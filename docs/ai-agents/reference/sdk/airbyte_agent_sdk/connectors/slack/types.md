@@ -10,6 +10,8 @@ Type definitions for slack connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="ChannelInvitesCreateParams"></a>
+
 `ChannelInvitesCreateParams(*args, **kwargs)`
 :   Parameters for channel_invites.create operation
 
@@ -48,6 +52,8 @@ Classes
 
     `users: str`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesAndCondition"></a>
 
 `ChannelMessagesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -69,6 +75,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLikeCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesAnyCondition"></a>
+
 `ChannelMessagesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -88,6 +96,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesAnyValueFilter"></a>
 
 `ChannelMessagesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -152,6 +162,8 @@ Classes
     `user: Any`
     :   User ID who sent the message.
 
+<a id="ChannelMessagesContainsCondition"></a>
+
 `ChannelMessagesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -163,6 +175,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesEqCondition"></a>
 
 `ChannelMessagesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -176,6 +190,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesFuzzyCondition"></a>
+
 `ChannelMessagesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -187,6 +203,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStringFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesGtCondition"></a>
 
 `ChannelMessagesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -200,6 +218,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesGteCondition"></a>
+
 `ChannelMessagesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -211,6 +231,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesInCondition"></a>
 
 `ChannelMessagesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -231,6 +253,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesInFilter"></a>
 
 `ChannelMessagesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -295,6 +319,8 @@ Classes
     `user: list[str]`
     :   User ID who sent the message.
 
+<a id="ChannelMessagesKeywordCondition"></a>
+
 `ChannelMessagesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -307,6 +333,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStringFilter`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesLikeCondition"></a>
+
 `ChannelMessagesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -318,6 +346,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesStringFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesListParams"></a>
 
 `ChannelMessagesListParams(*args, **kwargs)`
 :   Parameters for channel_messages.list operation
@@ -346,6 +376,8 @@ Classes
     `oldest: str`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesLtCondition"></a>
+
 `ChannelMessagesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -357,6 +389,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesLteCondition"></a>
 
 `ChannelMessagesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -370,6 +404,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesNeqCondition"></a>
+
 `ChannelMessagesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -381,6 +417,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesNotCondition"></a>
 
 `ChannelMessagesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -402,6 +440,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLikeCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesOrCondition"></a>
+
 `ChannelMessagesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -421,6 +461,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesLikeCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelMessagesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesSearchFilter"></a>
 
 `ChannelMessagesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering channel_messages search queries.
@@ -485,6 +527,8 @@ Classes
     `user: str | None`
     :   User ID who sent the message.
 
+<a id="ChannelMessagesSearchQuery"></a>
+
 `ChannelMessagesSearchQuery(*args, **kwargs)`
 :   Search query for channel_messages entity.
 
@@ -499,6 +543,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.ChannelMessagesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesSortFilter"></a>
 
 `ChannelMessagesSortFilter(*args, **kwargs)`
 :   Available fields for sorting channel_messages search results.
@@ -563,6 +609,8 @@ Classes
     `user: Literal['asc', 'desc']`
     :   User ID who sent the message.
 
+<a id="ChannelMessagesStringFilter"></a>
+
 `ChannelMessagesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -626,6 +674,8 @@ Classes
     `user: str`
     :   User ID who sent the message.
 
+<a id="ChannelPurposesCreateParams"></a>
+
 `ChannelPurposesCreateParams(*args, **kwargs)`
 :   Parameters for channel_purposes.create operation
 
@@ -641,6 +691,8 @@ Classes
     `purpose: str`
     :   The type of the None singleton.
 
+<a id="ChannelTopicsCreateParams"></a>
+
 `ChannelTopicsCreateParams(*args, **kwargs)`
 :   Parameters for channel_topics.create operation
 
@@ -655,6 +707,8 @@ Classes
 
     `topic: str`
     :   The type of the None singleton.
+
+<a id="ChannelsAndCondition"></a>
 
 `ChannelsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -676,6 +730,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLikeCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ChannelsAnyCondition"></a>
+
 `ChannelsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -695,6 +751,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.slack.types.ChannelsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsAnyValueFilter"></a>
 
 `ChannelsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -798,6 +856,8 @@ Classes
     `updated: Any`
     :   The timestamp when the channel was last updated.
 
+<a id="ChannelsContainsCondition"></a>
+
 `ChannelsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -809,6 +869,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.slack.types.ChannelsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsCreateParams"></a>
 
 `ChannelsCreateParams(*args, **kwargs)`
 :   Parameters for channels.create operation
@@ -825,6 +887,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="ChannelsEqCondition"></a>
+
 `ChannelsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -836,6 +900,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.slack.types.ChannelsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsFuzzyCondition"></a>
 
 `ChannelsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -849,6 +915,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.slack.types.ChannelsStringFilter`
     :   The type of the None singleton.
 
+<a id="ChannelsGetParams"></a>
+
 `ChannelsGetParams(*args, **kwargs)`
 :   Parameters for channels.get operation
 
@@ -860,6 +928,8 @@ Classes
 
     `channel: str`
     :   The type of the None singleton.
+
+<a id="ChannelsGtCondition"></a>
 
 `ChannelsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -873,6 +943,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.slack.types.ChannelsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChannelsGteCondition"></a>
+
 `ChannelsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -884,6 +956,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.slack.types.ChannelsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsInCondition"></a>
 
 `ChannelsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -904,6 +978,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.slack.types.ChannelsInFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsInFilter"></a>
 
 `ChannelsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1007,6 +1083,8 @@ Classes
     `updated: list[int]`
     :   The timestamp when the channel was last updated.
 
+<a id="ChannelsKeywordCondition"></a>
+
 `ChannelsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1019,6 +1097,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.slack.types.ChannelsStringFilter`
     :   The type of the None singleton.
 
+<a id="ChannelsLikeCondition"></a>
+
 `ChannelsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1030,6 +1110,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.slack.types.ChannelsStringFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsListParams"></a>
 
 `ChannelsListParams(*args, **kwargs)`
 :   Parameters for channels.list operation
@@ -1052,6 +1134,8 @@ Classes
     `types: str`
     :   The type of the None singleton.
 
+<a id="ChannelsLtCondition"></a>
+
 `ChannelsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1063,6 +1147,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.slack.types.ChannelsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsLteCondition"></a>
 
 `ChannelsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1076,6 +1162,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.slack.types.ChannelsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChannelsNeqCondition"></a>
+
 `ChannelsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1087,6 +1175,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.slack.types.ChannelsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChannelsNotCondition"></a>
 
 `ChannelsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1108,6 +1198,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLikeCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ChannelsOrCondition"></a>
+
 `ChannelsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1127,6 +1219,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.slack.types.ChannelsEqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsGteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLtCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLteCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsInCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsLikeCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsNotCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAndCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsOrCondition | airbyte_agent_sdk.connectors.slack.types.ChannelsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ChannelsSearchFilter"></a>
 
 `ChannelsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering channels search queries.
@@ -1230,6 +1324,8 @@ Classes
     `updated: int | None`
     :   The timestamp when the channel was last updated.
 
+<a id="ChannelsSearchQuery"></a>
+
 `ChannelsSearchQuery(*args, **kwargs)`
 :   Search query for channels entity.
 
@@ -1244,6 +1340,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.ChannelsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ChannelsSortFilter"></a>
 
 `ChannelsSortFilter(*args, **kwargs)`
 :   Available fields for sorting channels search results.
@@ -1347,6 +1445,8 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   The timestamp when the channel was last updated.
 
+<a id="ChannelsStringFilter"></a>
+
 `ChannelsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1449,6 +1549,8 @@ Classes
     `updated: str`
     :   The timestamp when the channel was last updated.
 
+<a id="ChannelsUpdateParams"></a>
+
 `ChannelsUpdateParams(*args, **kwargs)`
 :   Parameters for channels.update operation
 
@@ -1463,6 +1565,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="MessagesCreateParams"></a>
 
 `MessagesCreateParams(*args, **kwargs)`
 :   Parameters for messages.create operation
@@ -1491,6 +1595,8 @@ Classes
     `unfurl_media: bool`
     :   The type of the None singleton.
 
+<a id="MessagesUpdateParams"></a>
+
 `MessagesUpdateParams(*args, **kwargs)`
 :   Parameters for messages.update operation
 
@@ -1509,6 +1615,8 @@ Classes
     `ts: str`
     :   The type of the None singleton.
 
+<a id="ReactionsCreateParams"></a>
+
 `ReactionsCreateParams(*args, **kwargs)`
 :   Parameters for reactions.create operation
 
@@ -1526,6 +1634,8 @@ Classes
 
     `timestamp: str`
     :   The type of the None singleton.
+
+<a id="ThreadsAndCondition"></a>
 
 `ThreadsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1547,6 +1657,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ThreadsAnyCondition"></a>
+
 `ThreadsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1566,6 +1678,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.slack.types.ThreadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsAnyValueFilter"></a>
 
 `ThreadsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1624,6 +1738,8 @@ Classes
     `user: Any`
     :   User ID who sent the message.
 
+<a id="ThreadsContainsCondition"></a>
+
 `ThreadsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1635,6 +1751,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.slack.types.ThreadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsEqCondition"></a>
 
 `ThreadsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1648,6 +1766,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.slack.types.ThreadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ThreadsFuzzyCondition"></a>
+
 `ThreadsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1659,6 +1779,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.slack.types.ThreadsStringFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsGtCondition"></a>
 
 `ThreadsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1672,6 +1794,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.slack.types.ThreadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ThreadsGteCondition"></a>
+
 `ThreadsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1683,6 +1807,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.slack.types.ThreadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsInCondition"></a>
 
 `ThreadsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1703,6 +1829,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.slack.types.ThreadsInFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsInFilter"></a>
 
 `ThreadsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1761,6 +1889,8 @@ Classes
     `user: list[str]`
     :   User ID who sent the message.
 
+<a id="ThreadsKeywordCondition"></a>
+
 `ThreadsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1773,6 +1903,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.slack.types.ThreadsStringFilter`
     :   The type of the None singleton.
 
+<a id="ThreadsLikeCondition"></a>
+
 `ThreadsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1784,6 +1916,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.slack.types.ThreadsStringFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsListParams"></a>
 
 `ThreadsListParams(*args, **kwargs)`
 :   Parameters for threads.list operation
@@ -1815,6 +1949,8 @@ Classes
     `ts: str`
     :   The type of the None singleton.
 
+<a id="ThreadsLtCondition"></a>
+
 `ThreadsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1826,6 +1962,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.slack.types.ThreadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsLteCondition"></a>
 
 `ThreadsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1839,6 +1977,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.slack.types.ThreadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ThreadsNeqCondition"></a>
+
 `ThreadsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1850,6 +1990,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.slack.types.ThreadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ThreadsNotCondition"></a>
 
 `ThreadsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1871,6 +2013,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ThreadsOrCondition"></a>
+
 `ThreadsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1890,6 +2034,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.slack.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsInCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.slack.types.ThreadsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ThreadsSearchFilter"></a>
 
 `ThreadsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering threads search queries.
@@ -1948,6 +2094,8 @@ Classes
     `user: str | None`
     :   User ID who sent the message.
 
+<a id="ThreadsSearchQuery"></a>
+
 `ThreadsSearchQuery(*args, **kwargs)`
 :   Search query for threads entity.
 
@@ -1962,6 +2110,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.ThreadsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ThreadsSortFilter"></a>
 
 `ThreadsSortFilter(*args, **kwargs)`
 :   Available fields for sorting threads search results.
@@ -2020,6 +2170,8 @@ Classes
     `user: Literal['asc', 'desc']`
     :   User ID who sent the message.
 
+<a id="ThreadsStringFilter"></a>
+
 `ThreadsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2077,6 +2229,8 @@ Classes
     `user: str`
     :   User ID who sent the message.
 
+<a id="UsersAndCondition"></a>
+
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2097,6 +2251,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersLikeCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2116,6 +2272,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.slack.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2195,6 +2353,8 @@ Classes
     `who_can_share_contact_card: Any`
     :   Specifies who can share the user's contact card.
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2206,6 +2366,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.slack.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2219,6 +2381,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.slack.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2230,6 +2394,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.slack.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -2243,6 +2409,8 @@ Classes
     `user: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2255,6 +2423,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.slack.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2266,6 +2436,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.slack.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2286,6 +2458,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.slack.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2365,6 +2539,8 @@ Classes
     `who_can_share_contact_card: list[str]`
     :   Specifies who can share the user's contact card.
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2377,6 +2553,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.slack.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersLikeCondition"></a>
+
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2388,6 +2566,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.slack.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
@@ -2404,6 +2584,8 @@ Classes
     `limit: int`
     :   The type of the None singleton.
 
+<a id="UsersLtCondition"></a>
+
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2415,6 +2597,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.slack.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
 
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2428,6 +2612,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.slack.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2439,6 +2625,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.slack.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2460,6 +2648,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersLikeCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2479,6 +2669,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.slack.types.UsersEqCondition | airbyte_agent_sdk.connectors.slack.types.UsersNeqCondition | airbyte_agent_sdk.connectors.slack.types.UsersGtCondition | airbyte_agent_sdk.connectors.slack.types.UsersGteCondition | airbyte_agent_sdk.connectors.slack.types.UsersLtCondition | airbyte_agent_sdk.connectors.slack.types.UsersLteCondition | airbyte_agent_sdk.connectors.slack.types.UsersInCondition | airbyte_agent_sdk.connectors.slack.types.UsersLikeCondition | airbyte_agent_sdk.connectors.slack.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.slack.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.slack.types.UsersContainsCondition | airbyte_agent_sdk.connectors.slack.types.UsersNotCondition | airbyte_agent_sdk.connectors.slack.types.UsersAndCondition | airbyte_agent_sdk.connectors.slack.types.UsersOrCondition | airbyte_agent_sdk.connectors.slack.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -2558,6 +2750,8 @@ Classes
     `who_can_share_contact_card: str | None`
     :   Specifies who can share the user's contact card.
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -2572,6 +2766,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.slack.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -2650,6 +2846,8 @@ Classes
 
     `who_can_share_contact_card: Literal['asc', 'desc']`
     :   Specifies who can share the user's contact card.
+
+<a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

@@ -10,6 +10,8 @@ Type definitions for typeform connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="FormsAndCondition"></a>
+
 `FormsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="FormsAnyCondition"></a>
+
 `FormsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.typeform.types.FormsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="FormsAnyValueFilter"></a>
 
 `FormsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -122,6 +130,8 @@ Classes
     `workspace: Any`
     :   Workspace details where the form belongs
 
+<a id="FormsContainsCondition"></a>
+
 `FormsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -133,6 +143,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.FormsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="FormsEqCondition"></a>
 
 `FormsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -146,6 +158,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.typeform.types.FormsSearchFilter`
     :   The type of the None singleton.
 
+<a id="FormsFuzzyCondition"></a>
+
 `FormsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -157,6 +171,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
     :   The type of the None singleton.
+
+<a id="FormsGetParams"></a>
 
 `FormsGetParams(*args, **kwargs)`
 :   Parameters for forms.get operation
@@ -170,6 +186,8 @@ Classes
     `form_id: str`
     :   The type of the None singleton.
 
+<a id="FormsGtCondition"></a>
+
 `FormsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -182,6 +200,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.typeform.types.FormsSearchFilter`
     :   The type of the None singleton.
 
+<a id="FormsGteCondition"></a>
+
 `FormsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -193,6 +213,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.typeform.types.FormsSearchFilter`
     :   The type of the None singleton.
+
+<a id="FormsInCondition"></a>
 
 `FormsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -213,6 +235,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.typeform.types.FormsInFilter`
     :   The type of the None singleton.
+
+<a id="FormsInFilter"></a>
 
 `FormsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -265,6 +289,8 @@ Classes
     `workspace: list[dict[str, typing.Any]]`
     :   Workspace details where the form belongs
 
+<a id="FormsKeywordCondition"></a>
+
 `FormsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -277,6 +303,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
     :   The type of the None singleton.
 
+<a id="FormsLikeCondition"></a>
+
 `FormsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -288,6 +316,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
     :   The type of the None singleton.
+
+<a id="FormsListParams"></a>
 
 `FormsListParams(*args, **kwargs)`
 :   Parameters for forms.list operation
@@ -304,6 +334,8 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+<a id="FormsLtCondition"></a>
+
 `FormsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -315,6 +347,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.typeform.types.FormsSearchFilter`
     :   The type of the None singleton.
+
+<a id="FormsLteCondition"></a>
 
 `FormsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -328,6 +362,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.typeform.types.FormsSearchFilter`
     :   The type of the None singleton.
 
+<a id="FormsNeqCondition"></a>
+
 `FormsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -339,6 +375,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.typeform.types.FormsSearchFilter`
     :   The type of the None singleton.
+
+<a id="FormsNotCondition"></a>
 
 `FormsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -360,6 +398,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition`
     :   The type of the None singleton.
 
+<a id="FormsOrCondition"></a>
+
 `FormsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -379,6 +419,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="FormsSearchFilter"></a>
 
 `FormsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering forms search queries.
@@ -431,6 +473,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   Workspace details where the form belongs
 
+<a id="FormsSearchQuery"></a>
+
 `FormsSearchQuery(*args, **kwargs)`
 :   Search query for forms entity.
 
@@ -445,6 +489,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.FormsSortFilter]`
     :   The type of the None singleton.
+
+<a id="FormsSortFilter"></a>
 
 `FormsSortFilter(*args, **kwargs)`
 :   Available fields for sorting forms search results.
@@ -497,6 +543,8 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   Workspace details where the form belongs
 
+<a id="FormsStringFilter"></a>
+
 `FormsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -548,6 +596,8 @@ Classes
     `workspace: str`
     :   Workspace details where the form belongs
 
+<a id="ImagesAndCondition"></a>
+
 `ImagesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -568,6 +618,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ImagesAnyCondition"></a>
+
 `ImagesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -587,6 +639,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.typeform.types.ImagesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ImagesAnyValueFilter"></a>
 
 `ImagesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -621,6 +675,8 @@ Classes
     `width: Any`
     :   Width of the image in pixels
 
+<a id="ImagesContainsCondition"></a>
+
 `ImagesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -632,6 +688,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.ImagesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ImagesEqCondition"></a>
 
 `ImagesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -645,6 +703,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.typeform.types.ImagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ImagesFuzzyCondition"></a>
+
 `ImagesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -656,6 +716,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
     :   The type of the None singleton.
+
+<a id="ImagesGtCondition"></a>
 
 `ImagesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -669,6 +731,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.typeform.types.ImagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ImagesGteCondition"></a>
+
 `ImagesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -680,6 +744,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.typeform.types.ImagesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ImagesInCondition"></a>
 
 `ImagesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -700,6 +766,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.typeform.types.ImagesInFilter`
     :   The type of the None singleton.
+
+<a id="ImagesInFilter"></a>
 
 `ImagesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -734,6 +802,8 @@ Classes
     `width: list[int]`
     :   Width of the image in pixels
 
+<a id="ImagesKeywordCondition"></a>
+
 `ImagesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -745,6 +815,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
     :   The type of the None singleton.
+
+<a id="ImagesLikeCondition"></a>
 
 `ImagesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -758,12 +830,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
     :   The type of the None singleton.
 
+<a id="ImagesListParams"></a>
+
 `ImagesListParams(*args, **kwargs)`
 :   Parameters for images.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="ImagesLtCondition"></a>
 
 `ImagesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -777,6 +853,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.typeform.types.ImagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ImagesLteCondition"></a>
+
 `ImagesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -789,6 +867,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.typeform.types.ImagesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ImagesNeqCondition"></a>
+
 `ImagesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -800,6 +880,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.typeform.types.ImagesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ImagesNotCondition"></a>
 
 `ImagesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -821,6 +903,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ImagesOrCondition"></a>
+
 `ImagesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -840,6 +924,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ImagesSearchFilter"></a>
 
 `ImagesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering images search queries.
@@ -874,6 +960,8 @@ Classes
     `width: int | None`
     :   Width of the image in pixels
 
+<a id="ImagesSearchQuery"></a>
+
 `ImagesSearchQuery(*args, **kwargs)`
 :   Search query for images entity.
 
@@ -888,6 +976,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.ImagesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ImagesSortFilter"></a>
 
 `ImagesSortFilter(*args, **kwargs)`
 :   Available fields for sorting images search results.
@@ -922,6 +1012,8 @@ Classes
     `width: Literal['asc', 'desc']`
     :   Width of the image in pixels
 
+<a id="ImagesStringFilter"></a>
+
 `ImagesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -955,6 +1047,8 @@ Classes
     `width: str`
     :   Width of the image in pixels
 
+<a id="ResponsesAndCondition"></a>
+
 `ResponsesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -975,6 +1069,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ResponsesAnyCondition"></a>
+
 `ResponsesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -994,6 +1090,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesAnyValueFilter"></a>
 
 `ResponsesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1040,6 +1138,8 @@ Classes
     `variables: Any`
     :   Variables associated with the response
 
+<a id="ResponsesContainsCondition"></a>
+
 `ResponsesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1051,6 +1151,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesEqCondition"></a>
 
 `ResponsesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1064,6 +1166,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.typeform.types.ResponsesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ResponsesFuzzyCondition"></a>
+
 `ResponsesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1075,6 +1179,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesGtCondition"></a>
 
 `ResponsesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1088,6 +1194,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.typeform.types.ResponsesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ResponsesGteCondition"></a>
+
 `ResponsesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1099,6 +1207,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.typeform.types.ResponsesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesInCondition"></a>
 
 `ResponsesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1119,6 +1229,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.typeform.types.ResponsesInFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesInFilter"></a>
 
 `ResponsesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1165,6 +1277,8 @@ Classes
     `variables: list[list[typing.Any]]`
     :   Variables associated with the response
 
+<a id="ResponsesKeywordCondition"></a>
+
 `ResponsesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1177,6 +1291,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
     :   The type of the None singleton.
 
+<a id="ResponsesLikeCondition"></a>
+
 `ResponsesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1188,6 +1304,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesListParams"></a>
 
 `ResponsesListParams(*args, **kwargs)`
 :   Parameters for responses.list operation
@@ -1225,6 +1343,8 @@ Classes
     `until: str`
     :   The type of the None singleton.
 
+<a id="ResponsesLtCondition"></a>
+
 `ResponsesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1236,6 +1356,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.typeform.types.ResponsesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesLteCondition"></a>
 
 `ResponsesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1249,6 +1371,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.typeform.types.ResponsesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ResponsesNeqCondition"></a>
+
 `ResponsesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1260,6 +1384,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.typeform.types.ResponsesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ResponsesNotCondition"></a>
 
 `ResponsesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1281,6 +1407,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ResponsesOrCondition"></a>
+
 `ResponsesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1300,6 +1428,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ResponsesSearchFilter"></a>
 
 `ResponsesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering responses search queries.
@@ -1346,6 +1476,8 @@ Classes
     `variables: list[typing.Any] | None`
     :   Variables associated with the response
 
+<a id="ResponsesSearchQuery"></a>
+
 `ResponsesSearchQuery(*args, **kwargs)`
 :   Search query for responses entity.
 
@@ -1360,6 +1492,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ResponsesSortFilter"></a>
 
 `ResponsesSortFilter(*args, **kwargs)`
 :   Available fields for sorting responses search results.
@@ -1406,6 +1540,8 @@ Classes
     `variables: Literal['asc', 'desc']`
     :   Variables associated with the response
 
+<a id="ResponsesStringFilter"></a>
+
 `ResponsesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1451,6 +1587,8 @@ Classes
     `variables: str`
     :   Variables associated with the response
 
+<a id="ThemesAndCondition"></a>
+
 `ThemesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1471,6 +1609,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ThemesAnyCondition"></a>
+
 `ThemesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1490,6 +1630,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.typeform.types.ThemesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ThemesAnyValueFilter"></a>
 
 `ThemesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1536,6 +1678,8 @@ Classes
     `visibility: Any`
     :   Visibility setting of the theme
 
+<a id="ThemesContainsCondition"></a>
+
 `ThemesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1547,6 +1691,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.ThemesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ThemesEqCondition"></a>
 
 `ThemesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1560,6 +1706,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.typeform.types.ThemesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ThemesFuzzyCondition"></a>
+
 `ThemesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1571,6 +1719,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
     :   The type of the None singleton.
+
+<a id="ThemesGtCondition"></a>
 
 `ThemesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1584,6 +1734,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.typeform.types.ThemesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ThemesGteCondition"></a>
+
 `ThemesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1595,6 +1747,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.typeform.types.ThemesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ThemesInCondition"></a>
 
 `ThemesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1615,6 +1769,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.typeform.types.ThemesInFilter`
     :   The type of the None singleton.
+
+<a id="ThemesInFilter"></a>
 
 `ThemesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1661,6 +1817,8 @@ Classes
     `visibility: list[str]`
     :   Visibility setting of the theme
 
+<a id="ThemesKeywordCondition"></a>
+
 `ThemesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1673,6 +1831,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
     :   The type of the None singleton.
 
+<a id="ThemesLikeCondition"></a>
+
 `ThemesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1684,6 +1844,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
     :   The type of the None singleton.
+
+<a id="ThemesListParams"></a>
 
 `ThemesListParams(*args, **kwargs)`
 :   Parameters for themes.list operation
@@ -1700,6 +1862,8 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+<a id="ThemesLtCondition"></a>
+
 `ThemesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1711,6 +1875,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.typeform.types.ThemesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ThemesLteCondition"></a>
 
 `ThemesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1724,6 +1890,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.typeform.types.ThemesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ThemesNeqCondition"></a>
+
 `ThemesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1735,6 +1903,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.typeform.types.ThemesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ThemesNotCondition"></a>
 
 `ThemesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1756,6 +1926,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ThemesOrCondition"></a>
+
 `ThemesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1775,6 +1947,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ThemesSearchFilter"></a>
 
 `ThemesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering themes search queries.
@@ -1821,6 +1995,8 @@ Classes
     `visibility: str | None`
     :   Visibility setting of the theme
 
+<a id="ThemesSearchQuery"></a>
+
 `ThemesSearchQuery(*args, **kwargs)`
 :   Search query for themes entity.
 
@@ -1835,6 +2011,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.ThemesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ThemesSortFilter"></a>
 
 `ThemesSortFilter(*args, **kwargs)`
 :   Available fields for sorting themes search results.
@@ -1881,6 +2059,8 @@ Classes
     `visibility: Literal['asc', 'desc']`
     :   Visibility setting of the theme
 
+<a id="ThemesStringFilter"></a>
+
 `ThemesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1926,6 +2106,8 @@ Classes
     `visibility: str`
     :   Visibility setting of the theme
 
+<a id="WebhooksAndCondition"></a>
+
 `WebhooksAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1946,6 +2128,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition]`
     :   The type of the None singleton.
 
+<a id="WebhooksAnyCondition"></a>
+
 `WebhooksAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1965,6 +2149,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksAnyValueFilter"></a>
 
 `WebhooksAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1999,6 +2185,8 @@ Classes
     `verify_ssl: Any`
     :   Whether SSL verification is enforced
 
+<a id="WebhooksContainsCondition"></a>
+
 `WebhooksContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2010,6 +2198,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksEqCondition"></a>
 
 `WebhooksEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2023,6 +2213,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.typeform.types.WebhooksSearchFilter`
     :   The type of the None singleton.
 
+<a id="WebhooksFuzzyCondition"></a>
+
 `WebhooksFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2034,6 +2226,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksGtCondition"></a>
 
 `WebhooksGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -2047,6 +2241,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.typeform.types.WebhooksSearchFilter`
     :   The type of the None singleton.
 
+<a id="WebhooksGteCondition"></a>
+
 `WebhooksGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2058,6 +2254,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.typeform.types.WebhooksSearchFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksInCondition"></a>
 
 `WebhooksInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2078,6 +2276,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.typeform.types.WebhooksInFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksInFilter"></a>
 
 `WebhooksInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2112,6 +2312,8 @@ Classes
     `verify_ssl: list[bool]`
     :   Whether SSL verification is enforced
 
+<a id="WebhooksKeywordCondition"></a>
+
 `WebhooksKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2123,6 +2325,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksLikeCondition"></a>
 
 `WebhooksLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2136,6 +2340,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
     :   The type of the None singleton.
 
+<a id="WebhooksListParams"></a>
+
 `WebhooksListParams(*args, **kwargs)`
 :   Parameters for webhooks.list operation
 
@@ -2147,6 +2353,8 @@ Classes
 
     `form_id: str`
     :   The type of the None singleton.
+
+<a id="WebhooksLtCondition"></a>
 
 `WebhooksLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2160,6 +2368,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.typeform.types.WebhooksSearchFilter`
     :   The type of the None singleton.
 
+<a id="WebhooksLteCondition"></a>
+
 `WebhooksLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2172,6 +2382,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.typeform.types.WebhooksSearchFilter`
     :   The type of the None singleton.
 
+<a id="WebhooksNeqCondition"></a>
+
 `WebhooksNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2183,6 +2395,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.typeform.types.WebhooksSearchFilter`
     :   The type of the None singleton.
+
+<a id="WebhooksNotCondition"></a>
 
 `WebhooksNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2204,6 +2418,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition`
     :   The type of the None singleton.
 
+<a id="WebhooksOrCondition"></a>
+
 `WebhooksOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2223,6 +2439,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition]`
     :   The type of the None singleton.
+
+<a id="WebhooksSearchFilter"></a>
 
 `WebhooksSearchFilter(*args, **kwargs)`
 :   Available fields for filtering webhooks search queries.
@@ -2257,6 +2475,8 @@ Classes
     `verify_ssl: bool | None`
     :   Whether SSL verification is enforced
 
+<a id="WebhooksSearchQuery"></a>
+
 `WebhooksSearchQuery(*args, **kwargs)`
 :   Search query for webhooks entity.
 
@@ -2271,6 +2491,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksSortFilter]`
     :   The type of the None singleton.
+
+<a id="WebhooksSortFilter"></a>
 
 `WebhooksSortFilter(*args, **kwargs)`
 :   Available fields for sorting webhooks search results.
@@ -2305,6 +2527,8 @@ Classes
     `verify_ssl: Literal['asc', 'desc']`
     :   Whether SSL verification is enforced
 
+<a id="WebhooksStringFilter"></a>
+
 `WebhooksStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2338,6 +2562,8 @@ Classes
     `verify_ssl: str`
     :   Whether SSL verification is enforced
 
+<a id="WorkspacesAndCondition"></a>
+
 `WorkspacesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2358,6 +2584,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="WorkspacesAnyCondition"></a>
+
 `WorkspacesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2377,6 +2605,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesAnyValueFilter"></a>
 
 `WorkspacesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2408,6 +2638,8 @@ Classes
     `shared: Any`
     :   Whether this workspace is shared
 
+<a id="WorkspacesContainsCondition"></a>
+
 `WorkspacesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2419,6 +2651,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesEqCondition"></a>
 
 `WorkspacesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2432,6 +2666,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.typeform.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesFuzzyCondition"></a>
+
 `WorkspacesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2443,6 +2679,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesGtCondition"></a>
 
 `WorkspacesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -2456,6 +2694,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.typeform.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesGteCondition"></a>
+
 `WorkspacesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2467,6 +2707,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.typeform.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesInCondition"></a>
 
 `WorkspacesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2487,6 +2729,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.typeform.types.WorkspacesInFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesInFilter"></a>
 
 `WorkspacesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2518,6 +2762,8 @@ Classes
     `shared: list[bool]`
     :   Whether this workspace is shared
 
+<a id="WorkspacesKeywordCondition"></a>
+
 `WorkspacesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2530,6 +2776,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesLikeCondition"></a>
+
 `WorkspacesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2541,6 +2789,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesListParams"></a>
 
 `WorkspacesListParams(*args, **kwargs)`
 :   Parameters for workspaces.list operation
@@ -2557,6 +2807,8 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+<a id="WorkspacesLtCondition"></a>
+
 `WorkspacesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2568,6 +2820,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.typeform.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesLteCondition"></a>
 
 `WorkspacesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2581,6 +2835,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.typeform.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesNeqCondition"></a>
+
 `WorkspacesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2592,6 +2848,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.typeform.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesNotCondition"></a>
 
 `WorkspacesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2613,6 +2871,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
+<a id="WorkspacesOrCondition"></a>
+
 `WorkspacesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2632,6 +2892,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="WorkspacesSearchFilter"></a>
 
 `WorkspacesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering workspaces search queries.
@@ -2663,6 +2925,8 @@ Classes
     `shared: bool | None`
     :   Whether this workspace is shared
 
+<a id="WorkspacesSearchQuery"></a>
+
 `WorkspacesSearchQuery(*args, **kwargs)`
 :   Search query for workspaces entity.
 
@@ -2677,6 +2941,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesSortFilter]`
     :   The type of the None singleton.
+
+<a id="WorkspacesSortFilter"></a>
 
 `WorkspacesSortFilter(*args, **kwargs)`
 :   Available fields for sorting workspaces search results.
@@ -2707,6 +2973,8 @@ Classes
 
     `shared: Literal['asc', 'desc']`
     :   Whether this workspace is shared
+
+<a id="WorkspacesStringFilter"></a>
 
 `WorkspacesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

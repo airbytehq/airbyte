@@ -10,6 +10,8 @@ Zendesk-Talk connector.
 Classes
 -------
 
+<a id="AccountOverviewQuery"></a>
+
 `AccountOverviewQuery(connector: ZendeskTalkConnector)`
 :   Query class for AccountOverview entity operations.
     
@@ -68,6 +70,8 @@ Classes
         Returns:
             AccountOverviewListResult
 
+<a id="AddressesQuery"></a>
+
 `AddressesQuery(connector: ZendeskTalkConnector)`
 :   Query class for Addresses entity operations.
     
@@ -121,6 +125,8 @@ Classes
         
         Returns:
             AddressesListResult
+
+<a id="AgentsActivityQuery"></a>
 
 `AgentsActivityQuery(connector: ZendeskTalkConnector)`
 :   Query class for AgentsActivity entity operations.
@@ -183,6 +189,8 @@ Classes
         Returns:
             AgentsActivityListResult
 
+<a id="AgentsOverviewQuery"></a>
+
 `AgentsOverviewQuery(connector: ZendeskTalkConnector)`
 :   Query class for AgentsOverview entity operations.
     
@@ -240,6 +248,8 @@ Classes
         
         Returns:
             AgentsOverviewListResult
+
+<a id="CallLegsQuery"></a>
 
 `CallLegsQuery(connector: ZendeskTalkConnector)`
 :   Query class for CallLegs entity operations.
@@ -304,6 +314,8 @@ Classes
         
         Returns:
             CallLegsListResult
+
+<a id="CallsQuery"></a>
 
 `CallsQuery(connector: ZendeskTalkConnector)`
 :   Query class for Calls entity operations.
@@ -385,6 +397,8 @@ Classes
         Returns:
             CallsListResult
 
+<a id="CurrentQueueActivityQuery"></a>
+
 `CurrentQueueActivityQuery(connector: ZendeskTalkConnector)`
 :   Query class for CurrentQueueActivity entity operations.
     
@@ -426,6 +440,8 @@ Classes
         
         Returns:
             CurrentQueueActivityListResult
+
+<a id="GreetingCategoriesQuery"></a>
 
 `GreetingCategoriesQuery(connector: ZendeskTalkConnector)`
 :   Query class for GreetingCategories entity operations.
@@ -473,6 +489,8 @@ Classes
         
         Returns:
             GreetingCategoriesListResult
+
+<a id="GreetingsQuery"></a>
 
 `GreetingsQuery(connector: ZendeskTalkConnector)`
 :   Query class for Greetings entity operations.
@@ -532,6 +550,8 @@ Classes
         Returns:
             GreetingsListResult
 
+<a id="IvrsQuery"></a>
+
 `IvrsQuery(connector: ZendeskTalkConnector)`
 :   Query class for Ivrs entity operations.
     
@@ -581,6 +601,8 @@ Classes
         
         Returns:
             IvrsListResult
+
+<a id="PhoneNumbersQuery"></a>
 
 `PhoneNumbersQuery(connector: ZendeskTalkConnector)`
 :   Query class for PhoneNumbers entity operations.
@@ -656,6 +678,8 @@ Classes
         
         Returns:
             PhoneNumbersListResult
+
+<a id="ZendeskTalkConnector"></a>
 
 `ZendeskTalkConnector(auth_config: ZendeskTalkAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Zendesk-Talk API connector.

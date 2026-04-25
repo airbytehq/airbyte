@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -154,6 +160,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesSearchResult"></a>
+
 `BranchesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -169,6 +177,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CommentsSearchResult"></a>
 
 `CommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -186,6 +196,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="IssuesSearchResult"></a>
+
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -201,6 +213,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OrganizationsSearchResult"></a>
 
 `OrganizationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -218,6 +232,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PullRequestsSearchResult"></a>
+
 `PullRequestsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -233,6 +249,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="RepositoriesSearchResult"></a>
 
 `RepositoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -250,6 +268,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="StargazersSearchResult"></a>
+
 `StargazersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -265,6 +285,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -282,6 +304,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TeamsSearchResult"></a>
+
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -298,6 +322,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -313,6 +339,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BranchesSearchData"></a>
 
 `BranchesSearchData(**data: Any)`
 :   Search result data for branches entity.
@@ -333,6 +361,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsSearchData"></a>
+
 `CommentsSearchData(**data: Any)`
 :   Search result data for comments entity.
     
@@ -351,6 +381,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GithubConnector"></a>
 
 `GithubConnector(auth_config: GithubAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Github API connector.
@@ -608,6 +640,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GithubReplicationConfig"></a>
+
 `GithubReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from GitHub.
     
@@ -630,6 +664,8 @@ Classes
     `repositories: str`
     :   List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for all repositories from organization
 
+<a id="IssuesSearchData"></a>
+
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
     
@@ -648,6 +684,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrganizationsSearchData"></a>
 
 `OrganizationsSearchData(**data: Any)`
 :   Search result data for organizations entity.
@@ -668,6 +706,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PullRequestsSearchData"></a>
+
 `PullRequestsSearchData(**data: Any)`
 :   Search result data for pull_requests entity.
     
@@ -686,6 +726,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RepositoriesSearchData"></a>
 
 `RepositoriesSearchData(**data: Any)`
 :   Search result data for repositories entity.
@@ -706,6 +748,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StargazersSearchData"></a>
+
 `StargazersSearchData(**data: Any)`
 :   Search result data for stargazers entity.
     
@@ -724,6 +768,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsSearchData"></a>
 
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
@@ -744,6 +790,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsSearchData"></a>
+
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
     
@@ -762,6 +810,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

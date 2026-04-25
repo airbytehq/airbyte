@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="ActiveUsersData"></a>
+
 `ActiveUsersData(**data: Any)`
 :   Active or new user count data
     
@@ -47,6 +49,8 @@ Classes
     `x_values: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="ActiveUsersDataSeriesmetaItem"></a>
+
 `ActiveUsersDataSeriesmetaItem(**data: Any)`
 :   Nested schema for ActiveUsersData.seriesMeta_item
     
@@ -69,6 +73,8 @@ Classes
     `segment_index: int | Any`
     :   The type of the None singleton.
 
+<a id="ActiveUsersResponse"></a>
+
 `ActiveUsersResponse(**data: Any)`
 :   Active users response wrapper
     
@@ -90,6 +96,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ActiveUsersSearchData"></a>
 
 `ActiveUsersSearchData(**data: Any)`
 :   Search result data for active_users entity.
@@ -115,6 +123,8 @@ Classes
 
     `statistics: dict[str, typing.Any] | None`
     :   The statistics related to the active users for the given date
+
+<a id="AirbyteSearchMeta"></a>
 
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
@@ -143,6 +153,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -199,6 +211,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ActiveUsersSearchResult"></a>
+
 `ActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -235,6 +249,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AnnotationsSearchResult"></a>
 
 `AnnotationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -273,6 +289,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthSearchResult"></a>
+
 `AverageSessionLengthSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -309,6 +327,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CohortsSearchResult"></a>
 
 `CohortsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -347,6 +367,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsListSearchResult"></a>
+
 `EventsListSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -362,6 +384,8 @@ Classes
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmplitudeAuthConfig"></a>
 
 `AmplitudeAuthConfig(**data: Any)`
 :   API Key Authentication
@@ -387,6 +411,8 @@ Classes
 
     `secret_key: str`
     :   Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+
+<a id="AmplitudeCheckResult"></a>
 
 `AmplitudeCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -421,6 +447,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="AmplitudeExecuteResult"></a>
+
 `AmplitudeExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -454,6 +482,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AmplitudeExecuteResultWithMeta"></a>
 
 `AmplitudeExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -501,6 +531,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ActiveUsersListResult"></a>
+
 `ActiveUsersListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -541,6 +573,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthListResult"></a>
 
 `AverageSessionLengthListResult(**data: Any)`
 :   Response envelope with data only.
@@ -583,6 +617,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AnnotationsListResult"></a>
+
 `AnnotationsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -623,6 +659,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CohortsListResult"></a>
 
 `CohortsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -665,6 +703,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsListListResult"></a>
+
 `EventsListListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -682,6 +722,8 @@ Classes
     * airbyte_agent_sdk.connectors.amplitude.models.AmplitudeExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmplitudeReplicationConfig"></a>
 
 `AmplitudeReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Amplitude.
@@ -704,6 +746,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data before this date will not be replicated.
+
+<a id="Annotation"></a>
 
 `Annotation(**data: Any)`
 :   A chart annotation object
@@ -736,6 +780,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AnnotationGetResponse"></a>
+
 `AnnotationGetResponse(**data: Any)`
 :   Single annotation response
     
@@ -757,6 +803,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AnnotationV3"></a>
 
 `AnnotationV3(**data: Any)`
 :   A chart annotation object (v3 API format)
@@ -798,6 +846,8 @@ Classes
     `start: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AnnotationV3Category"></a>
+
 `AnnotationV3Category(**data: Any)`
 :   The annotation category
     
@@ -823,6 +873,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AnnotationsList"></a>
+
 `AnnotationsList(**data: Any)`
 :   List of annotations
     
@@ -844,6 +896,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AnnotationsSearchData"></a>
 
 `AnnotationsSearchData(**data: Any)`
 :   Search result data for annotations entity.
@@ -876,6 +930,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthData"></a>
+
 `AverageSessionLengthData(**data: Any)`
 :   Average session length data
     
@@ -907,6 +963,8 @@ Classes
     `x_values: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthDataSeriescollapsedItemItem"></a>
+
 `AverageSessionLengthDataSeriescollapsedItemItem(**data: Any)`
 :   Nested schema for AverageSessionLengthData.seriesCollapsed_item_item
     
@@ -931,6 +989,8 @@ Classes
 
     `value: float | Any`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthDataSeriesmetaItem"></a>
 
 `AverageSessionLengthDataSeriesmetaItem(**data: Any)`
 :   Nested schema for AverageSessionLengthData.seriesMeta_item
@@ -957,6 +1017,8 @@ Classes
     `session_index: int | Any`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthResponse"></a>
+
 `AverageSessionLengthResponse(**data: Any)`
 :   Average session length response wrapper
     
@@ -978,6 +1040,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthSearchData"></a>
 
 `AverageSessionLengthSearchData(**data: Any)`
 :   Search result data for average_session_length entity.
@@ -1003,6 +1067,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Cohort"></a>
 
 `Cohort(**data: Any)`
 :   A user cohort object
@@ -1116,6 +1182,8 @@ Classes
     `viewers: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="CohortGetResponse"></a>
+
 `CohortGetResponse(**data: Any)`
 :   Single cohort response wrapper
     
@@ -1138,6 +1206,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CohortsList"></a>
+
 `CohortsList(**data: Any)`
 :   List of cohorts
     
@@ -1159,6 +1229,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CohortsSearchData"></a>
 
 `CohortsSearchData(**data: Any)`
 :   Search result data for cohorts entity.
@@ -1257,6 +1329,8 @@ Classes
     `viewers: list[typing.Any] | None`
     :   Users or viewers who have access to the cohort data
 
+<a id="EventType"></a>
+
 `EventType(**data: Any)`
 :   An event type definition with weekly totals
     
@@ -1321,6 +1395,8 @@ Classes
     `waitroom_approved: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="EventsListResponse"></a>
+
 `EventsListResponse(**data: Any)`
 :   List of event types
     
@@ -1342,6 +1418,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventsListSearchData"></a>
 
 `EventsListSearchData(**data: Any)`
 :   Search result data for events_list entity.

@@ -10,6 +10,8 @@ Type definitions for mailchimp connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -30,6 +32,8 @@ Classes
 
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
+
+<a id="AutomationsListParams"></a>
 
 `AutomationsListParams(*args, **kwargs)`
 :   Parameters for automations.list operation
@@ -61,6 +65,8 @@ Classes
     `status: str`
     :   The type of the None singleton.
 
+<a id="CampaignsAndCondition"></a>
+
 `CampaignsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -81,6 +87,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CampaignsAnyCondition"></a>
+
 `CampaignsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -100,6 +108,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsAnyValueFilter"></a>
 
 `CampaignsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -176,6 +186,8 @@ Classes
     `web_id: Any`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="CampaignsContainsCondition"></a>
+
 `CampaignsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -187,6 +199,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsEqCondition"></a>
 
 `CampaignsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -200,6 +214,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsFuzzyCondition"></a>
+
 `CampaignsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -211,6 +227,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsGetParams"></a>
 
 `CampaignsGetParams(*args, **kwargs)`
 :   Parameters for campaigns.get operation
@@ -224,6 +242,8 @@ Classes
     `campaign_id: str`
     :   The type of the None singleton.
 
+<a id="CampaignsGtCondition"></a>
+
 `CampaignsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -236,6 +256,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsGteCondition"></a>
+
 `CampaignsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -247,6 +269,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInCondition"></a>
 
 `CampaignsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -267,6 +291,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInFilter"></a>
 
 `CampaignsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -343,6 +369,8 @@ Classes
     `web_id: list[int]`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="CampaignsKeywordCondition"></a>
+
 `CampaignsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -355,6 +383,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsLikeCondition"></a>
+
 `CampaignsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -366,6 +396,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
 :   Parameters for campaigns.list operation
@@ -412,6 +444,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="CampaignsLtCondition"></a>
+
 `CampaignsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -423,6 +457,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsLteCondition"></a>
 
 `CampaignsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -436,6 +472,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsNeqCondition"></a>
+
 `CampaignsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -447,6 +485,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsNotCondition"></a>
 
 `CampaignsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -468,6 +508,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CampaignsOrCondition"></a>
+
 `CampaignsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -487,6 +529,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchFilter"></a>
 
 `CampaignsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering campaigns search queries.
@@ -563,6 +607,8 @@ Classes
     `web_id: int | None`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="CampaignsSearchQuery"></a>
+
 `CampaignsSearchQuery(*args, **kwargs)`
 :   Search query for campaigns entity.
 
@@ -577,6 +623,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CampaignsSortFilter"></a>
 
 `CampaignsSortFilter(*args, **kwargs)`
 :   Available fields for sorting campaigns search results.
@@ -653,6 +701,8 @@ Classes
     `web_id: Literal['asc', 'desc']`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="CampaignsStringFilter"></a>
+
 `CampaignsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -728,6 +778,8 @@ Classes
     `web_id: str`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="EmailActivityAndCondition"></a>
+
 `EmailActivityAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -748,6 +800,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition]`
     :   The type of the None singleton.
 
+<a id="EmailActivityAnyCondition"></a>
+
 `EmailActivityAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -767,6 +821,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityAnyValueFilter"></a>
 
 `EmailActivityAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -807,6 +863,8 @@ Classes
     `url: Any`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="EmailActivityContainsCondition"></a>
+
 `EmailActivityContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -818,6 +876,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityEqCondition"></a>
 
 `EmailActivityEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -831,6 +891,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="EmailActivityFuzzyCondition"></a>
+
 `EmailActivityFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -842,6 +904,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStringFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityGtCondition"></a>
 
 `EmailActivityGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -855,6 +919,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="EmailActivityGteCondition"></a>
+
 `EmailActivityGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -866,6 +932,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityInCondition"></a>
 
 `EmailActivityInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -886,6 +954,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityInFilter"></a>
 
 `EmailActivityInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -926,6 +996,8 @@ Classes
     `url: list[str]`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="EmailActivityKeywordCondition"></a>
+
 `EmailActivityKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -938,6 +1010,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStringFilter`
     :   The type of the None singleton.
 
+<a id="EmailActivityLikeCondition"></a>
+
 `EmailActivityLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -949,6 +1023,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStringFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityListParams"></a>
 
 `EmailActivityListParams(*args, **kwargs)`
 :   Parameters for email_activity.list operation
@@ -971,6 +1047,8 @@ Classes
     `since: str`
     :   The type of the None singleton.
 
+<a id="EmailActivityLtCondition"></a>
+
 `EmailActivityLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -982,6 +1060,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityLteCondition"></a>
 
 `EmailActivityLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -995,6 +1075,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="EmailActivityNeqCondition"></a>
+
 `EmailActivityNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1006,6 +1088,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="EmailActivityNotCondition"></a>
 
 `EmailActivityNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1027,6 +1111,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition`
     :   The type of the None singleton.
 
+<a id="EmailActivityOrCondition"></a>
+
 `EmailActivityOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1046,6 +1132,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition]`
     :   The type of the None singleton.
+
+<a id="EmailActivitySearchFilter"></a>
 
 `EmailActivitySearchFilter(*args, **kwargs)`
 :   Available fields for filtering email_activity search queries.
@@ -1086,6 +1174,8 @@ Classes
     `url: str | None`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="EmailActivitySearchQuery"></a>
+
 `EmailActivitySearchQuery(*args, **kwargs)`
 :   Search query for email_activity entity.
 
@@ -1100,6 +1190,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySortFilter]`
     :   The type of the None singleton.
+
+<a id="EmailActivitySortFilter"></a>
 
 `EmailActivitySortFilter(*args, **kwargs)`
 :   Available fields for sorting email_activity search results.
@@ -1140,6 +1232,8 @@ Classes
     `url: Literal['asc', 'desc']`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="EmailActivityStringFilter"></a>
+
 `EmailActivityStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1179,6 +1273,8 @@ Classes
     `url: str`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="InterestCategoriesGetParams"></a>
+
 `InterestCategoriesGetParams(*args, **kwargs)`
 :   Parameters for interest_categories.get operation
 
@@ -1193,6 +1289,8 @@ Classes
 
     `list_id: str`
     :   The type of the None singleton.
+
+<a id="InterestCategoriesListParams"></a>
 
 `InterestCategoriesListParams(*args, **kwargs)`
 :   Parameters for interest_categories.list operation
@@ -1212,6 +1310,8 @@ Classes
     `offset: int`
     :   The type of the None singleton.
 
+<a id="InterestsGetParams"></a>
+
 `InterestsGetParams(*args, **kwargs)`
 :   Parameters for interests.get operation
 
@@ -1229,6 +1329,8 @@ Classes
 
     `list_id: str`
     :   The type of the None singleton.
+
+<a id="InterestsListParams"></a>
 
 `InterestsListParams(*args, **kwargs)`
 :   Parameters for interests.list operation
@@ -1251,6 +1353,8 @@ Classes
     `offset: int`
     :   The type of the None singleton.
 
+<a id="ListMembersGetParams"></a>
+
 `ListMembersGetParams(*args, **kwargs)`
 :   Parameters for list_members.get operation
 
@@ -1265,6 +1369,8 @@ Classes
 
     `subscriber_hash: str`
     :   The type of the None singleton.
+
+<a id="ListMembersListParams"></a>
 
 `ListMembersListParams(*args, **kwargs)`
 :   Parameters for list_members.list operation
@@ -1323,6 +1429,8 @@ Classes
     `vip_only: bool`
     :   The type of the None singleton.
 
+<a id="ListsAndCondition"></a>
+
 `ListsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1343,6 +1451,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ListsAnyCondition"></a>
+
 `ListsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1362,6 +1472,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListsAnyValueFilter"></a>
 
 `ListsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1435,6 +1547,8 @@ Classes
     `web_id: Any`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="ListsContainsCondition"></a>
+
 `ListsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1446,6 +1560,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListsEqCondition"></a>
 
 `ListsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1459,6 +1575,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.mailchimp.types.ListsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListsFuzzyCondition"></a>
+
 `ListsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1470,6 +1588,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.ListsStringFilter`
     :   The type of the None singleton.
+
+<a id="ListsGetParams"></a>
 
 `ListsGetParams(*args, **kwargs)`
 :   Parameters for lists.get operation
@@ -1483,6 +1603,8 @@ Classes
     `list_id: str`
     :   The type of the None singleton.
 
+<a id="ListsGtCondition"></a>
+
 `ListsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1495,6 +1617,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.mailchimp.types.ListsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListsGteCondition"></a>
+
 `ListsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1506,6 +1630,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.mailchimp.types.ListsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListsInCondition"></a>
 
 `ListsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1526,6 +1652,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.mailchimp.types.ListsInFilter`
     :   The type of the None singleton.
+
+<a id="ListsInFilter"></a>
 
 `ListsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1599,6 +1727,8 @@ Classes
     `web_id: list[int]`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="ListsKeywordCondition"></a>
+
 `ListsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1611,6 +1741,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.mailchimp.types.ListsStringFilter`
     :   The type of the None singleton.
 
+<a id="ListsLikeCondition"></a>
+
 `ListsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1622,6 +1754,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.mailchimp.types.ListsStringFilter`
     :   The type of the None singleton.
+
+<a id="ListsListParams"></a>
 
 `ListsListParams(*args, **kwargs)`
 :   Parameters for lists.list operation
@@ -1659,6 +1793,8 @@ Classes
     `sort_field: str`
     :   The type of the None singleton.
 
+<a id="ListsLtCondition"></a>
+
 `ListsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1670,6 +1806,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.mailchimp.types.ListsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListsLteCondition"></a>
 
 `ListsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1683,6 +1821,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.mailchimp.types.ListsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListsNeqCondition"></a>
+
 `ListsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1694,6 +1834,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.mailchimp.types.ListsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListsNotCondition"></a>
 
 `ListsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1715,6 +1857,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ListsOrCondition"></a>
+
 `ListsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1734,6 +1878,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ListsSearchFilter"></a>
 
 `ListsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering lists search queries.
@@ -1807,6 +1953,8 @@ Classes
     `web_id: int | None`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="ListsSearchQuery"></a>
+
 `ListsSearchQuery(*args, **kwargs)`
 :   Search query for lists entity.
 
@@ -1821,6 +1969,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ListsSortFilter"></a>
 
 `ListsSortFilter(*args, **kwargs)`
 :   Available fields for sorting lists search results.
@@ -1894,6 +2044,8 @@ Classes
     `web_id: Literal['asc', 'desc']`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="ListsStringFilter"></a>
+
 `ListsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1966,6 +2118,8 @@ Classes
     `web_id: str`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="ReportsAndCondition"></a>
+
 `ReportsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1986,6 +2140,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ReportsAnyCondition"></a>
+
 `ReportsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2005,6 +2161,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ReportsAnyValueFilter"></a>
 
 `ReportsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2093,6 +2251,8 @@ Classes
     `unsubscribed: Any`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="ReportsContainsCondition"></a>
+
 `ReportsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2104,6 +2264,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ReportsEqCondition"></a>
 
 `ReportsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2117,6 +2279,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.mailchimp.types.ReportsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ReportsFuzzyCondition"></a>
+
 `ReportsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2128,6 +2292,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.ReportsStringFilter`
     :   The type of the None singleton.
+
+<a id="ReportsGetParams"></a>
 
 `ReportsGetParams(*args, **kwargs)`
 :   Parameters for reports.get operation
@@ -2141,6 +2307,8 @@ Classes
     `campaign_id: str`
     :   The type of the None singleton.
 
+<a id="ReportsGtCondition"></a>
+
 `ReportsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2153,6 +2321,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.mailchimp.types.ReportsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ReportsGteCondition"></a>
+
 `ReportsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2164,6 +2334,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.mailchimp.types.ReportsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ReportsInCondition"></a>
 
 `ReportsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2184,6 +2356,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.mailchimp.types.ReportsInFilter`
     :   The type of the None singleton.
+
+<a id="ReportsInFilter"></a>
 
 `ReportsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2272,6 +2446,8 @@ Classes
     `unsubscribed: list[int]`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="ReportsKeywordCondition"></a>
+
 `ReportsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2284,6 +2460,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.mailchimp.types.ReportsStringFilter`
     :   The type of the None singleton.
 
+<a id="ReportsLikeCondition"></a>
+
 `ReportsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2295,6 +2473,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.mailchimp.types.ReportsStringFilter`
     :   The type of the None singleton.
+
+<a id="ReportsListParams"></a>
 
 `ReportsListParams(*args, **kwargs)`
 :   Parameters for reports.list operation
@@ -2320,6 +2500,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="ReportsLtCondition"></a>
+
 `ReportsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2331,6 +2513,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.mailchimp.types.ReportsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ReportsLteCondition"></a>
 
 `ReportsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2344,6 +2528,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.mailchimp.types.ReportsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ReportsNeqCondition"></a>
+
 `ReportsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2355,6 +2541,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.mailchimp.types.ReportsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ReportsNotCondition"></a>
 
 `ReportsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2376,6 +2564,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ReportsOrCondition"></a>
+
 `ReportsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2395,6 +2585,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ReportsSearchFilter"></a>
 
 `ReportsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering reports search queries.
@@ -2483,6 +2675,8 @@ Classes
     `unsubscribed: int | None`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="ReportsSearchQuery"></a>
+
 `ReportsSearchQuery(*args, **kwargs)`
 :   Search query for reports entity.
 
@@ -2497,6 +2691,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ReportsSortFilter"></a>
 
 `ReportsSortFilter(*args, **kwargs)`
 :   Available fields for sorting reports search results.
@@ -2585,6 +2781,8 @@ Classes
     `unsubscribed: Literal['asc', 'desc']`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="ReportsStringFilter"></a>
+
 `ReportsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2672,6 +2870,8 @@ Classes
     `unsubscribed: str`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="SegmentMembersListParams"></a>
+
 `SegmentMembersListParams(*args, **kwargs)`
 :   Parameters for segment_members.list operation
 
@@ -2693,6 +2893,8 @@ Classes
     `segment_id: str`
     :   The type of the None singleton.
 
+<a id="SegmentsGetParams"></a>
+
 `SegmentsGetParams(*args, **kwargs)`
 :   Parameters for segments.get operation
 
@@ -2707,6 +2909,8 @@ Classes
 
     `segment_id: str`
     :   The type of the None singleton.
+
+<a id="SegmentsListParams"></a>
 
 `SegmentsListParams(*args, **kwargs)`
 :   Parameters for segments.list operation
@@ -2741,6 +2945,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="TagsListParams"></a>
+
 `TagsListParams(*args, **kwargs)`
 :   Parameters for tags.list operation
 
@@ -2755,6 +2961,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="UnsubscribesListParams"></a>
 
 `UnsubscribesListParams(*args, **kwargs)`
 :   Parameters for unsubscribes.list operation

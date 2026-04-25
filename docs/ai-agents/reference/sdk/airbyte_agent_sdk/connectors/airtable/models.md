@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -93,6 +97,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BasesSearchResult"></a>
+
 `BasesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -130,6 +136,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TablesSearchResult"></a>
+
 `TablesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -145,6 +153,8 @@ Classes
     * airbyte_agent_sdk.connectors.airtable.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AirtableAuthConfig"></a>
 
 `AirtableAuthConfig(**data: Any)`
 :   Personal Access Token
@@ -167,6 +177,8 @@ Classes
 
     `personal_access_token: str`
     :   Airtable Personal Access Token. See https://airtable.com/developers/web/guides/personal-access-tokens
+
+<a id="AirtableCheckResult"></a>
 
 `AirtableCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -201,6 +213,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="AirtableExecuteResult"></a>
+
 `AirtableExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -230,6 +244,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AirtableExecuteResultWithMeta"></a>
 
 `AirtableExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -283,6 +299,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BasesListResult"></a>
+
 `BasesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -326,6 +344,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RecordsListResult"></a>
+
 `RecordsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -368,6 +388,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TablesListResult"></a>
+
 `TablesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -385,6 +407,8 @@ Classes
     * airbyte_agent_sdk.connectors.airtable.models.AirtableExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Base"></a>
 
 `Base(**data: Any)`
 :   An Airtable base (workspace)
@@ -414,6 +438,8 @@ Classes
     `permission_level: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BasesList"></a>
+
 `BasesList(**data: Any)`
 :   Paginated list of bases
     
@@ -439,6 +465,8 @@ Classes
     `offset: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BasesListResultMeta"></a>
+
 `BasesListResultMeta(**data: Any)`
 :   Metadata for bases.Action.LIST operation
     
@@ -460,6 +488,8 @@ Classes
 
     `offset: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BasesSearchData"></a>
 
 `BasesSearchData(**data: Any)`
 :   Search result data for bases entity.
@@ -489,6 +519,8 @@ Classes
     `permission_level: str | None`
     :   Permission level for the base
 
+<a id="Record"></a>
+
 `Record(**data: Any)`
 :   A record (row) in an Airtable table
     
@@ -517,6 +549,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RecordsList"></a>
+
 `RecordsList(**data: Any)`
 :   Paginated list of records
     
@@ -542,6 +576,8 @@ Classes
     `records: list[airbyte_agent_sdk.connectors.airtable.models.Record] | Any`
     :   The type of the None singleton.
 
+<a id="RecordsListResultMeta"></a>
+
 `RecordsListResultMeta(**data: Any)`
 :   Metadata for records.Action.LIST operation
     
@@ -563,6 +599,8 @@ Classes
 
     `offset: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Table"></a>
 
 `Table(**data: Any)`
 :   A table within an Airtable base
@@ -598,6 +636,8 @@ Classes
     `views: list[airbyte_agent_sdk.connectors.airtable.models.View] | Any | None`
     :   The type of the None singleton.
 
+<a id="TableField"></a>
+
 `TableField(**data: Any)`
 :   A field (column) in a table
     
@@ -629,6 +669,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TablesList"></a>
+
 `TablesList(**data: Any)`
 :   List of tables in a base
     
@@ -650,6 +692,8 @@ Classes
 
     `tables: list[airbyte_agent_sdk.connectors.airtable.models.Table] | Any`
     :   The type of the None singleton.
+
+<a id="TablesSearchData"></a>
 
 `TablesSearchData(**data: Any)`
 :   Search result data for tables entity.
@@ -684,6 +728,8 @@ Classes
 
     `views: list[typing.Any] | None`
     :   List of views in the table
+
+<a id="View"></a>
 
 `View(**data: Any)`
 :   A view in a table

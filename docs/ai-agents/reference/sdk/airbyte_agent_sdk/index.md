@@ -132,6 +132,8 @@ Sub-modules
 Functions
 ---------
 
+<a id="ask"></a>
+
 `ask(prompt: str, *, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None) ‑> airbyte_agent_sdk.executor.models.AskResult`
 :   Ask a natural-language question across all connectors in a workspace.
     
@@ -177,6 +179,8 @@ Functions
     See also:
         [`ask_sync`](#ask_sync) — blocking wrapper for scripts and notebooks.
 
+<a id="ask_sync"></a>
+
 `ask_sync(prompt: str, *, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None) ‑> airbyte_agent_sdk.executor.models.AskResult`
 :   Blocking variant of [`ask`](#ask). Works in scripts and notebooks.
     
@@ -215,11 +219,15 @@ Functions
     See also:
         [`ask`](#ask) — the async version for use in async applications.
 
+<a id="configure"></a>
+
 `configure(*, client_id: str, client_secret: str, organization_id: str | None = None, workspace_name: str = 'default') ‑> None`
 :   Set global SDK credentials. These are used as defaults by connect(), Workspace, and ask().
     
     Calling configure() again overwrites the previous configuration.
     Explicit kwargs passed to connect()/Workspace()/ask() always take priority.
+
+<a id="connect"></a>
 
 `connect(connector_name: str, *, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, connector_id: str | None = None, organization_id: str | None = None, auth_config: AirbyteAuthConfig | None = None) ‑> StripeConnector | HostedExecutor`
 :   Create a typed connector or `HostedExecutor` for a connector by name.
@@ -283,8 +291,12 @@ Functions
         See the module-level `## Errors` section for a compound `try`/`except`
         pattern that catches both SDK-defined and hosted-path errors.
 
+<a id="list_connectors"></a>
+
 `list_connectors() ‑> list[str]`
 :   Return a sorted list of all available connector names.
+
+<a id="save_download"></a>
 
 `save_download(download_iterator: AsyncIterator[bytes], path: str | Path, *, overwrite: bool = False) ‑> pathlib._local.Path`
 :   Save a download iterator to a file.
@@ -316,6 +328,8 @@ Functions
 Classes
 -------
 
+<a id="ActionNotSupportedError"></a>
+
 `ActionNotSupportedError(*args, **kwargs)`
 :   Raised when an action is not supported for an entity.
 
@@ -325,6 +339,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -394,6 +410,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteError"></a>
+
 `AirbyteError(*args, **kwargs)`
 :   Root of the SDK exception hierarchy.
     
@@ -433,6 +451,8 @@ Classes
     * airbyte_agent_sdk.executor.models.ExecutorError
     * airbyte_agent_sdk.http.exceptions.HTTPClientError
 
+<a id="AskResult"></a>
+
 `AskResult(outcome: str, outcome_reason: str | None = None, answer: str | None = None, results: list[AskToolCallResult] = <factory>, query_id: str | None = None, execution_metadata: dict[str, Any] = <factory>)`
 :   Result of a workspace-level natural language query.
     
@@ -465,6 +485,8 @@ Classes
     `results: list[airbyte_agent_sdk.executor.models.AskToolCallResult]`
     :   The type of the None singleton.
 
+<a id="AuthenticationError"></a>
+
 `AuthenticationError(message: str, status_code: int = 401, response: HTTPResponse | None = None)`
 :   Raised when authentication credentials are missing or invalid (401, 403).
     
@@ -482,6 +504,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="AutomationInfo"></a>
 
 `AutomationInfo(id: str, workflow_id: str, workspace_id: str, enabled: bool, trigger_type: str, cron_expression: str | None = None, timezone: str = 'UTC', completion_webhook_url: str | None = None, trigger_webhook_url: str | None = None, created_at: str | None = None, updated_at: str | None = None)`
 :   An automation attached to a workflow.
@@ -521,6 +545,8 @@ Classes
     `workspace_id: str`
     :   The type of the None singleton.
 
+<a id="ConnectorInfo"></a>
+
 `ConnectorInfo(id: str, name: str, connector_type: str | None = None, created_at: str | None = None, updated_at: str | None = None)`
 :   A connector instance in a workspace.
 
@@ -540,6 +566,8 @@ Classes
 
     `updated_at: str | None`
     :   The type of the None singleton.
+
+<a id="ConnectorValidationError"></a>
 
 `ConnectorValidationError(message: str, status_code: int = 400, response: HTTPResponse | None = None)`
 :   Raised when a connector request fails client-side or server-side validation.
@@ -565,6 +593,8 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="EntityNotFoundError"></a>
+
 `EntityNotFoundError(*args, **kwargs)`
 :   Raised when an entity is not found in the connector.
 
@@ -574,6 +604,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="ExecutionConfig"></a>
 
 `ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None)`
 :   Configuration for connector execution.
@@ -607,6 +639,8 @@ Classes
 
     `params: dict[str, typing.Any] | None`
     :   The type of the None singleton.
+
+<a id="ExecutionResult"></a>
 
 `ExecutionResult(success: bool, data: dict[str, Any] | AsyncIterator[bytes], error: str | None = None, meta: dict[str, Any] | None = None)`
 :   Result of a connector execution.
@@ -659,6 +693,8 @@ Classes
     `success: bool`
     :   The type of the None singleton.
 
+<a id="ExecutorError"></a>
+
 `ExecutorError(*args, **kwargs)`
 :   Base exception for executor errors.
 
@@ -675,6 +711,8 @@ Classes
     * airbyte_agent_sdk.executor.models.InvalidParameterError
     * airbyte_agent_sdk.executor.models.MissingParameterError
 
+<a id="HTTPClientError"></a>
+
 `HTTPClientError(*args, **kwargs)`
 :   Base exception for HTTP client errors.
 
@@ -689,6 +727,8 @@ Classes
     * airbyte_agent_sdk.http.exceptions.HTTPStatusError
     * airbyte_agent_sdk.http.exceptions.NetworkError
     * airbyte_agent_sdk.http.exceptions.TimeoutError
+
+<a id="HTTPStatusError"></a>
 
 `HTTPStatusError(status_code: int, message: str, response: HTTPResponse | None = None)`
 :   Raised when an HTTP response has a 4xx or 5xx status code.
@@ -715,6 +755,8 @@ Classes
     * airbyte_agent_sdk.http.exceptions.AuthenticationError
     * airbyte_agent_sdk.http.exceptions.ConnectorValidationError
     * airbyte_agent_sdk.http.exceptions.RateLimitError
+
+<a id="HostedExecutor"></a>
 
 `HostedExecutor(airbyte_client_id: str, airbyte_client_secret: str, connector_id: str | None = None, workspace_name: str | None = None, connector_definition_id: str | None = None, organization_id: str | None = None, model: Any | None = None)`
 :   Executor that proxies execution through the Airbyte Cloud API.
@@ -857,6 +899,8 @@ Classes
             # Shorthand form:
             result = await executor.execute("customers", "list", params=\{"limit": 10\})
 
+<a id="InvalidParameterError"></a>
+
 `InvalidParameterError(*args, **kwargs)`
 :   Raised when a parameter has an invalid type or value.
 
@@ -867,6 +911,8 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="MissingParameterError"></a>
+
 `MissingParameterError(*args, **kwargs)`
 :   Raised when a required parameter is missing.
 
@@ -876,6 +922,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="NetworkError"></a>
 
 `NetworkError(message: str, original_error: Exception | None = None)`
 :   Raised when network connection fails.
@@ -896,6 +944,8 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="RateLimitError"></a>
+
 `RateLimitError(message: str, retry_after: int | None = None, response: HTTPResponse | None = None)`
 :   Raised when API rate limit is exceeded (429 response).
     
@@ -913,6 +963,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="TimeoutError"></a>
 
 `TimeoutError(message: str, timeout_type: str | None = None, original_error: Exception | None = None)`
 :   Raised when a request times out.
@@ -939,6 +991,8 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="WorkflowInfo"></a>
+
 `WorkflowInfo(id: str, name: str, workspace_id: str, created_at: str | None = None, updated_at: str | None = None)`
 :   A workflow in a workspace.
 
@@ -958,6 +1012,8 @@ Classes
 
     `workspace_id: str`
     :   The type of the None singleton.
+
+<a id="Workspace"></a>
 
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.

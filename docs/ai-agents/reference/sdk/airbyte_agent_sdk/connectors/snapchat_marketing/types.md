@@ -10,6 +10,8 @@ Type definitions for snapchat-marketing connector.
 Classes
 -------
 
+<a id="AdaccountsAndCondition"></a>
+
 `AdaccountsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -30,6 +32,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AdaccountsAnyCondition"></a>
+
 `AdaccountsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -49,6 +53,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsAnyValueFilter"></a>
 
 `AdaccountsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -107,6 +113,8 @@ Classes
     `updated_at: Any`
     :   Last update timestamp
 
+<a id="AdaccountsContainsCondition"></a>
+
 `AdaccountsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -118,6 +126,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsEqCondition"></a>
 
 `AdaccountsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -131,6 +141,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdaccountsFuzzyCondition"></a>
+
 `AdaccountsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -142,6 +154,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsGetParams"></a>
 
 `AdaccountsGetParams(*args, **kwargs)`
 :   Parameters for adaccounts.get operation
@@ -155,6 +169,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AdaccountsGtCondition"></a>
+
 `AdaccountsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -167,6 +183,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdaccountsGteCondition"></a>
+
 `AdaccountsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -178,6 +196,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsInCondition"></a>
 
 `AdaccountsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -198,6 +218,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsInFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsInFilter"></a>
 
 `AdaccountsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -256,6 +278,8 @@ Classes
     `updated_at: list[str]`
     :   Last update timestamp
 
+<a id="AdaccountsKeywordCondition"></a>
+
 `AdaccountsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -267,6 +291,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsLikeCondition"></a>
 
 `AdaccountsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -280,6 +306,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsStringFilter`
     :   The type of the None singleton.
 
+<a id="AdaccountsListParams"></a>
+
 `AdaccountsListParams(*args, **kwargs)`
 :   Parameters for adaccounts.list operation
 
@@ -291,6 +319,8 @@ Classes
 
     `organization_id: str`
     :   The type of the None singleton.
+
+<a id="AdaccountsLtCondition"></a>
 
 `AdaccountsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -304,6 +334,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdaccountsLteCondition"></a>
+
 `AdaccountsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -316,6 +348,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdaccountsNeqCondition"></a>
+
 `AdaccountsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -327,6 +361,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdaccountsNotCondition"></a>
 
 `AdaccountsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -348,6 +384,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AdaccountsOrCondition"></a>
+
 `AdaccountsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -367,6 +405,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AdaccountsSearchFilter"></a>
 
 `AdaccountsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering adaccounts search queries.
@@ -425,6 +465,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AdaccountsSearchQuery"></a>
+
 `AdaccountsSearchQuery(*args, **kwargs)`
 :   Search query for adaccounts entity.
 
@@ -439,6 +481,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdaccountsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AdaccountsSortFilter"></a>
 
 `AdaccountsSortFilter(*args, **kwargs)`
 :   Available fields for sorting adaccounts search results.
@@ -497,6 +541,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Last update timestamp
 
+<a id="AdaccountsStringFilter"></a>
+
 `AdaccountsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -554,6 +600,8 @@ Classes
     `updated_at: str`
     :   Last update timestamp
 
+<a id="AdsAndCondition"></a>
+
 `AdsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -574,6 +622,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AdsAnyCondition"></a>
+
 `AdsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -593,6 +643,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdsAnyValueFilter"></a>
 
 `AdsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -639,6 +691,8 @@ Classes
     `updated_at: Any`
     :   Last update timestamp
 
+<a id="AdsContainsCondition"></a>
+
 `AdsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -650,6 +704,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdsEqCondition"></a>
 
 `AdsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -663,6 +719,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsFuzzyCondition"></a>
+
 `AdsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -674,6 +732,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdsGetParams"></a>
 
 `AdsGetParams(*args, **kwargs)`
 :   Parameters for ads.get operation
@@ -687,6 +747,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AdsGtCondition"></a>
+
 `AdsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -699,6 +761,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsGteCondition"></a>
+
 `AdsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -710,6 +774,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdsInCondition"></a>
 
 `AdsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -730,6 +796,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsInFilter`
     :   The type of the None singleton.
+
+<a id="AdsInFilter"></a>
 
 `AdsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -776,6 +844,8 @@ Classes
     `updated_at: list[str]`
     :   Last update timestamp
 
+<a id="AdsKeywordCondition"></a>
+
 `AdsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -787,6 +857,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdsLikeCondition"></a>
 
 `AdsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -800,6 +872,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
 
+<a id="AdsListParams"></a>
+
 `AdsListParams(*args, **kwargs)`
 :   Parameters for ads.list operation
 
@@ -811,6 +885,8 @@ Classes
 
     `ad_account_id: str`
     :   The type of the None singleton.
+
+<a id="AdsLtCondition"></a>
 
 `AdsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -824,6 +900,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsLteCondition"></a>
+
 `AdsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -836,6 +914,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsNeqCondition"></a>
+
 `AdsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -847,6 +927,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdsNotCondition"></a>
 
 `AdsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -868,6 +950,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AdsOrCondition"></a>
+
 `AdsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -887,6 +971,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AdsSearchFilter"></a>
 
 `AdsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering ads search queries.
@@ -933,6 +1019,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AdsSearchQuery"></a>
+
 `AdsSearchQuery(*args, **kwargs)`
 :   Search query for ads entity.
 
@@ -947,6 +1035,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AdsSortFilter"></a>
 
 `AdsSortFilter(*args, **kwargs)`
 :   Available fields for sorting ads search results.
@@ -993,6 +1083,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Last update timestamp
 
+<a id="AdsStringFilter"></a>
+
 `AdsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1038,6 +1130,8 @@ Classes
     `updated_at: str`
     :   Last update timestamp
 
+<a id="AdsquadsAndCondition"></a>
+
 `AdsquadsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1058,6 +1152,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AdsquadsAnyCondition"></a>
+
 `AdsquadsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1077,6 +1173,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsAnyValueFilter"></a>
 
 `AdsquadsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1171,6 +1269,8 @@ Classes
     `updated_at: Any`
     :   Last update timestamp
 
+<a id="AdsquadsContainsCondition"></a>
+
 `AdsquadsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1182,6 +1282,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsEqCondition"></a>
 
 `AdsquadsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1195,6 +1297,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsquadsFuzzyCondition"></a>
+
 `AdsquadsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1206,6 +1310,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsGetParams"></a>
 
 `AdsquadsGetParams(*args, **kwargs)`
 :   Parameters for adsquads.get operation
@@ -1219,6 +1325,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AdsquadsGtCondition"></a>
+
 `AdsquadsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1231,6 +1339,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsquadsGteCondition"></a>
+
 `AdsquadsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1242,6 +1352,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsInCondition"></a>
 
 `AdsquadsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1262,6 +1374,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsInFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsInFilter"></a>
 
 `AdsquadsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1356,6 +1470,8 @@ Classes
     `updated_at: list[str]`
     :   Last update timestamp
 
+<a id="AdsquadsKeywordCondition"></a>
+
 `AdsquadsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1367,6 +1483,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsLikeCondition"></a>
 
 `AdsquadsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1380,6 +1498,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsStringFilter`
     :   The type of the None singleton.
 
+<a id="AdsquadsListParams"></a>
+
 `AdsquadsListParams(*args, **kwargs)`
 :   Parameters for adsquads.list operation
 
@@ -1391,6 +1511,8 @@ Classes
 
     `ad_account_id: str`
     :   The type of the None singleton.
+
+<a id="AdsquadsLtCondition"></a>
 
 `AdsquadsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1404,6 +1526,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsquadsLteCondition"></a>
+
 `AdsquadsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1416,6 +1540,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdsquadsNeqCondition"></a>
+
 `AdsquadsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1427,6 +1553,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdsquadsNotCondition"></a>
 
 `AdsquadsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1448,6 +1576,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AdsquadsOrCondition"></a>
+
 `AdsquadsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1467,6 +1597,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AdsquadsSearchFilter"></a>
 
 `AdsquadsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering adsquads search queries.
@@ -1561,6 +1693,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AdsquadsSearchQuery"></a>
+
 `AdsquadsSearchQuery(*args, **kwargs)`
 :   Search query for adsquads entity.
 
@@ -1575,6 +1709,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.AdsquadsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AdsquadsSortFilter"></a>
 
 `AdsquadsSortFilter(*args, **kwargs)`
 :   Available fields for sorting adsquads search results.
@@ -1669,6 +1805,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Last update timestamp
 
+<a id="AdsquadsStringFilter"></a>
+
 `AdsquadsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1762,6 +1900,8 @@ Classes
     `updated_at: str`
     :   Last update timestamp
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -1783,6 +1923,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CampaignsAndCondition"></a>
+
 `CampaignsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1803,6 +1945,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CampaignsAnyCondition"></a>
+
 `CampaignsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1822,6 +1966,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsAnyValueFilter"></a>
 
 `CampaignsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1865,6 +2011,8 @@ Classes
     `updated_at: Any`
     :   Last update timestamp
 
+<a id="CampaignsContainsCondition"></a>
+
 `CampaignsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1876,6 +2024,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsEqCondition"></a>
 
 `CampaignsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1889,6 +2039,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsFuzzyCondition"></a>
+
 `CampaignsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1900,6 +2052,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsGetParams"></a>
 
 `CampaignsGetParams(*args, **kwargs)`
 :   Parameters for campaigns.get operation
@@ -1913,6 +2067,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CampaignsGtCondition"></a>
+
 `CampaignsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1925,6 +2081,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsGteCondition"></a>
+
 `CampaignsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1936,6 +2094,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInCondition"></a>
 
 `CampaignsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1956,6 +2116,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsInFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInFilter"></a>
 
 `CampaignsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1999,6 +2161,8 @@ Classes
     `updated_at: list[str]`
     :   Last update timestamp
 
+<a id="CampaignsKeywordCondition"></a>
+
 `CampaignsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2010,6 +2174,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsLikeCondition"></a>
 
 `CampaignsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2023,6 +2189,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsListParams"></a>
+
 `CampaignsListParams(*args, **kwargs)`
 :   Parameters for campaigns.list operation
 
@@ -2034,6 +2202,8 @@ Classes
 
     `ad_account_id: str`
     :   The type of the None singleton.
+
+<a id="CampaignsLtCondition"></a>
 
 `CampaignsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2047,6 +2217,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsLteCondition"></a>
+
 `CampaignsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2059,6 +2231,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsNeqCondition"></a>
+
 `CampaignsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2070,6 +2244,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsNotCondition"></a>
 
 `CampaignsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2091,6 +2267,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CampaignsOrCondition"></a>
+
 `CampaignsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2110,6 +2288,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchFilter"></a>
 
 `CampaignsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering campaigns search queries.
@@ -2153,6 +2333,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="CampaignsSearchQuery"></a>
+
 `CampaignsSearchQuery(*args, **kwargs)`
 :   Search query for campaigns entity.
 
@@ -2167,6 +2349,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.CampaignsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CampaignsSortFilter"></a>
 
 `CampaignsSortFilter(*args, **kwargs)`
 :   Available fields for sorting campaigns search results.
@@ -2210,6 +2394,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Last update timestamp
 
+<a id="CampaignsStringFilter"></a>
+
 `CampaignsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2252,6 +2438,8 @@ Classes
     `updated_at: str`
     :   Last update timestamp
 
+<a id="CreativesAndCondition"></a>
+
 `CreativesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2272,6 +2460,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CreativesAnyCondition"></a>
+
 `CreativesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2291,6 +2481,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CreativesAnyValueFilter"></a>
 
 `CreativesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2361,6 +2553,8 @@ Classes
     `web_view_properties: Any`
     :   Web view properties
 
+<a id="CreativesContainsCondition"></a>
+
 `CreativesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2372,6 +2566,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CreativesEqCondition"></a>
 
 `CreativesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2385,6 +2581,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesFuzzyCondition"></a>
+
 `CreativesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2396,6 +2594,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesStringFilter`
     :   The type of the None singleton.
+
+<a id="CreativesGetParams"></a>
 
 `CreativesGetParams(*args, **kwargs)`
 :   Parameters for creatives.get operation
@@ -2409,6 +2609,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CreativesGtCondition"></a>
+
 `CreativesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2421,6 +2623,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesGteCondition"></a>
+
 `CreativesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2432,6 +2636,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CreativesInCondition"></a>
 
 `CreativesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2452,6 +2658,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesInFilter`
     :   The type of the None singleton.
+
+<a id="CreativesInFilter"></a>
 
 `CreativesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2522,6 +2730,8 @@ Classes
     `web_view_properties: list[dict[str, typing.Any]]`
     :   Web view properties
 
+<a id="CreativesKeywordCondition"></a>
+
 `CreativesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2533,6 +2743,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesStringFilter`
     :   The type of the None singleton.
+
+<a id="CreativesLikeCondition"></a>
 
 `CreativesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2546,6 +2758,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesStringFilter`
     :   The type of the None singleton.
 
+<a id="CreativesListParams"></a>
+
 `CreativesListParams(*args, **kwargs)`
 :   Parameters for creatives.list operation
 
@@ -2557,6 +2771,8 @@ Classes
 
     `ad_account_id: str`
     :   The type of the None singleton.
+
+<a id="CreativesLtCondition"></a>
 
 `CreativesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2570,6 +2786,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesLteCondition"></a>
+
 `CreativesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2582,6 +2800,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesNeqCondition"></a>
+
 `CreativesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2593,6 +2813,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CreativesNotCondition"></a>
 
 `CreativesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2614,6 +2836,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAnyCondition`
     :   The type of the None singleton.
 
+<a id="CreativesOrCondition"></a>
+
 `CreativesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2633,6 +2857,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CreativesSearchFilter"></a>
 
 `CreativesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering creatives search queries.
@@ -2703,6 +2929,8 @@ Classes
     `web_view_properties: dict[str, typing.Any] | None`
     :   Web view properties
 
+<a id="CreativesSearchQuery"></a>
+
 `CreativesSearchQuery(*args, **kwargs)`
 :   Search query for creatives entity.
 
@@ -2717,6 +2945,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.CreativesSortFilter]`
     :   The type of the None singleton.
+
+<a id="CreativesSortFilter"></a>
 
 `CreativesSortFilter(*args, **kwargs)`
 :   Available fields for sorting creatives search results.
@@ -2787,6 +3017,8 @@ Classes
     `web_view_properties: Literal['asc', 'desc']`
     :   Web view properties
 
+<a id="CreativesStringFilter"></a>
+
 `CreativesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2856,6 +3088,8 @@ Classes
     `web_view_properties: str`
     :   Web view properties
 
+<a id="MediaAndCondition"></a>
+
 `MediaAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2876,6 +3110,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAnyCondition]`
     :   The type of the None singleton.
 
+<a id="MediaAnyCondition"></a>
+
 `MediaAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2895,6 +3131,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="MediaAnyValueFilter"></a>
 
 `MediaAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2956,6 +3194,8 @@ Classes
     `visibility: Any`
     :   Media visibility setting
 
+<a id="MediaContainsCondition"></a>
+
 `MediaContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2967,6 +3207,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="MediaEqCondition"></a>
 
 `MediaEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2980,6 +3222,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSearchFilter`
     :   The type of the None singleton.
 
+<a id="MediaFuzzyCondition"></a>
+
 `MediaFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2991,6 +3235,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaStringFilter`
     :   The type of the None singleton.
+
+<a id="MediaGetParams"></a>
 
 `MediaGetParams(*args, **kwargs)`
 :   Parameters for media.get operation
@@ -3004,6 +3250,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="MediaGtCondition"></a>
+
 `MediaGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3016,6 +3264,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSearchFilter`
     :   The type of the None singleton.
 
+<a id="MediaGteCondition"></a>
+
 `MediaGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3027,6 +3277,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSearchFilter`
     :   The type of the None singleton.
+
+<a id="MediaInCondition"></a>
 
 `MediaInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3047,6 +3299,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaInFilter`
     :   The type of the None singleton.
+
+<a id="MediaInFilter"></a>
 
 `MediaInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3108,6 +3362,8 @@ Classes
     `visibility: list[str]`
     :   Media visibility setting
 
+<a id="MediaKeywordCondition"></a>
+
 `MediaKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3119,6 +3375,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaStringFilter`
     :   The type of the None singleton.
+
+<a id="MediaLikeCondition"></a>
 
 `MediaLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3132,6 +3390,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaStringFilter`
     :   The type of the None singleton.
 
+<a id="MediaListParams"></a>
+
 `MediaListParams(*args, **kwargs)`
 :   Parameters for media.list operation
 
@@ -3143,6 +3403,8 @@ Classes
 
     `ad_account_id: str`
     :   The type of the None singleton.
+
+<a id="MediaLtCondition"></a>
 
 `MediaLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3156,6 +3418,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSearchFilter`
     :   The type of the None singleton.
 
+<a id="MediaLteCondition"></a>
+
 `MediaLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3168,6 +3432,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSearchFilter`
     :   The type of the None singleton.
 
+<a id="MediaNeqCondition"></a>
+
 `MediaNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3179,6 +3445,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSearchFilter`
     :   The type of the None singleton.
+
+<a id="MediaNotCondition"></a>
 
 `MediaNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3200,6 +3468,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAnyCondition`
     :   The type of the None singleton.
 
+<a id="MediaOrCondition"></a>
+
 `MediaOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3219,6 +3489,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaAnyCondition]`
     :   The type of the None singleton.
+
+<a id="MediaSearchFilter"></a>
 
 `MediaSearchFilter(*args, **kwargs)`
 :   Available fields for filtering media search queries.
@@ -3280,6 +3552,8 @@ Classes
     `visibility: str | None`
     :   Media visibility setting
 
+<a id="MediaSearchQuery"></a>
+
 `MediaSearchQuery(*args, **kwargs)`
 :   Search query for media entity.
 
@@ -3294,6 +3568,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.MediaSortFilter]`
     :   The type of the None singleton.
+
+<a id="MediaSortFilter"></a>
 
 `MediaSortFilter(*args, **kwargs)`
 :   Available fields for sorting media search results.
@@ -3355,6 +3631,8 @@ Classes
     `visibility: Literal['asc', 'desc']`
     :   Media visibility setting
 
+<a id="MediaStringFilter"></a>
+
 `MediaStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3415,6 +3693,8 @@ Classes
     `visibility: str`
     :   Media visibility setting
 
+<a id="OrganizationsAndCondition"></a>
+
 `OrganizationsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3435,6 +3715,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="OrganizationsAnyCondition"></a>
+
 `OrganizationsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3454,6 +3736,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsAnyValueFilter"></a>
 
 `OrganizationsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3530,6 +3814,8 @@ Classes
     `updated_at: Any`
     :   Last update timestamp
 
+<a id="OrganizationsContainsCondition"></a>
+
 `OrganizationsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3541,6 +3827,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsEqCondition"></a>
 
 `OrganizationsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3554,6 +3842,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="OrganizationsFuzzyCondition"></a>
+
 `OrganizationsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3565,6 +3855,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsStringFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsGetParams"></a>
 
 `OrganizationsGetParams(*args, **kwargs)`
 :   Parameters for organizations.get operation
@@ -3578,6 +3870,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="OrganizationsGtCondition"></a>
+
 `OrganizationsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3590,6 +3884,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="OrganizationsGteCondition"></a>
+
 `OrganizationsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3601,6 +3897,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsInCondition"></a>
 
 `OrganizationsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3621,6 +3919,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsInFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsInFilter"></a>
 
 `OrganizationsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3697,6 +3997,8 @@ Classes
     `updated_at: list[str]`
     :   Last update timestamp
 
+<a id="OrganizationsKeywordCondition"></a>
+
 `OrganizationsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3708,6 +4010,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsStringFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsLikeCondition"></a>
 
 `OrganizationsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3721,12 +4025,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsStringFilter`
     :   The type of the None singleton.
 
+<a id="OrganizationsListParams"></a>
+
 `OrganizationsListParams(*args, **kwargs)`
 :   Parameters for organizations.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="OrganizationsLtCondition"></a>
 
 `OrganizationsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3740,6 +4048,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="OrganizationsLteCondition"></a>
+
 `OrganizationsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3752,6 +4062,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="OrganizationsNeqCondition"></a>
+
 `OrganizationsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3763,6 +4075,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="OrganizationsNotCondition"></a>
 
 `OrganizationsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3784,6 +4098,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAnyCondition`
     :   The type of the None singleton.
 
+<a id="OrganizationsOrCondition"></a>
+
 `OrganizationsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3803,6 +4119,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="OrganizationsSearchFilter"></a>
 
 `OrganizationsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering organizations search queries.
@@ -3879,6 +4197,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="OrganizationsSearchQuery"></a>
+
 `OrganizationsSearchQuery(*args, **kwargs)`
 :   Search query for organizations entity.
 
@@ -3893,6 +4213,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.OrganizationsSortFilter]`
     :   The type of the None singleton.
+
+<a id="OrganizationsSortFilter"></a>
 
 `OrganizationsSortFilter(*args, **kwargs)`
 :   Available fields for sorting organizations search results.
@@ -3969,6 +4291,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Last update timestamp
 
+<a id="OrganizationsStringFilter"></a>
+
 `OrganizationsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4044,6 +4368,8 @@ Classes
     `updated_at: str`
     :   Last update timestamp
 
+<a id="SegmentsAndCondition"></a>
+
 `SegmentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4064,6 +4390,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="SegmentsAnyCondition"></a>
+
 `SegmentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4083,6 +4411,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsAnyValueFilter"></a>
 
 `SegmentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4135,6 +4465,8 @@ Classes
     `visible_to: Any`
     :   Visibility settings
 
+<a id="SegmentsContainsCondition"></a>
+
 `SegmentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4146,6 +4478,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsEqCondition"></a>
 
 `SegmentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4159,6 +4493,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SegmentsFuzzyCondition"></a>
+
 `SegmentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4170,6 +4506,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsStringFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsGetParams"></a>
 
 `SegmentsGetParams(*args, **kwargs)`
 :   Parameters for segments.get operation
@@ -4183,6 +4521,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="SegmentsGtCondition"></a>
+
 `SegmentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4195,6 +4535,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SegmentsGteCondition"></a>
+
 `SegmentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4206,6 +4548,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsInCondition"></a>
 
 `SegmentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4226,6 +4570,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsInFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsInFilter"></a>
 
 `SegmentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4278,6 +4624,8 @@ Classes
     `visible_to: list[list[typing.Any]]`
     :   Visibility settings
 
+<a id="SegmentsKeywordCondition"></a>
+
 `SegmentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4289,6 +4637,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsStringFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsLikeCondition"></a>
 
 `SegmentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -4302,6 +4652,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsStringFilter`
     :   The type of the None singleton.
 
+<a id="SegmentsListParams"></a>
+
 `SegmentsListParams(*args, **kwargs)`
 :   Parameters for segments.list operation
 
@@ -4313,6 +4665,8 @@ Classes
 
     `ad_account_id: str`
     :   The type of the None singleton.
+
+<a id="SegmentsLtCondition"></a>
 
 `SegmentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -4326,6 +4680,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SegmentsLteCondition"></a>
+
 `SegmentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -4338,6 +4694,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SegmentsNeqCondition"></a>
+
 `SegmentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4349,6 +4707,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SegmentsNotCondition"></a>
 
 `SegmentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4370,6 +4730,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="SegmentsOrCondition"></a>
+
 `SegmentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4389,6 +4751,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsInCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="SegmentsSearchFilter"></a>
 
 `SegmentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering segments search queries.
@@ -4441,6 +4805,8 @@ Classes
     `visible_to: list[typing.Any] | None`
     :   Visibility settings
 
+<a id="SegmentsSearchQuery"></a>
+
 `SegmentsSearchQuery(*args, **kwargs)`
 :   Search query for segments entity.
 
@@ -4455,6 +4821,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.snapchat_marketing.types.SegmentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="SegmentsSortFilter"></a>
 
 `SegmentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting segments search results.
@@ -4506,6 +4874,8 @@ Classes
 
     `visible_to: Literal['asc', 'desc']`
     :   Visibility settings
+
+<a id="SegmentsStringFilter"></a>
 
 `SegmentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="ClickupApiAuthConfig"></a>
+
 `ClickupApiAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -34,6 +36,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ClickupApiCheckResult"></a>
 
 `ClickupApiCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -67,6 +71,8 @@ Classes
 
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
+
+<a id="ClickupApiExecuteResult"></a>
 
 `ClickupApiExecuteResult(**data: Any)`
 :   Response envelope with data only.
@@ -105,6 +111,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ClickupApiExecuteResultWithMeta"></a>
 
 `ClickupApiExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -160,6 +168,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DocsListResult"></a>
+
 `DocsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -202,6 +212,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TasksApiSearchResult"></a>
 
 `TasksApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -246,6 +258,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksListResult"></a>
+
 `TasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -289,6 +303,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ViewTasksListResult"></a>
+
 `ViewTasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -331,6 +347,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsListResult"></a>
+
 `CommentsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -371,6 +389,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FoldersListResult"></a>
 
 `FoldersListResult(**data: Any)`
 :   Response envelope with data only.
@@ -413,6 +433,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GoalsListResult"></a>
+
 `GoalsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -453,6 +475,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListsListResult"></a>
 
 `ListsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -495,6 +519,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MembersListResult"></a>
+
 `MembersListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -535,6 +561,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpacesListResult"></a>
 
 `SpacesListResult(**data: Any)`
 :   Response envelope with data only.
@@ -577,6 +605,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResult"></a>
+
 `TeamsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -617,6 +647,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TimeTrackingListResult"></a>
 
 `TimeTrackingListResult(**data: Any)`
 :   Response envelope with data only.
@@ -659,6 +691,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ViewsListResult"></a>
+
 `ViewsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -676,6 +710,8 @@ Classes
     * airbyte_agent_sdk.connectors.clickup_api.models.ClickupApiExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Comment"></a>
 
 `Comment(**data: Any)`
 :   Comment type definition
@@ -723,6 +759,8 @@ Classes
     `user: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
 
+<a id="CommentCreateParams"></a>
+
 `CommentCreateParams(**data: Any)`
 :   CommentCreateParams type definition
     
@@ -750,6 +788,8 @@ Classes
 
     `notify_all: bool | Any`
     :   The type of the None singleton.
+
+<a id="CommentCreateResponse"></a>
 
 `CommentCreateResponse(**data: Any)`
 :   CommentCreateResponse type definition
@@ -782,6 +822,8 @@ Classes
     `version: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="CommentUpdateParams"></a>
+
 `CommentUpdateParams(**data: Any)`
 :   CommentUpdateParams type definition
     
@@ -810,6 +852,8 @@ Classes
     `resolved: bool | Any`
     :   The type of the None singleton.
 
+<a id="CommentUpdateResponse"></a>
+
 `CommentUpdateResponse(**data: Any)`
 :   CommentUpdateResponse type definition
     
@@ -828,6 +872,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsListResponse"></a>
 
 `CommentsListResponse(**data: Any)`
 :   CommentsListResponse type definition
@@ -850,6 +896,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Doc"></a>
 
 `Doc(**data: Any)`
 :   Doc type definition
@@ -903,6 +951,8 @@ Classes
     `workspace_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="DocsListResponse"></a>
+
 `DocsListResponse(**data: Any)`
 :   DocsListResponse type definition
     
@@ -928,6 +978,8 @@ Classes
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DocsListResultMeta"></a>
+
 `DocsListResultMeta(**data: Any)`
 :   Metadata for docs.Action.LIST operation
     
@@ -949,6 +1001,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Folder"></a>
 
 `Folder(**data: Any)`
 :   Folder type definition
@@ -1004,6 +1058,8 @@ Classes
 
     `task_count: str | Any | None`
     :   The type of the None singleton.
+
+<a id="FolderListsItem"></a>
 
 `FolderListsItem(**data: Any)`
 :   Nested schema for Folder.lists_item
@@ -1069,6 +1125,8 @@ Classes
     `task_count: int | Any | None`
     :   Number of tasks
 
+<a id="FolderListsItemStatusesItem"></a>
+
 `FolderListsItemStatusesItem(**data: Any)`
 :   Nested schema for FolderListsItem.statuses_item
     
@@ -1106,6 +1164,8 @@ Classes
     `type_: str | Any`
     :   Status type (open, custom, closed)
 
+<a id="FolderSpace"></a>
+
 `FolderSpace(**data: Any)`
 :   Parent space reference
     
@@ -1133,6 +1193,8 @@ Classes
 
     `name: str | Any`
     :   Space name
+
+<a id="FolderStatusesItem"></a>
 
 `FolderStatusesItem(**data: Any)`
 :   Nested schema for Folder.statuses_item
@@ -1168,6 +1230,8 @@ Classes
     `type_: str | Any`
     :   Status type (open, custom, closed)
 
+<a id="FoldersListResponse"></a>
+
 `FoldersListResponse(**data: Any)`
 :   FoldersListResponse type definition
     
@@ -1189,6 +1253,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Goal"></a>
 
 `Goal(**data: Any)`
 :   Goal type definition
@@ -1266,6 +1332,8 @@ Classes
     `team_id: str | Any`
     :   The type of the None singleton.
 
+<a id="GoalResponse"></a>
+
 `GoalResponse(**data: Any)`
 :   GoalResponse type definition
     
@@ -1287,6 +1355,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GoalsListResponse"></a>
 
 `GoalsListResponse(**data: Any)`
 :   GoalsListResponse type definition
@@ -1312,6 +1382,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="List"></a>
 
 `List(**data: Any)`
 :   List type definition
@@ -1386,6 +1458,8 @@ Classes
     `task_count: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ListFolder"></a>
+
 `ListFolder(**data: Any)`
 :   Parent folder reference
     
@@ -1417,6 +1491,8 @@ Classes
     `name: str | Any`
     :   Folder name
 
+<a id="ListSpace"></a>
+
 `ListSpace(**data: Any)`
 :   Parent space reference
     
@@ -1444,6 +1520,8 @@ Classes
 
     `name: str | Any`
     :   Space name
+
+<a id="ListStatusesItem"></a>
 
 `ListStatusesItem(**data: Any)`
 :   Nested schema for List.statuses_item
@@ -1482,6 +1560,8 @@ Classes
     `type_: str | Any`
     :   Status type (open, custom, closed)
 
+<a id="ListsListResponse"></a>
+
 `ListsListResponse(**data: Any)`
 :   ListsListResponse type definition
     
@@ -1503,6 +1583,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Member"></a>
 
 `Member(**data: Any)`
 :   Member type definition
@@ -1541,6 +1623,8 @@ Classes
     `username: str | Any`
     :   The type of the None singleton.
 
+<a id="MembersListResponse"></a>
+
 `MembersListResponse(**data: Any)`
 :   MembersListResponse type definition
     
@@ -1562,6 +1646,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Space"></a>
 
 `Space(**data: Any)`
 :   Space type definition
@@ -1611,6 +1697,8 @@ Classes
 
     `statuses: list[airbyte_agent_sdk.connectors.clickup_api.models.SpaceStatusesItem] | Any`
     :   The type of the None singleton.
+
+<a id="SpaceFeatures"></a>
 
 `SpaceFeatures(**data: Any)`
 :   Feature flags for the space
@@ -1691,6 +1779,8 @@ Classes
     `time_tracking: airbyte_agent_sdk.connectors.clickup_api.models.SpaceFeaturesTimeTracking | Any`
     :   Time tracking feature settings
 
+<a id="SpaceFeaturesCheckUnresolved"></a>
+
 `SpaceFeaturesCheckUnresolved(**data: Any)`
 :   Check unresolved feature settings
     
@@ -1722,6 +1812,8 @@ Classes
     `subtasks: bool | Any | None`
     :   Check unresolved subtasks
 
+<a id="SpaceFeaturesCustomFields"></a>
+
 `SpaceFeaturesCustomFields(**data: Any)`
 :   Custom fields feature settings
     
@@ -1744,6 +1836,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpaceFeaturesCustomItems"></a>
+
 `SpaceFeaturesCustomItems(**data: Any)`
 :   Custom items feature settings
     
@@ -1765,6 +1859,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesDependencyEnforcement"></a>
 
 `SpaceFeaturesDependencyEnforcement(**data: Any)`
 :   Dependency enforcement settings
@@ -1791,6 +1887,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpaceFeaturesDependencyWarning"></a>
+
 `SpaceFeaturesDependencyWarning(**data: Any)`
 :   Dependency warning feature settings
     
@@ -1812,6 +1910,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesDueDates"></a>
 
 `SpaceFeaturesDueDates(**data: Any)`
 :   Due dates feature settings
@@ -1844,6 +1944,8 @@ Classes
     `start_date: bool | Any`
     :   Whether start dates are enabled
 
+<a id="SpaceFeaturesEmails"></a>
+
 `SpaceFeaturesEmails(**data: Any)`
 :   Emails feature settings
     
@@ -1865,6 +1967,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesMilestones"></a>
 
 `SpaceFeaturesMilestones(**data: Any)`
 :   Milestones feature settings
@@ -1888,6 +1992,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpaceFeaturesMultipleAssignees"></a>
+
 `SpaceFeaturesMultipleAssignees(**data: Any)`
 :   Multiple assignees feature settings
     
@@ -1910,6 +2016,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpaceFeaturesPoints"></a>
+
 `SpaceFeaturesPoints(**data: Any)`
 :   Points feature settings
     
@@ -1931,6 +2039,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesPriorities"></a>
 
 `SpaceFeaturesPriorities(**data: Any)`
 :   Priorities feature settings
@@ -1956,6 +2066,8 @@ Classes
 
     `priorities: list[airbyte_agent_sdk.connectors.clickup_api.models.SpaceFeaturesPrioritiesPrioritiesItem] | Any`
     :   Priority levels
+
+<a id="SpaceFeaturesPrioritiesPrioritiesItem"></a>
 
 `SpaceFeaturesPrioritiesPrioritiesItem(**data: Any)`
 :   Nested schema for SpaceFeaturesPriorities.priorities_item
@@ -1988,6 +2100,8 @@ Classes
     `priority: str | Any`
     :   Priority name
 
+<a id="SpaceFeaturesRemapDependencies"></a>
+
 `SpaceFeaturesRemapDependencies(**data: Any)`
 :   Remap dependencies feature settings
     
@@ -2009,6 +2123,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesRescheduleClosedDependencies"></a>
 
 `SpaceFeaturesRescheduleClosedDependencies(**data: Any)`
 :   Reschedule closed dependencies settings
@@ -2032,6 +2148,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpaceFeaturesSprints"></a>
+
 `SpaceFeaturesSprints(**data: Any)`
 :   Sprints feature settings
     
@@ -2053,6 +2171,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesStatusPies"></a>
 
 `SpaceFeaturesStatusPies(**data: Any)`
 :   Status pies feature settings
@@ -2076,6 +2196,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpaceFeaturesTags"></a>
+
 `SpaceFeaturesTags(**data: Any)`
 :   Tags feature settings
     
@@ -2097,6 +2219,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpaceFeaturesTimeEstimates"></a>
 
 `SpaceFeaturesTimeEstimates(**data: Any)`
 :   Time estimates feature settings
@@ -2125,6 +2249,8 @@ Classes
 
     `rollup: bool | Any`
     :   Whether time estimate rollup is enabled
+
+<a id="SpaceFeaturesTimeTracking"></a>
 
 `SpaceFeaturesTimeTracking(**data: Any)`
 :   Time tracking feature settings
@@ -2156,6 +2282,8 @@ Classes
 
     `rollup: bool | Any`
     :   Whether time rollup is enabled
+
+<a id="SpaceStatusesItem"></a>
 
 `SpaceStatusesItem(**data: Any)`
 :   Nested schema for Space.statuses_item
@@ -2191,6 +2319,8 @@ Classes
     `type_: str | Any`
     :   Status type (open, custom, closed)
 
+<a id="SpacesListResponse"></a>
+
 `SpacesListResponse(**data: Any)`
 :   SpacesListResponse type definition
     
@@ -2212,6 +2342,8 @@ Classes
 
     `spaces: list[airbyte_agent_sdk.connectors.clickup_api.models.Space] | Any`
     :   The type of the None singleton.
+
+<a id="Task"></a>
 
 `Task(**data: Any)`
 :   Task type definition
@@ -2352,6 +2484,8 @@ Classes
     `watchers: list[airbyte_agent_sdk.connectors.clickup_api.models.TaskWatchersItem] | Any`
     :   The type of the None singleton.
 
+<a id="TaskCreator"></a>
+
 `TaskCreator(**data: Any)`
 :   Task creator
     
@@ -2386,6 +2520,8 @@ Classes
     `username: str | Any`
     :   Creator username
 
+<a id="TaskStatus"></a>
+
 `TaskStatus(**data: Any)`
 :   Task status
     
@@ -2419,6 +2555,8 @@ Classes
 
     `type_: str | Any`
     :   Status type (open, custom, closed)
+
+<a id="TaskWatchersItem"></a>
 
 `TaskWatchersItem(**data: Any)`
 :   Nested schema for Task.watchers_item
@@ -2457,6 +2595,8 @@ Classes
     `username: str | Any`
     :   Watcher username
 
+<a id="TasksApiSearchResultMeta"></a>
+
 `TasksApiSearchResultMeta(**data: Any)`
 :   Metadata for tasks.Action.API_SEARCH operation
     
@@ -2478,6 +2618,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TasksListResponse"></a>
 
 `TasksListResponse(**data: Any)`
 :   TasksListResponse type definition
@@ -2504,6 +2646,8 @@ Classes
     `tasks: list[airbyte_agent_sdk.connectors.clickup_api.models.Task] | Any`
     :   The type of the None singleton.
 
+<a id="TasksListResultMeta"></a>
+
 `TasksListResultMeta(**data: Any)`
 :   Metadata for tasks.Action.LIST operation
     
@@ -2525,6 +2669,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Team"></a>
 
 `Team(**data: Any)`
 :   Team type definition
@@ -2560,6 +2706,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="TeamMembersItem"></a>
+
 `TeamMembersItem(**data: Any)`
 :   Nested schema for Team.members_item
     
@@ -2581,6 +2729,8 @@ Classes
 
     `user: airbyte_agent_sdk.connectors.clickup_api.models.TeamMembersItemUser | Any`
     :   Member user details
+
+<a id="TeamMembersItemUser"></a>
 
 `TeamMembersItemUser(**data: Any)`
 :   Member user details
@@ -2640,6 +2790,8 @@ Classes
     `username: str | Any`
     :   Username
 
+<a id="TeamsListResponse"></a>
+
 `TeamsListResponse(**data: Any)`
 :   TeamsListResponse type definition
     
@@ -2662,6 +2814,8 @@ Classes
     `teams: list[airbyte_agent_sdk.connectors.clickup_api.models.Team] | Any`
     :   The type of the None singleton.
 
+<a id="TimeEntriesListResponse"></a>
+
 `TimeEntriesListResponse(**data: Any)`
 :   TimeEntriesListResponse type definition
     
@@ -2683,6 +2837,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TimeEntry"></a>
 
 `TimeEntry(**data: Any)`
 :   TimeEntry type definition
@@ -2736,6 +2892,8 @@ Classes
     `wid: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TimeEntryResponse"></a>
+
 `TimeEntryResponse(**data: Any)`
 :   TimeEntryResponse type definition
     
@@ -2757,6 +2915,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   User type definition
@@ -2804,6 +2964,8 @@ Classes
     `week_start_day: int | Any | None`
     :   The type of the None singleton.
 
+<a id="UserResponse"></a>
+
 `UserResponse(**data: Any)`
 :   UserResponse type definition
     
@@ -2825,6 +2987,8 @@ Classes
 
     `user: airbyte_agent_sdk.connectors.clickup_api.models.User | Any`
     :   The type of the None singleton.
+
+<a id="View"></a>
 
 `View(**data: Any)`
 :   View type definition
@@ -2905,6 +3069,8 @@ Classes
     `visibility: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ViewParent"></a>
+
 `ViewParent(**data: Any)`
 :   Parent reference
     
@@ -2930,6 +3096,8 @@ Classes
     `type_: Any`
     :   Parent entity type
 
+<a id="ViewResponse"></a>
+
 `ViewResponse(**data: Any)`
 :   ViewResponse type definition
     
@@ -2952,6 +3120,8 @@ Classes
     `view: airbyte_agent_sdk.connectors.clickup_api.models.View | Any`
     :   The type of the None singleton.
 
+<a id="ViewTasksListResultMeta"></a>
+
 `ViewTasksListResultMeta(**data: Any)`
 :   Metadata for view_tasks.Action.LIST operation
     
@@ -2973,6 +3143,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ViewsListResponse"></a>
 
 `ViewsListResponse(**data: Any)`
 :   ViewsListResponse type definition

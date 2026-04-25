@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Account"></a>
+
 `Account(**data: Any)`
 :   Zoho CRM account (company) object
     
@@ -128,6 +130,8 @@ Classes
     `website: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountsList"></a>
+
 `AccountsList(**data: Any)`
 :   Paginated list of accounts
     
@@ -153,6 +157,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsListResultMeta"></a>
+
 `AccountsListResultMeta(**data: Any)`
 :   Metadata for accounts.Action.LIST operation
     
@@ -177,6 +183,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="AccountsSearchData"></a>
 
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
@@ -248,6 +256,8 @@ Classes
     `website: str | None`
     :   Account website URL
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -275,6 +285,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -337,6 +349,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -373,6 +387,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsSearchResult"></a>
 
 `CallsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -411,6 +427,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -447,6 +465,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -485,6 +505,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DealsSearchResult"></a>
+
 `DealsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -521,6 +543,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventsSearchResult"></a>
 
 `EventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -559,6 +583,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoicesSearchResult"></a>
+
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -595,6 +621,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LeadsSearchResult"></a>
 
 `LeadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -633,6 +661,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductsSearchResult"></a>
+
 `ProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -669,6 +699,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="QuotesSearchResult"></a>
 
 `QuotesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -707,6 +739,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -722,6 +756,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Call"></a>
 
 `Call(**data: Any)`
 :   Zoho CRM call object
@@ -799,6 +835,8 @@ Classes
     `who_id: Any`
     :   The type of the None singleton.
 
+<a id="CallsList"></a>
+
 `CallsList(**data: Any)`
 :   Paginated list of calls
     
@@ -824,6 +862,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CallsListResultMeta"></a>
+
 `CallsListResultMeta(**data: Any)`
 :   Metadata for calls.Action.LIST operation
     
@@ -848,6 +888,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="CallsSearchData"></a>
 
 `CallsSearchData(**data: Any)`
 :   Search result data for calls entity.
@@ -906,6 +948,8 @@ Classes
 
     `subject: str | None`
     :   Subject of the call
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   Zoho CRM campaign object
@@ -980,6 +1024,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsList"></a>
+
 `CampaignsList(**data: Any)`
 :   Paginated list of campaigns
     
@@ -1005,6 +1051,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -1029,6 +1077,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -1090,6 +1140,8 @@ Classes
 
     `type_: str | None`
     :   Type of campaign (e.g., Email, Webinar, Conference)
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   Zoho CRM contact object
@@ -1200,6 +1252,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactsList"></a>
+
 `ContactsList(**data: Any)`
 :   Paginated list of contacts
     
@@ -1225,6 +1279,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -1249,6 +1305,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -1320,6 +1378,8 @@ Classes
     `title: str | None`
     :   Contact's job title
 
+<a id="CreatedBy"></a>
+
 `CreatedBy(**data: Any)`
 :   User who created the record
     
@@ -1347,6 +1407,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="Deal"></a>
 
 `Deal(**data: Any)`
 :   Zoho CRM deal (opportunity) object
@@ -1427,6 +1489,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DealPipeline"></a>
+
 `DealPipeline(**data: Any)`
 :   Sales pipeline reference
     
@@ -1451,6 +1515,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="DealsList"></a>
 
 `DealsList(**data: Any)`
 :   Paginated list of deals
@@ -1477,6 +1543,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DealsListResultMeta"></a>
+
 `DealsListResultMeta(**data: Any)`
 :   Metadata for deals.Action.LIST operation
     
@@ -1501,6 +1569,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="DealsSearchData"></a>
 
 `DealsSearchData(**data: Any)`
 :   Search result data for deals entity.
@@ -1556,6 +1626,8 @@ Classes
 
     `type_: str | None`
     :   Type of deal (e.g., New Business, Existing Business)
+
+<a id="Event"></a>
 
 `Event(**data: Any)`
 :   Zoho CRM event (meeting/calendar) object
@@ -1630,6 +1702,8 @@ Classes
     `who_id: Any`
     :   The type of the None singleton.
 
+<a id="EventParticipantsItem"></a>
+
 `EventParticipantsItem(**data: Any)`
 :   Nested schema for Event.Participants_item
     
@@ -1667,6 +1741,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="EventsList"></a>
+
 `EventsList(**data: Any)`
 :   Paginated list of events
     
@@ -1692,6 +1768,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsListResultMeta"></a>
+
 `EventsListResultMeta(**data: Any)`
 :   Metadata for events.Action.LIST operation
     
@@ -1716,6 +1794,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="EventsSearchData"></a>
 
 `EventsSearchData(**data: Any)`
 :   Search result data for events entity.
@@ -1762,6 +1842,8 @@ Classes
 
     `start_date_time: str | None`
     :   Event start date and time
+
+<a id="Invoice"></a>
 
 `Invoice(**data: Any)`
 :   Zoho CRM invoice object
@@ -1887,6 +1969,8 @@ Classes
     `terms_and_conditions: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InvoicesList"></a>
+
 `InvoicesList(**data: Any)`
 :   Paginated list of invoices
     
@@ -1912,6 +1996,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoicesListResultMeta"></a>
+
 `InvoicesListResultMeta(**data: Any)`
 :   Metadata for invoices.Action.LIST operation
     
@@ -1936,6 +2022,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -2006,6 +2094,8 @@ Classes
 
     `terms_and_conditions: str | None`
     :   Terms and conditions text
+
+<a id="Lead"></a>
 
 `Lead(**data: Any)`
 :   Zoho CRM lead object
@@ -2116,6 +2206,8 @@ Classes
     `zip_code: str | Any | None`
     :   The type of the None singleton.
 
+<a id="LeadsList"></a>
+
 `LeadsList(**data: Any)`
 :   Paginated list of leads
     
@@ -2141,6 +2233,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LeadsListResultMeta"></a>
+
 `LeadsListResultMeta(**data: Any)`
 :   Metadata for leads.Action.LIST operation
     
@@ -2165,6 +2259,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="LeadsSearchData"></a>
 
 `LeadsSearchData(**data: Any)`
 :   Search result data for leads entity.
@@ -2251,6 +2347,8 @@ Classes
     `website: str | None`
     :   Lead's website URL
 
+<a id="LookupRef"></a>
+
 `LookupRef(**data: Any)`
 :   Lookup reference to another record
     
@@ -2275,6 +2373,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="ModifiedBy"></a>
 
 `ModifiedBy(**data: Any)`
 :   User who last modified the record
@@ -2304,6 +2404,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="Owner"></a>
+
 `Owner(**data: Any)`
 :   Record owner reference
     
@@ -2331,6 +2433,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="PaginationInfo"></a>
 
 `PaginationInfo(**data: Any)`
 :   Pagination metadata
@@ -2368,6 +2472,8 @@ Classes
 
     `sort_order: str | Any`
     :   The type of the None singleton.
+
+<a id="Product"></a>
 
 `Product(**data: Any)`
 :   Zoho CRM product object
@@ -2466,6 +2572,8 @@ Classes
     `vendor_name: Any`
     :   The type of the None singleton.
 
+<a id="ProductsList"></a>
+
 `ProductsList(**data: Any)`
 :   Paginated list of products
     
@@ -2491,6 +2599,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductsListResultMeta"></a>
+
 `ProductsListResultMeta(**data: Any)`
 :   Metadata for products.Action.LIST operation
     
@@ -2515,6 +2625,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="ProductsSearchData"></a>
 
 `ProductsSearchData(**data: Any)`
 :   Search result data for products entity.
@@ -2582,6 +2694,8 @@ Classes
 
     `unit_price: float | None`
     :   Unit price of the product
+
+<a id="Quote"></a>
 
 `Quote(**data: Any)`
 :   Zoho CRM quote object
@@ -2695,6 +2809,8 @@ Classes
     `valid_till: str | Any | None`
     :   The type of the None singleton.
 
+<a id="QuotesList"></a>
+
 `QuotesList(**data: Any)`
 :   Paginated list of quotes
     
@@ -2720,6 +2836,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="QuotesListResultMeta"></a>
+
 `QuotesListResultMeta(**data: Any)`
 :   Metadata for quotes.Action.LIST operation
     
@@ -2744,6 +2862,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="QuotesSearchData"></a>
 
 `QuotesSearchData(**data: Any)`
 :   Search result data for quotes entity.
@@ -2805,6 +2925,8 @@ Classes
 
     `valid_till: str | None`
     :   Date until which the quote is valid
+
+<a id="Task"></a>
 
 `Task(**data: Any)`
 :   Zoho CRM task object
@@ -2879,6 +3001,8 @@ Classes
     `who_id: Any`
     :   The type of the None singleton.
 
+<a id="TasksList"></a>
+
 `TasksList(**data: Any)`
 :   Paginated list of tasks
     
@@ -2904,6 +3028,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksListResultMeta"></a>
+
 `TasksListResultMeta(**data: Any)`
 :   Metadata for tasks.Action.LIST operation
     
@@ -2928,6 +3054,8 @@ Classes
 
     `page: int | Any`
     :   The type of the None singleton.
+
+<a id="TasksSearchData"></a>
 
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.
@@ -2978,6 +3106,8 @@ Classes
     `subject: str | None`
     :   Subject or title of the task
 
+<a id="ZohoCrmAuthConfig"></a>
+
 `ZohoCrmAuthConfig(**data: Any)`
 :   Zoho CRM OAuth 2.0
     
@@ -3005,6 +3135,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth 2.0 Refresh Token (does not expire)
+
+<a id="ZohoCrmCheckResult"></a>
 
 `ZohoCrmCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -3039,6 +3171,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="ZohoCrmExecuteResult"></a>
+
 `ZohoCrmExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3067,6 +3201,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZohoCrmExecuteResultWithMeta"></a>
 
 `ZohoCrmExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3129,6 +3265,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsListResult"></a>
+
 `AccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3171,6 +3309,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsListResult"></a>
 
 `CallsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3215,6 +3355,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResult"></a>
+
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3257,6 +3399,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsListResult"></a>
 
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3301,6 +3445,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DealsListResult"></a>
+
 `DealsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3343,6 +3489,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventsListResult"></a>
 
 `EventsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3387,6 +3535,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoicesListResult"></a>
+
 `InvoicesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3429,6 +3579,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LeadsListResult"></a>
 
 `LeadsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3473,6 +3625,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductsListResult"></a>
+
 `ProductsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3516,6 +3670,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="QuotesListResult"></a>
+
 `QuotesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3558,6 +3714,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TasksListResult"></a>
 
 `TasksListResult(**data: Any)`
 :   Response envelope with data and metadata.

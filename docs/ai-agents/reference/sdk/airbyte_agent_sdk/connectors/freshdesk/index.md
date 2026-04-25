@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AgentsSearchData"></a>
+
 `AgentsSearchData(**data: Any)`
 :   Search result data for agents entity.
     
@@ -70,6 +72,8 @@ Classes
 
     `updated_at: str | None`
     :   Agent last update timestamp
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -139,6 +143,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -166,6 +172,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -199,6 +207,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentsSearchResult"></a>
+
 `AgentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -214,6 +224,8 @@ Classes
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GroupsSearchResult"></a>
 
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -231,6 +243,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TicketsSearchResult"></a>
+
 `TicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -246,6 +260,8 @@ Classes
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="FreshdeskAuthConfig"></a>
 
 `FreshdeskAuthConfig(**data: Any)`
 :   API Key Authentication
@@ -268,6 +284,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FreshdeskConnector"></a>
 
 `FreshdeskConnector(auth_config: FreshdeskAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Freshdesk API connector.
@@ -457,6 +475,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GroupsSearchData"></a>
+
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
     
@@ -505,6 +525,8 @@ Classes
 
     `updated_at: str | None`
     :   Group last update timestamp
+
+<a id="TicketsSearchData"></a>
 
 `TicketsSearchData(**data: Any)`
 :   Search result data for tickets entity.

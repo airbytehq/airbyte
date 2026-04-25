@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -149,6 +155,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsSearchResult"></a>
+
 `ApplicationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -164,6 +172,8 @@ Classes
     * airbyte_agent_sdk.connectors.ashby.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CandidatesSearchResult"></a>
 
 `CandidatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -181,6 +191,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="JobPostingsSearchResult"></a>
+
 `JobPostingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * airbyte_agent_sdk.connectors.ashby.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="JobsSearchResult"></a>
 
 `JobsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -213,6 +227,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -228,6 +244,8 @@ Classes
     * airbyte_agent_sdk.connectors.ashby.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ApplicationsSearchData"></a>
 
 `ApplicationsSearchData(**data: Any)`
 :   Search result data for applications entity.
@@ -247,6 +265,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AshbyAuthConfig"></a>
 
 `AshbyAuthConfig(**data: Any)`
 :   API Key Authentication
@@ -269,6 +289,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AshbyConnector"></a>
 
 `AshbyConnector(auth_config: AshbyAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Ashby API connector.
@@ -470,6 +492,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="AshbyReplicationConfig"></a>
+
 `AshbyReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Ashby.
     
@@ -492,6 +516,8 @@ Classes
     `start_date: str`
     :   The date from which to start replicating data, in the format YYYY-MM-DDT00:00:00Z.
 
+<a id="CandidatesSearchData"></a>
+
 `CandidatesSearchData(**data: Any)`
 :   Search result data for candidates entity.
     
@@ -510,6 +536,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JobPostingsSearchData"></a>
 
 `JobPostingsSearchData(**data: Any)`
 :   Search result data for job_postings entity.
@@ -530,6 +558,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobsSearchData"></a>
+
 `JobsSearchData(**data: Any)`
 :   Search result data for jobs entity.
     
@@ -548,6 +578,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

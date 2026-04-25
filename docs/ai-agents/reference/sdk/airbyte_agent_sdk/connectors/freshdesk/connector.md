@@ -10,6 +10,8 @@ Freshdesk connector.
 Classes
 -------
 
+<a id="AgentsQuery"></a>
+
 `AgentsQuery(connector: FreshdeskConnector)`
 :   Query class for Agents entity operations.
     
@@ -71,6 +73,8 @@ Classes
         Returns:
             AgentsListResult
 
+<a id="CompaniesQuery"></a>
+
 `CompaniesQuery(connector: FreshdeskConnector)`
 :   Query class for Companies entity operations.
     
@@ -98,6 +102,8 @@ Classes
         
         Returns:
             CompaniesListResult
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: FreshdeskConnector)`
 :   Query class for Contacts entity operations.
@@ -127,6 +133,8 @@ Classes
         
         Returns:
             ContactsListResult
+
+<a id="FreshdeskConnector"></a>
 
 `FreshdeskConnector(auth_config: FreshdeskAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Freshdesk API connector.
@@ -316,6 +324,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GroupsQuery"></a>
+
 `GroupsQuery(connector: FreshdeskConnector)`
 :   Query class for Groups entity operations.
     
@@ -376,6 +386,8 @@ Classes
         Returns:
             GroupsListResult
 
+<a id="RolesQuery"></a>
+
 `RolesQuery(connector: FreshdeskConnector)`
 :   Query class for Roles entity operations.
     
@@ -404,6 +416,8 @@ Classes
         Returns:
             RolesListResult
 
+<a id="SatisfactionRatingsQuery"></a>
+
 `SatisfactionRatingsQuery(connector: FreshdeskConnector)`
 :   Query class for SatisfactionRatings entity operations.
     
@@ -423,6 +437,8 @@ Classes
         Returns:
             SatisfactionRatingsListResult
 
+<a id="SurveysQuery"></a>
+
 `SurveysQuery(connector: FreshdeskConnector)`
 :   Query class for Surveys entity operations.
     
@@ -441,6 +457,8 @@ Classes
         Returns:
             SurveysListResult
 
+<a id="TicketFieldsQuery"></a>
+
 `TicketFieldsQuery(connector: FreshdeskConnector)`
 :   Query class for TicketFields entity operations.
     
@@ -458,6 +476,8 @@ Classes
         
         Returns:
             TicketFieldsListResult
+
+<a id="TicketsQuery"></a>
 
 `TicketsQuery(connector: FreshdeskConnector)`
 :   Query class for Tickets entity operations.
@@ -545,6 +565,8 @@ Classes
         
         Returns:
             TicketsListResult
+
+<a id="TimeEntriesQuery"></a>
 
 `TimeEntriesQuery(connector: FreshdeskConnector)`
 :   Query class for TimeEntries entity operations.

@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AdAccountsSearchData"></a>
+
 `AdAccountsSearchData(**data: Any)`
 :   Search result data for ad_accounts entity.
     
@@ -61,6 +63,8 @@ Classes
 
     `updated_time: int | None`
     :   Timestamp when the ad account was last updated (Unix seconds)
+
+<a id="AdGroupsSearchData"></a>
 
 `AdGroupsSearchData(**data: Any)`
 :   Search result data for ad_groups entity.
@@ -155,6 +159,8 @@ Classes
 
     `updated_time: float | None`
     :   Last update timestamp (Unix seconds)
+
+<a id="AdsSearchData"></a>
 
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
@@ -259,6 +265,8 @@ Classes
     `view_tracking_url: str | None`
     :   View tracking URL
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -327,6 +335,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -354,6 +364,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -398,6 +410,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountsSearchResult"></a>
+
 `AdAccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -413,6 +427,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdGroupsSearchResult"></a>
 
 `AdGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -430,6 +446,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdsSearchResult"></a>
+
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -445,6 +463,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AudiencesSearchResult"></a>
 
 `AudiencesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -462,6 +482,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="BoardPinsSearchResult"></a>
+
 `BoardPinsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -477,6 +499,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BoardSectionsSearchResult"></a>
 
 `BoardSectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -494,6 +518,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="BoardsSearchResult"></a>
+
 `BoardsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -509,6 +535,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchResult"></a>
 
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -526,6 +554,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CatalogsFeedsSearchResult"></a>
+
 `CatalogsFeedsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -541,6 +571,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CatalogsProductGroupsSearchResult"></a>
 
 `CatalogsProductGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -558,6 +590,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CatalogsSearchResult"></a>
+
 `CatalogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -573,6 +607,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ConversionTagsSearchResult"></a>
 
 `ConversionTagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -590,6 +626,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CustomerListsSearchResult"></a>
+
 `CustomerListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -606,6 +644,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="KeywordsSearchResult"></a>
+
 `KeywordsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -621,6 +661,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AudiencesSearchData"></a>
 
 `AudiencesSearchData(**data: Any)`
 :   Search result data for audiences entity.
@@ -673,6 +715,8 @@ Classes
 
     `updated_timestamp: int | None`
     :   Last update time (Unix seconds)
+
+<a id="BoardPinsSearchData"></a>
 
 `BoardPinsSearchData(**data: Any)`
 :   Search result data for board_pins entity.
@@ -744,6 +788,8 @@ Classes
     `title: str | None`
     :   Pin title
 
+<a id="BoardSectionsSearchData"></a>
+
 `BoardSectionsSearchData(**data: Any)`
 :   Search result data for board_sections entity.
     
@@ -768,6 +814,8 @@ Classes
 
     `name: str | None`
     :   Name of the board section
+
+<a id="BoardsSearchData"></a>
 
 `BoardsSearchData(**data: Any)`
 :   Search result data for boards entity.
@@ -820,6 +868,8 @@ Classes
 
     `privacy: str | None`
     :   Board privacy setting
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -891,6 +941,8 @@ Classes
     `updated_time: int | None`
     :   Last update timestamp (Unix seconds)
 
+<a id="CatalogsFeedsSearchData"></a>
+
 `CatalogsFeedsSearchData(**data: Any)`
 :   Search result data for catalogs_feeds entity.
     
@@ -949,6 +1001,8 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the feed was last updated
 
+<a id="CatalogsProductGroupsSearchData"></a>
+
 `CatalogsProductGroupsSearchData(**data: Any)`
 :   Search result data for catalogs_product_groups entity.
     
@@ -995,6 +1049,8 @@ Classes
     `updated_at: int | None`
     :   Last update timestamp (Unix seconds)
 
+<a id="CatalogsSearchData"></a>
+
 `CatalogsSearchData(**data: Any)`
 :   Search result data for catalogs entity.
     
@@ -1028,6 +1084,8 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the catalog was last updated
+
+<a id="ConversionTagsSearchData"></a>
 
 `ConversionTagsSearchData(**data: Any)`
 :   Search result data for conversion_tags entity.
@@ -1074,6 +1132,8 @@ Classes
 
     `version: str | None`
     :   Version number
+
+<a id="CustomerListsSearchData"></a>
 
 `CustomerListsSearchData(**data: Any)`
 :   Search result data for customer_lists entity.
@@ -1124,6 +1184,8 @@ Classes
     `updated_time: int | None`
     :   Last update time (Unix seconds)
 
+<a id="KeywordsSearchData"></a>
+
 `KeywordsSearchData(**data: Any)`
 :   Search result data for keywords entity.
     
@@ -1167,6 +1229,8 @@ Classes
     `value: str | None`
     :   Keyword text value
 
+<a id="PinterestAuthConfig"></a>
+
 `PinterestAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -1194,6 +1258,8 @@ Classes
 
     `refresh_token: str`
     :   Pinterest OAuth2 refresh token.
+
+<a id="PinterestConnector"></a>
 
 `PinterestConnector(auth_config: PinterestAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Pinterest API connector.
@@ -1450,6 +1516,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="PinterestReplicationConfig"></a>
 
 `PinterestReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Pinterest.

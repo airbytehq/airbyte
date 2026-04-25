@@ -10,6 +10,8 @@ Type definitions for pylon connector.
 Classes
 -------
 
+<a id="AccountsCreateParams"></a>
+
 `AccountsCreateParams(*args, **kwargs)`
 :   Parameters for accounts.create operation
 
@@ -37,6 +39,8 @@ Classes
     `tags: list[str]`
     :   The type of the None singleton.
 
+<a id="AccountsGetParams"></a>
+
 `AccountsGetParams(*args, **kwargs)`
 :   Parameters for accounts.get operation
 
@@ -49,6 +53,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AccountsListParams"></a>
+
 `AccountsListParams(*args, **kwargs)`
 :   Parameters for accounts.list operation
 
@@ -60,6 +66,8 @@ Classes
 
     `cursor: str`
     :   The type of the None singleton.
+
+<a id="AccountsUpdateParams"></a>
 
 `AccountsUpdateParams(*args, **kwargs)`
 :   Parameters for accounts.update operation
@@ -94,6 +102,8 @@ Classes
     `tags: list[str]`
     :   The type of the None singleton.
 
+<a id="ArticlesCreateParams"></a>
+
 `ArticlesCreateParams(*args, **kwargs)`
 :   Parameters for articles.create operation
 
@@ -121,6 +131,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="ArticlesUpdateParams"></a>
+
 `ArticlesUpdateParams(*args, **kwargs)`
 :   Parameters for articles.update operation
 
@@ -141,6 +153,8 @@ Classes
 
     `title: str`
     :   The type of the None singleton.
+
+<a id="CollectionsCreateParams"></a>
 
 `CollectionsCreateParams(*args, **kwargs)`
 :   Parameters for collections.create operation
@@ -163,6 +177,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="ContactsCreateParams"></a>
+
 `ContactsCreateParams(*args, **kwargs)`
 :   Parameters for contacts.create operation
 
@@ -184,6 +200,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="ContactsGetParams"></a>
+
 `ContactsGetParams(*args, **kwargs)`
 :   Parameters for contacts.get operation
 
@@ -196,6 +214,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ContactsListParams"></a>
+
 `ContactsListParams(*args, **kwargs)`
 :   Parameters for contacts.list operation
 
@@ -207,6 +227,8 @@ Classes
 
     `cursor: str`
     :   The type of the None singleton.
+
+<a id="ContactsUpdateParams"></a>
 
 `ContactsUpdateParams(*args, **kwargs)`
 :   Parameters for contacts.update operation
@@ -229,6 +251,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="CustomFieldsGetParams"></a>
+
 `CustomFieldsGetParams(*args, **kwargs)`
 :   Parameters for custom_fields.get operation
 
@@ -240,6 +264,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="CustomFieldsListParams"></a>
 
 `CustomFieldsListParams(*args, **kwargs)`
 :   Parameters for custom_fields.list operation
@@ -255,6 +281,8 @@ Classes
 
     `object_type: str`
     :   The type of the None singleton.
+
+<a id="IssueNotesCreateParams"></a>
 
 `IssueNotesCreateParams(*args, **kwargs)`
 :   Parameters for issue_notes.create operation
@@ -277,6 +305,8 @@ Classes
     `thread_id: str`
     :   The type of the None singleton.
 
+<a id="IssueThreadsCreateParams"></a>
+
 `IssueThreadsCreateParams(*args, **kwargs)`
 :   Parameters for issue_threads.create operation
 
@@ -291,6 +321,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="IssuesCreateParams"></a>
 
 `IssuesCreateParams(*args, **kwargs)`
 :   Parameters for issues.create operation
@@ -328,6 +360,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="IssuesGetParams"></a>
+
 `IssuesGetParams(*args, **kwargs)`
 :   Parameters for issues.get operation
 
@@ -339,6 +373,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="IssuesListParams"></a>
 
 `IssuesListParams(*args, **kwargs)`
 :   Parameters for issues.list operation
@@ -357,6 +393,8 @@ Classes
 
     `start_time: str`
     :   The type of the None singleton.
+
+<a id="IssuesUpdateParams"></a>
 
 `IssuesUpdateParams(*args, **kwargs)`
 :   Parameters for issues.update operation
@@ -385,12 +423,16 @@ Classes
     `team_id: str`
     :   The type of the None singleton.
 
+<a id="MeGetParams"></a>
+
 `MeGetParams(*args, **kwargs)`
 :   Parameters for me.get operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="MessagesListParams"></a>
 
 `MessagesListParams(*args, **kwargs)`
 :   Parameters for messages.list operation
@@ -406,6 +448,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="MilestonesCreateParams"></a>
 
 `MilestonesCreateParams(*args, **kwargs)`
 :   Parameters for milestones.create operation
@@ -425,6 +469,8 @@ Classes
     `project_id: str`
     :   The type of the None singleton.
 
+<a id="MilestonesUpdateParams"></a>
+
 `MilestonesUpdateParams(*args, **kwargs)`
 :   Parameters for milestones.update operation
 
@@ -442,6 +488,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="ProjectsCreateParams"></a>
 
 `ProjectsCreateParams(*args, **kwargs)`
 :   Parameters for projects.create operation
@@ -467,6 +515,8 @@ Classes
     `start_date: str`
     :   The type of the None singleton.
 
+<a id="ProjectsUpdateParams"></a>
+
 `ProjectsUpdateParams(*args, **kwargs)`
 :   Parameters for projects.update operation
 
@@ -488,6 +538,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="TagsCreateParams"></a>
+
 `TagsCreateParams(*args, **kwargs)`
 :   Parameters for tags.create operation
 
@@ -506,6 +558,8 @@ Classes
     `value: str`
     :   The type of the None singleton.
 
+<a id="TagsGetParams"></a>
+
 `TagsGetParams(*args, **kwargs)`
 :   Parameters for tags.get operation
 
@@ -518,6 +572,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TagsListParams"></a>
+
 `TagsListParams(*args, **kwargs)`
 :   Parameters for tags.list operation
 
@@ -529,6 +585,8 @@ Classes
 
     `cursor: str`
     :   The type of the None singleton.
+
+<a id="TagsUpdateParams"></a>
 
 `TagsUpdateParams(*args, **kwargs)`
 :   Parameters for tags.update operation
@@ -547,6 +605,8 @@ Classes
 
     `value: str`
     :   The type of the None singleton.
+
+<a id="TasksCreateParams"></a>
 
 `TasksCreateParams(*args, **kwargs)`
 :   Parameters for tasks.create operation
@@ -578,6 +638,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="TasksUpdateParams"></a>
+
 `TasksUpdateParams(*args, **kwargs)`
 :   Parameters for tasks.update operation
 
@@ -602,6 +664,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="TeamsCreateParams"></a>
+
 `TeamsCreateParams(*args, **kwargs)`
 :   Parameters for teams.create operation
 
@@ -613,6 +677,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="TeamsGetParams"></a>
 
 `TeamsGetParams(*args, **kwargs)`
 :   Parameters for teams.get operation
@@ -626,6 +692,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TeamsListParams"></a>
+
 `TeamsListParams(*args, **kwargs)`
 :   Parameters for teams.list operation
 
@@ -637,6 +705,8 @@ Classes
 
     `cursor: str`
     :   The type of the None singleton.
+
+<a id="TeamsUpdateParams"></a>
 
 `TeamsUpdateParams(*args, **kwargs)`
 :   Parameters for teams.update operation
@@ -653,6 +723,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="TicketFormsListParams"></a>
+
 `TicketFormsListParams(*args, **kwargs)`
 :   Parameters for ticket_forms.list operation
 
@@ -664,6 +736,8 @@ Classes
 
     `cursor: str`
     :   The type of the None singleton.
+
+<a id="UserRolesListParams"></a>
 
 `UserRolesListParams(*args, **kwargs)`
 :   Parameters for user_roles.list operation
@@ -677,6 +751,8 @@ Classes
     `cursor: str`
     :   The type of the None singleton.
 
+<a id="UsersGetParams"></a>
+
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
 
@@ -688,6 +764,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation

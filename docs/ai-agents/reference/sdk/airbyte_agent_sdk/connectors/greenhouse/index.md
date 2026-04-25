@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -153,6 +159,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsSearchResult"></a>
+
 `ApplicationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -168,6 +176,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CandidatesSearchResult"></a>
 
 `CandidatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -185,6 +195,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="DepartmentsSearchResult"></a>
+
 `DepartmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -200,6 +212,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="JobPostsSearchResult"></a>
 
 `JobPostsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -217,6 +231,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="JobsSearchResult"></a>
+
 `JobsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -232,6 +248,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OffersSearchResult"></a>
 
 `OffersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -249,6 +267,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OfficesSearchResult"></a>
+
 `OfficesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -264,6 +284,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SourcesSearchResult"></a>
 
 `SourcesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -281,6 +303,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -296,6 +320,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ApplicationsSearchData"></a>
 
 `ApplicationsSearchData(**data: Any)`
 :   Search result data for applications entity.
@@ -375,6 +401,8 @@ Classes
 
     `status: str | None`
     :   Status of the application.
+
+<a id="CandidatesSearchData"></a>
 
 `CandidatesSearchData(**data: Any)`
 :   Search result data for candidates entity.
@@ -473,6 +501,8 @@ Classes
     `website_addresses: list[typing.Any] | None`
     :   List of candidate's website addresses
 
+<a id="DepartmentsSearchData"></a>
+
 `DepartmentsSearchData(**data: Any)`
 :   Search result data for departments entity.
     
@@ -513,6 +543,8 @@ Classes
     `parent_id: int | None`
     :   Unique ID of the parent department of this department.
 
+<a id="GreenhouseAuthConfig"></a>
+
 `GreenhouseAuthConfig(**data: Any)`
 :   Harvest API Key Authentication
     
@@ -534,6 +566,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GreenhouseConnector"></a>
 
 `GreenhouseConnector(auth_config: GreenhouseAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Greenhouse API connector.
@@ -723,6 +757,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="JobPostsSearchData"></a>
+
 `JobPostsSearchData(**data: Any)`
 :   Search result data for job_posts entity.
     
@@ -786,6 +822,8 @@ Classes
 
     `updated_at: str | None`
     :   Date and time when the job post was last updated.
+
+<a id="JobsSearchData"></a>
 
 `JobsSearchData(**data: Any)`
 :   Search result data for jobs entity.
@@ -860,6 +898,8 @@ Classes
     `updated_at: str | None`
     :   The date and time the job was last updated
 
+<a id="OffersSearchData"></a>
+
 `OffersSearchData(**data: Any)`
 :   Search result data for offers entity.
     
@@ -921,6 +961,8 @@ Classes
     `version: int | None`
     :   Version of the offer data
 
+<a id="OfficesSearchData"></a>
+
 `OfficesSearchData(**data: Any)`
 :   Search result data for offices entity.
     
@@ -967,6 +1009,8 @@ Classes
     `primary_contact_user_id: int | None`
     :   User ID of the primary contact person for this office
 
+<a id="SourcesSearchData"></a>
+
 `SourcesSearchData(**data: Any)`
 :   Search result data for sources entity.
     
@@ -994,6 +1038,8 @@ Classes
 
     `type_: dict[str, typing.Any] | None`
     :   Type of the data source
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -104,6 +108,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlocksSearchResult"></a>
+
 `BlocksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -140,6 +146,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BouncesSearchResult"></a>
 
 `BouncesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -178,6 +186,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -214,6 +224,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -252,6 +264,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GlobalSuppressionsSearchResult"></a>
+
 `GlobalSuppressionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -288,6 +302,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvalidEmailsSearchResult"></a>
 
 `InvalidEmailsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -326,6 +342,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListsSearchResult"></a>
+
 `ListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -362,6 +380,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SegmentsSearchResult"></a>
 
 `SegmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -400,6 +420,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SinglesendStatsSearchResult"></a>
+
 `SinglesendStatsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -436,6 +458,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SinglesendsSearchResult"></a>
 
 `SinglesendsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -474,6 +498,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SuppressionGroupMembersSearchResult"></a>
+
 `SuppressionGroupMembersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -510,6 +536,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SuppressionGroupsSearchResult"></a>
 
 `SuppressionGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -548,6 +576,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TemplatesSearchResult"></a>
+
 `TemplatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -563,6 +593,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Block"></a>
 
 `Block(**data: Any)`
 :   A blocked email record
@@ -595,6 +627,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="BlocksListResultMeta"></a>
+
 `BlocksListResultMeta(**data: Any)`
 :   Metadata for blocks.Action.LIST operation
     
@@ -616,6 +650,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BlocksSearchData"></a>
 
 `BlocksSearchData(**data: Any)`
 :   Search result data for blocks entity.
@@ -648,6 +684,8 @@ Classes
     `status: str | None`
     :   The status code for the block
 
+<a id="Bounce"></a>
+
 `Bounce(**data: Any)`
 :   A bounced email record
     
@@ -679,6 +717,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="BouncesListResultMeta"></a>
+
 `BouncesListResultMeta(**data: Any)`
 :   Metadata for bounces.Action.LIST operation
     
@@ -700,6 +740,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BouncesSearchData"></a>
 
 `BouncesSearchData(**data: Any)`
 :   Search result data for bounces entity.
@@ -731,6 +773,8 @@ Classes
 
     `status: str | None`
     :   The enhanced status code for the bounce
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   A SendGrid marketing campaign
@@ -772,6 +816,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsList"></a>
+
 `CampaignsList(**data: Any)`
 :   Response containing a list of campaigns
     
@@ -797,6 +843,8 @@ Classes
     `result: list[airbyte_agent_sdk.connectors.sendgrid.models.Campaign] | Any`
     :   The type of the None singleton.
 
+<a id="CampaignsListMetadata"></a>
+
 `CampaignsListMetadata(**data: Any)`
 :   Nested schema for CampaignsList._metadata
     
@@ -819,6 +867,8 @@ Classes
     `next: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -840,6 +890,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -880,6 +932,8 @@ Classes
 
     `updated_at: str | None`
     :   When the campaign was last updated
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   A SendGrid marketing contact
@@ -963,6 +1017,8 @@ Classes
     `whatsapp: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactsList"></a>
+
 `ContactsList(**data: Any)`
 :   Response containing a list of contacts
     
@@ -991,6 +1047,8 @@ Classes
     `result: list[airbyte_agent_sdk.connectors.sendgrid.models.Contact] | Any`
     :   The type of the None singleton.
 
+<a id="ContactsListMetadata"></a>
+
 `ContactsListMetadata(**data: Any)`
 :   Nested schema for ContactsList._metadata
     
@@ -1012,6 +1070,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactsListResultMeta"></a>
 
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
@@ -1037,6 +1097,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -1117,6 +1179,8 @@ Classes
     `whatsapp: str | None`
     :   WhatsApp number
 
+<a id="GlobalSuppression"></a>
+
 `GlobalSuppression(**data: Any)`
 :   A globally suppressed email address
     
@@ -1142,6 +1206,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GlobalSuppressionsListResultMeta"></a>
+
 `GlobalSuppressionsListResultMeta(**data: Any)`
 :   Metadata for global_suppressions.Action.LIST operation
     
@@ -1163,6 +1229,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GlobalSuppressionsSearchData"></a>
 
 `GlobalSuppressionsSearchData(**data: Any)`
 :   Search result data for global_suppressions entity.
@@ -1188,6 +1256,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvalidEmail"></a>
 
 `InvalidEmail(**data: Any)`
 :   An invalid email record
@@ -1217,6 +1287,8 @@ Classes
     `reason: str | Any`
     :   The type of the None singleton.
 
+<a id="InvalidEmailsListResultMeta"></a>
+
 `InvalidEmailsListResultMeta(**data: Any)`
 :   Metadata for invalid_emails.Action.LIST operation
     
@@ -1238,6 +1310,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="InvalidEmailsSearchData"></a>
 
 `InvalidEmailsSearchData(**data: Any)`
 :   Search result data for invalid_emails entity.
@@ -1266,6 +1340,8 @@ Classes
 
     `reason: str | None`
     :   The reason the email is invalid
+
+<a id="List"></a>
 
 `List(**data: Any)`
 :   A SendGrid marketing list
@@ -1298,6 +1374,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="ListMetadata"></a>
+
 `ListMetadata(**data: Any)`
 :   Metadata about the list resource
     
@@ -1319,6 +1397,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="ListsList"></a>
 
 `ListsList(**data: Any)`
 :   Response containing a list of marketing lists
@@ -1345,6 +1425,8 @@ Classes
     `result: list[airbyte_agent_sdk.connectors.sendgrid.models.List] | Any`
     :   The type of the None singleton.
 
+<a id="ListsListMetadata"></a>
+
 `ListsListMetadata(**data: Any)`
 :   Nested schema for ListsList._metadata
     
@@ -1367,6 +1449,8 @@ Classes
     `next: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ListsListResultMeta"></a>
+
 `ListsListResultMeta(**data: Any)`
 :   Metadata for lists.Action.LIST operation
     
@@ -1388,6 +1472,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ListsSearchData"></a>
 
 `ListsSearchData(**data: Any)`
 :   Search result data for lists entity.
@@ -1419,6 +1505,8 @@ Classes
 
     `name: str | None`
     :   Name of the list
+
+<a id="Segment"></a>
 
 `Segment(**data: Any)`
 :   A SendGrid marketing segment
@@ -1469,6 +1557,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SegmentStatus"></a>
+
 `SegmentStatus(**data: Any)`
 :   Segment status details
     
@@ -1491,6 +1581,8 @@ Classes
     `query_validation: str | Any`
     :   The type of the None singleton.
 
+<a id="SegmentsList"></a>
+
 `SegmentsList(**data: Any)`
 :   Response containing a list of segments
     
@@ -1512,6 +1604,8 @@ Classes
 
     `results: list[airbyte_agent_sdk.connectors.sendgrid.models.Segment] | Any`
     :   The type of the None singleton.
+
+<a id="SegmentsSearchData"></a>
 
 `SegmentsSearchData(**data: Any)`
 :   Search result data for segments entity.
@@ -1562,6 +1656,8 @@ Classes
     `updated_at: str | None`
     :   When the segment was last updated
 
+<a id="SendgridAuthConfig"></a>
+
 `SendgridAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -1583,6 +1679,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SendgridCheckResult"></a>
 
 `SendgridCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1617,6 +1715,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="SendgridExecuteResult"></a>
+
 `SendgridExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1647,6 +1747,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SendgridExecuteResultWithMeta"></a>
 
 `SendgridExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1710,6 +1812,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlocksListResult"></a>
+
 `BlocksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1752,6 +1856,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BouncesListResult"></a>
 
 `BouncesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1796,6 +1902,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResult"></a>
+
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1838,6 +1946,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsListResult"></a>
 
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1882,6 +1992,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GlobalSuppressionsListResult"></a>
+
 `GlobalSuppressionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1924,6 +2036,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvalidEmailsListResult"></a>
 
 `InvalidEmailsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1968,6 +2082,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListsListResult"></a>
+
 `ListsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2010,6 +2126,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SinglesendStatsListResult"></a>
 
 `SinglesendStatsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2054,6 +2172,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SinglesendsListResult"></a>
+
 `SinglesendsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2096,6 +2216,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SpamReportsListResult"></a>
 
 `SpamReportsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2140,6 +2262,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SuppressionGroupMembersListResult"></a>
+
 `SuppressionGroupMembersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2183,6 +2307,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TemplatesListResult"></a>
+
 `TemplatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2225,6 +2351,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SegmentsListResult"></a>
+
 `SegmentsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2266,6 +2394,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SuppressionGroupsListResult"></a>
+
 `SuppressionGroupsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2283,6 +2413,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.SendgridExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SendgridReplicationConfig"></a>
 
 `SendgridReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from SendGrid.
@@ -2305,6 +2437,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.
+
+<a id="SingleSend"></a>
 
 `SingleSend(**data: Any)`
 :   A SendGrid single send
@@ -2355,6 +2489,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="SingleSendEmailConfig"></a>
+
 `SingleSendEmailConfig(**data: Any)`
 :   Email configuration details
     
@@ -2404,6 +2540,8 @@ Classes
     `suppression_group_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="SingleSendSendTo"></a>
+
 `SingleSendSendTo(**data: Any)`
 :   Recipients configuration
     
@@ -2431,6 +2569,8 @@ Classes
 
     `segment_ids: list[str] | Any | None`
     :   The type of the None singleton.
+
+<a id="SingleSendStats"></a>
 
 `SingleSendStats(**data: Any)`
 :   Stats for a single send
@@ -2466,6 +2606,8 @@ Classes
     `stats: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStatsStats | Any | None`
     :   The type of the None singleton.
 
+<a id="SingleSendStatsList"></a>
+
 `SingleSendStatsList(**data: Any)`
 :   Response containing a list of single send stats
     
@@ -2491,6 +2633,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStats] | Any`
     :   The type of the None singleton.
 
+<a id="SingleSendStatsListMetadata"></a>
+
 `SingleSendStatsListMetadata(**data: Any)`
 :   Nested schema for SingleSendStatsList._metadata
     
@@ -2512,6 +2656,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SingleSendStatsStats"></a>
 
 `SingleSendStatsStats(**data: Any)`
 :   Email statistics for the single send
@@ -2568,6 +2714,8 @@ Classes
     `unsubscribes: int | Any`
     :   The type of the None singleton.
 
+<a id="SingleSendsList"></a>
+
 `SingleSendsList(**data: Any)`
 :   Response containing a list of single sends
     
@@ -2593,6 +2741,8 @@ Classes
     `result: list[airbyte_agent_sdk.connectors.sendgrid.models.SingleSend] | Any`
     :   The type of the None singleton.
 
+<a id="SingleSendsListMetadata"></a>
+
 `SingleSendsListMetadata(**data: Any)`
 :   Nested schema for SingleSendsList._metadata
     
@@ -2615,6 +2765,8 @@ Classes
     `next: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SinglesendStatsListResultMeta"></a>
+
 `SinglesendStatsListResultMeta(**data: Any)`
 :   Metadata for singlesend_stats.Action.LIST operation
     
@@ -2636,6 +2788,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SinglesendStatsSearchData"></a>
 
 `SinglesendStatsSearchData(**data: Any)`
 :   Search result data for singlesend_stats entity.
@@ -2671,6 +2825,8 @@ Classes
     `stats: dict[str, typing.Any] | None`
     :   Email statistics for the single send
 
+<a id="SinglesendsListResultMeta"></a>
+
 `SinglesendsListResultMeta(**data: Any)`
 :   Metadata for singlesends.Action.LIST operation
     
@@ -2692,6 +2848,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SinglesendsSearchData"></a>
 
 `SinglesendsSearchData(**data: Any)`
 :   Search result data for singlesends entity.
@@ -2736,6 +2894,8 @@ Classes
     `updated_at: str | None`
     :   When the single send was last updated
 
+<a id="SpamReport"></a>
+
 `SpamReport(**data: Any)`
 :   A spam report record
     
@@ -2764,6 +2924,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpamReportsListResultMeta"></a>
+
 `SpamReportsListResultMeta(**data: Any)`
 :   Metadata for spam_reports.Action.LIST operation
     
@@ -2785,6 +2947,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SuppressionGroup"></a>
 
 `SuppressionGroup(**data: Any)`
 :   A suppression (unsubscribe) group
@@ -2820,6 +2984,8 @@ Classes
     `unsubscribes: int | Any`
     :   The type of the None singleton.
 
+<a id="SuppressionGroupMember"></a>
+
 `SuppressionGroupMember(**data: Any)`
 :   A member of a suppression group
     
@@ -2851,6 +3017,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SuppressionGroupMembersListResultMeta"></a>
+
 `SuppressionGroupMembersListResultMeta(**data: Any)`
 :   Metadata for suppression_group_members.Action.LIST operation
     
@@ -2872,6 +3040,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SuppressionGroupMembersSearchData"></a>
 
 `SuppressionGroupMembersSearchData(**data: Any)`
 :   Search result data for suppression_group_members entity.
@@ -2903,6 +3073,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SuppressionGroupsSearchData"></a>
 
 `SuppressionGroupsSearchData(**data: Any)`
 :   Search result data for suppression_groups entity.
@@ -2938,6 +3110,8 @@ Classes
     `unsubscribes: int | None`
     :   Number of unsubscribes in this group
 
+<a id="Template"></a>
+
 `Template(**data: Any)`
 :   A SendGrid transactional template
     
@@ -2972,6 +3146,8 @@ Classes
     `versions: list[typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="TemplatesList"></a>
+
 `TemplatesList(**data: Any)`
 :   Response containing a list of templates
     
@@ -2997,6 +3173,8 @@ Classes
     `templates: list[airbyte_agent_sdk.connectors.sendgrid.models.Template] | Any`
     :   The type of the None singleton.
 
+<a id="TemplatesListMetadata"></a>
+
 `TemplatesListMetadata(**data: Any)`
 :   Nested schema for TemplatesList._metadata
     
@@ -3019,6 +3197,8 @@ Classes
     `next: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TemplatesListResultMeta"></a>
+
 `TemplatesListResultMeta(**data: Any)`
 :   Metadata for templates.Action.LIST operation
     
@@ -3040,6 +3220,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TemplatesSearchData"></a>
 
 `TemplatesSearchData(**data: Any)`
 :   Search result data for templates entity.

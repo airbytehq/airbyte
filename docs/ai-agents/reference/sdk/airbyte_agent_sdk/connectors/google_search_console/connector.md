@@ -10,6 +10,8 @@ Google-Search-Console connector.
 Classes
 -------
 
+<a id="GoogleSearchConsoleConnector"></a>
+
 `GoogleSearchConsoleConnector(auth_config: GoogleSearchConsoleAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Search-Console API connector.
     
@@ -266,6 +268,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SearchAnalyticsAllFieldsQuery"></a>
+
 `SearchAnalyticsAllFieldsQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for SearchAnalyticsAllFields entity operations.
     
@@ -328,6 +332,8 @@ Classes
         Returns:
             SearchAnalyticsAllFieldsListResult
 
+<a id="SearchAnalyticsByCountryQuery"></a>
+
 `SearchAnalyticsByCountryQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for SearchAnalyticsByCountry entity operations.
     
@@ -387,6 +393,8 @@ Classes
         Returns:
             SearchAnalyticsByCountryListResult
 
+<a id="SearchAnalyticsByDateQuery"></a>
+
 `SearchAnalyticsByDateQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for SearchAnalyticsByDate entity operations.
     
@@ -444,6 +452,8 @@ Classes
         
         Returns:
             SearchAnalyticsByDateListResult
+
+<a id="SearchAnalyticsByDeviceQuery"></a>
 
 `SearchAnalyticsByDeviceQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for SearchAnalyticsByDevice entity operations.
@@ -504,6 +514,8 @@ Classes
         Returns:
             SearchAnalyticsByDeviceListResult
 
+<a id="SearchAnalyticsByPageQuery"></a>
+
 `SearchAnalyticsByPageQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for SearchAnalyticsByPage entity operations.
     
@@ -563,6 +575,8 @@ Classes
         Returns:
             SearchAnalyticsByPageListResult
 
+<a id="SearchAnalyticsByQueryQuery"></a>
+
 `SearchAnalyticsByQueryQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for SearchAnalyticsByQuery entity operations.
     
@@ -621,6 +635,8 @@ Classes
         
         Returns:
             SearchAnalyticsByQueryListResult
+
+<a id="SitemapsQuery"></a>
 
 `SitemapsQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for Sitemaps entity operations.
@@ -682,6 +698,8 @@ Classes
         
         Returns:
             SitemapsListResult
+
+<a id="SitesQuery"></a>
 
 `SitesQuery(connector: GoogleSearchConsoleConnector)`
 :   Query class for Sites entity operations.

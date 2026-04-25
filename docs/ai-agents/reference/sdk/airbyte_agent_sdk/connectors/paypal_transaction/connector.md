@@ -10,6 +10,8 @@ Paypal-Transaction connector.
 Classes
 -------
 
+<a id="BalancesQuery"></a>
+
 `BalancesQuery(connector: PaypalTransactionConnector)`
 :   Query class for Balances entity operations.
     
@@ -56,6 +58,8 @@ Classes
         
         Returns:
             BalancesListResult
+
+<a id="ListDisputesQuery"></a>
 
 `ListDisputesQuery(connector: PaypalTransactionConnector)`
 :   Query class for ListDisputes entity operations.
@@ -113,6 +117,8 @@ Classes
         Returns:
             ListDisputesListResult
 
+<a id="ListPaymentsQuery"></a>
+
 `ListPaymentsQuery(connector: PaypalTransactionConnector)`
 :   Query class for ListPayments entity operations.
     
@@ -165,6 +171,8 @@ Classes
         Returns:
             ListPaymentsListResult
 
+<a id="ListProductsQuery"></a>
+
 `ListProductsQuery(connector: PaypalTransactionConnector)`
 :   Query class for ListProducts entity operations.
     
@@ -209,6 +217,8 @@ Classes
         
         Returns:
             ListProductsListResult
+
+<a id="PaypalTransactionConnector"></a>
 
 `PaypalTransactionConnector(auth_config: PaypalTransactionAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Paypal-Transaction API connector.
@@ -466,6 +476,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SearchInvoicesQuery"></a>
+
 `SearchInvoicesQuery(connector: PaypalTransactionConnector)`
 :   Query class for SearchInvoices entity operations.
     
@@ -522,6 +534,8 @@ Classes
         Returns:
             SearchInvoicesListResult
 
+<a id="ShowProductDetailsQuery"></a>
+
 `ShowProductDetailsQuery(connector: PaypalTransactionConnector)`
 :   Query class for ShowProductDetails entity operations.
     
@@ -570,6 +584,8 @@ Classes
         
         Returns:
             ProductDetails
+
+<a id="TransactionsQuery"></a>
 
 `TransactionsQuery(connector: PaypalTransactionConnector)`
 :   Query class for Transactions entity operations.

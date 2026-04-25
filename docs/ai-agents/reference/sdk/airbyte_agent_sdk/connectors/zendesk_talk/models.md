@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AccountOverview"></a>
+
 `AccountOverview(**data: Any)`
 :   AccountOverview type definition
     
@@ -101,6 +103,8 @@ Classes
     `total_wrap_up_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountOverviewResponse"></a>
+
 `AccountOverviewResponse(**data: Any)`
 :   AccountOverviewResponse type definition
     
@@ -122,6 +126,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountOverviewSearchData"></a>
 
 `AccountOverviewSearchData(**data: Any)`
 :   Search result data for account_overview entity.
@@ -211,6 +217,8 @@ Classes
     `total_wrap_up_time: int | None`
     :   Total wrap-up time
 
+<a id="Address"></a>
+
 `Address(**data: Any)`
 :   Address type definition
     
@@ -257,6 +265,8 @@ Classes
     `zip: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AddressWrapper"></a>
+
 `AddressWrapper(**data: Any)`
 :   AddressWrapper type definition
     
@@ -278,6 +288,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AddressesList"></a>
 
 `AddressesList(**data: Any)`
 :   AddressesList type definition
@@ -310,6 +322,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AddressesListResultMeta"></a>
+
 `AddressesListResultMeta(**data: Any)`
 :   Metadata for addresses.Action.LIST operation
     
@@ -331,6 +345,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AddressesSearchData"></a>
 
 `AddressesSearchData(**data: Any)`
 :   Search result data for addresses entity.
@@ -377,6 +393,8 @@ Classes
 
     `zip: str | None`
     :   Zip code of the address
+
+<a id="AgentActivity"></a>
 
 `AgentActivity(**data: Any)`
 :   AgentActivity type definition
@@ -475,6 +493,8 @@ Classes
     `via: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AgentsActivityList"></a>
+
 `AgentsActivityList(**data: Any)`
 :   AgentsActivityList type definition
     
@@ -506,6 +526,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AgentsActivityListResultMeta"></a>
+
 `AgentsActivityListResultMeta(**data: Any)`
 :   Metadata for agents_activity.Action.LIST operation
     
@@ -527,6 +549,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AgentsActivitySearchData"></a>
 
 `AgentsActivitySearchData(**data: Any)`
 :   Search result data for agents_activity entity.
@@ -625,6 +649,8 @@ Classes
     `via: str | None`
     :   Channel the agent is registered on
 
+<a id="AgentsOverview"></a>
+
 `AgentsOverview(**data: Any)`
 :   AgentsOverview type definition
     
@@ -713,6 +739,8 @@ Classes
     `total_wrap_up_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewResponse"></a>
+
 `AgentsOverviewResponse(**data: Any)`
 :   AgentsOverviewResponse type definition
     
@@ -734,6 +762,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewSearchData"></a>
 
 `AgentsOverviewSearchData(**data: Any)`
 :   Search result data for agents_overview entity.
@@ -823,6 +853,8 @@ Classes
     `total_wrap_up_time: int | None`
     :   Total wrap-up time
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -850,6 +882,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -912,6 +946,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountOverviewSearchResult"></a>
+
 `AccountOverviewSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -948,6 +984,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AddressesSearchResult"></a>
 
 `AddressesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -986,6 +1024,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentsActivitySearchResult"></a>
+
 `AgentsActivitySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1022,6 +1062,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewSearchResult"></a>
 
 `AgentsOverviewSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1060,6 +1102,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CallLegsSearchResult"></a>
+
 `CallLegsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1096,6 +1140,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsSearchResult"></a>
 
 `CallsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1134,6 +1180,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivitySearchResult"></a>
+
 `CurrentQueueActivitySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1170,6 +1218,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesSearchResult"></a>
 
 `GreetingCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1208,6 +1258,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GreetingsSearchResult"></a>
+
 `GreetingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1244,6 +1296,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IvrsSearchResult"></a>
 
 `IvrsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1282,6 +1336,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersSearchResult"></a>
+
 `PhoneNumbersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1297,6 +1353,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Call"></a>
 
 `Call(**data: Any)`
 :   Call type definition
@@ -1461,6 +1519,8 @@ Classes
     `wrap_up_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CallLeg"></a>
+
 `CallLeg(**data: Any)`
 :   CallLeg type definition
     
@@ -1555,6 +1615,8 @@ Classes
     `wrap_up_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CallLegsList"></a>
+
 `CallLegsList(**data: Any)`
 :   CallLegsList type definition
     
@@ -1586,6 +1648,8 @@ Classes
     `next_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CallLegsListResultMeta"></a>
+
 `CallLegsListResultMeta(**data: Any)`
 :   Metadata for call_legs.Action.LIST operation
     
@@ -1610,6 +1674,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CallLegsSearchData"></a>
 
 `CallLegsSearchData(**data: Any)`
 :   Search result data for call_legs entity.
@@ -1705,6 +1771,8 @@ Classes
     `wrap_up_time: int | None`
     :   Wrap-up time in seconds
 
+<a id="CallsList"></a>
+
 `CallsList(**data: Any)`
 :   CallsList type definition
     
@@ -1736,6 +1804,8 @@ Classes
     `next_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CallsListResultMeta"></a>
+
 `CallsListResultMeta(**data: Any)`
 :   Metadata for calls.Action.LIST operation
     
@@ -1760,6 +1830,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CallsSearchData"></a>
 
 `CallsSearchData(**data: Any)`
 :   Search result data for calls entity.
@@ -1903,6 +1975,8 @@ Classes
     `wrap_up_time: int | None`
     :   Wrap-up time in seconds
 
+<a id="CurrentQueueActivity"></a>
+
 `CurrentQueueActivity(**data: Any)`
 :   CurrentQueueActivity type definition
     
@@ -1946,6 +2020,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityResponse"></a>
+
 `CurrentQueueActivityResponse(**data: Any)`
 :   CurrentQueueActivityResponse type definition
     
@@ -1967,6 +2043,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivitySearchData"></a>
 
 `CurrentQueueActivitySearchData(**data: Any)`
 :   Search result data for current_queue_activity entity.
@@ -2007,6 +2085,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Greeting"></a>
 
 `Greeting(**data: Any)`
 :   Greeting type definition
@@ -2066,6 +2146,8 @@ Classes
     `upload_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesList"></a>
+
 `GreetingCategoriesList(**data: Any)`
 :   GreetingCategoriesList type definition
     
@@ -2097,6 +2179,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesListResultMeta"></a>
+
 `GreetingCategoriesListResultMeta(**data: Any)`
 :   Metadata for greeting_categories.Action.LIST operation
     
@@ -2118,6 +2202,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesSearchData"></a>
 
 `GreetingCategoriesSearchData(**data: Any)`
 :   Search result data for greeting_categories entity.
@@ -2144,6 +2230,8 @@ Classes
     `name: str | None`
     :   Name of the greeting category
 
+<a id="GreetingCategory"></a>
+
 `GreetingCategory(**data: Any)`
 :   GreetingCategory type definition
     
@@ -2169,6 +2257,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GreetingCategoryWrapper"></a>
+
 `GreetingCategoryWrapper(**data: Any)`
 :   GreetingCategoryWrapper type definition
     
@@ -2191,6 +2281,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GreetingWrapper"></a>
+
 `GreetingWrapper(**data: Any)`
 :   GreetingWrapper type definition
     
@@ -2212,6 +2304,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GreetingsList"></a>
 
 `GreetingsList(**data: Any)`
 :   GreetingsList type definition
@@ -2244,6 +2338,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GreetingsListResultMeta"></a>
+
 `GreetingsListResultMeta(**data: Any)`
 :   Metadata for greetings.Action.LIST operation
     
@@ -2265,6 +2361,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GreetingsSearchData"></a>
 
 `GreetingsSearchData(**data: Any)`
 :   Search result data for greetings entity.
@@ -2324,6 +2422,8 @@ Classes
     `upload_id: int | None`
     :   Upload ID associated with the greeting
 
+<a id="Ivr"></a>
+
 `Ivr(**data: Any)`
 :   Ivr type definition
     
@@ -2358,6 +2458,8 @@ Classes
     `phone_number_names: list[typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="IvrMenusItem"></a>
+
 `IvrMenusItem(**data: Any)`
 :   Nested schema for Ivr.menus_item
     
@@ -2391,6 +2493,8 @@ Classes
 
     `routes: list[airbyte_agent_sdk.connectors.zendesk_talk.models.IvrMenusItemRoutesItem] | Any | None`
     :   The type of the None singleton.
+
+<a id="IvrMenusItemRoutesItem"></a>
 
 `IvrMenusItemRoutesItem(**data: Any)`
 :   Nested schema for IvrMenusItem.routes_item
@@ -2432,6 +2536,8 @@ Classes
     `overflow_options: list[typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="IvrWrapper"></a>
+
 `IvrWrapper(**data: Any)`
 :   IvrWrapper type definition
     
@@ -2453,6 +2559,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IvrsList"></a>
 
 `IvrsList(**data: Any)`
 :   IvrsList type definition
@@ -2485,6 +2593,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IvrsListResultMeta"></a>
+
 `IvrsListResultMeta(**data: Any)`
 :   Metadata for ivrs.Action.LIST operation
     
@@ -2506,6 +2616,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IvrsSearchData"></a>
 
 `IvrsSearchData(**data: Any)`
 :   Search result data for ivrs entity.
@@ -2540,6 +2652,8 @@ Classes
 
     `phone_number_names: list[typing.Any] | None`
     :   Names of phone numbers configured with this IVR
+
+<a id="PhoneNumber"></a>
 
 `PhoneNumber(**data: Any)`
 :   PhoneNumber type definition
@@ -2653,6 +2767,8 @@ Classes
     `voice_enabled: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="PhoneNumberCapabilities"></a>
+
 `PhoneNumberCapabilities(**data: Any)`
 :   Phone number capabilities (sms, mms, voice)
     
@@ -2684,6 +2800,8 @@ Classes
     `voice: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="PhoneNumberWrapper"></a>
+
 `PhoneNumberWrapper(**data: Any)`
 :   PhoneNumberWrapper type definition
     
@@ -2705,6 +2823,8 @@ Classes
 
     `phone_number: airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumber | Any`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersList"></a>
 
 `PhoneNumbersList(**data: Any)`
 :   PhoneNumbersList type definition
@@ -2737,6 +2857,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersListResultMeta"></a>
+
 `PhoneNumbersListResultMeta(**data: Any)`
 :   Metadata for phone_numbers.Action.LIST operation
     
@@ -2758,6 +2880,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersSearchData"></a>
 
 `PhoneNumbersSearchData(**data: Any)`
 :   Search result data for phone_numbers entity.
@@ -2868,6 +2992,8 @@ Classes
     `voice_enabled: bool | None`
     :   Whether voice is enabled
 
+<a id="ZendeskTalkApiTokenAuthConfig"></a>
+
 `ZendeskTalkApiTokenAuthConfig(**data: Any)`
 :   API Token - Authenticate using email and API token
     
@@ -2892,6 +3018,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskTalkCheckResult"></a>
 
 `ZendeskTalkCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2926,6 +3054,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="ZendeskTalkExecuteResult"></a>
+
 `ZendeskTalkExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2957,6 +3087,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskTalkExecuteResultWithMeta"></a>
 
 `ZendeskTalkExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3016,6 +3148,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AddressesListResult"></a>
+
 `AddressesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3058,6 +3192,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AgentsActivityListResult"></a>
 
 `AgentsActivityListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3102,6 +3238,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CallLegsListResult"></a>
+
 `CallLegsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3144,6 +3282,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsListResult"></a>
 
 `CallsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3188,6 +3328,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesListResult"></a>
+
 `GreetingCategoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3230,6 +3372,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GreetingsListResult"></a>
 
 `GreetingsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3274,6 +3418,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IvrsListResult"></a>
+
 `IvrsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3317,6 +3463,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersListResult"></a>
+
 `PhoneNumbersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3359,6 +3507,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountOverviewListResult"></a>
+
 `AccountOverviewListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3399,6 +3549,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewListResult"></a>
 
 `AgentsOverviewListResult(**data: Any)`
 :   Response envelope with data only.
@@ -3441,6 +3593,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityListResult"></a>
+
 `CurrentQueueActivityListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3458,6 +3612,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.ZendeskTalkExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ZendeskTalkOauth20AuthConfig"></a>
 
 `ZendeskTalkOauth20AuthConfig(**data: Any)`
 :   OAuth 2.0 - Zendesk OAuth 2.0 authentication
@@ -3489,6 +3645,8 @@ Classes
 
     `refresh_token: str | None`
     :   OAuth 2.0 refresh token (optional)
+
+<a id="ZendeskTalkReplicationConfig"></a>
 
 `ZendeskTalkReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Zendesk Talk.

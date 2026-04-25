@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Ad"></a>
+
 `Ad(**data: Any)`
 :   TikTok ad
     
@@ -178,6 +180,8 @@ Classes
 
     `viewability_vast_url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AdGroup"></a>
 
 `AdGroup(**data: Any)`
 :   TikTok ad group
@@ -486,6 +490,8 @@ Classes
     `zipcode_ids: list[typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="AdGroupsListResultMeta"></a>
+
 `AdGroupsListResultMeta(**data: Any)`
 :   Metadata for ad_groups.Action.LIST operation
     
@@ -507,6 +513,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupsReportDaily"></a>
 
 `AdGroupsReportDaily(**data: Any)`
 :   Daily performance report at the ad group level
@@ -671,6 +679,8 @@ Classes
     `video_watched_6s: float | Any | None`
     :   The type of the None singleton.
 
+<a id="AdGroupsReportsDailyListResultMeta"></a>
+
 `AdGroupsReportsDailyListResultMeta(**data: Any)`
 :   Metadata for ad_groups_reports_daily.Action.LIST operation
     
@@ -692,6 +702,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupsReportsDailySearchData"></a>
 
 `AdGroupsReportsDailySearchData(**data: Any)`
 :   Search result data for ad_groups_reports_daily entity.
@@ -856,6 +868,8 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdGroupsSearchData"></a>
+
 `AdGroupsSearchData(**data: Any)`
 :   Search result data for ad_groups entity.
     
@@ -914,6 +928,8 @@ Classes
     `secondary_status: str | None`
     :   The secondary status of the ad group
 
+<a id="AdsListResultMeta"></a>
+
 `AdsListResultMeta(**data: Any)`
 :   Metadata for ads.Action.LIST operation
     
@@ -935,6 +951,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AdsReportDaily"></a>
 
 `AdsReportDaily(**data: Any)`
 :   Daily performance report at the ad level
@@ -1108,6 +1126,8 @@ Classes
     `video_watched_6s: float | Any | None`
     :   The type of the None singleton.
 
+<a id="AdsReportsDailyListResultMeta"></a>
+
 `AdsReportsDailyListResultMeta(**data: Any)`
 :   Metadata for ads_reports_daily.Action.LIST operation
     
@@ -1129,6 +1149,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AdsReportsDailySearchData"></a>
 
 `AdsReportsDailySearchData(**data: Any)`
 :   Search result data for ads_reports_daily entity.
@@ -1302,6 +1324,8 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdsSearchData"></a>
+
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
     
@@ -1365,6 +1389,8 @@ Classes
 
     `video_id: str | None`
     :   The unique identifier of the video
+
+<a id="Advertiser"></a>
 
 `Advertiser(**data: Any)`
 :   TikTok advertiser account
@@ -1472,6 +1498,8 @@ Classes
     `timezone: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdvertisersListResultMeta"></a>
+
 `AdvertisersListResultMeta(**data: Any)`
 :   Metadata for advertisers.Action.LIST operation
     
@@ -1493,6 +1521,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AdvertisersReportDaily"></a>
 
 `AdvertisersReportDaily(**data: Any)`
 :   Daily performance report at the advertiser level
@@ -1606,6 +1636,8 @@ Classes
     `voucher_spend: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdvertisersReportsDailyListResultMeta"></a>
+
 `AdvertisersReportsDailyListResultMeta(**data: Any)`
 :   Metadata for advertisers_reports_daily.Action.LIST operation
     
@@ -1627,6 +1659,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AdvertisersReportsDailySearchData"></a>
 
 `AdvertisersReportsDailySearchData(**data: Any)`
 :   Search result data for advertisers_reports_daily entity.
@@ -1740,6 +1774,8 @@ Classes
     `voucher_spend: str | None`
     :   Amount spent using vouchers.
 
+<a id="AdvertisersSearchData"></a>
+
 `AdvertisersSearchData(**data: Any)`
 :   Search result data for advertisers entity.
     
@@ -1846,6 +1882,8 @@ Classes
     `timezone: str | None`
     :   The timezone setting for the advertiser's activities.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -1873,6 +1911,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1935,6 +1975,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsReportsDailySearchResult"></a>
+
 `AdGroupsReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1971,6 +2013,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupsSearchResult"></a>
 
 `AdGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2009,6 +2053,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsReportsDailySearchResult"></a>
+
 `AdsReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2045,6 +2091,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsSearchResult"></a>
 
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2083,6 +2131,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdvertisersReportsDailySearchResult"></a>
+
 `AdvertisersReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2119,6 +2169,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdvertisersSearchResult"></a>
 
 `AdvertisersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2157,6 +2209,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AudiencesSearchResult"></a>
+
 `AudiencesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2193,6 +2247,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsReportsDailySearchResult"></a>
 
 `CampaignsReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2231,6 +2287,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2267,6 +2325,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CreativeAssetsImagesSearchResult"></a>
 
 `CreativeAssetsImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2305,6 +2365,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativeAssetsVideosSearchResult"></a>
+
 `CreativeAssetsVideosSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2320,6 +2382,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Audience"></a>
 
 `Audience(**data: Any)`
 :   TikTok custom audience
@@ -2373,6 +2437,8 @@ Classes
     `shared: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="AudiencesListResultMeta"></a>
+
 `AudiencesListResultMeta(**data: Any)`
 :   Metadata for audiences.Action.LIST operation
     
@@ -2394,6 +2460,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="AudiencesSearchData"></a>
 
 `AudiencesSearchData(**data: Any)`
 :   Search result data for audiences entity.
@@ -2434,6 +2502,8 @@ Classes
 
     `shared: bool | None`
     :   Flag indicating if the audience is shared
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   TikTok marketing campaign
@@ -2541,6 +2611,8 @@ Classes
     `split_test_variable: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -2562,6 +2634,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="CampaignsReportDaily"></a>
 
 `CampaignsReportDaily(**data: Any)`
 :   Daily performance report at the campaign level
@@ -2672,6 +2746,8 @@ Classes
     `video_watched_6s: float | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsReportsDailyListResultMeta"></a>
+
 `CampaignsReportsDailyListResultMeta(**data: Any)`
 :   Metadata for campaigns_reports_daily.Action.LIST operation
     
@@ -2693,6 +2769,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="CampaignsReportsDailySearchData"></a>
 
 `CampaignsReportsDailySearchData(**data: Any)`
 :   Search result data for campaigns_reports_daily entity.
@@ -2803,6 +2881,8 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="CampaignsSearchData"></a>
+
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
     
@@ -2891,6 +2971,8 @@ Classes
     `split_test_variable: str | None`
     :   Variable being tested in a split test campaign
 
+<a id="CreativeAssetImage"></a>
+
 `CreativeAssetImage(**data: Any)`
 :   TikTok creative asset image
     
@@ -2948,6 +3030,8 @@ Classes
 
     `width: int | Any | None`
     :   The type of the None singleton.
+
+<a id="CreativeAssetVideo"></a>
 
 `CreativeAssetVideo(**data: Any)`
 :   TikTok creative asset video
@@ -3028,6 +3112,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CreativeAssetsImagesListResultMeta"></a>
+
 `CreativeAssetsImagesListResultMeta(**data: Any)`
 :   Metadata for creative_assets_images.Action.LIST operation
     
@@ -3049,6 +3135,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="CreativeAssetsImagesSearchData"></a>
 
 `CreativeAssetsImagesSearchData(**data: Any)`
 :   Search result data for creative_assets_images entity.
@@ -3096,6 +3184,8 @@ Classes
     `width: int | None`
     :   The width dimension of the image.
 
+<a id="CreativeAssetsVideosListResultMeta"></a>
+
 `CreativeAssetsVideosListResultMeta(**data: Any)`
 :   Metadata for creative_assets_videos.Action.LIST operation
     
@@ -3117,6 +3207,8 @@ Classes
 
     `page_info: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="CreativeAssetsVideosSearchData"></a>
 
 `CreativeAssetsVideosSearchData(**data: Any)`
 :   Search result data for creative_assets_videos entity.
@@ -3167,6 +3259,8 @@ Classes
     `width: int | None`
     :   Width of the video in pixels.
 
+<a id="TiktokMarketingAuthConfig"></a>
+
 `TiktokMarketingAuthConfig(**data: Any)`
 :   OAuth Access Token
     
@@ -3188,6 +3282,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TiktokMarketingCheckResult"></a>
 
 `TiktokMarketingCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -3222,6 +3318,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="TiktokMarketingExecuteResult"></a>
+
 `TiktokMarketingExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3250,6 +3348,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TiktokMarketingExecuteResultWithMeta"></a>
 
 `TiktokMarketingExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3312,6 +3412,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsListResult"></a>
+
 `AdGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3354,6 +3456,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupsReportsDailyListResult"></a>
 
 `AdGroupsReportsDailyListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3398,6 +3502,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsListResult"></a>
+
 `AdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3440,6 +3546,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsReportsDailyListResult"></a>
 
 `AdsReportsDailyListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3484,6 +3592,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdvertisersListResult"></a>
+
 `AdvertisersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3526,6 +3636,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdvertisersReportsDailyListResult"></a>
 
 `AdvertisersReportsDailyListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3570,6 +3682,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AudiencesListResult"></a>
+
 `AudiencesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3612,6 +3726,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsListResult"></a>
 
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3656,6 +3772,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsReportsDailyListResult"></a>
+
 `CampaignsReportsDailyListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3698,6 +3816,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CreativeAssetsImagesListResult"></a>
 
 `CreativeAssetsImagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3742,6 +3862,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativeAssetsVideosListResult"></a>
+
 `CreativeAssetsVideosListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3760,6 +3882,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TiktokMarketingReplicationConfig"></a>
 
 `TiktokMarketingReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from TikTok Marketing.

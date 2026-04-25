@@ -10,6 +10,8 @@ Google-Analytics-Data-Api connector.
 Classes
 -------
 
+<a id="DailyActiveUsersQuery"></a>
+
 `DailyActiveUsersQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for DailyActiveUsers entity operations.
     
@@ -59,6 +61,8 @@ Classes
         
         Returns:
             DailyActiveUsersListResult
+
+<a id="DevicesQuery"></a>
 
 `DevicesQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for Devices entity operations.
@@ -120,6 +124,8 @@ Classes
         Returns:
             DevicesListResult
 
+<a id="FourWeeklyActiveUsersQuery"></a>
+
 `FourWeeklyActiveUsersQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for FourWeeklyActiveUsers entity operations.
     
@@ -169,6 +175,8 @@ Classes
         
         Returns:
             FourWeeklyActiveUsersListResult
+
+<a id="GoogleAnalyticsDataApiConnector"></a>
 
 `GoogleAnalyticsDataApiConnector(auth_config: GoogleAnalyticsDataApiAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Analytics-Data-Api API connector.
@@ -426,6 +434,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="LocationsQuery"></a>
+
 `LocationsQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for Locations entity operations.
     
@@ -486,6 +496,8 @@ Classes
         Returns:
             LocationsListResult
 
+<a id="PagesQuery"></a>
+
 `PagesQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for Pages entity operations.
     
@@ -538,6 +550,8 @@ Classes
         
         Returns:
             PagesListResult
+
+<a id="TrafficSourcesQuery"></a>
 
 `TrafficSourcesQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for TrafficSources entity operations.
@@ -598,6 +612,8 @@ Classes
         Returns:
             TrafficSourcesListResult
 
+<a id="WebsiteOverviewQuery"></a>
+
 `WebsiteOverviewQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for WebsiteOverview entity operations.
     
@@ -654,6 +670,8 @@ Classes
         
         Returns:
             WebsiteOverviewListResult
+
+<a id="WeeklyActiveUsersQuery"></a>
 
 `WeeklyActiveUsersQuery(connector: GoogleAnalyticsDataApiConnector)`
 :   Query class for WeeklyActiveUsers entity operations.

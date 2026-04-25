@@ -10,6 +10,8 @@ Type definitions for monday connector.
 Classes
 -------
 
+<a id="ActivityLogsAndCondition"></a>
+
 `ActivityLogsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -30,6 +32,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ActivityLogsAnyCondition"></a>
+
 `ActivityLogsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -49,6 +53,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsAnyValueFilter"></a>
 
 `ActivityLogsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -86,6 +92,8 @@ Classes
     `user_id: Any`
     :   ID of the user who performed the action
 
+<a id="ActivityLogsContainsCondition"></a>
+
 `ActivityLogsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -97,6 +105,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsEqCondition"></a>
 
 `ActivityLogsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -110,6 +120,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.ActivityLogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActivityLogsFuzzyCondition"></a>
+
 `ActivityLogsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -121,6 +133,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsGtCondition"></a>
 
 `ActivityLogsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -134,6 +148,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.ActivityLogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActivityLogsGteCondition"></a>
+
 `ActivityLogsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -145,6 +161,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.ActivityLogsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsInCondition"></a>
 
 `ActivityLogsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -165,6 +183,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.ActivityLogsInFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsInFilter"></a>
 
 `ActivityLogsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -202,6 +222,8 @@ Classes
     `user_id: list[str]`
     :   ID of the user who performed the action
 
+<a id="ActivityLogsKeywordCondition"></a>
+
 `ActivityLogsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -213,6 +235,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsLikeCondition"></a>
 
 `ActivityLogsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -226,6 +250,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
     :   The type of the None singleton.
 
+<a id="ActivityLogsListParams"></a>
+
 `ActivityLogsListParams(*args, **kwargs)`
 :   Parameters for activity_logs.list operation
 
@@ -237,6 +263,8 @@ Classes
 
     `board_id: str`
     :   The type of the None singleton.
+
+<a id="ActivityLogsLtCondition"></a>
 
 `ActivityLogsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -250,6 +278,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.ActivityLogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActivityLogsLteCondition"></a>
+
 `ActivityLogsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -262,6 +292,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.ActivityLogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActivityLogsNeqCondition"></a>
+
 `ActivityLogsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -273,6 +305,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.ActivityLogsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ActivityLogsNotCondition"></a>
 
 `ActivityLogsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -294,6 +328,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ActivityLogsOrCondition"></a>
+
 `ActivityLogsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -313,6 +349,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ActivityLogsSearchFilter"></a>
 
 `ActivityLogsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering activity_logs search queries.
@@ -350,6 +388,8 @@ Classes
     `user_id: str | None`
     :   ID of the user who performed the action
 
+<a id="ActivityLogsSearchQuery"></a>
+
 `ActivityLogsSearchQuery(*args, **kwargs)`
 :   Search query for activity_logs entity.
 
@@ -364,6 +404,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ActivityLogsSortFilter"></a>
 
 `ActivityLogsSortFilter(*args, **kwargs)`
 :   Available fields for sorting activity_logs search results.
@@ -401,6 +443,8 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   ID of the user who performed the action
 
+<a id="ActivityLogsStringFilter"></a>
+
 `ActivityLogsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -437,6 +481,8 @@ Classes
     `user_id: str`
     :   ID of the user who performed the action
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -458,6 +504,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="BoardsAndCondition"></a>
+
 `BoardsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -478,6 +526,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="BoardsAnyCondition"></a>
+
 `BoardsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -497,6 +547,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.BoardsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BoardsAnyValueFilter"></a>
 
 `BoardsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -567,6 +619,8 @@ Classes
     `workspace: Any`
     :   Workspace the board belongs to
 
+<a id="BoardsContainsCondition"></a>
+
 `BoardsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -578,6 +632,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.BoardsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BoardsEqCondition"></a>
 
 `BoardsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -591,6 +647,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.BoardsSearchFilter`
     :   The type of the None singleton.
 
+<a id="BoardsFuzzyCondition"></a>
+
 `BoardsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -602,6 +660,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
     :   The type of the None singleton.
+
+<a id="BoardsGetParams"></a>
 
 `BoardsGetParams(*args, **kwargs)`
 :   Parameters for boards.get operation
@@ -615,6 +675,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="BoardsGtCondition"></a>
+
 `BoardsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -627,6 +689,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.BoardsSearchFilter`
     :   The type of the None singleton.
 
+<a id="BoardsGteCondition"></a>
+
 `BoardsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -638,6 +702,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.BoardsSearchFilter`
     :   The type of the None singleton.
+
+<a id="BoardsInCondition"></a>
 
 `BoardsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -658,6 +724,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.BoardsInFilter`
     :   The type of the None singleton.
+
+<a id="BoardsInFilter"></a>
 
 `BoardsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -728,6 +796,8 @@ Classes
     `workspace: list[dict[str, typing.Any]]`
     :   Workspace the board belongs to
 
+<a id="BoardsKeywordCondition"></a>
+
 `BoardsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -739,6 +809,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
     :   The type of the None singleton.
+
+<a id="BoardsLikeCondition"></a>
 
 `BoardsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -752,12 +824,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
     :   The type of the None singleton.
 
+<a id="BoardsListParams"></a>
+
 `BoardsListParams(*args, **kwargs)`
 :   Parameters for boards.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="BoardsLtCondition"></a>
 
 `BoardsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -771,6 +847,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.BoardsSearchFilter`
     :   The type of the None singleton.
 
+<a id="BoardsLteCondition"></a>
+
 `BoardsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -783,6 +861,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.BoardsSearchFilter`
     :   The type of the None singleton.
 
+<a id="BoardsNeqCondition"></a>
+
 `BoardsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -794,6 +874,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.BoardsSearchFilter`
     :   The type of the None singleton.
+
+<a id="BoardsNotCondition"></a>
 
 `BoardsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -815,6 +897,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition`
     :   The type of the None singleton.
 
+<a id="BoardsOrCondition"></a>
+
 `BoardsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -834,6 +918,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="BoardsSearchFilter"></a>
 
 `BoardsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering boards search queries.
@@ -904,6 +990,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   Workspace the board belongs to
 
+<a id="BoardsSearchQuery"></a>
+
 `BoardsSearchQuery(*args, **kwargs)`
 :   Search query for boards entity.
 
@@ -918,6 +1006,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.BoardsSortFilter]`
     :   The type of the None singleton.
+
+<a id="BoardsSortFilter"></a>
 
 `BoardsSortFilter(*args, **kwargs)`
 :   Available fields for sorting boards search results.
@@ -988,6 +1078,8 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   Workspace the board belongs to
 
+<a id="BoardsStringFilter"></a>
+
 `BoardsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1057,6 +1149,8 @@ Classes
     `workspace: str`
     :   Workspace the board belongs to
 
+<a id="ItemsAndCondition"></a>
+
 `ItemsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1077,6 +1171,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ItemsAnyCondition"></a>
+
 `ItemsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1096,6 +1192,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.ItemsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ItemsAnyValueFilter"></a>
 
 `ItemsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1148,6 +1246,8 @@ Classes
     `updates: Any`
     :   Item updates
 
+<a id="ItemsContainsCondition"></a>
+
 `ItemsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1159,6 +1259,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.ItemsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ItemsEqCondition"></a>
 
 `ItemsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1172,6 +1274,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.ItemsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ItemsFuzzyCondition"></a>
+
 `ItemsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1183,6 +1287,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
     :   The type of the None singleton.
+
+<a id="ItemsGetParams"></a>
 
 `ItemsGetParams(*args, **kwargs)`
 :   Parameters for items.get operation
@@ -1196,6 +1302,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ItemsGtCondition"></a>
+
 `ItemsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1208,6 +1316,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.ItemsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ItemsGteCondition"></a>
+
 `ItemsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1219,6 +1329,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.ItemsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ItemsInCondition"></a>
 
 `ItemsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1239,6 +1351,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.ItemsInFilter`
     :   The type of the None singleton.
+
+<a id="ItemsInFilter"></a>
 
 `ItemsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1291,6 +1405,8 @@ Classes
     `updates: list[list[typing.Any]]`
     :   Item updates
 
+<a id="ItemsKeywordCondition"></a>
+
 `ItemsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1302,6 +1418,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
     :   The type of the None singleton.
+
+<a id="ItemsLikeCondition"></a>
 
 `ItemsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1315,6 +1433,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
     :   The type of the None singleton.
 
+<a id="ItemsListParams"></a>
+
 `ItemsListParams(*args, **kwargs)`
 :   Parameters for items.list operation
 
@@ -1326,6 +1446,8 @@ Classes
 
     `board_id: str`
     :   The type of the None singleton.
+
+<a id="ItemsLtCondition"></a>
 
 `ItemsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1339,6 +1461,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.ItemsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ItemsLteCondition"></a>
+
 `ItemsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1351,6 +1475,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.ItemsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ItemsNeqCondition"></a>
+
 `ItemsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1362,6 +1488,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.ItemsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ItemsNotCondition"></a>
 
 `ItemsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1383,6 +1511,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ItemsOrCondition"></a>
+
 `ItemsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1402,6 +1532,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ItemsSearchFilter"></a>
 
 `ItemsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering items search queries.
@@ -1454,6 +1586,8 @@ Classes
     `updates: list[typing.Any] | None`
     :   Item updates
 
+<a id="ItemsSearchQuery"></a>
+
 `ItemsSearchQuery(*args, **kwargs)`
 :   Search query for items entity.
 
@@ -1468,6 +1602,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.ItemsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ItemsSortFilter"></a>
 
 `ItemsSortFilter(*args, **kwargs)`
 :   Available fields for sorting items search results.
@@ -1520,6 +1656,8 @@ Classes
     `updates: Literal['asc', 'desc']`
     :   Item updates
 
+<a id="ItemsStringFilter"></a>
+
 `ItemsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1571,6 +1709,8 @@ Classes
     `updates: str`
     :   Item updates
 
+<a id="TagsAndCondition"></a>
+
 `TagsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1590,6 +1730,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TagsAnyCondition"></a>
 
 `TagsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1611,6 +1753,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.monday.types.TagsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="TagsAnyValueFilter"></a>
+
 `TagsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -1629,6 +1773,8 @@ Classes
     `name: Any`
     :   Tag name
 
+<a id="TagsContainsCondition"></a>
+
 `TagsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1640,6 +1786,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.TagsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TagsEqCondition"></a>
 
 `TagsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1653,6 +1801,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsFuzzyCondition"></a>
+
 `TagsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1664,6 +1814,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
     :   The type of the None singleton.
+
+<a id="TagsGtCondition"></a>
 
 `TagsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1677,6 +1829,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsGteCondition"></a>
+
 `TagsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1688,6 +1842,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsInCondition"></a>
 
 `TagsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1709,6 +1865,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.monday.types.TagsInFilter`
     :   The type of the None singleton.
 
+<a id="TagsInFilter"></a>
+
 `TagsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -1727,6 +1885,8 @@ Classes
     `name: list[str]`
     :   Tag name
 
+<a id="TagsKeywordCondition"></a>
+
 `TagsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1738,6 +1898,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
     :   The type of the None singleton.
+
+<a id="TagsLikeCondition"></a>
 
 `TagsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1751,12 +1913,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
     :   The type of the None singleton.
 
+<a id="TagsListParams"></a>
+
 `TagsListParams(*args, **kwargs)`
 :   Parameters for tags.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="TagsLtCondition"></a>
 
 `TagsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1770,6 +1936,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsLteCondition"></a>
+
 `TagsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1782,6 +1950,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsNeqCondition"></a>
+
 `TagsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1793,6 +1963,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsNotCondition"></a>
 
 `TagsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1814,6 +1986,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TagsOrCondition"></a>
+
 `TagsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1834,6 +2008,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TagsSearchFilter"></a>
+
 `TagsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tags search queries.
 
@@ -1852,6 +2028,8 @@ Classes
     `name: str | None`
     :   Tag name
 
+<a id="TagsSearchQuery"></a>
+
 `TagsSearchQuery(*args, **kwargs)`
 :   Search query for tags entity.
 
@@ -1866,6 +2044,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.TagsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TagsSortFilter"></a>
 
 `TagsSortFilter(*args, **kwargs)`
 :   Available fields for sorting tags search results.
@@ -1885,6 +2065,8 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Tag name
 
+<a id="TagsStringFilter"></a>
+
 `TagsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1902,6 +2084,8 @@ Classes
 
     `name: str`
     :   Tag name
+
+<a id="TeamsAndCondition"></a>
 
 `TeamsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1923,6 +2107,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TeamsAnyCondition"></a>
+
 `TeamsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1942,6 +2128,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsAnyValueFilter"></a>
 
 `TeamsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1964,6 +2152,8 @@ Classes
     `users: Any`
     :   Team members
 
+<a id="TeamsContainsCondition"></a>
+
 `TeamsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1975,6 +2165,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsEqCondition"></a>
 
 `TeamsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1988,6 +2180,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsFuzzyCondition"></a>
+
 `TeamsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1999,6 +2193,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsGetParams"></a>
 
 `TeamsGetParams(*args, **kwargs)`
 :   Parameters for teams.get operation
@@ -2012,6 +2208,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TeamsGtCondition"></a>
+
 `TeamsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2024,6 +2222,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsGteCondition"></a>
+
 `TeamsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2035,6 +2235,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInCondition"></a>
 
 `TeamsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2055,6 +2257,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.TeamsInFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInFilter"></a>
 
 `TeamsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2077,6 +2281,8 @@ Classes
     `users: list[list[typing.Any]]`
     :   Team members
 
+<a id="TeamsKeywordCondition"></a>
+
 `TeamsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2088,6 +2294,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsLikeCondition"></a>
 
 `TeamsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2101,12 +2309,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
     :   The type of the None singleton.
 
+<a id="TeamsListParams"></a>
+
 `TeamsListParams(*args, **kwargs)`
 :   Parameters for teams.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="TeamsLtCondition"></a>
 
 `TeamsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2120,6 +2332,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsLteCondition"></a>
+
 `TeamsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2132,6 +2346,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsNeqCondition"></a>
+
 `TeamsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2143,6 +2359,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsNotCondition"></a>
 
 `TeamsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2164,6 +2382,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TeamsOrCondition"></a>
+
 `TeamsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2183,6 +2403,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TeamsSearchFilter"></a>
 
 `TeamsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering teams search queries.
@@ -2205,6 +2427,8 @@ Classes
     `users: list[typing.Any] | None`
     :   Team members
 
+<a id="TeamsSearchQuery"></a>
+
 `TeamsSearchQuery(*args, **kwargs)`
 :   Search query for teams entity.
 
@@ -2219,6 +2443,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.TeamsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TeamsSortFilter"></a>
 
 `TeamsSortFilter(*args, **kwargs)`
 :   Available fields for sorting teams search results.
@@ -2241,6 +2467,8 @@ Classes
     `users: Literal['asc', 'desc']`
     :   Team members
 
+<a id="TeamsStringFilter"></a>
+
 `TeamsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2262,6 +2490,8 @@ Classes
     `users: str`
     :   Team members
 
+<a id="UpdatesAndCondition"></a>
+
 `UpdatesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2282,6 +2512,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UpdatesAnyCondition"></a>
+
 `UpdatesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2301,6 +2533,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.UpdatesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesAnyValueFilter"></a>
 
 `UpdatesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2338,6 +2572,8 @@ Classes
     `updated_at: Any`
     :   When the update was last modified
 
+<a id="UpdatesContainsCondition"></a>
+
 `UpdatesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2349,6 +2585,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.UpdatesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesEqCondition"></a>
 
 `UpdatesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2362,6 +2600,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.UpdatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="UpdatesFuzzyCondition"></a>
+
 `UpdatesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2373,6 +2613,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesGetParams"></a>
 
 `UpdatesGetParams(*args, **kwargs)`
 :   Parameters for updates.get operation
@@ -2386,6 +2628,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="UpdatesGtCondition"></a>
+
 `UpdatesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2398,6 +2642,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.UpdatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="UpdatesGteCondition"></a>
+
 `UpdatesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2409,6 +2655,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.UpdatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesInCondition"></a>
 
 `UpdatesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2429,6 +2677,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.UpdatesInFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesInFilter"></a>
 
 `UpdatesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2466,6 +2716,8 @@ Classes
     `updated_at: list[str]`
     :   When the update was last modified
 
+<a id="UpdatesKeywordCondition"></a>
+
 `UpdatesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2478,6 +2730,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
     :   The type of the None singleton.
 
+<a id="UpdatesLikeCondition"></a>
+
 `UpdatesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2489,6 +2743,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesListParams"></a>
 
 `UpdatesListParams(*args, **kwargs)`
 :   Parameters for updates.list operation
@@ -2505,6 +2761,8 @@ Classes
     `page: int`
     :   The type of the None singleton.
 
+<a id="UpdatesLtCondition"></a>
+
 `UpdatesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2516,6 +2774,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.monday.types.UpdatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesLteCondition"></a>
 
 `UpdatesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2529,6 +2789,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.UpdatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="UpdatesNeqCondition"></a>
+
 `UpdatesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2540,6 +2802,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.UpdatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="UpdatesNotCondition"></a>
 
 `UpdatesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2561,6 +2825,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition`
     :   The type of the None singleton.
 
+<a id="UpdatesOrCondition"></a>
+
 `UpdatesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2580,6 +2846,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UpdatesSearchFilter"></a>
 
 `UpdatesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering updates search queries.
@@ -2617,6 +2885,8 @@ Classes
     `updated_at: str | None`
     :   When the update was last modified
 
+<a id="UpdatesSearchQuery"></a>
+
 `UpdatesSearchQuery(*args, **kwargs)`
 :   Search query for updates entity.
 
@@ -2631,6 +2901,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.UpdatesSortFilter]`
     :   The type of the None singleton.
+
+<a id="UpdatesSortFilter"></a>
 
 `UpdatesSortFilter(*args, **kwargs)`
 :   Available fields for sorting updates search results.
@@ -2668,6 +2940,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the update was last modified
 
+<a id="UpdatesStringFilter"></a>
+
 `UpdatesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2704,6 +2978,8 @@ Classes
     `updated_at: str`
     :   When the update was last modified
 
+<a id="UsersAndCondition"></a>
+
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2724,6 +3000,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2743,6 +3021,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2828,6 +3108,8 @@ Classes
     `utc_hours_diff: Any`
     :   UTC hours difference for the user's timezone
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2839,6 +3121,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2852,6 +3136,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2863,6 +3149,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -2876,6 +3164,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2888,6 +3178,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2899,6 +3191,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2919,6 +3213,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3004,6 +3300,8 @@ Classes
     `utc_hours_diff: list[int]`
     :   UTC hours difference for the user's timezone
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3015,6 +3313,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersLikeCondition"></a>
 
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3028,12 +3328,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersListParams"></a>
+
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="UsersLtCondition"></a>
 
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3047,6 +3351,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersLteCondition"></a>
+
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3059,6 +3365,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3070,6 +3378,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3091,6 +3401,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3110,6 +3422,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -3195,6 +3509,8 @@ Classes
     `utc_hours_diff: int | None`
     :   UTC hours difference for the user's timezone
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -3209,6 +3525,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -3294,6 +3612,8 @@ Classes
     `utc_hours_diff: Literal['asc', 'desc']`
     :   UTC hours difference for the user's timezone
 
+<a id="UsersStringFilter"></a>
+
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3378,6 +3698,8 @@ Classes
     `utc_hours_diff: str`
     :   UTC hours difference for the user's timezone
 
+<a id="WorkspacesAndCondition"></a>
+
 `WorkspacesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3398,6 +3720,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="WorkspacesAnyCondition"></a>
+
 `WorkspacesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3417,6 +3741,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesAnyValueFilter"></a>
 
 `WorkspacesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3463,6 +3789,8 @@ Classes
     `users_subscribers: Any`
     :   User subscribers
 
+<a id="WorkspacesContainsCondition"></a>
+
 `WorkspacesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3474,6 +3802,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesEqCondition"></a>
 
 `WorkspacesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3487,6 +3817,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.monday.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesFuzzyCondition"></a>
+
 `WorkspacesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3498,6 +3830,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesGetParams"></a>
 
 `WorkspacesGetParams(*args, **kwargs)`
 :   Parameters for workspaces.get operation
@@ -3511,6 +3845,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="WorkspacesGtCondition"></a>
+
 `WorkspacesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3523,6 +3859,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.monday.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesGteCondition"></a>
+
 `WorkspacesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3534,6 +3872,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.monday.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesInCondition"></a>
 
 `WorkspacesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3554,6 +3894,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.monday.types.WorkspacesInFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesInFilter"></a>
 
 `WorkspacesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3600,6 +3942,8 @@ Classes
     `users_subscribers: list[list[typing.Any]]`
     :   User subscribers
 
+<a id="WorkspacesKeywordCondition"></a>
+
 `WorkspacesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3611,6 +3955,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesLikeCondition"></a>
 
 `WorkspacesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3624,12 +3970,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesListParams"></a>
+
 `WorkspacesListParams(*args, **kwargs)`
 :   Parameters for workspaces.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="WorkspacesLtCondition"></a>
 
 `WorkspacesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3643,6 +3993,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.monday.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesLteCondition"></a>
+
 `WorkspacesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3655,6 +4007,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.monday.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesNeqCondition"></a>
+
 `WorkspacesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3666,6 +4020,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.monday.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesNotCondition"></a>
 
 `WorkspacesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3687,6 +4043,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
+<a id="WorkspacesOrCondition"></a>
+
 `WorkspacesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3706,6 +4064,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="WorkspacesSearchFilter"></a>
 
 `WorkspacesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering workspaces search queries.
@@ -3752,6 +4112,8 @@ Classes
     `users_subscribers: list[typing.Any] | None`
     :   User subscribers
 
+<a id="WorkspacesSearchQuery"></a>
+
 `WorkspacesSearchQuery(*args, **kwargs)`
 :   Search query for workspaces entity.
 
@@ -3766,6 +4128,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesSortFilter]`
     :   The type of the None singleton.
+
+<a id="WorkspacesSortFilter"></a>
 
 `WorkspacesSortFilter(*args, **kwargs)`
 :   Available fields for sorting workspaces search results.
@@ -3811,6 +4175,8 @@ Classes
 
     `users_subscribers: Literal['asc', 'desc']`
     :   User subscribers
+
+<a id="WorkspacesStringFilter"></a>
 
 `WorkspacesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AbandonedCheckout"></a>
+
 `AbandonedCheckout(**data: Any)`
 :   An abandoned checkout
     
@@ -167,6 +169,8 @@ Classes
     `user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AbandonedCheckoutList"></a>
+
 `AbandonedCheckoutList(**data: Any)`
 :   AbandonedCheckoutList type definition
     
@@ -188,6 +192,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AbandonedCheckoutsListResultMeta"></a>
 
 `AbandonedCheckoutsListResultMeta(**data: Any)`
 :   Metadata for abandoned_checkouts.Action.LIST operation
@@ -211,6 +217,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AbandonedCheckoutsSearchData"></a>
+
 `AbandonedCheckoutsSearchData(**data: Any)`
 :   Search result data for abandoned_checkouts entity.
     
@@ -229,6 +237,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
 
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
@@ -257,6 +267,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -336,6 +348,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AbandonedCheckoutsSearchResult"></a>
+
 `AbandonedCheckoutsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -372,6 +386,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CollectsSearchResult"></a>
 
 `CollectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -410,6 +426,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CountriesSearchResult"></a>
+
 `CountriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -446,6 +464,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomCollectionsSearchResult"></a>
 
 `CustomCollectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -484,6 +504,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersSearchResult"></a>
+
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -520,6 +542,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DiscountCodesSearchResult"></a>
 
 `DiscountCodesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -558,6 +582,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DraftOrdersSearchResult"></a>
+
 `DraftOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -594,6 +620,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FulfillmentOrdersSearchResult"></a>
 
 `FulfillmentOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -632,6 +660,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FulfillmentsSearchResult"></a>
+
 `FulfillmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -668,6 +698,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryItemsSearchResult"></a>
 
 `InventoryItemsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -706,6 +738,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InventoryLevelsSearchResult"></a>
+
 `InventoryLevelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -742,6 +776,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LocationsSearchResult"></a>
 
 `LocationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -780,6 +816,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldCustomersSearchResult"></a>
+
 `MetafieldCustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -816,6 +854,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldDraftOrdersSearchResult"></a>
 
 `MetafieldDraftOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -854,6 +894,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldLocationsSearchResult"></a>
+
 `MetafieldLocationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -890,6 +932,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldOrdersSearchResult"></a>
 
 `MetafieldOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -928,6 +972,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldProductImagesSearchResult"></a>
+
 `MetafieldProductImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -964,6 +1010,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductVariantsSearchResult"></a>
 
 `MetafieldProductVariantsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1002,6 +1050,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldProductsSearchResult"></a>
+
 `MetafieldProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1038,6 +1088,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldShopsSearchResult"></a>
 
 `MetafieldShopsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1076,6 +1128,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldSmartCollectionsSearchResult"></a>
+
 `MetafieldSmartCollectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1112,6 +1166,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderRefundsSearchResult"></a>
 
 `OrderRefundsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1150,6 +1206,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PriceRulesSearchResult"></a>
+
 `PriceRulesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1186,6 +1244,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductImagesSearchResult"></a>
 
 `ProductImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1224,6 +1284,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductVariantsSearchResult"></a>
+
 `ProductVariantsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1260,6 +1322,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShopSearchResult"></a>
 
 `ShopSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1298,6 +1362,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SmartCollectionsSearchResult"></a>
+
 `SmartCollectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1335,6 +1401,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TenderTransactionsSearchResult"></a>
+
 `TenderTransactionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1350,6 +1418,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Collect"></a>
 
 `Collect(**data: Any)`
 :   A collect (product-collection link)
@@ -1391,6 +1461,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CollectList"></a>
+
 `CollectList(**data: Any)`
 :   CollectList type definition
     
@@ -1412,6 +1484,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CollectsListResultMeta"></a>
 
 `CollectsListResultMeta(**data: Any)`
 :   Metadata for collects.Action.LIST operation
@@ -1435,6 +1509,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CollectsSearchData"></a>
+
 `CollectsSearchData(**data: Any)`
 :   Search result data for collects entity.
     
@@ -1453,6 +1529,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CountriesListResultMeta"></a>
 
 `CountriesListResultMeta(**data: Any)`
 :   Metadata for countries.Action.LIST operation
@@ -1476,6 +1554,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CountriesSearchData"></a>
+
 `CountriesSearchData(**data: Any)`
 :   Search result data for countries entity.
     
@@ -1494,6 +1574,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Country"></a>
 
 `Country(**data: Any)`
 :   A country
@@ -1532,6 +1614,8 @@ Classes
     `tax_name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CountryList"></a>
+
 `CountryList(**data: Any)`
 :   CountryList type definition
     
@@ -1553,6 +1637,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomCollection"></a>
 
 `CustomCollection(**data: Any)`
 :   A custom collection
@@ -1609,6 +1695,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomCollectionList"></a>
+
 `CustomCollectionList(**data: Any)`
 :   CustomCollectionList type definition
     
@@ -1630,6 +1718,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomCollectionsListResultMeta"></a>
 
 `CustomCollectionsListResultMeta(**data: Any)`
 :   Metadata for custom_collections.Action.LIST operation
@@ -1653,6 +1743,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomCollectionsSearchData"></a>
+
 `CustomCollectionsSearchData(**data: Any)`
 :   Search result data for custom_collections entity.
     
@@ -1671,6 +1763,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Customer"></a>
 
 `Customer(**data: Any)`
 :   A Shopify customer
@@ -1772,6 +1866,8 @@ Classes
     `verified_email: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomerAddress"></a>
+
 `CustomerAddress(**data: Any)`
 :   A customer address
     
@@ -1842,6 +1938,8 @@ Classes
     `zip: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomerAddressList"></a>
+
 `CustomerAddressList(**data: Any)`
 :   CustomerAddressList type definition
     
@@ -1863,6 +1961,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomerAddressListResultMeta"></a>
 
 `CustomerAddressListResultMeta(**data: Any)`
 :   Metadata for customer_address.Action.LIST operation
@@ -1886,6 +1986,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomerList"></a>
+
 `CustomerList(**data: Any)`
 :   CustomerList type definition
     
@@ -1907,6 +2009,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomersListResultMeta"></a>
 
 `CustomersListResultMeta(**data: Any)`
 :   Metadata for customers.Action.LIST operation
@@ -1930,6 +2034,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomersSearchData"></a>
+
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
     
@@ -1948,6 +2054,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DiscountCode"></a>
 
 `DiscountCode(**data: Any)`
 :   A discount code
@@ -1986,6 +2094,8 @@ Classes
     `usage_count: int | Any | None`
     :   The type of the None singleton.
 
+<a id="DiscountCodeList"></a>
+
 `DiscountCodeList(**data: Any)`
 :   DiscountCodeList type definition
     
@@ -2007,6 +2117,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DiscountCodesListResultMeta"></a>
 
 `DiscountCodesListResultMeta(**data: Any)`
 :   Metadata for discount_codes.Action.LIST operation
@@ -2030,6 +2142,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DiscountCodesSearchData"></a>
+
 `DiscountCodesSearchData(**data: Any)`
 :   Search result data for discount_codes entity.
     
@@ -2048,6 +2162,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DraftOrder"></a>
 
 `DraftOrder(**data: Any)`
 :   A draft order
@@ -2164,6 +2280,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DraftOrderList"></a>
+
 `DraftOrderList(**data: Any)`
 :   DraftOrderList type definition
     
@@ -2185,6 +2303,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DraftOrdersListResultMeta"></a>
 
 `DraftOrdersListResultMeta(**data: Any)`
 :   Metadata for draft_orders.Action.LIST operation
@@ -2208,6 +2328,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DraftOrdersSearchData"></a>
+
 `DraftOrdersSearchData(**data: Any)`
 :   Search result data for draft_orders entity.
     
@@ -2226,6 +2348,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Fulfillment"></a>
 
 `Fulfillment(**data: Any)`
 :   A fulfillment
@@ -2300,6 +2424,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FulfillmentList"></a>
+
 `FulfillmentList(**data: Any)`
 :   FulfillmentList type definition
     
@@ -2321,6 +2447,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FulfillmentOrder"></a>
 
 `FulfillmentOrder(**data: Any)`
 :   A fulfillment order
@@ -2395,6 +2523,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FulfillmentOrderList"></a>
+
 `FulfillmentOrderList(**data: Any)`
 :   FulfillmentOrderList type definition
     
@@ -2416,6 +2546,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FulfillmentOrdersListResultMeta"></a>
 
 `FulfillmentOrdersListResultMeta(**data: Any)`
 :   Metadata for fulfillment_orders.Action.LIST operation
@@ -2439,6 +2571,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FulfillmentOrdersSearchData"></a>
+
 `FulfillmentOrdersSearchData(**data: Any)`
 :   Search result data for fulfillment_orders entity.
     
@@ -2457,6 +2591,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FulfillmentsListResultMeta"></a>
 
 `FulfillmentsListResultMeta(**data: Any)`
 :   Metadata for fulfillments.Action.LIST operation
@@ -2480,6 +2616,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FulfillmentsSearchData"></a>
+
 `FulfillmentsSearchData(**data: Any)`
 :   Search result data for fulfillments entity.
     
@@ -2498,6 +2636,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryItem"></a>
 
 `InventoryItem(**data: Any)`
 :   An inventory item
@@ -2554,6 +2694,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InventoryItemList"></a>
+
 `InventoryItemList(**data: Any)`
 :   InventoryItemList type definition
     
@@ -2575,6 +2717,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryItemsListResultMeta"></a>
 
 `InventoryItemsListResultMeta(**data: Any)`
 :   Metadata for inventory_items.Action.LIST operation
@@ -2598,6 +2742,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InventoryItemsSearchData"></a>
+
 `InventoryItemsSearchData(**data: Any)`
 :   Search result data for inventory_items entity.
     
@@ -2616,6 +2762,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryLevel"></a>
 
 `InventoryLevel(**data: Any)`
 :   An inventory level
@@ -2651,6 +2799,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InventoryLevelList"></a>
+
 `InventoryLevelList(**data: Any)`
 :   InventoryLevelList type definition
     
@@ -2672,6 +2822,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryLevelsListResultMeta"></a>
 
 `InventoryLevelsListResultMeta(**data: Any)`
 :   Metadata for inventory_levels.Action.LIST operation
@@ -2695,6 +2847,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InventoryLevelsSearchData"></a>
+
 `InventoryLevelsSearchData(**data: Any)`
 :   Search result data for inventory_levels entity.
     
@@ -2713,6 +2867,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LineItem"></a>
 
 `LineItem(**data: Any)`
 :   LineItem type definition
@@ -2820,6 +2976,8 @@ Classes
     `vendor: str | Any | None`
     :   The type of the None singleton.
 
+<a id="Location"></a>
+
 `Location(**data: Any)`
 :   A store location
     
@@ -2896,6 +3054,8 @@ Classes
     `zip: str | Any | None`
     :   The type of the None singleton.
 
+<a id="LocationList"></a>
+
 `LocationList(**data: Any)`
 :   LocationList type definition
     
@@ -2917,6 +3077,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LocationsListResultMeta"></a>
 
 `LocationsListResultMeta(**data: Any)`
 :   Metadata for locations.Action.LIST operation
@@ -2940,6 +3102,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="LocationsSearchData"></a>
+
 `LocationsSearchData(**data: Any)`
 :   Search result data for locations entity.
     
@@ -2958,6 +3122,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MarketingConsent"></a>
 
 `MarketingConsent(**data: Any)`
 :   MarketingConsent type definition
@@ -2989,6 +3155,8 @@ Classes
 
     `state: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Metafield"></a>
 
 `Metafield(**data: Any)`
 :   A metafield
@@ -3042,6 +3210,8 @@ Classes
     `value: Any`
     :   The type of the None singleton.
 
+<a id="MetafieldCustomersListResultMeta"></a>
+
 `MetafieldCustomersListResultMeta(**data: Any)`
 :   Metadata for metafield_customers.Action.LIST operation
     
@@ -3064,6 +3234,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldCustomersSearchData"></a>
+
 `MetafieldCustomersSearchData(**data: Any)`
 :   Search result data for metafield_customers entity.
     
@@ -3082,6 +3254,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldDraftOrdersListResultMeta"></a>
 
 `MetafieldDraftOrdersListResultMeta(**data: Any)`
 :   Metadata for metafield_draft_orders.Action.LIST operation
@@ -3105,6 +3279,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldDraftOrdersSearchData"></a>
+
 `MetafieldDraftOrdersSearchData(**data: Any)`
 :   Search result data for metafield_draft_orders entity.
     
@@ -3123,6 +3299,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldList"></a>
 
 `MetafieldList(**data: Any)`
 :   MetafieldList type definition
@@ -3146,6 +3324,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldLocationsListResultMeta"></a>
+
 `MetafieldLocationsListResultMeta(**data: Any)`
 :   Metadata for metafield_locations.Action.LIST operation
     
@@ -3168,6 +3348,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldLocationsSearchData"></a>
+
 `MetafieldLocationsSearchData(**data: Any)`
 :   Search result data for metafield_locations entity.
     
@@ -3186,6 +3368,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldOrdersListResultMeta"></a>
 
 `MetafieldOrdersListResultMeta(**data: Any)`
 :   Metadata for metafield_orders.Action.LIST operation
@@ -3209,6 +3393,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldOrdersSearchData"></a>
+
 `MetafieldOrdersSearchData(**data: Any)`
 :   Search result data for metafield_orders entity.
     
@@ -3227,6 +3413,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductImagesListResultMeta"></a>
 
 `MetafieldProductImagesListResultMeta(**data: Any)`
 :   Metadata for metafield_product_images.Action.LIST operation
@@ -3250,6 +3438,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldProductImagesSearchData"></a>
+
 `MetafieldProductImagesSearchData(**data: Any)`
 :   Search result data for metafield_product_images entity.
     
@@ -3268,6 +3458,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductVariantsListResultMeta"></a>
 
 `MetafieldProductVariantsListResultMeta(**data: Any)`
 :   Metadata for metafield_product_variants.Action.LIST operation
@@ -3291,6 +3483,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldProductVariantsSearchData"></a>
+
 `MetafieldProductVariantsSearchData(**data: Any)`
 :   Search result data for metafield_product_variants entity.
     
@@ -3309,6 +3503,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductsListResultMeta"></a>
 
 `MetafieldProductsListResultMeta(**data: Any)`
 :   Metadata for metafield_products.Action.LIST operation
@@ -3332,6 +3528,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldProductsSearchData"></a>
+
 `MetafieldProductsSearchData(**data: Any)`
 :   Search result data for metafield_products entity.
     
@@ -3350,6 +3548,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldShopsListResultMeta"></a>
 
 `MetafieldShopsListResultMeta(**data: Any)`
 :   Metadata for metafield_shops.Action.LIST operation
@@ -3373,6 +3573,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldShopsSearchData"></a>
+
 `MetafieldShopsSearchData(**data: Any)`
 :   Search result data for metafield_shops entity.
     
@@ -3391,6 +3593,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldSmartCollectionsListResultMeta"></a>
 
 `MetafieldSmartCollectionsListResultMeta(**data: Any)`
 :   Metadata for metafield_smart_collections.Action.LIST operation
@@ -3414,6 +3618,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetafieldSmartCollectionsSearchData"></a>
+
 `MetafieldSmartCollectionsSearchData(**data: Any)`
 :   Search result data for metafield_smart_collections entity.
     
@@ -3432,6 +3638,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Order"></a>
 
 `Order(**data: Any)`
 :   A Shopify order
@@ -3731,6 +3939,8 @@ Classes
     `user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="OrderAddress"></a>
+
 `OrderAddress(**data: Any)`
 :   An address in an order (shipping or billing) - does not have id field
     
@@ -3795,6 +4005,8 @@ Classes
     `zip: str | Any | None`
     :   The type of the None singleton.
 
+<a id="OrderList"></a>
+
 `OrderList(**data: Any)`
 :   OrderList type definition
     
@@ -3816,6 +4028,8 @@ Classes
 
     `orders: list[airbyte_agent_sdk.connectors.shopify.models.Order] | Any`
     :   The type of the None singleton.
+
+<a id="OrderRefundsListResultMeta"></a>
 
 `OrderRefundsListResultMeta(**data: Any)`
 :   Metadata for order_refunds.Action.LIST operation
@@ -3839,6 +4053,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="OrderRefundsSearchData"></a>
+
 `OrderRefundsSearchData(**data: Any)`
 :   Search result data for order_refunds entity.
     
@@ -3857,6 +4073,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrdersListResultMeta"></a>
 
 `OrdersListResultMeta(**data: Any)`
 :   Metadata for orders.Action.LIST operation
@@ -3879,6 +4097,8 @@ Classes
 
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PriceRule"></a>
 
 `PriceRule(**data: Any)`
 :   A price rule
@@ -3989,6 +4209,8 @@ Classes
     `value_type: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PriceRuleList"></a>
+
 `PriceRuleList(**data: Any)`
 :   PriceRuleList type definition
     
@@ -4010,6 +4232,8 @@ Classes
 
     `price_rules: list[airbyte_agent_sdk.connectors.shopify.models.PriceRule] | Any`
     :   The type of the None singleton.
+
+<a id="PriceRulesListResultMeta"></a>
 
 `PriceRulesListResultMeta(**data: Any)`
 :   Metadata for price_rules.Action.LIST operation
@@ -4033,6 +4257,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PriceRulesSearchData"></a>
+
 `PriceRulesSearchData(**data: Any)`
 :   Search result data for price_rules entity.
     
@@ -4051,6 +4277,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Product"></a>
 
 `Product(**data: Any)`
 :   A Shopify product
@@ -4125,6 +4353,8 @@ Classes
     `vendor: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProductImage"></a>
+
 `ProductImage(**data: Any)`
 :   A product image
     
@@ -4177,6 +4407,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ProductImageList"></a>
+
 `ProductImageList(**data: Any)`
 :   ProductImageList type definition
     
@@ -4198,6 +4430,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductImagesListResultMeta"></a>
 
 `ProductImagesListResultMeta(**data: Any)`
 :   Metadata for product_images.Action.LIST operation
@@ -4221,6 +4455,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProductImagesSearchData"></a>
+
 `ProductImagesSearchData(**data: Any)`
 :   Search result data for product_images entity.
     
@@ -4239,6 +4475,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductList"></a>
 
 `ProductList(**data: Any)`
 :   ProductList type definition
@@ -4261,6 +4499,8 @@ Classes
 
     `products: list[airbyte_agent_sdk.connectors.shopify.models.Product] | Any`
     :   The type of the None singleton.
+
+<a id="ProductVariant"></a>
 
 `ProductVariant(**data: Any)`
 :   A product variant
@@ -4359,6 +4599,8 @@ Classes
     `weight_unit: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProductVariantList"></a>
+
 `ProductVariantList(**data: Any)`
 :   ProductVariantList type definition
     
@@ -4380,6 +4622,8 @@ Classes
 
     `variants: list[airbyte_agent_sdk.connectors.shopify.models.ProductVariant] | Any`
     :   The type of the None singleton.
+
+<a id="ProductVariantsListResultMeta"></a>
 
 `ProductVariantsListResultMeta(**data: Any)`
 :   Metadata for product_variants.Action.LIST operation
@@ -4403,6 +4647,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProductVariantsSearchData"></a>
+
 `ProductVariantsSearchData(**data: Any)`
 :   Search result data for product_variants entity.
     
@@ -4421,6 +4667,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductsListResultMeta"></a>
 
 `ProductsListResultMeta(**data: Any)`
 :   Metadata for products.Action.LIST operation
@@ -4443,6 +4691,8 @@ Classes
 
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Refund"></a>
 
 `Refund(**data: Any)`
 :   An order refund
@@ -4508,6 +4758,8 @@ Classes
     `user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="RefundList"></a>
+
 `RefundList(**data: Any)`
 :   RefundList type definition
     
@@ -4529,6 +4781,8 @@ Classes
 
     `refunds: list[airbyte_agent_sdk.connectors.shopify.models.Refund] | Any`
     :   The type of the None singleton.
+
+<a id="Shop"></a>
 
 `Shop(**data: Any)`
 :   Shop configuration
@@ -4711,6 +4965,8 @@ Classes
     `zip: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ShopSearchData"></a>
+
 `ShopSearchData(**data: Any)`
 :   Search result data for shop entity.
     
@@ -4729,6 +4985,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShopifyAuthConfig"></a>
 
 `ShopifyAuthConfig(**data: Any)`
 :   Access Token Authentication
@@ -4751,6 +5009,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShopifyCheckResult"></a>
 
 `ShopifyCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -4785,6 +5045,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="ShopifyExecuteResult"></a>
+
 `ShopifyExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -4813,6 +5075,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShopifyExecuteResultWithMeta"></a>
 
 `ShopifyExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4895,6 +5159,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AbandonedCheckoutsListResult"></a>
+
 `AbandonedCheckoutsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4937,6 +5203,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CollectsListResult"></a>
 
 `CollectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4981,6 +5249,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CountriesListResult"></a>
+
 `CountriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5023,6 +5293,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomCollectionsListResult"></a>
 
 `CustomCollectionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5067,6 +5339,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerAddressListResult"></a>
+
 `CustomerAddressListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5109,6 +5383,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomersListResult"></a>
 
 `CustomersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5153,6 +5429,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DiscountCodesListResult"></a>
+
 `DiscountCodesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5195,6 +5473,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DraftOrdersListResult"></a>
 
 `DraftOrdersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5239,6 +5519,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FulfillmentOrdersListResult"></a>
+
 `FulfillmentOrdersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5281,6 +5563,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FulfillmentsListResult"></a>
 
 `FulfillmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5325,6 +5609,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InventoryItemsListResult"></a>
+
 `InventoryItemsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5367,6 +5653,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryLevelsListResult"></a>
 
 `InventoryLevelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5411,6 +5699,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LocationsListResult"></a>
+
 `LocationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5453,6 +5743,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldCustomersListResult"></a>
 
 `MetafieldCustomersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5497,6 +5789,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldDraftOrdersListResult"></a>
+
 `MetafieldDraftOrdersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5539,6 +5833,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldLocationsListResult"></a>
 
 `MetafieldLocationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5583,6 +5879,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldOrdersListResult"></a>
+
 `MetafieldOrdersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5625,6 +5923,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductImagesListResult"></a>
 
 `MetafieldProductImagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5669,6 +5969,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldProductVariantsListResult"></a>
+
 `MetafieldProductVariantsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5711,6 +6013,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductsListResult"></a>
 
 `MetafieldProductsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5755,6 +6059,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldShopsListResult"></a>
+
 `MetafieldShopsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5797,6 +6103,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldSmartCollectionsListResult"></a>
 
 `MetafieldSmartCollectionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5841,6 +6149,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrdersListResult"></a>
+
 `OrdersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5883,6 +6193,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PriceRulesListResult"></a>
 
 `PriceRulesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -5927,6 +6239,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductImagesListResult"></a>
+
 `ProductImagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -5969,6 +6283,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductVariantsListResult"></a>
 
 `ProductVariantsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -6013,6 +6329,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductsListResult"></a>
+
 `ProductsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -6055,6 +6373,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderRefundsListResult"></a>
 
 `OrderRefundsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -6099,6 +6419,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SmartCollectionsListResult"></a>
+
 `SmartCollectionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -6141,6 +6463,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TenderTransactionsListResult"></a>
 
 `TenderTransactionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -6185,6 +6509,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TransactionsListResult"></a>
+
 `TransactionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -6203,6 +6529,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SmartCollection"></a>
 
 `SmartCollection(**data: Any)`
 :   A smart collection
@@ -6265,6 +6593,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SmartCollectionList"></a>
+
 `SmartCollectionList(**data: Any)`
 :   SmartCollectionList type definition
     
@@ -6286,6 +6616,8 @@ Classes
 
     `smart_collections: list[airbyte_agent_sdk.connectors.shopify.models.SmartCollection] | Any`
     :   The type of the None singleton.
+
+<a id="SmartCollectionsListResultMeta"></a>
 
 `SmartCollectionsListResultMeta(**data: Any)`
 :   Metadata for smart_collections.Action.LIST operation
@@ -6309,6 +6641,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SmartCollectionsSearchData"></a>
+
 `SmartCollectionsSearchData(**data: Any)`
 :   Search result data for smart_collections entity.
     
@@ -6327,6 +6661,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TenderTransaction"></a>
 
 `TenderTransaction(**data: Any)`
 :   A tender transaction
@@ -6377,6 +6713,8 @@ Classes
     `user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="TenderTransactionList"></a>
+
 `TenderTransactionList(**data: Any)`
 :   TenderTransactionList type definition
     
@@ -6398,6 +6736,8 @@ Classes
 
     `tender_transactions: list[airbyte_agent_sdk.connectors.shopify.models.TenderTransaction] | Any`
     :   The type of the None singleton.
+
+<a id="TenderTransactionsListResultMeta"></a>
 
 `TenderTransactionsListResultMeta(**data: Any)`
 :   Metadata for tender_transactions.Action.LIST operation
@@ -6421,6 +6761,8 @@ Classes
     `next_page_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TenderTransactionsSearchData"></a>
+
 `TenderTransactionsSearchData(**data: Any)`
 :   Search result data for tender_transactions entity.
     
@@ -6439,6 +6781,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Transaction"></a>
 
 `Transaction(**data: Any)`
 :   An order transaction
@@ -6531,6 +6875,8 @@ Classes
     `user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="TransactionList"></a>
+
 `TransactionList(**data: Any)`
 :   TransactionList type definition
     
@@ -6552,6 +6898,8 @@ Classes
 
     `transactions: list[airbyte_agent_sdk.connectors.shopify.models.Transaction] | Any`
     :   The type of the None singleton.
+
+<a id="TransactionsListResultMeta"></a>
 
 `TransactionsListResultMeta(**data: Any)`
 :   Metadata for transactions.Action.LIST operation

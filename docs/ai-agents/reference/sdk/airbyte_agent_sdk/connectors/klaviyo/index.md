@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -151,6 +157,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -166,6 +174,8 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EmailTemplatesSearchResult"></a>
 
 `EmailTemplatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -183,6 +193,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="EventsSearchResult"></a>
+
 `EventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -198,6 +210,8 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="FlowsSearchResult"></a>
 
 `FlowsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -215,6 +229,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ListsSearchResult"></a>
+
 `ListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -230,6 +246,8 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MetricsSearchResult"></a>
 
 `MetricsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -247,6 +265,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProfilesSearchResult"></a>
+
 `ProfilesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -262,6 +282,8 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -300,6 +322,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="EmailTemplatesSearchData"></a>
+
 `EmailTemplatesSearchData(**data: Any)`
 :   Search result data for email_templates entity.
     
@@ -333,6 +357,8 @@ Classes
 
     `updated: str | None`
     :   The type of the None singleton.
+
+<a id="EventsSearchData"></a>
 
 `EventsSearchData(**data: Any)`
 :   Search result data for events entity.
@@ -371,6 +397,8 @@ Classes
     `type_: str | None`
     :   The type of the None singleton.
 
+<a id="FlowsSearchData"></a>
+
 `FlowsSearchData(**data: Any)`
 :   Search result data for flows entity.
     
@@ -408,6 +436,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="KlaviyoAuthConfig"></a>
+
 `KlaviyoAuthConfig(**data: Any)`
 :   Authentication
     
@@ -429,6 +459,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="KlaviyoConnector"></a>
 
 `KlaviyoConnector(auth_config: KlaviyoAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Klaviyo API connector.
@@ -618,6 +650,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ListsSearchData"></a>
+
 `ListsSearchData(**data: Any)`
 :   Search result data for lists entity.
     
@@ -655,6 +689,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="MetricsSearchData"></a>
+
 `MetricsSearchData(**data: Any)`
 :   Search result data for metrics entity.
     
@@ -691,6 +727,8 @@ Classes
 
     `updated: str | None`
     :   The type of the None singleton.
+
+<a id="ProfilesSearchData"></a>
 
 `ProfilesSearchData(**data: Any)`
 :   Search result data for profiles entity.

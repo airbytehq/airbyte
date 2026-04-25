@@ -10,6 +10,8 @@ Asana connector.
 Classes
 -------
 
+<a id="AsanaConnector"></a>
+
 `AsanaConnector(auth_config: AsanaAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Asana API connector.
     
@@ -252,6 +254,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="AttachmentsQuery"></a>
+
 `AttachmentsQuery(connector: AsanaConnector)`
 :   Query class for Attachments entity operations.
     
@@ -342,6 +346,8 @@ Classes
         Returns:
             AttachmentsListResult
 
+<a id="ProjectSectionsQuery"></a>
+
 `ProjectSectionsQuery(connector: AsanaConnector)`
 :   Query class for ProjectSections entity operations.
     
@@ -373,6 +379,8 @@ Classes
         Returns:
             ProjectSectionsListResult
 
+<a id="ProjectTasksQuery"></a>
+
 `ProjectTasksQuery(connector: AsanaConnector)`
 :   Query class for ProjectTasks entity operations.
     
@@ -392,6 +400,8 @@ Classes
         
         Returns:
             ProjectTasksListResult
+
+<a id="ProjectsQuery"></a>
 
 `ProjectsQuery(connector: AsanaConnector)`
 :   Query class for Projects entity operations.
@@ -508,6 +518,8 @@ Classes
                 Returns:
                     Project
 
+<a id="SectionTasksQuery"></a>
+
 `SectionTasksQuery(connector: AsanaConnector)`
 :   Query class for SectionTasks entity operations.
     
@@ -541,6 +553,8 @@ Classes
         
         Returns:
             SectionTasksListResult
+
+<a id="SectionsQuery"></a>
 
 `SectionsQuery(connector: AsanaConnector)`
 :   Query class for Sections entity operations.
@@ -613,6 +627,8 @@ Classes
                 Returns:
                     Section
 
+<a id="TagTasksQuery"></a>
+
 `TagTasksQuery(connector: AsanaConnector)`
 :   Query class for TagTasks entity operations.
     
@@ -633,6 +649,8 @@ Classes
         
                 Returns:
                     TagTasksListResult
+
+<a id="TagsQuery"></a>
 
 `TagsQuery(connector: AsanaConnector)`
 :   Query class for Tags entity operations.
@@ -706,6 +724,8 @@ Classes
                 Returns:
                     Tag
 
+<a id="TaskDependenciesQuery"></a>
+
 `TaskDependenciesQuery(connector: AsanaConnector)`
 :   Query class for TaskDependencies entity operations.
     
@@ -724,6 +744,8 @@ Classes
         
         Returns:
             TaskDependenciesListResult
+
+<a id="TaskDependentsQuery"></a>
 
 `TaskDependentsQuery(connector: AsanaConnector)`
 :   Query class for TaskDependents entity operations.
@@ -744,6 +766,8 @@ Classes
         Returns:
             TaskDependentsListResult
 
+<a id="TaskProjectsQuery"></a>
+
 `TaskProjectsQuery(connector: AsanaConnector)`
 :   Query class for TaskProjects entity operations.
     
@@ -762,6 +786,8 @@ Classes
         
         Returns:
             TaskProjectsListResult
+
+<a id="TaskStoriesQuery"></a>
 
 `TaskStoriesQuery(connector: AsanaConnector)`
 :   Query class for TaskStories entity operations.
@@ -783,6 +809,8 @@ Classes
                 Returns:
                     Story
 
+<a id="TaskSubtasksQuery"></a>
+
 `TaskSubtasksQuery(connector: AsanaConnector)`
 :   Query class for TaskSubtasks entity operations.
     
@@ -801,6 +829,8 @@ Classes
         
         Returns:
             TaskSubtasksListResult
+
+<a id="TaskTagsQuery"></a>
 
 `TaskTagsQuery(connector: AsanaConnector)`
 :   Query class for TaskTags entity operations.
@@ -832,6 +862,8 @@ Classes
         
         Returns:
             dict[str, Any]
+
+<a id="TasksQuery"></a>
 
 `TasksQuery(connector: AsanaConnector)`
 :   Query class for Tasks entity operations.
@@ -965,6 +997,8 @@ Classes
                 Returns:
                     Task
 
+<a id="TeamProjectsQuery"></a>
+
 `TeamProjectsQuery(connector: AsanaConnector)`
 :   Query class for TeamProjects entity operations.
     
@@ -985,6 +1019,8 @@ Classes
         Returns:
             TeamProjectsListResult
 
+<a id="TeamUsersQuery"></a>
+
 `TeamUsersQuery(connector: AsanaConnector)`
 :   Query class for TeamUsers entity operations.
     
@@ -1003,6 +1039,8 @@ Classes
         
         Returns:
             TeamUsersListResult
+
+<a id="TeamsQuery"></a>
 
 `TeamsQuery(connector: AsanaConnector)`
 :   Query class for Teams entity operations.
@@ -1050,6 +1088,8 @@ Classes
         Returns:
             Team
 
+<a id="UserTeamsQuery"></a>
+
 `UserTeamsQuery(connector: AsanaConnector)`
 :   Query class for UserTeams entity operations.
     
@@ -1069,6 +1109,8 @@ Classes
         
         Returns:
             UserTeamsListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: AsanaConnector)`
 :   Query class for Users entity operations.
@@ -1128,6 +1170,8 @@ Classes
         Returns:
             UsersListResult
 
+<a id="WorkspaceMembershipsQuery"></a>
+
 `WorkspaceMembershipsQuery(connector: AsanaConnector)`
 :   Query class for WorkspaceMemberships entity operations.
     
@@ -1149,6 +1193,8 @@ Classes
                 Returns:
                     User
 
+<a id="WorkspaceProjectsQuery"></a>
+
 `WorkspaceProjectsQuery(connector: AsanaConnector)`
 :   Query class for WorkspaceProjects entity operations.
     
@@ -1168,6 +1214,8 @@ Classes
         
         Returns:
             WorkspaceProjectsListResult
+
+<a id="WorkspaceTagsQuery"></a>
 
 `WorkspaceTagsQuery(connector: AsanaConnector)`
 :   Query class for WorkspaceTags entity operations.
@@ -1201,6 +1249,8 @@ Classes
         
         Returns:
             WorkspaceTagsListResult
+
+<a id="WorkspaceTaskSearchQuery"></a>
 
 `WorkspaceTaskSearchQuery(connector: AsanaConnector)`
 :   Query class for WorkspaceTaskSearch entity operations.
@@ -1240,6 +1290,8 @@ Classes
                 Returns:
                     WorkspaceTaskSearchListResult
 
+<a id="WorkspaceTeamsQuery"></a>
+
 `WorkspaceTeamsQuery(connector: AsanaConnector)`
 :   Query class for WorkspaceTeams entity operations.
     
@@ -1259,6 +1311,8 @@ Classes
         Returns:
             WorkspaceTeamsListResult
 
+<a id="WorkspaceUsersQuery"></a>
+
 `WorkspaceUsersQuery(connector: AsanaConnector)`
 :   Query class for WorkspaceUsers entity operations.
     
@@ -1277,6 +1331,8 @@ Classes
         
         Returns:
             WorkspaceUsersListResult
+
+<a id="WorkspacesQuery"></a>
 
 `WorkspacesQuery(connector: AsanaConnector)`
 :   Query class for Workspaces entity operations.

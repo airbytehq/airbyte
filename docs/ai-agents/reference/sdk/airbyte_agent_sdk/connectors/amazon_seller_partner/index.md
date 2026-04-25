@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListFinancialEventGroupsSearchResult"></a>
+
 `ListFinancialEventGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ListFinancialEventsSearchResult"></a>
 
 `ListFinancialEventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OrderItemsSearchResult"></a>
+
 `OrderItemsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OrdersSearchResult"></a>
+
 `OrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmazonSellerPartnerAuthConfig"></a>
 
 `AmazonSellerPartnerAuthConfig(**data: Any)`
 :   Login with Amazon OAuth 2.0
@@ -242,6 +258,8 @@ Classes
 
     `refresh_token: str`
     :   The Refresh Token obtained via the OAuth authorization flow.
+
+<a id="AmazonSellerPartnerConnector"></a>
 
 `AmazonSellerPartnerConnector(auth_config: AmazonSellerPartnerAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, region: str | None = None)`
 :   Type-safe Amazon-Seller-Partner API connector.
@@ -503,6 +521,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="AmazonSellerPartnerReplicationConfig"></a>
+
 `AmazonSellerPartnerReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Amazon Seller Partner.
     
@@ -524,6 +544,8 @@ Classes
 
     `replication_start_date: str`
     :   UTC date and time in ISO 8601 format (e.g. 2024-01-01T00:00:00Z). Any data before this date will not be replicated. This sets the earliest date for order creation and financial event queries. For most sellers, a start date of 1-2 years ago is a good default. Must include the time component and Z timezone suffix.
+
+<a id="ListFinancialEventGroupsSearchData"></a>
 
 `ListFinancialEventGroupsSearchData(**data: Any)`
 :   Search result data for list_financial_event_groups entity.
@@ -576,6 +598,8 @@ Classes
 
     `trace_id: str | None`
     :   Unique identifier for tracing
+
+<a id="ListFinancialEventsSearchData"></a>
 
 `ListFinancialEventsSearchData(**data: Any)`
 :   Search result data for list_financial_events entity.
@@ -700,6 +724,8 @@ Classes
 
     `value_added_service_charge_event_list: list[typing.Any] | None`
     :   List of value-added service charge events
+
+<a id="OrderItemsSearchData"></a>
 
 `OrderItemsSearchData(**data: Any)`
 :   Search result data for order_items entity.
@@ -830,6 +856,8 @@ Classes
 
     `title: str | None`
     :   Title of the product
+
+<a id="OrdersSearchData"></a>
 
 `OrdersSearchData(**data: Any)`
 :   Search result data for orders entity.

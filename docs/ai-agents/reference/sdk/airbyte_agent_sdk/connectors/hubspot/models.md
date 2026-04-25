@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -94,6 +98,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CompaniesSearchResult"></a>
+
 `CompaniesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -130,6 +136,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -168,6 +176,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DealsSearchResult"></a>
+
 `DealsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -183,6 +193,8 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CRMObject"></a>
 
 `CRMObject(**data: Any)`
 :   Generic HubSpot CRM object (for custom objects)
@@ -233,6 +245,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CRMObjectProperties"></a>
+
 `CRMObjectProperties(**data: Any)`
 :   Object properties
     
@@ -260,6 +274,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CompaniesApiSearchResultMeta"></a>
 
 `CompaniesApiSearchResultMeta(**data: Any)`
 :   Metadata for companies.Action.API_SEARCH operation
@@ -289,6 +305,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="CompaniesList"></a>
+
 `CompaniesList(**data: Any)`
 :   Paginated list of companies
     
@@ -317,6 +335,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="CompaniesListResultMeta"></a>
+
 `CompaniesListResultMeta(**data: Any)`
 :   Metadata for companies.Action.LIST operation
     
@@ -341,6 +361,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="CompaniesSearchData"></a>
 
 `CompaniesSearchData(**data: Any)`
 :   Search result data for companies entity.
@@ -378,6 +400,8 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
+
+<a id="Company"></a>
 
 `Company(**data: Any)`
 :   HubSpot company object
@@ -428,6 +452,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CompanyProperties"></a>
+
 `CompanyProperties(**data: Any)`
 :   Company properties
     
@@ -461,6 +487,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   HubSpot contact object
@@ -511,6 +539,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactProperties"></a>
+
 `ContactProperties(**data: Any)`
 :   Contact properties
     
@@ -548,6 +578,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ContactsApiSearchResultMeta"></a>
+
 `ContactsApiSearchResultMeta(**data: Any)`
 :   Metadata for contacts.Action.API_SEARCH operation
     
@@ -575,6 +607,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="ContactsList"></a>
 
 `ContactsList(**data: Any)`
 :   Paginated list of contacts
@@ -604,6 +638,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -628,6 +664,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -665,6 +703,8 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp indicating when the contact record was last modified.
+
+<a id="Deal"></a>
 
 `Deal(**data: Any)`
 :   HubSpot deal object
@@ -715,6 +755,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DealProperties"></a>
+
 `DealProperties(**data: Any)`
 :   Deal properties
     
@@ -758,6 +800,8 @@ Classes
     `pipeline: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DealsApiSearchResultMeta"></a>
+
 `DealsApiSearchResultMeta(**data: Any)`
 :   Metadata for deals.Action.API_SEARCH operation
     
@@ -785,6 +829,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="DealsList"></a>
 
 `DealsList(**data: Any)`
 :   Paginated list of deals
@@ -814,6 +860,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="DealsListResultMeta"></a>
+
 `DealsListResultMeta(**data: Any)`
 :   Metadata for deals.Action.LIST operation
     
@@ -838,6 +886,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="DealsSearchData"></a>
 
 `DealsSearchData(**data: Any)`
 :   Search result data for deals entity.
@@ -882,6 +932,8 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
 
+<a id="HubspotCheckResult"></a>
+
 `HubspotCheckResult(**data: Any)`
 :   Result of a health check operation.
     
@@ -915,6 +967,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="HubspotExecuteResult"></a>
+
 `HubspotExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -944,6 +998,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="HubspotExecuteResultWithMeta"></a>
 
 `HubspotExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1004,6 +1060,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ObjectsListResult"></a>
+
 `ObjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1046,6 +1104,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CompaniesApiSearchResult"></a>
 
 `CompaniesApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1090,6 +1150,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CompaniesListResult"></a>
+
 `CompaniesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1132,6 +1194,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsApiSearchResult"></a>
 
 `ContactsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1176,6 +1240,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ContactsListResult"></a>
+
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1218,6 +1284,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DealsApiSearchResult"></a>
 
 `DealsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1262,6 +1330,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DealsListResult"></a>
+
 `DealsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1304,6 +1374,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketsApiSearchResult"></a>
 
 `TicketsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1348,6 +1420,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketsListResult"></a>
+
 `TicketsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1390,6 +1464,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SchemasListResult"></a>
+
 `SchemasListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1407,6 +1483,8 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.HubspotExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="HubspotOAuthCredentials"></a>
 
 `HubspotOAuthCredentials(**data: Any)`
 :   HubSpot OAuth App Credentials - Provide your own HubSpot OAuth app credentials to override the default Airbyte-managed ones.
@@ -1432,6 +1510,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="HubspotOauth2AuthConfig"></a>
 
 `HubspotOauth2AuthConfig(**data: Any)`
 :   OAuth2
@@ -1464,6 +1544,8 @@ Classes
     `refresh_token: str`
     :   Your HubSpot OAuth2 Refresh Token
 
+<a id="HubspotPrivateAppAuthConfig"></a>
+
 `HubspotPrivateAppAuthConfig(**data: Any)`
 :   Private App
     
@@ -1485,6 +1567,8 @@ Classes
 
     `private_app_token: str`
     :   Access token from a HubSpot Private App
+
+<a id="ObjectsList"></a>
 
 `ObjectsList(**data: Any)`
 :   Paginated list of generic CRM objects
@@ -1511,6 +1595,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.hubspot.models.CRMObject] | Any`
     :   The type of the None singleton.
 
+<a id="ObjectsListResultMeta"></a>
+
 `ObjectsListResultMeta(**data: Any)`
 :   Metadata for objects.Action.LIST operation
     
@@ -1536,6 +1622,8 @@ Classes
     `next_link: str | Any`
     :   The type of the None singleton.
 
+<a id="Paging"></a>
+
 `Paging(**data: Any)`
 :   Pagination information
     
@@ -1557,6 +1645,8 @@ Classes
 
     `next: airbyte_agent_sdk.connectors.hubspot.models.PagingNext | Any`
     :   The type of the None singleton.
+
+<a id="PagingNext"></a>
 
 `PagingNext(**data: Any)`
 :   Nested schema for Paging.next
@@ -1582,6 +1672,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Schema"></a>
 
 `Schema(**data: Any)`
 :   Custom object schema definition
@@ -1662,6 +1754,8 @@ Classes
     `updated_by_user_id: int | Any`
     :   The type of the None singleton.
 
+<a id="SchemaAssociationsItem"></a>
+
 `SchemaAssociationsItem(**data: Any)`
 :   Nested schema for Schema.associations_item
     
@@ -1717,6 +1811,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SchemaLabels"></a>
+
 `SchemaLabels(**data: Any)`
 :   Display labels
     
@@ -1741,6 +1837,8 @@ Classes
 
     `singular: str | Any`
     :   The type of the None singleton.
+
+<a id="SchemaPropertiesItem"></a>
 
 `SchemaPropertiesItem(**data: Any)`
 :   Nested schema for Schema.properties_item
@@ -1827,6 +1925,8 @@ Classes
     `updated_user_id: str | Any`
     :   The type of the None singleton.
 
+<a id="SchemaPropertiesItemModificationmetadata"></a>
+
 `SchemaPropertiesItemModificationmetadata(**data: Any)`
 :   Nested schema for SchemaPropertiesItem.modificationMetadata
     
@@ -1858,6 +1958,8 @@ Classes
     `read_only_value: bool | Any`
     :   The type of the None singleton.
 
+<a id="SchemasList"></a>
+
 `SchemasList(**data: Any)`
 :   List of custom object schemas
     
@@ -1879,6 +1981,8 @@ Classes
 
     `results: list[airbyte_agent_sdk.connectors.hubspot.models.Schema] | Any`
     :   The type of the None singleton.
+
+<a id="Ticket"></a>
 
 `Ticket(**data: Any)`
 :   HubSpot ticket object
@@ -1929,6 +2033,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketProperties"></a>
+
 `TicketProperties(**data: Any)`
 :   Ticket properties
     
@@ -1975,6 +2081,8 @@ Classes
     `subject: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketsApiSearchResultMeta"></a>
+
 `TicketsApiSearchResultMeta(**data: Any)`
 :   Metadata for tickets.Action.API_SEARCH operation
     
@@ -2003,6 +2111,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="TicketsList"></a>
+
 `TicketsList(**data: Any)`
 :   Paginated list of tickets
     
@@ -2030,6 +2140,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="TicketsListResultMeta"></a>
 
 `TicketsListResultMeta(**data: Any)`
 :   Metadata for tickets.Action.LIST operation

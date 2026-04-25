@@ -10,6 +10,8 @@ Type definitions for google-drive connector.
 Classes
 -------
 
+<a id="AboutGetParams"></a>
+
 `AboutGetParams(*args, **kwargs)`
 :   Parameters for about.get operation
 
@@ -21,6 +23,8 @@ Classes
 
     `fields: str`
     :   The type of the None singleton.
+
+<a id="ChangesListParams"></a>
 
 `ChangesListParams(*args, **kwargs)`
 :   Parameters for changes.list operation
@@ -55,6 +59,8 @@ Classes
     `supports_all_drives: bool`
     :   The type of the None singleton.
 
+<a id="ChangesStartPageTokenGetParams"></a>
+
 `ChangesStartPageTokenGetParams(*args, **kwargs)`
 :   Parameters for changes_start_page_token.get operation
 
@@ -69,6 +75,8 @@ Classes
 
     `supports_all_drives: bool`
     :   The type of the None singleton.
+
+<a id="CommentsGetParams"></a>
 
 `CommentsGetParams(*args, **kwargs)`
 :   Parameters for comments.get operation
@@ -90,6 +98,8 @@ Classes
 
     `include_deleted: bool`
     :   The type of the None singleton.
+
+<a id="CommentsListParams"></a>
 
 `CommentsListParams(*args, **kwargs)`
 :   Parameters for comments.list operation
@@ -118,6 +128,8 @@ Classes
     `start_modified_time: str`
     :   The type of the None singleton.
 
+<a id="DrivesGetParams"></a>
+
 `DrivesGetParams(*args, **kwargs)`
 :   Parameters for drives.get operation
 
@@ -132,6 +144,8 @@ Classes
 
     `use_domain_admin_access: bool`
     :   The type of the None singleton.
+
+<a id="DrivesListParams"></a>
 
 `DrivesListParams(*args, **kwargs)`
 :   Parameters for drives.list operation
@@ -154,6 +168,8 @@ Classes
     `use_domain_admin_access: bool`
     :   The type of the None singleton.
 
+<a id="FilesCreateParams"></a>
+
 `FilesCreateParams(*args, **kwargs)`
 :   Parameters for files.create operation
 
@@ -175,6 +191,8 @@ Classes
     `parents: list[str]`
     :   The type of the None singleton.
 
+<a id="FilesDeleteParams"></a>
+
 `FilesDeleteParams(*args, **kwargs)`
 :   Parameters for files.delete operation
 
@@ -189,6 +207,8 @@ Classes
 
     `supports_all_drives: bool`
     :   The type of the None singleton.
+
+<a id="FilesDownloadParams"></a>
 
 `FilesDownloadParams(*args, **kwargs)`
 :   Parameters for files.download operation
@@ -214,6 +234,8 @@ Classes
     `supports_all_drives: bool`
     :   The type of the None singleton.
 
+<a id="FilesExportDownloadParams"></a>
+
 `FilesExportDownloadParams(*args, **kwargs)`
 :   Parameters for files_export.download operation
 
@@ -232,6 +254,8 @@ Classes
     `range_header: str`
     :   The type of the None singleton.
 
+<a id="FilesGetParams"></a>
+
 `FilesGetParams(*args, **kwargs)`
 :   Parameters for files.get operation
 
@@ -249,6 +273,8 @@ Classes
 
     `supports_all_drives: bool`
     :   The type of the None singleton.
+
+<a id="FilesListParams"></a>
 
 `FilesListParams(*args, **kwargs)`
 :   Parameters for files.list operation
@@ -289,6 +315,8 @@ Classes
     `supports_all_drives: bool`
     :   The type of the None singleton.
 
+<a id="FilesUpdateParams"></a>
+
 `FilesUpdateParams(*args, **kwargs)`
 :   Parameters for files.update operation
 
@@ -318,6 +346,8 @@ Classes
 
     `supports_all_drives: bool`
     :   The type of the None singleton.
+
+<a id="FilesUploadCreateParams"></a>
 
 `FilesUploadCreateParams(*args, **kwargs)`
 :   Parameters for files_upload.create operation
@@ -352,6 +382,8 @@ Classes
     `upload_type: str`
     :   The type of the None singleton.
 
+<a id="PermissionsGetParams"></a>
+
 `PermissionsGetParams(*args, **kwargs)`
 :   Parameters for permissions.get operation
 
@@ -372,6 +404,8 @@ Classes
 
     `use_domain_admin_access: bool`
     :   The type of the None singleton.
+
+<a id="PermissionsListParams"></a>
 
 `PermissionsListParams(*args, **kwargs)`
 :   Parameters for permissions.list operation
@@ -397,6 +431,8 @@ Classes
     `use_domain_admin_access: bool`
     :   The type of the None singleton.
 
+<a id="RepliesGetParams"></a>
+
 `RepliesGetParams(*args, **kwargs)`
 :   Parameters for replies.get operation
 
@@ -420,6 +456,8 @@ Classes
 
     `reply_id: str`
     :   The type of the None singleton.
+
+<a id="RepliesListParams"></a>
 
 `RepliesListParams(*args, **kwargs)`
 :   Parameters for replies.list operation
@@ -448,6 +486,8 @@ Classes
     `page_token: str`
     :   The type of the None singleton.
 
+<a id="RevisionsGetParams"></a>
+
 `RevisionsGetParams(*args, **kwargs)`
 :   Parameters for revisions.get operation
 
@@ -462,6 +502,8 @@ Classes
 
     `revision_id: str`
     :   The type of the None singleton.
+
+<a id="RevisionsListParams"></a>
 
 `RevisionsListParams(*args, **kwargs)`
 :   Parameters for revisions.list operation

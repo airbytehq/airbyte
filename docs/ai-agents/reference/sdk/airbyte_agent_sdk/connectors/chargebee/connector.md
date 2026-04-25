@@ -10,6 +10,8 @@ Chargebee connector.
 Classes
 -------
 
+<a id="ChargebeeConnector"></a>
+
 `ChargebeeConnector(auth_config: ChargebeeAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, site: str | None = None)`
 :   Type-safe Chargebee API connector.
     
@@ -210,6 +212,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="CouponQuery"></a>
+
 `CouponQuery(connector: ChargebeeConnector)`
 :   Query class for Coupon entity operations.
     
@@ -287,6 +291,8 @@ Classes
         
         Returns:
             CouponListResult
+
+<a id="CreditNoteQuery"></a>
 
 `CreditNoteQuery(connector: ChargebeeConnector)`
 :   Query class for CreditNote entity operations.
@@ -386,6 +392,8 @@ Classes
         
         Returns:
             CreditNoteListResult
+
+<a id="CustomerQuery"></a>
 
 `CustomerQuery(connector: ChargebeeConnector)`
 :   Query class for Customer entity operations.
@@ -500,6 +508,8 @@ Classes
         Returns:
             CustomerListResult
 
+<a id="EventQuery"></a>
+
 `EventQuery(connector: ChargebeeConnector)`
 :   Query class for Event entity operations.
     
@@ -560,6 +570,8 @@ Classes
         
         Returns:
             EventListResult
+
+<a id="InvoiceQuery"></a>
 
 `InvoiceQuery(connector: ChargebeeConnector)`
 :   Query class for Invoice entity operations.
@@ -680,6 +692,8 @@ Classes
         Returns:
             InvoiceListResult
 
+<a id="ItemPriceQuery"></a>
+
 `ItemPriceQuery(connector: ChargebeeConnector)`
 :   Query class for ItemPrice entity operations.
     
@@ -767,6 +781,8 @@ Classes
         Returns:
             ItemPriceListResult
 
+<a id="ItemQuery"></a>
+
 `ItemQuery(connector: ChargebeeConnector)`
 :   Query class for Item entity operations.
     
@@ -842,6 +858,8 @@ Classes
         
         Returns:
             ItemListResult
+
+<a id="OrderQuery"></a>
 
 `OrderQuery(connector: ChargebeeConnector)`
 :   Query class for Order entity operations.
@@ -953,6 +971,8 @@ Classes
         Returns:
             OrderListResult
 
+<a id="PaymentSourceQuery"></a>
+
 `PaymentSourceQuery(connector: ChargebeeConnector)`
 :   Query class for PaymentSource entity operations.
     
@@ -1024,6 +1044,8 @@ Classes
         
         Returns:
             PaymentSourceListResult
+
+<a id="SubscriptionQuery"></a>
 
 `SubscriptionQuery(connector: ChargebeeConnector)`
 :   Query class for Subscription entity operations.
@@ -1150,6 +1172,8 @@ Classes
         
         Returns:
             SubscriptionListResult
+
+<a id="TransactionQuery"></a>
 
 `TransactionQuery(connector: ChargebeeConnector)`
 :   Query class for Transaction entity operations.

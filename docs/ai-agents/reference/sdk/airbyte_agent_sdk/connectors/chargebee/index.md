@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -155,6 +161,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CouponSearchResult"></a>
+
 `CouponSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -170,6 +178,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CreditNoteSearchResult"></a>
 
 `CreditNoteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -187,6 +197,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CustomerSearchResult"></a>
+
 `CustomerSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -202,6 +214,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EventSearchResult"></a>
 
 `EventSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -219,6 +233,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="InvoiceSearchResult"></a>
+
 `InvoiceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -234,6 +250,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ItemPriceSearchResult"></a>
 
 `ItemPriceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -251,6 +269,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ItemSearchResult"></a>
+
 `ItemSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -266,6 +286,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OrderSearchResult"></a>
 
 `OrderSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -283,6 +305,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PaymentSourceSearchResult"></a>
+
 `PaymentSourceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -298,6 +322,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SubscriptionSearchResult"></a>
 
 `SubscriptionSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -315,6 +341,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TransactionSearchResult"></a>
+
 `TransactionSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -330,6 +358,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChargebeeAuthConfig"></a>
 
 `ChargebeeAuthConfig(**data: Any)`
 :   API Key Authentication
@@ -352,6 +382,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChargebeeConnector"></a>
 
 `ChargebeeConnector(auth_config: ChargebeeAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, site: str | None = None)`
 :   Type-safe Chargebee API connector.
@@ -553,6 +585,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ChargebeeReplicationConfig"></a>
+
 `ChargebeeReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Chargebee.
     
@@ -574,6 +608,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Data before this date is excluded.
+
+<a id="CouponSearchData"></a>
 
 `CouponSearchData(**data: Any)`
 :   Search result data for coupon entity.
@@ -677,6 +713,8 @@ Classes
 
     `valid_till: int | None`
     :   Date until which the coupon is valid for use.
+
+<a id="CreditNoteSearchData"></a>
 
 `CreditNoteSearchData(**data: Any)`
 :   Search result data for credit_note entity.
@@ -843,6 +881,8 @@ Classes
 
     `voided_at: int | None`
     :   The date when the credit note was voided.
+
+<a id="CustomerSearchData"></a>
 
 `CustomerSearchData(**data: Any)`
 :   Search result data for customer entity.
@@ -1052,6 +1092,8 @@ Classes
     `vat_number_validated_time: int | None`
     :   Date and time when the VAT number was validated.
 
+<a id="EventSearchData"></a>
+
 `EventSearchData(**data: Any)`
 :   Search result data for event entity.
     
@@ -1103,6 +1145,8 @@ Classes
 
     `webhooks: list[typing.Any] | None`
     :   List of webhooks associated with the event.
+
+<a id="InvoiceSearchData"></a>
 
 `InvoiceSearchData(**data: Any)`
 :   Search result data for invoice entity.
@@ -1330,6 +1374,8 @@ Classes
     `write_off_amount: int | None`
     :   Amount written off
 
+<a id="ItemPriceSearchData"></a>
+
 `ItemPriceSearchData(**data: Any)`
 :   Search result data for item_price entity.
     
@@ -1460,6 +1506,8 @@ Classes
     `updated_at: int | None`
     :   Date and time when the item price was last updated.
 
+<a id="ItemSearchData"></a>
+
 `ItemSearchData(**data: Any)`
 :   Search result data for item entity.
     
@@ -1556,6 +1604,8 @@ Classes
 
     `usage_calculation: str | None`
     :   Calculation method used for item usage
+
+<a id="OrderSearchData"></a>
 
 `OrderSearchData(**data: Any)`
 :   Search result data for order entity.
@@ -1756,6 +1806,8 @@ Classes
     `updated_at: int | None`
     :   Timestamp when the order data was last updated.
 
+<a id="PaymentSourceSearchData"></a>
+
 `PaymentSourceSearchData(**data: Any)`
 :   Search result data for payment_source entity.
     
@@ -1840,6 +1892,8 @@ Classes
 
     `upi: dict[str, typing.Any] | None`
     :   Data related to UPI payment source
+
+<a id="SubscriptionSearchData"></a>
 
 `SubscriptionSearchData(**data: Any)`
 :   Search result data for subscription entity.
@@ -2087,6 +2141,8 @@ Classes
 
     `updated_at: int | None`
     :   The date and time when the subscription was last updated.
+
+<a id="TransactionSearchData"></a>
 
 `TransactionSearchData(**data: Any)`
 :   Search result data for transaction entity.

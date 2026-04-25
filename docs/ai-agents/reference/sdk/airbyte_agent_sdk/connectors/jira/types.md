@@ -10,6 +10,8 @@ Type definitions for jira connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="IssueCommentsAndCondition"></a>
+
 `IssueCommentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IssueCommentsAnyCondition"></a>
+
 `IssueCommentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsAnyValueFilter"></a>
 
 `IssueCommentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -116,6 +124,8 @@ Classes
     `visibility: Any`
     :   The group or role to which this item is visible
 
+<a id="IssueCommentsContainsCondition"></a>
+
 `IssueCommentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -127,6 +137,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsCreateParams"></a>
 
 `IssueCommentsCreateParams(*args, **kwargs)`
 :   Parameters for issue_comments.create operation
@@ -152,6 +164,8 @@ Classes
     `visibility: airbyte_agent_sdk.connectors.jira.types.IssueCommentsCreateParamsVisibility`
     :   The type of the None singleton.
 
+<a id="IssueCommentsCreateParamsBody"></a>
+
 `IssueCommentsCreateParamsBody(*args, **kwargs)`
 :   Comment content in Atlassian Document Format (ADF)
 
@@ -170,6 +184,8 @@ Classes
     `version: int`
     :   The type of the None singleton.
 
+<a id="IssueCommentsCreateParamsBodyContentItem"></a>
+
 `IssueCommentsCreateParamsBodyContentItem(*args, **kwargs)`
 :   Nested schema for IssueCommentsCreateParamsBody.content_item
 
@@ -185,6 +201,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="IssueCommentsCreateParamsBodyContentItemContentItem"></a>
+
 `IssueCommentsCreateParamsBodyContentItemContentItem(*args, **kwargs)`
 :   Nested schema for IssueCommentsCreateParamsBodyContentItem.content_item
 
@@ -199,6 +217,8 @@ Classes
 
     `type: str`
     :   The type of the None singleton.
+
+<a id="IssueCommentsCreateParamsVisibility"></a>
 
 `IssueCommentsCreateParamsVisibility(*args, **kwargs)`
 :   Restrict comment visibility to a group or role
@@ -218,6 +238,8 @@ Classes
     `value: str`
     :   The type of the None singleton.
 
+<a id="IssueCommentsDeleteParams"></a>
+
 `IssueCommentsDeleteParams(*args, **kwargs)`
 :   Parameters for issue_comments.delete operation
 
@@ -233,6 +255,8 @@ Classes
     `issue_id_or_key: str`
     :   The type of the None singleton.
 
+<a id="IssueCommentsEqCondition"></a>
+
 `IssueCommentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -245,6 +269,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.jira.types.IssueCommentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueCommentsFuzzyCondition"></a>
+
 `IssueCommentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -256,6 +282,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.jira.types.IssueCommentsStringFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsGetParams"></a>
 
 `IssueCommentsGetParams(*args, **kwargs)`
 :   Parameters for issue_comments.get operation
@@ -275,6 +303,8 @@ Classes
     `issue_id_or_key: str`
     :   The type of the None singleton.
 
+<a id="IssueCommentsGtCondition"></a>
+
 `IssueCommentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -287,6 +317,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.jira.types.IssueCommentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueCommentsGteCondition"></a>
+
 `IssueCommentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -298,6 +330,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.jira.types.IssueCommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsInCondition"></a>
 
 `IssueCommentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -318,6 +352,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.jira.types.IssueCommentsInFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsInFilter"></a>
 
 `IssueCommentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -364,6 +400,8 @@ Classes
     `visibility: list[dict[str, typing.Any]]`
     :   The group or role to which this item is visible
 
+<a id="IssueCommentsKeywordCondition"></a>
+
 `IssueCommentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -376,6 +414,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.jira.types.IssueCommentsStringFilter`
     :   The type of the None singleton.
 
+<a id="IssueCommentsLikeCondition"></a>
+
 `IssueCommentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -387,6 +427,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.jira.types.IssueCommentsStringFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsListParams"></a>
 
 `IssueCommentsListParams(*args, **kwargs)`
 :   Parameters for issue_comments.list operation
@@ -412,6 +454,8 @@ Classes
     `start_at: int`
     :   The type of the None singleton.
 
+<a id="IssueCommentsLtCondition"></a>
+
 `IssueCommentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -423,6 +467,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.jira.types.IssueCommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsLteCondition"></a>
 
 `IssueCommentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -436,6 +482,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.jira.types.IssueCommentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueCommentsNeqCondition"></a>
+
 `IssueCommentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -447,6 +495,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.jira.types.IssueCommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueCommentsNotCondition"></a>
 
 `IssueCommentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -468,6 +518,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="IssueCommentsOrCondition"></a>
+
 `IssueCommentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -487,6 +539,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueCommentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IssueCommentsSearchFilter"></a>
 
 `IssueCommentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering issue_comments search queries.
@@ -533,6 +587,8 @@ Classes
     `visibility: dict[str, typing.Any] | None`
     :   The group or role to which this item is visible
 
+<a id="IssueCommentsSearchQuery"></a>
+
 `IssueCommentsSearchQuery(*args, **kwargs)`
 :   Search query for issue_comments entity.
 
@@ -547,6 +603,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="IssueCommentsSortFilter"></a>
 
 `IssueCommentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting issue_comments search results.
@@ -593,6 +651,8 @@ Classes
     `visibility: Literal['asc', 'desc']`
     :   The group or role to which this item is visible
 
+<a id="IssueCommentsStringFilter"></a>
+
 `IssueCommentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -638,6 +698,8 @@ Classes
     `visibility: str`
     :   The group or role to which this item is visible
 
+<a id="IssueCommentsUpdateParams"></a>
+
 `IssueCommentsUpdateParams(*args, **kwargs)`
 :   Parameters for issue_comments.update operation
 
@@ -665,6 +727,8 @@ Classes
     `visibility: airbyte_agent_sdk.connectors.jira.types.IssueCommentsUpdateParamsVisibility`
     :   The type of the None singleton.
 
+<a id="IssueCommentsUpdateParamsBody"></a>
+
 `IssueCommentsUpdateParamsBody(*args, **kwargs)`
 :   Updated comment content in Atlassian Document Format (ADF)
 
@@ -683,6 +747,8 @@ Classes
     `version: int`
     :   The type of the None singleton.
 
+<a id="IssueCommentsUpdateParamsBodyContentItem"></a>
+
 `IssueCommentsUpdateParamsBodyContentItem(*args, **kwargs)`
 :   Nested schema for IssueCommentsUpdateParamsBody.content_item
 
@@ -698,6 +764,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="IssueCommentsUpdateParamsBodyContentItemContentItem"></a>
+
 `IssueCommentsUpdateParamsBodyContentItemContentItem(*args, **kwargs)`
 :   Nested schema for IssueCommentsUpdateParamsBodyContentItem.content_item
 
@@ -712,6 +780,8 @@ Classes
 
     `type: str`
     :   The type of the None singleton.
+
+<a id="IssueCommentsUpdateParamsVisibility"></a>
 
 `IssueCommentsUpdateParamsVisibility(*args, **kwargs)`
 :   Restrict comment visibility to a group or role
@@ -730,6 +800,8 @@ Classes
 
     `value: str`
     :   The type of the None singleton.
+
+<a id="IssueFieldsAndCondition"></a>
 
 `IssueFieldsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -751,6 +823,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IssueFieldsAnyCondition"></a>
+
 `IssueFieldsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -770,6 +844,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsAnyValueFilter"></a>
 
 `IssueFieldsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -813,6 +889,8 @@ Classes
     `untranslated_name: Any`
     :   The untranslated name of the field
 
+<a id="IssueFieldsApiSearchParams"></a>
+
 `IssueFieldsApiSearchParams(*args, **kwargs)`
 :   Parameters for issue_fields.api_search operation
 
@@ -843,6 +921,8 @@ Classes
     `type: list[str]`
     :   The type of the None singleton.
 
+<a id="IssueFieldsContainsCondition"></a>
+
 `IssueFieldsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -854,6 +934,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsEqCondition"></a>
 
 `IssueFieldsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -867,6 +949,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.jira.types.IssueFieldsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueFieldsFuzzyCondition"></a>
+
 `IssueFieldsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -878,6 +962,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.jira.types.IssueFieldsStringFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsGtCondition"></a>
 
 `IssueFieldsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -891,6 +977,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.jira.types.IssueFieldsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueFieldsGteCondition"></a>
+
 `IssueFieldsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -902,6 +990,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.jira.types.IssueFieldsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsInCondition"></a>
 
 `IssueFieldsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -922,6 +1012,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.jira.types.IssueFieldsInFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsInFilter"></a>
 
 `IssueFieldsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -965,6 +1057,8 @@ Classes
     `untranslated_name: list[str]`
     :   The untranslated name of the field
 
+<a id="IssueFieldsKeywordCondition"></a>
+
 `IssueFieldsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -976,6 +1070,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.jira.types.IssueFieldsStringFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsLikeCondition"></a>
 
 `IssueFieldsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -989,12 +1085,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.jira.types.IssueFieldsStringFilter`
     :   The type of the None singleton.
 
+<a id="IssueFieldsListParams"></a>
+
 `IssueFieldsListParams(*args, **kwargs)`
 :   Parameters for issue_fields.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="IssueFieldsLtCondition"></a>
 
 `IssueFieldsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1008,6 +1108,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.jira.types.IssueFieldsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueFieldsLteCondition"></a>
+
 `IssueFieldsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1020,6 +1122,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.jira.types.IssueFieldsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueFieldsNeqCondition"></a>
+
 `IssueFieldsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1031,6 +1135,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.jira.types.IssueFieldsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueFieldsNotCondition"></a>
 
 `IssueFieldsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1052,6 +1158,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition`
     :   The type of the None singleton.
 
+<a id="IssueFieldsOrCondition"></a>
+
 `IssueFieldsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1071,6 +1179,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueFieldsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IssueFieldsSearchFilter"></a>
 
 `IssueFieldsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering issue_fields search queries.
@@ -1114,6 +1224,8 @@ Classes
     `untranslated_name: str | None`
     :   The untranslated name of the field
 
+<a id="IssueFieldsSearchQuery"></a>
+
 `IssueFieldsSearchQuery(*args, **kwargs)`
 :   Search query for issue_fields entity.
 
@@ -1128,6 +1240,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssueFieldsSortFilter]`
     :   The type of the None singleton.
+
+<a id="IssueFieldsSortFilter"></a>
 
 `IssueFieldsSortFilter(*args, **kwargs)`
 :   Available fields for sorting issue_fields search results.
@@ -1171,6 +1285,8 @@ Classes
     `untranslated_name: Literal['asc', 'desc']`
     :   The untranslated name of the field
 
+<a id="IssueFieldsStringFilter"></a>
+
 `IssueFieldsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1213,6 +1329,8 @@ Classes
     `untranslated_name: str`
     :   The untranslated name of the field
 
+<a id="IssueWorklogsAndCondition"></a>
+
 `IssueWorklogsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1233,6 +1351,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsAnyCondition"></a>
+
 `IssueWorklogsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1252,6 +1372,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsAnyValueFilter"></a>
 
 `IssueWorklogsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1301,6 +1423,8 @@ Classes
     `visibility: Any`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssueWorklogsContainsCondition"></a>
+
 `IssueWorklogsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1312,6 +1436,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsEqCondition"></a>
 
 `IssueWorklogsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1325,6 +1451,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsFuzzyCondition"></a>
+
 `IssueWorklogsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1336,6 +1464,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStringFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsGetParams"></a>
 
 `IssueWorklogsGetParams(*args, **kwargs)`
 :   Parameters for issue_worklogs.get operation
@@ -1355,6 +1485,8 @@ Classes
     `worklog_id: str`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsGtCondition"></a>
+
 `IssueWorklogsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1367,6 +1499,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsGteCondition"></a>
+
 `IssueWorklogsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1378,6 +1512,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsInCondition"></a>
 
 `IssueWorklogsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1398,6 +1534,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsInFilter"></a>
 
 `IssueWorklogsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1447,6 +1585,8 @@ Classes
     `visibility: list[dict[str, typing.Any]]`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssueWorklogsKeywordCondition"></a>
+
 `IssueWorklogsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1459,6 +1599,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStringFilter`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsLikeCondition"></a>
+
 `IssueWorklogsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1470,6 +1612,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsStringFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsListParams"></a>
 
 `IssueWorklogsListParams(*args, **kwargs)`
 :   Parameters for issue_worklogs.list operation
@@ -1492,6 +1636,8 @@ Classes
     `start_at: int`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsLtCondition"></a>
+
 `IssueWorklogsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1503,6 +1649,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsLteCondition"></a>
 
 `IssueWorklogsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1516,6 +1664,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsNeqCondition"></a>
+
 `IssueWorklogsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1527,6 +1677,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsNotCondition"></a>
 
 `IssueWorklogsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1548,6 +1700,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsOrCondition"></a>
+
 `IssueWorklogsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1567,6 +1721,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsEqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsGteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLtCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLteCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsInCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsNotCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAndCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsOrCondition | airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsSearchFilter"></a>
 
 `IssueWorklogsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering issue_worklogs search queries.
@@ -1616,6 +1772,8 @@ Classes
     `visibility: dict[str, typing.Any] | None`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssueWorklogsSearchQuery"></a>
+
 `IssueWorklogsSearchQuery(*args, **kwargs)`
 :   Search query for issue_worklogs entity.
 
@@ -1630,6 +1788,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsSortFilter]`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsSortFilter"></a>
 
 `IssueWorklogsSortFilter(*args, **kwargs)`
 :   Available fields for sorting issue_worklogs search results.
@@ -1679,6 +1839,8 @@ Classes
     `visibility: Literal['asc', 'desc']`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssueWorklogsStringFilter"></a>
+
 `IssueWorklogsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1727,6 +1889,8 @@ Classes
     `visibility: str`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssuesAndCondition"></a>
+
 `IssuesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1747,6 +1911,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IssuesAnyCondition"></a>
+
 `IssuesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1766,6 +1932,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.jira.types.IssuesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssuesAnyValueFilter"></a>
 
 `IssuesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1833,6 +2001,8 @@ Classes
     `versioned_representations: Any`
     :   The versions of each field on the issue
 
+<a id="IssuesApiSearchParams"></a>
+
 `IssuesApiSearchParams(*args, **kwargs)`
 :   Parameters for issues.api_search operation
 
@@ -1866,6 +2036,8 @@ Classes
     `properties: str`
     :   The type of the None singleton.
 
+<a id="IssuesAssigneeUpdateParams"></a>
+
 `IssuesAssigneeUpdateParams(*args, **kwargs)`
 :   Parameters for issues_assignee.update operation
 
@@ -1881,6 +2053,8 @@ Classes
     `issue_id_or_key: str`
     :   The type of the None singleton.
 
+<a id="IssuesContainsCondition"></a>
+
 `IssuesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1892,6 +2066,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.jira.types.IssuesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssuesCreateParams"></a>
 
 `IssuesCreateParams(*args, **kwargs)`
 :   Parameters for issues.create operation
@@ -1915,6 +2091,8 @@ Classes
         If E is present and has a .keys() method, then does:  for k in E.keys(): D[k] = E[k]
         If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
         In either case, this is followed by: for k in F:  D[k] = F[k]
+
+<a id="IssuesCreateParamsFields"></a>
 
 `IssuesCreateParamsFields(*args, **kwargs)`
 :   The issue fields to set
@@ -1949,6 +2127,8 @@ Classes
     `summary: str`
     :   The type of the None singleton.
 
+<a id="IssuesCreateParamsFieldsAssignee"></a>
+
 `IssuesCreateParamsFieldsAssignee(*args, **kwargs)`
 :   The user to assign the issue to
 
@@ -1960,6 +2140,8 @@ Classes
 
     `accountId: str`
     :   The type of the None singleton.
+
+<a id="IssuesCreateParamsFieldsDescription"></a>
 
 `IssuesCreateParamsFieldsDescription(*args, **kwargs)`
 :   Issue description in Atlassian Document Format (ADF)
@@ -1979,6 +2161,8 @@ Classes
     `version: int`
     :   The type of the None singleton.
 
+<a id="IssuesCreateParamsFieldsDescriptionContentItem"></a>
+
 `IssuesCreateParamsFieldsDescriptionContentItem(*args, **kwargs)`
 :   Nested schema for IssuesCreateParamsFieldsDescription.content_item
 
@@ -1993,6 +2177,8 @@ Classes
 
     `type: str`
     :   The type of the None singleton.
+
+<a id="IssuesCreateParamsFieldsDescriptionContentItemContentItem"></a>
 
 `IssuesCreateParamsFieldsDescriptionContentItemContentItem(*args, **kwargs)`
 :   Nested schema for IssuesCreateParamsFieldsDescriptionContentItem.content_item
@@ -2009,6 +2195,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="IssuesCreateParamsFieldsIssuetype"></a>
+
 `IssuesCreateParamsFieldsIssuetype(*args, **kwargs)`
 :   The type of issue (e.g., Bug, Task, Story)
 
@@ -2024,6 +2212,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="IssuesCreateParamsFieldsParent"></a>
+
 `IssuesCreateParamsFieldsParent(*args, **kwargs)`
 :   Parent issue for subtasks
 
@@ -2035,6 +2225,8 @@ Classes
 
     `key: str`
     :   The type of the None singleton.
+
+<a id="IssuesCreateParamsFieldsPriority"></a>
 
 `IssuesCreateParamsFieldsPriority(*args, **kwargs)`
 :   Issue priority
@@ -2051,6 +2243,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="IssuesCreateParamsFieldsProject"></a>
+
 `IssuesCreateParamsFieldsProject(*args, **kwargs)`
 :   The project to create the issue in
 
@@ -2065,6 +2259,8 @@ Classes
 
     `key: str`
     :   The type of the None singleton.
+
+<a id="IssuesDeleteParams"></a>
 
 `IssuesDeleteParams(*args, **kwargs)`
 :   Parameters for issues.delete operation
@@ -2081,6 +2277,8 @@ Classes
     `issue_id_or_key: str`
     :   The type of the None singleton.
 
+<a id="IssuesEqCondition"></a>
+
 `IssuesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -2093,6 +2291,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.jira.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesFuzzyCondition"></a>
+
 `IssuesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2104,6 +2304,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.jira.types.IssuesStringFilter`
     :   The type of the None singleton.
+
+<a id="IssuesGetParams"></a>
 
 `IssuesGetParams(*args, **kwargs)`
 :   Parameters for issues.get operation
@@ -2135,6 +2337,8 @@ Classes
     `update_history: bool`
     :   The type of the None singleton.
 
+<a id="IssuesGtCondition"></a>
+
 `IssuesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2147,6 +2351,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.jira.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesGteCondition"></a>
+
 `IssuesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2158,6 +2364,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.jira.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesInCondition"></a>
 
 `IssuesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2178,6 +2386,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.jira.types.IssuesInFilter`
     :   The type of the None singleton.
+
+<a id="IssuesInFilter"></a>
 
 `IssuesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2245,6 +2455,8 @@ Classes
     `versioned_representations: list[dict[str, typing.Any]]`
     :   The versions of each field on the issue
 
+<a id="IssuesKeywordCondition"></a>
+
 `IssuesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2256,6 +2468,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.jira.types.IssuesStringFilter`
     :   The type of the None singleton.
+
+<a id="IssuesLikeCondition"></a>
 
 `IssuesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2269,6 +2483,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.jira.types.IssuesStringFilter`
     :   The type of the None singleton.
 
+<a id="IssuesLtCondition"></a>
+
 `IssuesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2280,6 +2496,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.jira.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesLteCondition"></a>
 
 `IssuesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2293,6 +2511,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.jira.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesNeqCondition"></a>
+
 `IssuesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2304,6 +2524,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.jira.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesNotCondition"></a>
 
 `IssuesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2325,6 +2547,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
+<a id="IssuesOrCondition"></a>
+
 `IssuesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2344,6 +2568,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.jira.types.IssuesEqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesGteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLtCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLteCondition | airbyte_agent_sdk.connectors.jira.types.IssuesInCondition | airbyte_agent_sdk.connectors.jira.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.jira.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.jira.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.jira.types.IssuesNotCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAndCondition | airbyte_agent_sdk.connectors.jira.types.IssuesOrCondition | airbyte_agent_sdk.connectors.jira.types.IssuesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IssuesSearchFilter"></a>
 
 `IssuesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering issues search queries.
@@ -2411,6 +2637,8 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
+<a id="IssuesSearchQuery"></a>
+
 `IssuesSearchQuery(*args, **kwargs)`
 :   Search query for issues entity.
 
@@ -2425,6 +2653,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.IssuesSortFilter]`
     :   The type of the None singleton.
+
+<a id="IssuesSortFilter"></a>
 
 `IssuesSortFilter(*args, **kwargs)`
 :   Available fields for sorting issues search results.
@@ -2492,6 +2722,8 @@ Classes
     `versioned_representations: Literal['asc', 'desc']`
     :   The versions of each field on the issue
 
+<a id="IssuesStringFilter"></a>
+
 `IssuesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2558,6 +2790,8 @@ Classes
     `versioned_representations: str`
     :   The versions of each field on the issue
 
+<a id="IssuesUpdateParams"></a>
+
 `IssuesUpdateParams(*args, **kwargs)`
 :   Parameters for issues.update operation
 
@@ -2599,6 +2833,8 @@ Classes
         If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
         In either case, this is followed by: for k in F:  D[k] = F[k]
 
+<a id="IssuesUpdateParamsFields"></a>
+
 `IssuesUpdateParamsFields(*args, **kwargs)`
 :   The issue fields to update
 
@@ -2623,6 +2859,8 @@ Classes
     `summary: str`
     :   The type of the None singleton.
 
+<a id="IssuesUpdateParamsFieldsAssignee"></a>
+
 `IssuesUpdateParamsFieldsAssignee(*args, **kwargs)`
 :   The user to assign the issue to
 
@@ -2634,6 +2872,8 @@ Classes
 
     `accountId: str`
     :   The type of the None singleton.
+
+<a id="IssuesUpdateParamsFieldsDescription"></a>
 
 `IssuesUpdateParamsFieldsDescription(*args, **kwargs)`
 :   Issue description in Atlassian Document Format (ADF)
@@ -2653,6 +2893,8 @@ Classes
     `version: int`
     :   The type of the None singleton.
 
+<a id="IssuesUpdateParamsFieldsDescriptionContentItem"></a>
+
 `IssuesUpdateParamsFieldsDescriptionContentItem(*args, **kwargs)`
 :   Nested schema for IssuesUpdateParamsFieldsDescription.content_item
 
@@ -2667,6 +2909,8 @@ Classes
 
     `type: str`
     :   The type of the None singleton.
+
+<a id="IssuesUpdateParamsFieldsDescriptionContentItemContentItem"></a>
 
 `IssuesUpdateParamsFieldsDescriptionContentItemContentItem(*args, **kwargs)`
 :   Nested schema for IssuesUpdateParamsFieldsDescriptionContentItem.content_item
@@ -2683,6 +2927,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="IssuesUpdateParamsFieldsPriority"></a>
+
 `IssuesUpdateParamsFieldsPriority(*args, **kwargs)`
 :   Issue priority
 
@@ -2698,6 +2944,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="IssuesUpdateParamsTransition"></a>
+
 `IssuesUpdateParamsTransition(*args, **kwargs)`
 :   Transition the issue to a new status
 
@@ -2709,6 +2957,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="ProjectsAndCondition"></a>
 
 `ProjectsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2730,6 +2980,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProjectsAnyCondition"></a>
+
 `ProjectsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2749,6 +3001,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.jira.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsAnyValueFilter"></a>
 
 `ProjectsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2861,6 +3115,8 @@ Classes
     `versions: Any`
     :   The versions defined in the project
 
+<a id="ProjectsApiSearchParams"></a>
+
 `ProjectsApiSearchParams(*args, **kwargs)`
 :   Parameters for projects.api_search operation
 
@@ -2905,6 +3161,8 @@ Classes
     `keys(self, /) ‑> list[str]`
     :   Return a set-like object providing a view on the dict's keys.
 
+<a id="ProjectsContainsCondition"></a>
+
 `ProjectsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2916,6 +3174,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.jira.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsEqCondition"></a>
 
 `ProjectsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2929,6 +3189,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.jira.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsFuzzyCondition"></a>
+
 `ProjectsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2940,6 +3202,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.jira.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsGetParams"></a>
 
 `ProjectsGetParams(*args, **kwargs)`
 :   Parameters for projects.get operation
@@ -2959,6 +3223,8 @@ Classes
     `properties: str`
     :   The type of the None singleton.
 
+<a id="ProjectsGtCondition"></a>
+
 `ProjectsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2971,6 +3237,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.jira.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsGteCondition"></a>
+
 `ProjectsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2982,6 +3250,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.jira.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInCondition"></a>
 
 `ProjectsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3002,6 +3272,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.jira.types.ProjectsInFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInFilter"></a>
 
 `ProjectsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3114,6 +3386,8 @@ Classes
     `versions: list[list[typing.Any]]`
     :   The versions defined in the project
 
+<a id="ProjectsKeywordCondition"></a>
+
 `ProjectsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3125,6 +3399,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.jira.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsLikeCondition"></a>
 
 `ProjectsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3138,6 +3414,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.jira.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsLtCondition"></a>
+
 `ProjectsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3149,6 +3427,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.jira.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsLteCondition"></a>
 
 `ProjectsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3162,6 +3442,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.jira.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsNeqCondition"></a>
+
 `ProjectsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3173,6 +3455,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.jira.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsNotCondition"></a>
 
 `ProjectsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3194,6 +3478,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProjectsOrCondition"></a>
+
 `ProjectsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3213,6 +3499,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.jira.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsInCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.jira.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchFilter"></a>
 
 `ProjectsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering projects search queries.
@@ -3325,6 +3613,8 @@ Classes
     `versions: list[typing.Any]`
     :   The versions defined in the project
 
+<a id="ProjectsSearchQuery"></a>
+
 `ProjectsSearchQuery(*args, **kwargs)`
 :   Search query for projects entity.
 
@@ -3339,6 +3629,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.ProjectsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProjectsSortFilter"></a>
 
 `ProjectsSortFilter(*args, **kwargs)`
 :   Available fields for sorting projects search results.
@@ -3451,6 +3743,8 @@ Classes
     `versions: Literal['asc', 'desc']`
     :   The versions defined in the project
 
+<a id="ProjectsStringFilter"></a>
+
 `ProjectsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3562,6 +3856,8 @@ Classes
     `versions: str`
     :   The versions defined in the project
 
+<a id="UsersAndCondition"></a>
+
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3582,6 +3878,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersLikeCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3601,6 +3899,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.jira.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3653,6 +3953,8 @@ Classes
     `time_zone: Any`
     :   The time zone specified in the user's profile
 
+<a id="UsersApiSearchParams"></a>
+
 `UsersApiSearchParams(*args, **kwargs)`
 :   Parameters for users.api_search operation
 
@@ -3677,6 +3979,8 @@ Classes
     `start_at: int`
     :   The type of the None singleton.
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3688,6 +3992,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.jira.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3701,6 +4007,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.jira.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3712,6 +4020,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.jira.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -3728,6 +4038,8 @@ Classes
     `expand: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3740,6 +4052,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.jira.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3751,6 +4065,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.jira.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3771,6 +4087,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.jira.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3823,6 +4141,8 @@ Classes
     `time_zone: list[str]`
     :   The time zone specified in the user's profile
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3835,6 +4155,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.jira.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersLikeCondition"></a>
+
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3846,6 +4168,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.jira.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
@@ -3862,6 +4186,8 @@ Classes
     `start_at: int`
     :   The type of the None singleton.
 
+<a id="UsersLtCondition"></a>
+
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3873,6 +4199,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.jira.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
 
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3886,6 +4214,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.jira.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3897,6 +4227,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.jira.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3918,6 +4250,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersLikeCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3937,6 +4271,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.jira.types.UsersEqCondition | airbyte_agent_sdk.connectors.jira.types.UsersNeqCondition | airbyte_agent_sdk.connectors.jira.types.UsersGtCondition | airbyte_agent_sdk.connectors.jira.types.UsersGteCondition | airbyte_agent_sdk.connectors.jira.types.UsersLtCondition | airbyte_agent_sdk.connectors.jira.types.UsersLteCondition | airbyte_agent_sdk.connectors.jira.types.UsersInCondition | airbyte_agent_sdk.connectors.jira.types.UsersLikeCondition | airbyte_agent_sdk.connectors.jira.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.jira.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.jira.types.UsersContainsCondition | airbyte_agent_sdk.connectors.jira.types.UsersNotCondition | airbyte_agent_sdk.connectors.jira.types.UsersAndCondition | airbyte_agent_sdk.connectors.jira.types.UsersOrCondition | airbyte_agent_sdk.connectors.jira.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -3989,6 +4325,8 @@ Classes
     `time_zone: str | None`
     :   The time zone specified in the user's profile
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -4003,6 +4341,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.jira.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -4054,6 +4394,8 @@ Classes
 
     `time_zone: Literal['asc', 'desc']`
     :   The time zone specified in the user's profile
+
+<a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

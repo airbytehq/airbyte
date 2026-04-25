@@ -10,6 +10,8 @@ Gmail connector.
 Classes
 -------
 
+<a id="DraftsQuery"></a>
+
 `DraftsQuery(connector: GmailConnector)`
 :   Query class for Drafts entity operations.
     
@@ -72,6 +74,8 @@ Classes
         Returns:
             Draft
 
+<a id="DraftsSendQuery"></a>
+
 `DraftsSendQuery(connector: GmailConnector)`
 :   Query class for DraftsSend entity operations.
     
@@ -88,6 +92,8 @@ Classes
         
         Returns:
             Message
+
+<a id="GmailConnector"></a>
 
 `GmailConnector(auth_config: GmailAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Gmail API connector.
@@ -345,6 +351,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="LabelsQuery"></a>
+
 `LabelsQuery(connector: GmailConnector)`
 :   Query class for Labels entity operations.
     
@@ -405,6 +413,8 @@ Classes
         
         Returns:
             Label
+
+<a id="MessagesQuery"></a>
 
 `MessagesQuery(connector: GmailConnector)`
 :   Query class for Messages entity operations.
@@ -467,6 +477,8 @@ Classes
                 Returns:
                     Message
 
+<a id="MessagesTrashQuery"></a>
+
 `MessagesTrashQuery(connector: GmailConnector)`
 :   Query class for MessagesTrash entity operations.
     
@@ -483,6 +495,8 @@ Classes
         
         Returns:
             Message
+
+<a id="MessagesUntrashQuery"></a>
 
 `MessagesUntrashQuery(connector: GmailConnector)`
 :   Query class for MessagesUntrash entity operations.
@@ -501,6 +515,8 @@ Classes
         Returns:
             Message
 
+<a id="ProfileQuery"></a>
+
 `ProfileQuery(connector: GmailConnector)`
 :   Query class for Profile entity operations.
     
@@ -513,6 +529,8 @@ Classes
         
         Returns:
             Profile
+
+<a id="ThreadsQuery"></a>
 
 `ThreadsQuery(connector: GmailConnector)`
 :   Query class for Threads entity operations.

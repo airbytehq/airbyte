@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="PylonAuthConfig"></a>
+
 `PylonAuthConfig(**data: Any)`
 :   API Token Authentication
     
@@ -108,6 +112,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PylonConnector"></a>
 
 `PylonConnector(auth_config: PylonAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Pylon API connector.

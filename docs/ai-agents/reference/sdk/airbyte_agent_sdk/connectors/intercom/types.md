@@ -10,6 +10,8 @@ Type definitions for intercom connector.
 Classes
 -------
 
+<a id="AdminsGetParams"></a>
+
 `AdminsGetParams(*args, **kwargs)`
 :   Parameters for admins.get operation
 
@@ -22,12 +24,16 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AdminsListParams"></a>
+
 `AdminsListParams(*args, **kwargs)`
 :   Parameters for admins.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="AirbyteSearchParams"></a>
 
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
@@ -50,6 +56,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CompaniesAndCondition"></a>
+
 `CompaniesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +78,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CompaniesAnyCondition"></a>
+
 `CompaniesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -89,6 +99,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesAnyValueFilter"></a>
 
 `CompaniesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -153,6 +165,8 @@ Classes
     `website: Any`
     :   The website of the company
 
+<a id="CompaniesContainsCondition"></a>
+
 `CompaniesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -164,6 +178,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesCreateParams"></a>
 
 `CompaniesCreateParams(*args, **kwargs)`
 :   Parameters for companies.create operation
@@ -198,6 +214,8 @@ Classes
     `website: str`
     :   The type of the None singleton.
 
+<a id="CompaniesEqCondition"></a>
+
 `CompaniesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -209,6 +227,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.intercom.types.CompaniesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesFuzzyCondition"></a>
 
 `CompaniesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -222,6 +242,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
+<a id="CompaniesGetParams"></a>
+
 `CompaniesGetParams(*args, **kwargs)`
 :   Parameters for companies.get operation
 
@@ -233,6 +255,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="CompaniesGtCondition"></a>
 
 `CompaniesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -246,6 +270,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.intercom.types.CompaniesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CompaniesGteCondition"></a>
+
 `CompaniesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -257,6 +283,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.intercom.types.CompaniesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesInCondition"></a>
 
 `CompaniesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -277,6 +305,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.intercom.types.CompaniesInFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesInFilter"></a>
 
 `CompaniesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -341,6 +371,8 @@ Classes
     `website: list[str]`
     :   The website of the company
 
+<a id="CompaniesKeywordCondition"></a>
+
 `CompaniesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -353,6 +385,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
+<a id="CompaniesLikeCondition"></a>
+
 `CompaniesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -364,6 +398,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesListParams"></a>
 
 `CompaniesListParams(*args, **kwargs)`
 :   Parameters for companies.list operation
@@ -380,6 +416,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="CompaniesLtCondition"></a>
+
 `CompaniesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -391,6 +429,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.intercom.types.CompaniesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesLteCondition"></a>
 
 `CompaniesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -404,6 +444,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.intercom.types.CompaniesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CompaniesNeqCondition"></a>
+
 `CompaniesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -415,6 +457,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.intercom.types.CompaniesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CompaniesNotCondition"></a>
 
 `CompaniesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -436,6 +480,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
+<a id="CompaniesOrCondition"></a>
+
 `CompaniesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -455,6 +501,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CompaniesSearchFilter"></a>
 
 `CompaniesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering companies search queries.
@@ -519,6 +567,8 @@ Classes
     `website: str | None`
     :   The website of the company
 
+<a id="CompaniesSearchQuery"></a>
+
 `CompaniesSearchQuery(*args, **kwargs)`
 :   Search query for companies entity.
 
@@ -533,6 +583,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesSortFilter]`
     :   The type of the None singleton.
+
+<a id="CompaniesSortFilter"></a>
 
 `CompaniesSortFilter(*args, **kwargs)`
 :   Available fields for sorting companies search results.
@@ -597,6 +649,8 @@ Classes
     `website: Literal['asc', 'desc']`
     :   The website of the company
 
+<a id="CompaniesStringFilter"></a>
+
 `CompaniesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -660,6 +714,8 @@ Classes
     `website: str`
     :   The website of the company
 
+<a id="CompaniesUpdateParams"></a>
+
 `CompaniesUpdateParams(*args, **kwargs)`
 :   Parameters for companies.update operation
 
@@ -693,6 +749,8 @@ Classes
     `website: str`
     :   The type of the None singleton.
 
+<a id="ContactsAndCondition"></a>
+
 `ContactsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -713,6 +771,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ContactsAnyCondition"></a>
+
 `ContactsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -732,6 +792,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.intercom.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ContactsAnyValueFilter"></a>
 
 `ContactsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -904,6 +966,8 @@ Classes
     `workspace_id: Any`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ContactsContainsCondition"></a>
+
 `ContactsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -915,6 +979,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.intercom.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ContactsCreateParams"></a>
 
 `ContactsCreateParams(*args, **kwargs)`
 :   Parameters for contacts.create operation
@@ -958,6 +1024,8 @@ Classes
     `unsubscribed_from_emails: bool`
     :   The type of the None singleton.
 
+<a id="ContactsEqCondition"></a>
+
 `ContactsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -969,6 +1037,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.intercom.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsFuzzyCondition"></a>
 
 `ContactsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -982,6 +1052,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
     :   The type of the None singleton.
 
+<a id="ContactsGetParams"></a>
+
 `ContactsGetParams(*args, **kwargs)`
 :   Parameters for contacts.get operation
 
@@ -993,6 +1065,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="ContactsGtCondition"></a>
 
 `ContactsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1006,6 +1080,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.intercom.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsGteCondition"></a>
+
 `ContactsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1017,6 +1093,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.intercom.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsInCondition"></a>
 
 `ContactsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1037,6 +1115,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.intercom.types.ContactsInFilter`
     :   The type of the None singleton.
+
+<a id="ContactsInFilter"></a>
 
 `ContactsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1209,6 +1289,8 @@ Classes
     `workspace_id: list[str]`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ContactsKeywordCondition"></a>
+
 `ContactsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1221,6 +1303,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
     :   The type of the None singleton.
 
+<a id="ContactsLikeCondition"></a>
+
 `ContactsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1232,6 +1316,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
     :   The type of the None singleton.
+
+<a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
 :   Parameters for contacts.list operation
@@ -1248,6 +1334,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="ContactsLtCondition"></a>
+
 `ContactsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1259,6 +1347,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.intercom.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsLteCondition"></a>
 
 `ContactsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1272,6 +1362,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.intercom.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsNeqCondition"></a>
+
 `ContactsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1283,6 +1375,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.intercom.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsNotCondition"></a>
 
 `ContactsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1304,6 +1398,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ContactsOrCondition"></a>
+
 `ContactsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1323,6 +1419,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ContactsSearchFilter"></a>
 
 `ContactsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering contacts search queries.
@@ -1495,6 +1593,8 @@ Classes
     `workspace_id: str | None`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ContactsSearchQuery"></a>
+
 `ContactsSearchQuery(*args, **kwargs)`
 :   Search query for contacts entity.
 
@@ -1509,6 +1609,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.ContactsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ContactsSortFilter"></a>
 
 `ContactsSortFilter(*args, **kwargs)`
 :   Available fields for sorting contacts search results.
@@ -1681,6 +1783,8 @@ Classes
     `workspace_id: Literal['asc', 'desc']`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ContactsStringFilter"></a>
+
 `ContactsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1852,6 +1956,8 @@ Classes
     `workspace_id: str`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ContactsUpdateParams"></a>
+
 `ContactsUpdateParams(*args, **kwargs)`
 :   Parameters for contacts.update operation
 
@@ -1897,6 +2003,8 @@ Classes
     `unsubscribed_from_emails: bool`
     :   The type of the None singleton.
 
+<a id="ConversationsAndCondition"></a>
+
 `ConversationsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1917,6 +2025,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ConversationsAnyCondition"></a>
+
 `ConversationsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1936,6 +2046,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsAnyValueFilter"></a>
 
 `ConversationsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2045,6 +2157,8 @@ Classes
     `waiting_since: Any`
     :   Timestamp since waiting for a response
 
+<a id="ConversationsContainsCondition"></a>
+
 `ConversationsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2056,6 +2170,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsEqCondition"></a>
 
 `ConversationsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2069,6 +2185,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.intercom.types.ConversationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ConversationsFuzzyCondition"></a>
+
 `ConversationsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2080,6 +2198,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsGetParams"></a>
 
 `ConversationsGetParams(*args, **kwargs)`
 :   Parameters for conversations.get operation
@@ -2093,6 +2213,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ConversationsGtCondition"></a>
+
 `ConversationsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2105,6 +2227,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.intercom.types.ConversationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ConversationsGteCondition"></a>
+
 `ConversationsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2116,6 +2240,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.intercom.types.ConversationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsInCondition"></a>
 
 `ConversationsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2136,6 +2262,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.intercom.types.ConversationsInFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsInFilter"></a>
 
 `ConversationsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2245,6 +2373,8 @@ Classes
     `waiting_since: list[int]`
     :   Timestamp since waiting for a response
 
+<a id="ConversationsKeywordCondition"></a>
+
 `ConversationsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2257,6 +2387,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
     :   The type of the None singleton.
 
+<a id="ConversationsLikeCondition"></a>
+
 `ConversationsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2268,6 +2400,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsListParams"></a>
 
 `ConversationsListParams(*args, **kwargs)`
 :   Parameters for conversations.list operation
@@ -2284,6 +2418,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="ConversationsLtCondition"></a>
+
 `ConversationsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2295,6 +2431,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.intercom.types.ConversationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsLteCondition"></a>
 
 `ConversationsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2308,6 +2446,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.intercom.types.ConversationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ConversationsNeqCondition"></a>
+
 `ConversationsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2319,6 +2459,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.intercom.types.ConversationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ConversationsNotCondition"></a>
 
 `ConversationsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2340,6 +2482,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ConversationsOrCondition"></a>
+
 `ConversationsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2359,6 +2503,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ConversationsSearchFilter"></a>
 
 `ConversationsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering conversations search queries.
@@ -2468,6 +2614,8 @@ Classes
     `waiting_since: int | None`
     :   Timestamp since waiting for a response
 
+<a id="ConversationsSearchQuery"></a>
+
 `ConversationsSearchQuery(*args, **kwargs)`
 :   Search query for conversations entity.
 
@@ -2482,6 +2630,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ConversationsSortFilter"></a>
 
 `ConversationsSortFilter(*args, **kwargs)`
 :   Available fields for sorting conversations search results.
@@ -2591,6 +2741,8 @@ Classes
     `waiting_since: Literal['asc', 'desc']`
     :   Timestamp since waiting for a response
 
+<a id="ConversationsStringFilter"></a>
+
 `ConversationsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2699,6 +2851,8 @@ Classes
     `waiting_since: str`
     :   Timestamp since waiting for a response
 
+<a id="InternalArticlesCreateParams"></a>
+
 `InternalArticlesCreateParams(*args, **kwargs)`
 :   Parameters for internal_articles.create operation
 
@@ -2720,6 +2874,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="NotesCreateParams"></a>
+
 `NotesCreateParams(*args, **kwargs)`
 :   Parameters for notes.create operation
 
@@ -2738,6 +2894,8 @@ Classes
     `contact_id: str`
     :   The type of the None singleton.
 
+<a id="SegmentsGetParams"></a>
+
 `SegmentsGetParams(*args, **kwargs)`
 :   Parameters for segments.get operation
 
@@ -2749,6 +2907,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="SegmentsListParams"></a>
 
 `SegmentsListParams(*args, **kwargs)`
 :   Parameters for segments.list operation
@@ -2762,6 +2922,8 @@ Classes
     `include_count: bool`
     :   The type of the None singleton.
 
+<a id="TagsCreateParams"></a>
+
 `TagsCreateParams(*args, **kwargs)`
 :   Parameters for tags.create operation
 
@@ -2773,6 +2935,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="TagsGetParams"></a>
 
 `TagsGetParams(*args, **kwargs)`
 :   Parameters for tags.get operation
@@ -2786,12 +2950,16 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TagsListParams"></a>
+
 `TagsListParams(*args, **kwargs)`
 :   Parameters for tags.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="TeamsAndCondition"></a>
 
 `TeamsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2813,6 +2981,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TeamsAnyCondition"></a>
+
 `TeamsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2832,6 +3002,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.intercom.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsAnyValueFilter"></a>
 
 `TeamsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2854,6 +3026,8 @@ Classes
     `type_: Any`
     :   Type of team (e.g., 'internal', 'external').
 
+<a id="TeamsContainsCondition"></a>
+
 `TeamsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2865,6 +3039,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.intercom.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsEqCondition"></a>
 
 `TeamsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2878,6 +3054,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.intercom.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsFuzzyCondition"></a>
+
 `TeamsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2889,6 +3067,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsGetParams"></a>
 
 `TeamsGetParams(*args, **kwargs)`
 :   Parameters for teams.get operation
@@ -2902,6 +3082,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TeamsGtCondition"></a>
+
 `TeamsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2914,6 +3096,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.intercom.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsGteCondition"></a>
+
 `TeamsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2925,6 +3109,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.intercom.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInCondition"></a>
 
 `TeamsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2945,6 +3131,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.intercom.types.TeamsInFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInFilter"></a>
 
 `TeamsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2967,6 +3155,8 @@ Classes
     `type_: list[str]`
     :   Type of team (e.g., 'internal', 'external').
 
+<a id="TeamsKeywordCondition"></a>
+
 `TeamsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2978,6 +3168,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsLikeCondition"></a>
 
 `TeamsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2991,12 +3183,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
     :   The type of the None singleton.
 
+<a id="TeamsListParams"></a>
+
 `TeamsListParams(*args, **kwargs)`
 :   Parameters for teams.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="TeamsLtCondition"></a>
 
 `TeamsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3010,6 +3206,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.intercom.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsLteCondition"></a>
+
 `TeamsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3022,6 +3220,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.intercom.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsNeqCondition"></a>
+
 `TeamsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3033,6 +3233,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.intercom.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsNotCondition"></a>
 
 `TeamsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3054,6 +3256,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TeamsOrCondition"></a>
+
 `TeamsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3073,6 +3277,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TeamsSearchFilter"></a>
 
 `TeamsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering teams search queries.
@@ -3095,6 +3301,8 @@ Classes
     `type_: str | None`
     :   Type of team (e.g., 'internal', 'external').
 
+<a id="TeamsSearchQuery"></a>
+
 `TeamsSearchQuery(*args, **kwargs)`
 :   Search query for teams entity.
 
@@ -3109,6 +3317,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.TeamsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TeamsSortFilter"></a>
 
 `TeamsSortFilter(*args, **kwargs)`
 :   Available fields for sorting teams search results.
@@ -3130,6 +3340,8 @@ Classes
 
     `type_: Literal['asc', 'desc']`
     :   Type of team (e.g., 'internal', 'external').
+
+<a id="TeamsStringFilter"></a>
 
 `TeamsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

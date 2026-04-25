@@ -10,6 +10,8 @@ Greenhouse connector.
 Classes
 -------
 
+<a id="ApplicationAttachmentQuery"></a>
+
 `ApplicationAttachmentQuery(connector: GreenhouseConnector)`
 :   Query class for ApplicationAttachment entity operations.
     
@@ -47,6 +49,8 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+<a id="ApplicationsQuery"></a>
 
 `ApplicationsQuery(connector: GreenhouseConnector)`
 :   Query class for Applications entity operations.
@@ -123,6 +127,8 @@ Classes
         Returns:
             ApplicationsListResult
 
+<a id="CandidateAttachmentQuery"></a>
+
 `CandidateAttachmentQuery(connector: GreenhouseConnector)`
 :   Query class for CandidateAttachment entity operations.
     
@@ -160,6 +166,8 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+<a id="CandidatesQuery"></a>
 
 `CandidatesQuery(connector: GreenhouseConnector)`
 :   Query class for Candidates entity operations.
@@ -237,6 +245,8 @@ Classes
         Returns:
             CandidatesListResult
 
+<a id="DepartmentsQuery"></a>
+
 `DepartmentsQuery(connector: GreenhouseConnector)`
 :   Query class for Departments entity operations.
     
@@ -293,6 +303,8 @@ Classes
         
         Returns:
             DepartmentsListResult
+
+<a id="GreenhouseConnector"></a>
 
 `GreenhouseConnector(auth_config: GreenhouseAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Greenhouse API connector.
@@ -482,6 +494,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="JobPostsQuery"></a>
+
 `JobPostsQuery(connector: GreenhouseConnector)`
 :   Query class for JobPosts entity operations.
     
@@ -548,6 +562,8 @@ Classes
         
         Returns:
             JobPostsListResult
+
+<a id="JobsQuery"></a>
 
 `JobsQuery(connector: GreenhouseConnector)`
 :   Query class for Jobs entity operations.
@@ -617,6 +633,8 @@ Classes
         Returns:
             JobsListResult
 
+<a id="OffersQuery"></a>
+
 `OffersQuery(connector: GreenhouseConnector)`
 :   Query class for Offers entity operations.
     
@@ -684,6 +702,8 @@ Classes
         Returns:
             OffersListResult
 
+<a id="OfficesQuery"></a>
+
 `OfficesQuery(connector: GreenhouseConnector)`
 :   Query class for Offices entity operations.
     
@@ -743,6 +763,8 @@ Classes
         Returns:
             OfficesListResult
 
+<a id="ScheduledInterviewsQuery"></a>
+
 `ScheduledInterviewsQuery(connector: GreenhouseConnector)`
 :   Query class for ScheduledInterviews entity operations.
     
@@ -776,6 +798,8 @@ Classes
         
         Returns:
             ScheduledInterviewsListResult
+
+<a id="SourcesQuery"></a>
 
 `SourcesQuery(connector: GreenhouseConnector)`
 :   Query class for Sources entity operations.
@@ -819,6 +843,8 @@ Classes
         
         Returns:
             SourcesListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: GreenhouseConnector)`
 :   Query class for Users entity operations.

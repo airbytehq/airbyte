@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Ad"></a>
+
 `Ad(**data: Any)`
 :   Facebook Ad
     
@@ -91,6 +93,8 @@ Classes
 
     `updated_time: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AdAccount"></a>
 
 `AdAccount(**data: Any)`
 :   Facebook Ad Account
@@ -210,6 +214,8 @@ Classes
     `timezone_offset_hours_utc: float | Any | None`
     :   The type of the None singleton.
 
+<a id="AdAccountListItem"></a>
+
 `AdAccountListItem(**data: Any)`
 :   Facebook Ad Account in list response
     
@@ -274,6 +280,8 @@ Classes
     `timezone_name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdAccountSearchData"></a>
+
 `AdAccountSearchData(**data: Any)`
 :   Search result data for ad_account entity.
     
@@ -326,6 +334,8 @@ Classes
     `timezone_name: str | None`
     :   Timezone name
 
+<a id="AdAccountsList"></a>
+
 `AdAccountsList(**data: Any)`
 :   List of Facebook Ad Accounts
     
@@ -351,6 +361,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="AdAccountsListResultMeta"></a>
+
 `AdAccountsListResultMeta(**data: Any)`
 :   Metadata for ad_accounts.Action.LIST operation
     
@@ -372,6 +384,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdAccountsSearchData"></a>
 
 `AdAccountsSearchData(**data: Any)`
 :   Search result data for ad_accounts entity.
@@ -425,6 +439,8 @@ Classes
     `timezone_name: str | None`
     :   Timezone name
 
+<a id="AdCreateParams"></a>
+
 `AdCreateParams(**data: Any)`
 :   Parameters for creating a new ad. Note - requires a Facebook Page to be connected to the ad account.
     
@@ -462,6 +478,8 @@ Classes
     `tracking_specs: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdCreateResponse"></a>
+
 `AdCreateResponse(**data: Any)`
 :   Response from creating an ad
     
@@ -483,6 +501,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdCreative"></a>
 
 `AdCreative(**data: Any)`
 :   Facebook Ad Creative
@@ -554,6 +574,8 @@ Classes
     `url_tags: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdCreativeRef"></a>
+
 `AdCreativeRef(**data: Any)`
 :   AdCreativeRef type definition
     
@@ -578,6 +600,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdCreativesList"></a>
 
 `AdCreativesList(**data: Any)`
 :   AdCreativesList type definition
@@ -604,6 +628,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="AdCreativesListResultMeta"></a>
+
 `AdCreativesListResultMeta(**data: Any)`
 :   Metadata for ad_creatives.Action.LIST operation
     
@@ -625,6 +651,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdCreativesSearchData"></a>
 
 `AdCreativesSearchData(**data: Any)`
 :   Search result data for ad_creatives entity.
@@ -675,6 +703,8 @@ Classes
     `title: str | None`
     :   Ad title
 
+<a id="AdLabel"></a>
+
 `AdLabel(**data: Any)`
 :   AdLabel type definition
     
@@ -705,6 +735,8 @@ Classes
 
     `updated_time: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AdLibraryAd"></a>
 
 `AdLibraryAd(**data: Any)`
 :   An archived ad from the Facebook Ad Library, containing ad creative content, delivery information, spend data, and demographic reach breakdowns.
@@ -809,6 +841,8 @@ Classes
     `total_reach_by_location: list[dict[str, typing.Any]] | Any | None`
     :   The type of the None singleton.
 
+<a id="AdLibraryAdDeliveryByRegionItem"></a>
+
 `AdLibraryAdDeliveryByRegionItem(**data: Any)`
 :   Nested schema for AdLibraryAd.delivery_by_region_item
     
@@ -833,6 +867,8 @@ Classes
 
     `region: str | Any | None`
     :   Region name
+
+<a id="AdLibraryAdDemographicDistributionItem"></a>
 
 `AdLibraryAdDemographicDistributionItem(**data: Any)`
 :   Nested schema for AdLibraryAd.demographic_distribution_item
@@ -862,6 +898,8 @@ Classes
     `percentage: str | Any | None`
     :   Percentage of audience in this demographic
 
+<a id="AdLibraryAdEstimatedAudienceSize"></a>
+
 `AdLibraryAdEstimatedAudienceSize(**data: Any)`
 :   Estimated audience size range
     
@@ -886,6 +924,8 @@ Classes
 
     `upper_bound: int | Any | None`
     :   Upper bound of the estimated audience size
+
+<a id="AdLibraryAdImpressions"></a>
 
 `AdLibraryAdImpressions(**data: Any)`
 :   Number of impressions as a range
@@ -912,6 +952,8 @@ Classes
     `upper_bound: int | Any | None`
     :   Upper bound of impressions
 
+<a id="AdLibraryAdSpend"></a>
+
 `AdLibraryAdSpend(**data: Any)`
 :   Amount spent on the ad as a range
     
@@ -936,6 +978,8 @@ Classes
 
     `upper_bound: int | Any | None`
     :   Upper bound of spend
+
+<a id="AdLibraryList"></a>
 
 `AdLibraryList(**data: Any)`
 :   AdLibraryList type definition
@@ -962,6 +1006,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="AdLibraryListResultMeta"></a>
+
 `AdLibraryListResultMeta(**data: Any)`
 :   Metadata for ad_library.Action.LIST operation
     
@@ -983,6 +1029,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdSet"></a>
 
 `AdSet(**data: Any)`
 :   Facebook Ad Set
@@ -1063,6 +1111,8 @@ Classes
     `updated_time: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdSetCreateParams"></a>
+
 `AdSetCreateParams(**data: Any)`
 :   Parameters for creating a new ad set
     
@@ -1115,6 +1165,8 @@ Classes
     `targeting: str | Any`
     :   The type of the None singleton.
 
+<a id="AdSetCreateResponse"></a>
+
 `AdSetCreateResponse(**data: Any)`
 :   Response from creating an ad set
     
@@ -1136,6 +1188,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdSetUpdateParams"></a>
 
 `AdSetUpdateParams(**data: Any)`
 :   Parameters for updating an ad set
@@ -1180,6 +1234,8 @@ Classes
     `targeting: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdSetsList"></a>
+
 `AdSetsList(**data: Any)`
 :   AdSetsList type definition
     
@@ -1205,6 +1261,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="AdSetsListResultMeta"></a>
+
 `AdSetsListResultMeta(**data: Any)`
 :   Metadata for ad_sets.Action.LIST operation
     
@@ -1226,6 +1284,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdSetsSearchData"></a>
 
 `AdSetsSearchData(**data: Any)`
 :   Search result data for ad_sets entity.
@@ -1288,6 +1348,8 @@ Classes
     `updated_time: str | None`
     :   Last update time
 
+<a id="AdUpdateParams"></a>
+
 `AdUpdateParams(**data: Any)`
 :   Parameters for updating an ad
     
@@ -1321,6 +1383,8 @@ Classes
 
     `tracking_specs: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AdsActionStats"></a>
 
 `AdsActionStats(**data: Any)`
 :   Action statistics for Facebook ads
@@ -1370,6 +1434,8 @@ Classes
 
     `value: float | Any | None`
     :   The type of the None singleton.
+
+<a id="AdsInsight"></a>
 
 `AdsInsight(**data: Any)`
 :   Facebook Ads Insight
@@ -1447,6 +1513,8 @@ Classes
     `spend: float | Any | None`
     :   The type of the None singleton.
 
+<a id="AdsInsightsList"></a>
+
 `AdsInsightsList(**data: Any)`
 :   AdsInsightsList type definition
     
@@ -1472,6 +1540,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="AdsInsightsListResultMeta"></a>
+
 `AdsInsightsListResultMeta(**data: Any)`
 :   Metadata for ads_insights.Action.LIST operation
     
@@ -1493,6 +1563,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsInsightsSearchData"></a>
 
 `AdsInsightsSearchData(**data: Any)`
 :   Search result data for ads_insights entity.
@@ -1570,6 +1642,8 @@ Classes
     `spend: float | None`
     :   Amount spent
 
+<a id="AdsList"></a>
+
 `AdsList(**data: Any)`
 :   AdsList type definition
     
@@ -1595,6 +1669,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="AdsListResultMeta"></a>
+
 `AdsListResultMeta(**data: Any)`
 :   Metadata for ads.Action.LIST operation
     
@@ -1616,6 +1692,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsSearchData"></a>
 
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
@@ -1663,6 +1741,8 @@ Classes
     `updated_time: str | None`
     :   Last update time
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -1690,6 +1770,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1751,6 +1833,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountSearchResult"></a>
+
 `AdAccountSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1787,6 +1871,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdAccountsSearchResult"></a>
 
 `AdAccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1825,6 +1911,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdCreativesSearchResult"></a>
+
 `AdCreativesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1861,6 +1949,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdSetsSearchResult"></a>
 
 `AdSetsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1899,6 +1989,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsInsightsSearchResult"></a>
+
 `AdsInsightsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1935,6 +2027,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsSearchResult"></a>
 
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1973,6 +2067,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2009,6 +2105,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomConversionsSearchResult"></a>
 
 `CustomConversionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2047,6 +2145,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ImagesSearchResult"></a>
+
 `ImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2084,6 +2184,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="VideosSearchResult"></a>
+
 `VideosSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -2099,6 +2201,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BidConstraints"></a>
 
 `BidConstraints(**data: Any)`
 :   BidConstraints type definition
@@ -2121,6 +2225,8 @@ Classes
 
     `roas_average_floor: int | Any | None`
     :   The type of the None singleton.
+
+<a id="BidInfo"></a>
 
 `BidInfo(**data: Any)`
 :   BidInfo type definition
@@ -2156,6 +2262,8 @@ Classes
     `social: int | Any | None`
     :   The type of the None singleton.
 
+<a id="BusinessRef"></a>
+
 `BusinessRef(**data: Any)`
 :   Reference to a Facebook Business
     
@@ -2180,6 +2288,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   Facebook Ad Campaign
@@ -2275,6 +2385,8 @@ Classes
     `updated_time: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignCreateParams"></a>
+
 `CampaignCreateParams(**data: Any)`
 :   Parameters for creating a new campaign
     
@@ -2318,6 +2430,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignCreateResponse"></a>
+
 `CampaignCreateResponse(**data: Any)`
 :   Response from creating a campaign
     
@@ -2339,6 +2453,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignUpdateParams"></a>
 
 `CampaignUpdateParams(**data: Any)`
 :   Parameters for updating a campaign
@@ -2377,6 +2493,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsList"></a>
+
 `CampaignsList(**data: Any)`
 :   CampaignsList type definition
     
@@ -2402,6 +2520,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -2423,6 +2543,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -2482,6 +2604,8 @@ Classes
     `updated_time: str | None`
     :   Last update time
 
+<a id="CurrentUser"></a>
+
 `CurrentUser(**data: Any)`
 :   Current Facebook user associated with the access token
     
@@ -2506,6 +2630,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CustomConversion"></a>
 
 `CustomConversion(**data: Any)`
 :   Facebook Custom Conversion
@@ -2577,6 +2703,8 @@ Classes
     `rule: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomConversionsList"></a>
+
 `CustomConversionsList(**data: Any)`
 :   CustomConversionsList type definition
     
@@ -2602,6 +2730,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="CustomConversionsListResultMeta"></a>
+
 `CustomConversionsListResultMeta(**data: Any)`
 :   Metadata for custom_conversions.Action.LIST operation
     
@@ -2623,6 +2753,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomConversionsSearchData"></a>
 
 `CustomConversionsSearchData(**data: Any)`
 :   Search result data for custom_conversions entity.
@@ -2670,6 +2802,8 @@ Classes
     `name: str | None`
     :   Custom Conversion name
 
+<a id="DataSource"></a>
+
 `DataSource(**data: Any)`
 :   DataSource type definition
     
@@ -2697,6 +2831,8 @@ Classes
 
     `source_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="FacebookMarketingCheckResult"></a>
 
 `FacebookMarketingCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2731,6 +2867,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="FacebookMarketingExecuteResult"></a>
+
 `FacebookMarketingExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2760,6 +2898,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FacebookMarketingExecuteResultWithMeta"></a>
 
 `FacebookMarketingExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2822,6 +2962,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountsListResult"></a>
+
 `AdAccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2864,6 +3006,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdCreativesListResult"></a>
 
 `AdCreativesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2908,6 +3052,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdLibraryListResult"></a>
+
 `AdLibraryListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2950,6 +3096,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdSetsListResult"></a>
 
 `AdSetsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2994,6 +3142,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsListResult"></a>
+
 `AdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3036,6 +3186,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsInsightsListResult"></a>
 
 `AdsInsightsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3080,6 +3232,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResult"></a>
+
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3122,6 +3276,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomConversionsListResult"></a>
 
 `CustomConversionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3166,6 +3322,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ImagesListResult"></a>
+
 `ImagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3208,6 +3366,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PixelsListResult"></a>
 
 `PixelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3252,6 +3412,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="VideosListResult"></a>
+
 `VideosListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3294,6 +3456,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PixelStatsListResult"></a>
+
 `PixelStatsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3311,6 +3475,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.FacebookMarketingExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="FacebookMarketingOauth20AuthenticationAuthConfig"></a>
 
 `FacebookMarketingOauth20AuthenticationAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
@@ -3340,6 +3506,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FacebookMarketingReplicationConfig"></a>
+
 `FacebookMarketingReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Facebook Marketing.
     
@@ -3362,6 +3530,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FacebookMarketingServiceAccountKeyAuthenticationAuthConfig"></a>
+
 `FacebookMarketingServiceAccountKeyAuthenticationAuthConfig(**data: Any)`
 :   Service Account Key Authentication
     
@@ -3383,6 +3553,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Image"></a>
 
 `Image(**data: Any)`
 :   Image type definition
@@ -3454,6 +3626,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ImagesList"></a>
+
 `ImagesList(**data: Any)`
 :   ImagesList type definition
     
@@ -3479,6 +3653,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="ImagesListResultMeta"></a>
+
 `ImagesListResultMeta(**data: Any)`
 :   Metadata for images.Action.LIST operation
     
@@ -3500,6 +3676,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ImagesSearchData"></a>
 
 `ImagesSearchData(**data: Any)`
 :   Search result data for images entity.
@@ -3553,6 +3731,8 @@ Classes
     `width: int | None`
     :   Image width
 
+<a id="IssueInfo"></a>
+
 `IssueInfo(**data: Any)`
 :   IssueInfo type definition
     
@@ -3587,6 +3767,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LearningStageInfo"></a>
+
 `LearningStageInfo(**data: Any)`
 :   LearningStageInfo type definition
     
@@ -3618,6 +3800,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="Paging"></a>
+
 `Paging(**data: Any)`
 :   Paging type definition
     
@@ -3646,6 +3830,8 @@ Classes
     `previous: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PagingCursors"></a>
+
 `PagingCursors(**data: Any)`
 :   Nested schema for Paging.cursors
     
@@ -3670,6 +3856,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Pixel"></a>
 
 `Pixel(**data: Any)`
 :   Facebook Ads Pixel
@@ -3729,6 +3917,8 @@ Classes
     `owner_business: airbyte_agent_sdk.connectors.facebook_marketing.models.PixelOwnerBusiness | Any | None`
     :   The type of the None singleton.
 
+<a id="PixelCreator"></a>
+
 `PixelCreator(**data: Any)`
 :   User who created the pixel
     
@@ -3753,6 +3943,8 @@ Classes
 
     `name: str | Any | None`
     :   Creator user name
+
+<a id="PixelOwnerAdAccount"></a>
 
 `PixelOwnerAdAccount(**data: Any)`
 :   Ad account that owns the pixel
@@ -3779,6 +3971,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PixelOwnerBusiness"></a>
+
 `PixelOwnerBusiness(**data: Any)`
 :   Business that owns the pixel
     
@@ -3803,6 +3997,8 @@ Classes
 
     `name: str | Any | None`
     :   Owner business name
+
+<a id="PixelStat"></a>
 
 `PixelStat(**data: Any)`
 :   Facebook Pixel event stat entry showing event counts and quality metrics
@@ -3844,6 +4040,8 @@ Classes
     `total_matched_count: int | Any | None`
     :   The type of the None singleton.
 
+<a id="PixelStatDataItem"></a>
+
 `PixelStatDataItem(**data: Any)`
 :   Nested schema for PixelStat.data_item
     
@@ -3869,6 +4067,8 @@ Classes
     `value: int | Any | None`
     :   Event count at the timestamp
 
+<a id="PixelStatsList"></a>
+
 `PixelStatsList(**data: Any)`
 :   PixelStatsList type definition
     
@@ -3890,6 +4090,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PixelsList"></a>
 
 `PixelsList(**data: Any)`
 :   PixelsList type definition
@@ -3916,6 +4118,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="PixelsListResultMeta"></a>
+
 `PixelsListResultMeta(**data: Any)`
 :   Metadata for pixels.Action.LIST operation
     
@@ -3937,6 +4141,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PromotedObject"></a>
 
 `PromotedObject(**data: Any)`
 :   PromotedObject type definition
@@ -3981,6 +4187,8 @@ Classes
     `product_set_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="Recommendation"></a>
+
 `Recommendation(**data: Any)`
 :   Recommendation type definition
     
@@ -4018,6 +4226,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UpdateResponse"></a>
+
 `UpdateResponse(**data: Any)`
 :   Generic response from update operations
     
@@ -4039,6 +4249,8 @@ Classes
 
     `success: bool | Any`
     :   The type of the None singleton.
+
+<a id="Video"></a>
 
 `Video(**data: Any)`
 :   Video type definition
@@ -4149,6 +4361,8 @@ Classes
     `views: int | Any | None`
     :   The type of the None singleton.
 
+<a id="VideoFormat"></a>
+
 `VideoFormat(**data: Any)`
 :   VideoFormat type definition
     
@@ -4183,6 +4397,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="VideosList"></a>
+
 `VideosList(**data: Any)`
 :   VideosList type definition
     
@@ -4208,6 +4424,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.facebook_marketing.models.Paging | Any`
     :   The type of the None singleton.
 
+<a id="VideosListResultMeta"></a>
+
 `VideosListResultMeta(**data: Any)`
 :   Metadata for videos.Action.LIST operation
     
@@ -4229,6 +4447,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="VideosSearchData"></a>
 
 `VideosSearchData(**data: Any)`
 :   Search result data for videos entity.

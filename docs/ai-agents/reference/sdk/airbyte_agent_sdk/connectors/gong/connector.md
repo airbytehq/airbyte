@@ -10,6 +10,8 @@ Gong connector.
 Classes
 -------
 
+<a id="CallAudioQuery"></a>
+
 `CallAudioQuery(connector: GongConnector)`
 :   Query class for CallAudio entity operations.
     
@@ -48,6 +50,8 @@ Classes
                 Returns:
                     str: Path to the downloaded file
 
+<a id="CallTranscriptsQuery"></a>
+
 `CallTranscriptsQuery(connector: GongConnector)`
 :   Query class for CallTranscripts entity operations.
     
@@ -65,6 +69,8 @@ Classes
         
         Returns:
             CallTranscriptsListResult
+
+<a id="CallVideoQuery"></a>
 
 `CallVideoQuery(connector: GongConnector)`
 :   Query class for CallVideo entity operations.
@@ -103,6 +109,8 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+<a id="CallsExtensiveQuery"></a>
 
 `CallsExtensiveQuery(connector: GongConnector)`
 :   Query class for CallsExtensive entity operations.
@@ -153,6 +161,8 @@ Classes
         
         Returns:
             CallsExtensiveListResult
+
+<a id="CallsQuery"></a>
 
 `CallsQuery(connector: GongConnector)`
 :   Query class for Calls entity operations.
@@ -225,6 +235,8 @@ Classes
         Returns:
             CallsListResult
 
+<a id="CoachingQuery"></a>
+
 `CoachingQuery(connector: GongConnector)`
 :   Query class for Coaching entity operations.
     
@@ -244,6 +256,8 @@ Classes
         
         Returns:
             CoachingListResult
+
+<a id="GongConnector"></a>
 
 `GongConnector(auth_config: GongAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Gong API connector.
@@ -487,6 +501,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="LibraryFolderContentQuery"></a>
+
 `LibraryFolderContentQuery(connector: GongConnector)`
 :   Query class for LibraryFolderContent entity operations.
     
@@ -505,6 +521,8 @@ Classes
         Returns:
             LibraryFolderContentListResult
 
+<a id="LibraryFoldersQuery"></a>
+
 `LibraryFoldersQuery(connector: GongConnector)`
 :   Query class for LibraryFolders entity operations.
     
@@ -521,6 +539,8 @@ Classes
         
         Returns:
             LibraryFoldersListResult
+
+<a id="SettingsScorecardsQuery"></a>
 
 `SettingsScorecardsQuery(connector: GongConnector)`
 :   Query class for SettingsScorecards entity operations.
@@ -569,6 +589,8 @@ Classes
         Returns:
             SettingsScorecardsListResult
 
+<a id="SettingsTrackersQuery"></a>
+
 `SettingsTrackersQuery(connector: GongConnector)`
 :   Query class for SettingsTrackers entity operations.
     
@@ -585,6 +607,8 @@ Classes
         
         Returns:
             SettingsTrackersListResult
+
+<a id="StatsActivityAggregateQuery"></a>
 
 `StatsActivityAggregateQuery(connector: GongConnector)`
 :   Query class for StatsActivityAggregate entity operations.
@@ -603,6 +627,8 @@ Classes
         Returns:
             StatsActivityAggregateListResult
 
+<a id="StatsActivityDayByDayQuery"></a>
+
 `StatsActivityDayByDayQuery(connector: GongConnector)`
 :   Query class for StatsActivityDayByDay entity operations.
     
@@ -619,6 +645,8 @@ Classes
         
         Returns:
             StatsActivityDayByDayListResult
+
+<a id="StatsActivityScorecardsQuery"></a>
 
 `StatsActivityScorecardsQuery(connector: GongConnector)`
 :   Query class for StatsActivityScorecards entity operations.
@@ -670,6 +698,8 @@ Classes
         Returns:
             StatsActivityScorecardsListResult
 
+<a id="StatsInteractionQuery"></a>
+
 `StatsInteractionQuery(connector: GongConnector)`
 :   Query class for StatsInteraction entity operations.
     
@@ -686,6 +716,8 @@ Classes
         
         Returns:
             StatsInteractionListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: GongConnector)`
 :   Query class for Users entity operations.
@@ -751,6 +783,8 @@ Classes
         
         Returns:
             UsersListResult
+
+<a id="WorkspacesQuery"></a>
 
 `WorkspacesQuery(connector: GongConnector)`
 :   Query class for Workspaces entity operations.

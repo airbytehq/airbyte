@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountUsersSearchData"></a>
+
 `AccountUsersSearchData(**data: Any)`
 :   Search result data for account_users entity.
     
@@ -46,6 +48,8 @@ Classes
 
     `user: str | None`
     :   User URN
+
+<a id="AccountsSearchData"></a>
 
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
@@ -107,6 +111,8 @@ Classes
 
     `version: dict[str, typing.Any] | None`
     :   Version information
+
+<a id="AdCampaignAnalyticsSearchData"></a>
 
 `AdCampaignAnalyticsSearchData(**data: Any)`
 :   Search result data for ad_campaign_analytics entity.
@@ -244,6 +250,8 @@ Classes
     `video_views: float | None`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsSearchData"></a>
+
 `AdCreativeAnalyticsSearchData(**data: Any)`
 :   Search result data for ad_creative_analytics entity.
     
@@ -380,6 +388,8 @@ Classes
     `video_views: float | None`
     :   Number of video views
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -448,6 +458,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -475,6 +487,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -513,6 +527,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountUsersSearchResult"></a>
+
 `AccountUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -528,6 +544,8 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AccountsSearchResult"></a>
 
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -545,6 +563,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdCampaignAnalyticsSearchResult"></a>
+
 `AdCampaignAnalyticsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -560,6 +580,8 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdCreativeAnalyticsSearchResult"></a>
 
 `AdCreativeAnalyticsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -577,6 +599,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CampaignGroupsSearchResult"></a>
+
 `CampaignGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -592,6 +616,8 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchResult"></a>
 
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -609,6 +635,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ConversionsSearchResult"></a>
+
 `ConversionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -625,6 +653,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CreativesSearchResult"></a>
+
 `CreativesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -640,6 +670,8 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignGroupsSearchData"></a>
 
 `CampaignGroupsSearchData(**data: Any)`
 :   Search result data for campaign_groups entity.
@@ -689,6 +721,8 @@ Classes
 
     `total_budget: dict[str, typing.Any] | None`
     :   Total budget for the campaign group
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -781,6 +815,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="ConversionsSearchData"></a>
+
 `ConversionsSearchData(**data: Any)`
 :   Search result data for conversions entity.
     
@@ -842,6 +878,8 @@ Classes
     `view_through_attribution_window_size: int | None`
     :   View-through attribution window size in days
 
+<a id="CreativesSearchData"></a>
+
 `CreativesSearchData(**data: Any)`
 :   Search result data for creatives entity.
     
@@ -900,6 +938,8 @@ Classes
     `serving_hold_reasons: list[typing.Any] | None`
     :   Reasons for holding creative from serving
 
+<a id="LinkedinAdsAuthConfig"></a>
+
 `LinkedinAdsAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -927,6 +967,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth 2.0 refresh token for automatic renewal
+
+<a id="LinkedinAdsConnector"></a>
 
 `LinkedinAdsConnector(auth_config: LinkedinAdsAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Linkedin-Ads API connector.
@@ -1183,6 +1225,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="LinkedinAdsReplicationConfig"></a>
 
 `LinkedinAdsReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from LinkedIn Ads.

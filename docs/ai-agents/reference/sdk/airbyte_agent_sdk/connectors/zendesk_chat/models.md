@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Account"></a>
+
 `Account(**data: Any)`
 :   Zendesk Chat account information
     
@@ -46,6 +48,8 @@ Classes
 
     `status: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Agent"></a>
 
 `Agent(**data: Any)`
 :   Zendesk Chat agent
@@ -111,6 +115,8 @@ Classes
     `skills: list[int] | Any | None`
     :   The type of the None singleton.
 
+<a id="AgentRoles"></a>
+
 `AgentRoles(**data: Any)`
 :   Agent role flags
     
@@ -135,6 +141,8 @@ Classes
 
     `owner: bool | Any | None`
     :   The type of the None singleton.
+
+<a id="AgentTimeline"></a>
 
 `AgentTimeline(**data: Any)`
 :   Agent activity timeline entry
@@ -170,6 +178,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AgentTimelineListResultMeta"></a>
+
 `AgentTimelineListResultMeta(**data: Any)`
 :   Metadata for agent_timeline.Action.LIST operation
     
@@ -194,6 +204,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AgentsSearchData"></a>
 
 `AgentsSearchData(**data: Any)`
 :   Search result data for agents entity.
@@ -241,6 +253,8 @@ Classes
     `role_id: int | None`
     :   Agent role ID
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -268,6 +282,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -324,6 +340,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentsSearchResult"></a>
+
 `AgentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -360,6 +378,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChatsSearchResult"></a>
 
 `ChatsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -398,6 +418,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DepartmentsSearchResult"></a>
+
 `DepartmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -434,6 +456,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShortcutsSearchResult"></a>
 
 `ShortcutsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -472,6 +496,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TriggersSearchResult"></a>
+
 `TriggersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -487,6 +513,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Ban"></a>
 
 `Ban(**data: Any)`
 :   Banned visitor
@@ -527,6 +555,8 @@ Classes
 
     `visitor_name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Billing"></a>
 
 `Billing(**data: Any)`
 :   Account billing information
@@ -585,6 +615,8 @@ Classes
 
     `state: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Chat"></a>
 
 `Chat(**data: Any)`
 :   Chat conversation transcript
@@ -689,6 +721,8 @@ Classes
     `zendesk_ticket_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ChatConversion"></a>
+
 `ChatConversion(**data: Any)`
 :   ChatConversion type definition
     
@@ -722,6 +756,8 @@ Classes
 
     `timestamp: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ChatEngagement"></a>
 
 `ChatEngagement(**data: Any)`
 :   ChatEngagement type definition
@@ -790,6 +826,8 @@ Classes
     `timestamp: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChatHistoryItem"></a>
+
 `ChatHistoryItem(**data: Any)`
 :   ChatHistoryItem type definition
     
@@ -851,6 +889,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChatSession"></a>
+
 `ChatSession(**data: Any)`
 :   ChatSession type definition
     
@@ -903,6 +943,8 @@ Classes
     `user_agent: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChatsListResultMeta"></a>
+
 `ChatsListResultMeta(**data: Any)`
 :   Metadata for chats.Action.LIST operation
     
@@ -927,6 +969,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ChatsSearchData"></a>
 
 `ChatsSearchData(**data: Any)`
 :   Search result data for chats entity.
@@ -974,6 +1018,8 @@ Classes
     `update_timestamp: str | None`
     :   Last update timestamp
 
+<a id="ConversionAttribution"></a>
+
 `ConversionAttribution(**data: Any)`
 :   ConversionAttribution type definition
     
@@ -1007,6 +1053,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Department"></a>
 
 `Department(**data: Any)`
 :   Department type definition
@@ -1045,6 +1093,8 @@ Classes
     `settings: Any`
     :   The type of the None singleton.
 
+<a id="DepartmentSettings"></a>
+
 `DepartmentSettings(**data: Any)`
 :   DepartmentSettings type definition
     
@@ -1066,6 +1116,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DepartmentsSearchData"></a>
 
 `DepartmentsSearchData(**data: Any)`
 :   Search result data for departments entity.
@@ -1097,6 +1149,8 @@ Classes
 
     `name: str | None`
     :   Department name
+
+<a id="Goal"></a>
 
 `Goal(**data: Any)`
 :   Goal type definition
@@ -1141,6 +1195,8 @@ Classes
     `settings: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageCount"></a>
+
 `MessageCount(**data: Any)`
 :   MessageCount type definition
     
@@ -1168,6 +1224,8 @@ Classes
 
     `visitor: int | Any | None`
     :   The type of the None singleton.
+
+<a id="Plan"></a>
 
 `Plan(**data: Any)`
 :   Account plan details
@@ -1272,6 +1330,8 @@ Classes
     `widget_customization: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ResponseTime"></a>
+
 `ResponseTime(**data: Any)`
 :   ResponseTime type definition
     
@@ -1299,6 +1359,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Role"></a>
 
 `Role(**data: Any)`
 :   Role type definition
@@ -1337,6 +1399,8 @@ Classes
     `permissions: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="RoutingSettings"></a>
+
 `RoutingSettings(**data: Any)`
 :   RoutingSettings type definition
     
@@ -1373,6 +1437,8 @@ Classes
 
     `skill_routing: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="Shortcut"></a>
 
 `Shortcut(**data: Any)`
 :   Shortcut type definition
@@ -1417,6 +1483,8 @@ Classes
     `tags: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="ShortcutsSearchData"></a>
+
 `ShortcutsSearchData(**data: Any)`
 :   Search result data for shortcuts entity.
     
@@ -1447,6 +1515,8 @@ Classes
 
     `tags: list[typing.Any] | None`
     :   Tags applied when shortcut is used
+
+<a id="Skill"></a>
 
 `Skill(**data: Any)`
 :   Skill type definition
@@ -1481,6 +1551,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Trigger"></a>
 
 `Trigger(**data: Any)`
 :   Trigger type definition
@@ -1528,6 +1600,8 @@ Classes
     `run_once: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="TriggersSearchData"></a>
+
 `TriggersSearchData(**data: Any)`
 :   Search result data for triggers entity.
     
@@ -1555,6 +1629,8 @@ Classes
 
     `name: str | None`
     :   Trigger name
+
+<a id="Visitor"></a>
 
 `Visitor(**data: Any)`
 :   Visitor type definition
@@ -1590,6 +1666,8 @@ Classes
     `phone: str | Any | None`
     :   The type of the None singleton.
 
+<a id="WebpathItem"></a>
+
 `WebpathItem(**data: Any)`
 :   WebpathItem type definition
     
@@ -1615,6 +1693,8 @@ Classes
     `timestamp: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ZendeskChatAuthConfig"></a>
+
 `ZendeskChatAuthConfig(**data: Any)`
 :   OAuth 2.0 Access Token - Authenticate using an OAuth 2.0 access token from Zendesk
     
@@ -1636,6 +1716,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskChatCheckResult"></a>
 
 `ZendeskChatCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1669,6 +1751,8 @@ Classes
 
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
+
+<a id="ZendeskChatExecuteResult"></a>
 
 `ZendeskChatExecuteResult(**data: Any)`
 :   Response envelope with data only.
@@ -1706,6 +1790,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskChatExecuteResultWithMeta"></a>
 
 `ZendeskChatExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1759,6 +1845,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentTimelineListResult"></a>
+
 `AgentTimelineListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1802,6 +1890,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChatsListResult"></a>
+
 `ChatsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1844,6 +1934,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BansListResult"></a>
+
 `BansListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1884,6 +1976,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AgentsListResult"></a>
 
 `AgentsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -1926,6 +2020,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DepartmentsListResult"></a>
+
 `DepartmentsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1966,6 +2062,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GoalsListResult"></a>
 
 `GoalsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2008,6 +2106,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RolesListResult"></a>
+
 `RolesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2048,6 +2148,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShortcutsListResult"></a>
 
 `ShortcutsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2090,6 +2192,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SkillsListResult"></a>
+
 `SkillsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2131,6 +2235,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TriggersListResult"></a>
+
 `TriggersListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2148,6 +2254,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_chat.models.ZendeskChatExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ZendeskChatReplicationConfig"></a>
 
 `ZendeskChatReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Zendesk Chat.

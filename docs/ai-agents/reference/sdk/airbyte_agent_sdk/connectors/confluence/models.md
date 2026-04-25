@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -96,6 +100,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AuditSearchResult"></a>
+
 `AuditSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -132,6 +138,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BlogPostsSearchResult"></a>
 
 `BlogPostsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -170,6 +178,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupsSearchResult"></a>
+
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PagesSearchResult"></a>
 
 `PagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -244,6 +256,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpacesSearchResult"></a>
+
 `SpacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -259,6 +273,8 @@ Classes
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AuditListResultMeta"></a>
 
 `AuditListResultMeta(**data: Any)`
 :   Metadata for audit.Action.LIST operation
@@ -290,6 +306,8 @@ Classes
 
     `start: int | Any`
     :   The type of the None singleton.
+
+<a id="AuditRecord"></a>
 
 `AuditRecord(**data: Any)`
 :   Confluence audit record
@@ -343,6 +361,8 @@ Classes
     `sys_admin: bool | Any`
     :   The type of the None singleton.
 
+<a id="AuditRecordAffectedobject"></a>
+
 `AuditRecordAffectedobject(**data: Any)`
 :   Object affected by the audit event
     
@@ -368,6 +388,8 @@ Classes
     `object_type: str | Any`
     :   Type of the affected object
 
+<a id="AuditRecordAssociatedobjectsItem"></a>
+
 `AuditRecordAssociatedobjectsItem(**data: Any)`
 :   Nested schema for AuditRecord.associatedObjects_item
     
@@ -392,6 +414,8 @@ Classes
 
     `object_type: str | Any`
     :   Type of the associated object
+
+<a id="AuditRecordAuthor"></a>
 
 `AuditRecordAuthor(**data: Any)`
 :   User who triggered the audit event
@@ -433,6 +457,8 @@ Classes
     `type_: str | Any`
     :   Author type
 
+<a id="AuditRecordsList"></a>
+
 `AuditRecordsList(**data: Any)`
 :   Paginated list of audit records
     
@@ -467,6 +493,8 @@ Classes
     `start: int | Any`
     :   The type of the None singleton.
 
+<a id="AuditRecordsListLinks"></a>
+
 `AuditRecordsListLinks(**data: Any)`
 :   Nested schema for AuditRecordsList._links
     
@@ -497,6 +525,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="AuditSearchData"></a>
 
 `AuditSearchData(**data: Any)`
 :   Search result data for audit entity.
@@ -550,6 +580,8 @@ Classes
     `sys_admin: bool | None`
     :   Indicates if the user triggering the audit event is a system admin.
 
+<a id="BlogPost"></a>
+
 `BlogPost(**data: Any)`
 :   Confluence blog post object
     
@@ -596,6 +628,8 @@ Classes
     `version: airbyte_agent_sdk.connectors.confluence.models.BlogPostVersion | Any`
     :   The type of the None singleton.
 
+<a id="BlogPostBody"></a>
+
 `BlogPostBody(**data: Any)`
 :   Blog post body content
     
@@ -620,6 +654,8 @@ Classes
 
     `storage: dict[str, typing.Any] | Any`
     :   Storage format body
+
+<a id="BlogPostLinks"></a>
 
 `BlogPostLinks(**data: Any)`
 :   Links related to the blog post
@@ -654,6 +690,8 @@ Classes
 
     `webui: str | Any`
     :   Web UI link
+
+<a id="BlogPostVersion"></a>
 
 `BlogPostVersion(**data: Any)`
 :   Version information
@@ -692,6 +730,8 @@ Classes
     `number: int | Any`
     :   Version number
 
+<a id="BlogPostsList"></a>
+
 `BlogPostsList(**data: Any)`
 :   Paginated list of blog posts
     
@@ -716,6 +756,8 @@ Classes
 
     `results: list[airbyte_agent_sdk.connectors.confluence.models.BlogPost] | Any`
     :   The type of the None singleton.
+
+<a id="BlogPostsListLinks"></a>
 
 `BlogPostsListLinks(**data: Any)`
 :   Nested schema for BlogPostsList._links
@@ -742,6 +784,8 @@ Classes
     `next: str | Any`
     :   URL for the next page of results
 
+<a id="BlogPostsListResultMeta"></a>
+
 `BlogPostsListResultMeta(**data: Any)`
 :   Metadata for blog_posts.Action.LIST operation
     
@@ -763,6 +807,8 @@ Classes
 
     `next: str | Any`
     :   The type of the None singleton.
+
+<a id="BlogPostsSearchData"></a>
 
 `BlogPostsSearchData(**data: Any)`
 :   Search result data for blog_posts entity.
@@ -810,6 +856,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="ConfluenceAuthConfig"></a>
+
 `ConfluenceAuthConfig(**data: Any)`
 :   Confluence API Token Authentication - Authenticate using your Atlassian account email and API token
     
@@ -834,6 +882,8 @@ Classes
 
     `username: str`
     :   Your Atlassian account email address
+
+<a id="ConfluenceCheckResult"></a>
 
 `ConfluenceCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -868,6 +918,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="ConfluenceExecuteResult"></a>
+
 `ConfluenceExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -896,6 +948,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ConfluenceExecuteResultWithMeta"></a>
 
 `ConfluenceExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -952,6 +1006,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AuditListResult"></a>
+
 `AuditListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -994,6 +1050,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BlogPostsListResult"></a>
 
 `BlogPostsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1038,6 +1096,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupsListResult"></a>
+
 `GroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1080,6 +1140,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PagesListResult"></a>
 
 `PagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1124,6 +1186,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SpacesListResult"></a>
+
 `SpacesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1142,6 +1206,8 @@ Classes
     * airbyte_agent_sdk.connectors.confluence.models.ConfluenceExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Group"></a>
 
 `Group(**data: Any)`
 :   Confluence group object
@@ -1183,6 +1249,8 @@ Classes
     `usage_type: str | Any`
     :   The type of the None singleton.
 
+<a id="GroupLinks"></a>
+
 `GroupLinks(**data: Any)`
 :   Links related to the group
     
@@ -1204,6 +1272,8 @@ Classes
 
     `self: str | Any`
     :   Self link
+
+<a id="GroupsList"></a>
 
 `GroupsList(**data: Any)`
 :   Paginated list of groups
@@ -1239,6 +1309,8 @@ Classes
     `start: int | Any`
     :   The type of the None singleton.
 
+<a id="GroupsListLinks"></a>
+
 `GroupsListLinks(**data: Any)`
 :   Nested schema for GroupsList._links
     
@@ -1269,6 +1341,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="GroupsListResultMeta"></a>
 
 `GroupsListResultMeta(**data: Any)`
 :   Metadata for groups.Action.LIST operation
@@ -1301,6 +1375,8 @@ Classes
     `start: int | Any`
     :   The type of the None singleton.
 
+<a id="GroupsSearchData"></a>
+
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
     
@@ -1331,6 +1407,8 @@ Classes
 
     `type_: str | None`
     :   The type of group
+
+<a id="Page"></a>
 
 `Page(**data: Any)`
 :   Confluence page object
@@ -1393,6 +1471,8 @@ Classes
     `version: airbyte_agent_sdk.connectors.confluence.models.PageVersion | Any`
     :   The type of the None singleton.
 
+<a id="PageBody"></a>
+
 `PageBody(**data: Any)`
 :   Page body content
     
@@ -1417,6 +1497,8 @@ Classes
 
     `storage: dict[str, typing.Any] | Any`
     :   Storage format body
+
+<a id="PageLinks"></a>
 
 `PageLinks(**data: Any)`
 :   Links related to the page
@@ -1451,6 +1533,8 @@ Classes
 
     `webui: str | Any`
     :   Web UI link
+
+<a id="PageVersion"></a>
 
 `PageVersion(**data: Any)`
 :   Version information
@@ -1489,6 +1573,8 @@ Classes
     `number: int | Any`
     :   Version number
 
+<a id="PagesList"></a>
+
 `PagesList(**data: Any)`
 :   Paginated list of pages
     
@@ -1513,6 +1599,8 @@ Classes
 
     `results: list[airbyte_agent_sdk.connectors.confluence.models.Page] | Any`
     :   The type of the None singleton.
+
+<a id="PagesListLinks"></a>
 
 `PagesListLinks(**data: Any)`
 :   Nested schema for PagesList._links
@@ -1539,6 +1627,8 @@ Classes
     `next: str | Any`
     :   URL for the next page of results
 
+<a id="PagesListResultMeta"></a>
+
 `PagesListResultMeta(**data: Any)`
 :   Metadata for pages.Action.LIST operation
     
@@ -1560,6 +1650,8 @@ Classes
 
     `next: str | Any`
     :   The type of the None singleton.
+
+<a id="PagesSearchData"></a>
 
 `PagesSearchData(**data: Any)`
 :   Search result data for pages entity.
@@ -1622,6 +1714,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="Space"></a>
+
 `Space(**data: Any)`
 :   Confluence space object
     
@@ -1680,6 +1774,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="SpaceLinks"></a>
+
 `SpaceLinks(**data: Any)`
 :   Links related to the space
     
@@ -1704,6 +1800,8 @@ Classes
 
     `webui: str | Any`
     :   Web UI link
+
+<a id="SpacesList"></a>
 
 `SpacesList(**data: Any)`
 :   Paginated list of spaces
@@ -1730,6 +1828,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.confluence.models.Space] | Any`
     :   The type of the None singleton.
 
+<a id="SpacesListLinks"></a>
+
 `SpacesListLinks(**data: Any)`
 :   Nested schema for SpacesList._links
     
@@ -1755,6 +1855,8 @@ Classes
     `next: str | Any`
     :   URL for the next page of results
 
+<a id="SpacesListResultMeta"></a>
+
 `SpacesListResultMeta(**data: Any)`
 :   Metadata for spaces.Action.LIST operation
     
@@ -1776,6 +1878,8 @@ Classes
 
     `next: str | Any`
     :   The type of the None singleton.
+
+<a id="SpacesSearchData"></a>
 
 `SpacesSearchData(**data: Any)`
 :   Search result data for spaces entity.

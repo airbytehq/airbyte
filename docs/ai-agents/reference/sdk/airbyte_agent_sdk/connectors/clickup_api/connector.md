@@ -10,6 +10,8 @@ Clickup-Api connector.
 Classes
 -------
 
+<a id="ClickupApiConnector"></a>
+
 `ClickupApiConnector(auth_config: ClickupApiAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Clickup-Api API connector.
     
@@ -198,6 +200,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="CommentsQuery"></a>
+
 `CommentsQuery(connector: ClickupApiConnector)`
 :   Query class for Comments entity operations.
     
@@ -251,6 +255,8 @@ Classes
         Returns:
             CommentUpdateResponse
 
+<a id="DocsQuery"></a>
+
 `DocsQuery(connector: ClickupApiConnector)`
 :   Query class for Docs entity operations.
     
@@ -280,6 +286,8 @@ Classes
         Returns:
             DocsListResult
 
+<a id="FoldersQuery"></a>
+
 `FoldersQuery(connector: ClickupApiConnector)`
 :   Query class for Folders entity operations.
     
@@ -306,6 +314,8 @@ Classes
         
         Returns:
             FoldersListResult
+
+<a id="GoalsQuery"></a>
 
 `GoalsQuery(connector: ClickupApiConnector)`
 :   Query class for Goals entity operations.
@@ -334,6 +344,8 @@ Classes
         Returns:
             GoalsListResult
 
+<a id="ListsQuery"></a>
+
 `ListsQuery(connector: ClickupApiConnector)`
 :   Query class for Lists entity operations.
     
@@ -361,6 +373,8 @@ Classes
         Returns:
             ListsListResult
 
+<a id="MembersQuery"></a>
+
 `MembersQuery(connector: ClickupApiConnector)`
 :   Query class for Members entity operations.
     
@@ -377,6 +391,8 @@ Classes
         
         Returns:
             MembersListResult
+
+<a id="SpacesQuery"></a>
 
 `SpacesQuery(connector: ClickupApiConnector)`
 :   Query class for Spaces entity operations.
@@ -404,6 +420,8 @@ Classes
         
         Returns:
             SpacesListResult
+
+<a id="TasksQuery"></a>
 
 `TasksQuery(connector: ClickupApiConnector)`
 :   Query class for Tasks entity operations.
@@ -464,6 +482,8 @@ Classes
         Returns:
             TasksListResult
 
+<a id="TeamsQuery"></a>
+
 `TeamsQuery(connector: ClickupApiConnector)`
 :   Query class for Teams entity operations.
     
@@ -476,6 +496,8 @@ Classes
         
         Returns:
             TeamsListResult
+
+<a id="TimeTrackingQuery"></a>
 
 `TimeTrackingQuery(connector: ClickupApiConnector)`
 :   Query class for TimeTracking entity operations.
@@ -508,6 +530,8 @@ Classes
         Returns:
             TimeTrackingListResult
 
+<a id="UserQuery"></a>
+
 `UserQuery(connector: ClickupApiConnector)`
 :   Query class for User entity operations.
     
@@ -520,6 +544,8 @@ Classes
         
         Returns:
             User
+
+<a id="ViewTasksQuery"></a>
 
 `ViewTasksQuery(connector: ClickupApiConnector)`
 :   Query class for ViewTasks entity operations.
@@ -538,6 +564,8 @@ Classes
         
         Returns:
             ViewTasksListResult
+
+<a id="ViewsQuery"></a>
 
 `ViewsQuery(connector: ClickupApiConnector)`
 :   Query class for Views entity operations.

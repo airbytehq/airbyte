@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="ActivityAggregateResponse"></a>
+
 `ActivityAggregateResponse(**data: Any)`
 :   Response containing aggregated activity statistics
     
@@ -50,6 +52,8 @@ Classes
     `users_aggregate_activity_stats: list[airbyte_agent_sdk.connectors.gong.models.UserAggregateActivity] | Any`
     :   The type of the None singleton.
 
+<a id="ActivityDayByDayResponse"></a>
+
 `ActivityDayByDayResponse(**data: Any)`
 :   Response containing daily activity statistics
     
@@ -78,6 +82,8 @@ Classes
     `users_detailed_activities: list[airbyte_agent_sdk.connectors.gong.models.UserDetailedActivity] | Any`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -105,6 +111,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -161,6 +169,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CallsExtensiveSearchResult"></a>
+
 `CallsExtensiveSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -197,6 +207,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsSearchResult"></a>
 
 `CallsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -235,6 +247,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SettingsScorecardsSearchResult"></a>
+
 `SettingsScorecardsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -271,6 +285,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StatsActivityScorecardsSearchResult"></a>
 
 `StatsActivityScorecardsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -309,6 +325,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -324,6 +342,8 @@ Classes
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AnsweredScorecard"></a>
 
 `AnsweredScorecard(**data: Any)`
 :   A completed scorecard
@@ -389,6 +409,8 @@ Classes
     `visibility_type: str | Any`
     :   The type of the None singleton.
 
+<a id="AnsweredScorecardAnswer"></a>
+
 `AnsweredScorecardAnswer(**data: Any)`
 :   An answer to a scorecard question
     
@@ -432,6 +454,8 @@ Classes
     `selected_options: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="AnsweredScorecardsResponse"></a>
+
 `AnsweredScorecardsResponse(**data: Any)`
 :   Response containing answered scorecards
     
@@ -459,6 +483,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Call"></a>
 
 `Call(**data: Any)`
 :   Call object
@@ -539,6 +565,8 @@ Classes
     `workspace_id: str | Any`
     :   The type of the None singleton.
 
+<a id="CallResponse"></a>
+
 `CallResponse(**data: Any)`
 :   Response containing single call
     
@@ -564,6 +592,8 @@ Classes
     `request_id: str | Any`
     :   The type of the None singleton.
 
+<a id="CallTranscript"></a>
+
 `CallTranscript(**data: Any)`
 :   Call transcript object
     
@@ -588,6 +618,8 @@ Classes
 
     `transcript: list[airbyte_agent_sdk.connectors.gong.models.CallTranscriptTranscriptItem] | Any`
     :   The type of the None singleton.
+
+<a id="CallTranscriptTranscriptItem"></a>
 
 `CallTranscriptTranscriptItem(**data: Any)`
 :   Nested schema for CallTranscript.transcript_item
@@ -617,6 +649,8 @@ Classes
     `topic: str | Any | None`
     :   Topic
 
+<a id="CallTranscriptTranscriptItemSentencesItem"></a>
+
 `CallTranscriptTranscriptItemSentencesItem(**data: Any)`
 :   Nested schema for CallTranscriptTranscriptItem.sentences_item
     
@@ -644,6 +678,8 @@ Classes
 
     `text: str | Any`
     :   Sentence text
+
+<a id="CallTranscriptsListResultMeta"></a>
 
 `CallTranscriptsListResultMeta(**data: Any)`
 :   Metadata for call_transcripts.Action.LIST operation
@@ -673,6 +709,8 @@ Classes
     `total_records: int | Any`
     :   The type of the None singleton.
 
+<a id="CallsExtensiveListResultMeta"></a>
+
 `CallsExtensiveListResultMeta(**data: Any)`
 :   Metadata for calls_extensive.Action.LIST operation
     
@@ -700,6 +738,8 @@ Classes
 
     `total_records: int | Any`
     :   The type of the None singleton.
+
+<a id="CallsExtensiveSearchData"></a>
 
 `CallsExtensiveSearchData(**data: Any)`
 :   Search result data for calls_extensive entity.
@@ -747,6 +787,8 @@ Classes
     `startdatetime: str | None`
     :   Datetime for extensive calls.
 
+<a id="CallsListResultMeta"></a>
+
 `CallsListResultMeta(**data: Any)`
 :   Metadata for calls.Action.LIST operation
     
@@ -775,6 +817,8 @@ Classes
     `total_records: int | Any`
     :   The type of the None singleton.
 
+<a id="CallsResponse"></a>
+
 `CallsResponse(**data: Any)`
 :   Response containing list of calls
     
@@ -802,6 +846,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="CallsSearchData"></a>
 
 `CallsSearchData(**data: Any)`
 :   Search result data for calls entity.
@@ -882,6 +928,8 @@ Classes
     `workspace_id: str | None`
     :   Identifier for the workspace to which the call belongs.
 
+<a id="CoachingData"></a>
+
 `CoachingData(**data: Any)`
 :   Coaching data for a user
     
@@ -915,6 +963,8 @@ Classes
 
     `user_name: str | Any`
     :   The type of the None singleton.
+
+<a id="CoachingMetrics"></a>
 
 `CoachingMetrics(**data: Any)`
 :   Coaching metrics for a user
@@ -950,6 +1000,8 @@ Classes
     `scorecards_filled: int | Any`
     :   The type of the None singleton.
 
+<a id="CoachingResponse"></a>
+
 `CoachingResponse(**data: Any)`
 :   Response containing coaching metrics
     
@@ -980,6 +1032,8 @@ Classes
 
     `to_date_time: str | Any`
     :   The type of the None singleton.
+
+<a id="DailyActivityStats"></a>
 
 `DailyActivityStats(**data: Any)`
 :   Daily activity statistics with call IDs
@@ -1051,6 +1105,8 @@ Classes
     `to_date: str | Any`
     :   The type of the None singleton.
 
+<a id="ExtensiveCall"></a>
+
 `ExtensiveCall(**data: Any)`
 :   Detailed call object with extended information
     
@@ -1088,6 +1144,8 @@ Classes
     `parties: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItem] | Any`
     :   The type of the None singleton.
 
+<a id="ExtensiveCallCollaboration"></a>
+
 `ExtensiveCallCollaboration(**data: Any)`
 :   Collaboration data
     
@@ -1109,6 +1167,8 @@ Classes
 
     `public_comments: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
+
+<a id="ExtensiveCallContent"></a>
 
 `ExtensiveCallContent(**data: Any)`
 :   Content data including topics and trackers
@@ -1138,6 +1198,8 @@ Classes
     `trackers: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContentTrackersItem] | Any`
     :   The type of the None singleton.
 
+<a id="ExtensiveCallContentTopicsItem"></a>
+
 `ExtensiveCallContentTopicsItem(**data: Any)`
 :   Nested schema for ExtensiveCallContent.topics_item
     
@@ -1162,6 +1224,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="ExtensiveCallContentTrackersItem"></a>
 
 `ExtensiveCallContentTrackersItem(**data: Any)`
 :   Nested schema for ExtensiveCallContent.trackers_item
@@ -1197,6 +1261,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="ExtensiveCallInteraction"></a>
+
 `ExtensiveCallInteraction(**data: Any)`
 :   Interaction statistics
     
@@ -1221,6 +1287,8 @@ Classes
 
     `questions: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteractionQuestions | Any`
     :   The type of the None singleton.
+
+<a id="ExtensiveCallInteractionInteractionstatsItem"></a>
 
 `ExtensiveCallInteractionInteractionstatsItem(**data: Any)`
 :   Nested schema for ExtensiveCallInteraction.interactionStats_item
@@ -1247,6 +1315,8 @@ Classes
     `value: float | Any`
     :   Stat value
 
+<a id="ExtensiveCallInteractionQuestions"></a>
+
 `ExtensiveCallInteractionQuestions(**data: Any)`
 :   Nested schema for ExtensiveCallInteraction.questions
     
@@ -1272,6 +1342,8 @@ Classes
     `non_company_count: int | Any`
     :   The type of the None singleton.
 
+<a id="ExtensiveCallMedia"></a>
+
 `ExtensiveCallMedia(**data: Any)`
 :   Media URLs
     
@@ -1296,6 +1368,8 @@ Classes
 
     `video_url: str | Any`
     :   The type of the None singleton.
+
+<a id="ExtensiveCallMetadata"></a>
 
 `ExtensiveCallMetadata(**data: Any)`
 :   Call metadata
@@ -1376,6 +1450,8 @@ Classes
     `workspace_id: str | Any`
     :   Workspace ID
 
+<a id="ExtensiveCallPartiesItem"></a>
+
 `ExtensiveCallPartiesItem(**data: Any)`
 :   Nested schema for ExtensiveCall.parties_item
     
@@ -1425,6 +1501,8 @@ Classes
     `user_id: str | Any`
     :   Gong user ID if internal
 
+<a id="ExtensiveCallPartiesItemContextItem"></a>
+
 `ExtensiveCallPartiesItemContextItem(**data: Any)`
 :   Nested schema for ExtensiveCallPartiesItem.context_item
     
@@ -1449,6 +1527,8 @@ Classes
 
     `system: str | Any`
     :   CRM system name (e.g., Salesforce, HubSpot)
+
+<a id="ExtensiveCallPartiesItemContextItemObjectsItem"></a>
 
 `ExtensiveCallPartiesItemContextItemObjectsItem(**data: Any)`
 :   Nested schema for ExtensiveCallPartiesItemContextItem.objects_item
@@ -1478,6 +1558,8 @@ Classes
     `object_type: str | Any`
     :   CRM object type (Account, Contact, Opportunity, Lead)
 
+<a id="ExtensiveCallPartiesItemContextItemObjectsItemFieldsItem"></a>
+
 `ExtensiveCallPartiesItemContextItemObjectsItemFieldsItem(**data: Any)`
 :   Nested schema for ExtensiveCallPartiesItemContextItemObjectsItem.fields_item
     
@@ -1502,6 +1584,8 @@ Classes
 
     `value: Any`
     :   Field value
+
+<a id="ExtensiveCallsResponse"></a>
 
 `ExtensiveCallsResponse(**data: Any)`
 :   Response containing detailed call data
@@ -1530,6 +1614,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="FolderCall"></a>
 
 `FolderCall(**data: Any)`
 :   Call within a library folder
@@ -1567,6 +1653,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="FolderContentResponse"></a>
 
 `FolderContentResponse(**data: Any)`
 :   Response containing calls in a folder
@@ -1608,6 +1696,8 @@ Classes
     `updated: str | Any`
     :   The type of the None singleton.
 
+<a id="GongAccessKeyAuthenticationAuthConfig"></a>
+
 `GongAccessKeyAuthenticationAuthConfig(**data: Any)`
 :   Access Key Authentication
     
@@ -1632,6 +1722,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GongCheckResult"></a>
 
 `GongCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1666,6 +1758,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GongExecuteResult"></a>
+
 `GongExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1699,6 +1793,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GongExecuteResultWithMeta"></a>
 
 `GongExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1759,6 +1855,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StatsActivityScorecardsListResult"></a>
+
 `StatsActivityScorecardsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1801,6 +1899,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallTranscriptsListResult"></a>
 
 `CallTranscriptsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1845,6 +1945,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CallsListResult"></a>
+
 `CallsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1887,6 +1989,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CallsExtensiveListResult"></a>
 
 `CallsExtensiveListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1931,6 +2035,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LibraryFolderContentListResult"></a>
+
 `LibraryFolderContentListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1973,6 +2079,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StatsActivityAggregateListResult"></a>
 
 `StatsActivityAggregateListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2017,6 +2125,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StatsActivityDayByDayListResult"></a>
+
 `StatsActivityDayByDayListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2059,6 +2169,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StatsInteractionListResult"></a>
 
 `StatsInteractionListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2103,6 +2215,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2145,6 +2259,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CoachingListResult"></a>
+
 `CoachingListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2185,6 +2301,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LibraryFoldersListResult"></a>
 
 `LibraryFoldersListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2227,6 +2345,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SettingsScorecardsListResult"></a>
+
 `SettingsScorecardsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2267,6 +2387,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SettingsTrackersListResult"></a>
 
 `SettingsTrackersListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2309,6 +2431,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspacesListResult"></a>
+
 `WorkspacesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2326,6 +2450,8 @@ Classes
     * airbyte_agent_sdk.connectors.gong.models.GongExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GongOauth20AuthenticationAuthConfig"></a>
 
 `GongOauth20AuthenticationAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
@@ -2357,6 +2483,8 @@ Classes
 
     `refresh_token: str`
     :   Your Gong OAuth2 Refresh Token. Note: Gong uses single-use refresh tokens.
+
+<a id="InteractionStatsResponse"></a>
 
 `InteractionStatsResponse(**data: Any)`
 :   Response containing interaction statistics
@@ -2395,6 +2523,8 @@ Classes
     `to_date_time: str | Any`
     :   The type of the None singleton.
 
+<a id="LibraryFolder"></a>
+
 `LibraryFolder(**data: Any)`
 :   Library folder structure
     
@@ -2429,6 +2559,8 @@ Classes
     `updated: str | Any`
     :   The type of the None singleton.
 
+<a id="LibraryFolderContentListResultMeta"></a>
+
 `LibraryFolderContentListResultMeta(**data: Any)`
 :   Metadata for library_folder_content.Action.LIST operation
     
@@ -2457,6 +2589,8 @@ Classes
     `total_records: int | Any`
     :   The type of the None singleton.
 
+<a id="LibraryFoldersResponse"></a>
+
 `LibraryFoldersResponse(**data: Any)`
 :   Response containing library folder structure
     
@@ -2481,6 +2615,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="PaginationRecords"></a>
 
 `PaginationRecords(**data: Any)`
 :   Pagination metadata
@@ -2513,6 +2649,8 @@ Classes
     `total_records: int | Any`
     :   The type of the None singleton.
 
+<a id="PersonInteractionStat"></a>
+
 `PersonInteractionStat(**data: Any)`
 :   Individual interaction statistic
     
@@ -2537,6 +2675,8 @@ Classes
 
     `value: float | Any`
     :   The type of the None singleton.
+
+<a id="Scorecard"></a>
 
 `Scorecard(**data: Any)`
 :   Scorecard configuration
@@ -2583,6 +2723,8 @@ Classes
 
     `workspace_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ScorecardQuestion"></a>
 
 `ScorecardQuestion(**data: Any)`
 :   A question within a scorecard
@@ -2642,6 +2784,8 @@ Classes
     `updater_user_id: str | Any`
     :   The type of the None singleton.
 
+<a id="ScorecardQuestionAnsweroptionsItem"></a>
+
 `ScorecardQuestionAnsweroptionsItem(**data: Any)`
 :   Nested schema for ScorecardQuestion.answerOptions_item
     
@@ -2670,6 +2814,8 @@ Classes
     `score: float | Any`
     :   The type of the None singleton.
 
+<a id="ScorecardsResponse"></a>
+
 `ScorecardsResponse(**data: Any)`
 :   Response containing list of scorecards
     
@@ -2694,6 +2840,8 @@ Classes
 
     `scorecards: list[airbyte_agent_sdk.connectors.gong.models.Scorecard] | Any`
     :   The type of the None singleton.
+
+<a id="SettingsScorecardsSearchData"></a>
 
 `SettingsScorecardsSearchData(**data: Any)`
 :   Search result data for settings_scorecards entity.
@@ -2738,6 +2886,8 @@ Classes
     `workspace_id: str | None`
     :   The unique identifier of the workspace associated with the scorecard
 
+<a id="StatsActivityAggregateListResultMeta"></a>
+
 `StatsActivityAggregateListResultMeta(**data: Any)`
 :   Metadata for stats_activity_aggregate.Action.LIST operation
     
@@ -2765,6 +2915,8 @@ Classes
 
     `total_records: int | Any`
     :   The type of the None singleton.
+
+<a id="StatsActivityDayByDayListResultMeta"></a>
 
 `StatsActivityDayByDayListResultMeta(**data: Any)`
 :   Metadata for stats_activity_day_by_day.Action.LIST operation
@@ -2794,6 +2946,8 @@ Classes
     `total_records: int | Any`
     :   The type of the None singleton.
 
+<a id="StatsActivityScorecardsListResultMeta"></a>
+
 `StatsActivityScorecardsListResultMeta(**data: Any)`
 :   Metadata for stats_activity_scorecards.Action.LIST operation
     
@@ -2821,6 +2975,8 @@ Classes
 
     `total_records: int | Any`
     :   The type of the None singleton.
+
+<a id="StatsActivityScorecardsSearchData"></a>
 
 `StatsActivityScorecardsSearchData(**data: Any)`
 :   Search result data for stats_activity_scorecards entity.
@@ -2871,6 +3027,8 @@ Classes
     `visibility_type: str | None`
     :   Type indicating the visibility permissions for the answered scorecard.
 
+<a id="StatsInteractionListResultMeta"></a>
+
 `StatsInteractionListResultMeta(**data: Any)`
 :   Metadata for stats_interaction.Action.LIST operation
     
@@ -2898,6 +3056,8 @@ Classes
 
     `total_records: int | Any`
     :   The type of the None singleton.
+
+<a id="Tracker"></a>
 
 `Tracker(**data: Any)`
 :   Keyword tracker configuration
@@ -2963,6 +3123,8 @@ Classes
     `workspace_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TrackerLanguagekeywordsItem"></a>
+
 `TrackerLanguagekeywordsItem(**data: Any)`
 :   Nested schema for Tracker.languageKeywords_item
     
@@ -2991,6 +3153,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TrackersResponse"></a>
+
 `TrackersResponse(**data: Any)`
 :   Response containing list of trackers
     
@@ -3015,6 +3179,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="TranscriptsResponse"></a>
 
 `TranscriptsResponse(**data: Any)`
 :   Response containing call transcripts
@@ -3043,6 +3209,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   User object
@@ -3111,6 +3279,8 @@ Classes
     `trusted_email_address: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserAggregateActivity"></a>
+
 `UserAggregateActivity(**data: Any)`
 :   User with aggregated activity statistics
     
@@ -3138,6 +3308,8 @@ Classes
 
     `user_id: str | Any`
     :   The type of the None singleton.
+
+<a id="UserAggregateActivityStats"></a>
 
 `UserAggregateActivityStats(**data: Any)`
 :   Aggregated activity statistics for a user
@@ -3203,6 +3375,8 @@ Classes
     `own_calls_listened_to: int | Any`
     :   The type of the None singleton.
 
+<a id="UserDetailedActivity"></a>
+
 `UserDetailedActivity(**data: Any)`
 :   User with detailed daily activity statistics
     
@@ -3230,6 +3404,8 @@ Classes
 
     `user_id: str | Any`
     :   The type of the None singleton.
+
+<a id="UserInteractionStats"></a>
 
 `UserInteractionStats(**data: Any)`
 :   User with interaction statistics
@@ -3259,6 +3435,8 @@ Classes
     `user_id: str | Any`
     :   The type of the None singleton.
 
+<a id="UserResponse"></a>
+
 `UserResponse(**data: Any)`
 :   Response containing single user
     
@@ -3283,6 +3461,8 @@ Classes
 
     `user: airbyte_agent_sdk.connectors.gong.models.User | Any`
     :   The type of the None singleton.
+
+<a id="UserSettings"></a>
 
 `UserSettings(**data: Any)`
 :   User settings
@@ -3324,6 +3504,8 @@ Classes
     `web_conferences_recorded: bool | Any`
     :   The type of the None singleton.
 
+<a id="UserSpokenlanguagesItem"></a>
+
 `UserSpokenlanguagesItem(**data: Any)`
 :   Nested schema for User.spokenLanguages_item
     
@@ -3348,6 +3530,8 @@ Classes
 
     `primary: bool | Any`
     :   The type of the None singleton.
+
+<a id="UsersListResultMeta"></a>
 
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
@@ -3377,6 +3561,8 @@ Classes
     `total_records: int | Any`
     :   The type of the None singleton.
 
+<a id="UsersResponse"></a>
+
 `UsersResponse(**data: Any)`
 :   Response containing list of users
     
@@ -3404,6 +3590,8 @@ Classes
 
     `users: list[airbyte_agent_sdk.connectors.gong.models.User] | Any`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
@@ -3472,6 +3660,8 @@ Classes
     `trusted_email_address: str | None`
     :   An email address that is considered trusted for the user
 
+<a id="Workspace"></a>
+
 `Workspace(**data: Any)`
 :   Workspace object
     
@@ -3502,6 +3692,8 @@ Classes
 
     `workspace_id: str | Any`
     :   The type of the None singleton.
+
+<a id="WorkspacesResponse"></a>
 
 `WorkspacesResponse(**data: Any)`
 :   Response containing list of workspaces

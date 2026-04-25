@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -157,6 +163,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BrandsSearchResult"></a>
+
 `BrandsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -172,6 +180,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="DeletedTicketsSearchResult"></a>
 
 `DeletedTicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -189,6 +199,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GroupsSearchResult"></a>
+
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -204,6 +216,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OrganizationsSearchResult"></a>
 
 `OrganizationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -221,6 +235,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SatisfactionRatingsSearchResult"></a>
+
 `SatisfactionRatingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -236,6 +252,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -253,6 +271,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TicketAuditsSearchResult"></a>
+
 `TicketAuditsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -268,6 +288,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TicketCommentsSearchResult"></a>
 
 `TicketCommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -285,6 +307,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TicketFieldsSearchResult"></a>
+
 `TicketFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -300,6 +324,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TicketFormsSearchResult"></a>
 
 `TicketFormsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -317,6 +343,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TicketMetricsSearchResult"></a>
+
 `TicketMetricsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -332,6 +360,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TicketsSearchResult"></a>
 
 `TicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -349,6 +379,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -364,6 +396,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BrandsSearchData"></a>
 
 `BrandsSearchData(**data: Any)`
 :   Search result data for brands entity.
@@ -432,6 +466,8 @@ Classes
     `url: str | None`
     :   The API URL for accessing this brand resource
 
+<a id="DeletedTicketsSearchData"></a>
+
 `DeletedTicketsSearchData(**data: Any)`
 :   Search result data for deleted_tickets entity.
     
@@ -468,6 +504,8 @@ Classes
 
     `subject: str | None`
     :   The subject or title of the deleted ticket
+
+<a id="GroupsSearchData"></a>
 
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
@@ -514,6 +552,8 @@ Classes
 
     `url: str | None`
     :   The API URL of the group
+
+<a id="OrganizationsSearchData"></a>
 
 `OrganizationsSearchData(**data: Any)`
 :   Search result data for organizations entity.
@@ -579,6 +619,8 @@ Classes
     `url: str | None`
     :   The API URL of this organization
 
+<a id="SatisfactionRatingsSearchData"></a>
+
 `SatisfactionRatingsSearchData(**data: Any)`
 :   Search result data for satisfaction_ratings entity.
     
@@ -634,6 +676,8 @@ Classes
     `url: str | None`
     :   The API URL of this satisfaction rating resource
 
+<a id="TagsSearchData"></a>
+
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
     
@@ -658,6 +702,8 @@ Classes
 
     `name: str | None`
     :   The tag name string used to label and categorize resources
+
+<a id="TicketAuditsSearchData"></a>
 
 `TicketAuditsSearchData(**data: Any)`
 :   Search result data for ticket_audits entity.
@@ -701,6 +747,8 @@ Classes
 
     `via: dict[str, typing.Any] | None`
     :   Describes how the audit was created, providing context about the creation source
+
+<a id="TicketCommentsSearchData"></a>
 
 `TicketCommentsSearchData(**data: Any)`
 :   Search result data for ticket_comments entity.
@@ -771,6 +819,8 @@ Classes
 
     `via_reference_id: int | None`
     :   Reference identifier for the channel through which the comment was created
+
+<a id="TicketFieldsSearchData"></a>
 
 `TicketFieldsSearchData(**data: Any)`
 :   Search result data for ticket_fields entity.
@@ -872,6 +922,8 @@ Classes
     `visible_in_portal: bool | None`
     :   Whether this field is visible to end users in Help Center
 
+<a id="TicketFormsSearchData"></a>
+
 `TicketFormsSearchData(**data: Any)`
 :   Search result data for ticket_forms entity.
     
@@ -941,6 +993,8 @@ Classes
 
     `url: str | None`
     :   URL of the ticket form
+
+<a id="TicketMetricsSearchData"></a>
 
 `TicketMetricsSearchData(**data: Any)`
 :   Search result data for ticket_metrics entity.
@@ -1050,6 +1104,8 @@ Classes
 
     `url: str | None`
     :   The API url of the ticket metric
+
+<a id="TicketsSearchData"></a>
 
 `TicketsSearchData(**data: Any)`
 :   Search result data for tickets entity.
@@ -1193,6 +1249,8 @@ Classes
     `via: dict[str, typing.Any] | None`
     :   Object describing the channel and method through which the ticket was created
 
+<a id="UsersSearchData"></a>
+
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
     
@@ -1328,6 +1386,8 @@ Classes
 
     `verified: bool | None`
     :   Indicates if the user's identity has been verified
+
+<a id="ZendeskSupportConnector"></a>
 
 `ZendeskSupportConnector(auth_config: ZendeskSupportAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Zendesk-Support API connector.

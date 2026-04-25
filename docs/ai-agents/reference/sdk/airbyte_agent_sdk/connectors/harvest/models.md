@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -109,6 +113,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ClientsSearchResult"></a>
+
 `ClientsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -145,6 +151,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CompanySearchResult"></a>
 
 `CompanySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -183,6 +191,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ContactsSearchResult"></a>
+
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -219,6 +229,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EstimateItemCategoriesSearchResult"></a>
 
 `EstimateItemCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -257,6 +269,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EstimatesSearchResult"></a>
+
 `EstimatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -293,6 +307,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ExpenseCategoriesSearchResult"></a>
 
 `ExpenseCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -331,6 +347,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ExpensesSearchResult"></a>
+
 `ExpensesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -367,6 +385,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceItemCategoriesSearchResult"></a>
 
 `InvoiceItemCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -405,6 +425,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoicesSearchResult"></a>
+
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -441,6 +463,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchResult"></a>
 
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -479,6 +503,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RolesSearchResult"></a>
+
 `RolesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -515,6 +541,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TaskAssignmentsSearchResult"></a>
 
 `TaskAssignmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -553,6 +581,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -589,6 +619,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TimeEntriesSearchResult"></a>
 
 `TimeEntriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -627,6 +659,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TimeProjectsSearchResult"></a>
+
 `TimeProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -663,6 +697,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TimeTasksSearchResult"></a>
 
 `TimeTasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -701,6 +737,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UserAssignmentsSearchResult"></a>
+
 `UserAssignmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -738,6 +776,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -753,6 +793,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Client"></a>
 
 `Client(**data: Any)`
 :   A Harvest client
@@ -797,6 +839,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ClientsList"></a>
+
 `ClientsList(**data: Any)`
 :   Paginated list of clients
     
@@ -840,6 +884,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="ClientsListResultMeta"></a>
+
 `ClientsListResultMeta(**data: Any)`
 :   Metadata for clients.Action.LIST operation
     
@@ -861,6 +907,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ClientsSearchData"></a>
 
 `ClientsSearchData(**data: Any)`
 :   Search result data for clients entity.
@@ -901,6 +949,8 @@ Classes
 
     `updated_at: str | None`
     :   When the client record was last updated
+
+<a id="Company"></a>
 
 `Company(**data: Any)`
 :   The Harvest company/account information
@@ -993,6 +1043,8 @@ Classes
     `weekly_capacity: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CompanySearchData"></a>
+
 `CompanySearchData(**data: Any)`
 :   Search result data for company entity.
     
@@ -1032,6 +1084,8 @@ Classes
 
     `weekly_capacity: int | None`
     :   Weekly capacity in seconds
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   A Harvest contact associated with a client
@@ -1085,6 +1139,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactClient"></a>
+
 `ContactClient(**data: Any)`
 :   The client associated with this contact
     
@@ -1109,6 +1165,8 @@ Classes
 
     `name: str | Any | None`
     :   Client name
+
+<a id="ContactsList"></a>
 
 `ContactsList(**data: Any)`
 :   Paginated list of contacts
@@ -1153,6 +1211,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -1174,6 +1234,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -1217,6 +1279,8 @@ Classes
 
     `updated_at: str | None`
     :   When last updated
+
+<a id="Estimate"></a>
 
 `Estimate(**data: Any)`
 :   A Harvest estimate
@@ -1309,6 +1373,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EstimateItemCategoriesList"></a>
+
 `EstimateItemCategoriesList(**data: Any)`
 :   Paginated list of estimate item categories
     
@@ -1352,6 +1418,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="EstimateItemCategoriesListResultMeta"></a>
+
 `EstimateItemCategoriesListResultMeta(**data: Any)`
 :   Metadata for estimate_item_categories.Action.LIST operation
     
@@ -1373,6 +1441,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EstimateItemCategoriesSearchData"></a>
 
 `EstimateItemCategoriesSearchData(**data: Any)`
 :   Search result data for estimate_item_categories entity.
@@ -1405,6 +1475,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="EstimateItemCategory"></a>
+
 `EstimateItemCategory(**data: Any)`
 :   A Harvest estimate item category
     
@@ -1435,6 +1507,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EstimatesList"></a>
 
 `EstimatesList(**data: Any)`
 :   Paginated list of estimates
@@ -1479,6 +1553,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="EstimatesListResultMeta"></a>
+
 `EstimatesListResultMeta(**data: Any)`
 :   Metadata for estimates.Action.LIST operation
     
@@ -1500,6 +1576,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EstimatesSearchData"></a>
 
 `EstimatesSearchData(**data: Any)`
 :   Search result data for estimates entity.
@@ -1549,6 +1627,8 @@ Classes
 
     `updated_at: str | None`
     :   When last updated
+
+<a id="Expense"></a>
 
 `Expense(**data: Any)`
 :   A Harvest expense
@@ -1632,6 +1712,8 @@ Classes
     `user_assignment: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="ExpenseCategoriesList"></a>
+
 `ExpenseCategoriesList(**data: Any)`
 :   Paginated list of expense categories
     
@@ -1675,6 +1757,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="ExpenseCategoriesListResultMeta"></a>
+
 `ExpenseCategoriesListResultMeta(**data: Any)`
 :   Metadata for expense_categories.Action.LIST operation
     
@@ -1696,6 +1780,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ExpenseCategoriesSearchData"></a>
 
 `ExpenseCategoriesSearchData(**data: Any)`
 :   Search result data for expense_categories entity.
@@ -1737,6 +1823,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="ExpenseCategory"></a>
+
 `ExpenseCategory(**data: Any)`
 :   A Harvest expense category
     
@@ -1776,6 +1864,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ExpensesList"></a>
 
 `ExpensesList(**data: Any)`
 :   Paginated list of expenses
@@ -1820,6 +1910,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="ExpensesListResultMeta"></a>
+
 `ExpensesListResultMeta(**data: Any)`
 :   Metadata for expenses.Action.LIST operation
     
@@ -1841,6 +1933,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ExpensesSearchData"></a>
 
 `ExpensesSearchData(**data: Any)`
 :   Search result data for expenses entity.
@@ -1897,6 +1991,8 @@ Classes
     `user: dict[str, typing.Any] | None`
     :   Associated user
 
+<a id="HarvestCheckResult"></a>
+
 `HarvestCheckResult(**data: Any)`
 :   Result of a health check operation.
     
@@ -1930,6 +2026,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="HarvestExecuteResult"></a>
+
 `HarvestExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1958,6 +2056,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="HarvestExecuteResultWithMeta"></a>
 
 `HarvestExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2026,6 +2126,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ClientsListResult"></a>
+
 `ClientsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2068,6 +2170,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsListResult"></a>
 
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2112,6 +2216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EstimateItemCategoriesListResult"></a>
+
 `EstimateItemCategoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2154,6 +2260,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EstimatesListResult"></a>
 
 `EstimatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2198,6 +2306,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ExpenseCategoriesListResult"></a>
+
 `ExpenseCategoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2240,6 +2350,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ExpensesListResult"></a>
 
 `ExpensesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2284,6 +2396,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceItemCategoriesListResult"></a>
+
 `InvoiceItemCategoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2326,6 +2440,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesListResult"></a>
 
 `InvoicesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2370,6 +2486,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResult"></a>
+
 `ProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2412,6 +2530,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RolesListResult"></a>
 
 `RolesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2456,6 +2576,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskAssignmentsListResult"></a>
+
 `TaskAssignmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2498,6 +2620,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TasksListResult"></a>
 
 `TasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2542,6 +2666,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TimeEntriesListResult"></a>
+
 `TimeEntriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2584,6 +2710,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TimeProjectsListResult"></a>
 
 `TimeProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2628,6 +2756,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TimeTasksListResult"></a>
+
 `TimeTasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2670,6 +2800,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UserAssignmentsListResult"></a>
 
 `UserAssignmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2714,6 +2846,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2732,6 +2866,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.HarvestExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="HarvestOauth20AuthConfig"></a>
 
 `HarvestOauth20AuthConfig(**data: Any)`
 :   OAuth 2.0
@@ -2764,6 +2900,8 @@ Classes
     `refresh_token: str`
     :   Your Harvest OAuth2 refresh token
 
+<a id="HarvestPersonalAccessTokenAuthConfig"></a>
+
 `HarvestPersonalAccessTokenAuthConfig(**data: Any)`
 :   Personal Access Token
     
@@ -2789,6 +2927,8 @@ Classes
     `token: str`
     :   Your Harvest personal access token
 
+<a id="HarvestReplicationConfig"></a>
+
 `HarvestReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Harvest.
     
@@ -2810,6 +2950,8 @@ Classes
 
     `replication_start_date: str`
     :   UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.
+
+<a id="Invoice"></a>
 
 `Invoice(**data: Any)`
 :   A Harvest invoice
@@ -2932,6 +3074,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InvoiceItemCategoriesList"></a>
+
 `InvoiceItemCategoriesList(**data: Any)`
 :   Paginated list of invoice item categories
     
@@ -2975,6 +3119,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceItemCategoriesListResultMeta"></a>
+
 `InvoiceItemCategoriesListResultMeta(**data: Any)`
 :   Metadata for invoice_item_categories.Action.LIST operation
     
@@ -2996,6 +3142,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="InvoiceItemCategoriesSearchData"></a>
 
 `InvoiceItemCategoriesSearchData(**data: Any)`
 :   Search result data for invoice_item_categories entity.
@@ -3034,6 +3182,8 @@ Classes
     `use_as_service: bool | None`
     :   Whether used as service type
 
+<a id="InvoiceItemCategory"></a>
+
 `InvoiceItemCategory(**data: Any)`
 :   A Harvest invoice item category
     
@@ -3070,6 +3220,8 @@ Classes
 
     `use_as_service: bool | Any | None`
     :   The type of the None singleton.
+
+<a id="InvoicesList"></a>
 
 `InvoicesList(**data: Any)`
 :   Paginated list of invoices
@@ -3114,6 +3266,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="InvoicesListResultMeta"></a>
+
 `InvoicesListResultMeta(**data: Any)`
 :   Metadata for invoices.Action.LIST operation
     
@@ -3135,6 +3289,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -3191,6 +3347,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="PaginationLinks"></a>
+
 `PaginationLinks(**data: Any)`
 :   Pagination links for navigating result pages
     
@@ -3221,6 +3379,8 @@ Classes
 
     `previous: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   A Harvest project
@@ -3313,6 +3473,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectClient"></a>
+
 `ProjectClient(**data: Any)`
 :   The client associated with the project
     
@@ -3340,6 +3502,8 @@ Classes
 
     `name: str | Any | None`
     :   Client name
+
+<a id="ProjectsList"></a>
 
 `ProjectsList(**data: Any)`
 :   Paginated list of projects
@@ -3384,6 +3548,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="ProjectsListResultMeta"></a>
+
 `ProjectsListResultMeta(**data: Any)`
 :   Metadata for projects.Action.LIST operation
     
@@ -3405,6 +3571,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -3458,6 +3626,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="Role"></a>
+
 `Role(**data: Any)`
 :   A Harvest role
     
@@ -3491,6 +3661,8 @@ Classes
 
     `user_ids: list[int] | Any | None`
     :   The type of the None singleton.
+
+<a id="RolesList"></a>
 
 `RolesList(**data: Any)`
 :   Paginated list of roles
@@ -3535,6 +3707,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="RolesListResultMeta"></a>
+
 `RolesListResultMeta(**data: Any)`
 :   Metadata for roles.Action.LIST operation
     
@@ -3556,6 +3730,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="RolesSearchData"></a>
 
 `RolesSearchData(**data: Any)`
 :   Search result data for roles entity.
@@ -3590,6 +3766,8 @@ Classes
 
     `user_ids: list[typing.Any] | None`
     :   User IDs with this role
+
+<a id="Task"></a>
 
 `Task(**data: Any)`
 :   A Harvest task
@@ -3633,6 +3811,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TaskAssignment"></a>
 
 `TaskAssignment(**data: Any)`
 :   A Harvest task assignment linking a task to a project
@@ -3680,6 +3860,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TaskAssignmentProject"></a>
+
 `TaskAssignmentProject(**data: Any)`
 :   The project associated with the assignment
     
@@ -3708,6 +3890,8 @@ Classes
     `name: str | Any | None`
     :   Project name
 
+<a id="TaskAssignmentTask"></a>
+
 `TaskAssignmentTask(**data: Any)`
 :   The task associated with the assignment
     
@@ -3732,6 +3916,8 @@ Classes
 
     `name: str | Any | None`
     :   Task name
+
+<a id="TaskAssignmentsList"></a>
 
 `TaskAssignmentsList(**data: Any)`
 :   Paginated list of task assignments
@@ -3776,6 +3962,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="TaskAssignmentsListResultMeta"></a>
+
 `TaskAssignmentsListResultMeta(**data: Any)`
 :   Metadata for task_assignments.Action.LIST operation
     
@@ -3797,6 +3985,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TaskAssignmentsSearchData"></a>
 
 `TaskAssignmentsSearchData(**data: Any)`
 :   Search result data for task_assignments entity.
@@ -3841,6 +4031,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="TasksList"></a>
+
 `TasksList(**data: Any)`
 :   Paginated list of tasks
     
@@ -3884,6 +4076,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="TasksListResultMeta"></a>
+
 `TasksListResultMeta(**data: Any)`
 :   Metadata for tasks.Action.LIST operation
     
@@ -3905,6 +4099,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TasksSearchData"></a>
 
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.
@@ -3945,6 +4141,8 @@ Classes
 
     `updated_at: str | None`
     :   When last updated
+
+<a id="TimeEntriesList"></a>
 
 `TimeEntriesList(**data: Any)`
 :   Paginated list of time entries
@@ -3989,6 +4187,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="TimeEntriesListResultMeta"></a>
+
 `TimeEntriesListResultMeta(**data: Any)`
 :   Metadata for time_entries.Action.LIST operation
     
@@ -4010,6 +4210,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TimeEntriesSearchData"></a>
 
 `TimeEntriesSearchData(**data: Any)`
 :   Search result data for time_entries entity.
@@ -4065,6 +4267,8 @@ Classes
 
     `user: dict[str, typing.Any] | None`
     :   Associated user
+
+<a id="TimeEntry"></a>
 
 `TimeEntry(**data: Any)`
 :   A Harvest time entry
@@ -4175,6 +4379,8 @@ Classes
     `user_assignment: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="TimeEntryClient"></a>
+
 `TimeEntryClient(**data: Any)`
 :   The client associated with the time entry
     
@@ -4199,6 +4405,8 @@ Classes
 
     `name: str | Any | None`
     :   Client name
+
+<a id="TimeEntryInvoice"></a>
 
 `TimeEntryInvoice(**data: Any)`
 :   The invoice associated with the time entry
@@ -4225,6 +4433,8 @@ Classes
     `number: str | Any | None`
     :   Invoice number
 
+<a id="TimeEntryProject"></a>
+
 `TimeEntryProject(**data: Any)`
 :   The project associated with the time entry
     
@@ -4249,6 +4459,8 @@ Classes
 
     `name: str | Any | None`
     :   Project name
+
+<a id="TimeEntryTask"></a>
 
 `TimeEntryTask(**data: Any)`
 :   The task associated with the time entry
@@ -4275,6 +4487,8 @@ Classes
     `name: str | Any | None`
     :   Task name
 
+<a id="TimeEntryUser"></a>
+
 `TimeEntryUser(**data: Any)`
 :   The user associated with the time entry
     
@@ -4299,6 +4513,8 @@ Classes
 
     `name: str | Any | None`
     :   User name
+
+<a id="TimeProject"></a>
 
 `TimeProject(**data: Any)`
 :   A time report entry grouped by project
@@ -4343,6 +4559,8 @@ Classes
     `total_hours: float | Any | None`
     :   The type of the None singleton.
 
+<a id="TimeProjectsList"></a>
+
 `TimeProjectsList(**data: Any)`
 :   Paginated list of time report entries by project
     
@@ -4386,6 +4604,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="TimeProjectsListResultMeta"></a>
+
 `TimeProjectsListResultMeta(**data: Any)`
 :   Metadata for time_projects.Action.LIST operation
     
@@ -4407,6 +4627,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TimeProjectsSearchData"></a>
 
 `TimeProjectsSearchData(**data: Any)`
 :   Search result data for time_projects entity.
@@ -4451,6 +4673,8 @@ Classes
     `total_hours: float | None`
     :   Total hours spent
 
+<a id="TimeTask"></a>
+
 `TimeTask(**data: Any)`
 :   A time report entry grouped by task
     
@@ -4487,6 +4711,8 @@ Classes
 
     `total_hours: float | Any | None`
     :   The type of the None singleton.
+
+<a id="TimeTasksList"></a>
 
 `TimeTasksList(**data: Any)`
 :   Paginated list of time report entries by task
@@ -4531,6 +4757,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="TimeTasksListResultMeta"></a>
+
 `TimeTasksListResultMeta(**data: Any)`
 :   Metadata for time_tasks.Action.LIST operation
     
@@ -4552,6 +4780,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TimeTasksSearchData"></a>
 
 `TimeTasksSearchData(**data: Any)`
 :   Search result data for time_tasks entity.
@@ -4589,6 +4819,8 @@ Classes
 
     `total_hours: float | None`
     :   Total hours spent
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   A Harvest user
@@ -4675,6 +4907,8 @@ Classes
     `weekly_capacity: int | Any | None`
     :   The type of the None singleton.
 
+<a id="UserAssignment"></a>
+
 `UserAssignment(**data: Any)`
 :   A Harvest user assignment linking a user to a project
     
@@ -4724,6 +4958,8 @@ Classes
     `user: airbyte_agent_sdk.connectors.harvest.models.UserAssignmentUser | Any | None`
     :   The type of the None singleton.
 
+<a id="UserAssignmentProject"></a>
+
 `UserAssignmentProject(**data: Any)`
 :   The project associated with the assignment
     
@@ -4752,6 +4988,8 @@ Classes
     `name: str | Any | None`
     :   Project name
 
+<a id="UserAssignmentUser"></a>
+
 `UserAssignmentUser(**data: Any)`
 :   The user associated with the assignment
     
@@ -4776,6 +5014,8 @@ Classes
 
     `name: str | Any | None`
     :   User name
+
+<a id="UserAssignmentsList"></a>
 
 `UserAssignmentsList(**data: Any)`
 :   Paginated list of user assignments
@@ -4820,6 +5060,8 @@ Classes
     `user_assignments: list[airbyte_agent_sdk.connectors.harvest.models.UserAssignment] | Any`
     :   The type of the None singleton.
 
+<a id="UserAssignmentsListResultMeta"></a>
+
 `UserAssignmentsListResultMeta(**data: Any)`
 :   Metadata for user_assignments.Action.LIST operation
     
@@ -4841,6 +5083,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UserAssignmentsSearchData"></a>
 
 `UserAssignmentsSearchData(**data: Any)`
 :   Search result data for user_assignments entity.
@@ -4888,6 +5132,8 @@ Classes
     `user: dict[str, typing.Any] | None`
     :   Associated user
 
+<a id="UsersList"></a>
+
 `UsersList(**data: Any)`
 :   Paginated list of users
     
@@ -4931,6 +5177,8 @@ Classes
     `users: list[airbyte_agent_sdk.connectors.harvest.models.User] | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -4952,6 +5200,8 @@ Classes
 
     `next_link: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

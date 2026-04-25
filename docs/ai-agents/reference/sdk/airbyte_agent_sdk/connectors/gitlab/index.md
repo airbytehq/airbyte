@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -158,6 +164,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesSearchResult"></a>
+
 `BranchesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -173,6 +181,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CommitsSearchResult"></a>
 
 `CommitsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -190,6 +200,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GroupMembersSearchResult"></a>
+
 `GroupMembersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -205,6 +217,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GroupMilestonesSearchResult"></a>
 
 `GroupMilestonesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -222,6 +236,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GroupsSearchResult"></a>
+
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -237,6 +253,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -254,6 +272,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MergeRequestsSearchResult"></a>
+
 `MergeRequestsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -269,6 +289,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="PipelinesSearchResult"></a>
 
 `PipelinesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -286,6 +308,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProjectMembersSearchResult"></a>
+
 `ProjectMembersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -301,6 +325,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProjectMilestonesSearchResult"></a>
 
 `ProjectMilestonesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -318,6 +344,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -333,6 +361,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ReleasesSearchResult"></a>
 
 `ReleasesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -350,6 +380,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TagsSearchResult"></a>
+
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -366,6 +398,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -381,6 +415,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BranchesSearchData"></a>
 
 `BranchesSearchData(**data: Any)`
 :   Search result data for branches entity.
@@ -433,6 +469,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the branch
+
+<a id="CommitsSearchData"></a>
 
 `CommitsSearchData(**data: Any)`
 :   Search result data for commits entity.
@@ -500,6 +538,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the commit
+
+<a id="GitlabConnector"></a>
 
 `GitlabConnector(auth_config: GitlabAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, api_url: str | None = None)`
 :   Type-safe Gitlab API connector.
@@ -757,6 +797,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GitlabReplicationConfig"></a>
+
 `GitlabReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from GitLab.
     
@@ -778,6 +820,8 @@ Classes
 
     `start_date: str | None`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. If not set, all data will be replicated.
+
+<a id="GroupMembersSearchData"></a>
 
 `GroupMembersSearchData(**data: Any)`
 :   Search result data for group_members entity.
@@ -837,6 +881,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the member profile
 
+<a id="GroupMilestonesSearchData"></a>
+
 `GroupMilestonesSearchData(**data: Any)`
 :   Search result data for group_milestones entity.
     
@@ -891,6 +937,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the milestone
+
+<a id="GroupsSearchData"></a>
 
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
@@ -985,6 +1033,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the group
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -1115,6 +1165,8 @@ Classes
 
     `weight: int | None`
     :   Weight of the issue
+
+<a id="MergeRequestsSearchData"></a>
 
 `MergeRequestsSearchData(**data: Any)`
 :   Search result data for merge_requests entity.
@@ -1285,6 +1337,8 @@ Classes
     `work_in_progress: bool | None`
     :   Whether the merge request is a work in progress
 
+<a id="PipelinesSearchData"></a>
+
 `PipelinesSearchData(**data: Any)`
 :   Search result data for pipelines entity.
     
@@ -1336,6 +1390,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the pipeline
+
+<a id="ProjectMembersSearchData"></a>
 
 `ProjectMembersSearchData(**data: Any)`
 :   Search result data for project_members entity.
@@ -1395,6 +1451,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the member profile
 
+<a id="ProjectMilestonesSearchData"></a>
+
 `ProjectMilestonesSearchData(**data: Any)`
 :   Search result data for project_milestones entity.
     
@@ -1449,6 +1507,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the milestone
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -1706,6 +1766,8 @@ Classes
     `wiki_enabled: bool | None`
     :   Whether wiki is enabled
 
+<a id="ReleasesSearchData"></a>
+
 `ReleasesSearchData(**data: Any)`
 :   Search result data for releases entity.
     
@@ -1776,6 +1838,8 @@ Classes
     `upcoming_release: bool | None`
     :   Whether this is an upcoming release
 
+<a id="TagsSearchData"></a>
+
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
     
@@ -1818,6 +1882,8 @@ Classes
 
     `target: str | None`
     :   SHA the tag points to
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -102,6 +106,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CouponSearchResult"></a>
+
 `CouponSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -138,6 +144,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CreditNoteSearchResult"></a>
 
 `CreditNoteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -176,6 +184,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerSearchResult"></a>
+
 `CustomerSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -212,6 +222,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventSearchResult"></a>
 
 `EventSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -250,6 +262,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceSearchResult"></a>
+
 `InvoiceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -286,6 +300,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ItemPriceSearchResult"></a>
 
 `ItemPriceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -324,6 +340,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemSearchResult"></a>
+
 `ItemSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -360,6 +378,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderSearchResult"></a>
 
 `OrderSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -398,6 +418,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PaymentSourceSearchResult"></a>
+
 `PaymentSourceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -434,6 +456,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionSearchResult"></a>
 
 `SubscriptionSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -472,6 +496,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TransactionSearchResult"></a>
+
 `TransactionSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -487,6 +513,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChargebeeAuthConfig"></a>
 
 `ChargebeeAuthConfig(**data: Any)`
 :   API Key Authentication
@@ -509,6 +537,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChargebeeCheckResult"></a>
 
 `ChargebeeCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -543,6 +573,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="ChargebeeExecuteResult"></a>
+
 `ChargebeeExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -571,6 +603,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChargebeeExecuteResultWithMeta"></a>
 
 `ChargebeeExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -633,6 +667,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CouponListResult"></a>
+
 `CouponListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -675,6 +711,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CreditNoteListResult"></a>
 
 `CreditNoteListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -719,6 +757,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerListResult"></a>
+
 `CustomerListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -761,6 +801,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventListResult"></a>
 
 `EventListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -805,6 +847,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceListResult"></a>
+
 `InvoiceListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -847,6 +891,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ItemPriceListResult"></a>
 
 `ItemPriceListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -891,6 +937,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemListResult"></a>
+
 `ItemListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -933,6 +981,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderListResult"></a>
 
 `OrderListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -977,6 +1027,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PaymentSourceListResult"></a>
+
 `PaymentSourceListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1019,6 +1071,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionListResult"></a>
 
 `SubscriptionListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1063,6 +1117,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TransactionListResult"></a>
+
 `TransactionListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1081,6 +1137,8 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.ChargebeeExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChargebeeReplicationConfig"></a>
 
 `ChargebeeReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Chargebee.
@@ -1103,6 +1161,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Data before this date is excluded.
+
+<a id="Coupon"></a>
 
 `Coupon(**data: Any)`
 :   Chargebee coupon object
@@ -1216,6 +1276,8 @@ Classes
     `valid_till: int | Any`
     :   The type of the None singleton.
 
+<a id="CouponList"></a>
+
 `CouponList(**data: Any)`
 :   Paginated list of coupons
     
@@ -1241,6 +1303,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="CouponListListItem"></a>
+
 `CouponListListItem(**data: Any)`
 :   Nested schema for CouponList.list_item
     
@@ -1263,6 +1327,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CouponListResultMeta"></a>
+
 `CouponListResultMeta(**data: Any)`
 :   Metadata for coupon.Action.LIST operation
     
@@ -1284,6 +1350,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="CouponSearchData"></a>
 
 `CouponSearchData(**data: Any)`
 :   Search result data for coupon entity.
@@ -1388,6 +1456,8 @@ Classes
     `valid_till: int | None`
     :   Date until which the coupon is valid for use.
 
+<a id="CouponWrapper"></a>
+
 `CouponWrapper(**data: Any)`
 :   CouponWrapper type definition
     
@@ -1409,6 +1479,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CreditNote"></a>
 
 `CreditNote(**data: Any)`
 :   Chargebee credit note object
@@ -1564,6 +1636,8 @@ Classes
     `voided_at: int | Any`
     :   The type of the None singleton.
 
+<a id="CreditNoteList"></a>
+
 `CreditNoteList(**data: Any)`
 :   Paginated list of credit notes
     
@@ -1589,6 +1663,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="CreditNoteListListItem"></a>
+
 `CreditNoteListListItem(**data: Any)`
 :   Nested schema for CreditNoteList.list_item
     
@@ -1611,6 +1687,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreditNoteListResultMeta"></a>
+
 `CreditNoteListResultMeta(**data: Any)`
 :   Metadata for credit_note.Action.LIST operation
     
@@ -1632,6 +1710,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="CreditNoteSearchData"></a>
 
 `CreditNoteSearchData(**data: Any)`
 :   Search result data for credit_note entity.
@@ -1799,6 +1879,8 @@ Classes
     `voided_at: int | None`
     :   The date when the credit note was voided.
 
+<a id="CreditNoteWrapper"></a>
+
 `CreditNoteWrapper(**data: Any)`
 :   CreditNoteWrapper type definition
     
@@ -1820,6 +1902,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Customer"></a>
 
 `Customer(**data: Any)`
 :   Chargebee customer object
@@ -2029,6 +2113,8 @@ Classes
     `vat_number_validated_time: int | Any`
     :   The type of the None singleton.
 
+<a id="CustomerList"></a>
+
 `CustomerList(**data: Any)`
 :   Paginated list of customers
     
@@ -2054,6 +2140,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="CustomerListListItem"></a>
+
 `CustomerListListItem(**data: Any)`
 :   Nested schema for CustomerList.list_item
     
@@ -2076,6 +2164,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerListResultMeta"></a>
+
 `CustomerListResultMeta(**data: Any)`
 :   Metadata for customer.Action.LIST operation
     
@@ -2097,6 +2187,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="CustomerSearchData"></a>
 
 `CustomerSearchData(**data: Any)`
 :   Search result data for customer entity.
@@ -2306,6 +2398,8 @@ Classes
     `vat_number_validated_time: int | None`
     :   Date and time when the VAT number was validated.
 
+<a id="CustomerWrapper"></a>
+
 `CustomerWrapper(**data: Any)`
 :   CustomerWrapper type definition
     
@@ -2327,6 +2421,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Event"></a>
 
 `Event(**data: Any)`
 :   Chargebee event object
@@ -2380,6 +2476,8 @@ Classes
     `webhooks: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
 
+<a id="EventList"></a>
+
 `EventList(**data: Any)`
 :   Paginated list of events
     
@@ -2405,6 +2503,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="EventListListItem"></a>
+
 `EventListListItem(**data: Any)`
 :   Nested schema for EventList.list_item
     
@@ -2427,6 +2527,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventListResultMeta"></a>
+
 `EventListResultMeta(**data: Any)`
 :   Metadata for event.Action.LIST operation
     
@@ -2448,6 +2550,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="EventSearchData"></a>
 
 `EventSearchData(**data: Any)`
 :   Search result data for event entity.
@@ -2501,6 +2605,8 @@ Classes
     `webhooks: list[typing.Any] | None`
     :   List of webhooks associated with the event.
 
+<a id="EventWrapper"></a>
+
 `EventWrapper(**data: Any)`
 :   EventWrapper type definition
     
@@ -2522,6 +2628,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Invoice"></a>
 
 `Invoice(**data: Any)`
 :   Chargebee invoice object
@@ -2716,6 +2824,8 @@ Classes
     `write_off_amount: int | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceList"></a>
+
 `InvoiceList(**data: Any)`
 :   Paginated list of invoices
     
@@ -2741,6 +2851,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceListListItem"></a>
+
 `InvoiceListListItem(**data: Any)`
 :   Nested schema for InvoiceList.list_item
     
@@ -2763,6 +2875,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceListResultMeta"></a>
+
 `InvoiceListResultMeta(**data: Any)`
 :   Metadata for invoice.Action.LIST operation
     
@@ -2784,6 +2898,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="InvoiceSearchData"></a>
 
 `InvoiceSearchData(**data: Any)`
 :   Search result data for invoice entity.
@@ -3011,6 +3127,8 @@ Classes
     `write_off_amount: int | None`
     :   Amount written off
 
+<a id="InvoiceWrapper"></a>
+
 `InvoiceWrapper(**data: Any)`
 :   InvoiceWrapper type definition
     
@@ -3032,6 +3150,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Item"></a>
 
 `Item(**data: Any)`
 :   Chargebee item object (Product Catalog 2.0)
@@ -3142,6 +3262,8 @@ Classes
     `usage_calculation: str | Any`
     :   The type of the None singleton.
 
+<a id="ItemList"></a>
+
 `ItemList(**data: Any)`
 :   Paginated list of items
     
@@ -3167,6 +3289,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="ItemListListItem"></a>
+
 `ItemListListItem(**data: Any)`
 :   Nested schema for ItemList.list_item
     
@@ -3189,6 +3313,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemListResultMeta"></a>
+
 `ItemListResultMeta(**data: Any)`
 :   Metadata for item.Action.LIST operation
     
@@ -3210,6 +3336,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="ItemPrice"></a>
 
 `ItemPrice(**data: Any)`
 :   Chargebee item price object (Product Catalog 2.0)
@@ -3347,6 +3475,8 @@ Classes
     `updated_at: int | Any`
     :   The type of the None singleton.
 
+<a id="ItemPriceList"></a>
+
 `ItemPriceList(**data: Any)`
 :   Paginated list of item prices
     
@@ -3372,6 +3502,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="ItemPriceListListItem"></a>
+
 `ItemPriceListListItem(**data: Any)`
 :   Nested schema for ItemPriceList.list_item
     
@@ -3394,6 +3526,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemPriceListResultMeta"></a>
+
 `ItemPriceListResultMeta(**data: Any)`
 :   Metadata for item_price.Action.LIST operation
     
@@ -3415,6 +3549,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="ItemPriceSearchData"></a>
 
 `ItemPriceSearchData(**data: Any)`
 :   Search result data for item_price entity.
@@ -3546,6 +3682,8 @@ Classes
     `updated_at: int | None`
     :   Date and time when the item price was last updated.
 
+<a id="ItemPriceWrapper"></a>
+
 `ItemPriceWrapper(**data: Any)`
 :   ItemPriceWrapper type definition
     
@@ -3567,6 +3705,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ItemSearchData"></a>
 
 `ItemSearchData(**data: Any)`
 :   Search result data for item entity.
@@ -3665,6 +3805,8 @@ Classes
     `usage_calculation: str | None`
     :   Calculation method used for item usage
 
+<a id="ItemWrapper"></a>
+
 `ItemWrapper(**data: Any)`
 :   ItemWrapper type definition
     
@@ -3686,6 +3828,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Order"></a>
 
 `Order(**data: Any)`
 :   Chargebee order object
@@ -3880,6 +4024,8 @@ Classes
     `updated_at: int | Any`
     :   The type of the None singleton.
 
+<a id="OrderList"></a>
+
 `OrderList(**data: Any)`
 :   Paginated list of orders
     
@@ -3905,6 +4051,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="OrderListListItem"></a>
+
 `OrderListListItem(**data: Any)`
 :   Nested schema for OrderList.list_item
     
@@ -3927,6 +4075,8 @@ Classes
     `order: airbyte_agent_sdk.connectors.chargebee.models.Order | Any`
     :   The type of the None singleton.
 
+<a id="OrderListResultMeta"></a>
+
 `OrderListResultMeta(**data: Any)`
 :   Metadata for order.Action.LIST operation
     
@@ -3948,6 +4098,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="OrderSearchData"></a>
 
 `OrderSearchData(**data: Any)`
 :   Search result data for order entity.
@@ -4148,6 +4300,8 @@ Classes
     `updated_at: int | None`
     :   Timestamp when the order data was last updated.
 
+<a id="OrderWrapper"></a>
+
 `OrderWrapper(**data: Any)`
 :   OrderWrapper type definition
     
@@ -4169,6 +4323,8 @@ Classes
 
     `order: airbyte_agent_sdk.connectors.chargebee.models.Order | Any`
     :   The type of the None singleton.
+
+<a id="PaymentSource"></a>
 
 `PaymentSource(**data: Any)`
 :   Chargebee payment source object
@@ -4255,6 +4411,8 @@ Classes
     `upi: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
 
+<a id="PaymentSourceList"></a>
+
 `PaymentSourceList(**data: Any)`
 :   Paginated list of payment sources
     
@@ -4280,6 +4438,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="PaymentSourceListListItem"></a>
+
 `PaymentSourceListListItem(**data: Any)`
 :   Nested schema for PaymentSourceList.list_item
     
@@ -4302,6 +4462,8 @@ Classes
     `payment_source: airbyte_agent_sdk.connectors.chargebee.models.PaymentSource | Any`
     :   The type of the None singleton.
 
+<a id="PaymentSourceListResultMeta"></a>
+
 `PaymentSourceListResultMeta(**data: Any)`
 :   Metadata for payment_source.Action.LIST operation
     
@@ -4323,6 +4485,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="PaymentSourceSearchData"></a>
 
 `PaymentSourceSearchData(**data: Any)`
 :   Search result data for payment_source entity.
@@ -4409,6 +4573,8 @@ Classes
     `upi: dict[str, typing.Any] | None`
     :   Data related to UPI payment source
 
+<a id="PaymentSourceWrapper"></a>
+
 `PaymentSourceWrapper(**data: Any)`
 :   PaymentSourceWrapper type definition
     
@@ -4430,6 +4596,8 @@ Classes
 
     `payment_source: airbyte_agent_sdk.connectors.chargebee.models.PaymentSource | Any`
     :   The type of the None singleton.
+
+<a id="Subscription"></a>
 
 `Subscription(**data: Any)`
 :   Chargebee subscription object
@@ -4648,6 +4816,8 @@ Classes
     `updated_at: int | Any`
     :   The type of the None singleton.
 
+<a id="SubscriptionList"></a>
+
 `SubscriptionList(**data: Any)`
 :   Paginated list of subscriptions
     
@@ -4673,6 +4843,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="SubscriptionListListItem"></a>
+
 `SubscriptionListListItem(**data: Any)`
 :   Nested schema for SubscriptionList.list_item
     
@@ -4695,6 +4867,8 @@ Classes
     `subscription: airbyte_agent_sdk.connectors.chargebee.models.Subscription | Any`
     :   The type of the None singleton.
 
+<a id="SubscriptionListResultMeta"></a>
+
 `SubscriptionListResultMeta(**data: Any)`
 :   Metadata for subscription.Action.LIST operation
     
@@ -4716,6 +4890,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="SubscriptionSearchData"></a>
 
 `SubscriptionSearchData(**data: Any)`
 :   Search result data for subscription entity.
@@ -4964,6 +5140,8 @@ Classes
     `updated_at: int | None`
     :   The date and time when the subscription was last updated.
 
+<a id="SubscriptionWrapper"></a>
+
 `SubscriptionWrapper(**data: Any)`
 :   SubscriptionWrapper type definition
     
@@ -4985,6 +5163,8 @@ Classes
 
     `subscription: airbyte_agent_sdk.connectors.chargebee.models.Subscription | Any`
     :   The type of the None singleton.
+
+<a id="Transaction"></a>
 
 `Transaction(**data: Any)`
 :   Chargebee transaction object
@@ -5146,6 +5326,8 @@ Classes
     `voided_at: int | Any`
     :   The type of the None singleton.
 
+<a id="TransactionList"></a>
+
 `TransactionList(**data: Any)`
 :   Paginated list of transactions
     
@@ -5171,6 +5353,8 @@ Classes
     `next_offset: str | Any`
     :   The type of the None singleton.
 
+<a id="TransactionListListItem"></a>
+
 `TransactionListListItem(**data: Any)`
 :   Nested schema for TransactionList.list_item
     
@@ -5193,6 +5377,8 @@ Classes
     `transaction: airbyte_agent_sdk.connectors.chargebee.models.Transaction | Any`
     :   The type of the None singleton.
 
+<a id="TransactionListResultMeta"></a>
+
 `TransactionListResultMeta(**data: Any)`
 :   Metadata for transaction.Action.LIST operation
     
@@ -5214,6 +5400,8 @@ Classes
 
     `next_offset: str | Any`
     :   The type of the None singleton.
+
+<a id="TransactionSearchData"></a>
 
 `TransactionSearchData(**data: Any)`
 :   Search result data for transaction entity.
@@ -5398,6 +5586,8 @@ Classes
 
     `voided_at: int | None`
     :   Date when the transaction was voided.
+
+<a id="TransactionWrapper"></a>
 
 `TransactionWrapper(**data: Any)`
 :   TransactionWrapper type definition

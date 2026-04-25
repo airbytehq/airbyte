@@ -10,6 +10,8 @@ Incident-Io connector.
 Classes
 -------
 
+<a id="AlertsQuery"></a>
+
 `AlertsQuery(connector: IncidentIoConnector)`
 :   Query class for Alerts entity operations.
     
@@ -70,6 +72,8 @@ Classes
         
         Returns:
             AlertsListResult
+
+<a id="CatalogTypesQuery"></a>
 
 `CatalogTypesQuery(connector: IncidentIoConnector)`
 :   Query class for CatalogTypes entity operations.
@@ -133,6 +137,8 @@ Classes
         Returns:
             CatalogTypesListResult
 
+<a id="CustomFieldsQuery"></a>
+
 `CustomFieldsQuery(connector: IncidentIoConnector)`
 :   Query class for CustomFields entity operations.
     
@@ -183,6 +189,8 @@ Classes
         
         Returns:
             CustomFieldsListResult
+
+<a id="EscalationsQuery"></a>
 
 `EscalationsQuery(connector: IncidentIoConnector)`
 :   Query class for Escalations entity operations.
@@ -244,6 +252,8 @@ Classes
         
         Returns:
             EscalationsListResult
+
+<a id="IncidentIoConnector"></a>
 
 `IncidentIoConnector(auth_config: IncidentIoAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Incident-Io API connector.
@@ -433,6 +443,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="IncidentRolesQuery"></a>
+
 `IncidentRolesQuery(connector: IncidentIoConnector)`
 :   Query class for IncidentRoles entity operations.
     
@@ -487,6 +499,8 @@ Classes
         Returns:
             IncidentRolesListResult
 
+<a id="IncidentStatusesQuery"></a>
+
 `IncidentStatusesQuery(connector: IncidentIoConnector)`
 :   Query class for IncidentStatuses entity operations.
     
@@ -539,6 +553,8 @@ Classes
         Returns:
             IncidentStatusesListResult
 
+<a id="IncidentTimestampsQuery"></a>
+
 `IncidentTimestampsQuery(connector: IncidentIoConnector)`
 :   Query class for IncidentTimestamps entity operations.
     
@@ -587,6 +603,8 @@ Classes
         Returns:
             IncidentTimestampsListResult
 
+<a id="IncidentUpdatesQuery"></a>
+
 `IncidentUpdatesQuery(connector: IncidentIoConnector)`
 :   Query class for IncidentUpdates entity operations.
     
@@ -633,6 +651,8 @@ Classes
         
         Returns:
             IncidentUpdatesListResult
+
+<a id="IncidentsQuery"></a>
 
 `IncidentsQuery(connector: IncidentIoConnector)`
 :   Query class for Incidents entity operations.
@@ -709,6 +729,8 @@ Classes
         Returns:
             IncidentsListResult
 
+<a id="SchedulesQuery"></a>
+
 `SchedulesQuery(connector: IncidentIoConnector)`
 :   Query class for Schedules entity operations.
     
@@ -767,6 +789,8 @@ Classes
         Returns:
             SchedulesListResult
 
+<a id="SeveritiesQuery"></a>
+
 `SeveritiesQuery(connector: IncidentIoConnector)`
 :   Query class for Severities entity operations.
     
@@ -817,6 +841,8 @@ Classes
         
         Returns:
             SeveritiesListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: IncidentIoConnector)`
 :   Query class for Users entity operations.

@@ -10,6 +10,8 @@ Linkedin-Ads connector.
 Classes
 -------
 
+<a id="AccountUsersQuery"></a>
+
 `AccountUsersQuery(connector: LinkedinAdsConnector)`
 :   Query class for AccountUsers entity operations.
     
@@ -54,6 +56,8 @@ Classes
         
         Returns:
             AccountUsersListResult
+
+<a id="AccountsQuery"></a>
 
 `AccountsQuery(connector: LinkedinAdsConnector)`
 :   Query class for Accounts entity operations.
@@ -119,6 +123,8 @@ Classes
         
         Returns:
             AccountsListResult
+
+<a id="AdCampaignAnalyticsQuery"></a>
 
 `AdCampaignAnalyticsQuery(connector: LinkedinAdsConnector)`
 :   Query class for AdCampaignAnalytics entity operations.
@@ -204,6 +210,8 @@ Classes
         Returns:
             AdCampaignAnalyticsListResult
 
+<a id="AdCreativeAnalyticsQuery"></a>
+
 `AdCreativeAnalyticsQuery(connector: LinkedinAdsConnector)`
 :   Query class for AdCreativeAnalytics entity operations.
     
@@ -288,6 +296,8 @@ Classes
         Returns:
             AdCreativeAnalyticsListResult
 
+<a id="CampaignGroupsQuery"></a>
+
 `CampaignGroupsQuery(connector: LinkedinAdsConnector)`
 :   Query class for CampaignGroups entity operations.
     
@@ -350,6 +360,8 @@ Classes
         
         Returns:
             CampaignGroupsListResult
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: LinkedinAdsConnector)`
 :   Query class for Campaigns entity operations.
@@ -428,6 +440,8 @@ Classes
         Returns:
             CampaignsListResult
 
+<a id="ConversionsQuery"></a>
+
 `ConversionsQuery(connector: LinkedinAdsConnector)`
 :   Query class for Conversions entity operations.
     
@@ -494,6 +508,8 @@ Classes
         Returns:
             ConversionsListResult
 
+<a id="CreativesQuery"></a>
+
 `CreativesQuery(connector: LinkedinAdsConnector)`
 :   Query class for Creatives entity operations.
     
@@ -559,6 +575,8 @@ Classes
         
         Returns:
             CreativesListResult
+
+<a id="LinkedinAdsConnector"></a>
 
 `LinkedinAdsConnector(auth_config: LinkedinAdsAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Linkedin-Ads API connector.

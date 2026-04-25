@@ -10,6 +10,8 @@ Notion connector.
 Classes
 -------
 
+<a id="BlocksQuery"></a>
+
 `BlocksQuery(connector: NotionConnector)`
 :   Query class for Blocks entity operations.
     
@@ -103,6 +105,8 @@ Classes
         Returns:
             BlocksListResult
 
+<a id="CommentsQuery"></a>
+
 `CommentsQuery(connector: NotionConnector)`
 :   Query class for Comments entity operations.
     
@@ -121,6 +125,8 @@ Classes
         
         Returns:
             CommentsListResult
+
+<a id="DataSourcesQuery"></a>
 
 `DataSourcesQuery(connector: NotionConnector)`
 :   Query class for DataSources entity operations.
@@ -190,6 +196,8 @@ Classes
         
         Returns:
             DataSourcesListResult
+
+<a id="NotionConnector"></a>
 
 `NotionConnector(auth_config: NotionAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Notion API connector.
@@ -467,6 +475,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="PagesQuery"></a>
+
 `PagesQuery(connector: NotionConnector)`
 :   Query class for Pages entity operations.
     
@@ -532,6 +542,8 @@ Classes
         
         Returns:
             PagesListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: NotionConnector)`
 :   Query class for Users entity operations.

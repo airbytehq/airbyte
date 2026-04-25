@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Account"></a>
+
 `Account(**data: Any)`
 :   Salesforce Account object - uses FIELDS(STANDARD) so all standard fields are returned
     
@@ -41,6 +43,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="AccountAttributes"></a>
+
 `AccountAttributes(**data: Any)`
 :   Nested schema for Account.attributes
     
@@ -65,6 +69,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="AccountQueryResult"></a>
 
 `AccountQueryResult(**data: Any)`
 :   SOQL query result for accounts
@@ -97,6 +103,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="AccountsListResultMeta"></a>
+
 `AccountsListResultMeta(**data: Any)`
 :   Metadata for accounts.Action.LIST operation
     
@@ -121,6 +129,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="AccountsSearchData"></a>
 
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
@@ -231,6 +241,8 @@ Classes
     `website: str | None`
     :   Website URL for the account
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -258,6 +270,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -314,6 +328,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -350,6 +366,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -388,6 +406,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LeadsSearchResult"></a>
+
 `LeadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -424,6 +444,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OpportunitiesSearchResult"></a>
 
 `OpportunitiesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -462,6 +484,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -477,6 +501,8 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Attachment"></a>
 
 `Attachment(**data: Any)`
 :   Salesforce Attachment object - legacy file attachment on a record
@@ -515,6 +541,8 @@ Classes
     `parent_id: str | Any`
     :   The type of the None singleton.
 
+<a id="AttachmentAttributes"></a>
+
 `AttachmentAttributes(**data: Any)`
 :   Nested schema for Attachment.attributes
     
@@ -539,6 +567,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="AttachmentQueryResult"></a>
 
 `AttachmentQueryResult(**data: Any)`
 :   SOQL query result for attachments
@@ -571,6 +601,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="AttachmentsListResultMeta"></a>
+
 `AttachmentsListResultMeta(**data: Any)`
 :   Metadata for attachments.Action.LIST operation
     
@@ -595,6 +627,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   Salesforce Campaign object - uses FIELDS(STANDARD) so all standard fields are returned
@@ -624,6 +658,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignAttributes"></a>
+
 `CampaignAttributes(**data: Any)`
 :   Nested schema for Campaign.attributes
     
@@ -648,6 +684,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="CampaignQueryResult"></a>
 
 `CampaignQueryResult(**data: Any)`
 :   SOQL query result for campaigns
@@ -680,6 +718,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -704,6 +744,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="Case"></a>
 
 `Case(**data: Any)`
 :   Salesforce Case object - uses FIELDS(STANDARD) so all standard fields are returned
@@ -736,6 +778,8 @@ Classes
     `subject: str | Any`
     :   The type of the None singleton.
 
+<a id="CaseAttributes"></a>
+
 `CaseAttributes(**data: Any)`
 :   Nested schema for Case.attributes
     
@@ -760,6 +804,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="CaseQueryResult"></a>
 
 `CaseQueryResult(**data: Any)`
 :   SOQL query result for cases
@@ -792,6 +838,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="CasesListResultMeta"></a>
+
 `CasesListResultMeta(**data: Any)`
 :   Metadata for cases.Action.LIST operation
     
@@ -816,6 +864,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   Salesforce Contact object - uses FIELDS(STANDARD) so all standard fields are returned
@@ -845,6 +895,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="ContactAttributes"></a>
+
 `ContactAttributes(**data: Any)`
 :   Nested schema for Contact.attributes
     
@@ -869,6 +921,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="ContactQueryResult"></a>
 
 `ContactQueryResult(**data: Any)`
 :   SOQL query result for contacts
@@ -901,6 +955,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -925,6 +981,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -1023,6 +1081,8 @@ Classes
     `title: str | None`
     :   Job title of the contact
 
+<a id="ContentVersion"></a>
+
 `ContentVersion(**data: Any)`
 :   Salesforce ContentVersion object - represents a file version in Salesforce Files
     
@@ -1066,6 +1126,8 @@ Classes
     `version_number: str | Any`
     :   The type of the None singleton.
 
+<a id="ContentVersionAttributes"></a>
+
 `ContentVersionAttributes(**data: Any)`
 :   Nested schema for ContentVersion.attributes
     
@@ -1090,6 +1152,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="ContentVersionQueryResult"></a>
 
 `ContentVersionQueryResult(**data: Any)`
 :   SOQL query result for content versions
@@ -1122,6 +1186,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="ContentVersionsListResultMeta"></a>
+
 `ContentVersionsListResultMeta(**data: Any)`
 :   Metadata for content_versions.Action.LIST operation
     
@@ -1146,6 +1212,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="Event"></a>
 
 `Event(**data: Any)`
 :   Salesforce Event object - uses FIELDS(STANDARD) so all standard fields are returned
@@ -1175,6 +1243,8 @@ Classes
     `subject: str | Any`
     :   The type of the None singleton.
 
+<a id="EventAttributes"></a>
+
 `EventAttributes(**data: Any)`
 :   Nested schema for Event.attributes
     
@@ -1199,6 +1269,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="EventQueryResult"></a>
 
 `EventQueryResult(**data: Any)`
 :   SOQL query result for events
@@ -1231,6 +1303,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="EventsListResultMeta"></a>
+
 `EventsListResultMeta(**data: Any)`
 :   Metadata for events.Action.LIST operation
     
@@ -1255,6 +1329,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="Lead"></a>
 
 `Lead(**data: Any)`
 :   Salesforce Lead object - uses FIELDS(STANDARD) so all standard fields are returned
@@ -1284,6 +1360,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="LeadAttributes"></a>
+
 `LeadAttributes(**data: Any)`
 :   Nested schema for Lead.attributes
     
@@ -1308,6 +1386,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="LeadQueryResult"></a>
 
 `LeadQueryResult(**data: Any)`
 :   SOQL query result for leads
@@ -1340,6 +1420,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="LeadsListResultMeta"></a>
+
 `LeadsListResultMeta(**data: Any)`
 :   Metadata for leads.Action.LIST operation
     
@@ -1364,6 +1446,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="LeadsSearchData"></a>
 
 `LeadsSearchData(**data: Any)`
 :   Search result data for leads entity.
@@ -1486,6 +1570,8 @@ Classes
     `website: str | None`
     :   Website URL for the lead's company
 
+<a id="Note"></a>
+
 `Note(**data: Any)`
 :   Salesforce Note object - uses FIELDS(STANDARD) so all standard fields are returned
     
@@ -1514,6 +1600,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="NoteAttributes"></a>
+
 `NoteAttributes(**data: Any)`
 :   Nested schema for Note.attributes
     
@@ -1538,6 +1626,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="NoteQueryResult"></a>
 
 `NoteQueryResult(**data: Any)`
 :   SOQL query result for notes
@@ -1570,6 +1660,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="NotesListResultMeta"></a>
+
 `NotesListResultMeta(**data: Any)`
 :   Metadata for notes.Action.LIST operation
     
@@ -1595,6 +1687,8 @@ Classes
     `next_records_url: str | Any`
     :   The type of the None singleton.
 
+<a id="OpportunitiesListResultMeta"></a>
+
 `OpportunitiesListResultMeta(**data: Any)`
 :   Metadata for opportunities.Action.LIST operation
     
@@ -1619,6 +1713,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="OpportunitiesSearchData"></a>
 
 `OpportunitiesSearchData(**data: Any)`
 :   Search result data for opportunities entity.
@@ -1717,6 +1813,8 @@ Classes
     `type_: str | None`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="Opportunity"></a>
+
 `Opportunity(**data: Any)`
 :   Salesforce Opportunity object - uses FIELDS(STANDARD) so all standard fields are returned
     
@@ -1745,6 +1843,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="OpportunityAttributes"></a>
+
 `OpportunityAttributes(**data: Any)`
 :   Nested schema for Opportunity.attributes
     
@@ -1769,6 +1869,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="OpportunityQueryResult"></a>
 
 `OpportunityQueryResult(**data: Any)`
 :   SOQL query result for opportunities
@@ -1801,6 +1903,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="QueryListResultMeta"></a>
+
 `QueryListResultMeta(**data: Any)`
 :   Metadata for query.Action.LIST operation
     
@@ -1825,6 +1929,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="QueryResult"></a>
 
 `QueryResult(**data: Any)`
 :   Generic SOQL query result
@@ -1856,6 +1962,8 @@ Classes
 
     `total_size: int | Any`
     :   The type of the None singleton.
+
+<a id="Report"></a>
 
 `Report(**data: Any)`
 :   Salesforce Report metadata from the Analytics API
@@ -1890,6 +1998,8 @@ Classes
 
     `url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ReportResults"></a>
 
 `ReportResults(**data: Any)`
 :   Executed report results including data rows, aggregates, and metadata
@@ -1933,6 +2043,8 @@ Classes
 
     `report_metadata: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="SObject"></a>
 
 `SObject(**data: Any)`
 :   Salesforce sObject metadata
@@ -1986,6 +2098,8 @@ Classes
     `urls: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="SObjectsResponse"></a>
+
 `SObjectsResponse(**data: Any)`
 :   Response from the sobjects endpoint listing all available Salesforce objects
     
@@ -2014,6 +2128,8 @@ Classes
     `sobjects: list[airbyte_agent_sdk.connectors.salesforce.models.SObject] | Any`
     :   The type of the None singleton.
 
+<a id="SalesforceAuthConfig"></a>
+
 `SalesforceAuthConfig(**data: Any)`
 :   Salesforce OAuth 2.0
     
@@ -2041,6 +2157,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth refresh token for automatic token renewal
+
+<a id="SalesforceCheckResult"></a>
 
 `SalesforceCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2075,6 +2193,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="SalesforceExecuteResult"></a>
+
 `SalesforceExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2106,6 +2226,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SalesforceExecuteResultWithMeta"></a>
 
 `SalesforceExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2169,6 +2291,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsListResult"></a>
+
 `AccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2211,6 +2335,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AttachmentsListResult"></a>
 
 `AttachmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2255,6 +2381,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResult"></a>
+
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2297,6 +2425,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CasesListResult"></a>
 
 `CasesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2341,6 +2471,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ContactsListResult"></a>
+
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2383,6 +2515,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContentVersionsListResult"></a>
 
 `ContentVersionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2427,6 +2561,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsListResult"></a>
+
 `EventsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2469,6 +2605,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LeadsListResult"></a>
 
 `LeadsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2513,6 +2651,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="NotesListResult"></a>
+
 `NotesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2555,6 +2695,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OpportunitiesListResult"></a>
 
 `OpportunitiesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2599,6 +2741,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksListResult"></a>
+
 `TasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2642,6 +2786,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="QueryListResult"></a>
+
 `QueryListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2684,6 +2830,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsApiSearchResult"></a>
+
 `AccountsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2706,6 +2854,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsApiSearchResult"></a>
 
 `ContactsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
@@ -2730,6 +2880,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LeadsApiSearchResult"></a>
+
 `LeadsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2752,6 +2904,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OpportunitiesApiSearchResult"></a>
 
 `OpportunitiesApiSearchResult(**data: Any)`
 :   Response envelope with data only.
@@ -2776,6 +2930,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksApiSearchResult"></a>
+
 `TasksApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2798,6 +2954,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventsApiSearchResult"></a>
 
 `EventsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
@@ -2822,6 +2980,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsApiSearchResult"></a>
+
 `CampaignsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2845,6 +3005,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CasesApiSearchResult"></a>
+
 `CasesApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2867,6 +3029,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="NotesApiSearchResult"></a>
 
 `NotesApiSearchResult(**data: Any)`
 :   Response envelope with data only.
@@ -2909,6 +3073,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ReportsListResult"></a>
+
 `ReportsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2950,6 +3116,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SobjectsListResult"></a>
+
 `SobjectsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2967,6 +3135,8 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SearchResult"></a>
 
 `SearchResult(**data: Any)`
 :   SOSL search result
@@ -2989,6 +3159,8 @@ Classes
 
     `search_records: list[airbyte_agent_sdk.connectors.salesforce.models.SearchResultSearchrecordsItem] | Any`
     :   The type of the None singleton.
+
+<a id="SearchResultSearchrecordsItem"></a>
 
 `SearchResultSearchrecordsItem(**data: Any)`
 :   Nested schema for SearchResult.searchRecords_item
@@ -3015,6 +3187,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchResultSearchrecordsItemAttributes"></a>
+
 `SearchResultSearchrecordsItemAttributes(**data: Any)`
 :   Nested schema for SearchResultSearchrecordsItem.attributes
     
@@ -3039,6 +3213,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="Task"></a>
 
 `Task(**data: Any)`
 :   Salesforce Task object - uses FIELDS(STANDARD) so all standard fields are returned
@@ -3068,6 +3244,8 @@ Classes
     `subject: str | Any`
     :   The type of the None singleton.
 
+<a id="TaskAttributes"></a>
+
 `TaskAttributes(**data: Any)`
 :   Nested schema for Task.attributes
     
@@ -3092,6 +3270,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="TaskQueryResult"></a>
 
 `TaskQueryResult(**data: Any)`
 :   SOQL query result for tasks
@@ -3124,6 +3304,8 @@ Classes
     `total_size: int | Any`
     :   The type of the None singleton.
 
+<a id="TasksListResultMeta"></a>
+
 `TasksListResultMeta(**data: Any)`
 :   Metadata for tasks.Action.LIST operation
     
@@ -3148,6 +3330,8 @@ Classes
 
     `next_records_url: str | Any`
     :   The type of the None singleton.
+
+<a id="TasksSearchData"></a>
 
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.

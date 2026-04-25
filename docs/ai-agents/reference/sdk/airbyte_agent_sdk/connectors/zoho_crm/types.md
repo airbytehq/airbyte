@@ -10,6 +10,8 @@ Type definitions for zoho-crm connector.
 Classes
 -------
 
+<a id="AccountsAndCondition"></a>
+
 `AccountsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -30,6 +32,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.AccountsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AccountsAnyCondition"></a>
+
 `AccountsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -49,6 +53,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountsAnyValueFilter"></a>
 
 `AccountsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -110,6 +116,8 @@ Classes
     `website: Any`
     :   Account website URL
 
+<a id="AccountsContainsCondition"></a>
+
 `AccountsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -121,6 +129,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountsEqCondition"></a>
 
 `AccountsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -134,6 +144,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsFuzzyCondition"></a>
+
 `AccountsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -145,6 +157,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountsGetParams"></a>
 
 `AccountsGetParams(*args, **kwargs)`
 :   Parameters for accounts.get operation
@@ -158,6 +172,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AccountsGtCondition"></a>
+
 `AccountsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -170,6 +186,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsGteCondition"></a>
+
 `AccountsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -181,6 +199,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsInCondition"></a>
 
 `AccountsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -201,6 +221,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsInFilter`
     :   The type of the None singleton.
+
+<a id="AccountsInFilter"></a>
 
 `AccountsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -262,6 +284,8 @@ Classes
     `website: list[str]`
     :   Account website URL
 
+<a id="AccountsKeywordCondition"></a>
+
 `AccountsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -274,6 +298,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsStringFilter`
     :   The type of the None singleton.
 
+<a id="AccountsLikeCondition"></a>
+
 `AccountsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -285,6 +311,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountsListParams"></a>
 
 `AccountsListParams(*args, **kwargs)`
 :   Parameters for accounts.list operation
@@ -310,6 +338,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="AccountsLtCondition"></a>
+
 `AccountsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -321,6 +351,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsLteCondition"></a>
 
 `AccountsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -334,6 +366,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsNeqCondition"></a>
+
 `AccountsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -345,6 +379,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsNotCondition"></a>
 
 `AccountsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -366,6 +402,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AccountsOrCondition"></a>
+
 `AccountsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -385,6 +423,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.AccountsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AccountsSearchFilter"></a>
 
 `AccountsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering accounts search queries.
@@ -446,6 +486,8 @@ Classes
     `website: str | None`
     :   Account website URL
 
+<a id="AccountsSearchQuery"></a>
+
 `AccountsSearchQuery(*args, **kwargs)`
 :   Search query for accounts entity.
 
@@ -460,6 +502,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.AccountsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AccountsSortFilter"></a>
 
 `AccountsSortFilter(*args, **kwargs)`
 :   Available fields for sorting accounts search results.
@@ -521,6 +565,8 @@ Classes
     `website: Literal['asc', 'desc']`
     :   Account website URL
 
+<a id="AccountsStringFilter"></a>
+
 `AccountsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -581,6 +627,8 @@ Classes
     `website: str`
     :   Account website URL
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -602,6 +650,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CallsAndCondition"></a>
+
 `CallsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -622,6 +672,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.CallsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CallsAnyCondition"></a>
+
 `CallsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -641,6 +693,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.CallsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CallsAnyValueFilter"></a>
 
 `CallsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -690,6 +744,8 @@ Classes
     `subject: Any`
     :   Subject of the call
 
+<a id="CallsContainsCondition"></a>
+
 `CallsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -701,6 +757,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.CallsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CallsEqCondition"></a>
 
 `CallsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -714,6 +772,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsFuzzyCondition"></a>
+
 `CallsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -725,6 +785,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.CallsStringFilter`
     :   The type of the None singleton.
+
+<a id="CallsGetParams"></a>
 
 `CallsGetParams(*args, **kwargs)`
 :   Parameters for calls.get operation
@@ -738,6 +800,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CallsGtCondition"></a>
+
 `CallsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -750,6 +814,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsGteCondition"></a>
+
 `CallsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -761,6 +827,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.CallsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallsInCondition"></a>
 
 `CallsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -781,6 +849,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.CallsInFilter`
     :   The type of the None singleton.
+
+<a id="CallsInFilter"></a>
 
 `CallsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -830,6 +900,8 @@ Classes
     `subject: list[str]`
     :   Subject of the call
 
+<a id="CallsKeywordCondition"></a>
+
 `CallsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -842,6 +914,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.CallsStringFilter`
     :   The type of the None singleton.
 
+<a id="CallsLikeCondition"></a>
+
 `CallsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -853,6 +927,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.CallsStringFilter`
     :   The type of the None singleton.
+
+<a id="CallsListParams"></a>
 
 `CallsListParams(*args, **kwargs)`
 :   Parameters for calls.list operation
@@ -878,6 +954,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="CallsLtCondition"></a>
+
 `CallsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -889,6 +967,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.CallsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallsLteCondition"></a>
 
 `CallsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -902,6 +982,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsNeqCondition"></a>
+
 `CallsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -913,6 +995,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.CallsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallsNotCondition"></a>
 
 `CallsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -934,6 +1018,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.CallsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CallsOrCondition"></a>
+
 `CallsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -953,6 +1039,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.CallsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CallsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CallsSearchFilter"></a>
 
 `CallsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering calls search queries.
@@ -1002,6 +1090,8 @@ Classes
     `subject: str | None`
     :   Subject of the call
 
+<a id="CallsSearchQuery"></a>
+
 `CallsSearchQuery(*args, **kwargs)`
 :   Search query for calls entity.
 
@@ -1016,6 +1106,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.CallsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CallsSortFilter"></a>
 
 `CallsSortFilter(*args, **kwargs)`
 :   Available fields for sorting calls search results.
@@ -1065,6 +1157,8 @@ Classes
     `subject: Literal['asc', 'desc']`
     :   Subject of the call
 
+<a id="CallsStringFilter"></a>
+
 `CallsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1113,6 +1207,8 @@ Classes
     `subject: str`
     :   Subject of the call
 
+<a id="CampaignsAndCondition"></a>
+
 `CampaignsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1133,6 +1229,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CampaignsAnyCondition"></a>
+
 `CampaignsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1152,6 +1250,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsAnyValueFilter"></a>
 
 `CampaignsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1204,6 +1304,8 @@ Classes
     `type_: Any`
     :   Type of campaign (e.g., Email, Webinar, Conference)
 
+<a id="CampaignsContainsCondition"></a>
+
 `CampaignsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1215,6 +1317,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsEqCondition"></a>
 
 `CampaignsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1228,6 +1332,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsFuzzyCondition"></a>
+
 `CampaignsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1239,6 +1345,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsGetParams"></a>
 
 `CampaignsGetParams(*args, **kwargs)`
 :   Parameters for campaigns.get operation
@@ -1252,6 +1360,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CampaignsGtCondition"></a>
+
 `CampaignsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1264,6 +1374,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsGteCondition"></a>
+
 `CampaignsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1275,6 +1387,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInCondition"></a>
 
 `CampaignsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1295,6 +1409,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsInFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInFilter"></a>
 
 `CampaignsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1347,6 +1463,8 @@ Classes
     `type_: list[str]`
     :   Type of campaign (e.g., Email, Webinar, Conference)
 
+<a id="CampaignsKeywordCondition"></a>
+
 `CampaignsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1359,6 +1477,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsLikeCondition"></a>
+
 `CampaignsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1370,6 +1490,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
 :   Parameters for campaigns.list operation
@@ -1395,6 +1517,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="CampaignsLtCondition"></a>
+
 `CampaignsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1406,6 +1530,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsLteCondition"></a>
 
 `CampaignsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1419,6 +1545,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsNeqCondition"></a>
+
 `CampaignsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1430,6 +1558,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsNotCondition"></a>
 
 `CampaignsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1451,6 +1581,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CampaignsOrCondition"></a>
+
 `CampaignsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1470,6 +1602,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchFilter"></a>
 
 `CampaignsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering campaigns search queries.
@@ -1522,6 +1656,8 @@ Classes
     `type_: str | None`
     :   Type of campaign (e.g., Email, Webinar, Conference)
 
+<a id="CampaignsSearchQuery"></a>
+
 `CampaignsSearchQuery(*args, **kwargs)`
 :   Search query for campaigns entity.
 
@@ -1536,6 +1672,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.CampaignsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CampaignsSortFilter"></a>
 
 `CampaignsSortFilter(*args, **kwargs)`
 :   Available fields for sorting campaigns search results.
@@ -1588,6 +1726,8 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of campaign (e.g., Email, Webinar, Conference)
 
+<a id="CampaignsStringFilter"></a>
+
 `CampaignsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1639,6 +1779,8 @@ Classes
     `type_: str`
     :   Type of campaign (e.g., Email, Webinar, Conference)
 
+<a id="ContactsAndCondition"></a>
+
 `ContactsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1659,6 +1801,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.ContactsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ContactsAnyCondition"></a>
+
 `ContactsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1678,6 +1822,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ContactsAnyValueFilter"></a>
 
 `ContactsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1739,6 +1885,8 @@ Classes
     `title: Any`
     :   Contact's job title
 
+<a id="ContactsContainsCondition"></a>
+
 `ContactsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1750,6 +1898,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ContactsEqCondition"></a>
 
 `ContactsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1763,6 +1913,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsFuzzyCondition"></a>
+
 `ContactsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1774,6 +1926,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsStringFilter`
     :   The type of the None singleton.
+
+<a id="ContactsGetParams"></a>
 
 `ContactsGetParams(*args, **kwargs)`
 :   Parameters for contacts.get operation
@@ -1787,6 +1941,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ContactsGtCondition"></a>
+
 `ContactsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1799,6 +1955,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsGteCondition"></a>
+
 `ContactsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1810,6 +1968,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsInCondition"></a>
 
 `ContactsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1830,6 +1990,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsInFilter`
     :   The type of the None singleton.
+
+<a id="ContactsInFilter"></a>
 
 `ContactsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1891,6 +2053,8 @@ Classes
     `title: list[str]`
     :   Contact's job title
 
+<a id="ContactsKeywordCondition"></a>
+
 `ContactsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1903,6 +2067,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsStringFilter`
     :   The type of the None singleton.
 
+<a id="ContactsLikeCondition"></a>
+
 `ContactsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1914,6 +2080,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsStringFilter`
     :   The type of the None singleton.
+
+<a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
 :   Parameters for contacts.list operation
@@ -1939,6 +2107,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="ContactsLtCondition"></a>
+
 `ContactsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1950,6 +2120,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsLteCondition"></a>
 
 `ContactsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1963,6 +2135,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsNeqCondition"></a>
+
 `ContactsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1974,6 +2148,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsNotCondition"></a>
 
 `ContactsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1995,6 +2171,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ContactsOrCondition"></a>
+
 `ContactsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2014,6 +2192,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.ContactsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ContactsSearchFilter"></a>
 
 `ContactsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering contacts search queries.
@@ -2075,6 +2255,8 @@ Classes
     `title: str | None`
     :   Contact's job title
 
+<a id="ContactsSearchQuery"></a>
+
 `ContactsSearchQuery(*args, **kwargs)`
 :   Search query for contacts entity.
 
@@ -2089,6 +2271,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.ContactsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ContactsSortFilter"></a>
 
 `ContactsSortFilter(*args, **kwargs)`
 :   Available fields for sorting contacts search results.
@@ -2150,6 +2334,8 @@ Classes
     `title: Literal['asc', 'desc']`
     :   Contact's job title
 
+<a id="ContactsStringFilter"></a>
+
 `ContactsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2210,6 +2396,8 @@ Classes
     `title: str`
     :   Contact's job title
 
+<a id="DealsAndCondition"></a>
+
 `DealsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2230,6 +2418,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.DealsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="DealsAnyCondition"></a>
+
 `DealsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2249,6 +2439,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.DealsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="DealsAnyValueFilter"></a>
 
 `DealsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2295,6 +2487,8 @@ Classes
     `type_: Any`
     :   Type of deal (e.g., New Business, Existing Business)
 
+<a id="DealsContainsCondition"></a>
+
 `DealsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2306,6 +2500,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.DealsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="DealsEqCondition"></a>
 
 `DealsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2319,6 +2515,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.DealsSearchFilter`
     :   The type of the None singleton.
 
+<a id="DealsFuzzyCondition"></a>
+
 `DealsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2330,6 +2528,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.DealsStringFilter`
     :   The type of the None singleton.
+
+<a id="DealsGetParams"></a>
 
 `DealsGetParams(*args, **kwargs)`
 :   Parameters for deals.get operation
@@ -2343,6 +2543,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="DealsGtCondition"></a>
+
 `DealsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2355,6 +2557,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.DealsSearchFilter`
     :   The type of the None singleton.
 
+<a id="DealsGteCondition"></a>
+
 `DealsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2366,6 +2570,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.DealsSearchFilter`
     :   The type of the None singleton.
+
+<a id="DealsInCondition"></a>
 
 `DealsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2386,6 +2592,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.DealsInFilter`
     :   The type of the None singleton.
+
+<a id="DealsInFilter"></a>
 
 `DealsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2432,6 +2640,8 @@ Classes
     `type_: list[str]`
     :   Type of deal (e.g., New Business, Existing Business)
 
+<a id="DealsKeywordCondition"></a>
+
 `DealsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2444,6 +2654,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.DealsStringFilter`
     :   The type of the None singleton.
 
+<a id="DealsLikeCondition"></a>
+
 `DealsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2455,6 +2667,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.DealsStringFilter`
     :   The type of the None singleton.
+
+<a id="DealsListParams"></a>
 
 `DealsListParams(*args, **kwargs)`
 :   Parameters for deals.list operation
@@ -2480,6 +2694,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="DealsLtCondition"></a>
+
 `DealsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2491,6 +2707,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.DealsSearchFilter`
     :   The type of the None singleton.
+
+<a id="DealsLteCondition"></a>
 
 `DealsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2504,6 +2722,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.DealsSearchFilter`
     :   The type of the None singleton.
 
+<a id="DealsNeqCondition"></a>
+
 `DealsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2515,6 +2735,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.DealsSearchFilter`
     :   The type of the None singleton.
+
+<a id="DealsNotCondition"></a>
 
 `DealsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2536,6 +2758,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.DealsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsAnyCondition`
     :   The type of the None singleton.
 
+<a id="DealsOrCondition"></a>
+
 `DealsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2555,6 +2779,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.DealsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.DealsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="DealsSearchFilter"></a>
 
 `DealsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering deals search queries.
@@ -2601,6 +2827,8 @@ Classes
     `type_: str | None`
     :   Type of deal (e.g., New Business, Existing Business)
 
+<a id="DealsSearchQuery"></a>
+
 `DealsSearchQuery(*args, **kwargs)`
 :   Search query for deals entity.
 
@@ -2615,6 +2843,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.DealsSortFilter]`
     :   The type of the None singleton.
+
+<a id="DealsSortFilter"></a>
 
 `DealsSortFilter(*args, **kwargs)`
 :   Available fields for sorting deals search results.
@@ -2661,6 +2891,8 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of deal (e.g., New Business, Existing Business)
 
+<a id="DealsStringFilter"></a>
+
 `DealsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2706,6 +2938,8 @@ Classes
     `type_: str`
     :   Type of deal (e.g., New Business, Existing Business)
 
+<a id="EventsAndCondition"></a>
+
 `EventsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2726,6 +2960,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.EventsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="EventsAnyCondition"></a>
+
 `EventsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2745,6 +2981,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.EventsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="EventsAnyValueFilter"></a>
 
 `EventsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2782,6 +3020,8 @@ Classes
     `start_date_time: Any`
     :   Event start date and time
 
+<a id="EventsContainsCondition"></a>
+
 `EventsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2793,6 +3033,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.EventsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="EventsEqCondition"></a>
 
 `EventsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2806,6 +3048,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.EventsSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsFuzzyCondition"></a>
+
 `EventsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2817,6 +3061,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.EventsStringFilter`
     :   The type of the None singleton.
+
+<a id="EventsGetParams"></a>
 
 `EventsGetParams(*args, **kwargs)`
 :   Parameters for events.get operation
@@ -2830,6 +3076,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="EventsGtCondition"></a>
+
 `EventsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2842,6 +3090,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.EventsSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsGteCondition"></a>
+
 `EventsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2853,6 +3103,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.EventsSearchFilter`
     :   The type of the None singleton.
+
+<a id="EventsInCondition"></a>
 
 `EventsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2873,6 +3125,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.EventsInFilter`
     :   The type of the None singleton.
+
+<a id="EventsInFilter"></a>
 
 `EventsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2910,6 +3164,8 @@ Classes
     `start_date_time: list[str]`
     :   Event start date and time
 
+<a id="EventsKeywordCondition"></a>
+
 `EventsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2922,6 +3178,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.EventsStringFilter`
     :   The type of the None singleton.
 
+<a id="EventsLikeCondition"></a>
+
 `EventsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2933,6 +3191,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.EventsStringFilter`
     :   The type of the None singleton.
+
+<a id="EventsListParams"></a>
 
 `EventsListParams(*args, **kwargs)`
 :   Parameters for events.list operation
@@ -2958,6 +3218,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="EventsLtCondition"></a>
+
 `EventsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2969,6 +3231,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.EventsSearchFilter`
     :   The type of the None singleton.
+
+<a id="EventsLteCondition"></a>
 
 `EventsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2982,6 +3246,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.EventsSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsNeqCondition"></a>
+
 `EventsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2993,6 +3259,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.EventsSearchFilter`
     :   The type of the None singleton.
+
+<a id="EventsNotCondition"></a>
 
 `EventsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3014,6 +3282,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.EventsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsAnyCondition`
     :   The type of the None singleton.
 
+<a id="EventsOrCondition"></a>
+
 `EventsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3033,6 +3303,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.EventsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.EventsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="EventsSearchFilter"></a>
 
 `EventsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering events search queries.
@@ -3070,6 +3342,8 @@ Classes
     `start_date_time: str | None`
     :   Event start date and time
 
+<a id="EventsSearchQuery"></a>
+
 `EventsSearchQuery(*args, **kwargs)`
 :   Search query for events entity.
 
@@ -3084,6 +3358,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.EventsSortFilter]`
     :   The type of the None singleton.
+
+<a id="EventsSortFilter"></a>
 
 `EventsSortFilter(*args, **kwargs)`
 :   Available fields for sorting events search results.
@@ -3121,6 +3397,8 @@ Classes
     `start_date_time: Literal['asc', 'desc']`
     :   Event start date and time
 
+<a id="EventsStringFilter"></a>
+
 `EventsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3157,6 +3435,8 @@ Classes
     `start_date_time: str`
     :   Event start date and time
 
+<a id="InvoicesAndCondition"></a>
+
 `InvoicesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3177,6 +3457,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="InvoicesAnyCondition"></a>
+
 `InvoicesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3196,6 +3478,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesAnyValueFilter"></a>
 
 `InvoicesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3257,6 +3541,8 @@ Classes
     `terms_and_conditions: Any`
     :   Terms and conditions text
 
+<a id="InvoicesContainsCondition"></a>
+
 `InvoicesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3268,6 +3554,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesEqCondition"></a>
 
 `InvoicesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3281,6 +3569,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesFuzzyCondition"></a>
+
 `InvoicesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3292,6 +3582,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesStringFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesGetParams"></a>
 
 `InvoicesGetParams(*args, **kwargs)`
 :   Parameters for invoices.get operation
@@ -3305,6 +3597,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="InvoicesGtCondition"></a>
+
 `InvoicesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3317,6 +3611,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesGteCondition"></a>
+
 `InvoicesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3328,6 +3624,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesInCondition"></a>
 
 `InvoicesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3348,6 +3646,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesInFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesInFilter"></a>
 
 `InvoicesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3409,6 +3709,8 @@ Classes
     `terms_and_conditions: list[str]`
     :   Terms and conditions text
 
+<a id="InvoicesKeywordCondition"></a>
+
 `InvoicesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3421,6 +3723,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesStringFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesLikeCondition"></a>
+
 `InvoicesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3432,6 +3736,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesStringFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesListParams"></a>
 
 `InvoicesListParams(*args, **kwargs)`
 :   Parameters for invoices.list operation
@@ -3457,6 +3763,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="InvoicesLtCondition"></a>
+
 `InvoicesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3468,6 +3776,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesLteCondition"></a>
 
 `InvoicesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3481,6 +3791,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesNeqCondition"></a>
+
 `InvoicesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3492,6 +3804,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesNotCondition"></a>
 
 `InvoicesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3513,6 +3827,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAnyCondition`
     :   The type of the None singleton.
 
+<a id="InvoicesOrCondition"></a>
+
 `InvoicesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3532,6 +3848,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchFilter"></a>
 
 `InvoicesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering invoices search queries.
@@ -3593,6 +3911,8 @@ Classes
     `terms_and_conditions: str | None`
     :   Terms and conditions text
 
+<a id="InvoicesSearchQuery"></a>
+
 `InvoicesSearchQuery(*args, **kwargs)`
 :   Search query for invoices entity.
 
@@ -3607,6 +3927,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.InvoicesSortFilter]`
     :   The type of the None singleton.
+
+<a id="InvoicesSortFilter"></a>
 
 `InvoicesSortFilter(*args, **kwargs)`
 :   Available fields for sorting invoices search results.
@@ -3668,6 +3990,8 @@ Classes
     `terms_and_conditions: Literal['asc', 'desc']`
     :   Terms and conditions text
 
+<a id="InvoicesStringFilter"></a>
+
 `InvoicesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3728,6 +4052,8 @@ Classes
     `terms_and_conditions: str`
     :   Terms and conditions text
 
+<a id="LeadsAndCondition"></a>
+
 `LeadsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3748,6 +4074,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.LeadsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="LeadsAnyCondition"></a>
+
 `LeadsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3767,6 +4095,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="LeadsAnyValueFilter"></a>
 
 `LeadsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3843,6 +4173,8 @@ Classes
     `website: Any`
     :   Lead's website URL
 
+<a id="LeadsContainsCondition"></a>
+
 `LeadsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3854,6 +4186,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="LeadsEqCondition"></a>
 
 `LeadsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3867,6 +4201,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsFuzzyCondition"></a>
+
 `LeadsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3878,6 +4214,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsStringFilter`
     :   The type of the None singleton.
+
+<a id="LeadsGetParams"></a>
 
 `LeadsGetParams(*args, **kwargs)`
 :   Parameters for leads.get operation
@@ -3891,6 +4229,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="LeadsGtCondition"></a>
+
 `LeadsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3903,6 +4243,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsGteCondition"></a>
+
 `LeadsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3914,6 +4256,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="LeadsInCondition"></a>
 
 `LeadsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3934,6 +4278,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsInFilter`
     :   The type of the None singleton.
+
+<a id="LeadsInFilter"></a>
 
 `LeadsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4010,6 +4356,8 @@ Classes
     `website: list[str]`
     :   Lead's website URL
 
+<a id="LeadsKeywordCondition"></a>
+
 `LeadsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4022,6 +4370,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsStringFilter`
     :   The type of the None singleton.
 
+<a id="LeadsLikeCondition"></a>
+
 `LeadsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4033,6 +4383,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsStringFilter`
     :   The type of the None singleton.
+
+<a id="LeadsListParams"></a>
 
 `LeadsListParams(*args, **kwargs)`
 :   Parameters for leads.list operation
@@ -4058,6 +4410,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="LeadsLtCondition"></a>
+
 `LeadsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4069,6 +4423,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="LeadsLteCondition"></a>
 
 `LeadsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4082,6 +4438,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsNeqCondition"></a>
+
 `LeadsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4093,6 +4451,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="LeadsNotCondition"></a>
 
 `LeadsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4114,6 +4474,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAnyCondition`
     :   The type of the None singleton.
 
+<a id="LeadsOrCondition"></a>
+
 `LeadsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4133,6 +4495,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.LeadsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="LeadsSearchFilter"></a>
 
 `LeadsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering leads search queries.
@@ -4209,6 +4573,8 @@ Classes
     `website: str | None`
     :   Lead's website URL
 
+<a id="LeadsSearchQuery"></a>
+
 `LeadsSearchQuery(*args, **kwargs)`
 :   Search query for leads entity.
 
@@ -4223,6 +4589,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.LeadsSortFilter]`
     :   The type of the None singleton.
+
+<a id="LeadsSortFilter"></a>
 
 `LeadsSortFilter(*args, **kwargs)`
 :   Available fields for sorting leads search results.
@@ -4299,6 +4667,8 @@ Classes
     `website: Literal['asc', 'desc']`
     :   Lead's website URL
 
+<a id="LeadsStringFilter"></a>
+
 `LeadsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4374,6 +4744,8 @@ Classes
     `website: str`
     :   Lead's website URL
 
+<a id="ProductsAndCondition"></a>
+
 `ProductsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4394,6 +4766,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.ProductsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProductsAnyCondition"></a>
+
 `ProductsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4413,6 +4787,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProductsAnyValueFilter"></a>
 
 `ProductsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4471,6 +4847,8 @@ Classes
     `unit_price: Any`
     :   Unit price of the product
 
+<a id="ProductsContainsCondition"></a>
+
 `ProductsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4482,6 +4860,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProductsEqCondition"></a>
 
 `ProductsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4495,6 +4875,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProductsFuzzyCondition"></a>
+
 `ProductsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4506,6 +4888,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProductsGetParams"></a>
 
 `ProductsGetParams(*args, **kwargs)`
 :   Parameters for products.get operation
@@ -4519,6 +4903,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ProductsGtCondition"></a>
+
 `ProductsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4531,6 +4917,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProductsGteCondition"></a>
+
 `ProductsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4542,6 +4930,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProductsInCondition"></a>
 
 `ProductsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4562,6 +4952,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsInFilter`
     :   The type of the None singleton.
+
+<a id="ProductsInFilter"></a>
 
 `ProductsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4620,6 +5012,8 @@ Classes
     `unit_price: list[float]`
     :   Unit price of the product
 
+<a id="ProductsKeywordCondition"></a>
+
 `ProductsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4632,6 +5026,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsStringFilter`
     :   The type of the None singleton.
 
+<a id="ProductsLikeCondition"></a>
+
 `ProductsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4643,6 +5039,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProductsListParams"></a>
 
 `ProductsListParams(*args, **kwargs)`
 :   Parameters for products.list operation
@@ -4668,6 +5066,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="ProductsLtCondition"></a>
+
 `ProductsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4679,6 +5079,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProductsLteCondition"></a>
 
 `ProductsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4692,6 +5094,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProductsNeqCondition"></a>
+
 `ProductsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4703,6 +5107,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProductsNotCondition"></a>
 
 `ProductsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4724,6 +5130,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.ProductsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProductsOrCondition"></a>
+
 `ProductsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4743,6 +5151,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.ProductsEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.ProductsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProductsSearchFilter"></a>
 
 `ProductsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering products search queries.
@@ -4801,6 +5211,8 @@ Classes
     `unit_price: float | None`
     :   Unit price of the product
 
+<a id="ProductsSearchQuery"></a>
+
 `ProductsSearchQuery(*args, **kwargs)`
 :   Search query for products entity.
 
@@ -4815,6 +5227,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.ProductsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProductsSortFilter"></a>
 
 `ProductsSortFilter(*args, **kwargs)`
 :   Available fields for sorting products search results.
@@ -4873,6 +5287,8 @@ Classes
     `unit_price: Literal['asc', 'desc']`
     :   Unit price of the product
 
+<a id="ProductsStringFilter"></a>
+
 `ProductsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4930,6 +5346,8 @@ Classes
     `unit_price: str`
     :   Unit price of the product
 
+<a id="QuotesAndCondition"></a>
+
 `QuotesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4950,6 +5368,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.QuotesEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="QuotesAnyCondition"></a>
+
 `QuotesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4969,6 +5389,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="QuotesAnyValueFilter"></a>
 
 `QuotesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -5021,6 +5443,8 @@ Classes
     `valid_till: Any`
     :   Date until which the quote is valid
 
+<a id="QuotesContainsCondition"></a>
+
 `QuotesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -5032,6 +5456,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="QuotesEqCondition"></a>
 
 `QuotesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -5045,6 +5471,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSearchFilter`
     :   The type of the None singleton.
 
+<a id="QuotesFuzzyCondition"></a>
+
 `QuotesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -5056,6 +5484,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesStringFilter`
     :   The type of the None singleton.
+
+<a id="QuotesGetParams"></a>
 
 `QuotesGetParams(*args, **kwargs)`
 :   Parameters for quotes.get operation
@@ -5069,6 +5499,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="QuotesGtCondition"></a>
+
 `QuotesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5081,6 +5513,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSearchFilter`
     :   The type of the None singleton.
 
+<a id="QuotesGteCondition"></a>
+
 `QuotesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5092,6 +5526,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSearchFilter`
     :   The type of the None singleton.
+
+<a id="QuotesInCondition"></a>
 
 `QuotesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5112,6 +5548,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesInFilter`
     :   The type of the None singleton.
+
+<a id="QuotesInFilter"></a>
 
 `QuotesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5164,6 +5602,8 @@ Classes
     `valid_till: list[str]`
     :   Date until which the quote is valid
 
+<a id="QuotesKeywordCondition"></a>
+
 `QuotesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -5176,6 +5616,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesStringFilter`
     :   The type of the None singleton.
 
+<a id="QuotesLikeCondition"></a>
+
 `QuotesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -5187,6 +5629,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesStringFilter`
     :   The type of the None singleton.
+
+<a id="QuotesListParams"></a>
 
 `QuotesListParams(*args, **kwargs)`
 :   Parameters for quotes.list operation
@@ -5212,6 +5656,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="QuotesLtCondition"></a>
+
 `QuotesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -5223,6 +5669,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSearchFilter`
     :   The type of the None singleton.
+
+<a id="QuotesLteCondition"></a>
 
 `QuotesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -5236,6 +5684,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSearchFilter`
     :   The type of the None singleton.
 
+<a id="QuotesNeqCondition"></a>
+
 `QuotesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5247,6 +5697,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSearchFilter`
     :   The type of the None singleton.
+
+<a id="QuotesNotCondition"></a>
 
 `QuotesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5268,6 +5720,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.QuotesEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAnyCondition`
     :   The type of the None singleton.
 
+<a id="QuotesOrCondition"></a>
+
 `QuotesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5287,6 +5741,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.QuotesEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.QuotesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="QuotesSearchFilter"></a>
 
 `QuotesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering quotes search queries.
@@ -5339,6 +5795,8 @@ Classes
     `valid_till: str | None`
     :   Date until which the quote is valid
 
+<a id="QuotesSearchQuery"></a>
+
 `QuotesSearchQuery(*args, **kwargs)`
 :   Search query for quotes entity.
 
@@ -5353,6 +5811,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.QuotesSortFilter]`
     :   The type of the None singleton.
+
+<a id="QuotesSortFilter"></a>
 
 `QuotesSortFilter(*args, **kwargs)`
 :   Available fields for sorting quotes search results.
@@ -5405,6 +5865,8 @@ Classes
     `valid_till: Literal['asc', 'desc']`
     :   Date until which the quote is valid
 
+<a id="QuotesStringFilter"></a>
+
 `QuotesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -5456,6 +5918,8 @@ Classes
     `valid_till: str`
     :   Date until which the quote is valid
 
+<a id="TasksAndCondition"></a>
+
 `TasksAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5476,6 +5940,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zoho_crm.types.TasksEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TasksAnyCondition"></a>
+
 `TasksAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5495,6 +5961,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zoho_crm.types.TasksAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TasksAnyValueFilter"></a>
 
 `TasksAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -5535,6 +6003,8 @@ Classes
     `subject: Any`
     :   Subject or title of the task
 
+<a id="TasksContainsCondition"></a>
+
 `TasksContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -5546,6 +6016,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.TasksAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TasksEqCondition"></a>
 
 `TasksEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -5559,6 +6031,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zoho_crm.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksFuzzyCondition"></a>
+
 `TasksFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -5570,6 +6044,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zoho_crm.types.TasksStringFilter`
     :   The type of the None singleton.
+
+<a id="TasksGetParams"></a>
 
 `TasksGetParams(*args, **kwargs)`
 :   Parameters for tasks.get operation
@@ -5583,6 +6059,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TasksGtCondition"></a>
+
 `TasksGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5595,6 +6073,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zoho_crm.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksGteCondition"></a>
+
 `TasksGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5606,6 +6086,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zoho_crm.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksInCondition"></a>
 
 `TasksInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5626,6 +6108,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zoho_crm.types.TasksInFilter`
     :   The type of the None singleton.
+
+<a id="TasksInFilter"></a>
 
 `TasksInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5666,6 +6150,8 @@ Classes
     `subject: list[str]`
     :   Subject or title of the task
 
+<a id="TasksKeywordCondition"></a>
+
 `TasksKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -5678,6 +6164,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.zoho_crm.types.TasksStringFilter`
     :   The type of the None singleton.
 
+<a id="TasksLikeCondition"></a>
+
 `TasksLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -5689,6 +6177,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.zoho_crm.types.TasksStringFilter`
     :   The type of the None singleton.
+
+<a id="TasksListParams"></a>
 
 `TasksListParams(*args, **kwargs)`
 :   Parameters for tasks.list operation
@@ -5714,6 +6204,8 @@ Classes
     `sort_order: str`
     :   The type of the None singleton.
 
+<a id="TasksLtCondition"></a>
+
 `TasksLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -5725,6 +6217,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.zoho_crm.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksLteCondition"></a>
 
 `TasksLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -5738,6 +6232,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zoho_crm.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksNeqCondition"></a>
+
 `TasksNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5749,6 +6245,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zoho_crm.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksNotCondition"></a>
 
 `TasksNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5770,6 +6268,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zoho_crm.types.TasksEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksAnyCondition`
     :   The type of the None singleton.
 
+<a id="TasksOrCondition"></a>
+
 `TasksOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5789,6 +6289,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zoho_crm.types.TasksEqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksNeqCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksGtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksGteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLtCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLteCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksInCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksLikeCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksContainsCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksNotCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksAndCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksOrCondition | airbyte_agent_sdk.connectors.zoho_crm.types.TasksAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TasksSearchFilter"></a>
 
 `TasksSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tasks search queries.
@@ -5829,6 +6331,8 @@ Classes
     `subject: str | None`
     :   Subject or title of the task
 
+<a id="TasksSearchQuery"></a>
+
 `TasksSearchQuery(*args, **kwargs)`
 :   Search query for tasks entity.
 
@@ -5843,6 +6347,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zoho_crm.types.TasksSortFilter]`
     :   The type of the None singleton.
+
+<a id="TasksSortFilter"></a>
 
 `TasksSortFilter(*args, **kwargs)`
 :   Available fields for sorting tasks search results.
@@ -5882,6 +6388,8 @@ Classes
 
     `subject: Literal['asc', 'desc']`
     :   Subject or title of the task
+
+<a id="TasksStringFilter"></a>
 
 `TasksStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

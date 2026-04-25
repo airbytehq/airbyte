@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AdGroupsReportsDailySearchData"></a>
+
 `AdGroupsReportsDailySearchData(**data: Any)`
 :   Search result data for ad_groups_reports_daily entity.
     
@@ -182,6 +184,8 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdGroupsSearchData"></a>
+
 `AdGroupsSearchData(**data: Any)`
 :   Search result data for ad_groups entity.
     
@@ -239,6 +243,8 @@ Classes
 
     `secondary_status: str | None`
     :   The secondary status of the ad group
+
+<a id="AdsReportsDailySearchData"></a>
 
 `AdsReportsDailySearchData(**data: Any)`
 :   Search result data for ads_reports_daily entity.
@@ -412,6 +418,8 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdsSearchData"></a>
+
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
     
@@ -475,6 +483,8 @@ Classes
 
     `video_id: str | None`
     :   The unique identifier of the video
+
+<a id="AdvertisersReportsDailySearchData"></a>
 
 `AdvertisersReportsDailySearchData(**data: Any)`
 :   Search result data for advertisers_reports_daily entity.
@@ -588,6 +598,8 @@ Classes
     `voucher_spend: str | None`
     :   Amount spent using vouchers.
 
+<a id="AdvertisersSearchData"></a>
+
 `AdvertisersSearchData(**data: Any)`
 :   Search result data for advertisers entity.
     
@@ -694,6 +706,8 @@ Classes
     `timezone: str | None`
     :   The timezone setting for the advertiser's activities.
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -762,6 +776,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -789,6 +805,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -830,6 +848,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsReportsDailySearchResult"></a>
+
 `AdGroupsReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -845,6 +865,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdGroupsSearchResult"></a>
 
 `AdGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -862,6 +884,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdsReportsDailySearchResult"></a>
+
 `AdsReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -877,6 +901,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdsSearchResult"></a>
 
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -894,6 +920,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdvertisersReportsDailySearchResult"></a>
+
 `AdvertisersReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -909,6 +937,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdvertisersSearchResult"></a>
 
 `AdvertisersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -926,6 +956,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AudiencesSearchResult"></a>
+
 `AudiencesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -941,6 +973,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsReportsDailySearchResult"></a>
 
 `CampaignsReportsDailySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -958,6 +992,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -973,6 +1009,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CreativeAssetsImagesSearchResult"></a>
 
 `CreativeAssetsImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -990,6 +1028,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CreativeAssetsVideosSearchResult"></a>
+
 `CreativeAssetsVideosSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1005,6 +1045,8 @@ Classes
     * airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AudiencesSearchData"></a>
 
 `AudiencesSearchData(**data: Any)`
 :   Search result data for audiences entity.
@@ -1045,6 +1087,8 @@ Classes
 
     `shared: bool | None`
     :   Flag indicating if the audience is shared
+
+<a id="CampaignsReportsDailySearchData"></a>
 
 `CampaignsReportsDailySearchData(**data: Any)`
 :   Search result data for campaigns_reports_daily entity.
@@ -1155,6 +1199,8 @@ Classes
     `video_watched_6s: float | None`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="CampaignsSearchData"></a>
+
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
     
@@ -1243,6 +1289,8 @@ Classes
     `split_test_variable: str | None`
     :   Variable being tested in a split test campaign
 
+<a id="CreativeAssetsImagesSearchData"></a>
+
 `CreativeAssetsImagesSearchData(**data: Any)`
 :   Search result data for creative_assets_images entity.
     
@@ -1288,6 +1336,8 @@ Classes
 
     `width: int | None`
     :   The width dimension of the image.
+
+<a id="CreativeAssetsVideosSearchData"></a>
 
 `CreativeAssetsVideosSearchData(**data: Any)`
 :   Search result data for creative_assets_videos entity.
@@ -1338,6 +1388,8 @@ Classes
     `width: int | None`
     :   Width of the video in pixels.
 
+<a id="TiktokMarketingAuthConfig"></a>
+
 `TiktokMarketingAuthConfig(**data: Any)`
 :   OAuth Access Token
     
@@ -1359,6 +1411,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TiktokMarketingConnector"></a>
 
 `TiktokMarketingConnector(auth_config: TiktokMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Tiktok-Marketing API connector.
@@ -1559,6 +1613,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="TiktokMarketingReplicationConfig"></a>
 
 `TiktokMarketingReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from TikTok Marketing.

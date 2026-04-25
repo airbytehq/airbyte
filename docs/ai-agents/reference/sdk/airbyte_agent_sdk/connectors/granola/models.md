@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -92,6 +96,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="NotesSearchResult"></a>
+
 `NotesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -107,6 +113,8 @@ Classes
     * airbyte_agent_sdk.connectors.granola.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Attendee"></a>
 
 `Attendee(**data: Any)`
 :   A meeting attendee
@@ -132,6 +140,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CalendarEvent"></a>
 
 `CalendarEvent(**data: Any)`
 :   Associated calendar event details
@@ -170,6 +180,8 @@ Classes
     `scheduled_start_time: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CalendarEventInvitee"></a>
+
 `CalendarEventInvitee(**data: Any)`
 :   A calendar event invitee
     
@@ -191,6 +203,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FolderMembership"></a>
 
 `FolderMembership(**data: Any)`
 :   Folder the note belongs to
@@ -220,6 +234,8 @@ Classes
     `object_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GranolaAuthConfig"></a>
+
 `GranolaAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -241,6 +257,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GranolaCheckResult"></a>
 
 `GranolaCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -275,6 +293,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GranolaExecuteResult"></a>
+
 `GranolaExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -303,6 +323,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GranolaExecuteResultWithMeta"></a>
 
 `GranolaExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -355,6 +377,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="NotesListResult"></a>
+
 `NotesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -373,6 +397,8 @@ Classes
     * airbyte_agent_sdk.connectors.granola.models.GranolaExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Note"></a>
 
 `Note(**data: Any)`
 :   A Granola meeting note
@@ -429,6 +455,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="NotesList"></a>
+
 `NotesList(**data: Any)`
 :   Paginated list of notes
     
@@ -457,6 +485,8 @@ Classes
     `notes: list[airbyte_agent_sdk.connectors.granola.models.Note] | Any`
     :   The type of the None singleton.
 
+<a id="NotesListResultMeta"></a>
+
 `NotesListResultMeta(**data: Any)`
 :   Metadata for notes.Action.LIST operation
     
@@ -481,6 +511,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="NotesSearchData"></a>
 
 `NotesSearchData(**data: Any)`
 :   Search result data for notes entity.
@@ -537,6 +569,8 @@ Classes
     `updated_at: str | None`
     :   The last update time of the note in ISO 8601 format.
 
+<a id="Owner"></a>
+
 `Owner(**data: Any)`
 :   The owner of the note
     
@@ -561,6 +595,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TranscriptEntry"></a>
 
 `TranscriptEntry(**data: Any)`
 :   A single transcript entry
@@ -592,6 +628,8 @@ Classes
 
     `text: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TranscriptSpeaker"></a>
 
 `TranscriptSpeaker(**data: Any)`
 :   Speaker information in transcript

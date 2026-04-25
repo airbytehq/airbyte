@@ -10,6 +10,8 @@ Confluence connector.
 Classes
 -------
 
+<a id="AuditQuery"></a>
+
 `AuditQuery(connector: ConfluenceConnector)`
 :   Query class for Audit entity operations.
     
@@ -63,6 +65,8 @@ Classes
         
         Returns:
             AuditListResult
+
+<a id="BlogPostsQuery"></a>
 
 `BlogPostsQuery(connector: ConfluenceConnector)`
 :   Query class for BlogPosts entity operations.
@@ -129,6 +133,8 @@ Classes
         
         Returns:
             BlogPostsListResult
+
+<a id="ConfluenceConnector"></a>
 
 `ConfluenceConnector(auth_config: ConfluenceAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Confluence API connector.
@@ -318,6 +324,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GroupsQuery"></a>
+
 `GroupsQuery(connector: ConfluenceConnector)`
 :   Query class for Groups entity operations.
     
@@ -361,6 +369,8 @@ Classes
         
         Returns:
             GroupsListResult
+
+<a id="PagesQuery"></a>
 
 `PagesQuery(connector: ConfluenceConnector)`
 :   Query class for Pages entity operations.
@@ -432,6 +442,8 @@ Classes
         
         Returns:
             PagesListResult
+
+<a id="SpacesQuery"></a>
 
 `SpacesQuery(connector: ConfluenceConnector)`
 :   Query class for Spaces entity operations.

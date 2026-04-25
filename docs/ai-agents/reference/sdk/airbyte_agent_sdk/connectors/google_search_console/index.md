@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -152,6 +158,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsAllFieldsSearchResult"></a>
+
 `SearchAnalyticsAllFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -167,6 +175,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SearchAnalyticsByCountrySearchResult"></a>
 
 `SearchAnalyticsByCountrySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -184,6 +194,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SearchAnalyticsByDateSearchResult"></a>
+
 `SearchAnalyticsByDateSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -199,6 +211,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SearchAnalyticsByDeviceSearchResult"></a>
 
 `SearchAnalyticsByDeviceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -216,6 +230,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SearchAnalyticsByPageSearchResult"></a>
+
 `SearchAnalyticsByPageSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -231,6 +247,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SearchAnalyticsByQuerySearchResult"></a>
 
 `SearchAnalyticsByQuerySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -248,6 +266,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SitemapsSearchResult"></a>
+
 `SitemapsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -264,6 +284,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SitesSearchResult"></a>
+
 `SitesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -279,6 +301,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GoogleSearchConsoleAuthConfig"></a>
 
 `GoogleSearchConsoleAuthConfig(**data: Any)`
 :   OAuth2 Authentication
@@ -307,6 +331,8 @@ Classes
 
     `refresh_token: str`
     :   The refresh token for obtaining new access tokens.
+
+<a id="GoogleSearchConsoleConnector"></a>
 
 `GoogleSearchConsoleConnector(auth_config: GoogleSearchConsoleAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Search-Console API connector.
@@ -564,6 +590,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GoogleSearchConsoleReplicationConfig"></a>
+
 `GoogleSearchConsoleReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Search Console.
     
@@ -588,6 +616,8 @@ Classes
 
     `start_date: str | None`
     :   UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated.
+
+<a id="SearchAnalyticsAllFieldsSearchData"></a>
 
 `SearchAnalyticsAllFieldsSearchData(**data: Any)`
 :   Search result data for search_analytics_all_fields entity.
@@ -641,6 +671,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site from which the data originates
 
+<a id="SearchAnalyticsByCountrySearchData"></a>
+
 `SearchAnalyticsByCountrySearchData(**data: Any)`
 :   Search result data for search_analytics_by_country entity.
     
@@ -684,6 +716,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByDateSearchData"></a>
+
 `SearchAnalyticsByDateSearchData(**data: Any)`
 :   Search result data for search_analytics_by_date entity.
     
@@ -723,6 +757,8 @@ Classes
 
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is being reported
+
+<a id="SearchAnalyticsByDeviceSearchData"></a>
 
 `SearchAnalyticsByDeviceSearchData(**data: Any)`
 :   Search result data for search_analytics_by_device entity.
@@ -767,6 +803,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which search analytics data is being provided
 
+<a id="SearchAnalyticsByPageSearchData"></a>
+
 `SearchAnalyticsByPageSearchData(**data: Any)`
 :   Search result data for search_analytics_by_page entity.
     
@@ -810,6 +848,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByQuerySearchData"></a>
+
 `SearchAnalyticsByQuerySearchData(**data: Any)`
 :   Search result data for search_analytics_by_query entity.
     
@@ -852,6 +892,8 @@ Classes
 
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is captured
+
+<a id="SitemapsSearchData"></a>
 
 `SitemapsSearchData(**data: Any)`
 :   Search result data for sitemaps entity.
@@ -898,6 +940,8 @@ Classes
 
     `warnings: str | None`
     :   Warnings encountered while processing the sitemaps
+
+<a id="SitesSearchData"></a>
 
 `SitesSearchData(**data: Any)`
 :   Search result data for sites entity.

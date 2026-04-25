@@ -10,6 +10,8 @@ Slack connector.
 Classes
 -------
 
+<a id="ChannelInvitesQuery"></a>
+
 `ChannelInvitesQuery(connector: SlackConnector)`
 :   Query class for ChannelInvites entity operations.
     
@@ -28,6 +30,8 @@ Classes
         
         Returns:
             Channel
+
+<a id="ChannelMessagesQuery"></a>
 
 `ChannelMessagesQuery(connector: SlackConnector)`
 :   Query class for ChannelMessages entity operations.
@@ -91,6 +95,8 @@ Classes
         Returns:
             ChannelMessagesListResult
 
+<a id="ChannelPurposesQuery"></a>
+
 `ChannelPurposesQuery(connector: SlackConnector)`
 :   Query class for ChannelPurposes entity operations.
     
@@ -109,6 +115,8 @@ Classes
         Returns:
             Channel
 
+<a id="ChannelTopicsQuery"></a>
+
 `ChannelTopicsQuery(connector: SlackConnector)`
 :   Query class for ChannelTopics entity operations.
     
@@ -126,6 +134,8 @@ Classes
         
         Returns:
             Channel
+
+<a id="ChannelsQuery"></a>
 
 `ChannelsQuery(connector: SlackConnector)`
 :   Query class for Channels entity operations.
@@ -232,6 +242,8 @@ Classes
         Returns:
             Channel
 
+<a id="MessagesQuery"></a>
+
 `MessagesQuery(connector: SlackConnector)`
 :   Query class for Messages entity operations.
     
@@ -266,6 +278,8 @@ Classes
         Returns:
             CreatedMessage
 
+<a id="ReactionsQuery"></a>
+
 `ReactionsQuery(connector: SlackConnector)`
 :   Query class for Reactions entity operations.
     
@@ -284,6 +298,8 @@ Classes
         
         Returns:
             ReactionAddResponse
+
+<a id="SlackConnector"></a>
 
 `SlackConnector(auth_config: SlackAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Slack API connector.
@@ -541,6 +557,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ThreadsQuery"></a>
+
 `ThreadsQuery(connector: SlackConnector)`
 :   Query class for Threads entity operations.
     
@@ -601,6 +619,8 @@ Classes
         
         Returns:
             ThreadsListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: SlackConnector)`
 :   Query class for Users entity operations.

@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -152,6 +158,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AttachmentsSearchResult"></a>
+
 `AttachmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -167,6 +175,8 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProjectsSearchResult"></a>
 
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -184,6 +194,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SectionsSearchResult"></a>
+
 `SectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -199,6 +211,8 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -216,6 +230,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -231,6 +247,8 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TeamsSearchResult"></a>
 
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -248,6 +266,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -264,6 +284,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WorkspacesSearchResult"></a>
+
 `WorkspacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -279,6 +301,8 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AsanaConnector"></a>
 
 `AsanaConnector(auth_config: AsanaAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Asana API connector.
@@ -522,6 +546,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="AttachmentsSearchData"></a>
+
 `AttachmentsSearchData(**data: Any)`
 :   Search result data for attachments entity.
     
@@ -576,6 +602,8 @@ Classes
 
     `view_url: str | None`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -671,6 +699,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="SectionsSearchData"></a>
+
 `SectionsSearchData(**data: Any)`
 :   Search result data for sections entity.
     
@@ -704,6 +734,8 @@ Classes
 
     `resource_type: str | None`
     :   The type of the None singleton.
+
+<a id="TagsSearchData"></a>
 
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
@@ -744,6 +776,8 @@ Classes
 
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
+
+<a id="TasksSearchData"></a>
 
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.
@@ -872,6 +906,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="TeamsSearchData"></a>
+
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
     
@@ -912,6 +948,8 @@ Classes
     `resource_type: str | None`
     :   The type of the None singleton.
 
+<a id="UsersSearchData"></a>
+
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
     
@@ -948,6 +986,8 @@ Classes
 
     `workspaces: list[typing.Any] | None`
     :   The type of the None singleton.
+
+<a id="WorkspacesSearchData"></a>
 
 `WorkspacesSearchData(**data: Any)`
 :   Search result data for workspaces entity.

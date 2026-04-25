@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="ActiveUsersSearchData"></a>
+
 `ActiveUsersSearchData(**data: Any)`
 :   Search result data for active_users entity.
     
@@ -43,6 +45,8 @@ Classes
 
     `statistics: dict[str, typing.Any] | None`
     :   The statistics related to the active users for the given date
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -112,6 +116,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -139,6 +145,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -174,6 +182,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ActiveUsersSearchResult"></a>
+
 `ActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -189,6 +199,8 @@ Classes
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AnnotationsSearchResult"></a>
 
 `AnnotationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -206,6 +218,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AverageSessionLengthSearchResult"></a>
+
 `AverageSessionLengthSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -221,6 +235,8 @@ Classes
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CohortsSearchResult"></a>
 
 `CohortsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -238,6 +254,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="EventsListSearchResult"></a>
+
 `EventsListSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -253,6 +271,8 @@ Classes
     * airbyte_agent_sdk.connectors.amplitude.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmplitudeAuthConfig"></a>
 
 `AmplitudeAuthConfig(**data: Any)`
 :   API Key Authentication
@@ -278,6 +298,8 @@ Classes
 
     `secret_key: str`
     :   Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+
+<a id="AmplitudeConnector"></a>
 
 `AmplitudeConnector(auth_config: AmplitudeAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Amplitude API connector.
@@ -479,6 +501,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="AmplitudeReplicationConfig"></a>
+
 `AmplitudeReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Amplitude.
     
@@ -500,6 +524,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data before this date will not be replicated.
+
+<a id="AnnotationsSearchData"></a>
 
 `AnnotationsSearchData(**data: Any)`
 :   Search result data for annotations entity.
@@ -532,6 +558,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthSearchData"></a>
+
 `AverageSessionLengthSearchData(**data: Any)`
 :   Search result data for average_session_length entity.
     
@@ -556,6 +584,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CohortsSearchData"></a>
 
 `CohortsSearchData(**data: Any)`
 :   Search result data for cohorts entity.
@@ -653,6 +683,8 @@ Classes
 
     `viewers: list[typing.Any] | None`
     :   Users or viewers who have access to the cohort data
+
+<a id="EventsListSearchData"></a>
 
 `EventsListSearchData(**data: Any)`
 :   Search result data for events_list entity.

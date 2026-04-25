@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AccessibleCustomerResourceName"></a>
+
 `AccessibleCustomerResourceName(**data: Any)`
 :   Resource name of an accessible customer (e.g., customers/1234567890)
     
@@ -31,6 +33,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccessibleCustomersList"></a>
 
 `AccessibleCustomersList(**data: Any)`
 :   List of accessible customer resource names
@@ -54,6 +58,8 @@ Classes
     `resource_names: list[airbyte_agent_sdk.connectors.google_ads.models.AccessibleCustomerResourceName] | Any`
     :   The type of the None singleton.
 
+<a id="Account"></a>
+
 `Account(**data: Any)`
 :   Google Ads customer account
     
@@ -75,6 +81,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountCustomer"></a>
 
 `AccountCustomer(**data: Any)`
 :   Nested schema for Account.customer
@@ -146,6 +154,8 @@ Classes
     `tracking_url_template: str | Any`
     :   The type of the None singleton.
 
+<a id="AccountCustomerCallreportingsetting"></a>
+
 `AccountCustomerCallreportingsetting(**data: Any)`
 :   Nested schema for AccountCustomer.callReportingSetting
     
@@ -174,6 +184,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountCustomerConversiontrackingsetting"></a>
+
 `AccountCustomerConversiontrackingsetting(**data: Any)`
 :   Nested schema for AccountCustomer.conversionTrackingSetting
     
@@ -199,6 +211,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountCustomerRemarketingsetting"></a>
+
 `AccountCustomerRemarketingsetting(**data: Any)`
 :   Nested schema for AccountCustomer.remarketingSetting
     
@@ -220,6 +234,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountSearchResponse"></a>
 
 `AccountSearchResponse(**data: Any)`
 :   Search response containing account data
@@ -252,6 +268,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.Account] | Any`
     :   The type of the None singleton.
 
+<a id="AccountsListResultMeta"></a>
+
 `AccountsListResultMeta(**data: Any)`
 :   Metadata for accounts.Action.LIST operation
     
@@ -273,6 +291,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AccountsSearchData"></a>
 
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
@@ -356,6 +376,8 @@ Classes
     `segments_date: str | None`
     :   Date segment for the report row
 
+<a id="AdGroup"></a>
+
 `AdGroup(**data: Any)`
 :   Google Ads ad group
     
@@ -387,6 +409,8 @@ Classes
     `segments: airbyte_agent_sdk.connectors.google_ads.models.AdGroupSegments | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAd"></a>
+
 `AdGroupAd(**data: Any)`
 :   Google Ads ad group ad
     
@@ -415,6 +439,8 @@ Classes
     `segments: airbyte_agent_sdk.connectors.google_ads.models.AdGroupAdSegments | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAdAdgroup"></a>
+
 `AdGroupAdAdgroup(**data: Any)`
 :   Nested schema for AdGroupAd.adGroup
     
@@ -439,6 +465,8 @@ Classes
 
     `resource_name: str | Any`
     :   Parent ad group resource name
+
+<a id="AdGroupAdAdgroupad"></a>
 
 `AdGroupAdAdgroupad(**data: Any)`
 :   Nested schema for AdGroupAd.adGroupAd
@@ -479,6 +507,8 @@ Classes
 
     `status: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupAdAdgroupadAd"></a>
 
 `AdGroupAdAdgroupadAd(**data: Any)`
 :   Nested schema for AdGroupAdAdgroupad.ad
@@ -526,6 +556,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAdAdgroupadPolicysummary"></a>
+
 `AdGroupAdAdgroupadPolicysummary(**data: Any)`
 :   Nested schema for AdGroupAdAdgroupad.policySummary
     
@@ -550,6 +582,8 @@ Classes
 
     `review_status: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupAdLabel"></a>
 
 `AdGroupAdLabel(**data: Any)`
 :   Ad group ad label association
@@ -579,6 +613,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupAdLabelAdgroupad"></a>
+
 `AdGroupAdLabelAdgroupad(**data: Any)`
 :   Nested schema for AdGroupAdLabel.adGroupAd
     
@@ -601,6 +637,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupAdLabelAdgroupadAd"></a>
+
 `AdGroupAdLabelAdgroupadAd(**data: Any)`
 :   Nested schema for AdGroupAdLabelAdgroupad.ad
     
@@ -622,6 +660,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupAdLabelAdgroupadlabel"></a>
 
 `AdGroupAdLabelAdgroupadlabel(**data: Any)`
 :   Nested schema for AdGroupAdLabel.adGroupAdLabel
@@ -651,6 +691,8 @@ Classes
     `resource_name: str | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAdLabelLabel"></a>
+
 `AdGroupAdLabelLabel(**data: Any)`
 :   Nested schema for AdGroupAdLabel.label
     
@@ -678,6 +720,8 @@ Classes
 
     `resource_name: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupAdLabelSearchResponse"></a>
 
 `AdGroupAdLabelSearchResponse(**data: Any)`
 :   Search response containing ad group ad label data
@@ -710,6 +754,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupAdLabel] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAdLabelsListResultMeta"></a>
+
 `AdGroupAdLabelsListResultMeta(**data: Any)`
 :   Metadata for ad_group_ad_labels.Action.LIST operation
     
@@ -731,6 +777,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupAdLabelsSearchData"></a>
 
 `AdGroupAdLabelsSearchData(**data: Any)`
 :   Search result data for ad_group_ad_labels entity.
@@ -766,6 +814,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupAdSearchResponse"></a>
+
 `AdGroupAdSearchResponse(**data: Any)`
 :   Search response containing ad group ad data
     
@@ -797,6 +847,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupAd] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAdSegments"></a>
+
 `AdGroupAdSegments(**data: Any)`
 :   Nested schema for AdGroupAd.segments
     
@@ -818,6 +870,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupAdgroup"></a>
 
 `AdGroupAdgroup(**data: Any)`
 :   Nested schema for AdGroup.adGroup
@@ -895,6 +949,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupAdsListResultMeta"></a>
+
 `AdGroupAdsListResultMeta(**data: Any)`
 :   Metadata for ad_group_ads.Action.LIST operation
     
@@ -916,6 +972,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupAdsSearchData"></a>
 
 `AdGroupAdsSearchData(**data: Any)`
 :   Search result data for ad_group_ads entity.
@@ -990,6 +1048,8 @@ Classes
     `segments_date: str | None`
     :   Date segment for the report row
 
+<a id="AdGroupCampaign"></a>
+
 `AdGroupCampaign(**data: Any)`
 :   Nested schema for AdGroup.campaign
     
@@ -1014,6 +1074,8 @@ Classes
 
     `resource_name: str | Any`
     :   Parent campaign resource name
+
+<a id="AdGroupLabel"></a>
 
 `AdGroupLabel(**data: Any)`
 :   Ad group label association
@@ -1043,6 +1105,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelAdgroup"></a>
+
 `AdGroupLabelAdgroup(**data: Any)`
 :   Nested schema for AdGroupLabel.adGroup
     
@@ -1064,6 +1128,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupLabelAdgrouplabel"></a>
 
 `AdGroupLabelAdgrouplabel(**data: Any)`
 :   Nested schema for AdGroupLabel.adGroupLabel
@@ -1093,6 +1159,8 @@ Classes
     `resource_name: str | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelLabel"></a>
+
 `AdGroupLabelLabel(**data: Any)`
 :   Nested schema for AdGroupLabel.label
     
@@ -1121,6 +1189,8 @@ Classes
     `resource_name: str | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelMutateRequest"></a>
+
 `AdGroupLabelMutateRequest(**data: Any)`
 :   Request to create ad group-label associations
     
@@ -1143,6 +1213,8 @@ Classes
     `operations: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupLabelMutateRequestOperationsItem] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelMutateRequestOperationsItem"></a>
+
 `AdGroupLabelMutateRequestOperationsItem(**data: Any)`
 :   Nested schema for AdGroupLabelMutateRequest.operations_item
     
@@ -1164,6 +1236,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupLabelMutateRequestOperationsItemCreate"></a>
 
 `AdGroupLabelMutateRequestOperationsItemCreate(**data: Any)`
 :   Ad group label association to create
@@ -1190,6 +1264,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelMutateResponse"></a>
+
 `AdGroupLabelMutateResponse(**data: Any)`
 :   Response from ad group label mutate operation
     
@@ -1212,6 +1288,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupLabelMutateResponseResultsItem] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelMutateResponseResultsItem"></a>
+
 `AdGroupLabelMutateResponseResultsItem(**data: Any)`
 :   Nested schema for AdGroupLabelMutateResponse.results_item
     
@@ -1233,6 +1311,8 @@ Classes
 
     `resource_name: str | Any`
     :   Resource name of the created ad group label association
+
+<a id="AdGroupLabelSearchResponse"></a>
 
 `AdGroupLabelSearchResponse(**data: Any)`
 :   Search response containing ad group label data
@@ -1265,6 +1345,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupLabel] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupLabelsListResultMeta"></a>
+
 `AdGroupLabelsListResultMeta(**data: Any)`
 :   Metadata for ad_group_labels.Action.LIST operation
     
@@ -1286,6 +1368,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupLabelsSearchData"></a>
 
 `AdGroupLabelsSearchData(**data: Any)`
 :   Search result data for ad_group_labels entity.
@@ -1321,6 +1405,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupMetrics"></a>
+
 `AdGroupMetrics(**data: Any)`
 :   Nested schema for AdGroup.metrics
     
@@ -1343,6 +1429,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupMutateRequest"></a>
+
 `AdGroupMutateRequest(**data: Any)`
 :   Request to mutate (update) ad groups
     
@@ -1364,6 +1452,8 @@ Classes
 
     `operations: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupMutateRequestOperationsItem] | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupMutateRequestOperationsItem"></a>
 
 `AdGroupMutateRequestOperationsItem(**data: Any)`
 :   Nested schema for AdGroupMutateRequest.operations_item
@@ -1389,6 +1479,8 @@ Classes
 
     `update_mask: str | Any`
     :   Comma-separated list of field paths to update (e.g., name,status,cpcBidMicros)
+
+<a id="AdGroupMutateRequestOperationsItemUpdate"></a>
 
 `AdGroupMutateRequestOperationsItemUpdate(**data: Any)`
 :   Ad group fields to update
@@ -1421,6 +1513,8 @@ Classes
     `status: str | Any`
     :   Ad group status (ENABLED or PAUSED)
 
+<a id="AdGroupMutateResponse"></a>
+
 `AdGroupMutateResponse(**data: Any)`
 :   Response from ad group mutate operation
     
@@ -1443,6 +1537,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroupMutateResponseResultsItem] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupMutateResponseResultsItem"></a>
+
 `AdGroupMutateResponseResultsItem(**data: Any)`
 :   Nested schema for AdGroupMutateResponse.results_item
     
@@ -1464,6 +1560,8 @@ Classes
 
     `resource_name: str | Any`
     :   Resource name of the mutated ad group
+
+<a id="AdGroupSearchResponse"></a>
 
 `AdGroupSearchResponse(**data: Any)`
 :   Search response containing ad group data
@@ -1496,6 +1594,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.AdGroup] | Any`
     :   The type of the None singleton.
 
+<a id="AdGroupSegments"></a>
+
 `AdGroupSegments(**data: Any)`
 :   Nested schema for AdGroup.segments
     
@@ -1518,6 +1618,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsListResultMeta"></a>
+
 `AdGroupsListResultMeta(**data: Any)`
 :   Metadata for ad_groups.Action.LIST operation
     
@@ -1539,6 +1641,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AdGroupsSearchData"></a>
 
 `AdGroupsSearchData(**data: Any)`
 :   Search result data for ad_groups entity.
@@ -1625,6 +1729,8 @@ Classes
     `segments_date: str | None`
     :   Date segment for the report row
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -1652,6 +1758,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1710,6 +1818,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1746,6 +1856,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupAdLabelsSearchResult"></a>
 
 `AdGroupAdLabelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1784,6 +1896,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupAdsSearchResult"></a>
+
 `AdGroupAdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1820,6 +1934,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupLabelsSearchResult"></a>
 
 `AdGroupLabelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1858,6 +1974,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsSearchResult"></a>
+
 `AdGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1894,6 +2012,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignLabelsSearchResult"></a>
 
 `CampaignLabelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1932,6 +2052,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1947,6 +2069,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   Google Ads campaign
@@ -1978,6 +2102,8 @@ Classes
 
     `segments: airbyte_agent_sdk.connectors.google_ads.models.CampaignSegments | Any`
     :   The type of the None singleton.
+
+<a id="CampaignCampaign"></a>
 
 `CampaignCampaign(**data: Any)`
 :   Nested schema for Campaign.campaign
@@ -2040,6 +2166,8 @@ Classes
     `status: str | Any`
     :   Campaign status
 
+<a id="CampaignCampaignNetworksettings"></a>
+
 `CampaignCampaignNetworksettings(**data: Any)`
 :   Nested schema for CampaignCampaign.networkSettings
     
@@ -2071,6 +2199,8 @@ Classes
     `target_search_network: bool | Any`
     :   The type of the None singleton.
 
+<a id="CampaignCampaignbudget"></a>
+
 `CampaignCampaignbudget(**data: Any)`
 :   Nested schema for Campaign.campaignBudget
     
@@ -2095,6 +2225,8 @@ Classes
 
     `resource_name: str | Any`
     :   Resource name of the campaign budget
+
+<a id="CampaignLabel"></a>
 
 `CampaignLabel(**data: Any)`
 :   Campaign label association
@@ -2124,6 +2256,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignLabelCampaign"></a>
+
 `CampaignLabelCampaign(**data: Any)`
 :   Nested schema for CampaignLabel.campaign
     
@@ -2145,6 +2279,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignLabelCampaignlabel"></a>
 
 `CampaignLabelCampaignlabel(**data: Any)`
 :   Nested schema for CampaignLabel.campaignLabel
@@ -2174,6 +2310,8 @@ Classes
     `resource_name: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignLabelLabel"></a>
+
 `CampaignLabelLabel(**data: Any)`
 :   Nested schema for CampaignLabel.label
     
@@ -2202,6 +2340,8 @@ Classes
     `resource_name: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignLabelMutateRequest"></a>
+
 `CampaignLabelMutateRequest(**data: Any)`
 :   Request to create campaign-label associations
     
@@ -2224,6 +2364,8 @@ Classes
     `operations: list[airbyte_agent_sdk.connectors.google_ads.models.CampaignLabelMutateRequestOperationsItem] | Any`
     :   The type of the None singleton.
 
+<a id="CampaignLabelMutateRequestOperationsItem"></a>
+
 `CampaignLabelMutateRequestOperationsItem(**data: Any)`
 :   Nested schema for CampaignLabelMutateRequest.operations_item
     
@@ -2245,6 +2387,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignLabelMutateRequestOperationsItemCreate"></a>
 
 `CampaignLabelMutateRequestOperationsItemCreate(**data: Any)`
 :   Campaign label association to create
@@ -2271,6 +2415,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignLabelMutateResponse"></a>
+
 `CampaignLabelMutateResponse(**data: Any)`
 :   Response from campaign label mutate operation
     
@@ -2293,6 +2439,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.CampaignLabelMutateResponseResultsItem] | Any`
     :   The type of the None singleton.
 
+<a id="CampaignLabelMutateResponseResultsItem"></a>
+
 `CampaignLabelMutateResponseResultsItem(**data: Any)`
 :   Nested schema for CampaignLabelMutateResponse.results_item
     
@@ -2314,6 +2462,8 @@ Classes
 
     `resource_name: str | Any`
     :   Resource name of the created campaign label association
+
+<a id="CampaignLabelSearchResponse"></a>
 
 `CampaignLabelSearchResponse(**data: Any)`
 :   Search response containing campaign label data
@@ -2346,6 +2496,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.CampaignLabel] | Any`
     :   The type of the None singleton.
 
+<a id="CampaignLabelsListResultMeta"></a>
+
 `CampaignLabelsListResultMeta(**data: Any)`
 :   Metadata for campaign_labels.Action.LIST operation
     
@@ -2367,6 +2519,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="CampaignLabelsSearchData"></a>
 
 `CampaignLabelsSearchData(**data: Any)`
 :   Search result data for campaign_labels entity.
@@ -2401,6 +2555,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignMetrics"></a>
 
 `CampaignMetrics(**data: Any)`
 :   Nested schema for Campaign.metrics
@@ -2448,6 +2604,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignMutateRequest"></a>
+
 `CampaignMutateRequest(**data: Any)`
 :   Request to mutate (update) campaigns
     
@@ -2469,6 +2627,8 @@ Classes
 
     `operations: list[airbyte_agent_sdk.connectors.google_ads.models.CampaignMutateRequestOperationsItem] | Any`
     :   The type of the None singleton.
+
+<a id="CampaignMutateRequestOperationsItem"></a>
 
 `CampaignMutateRequestOperationsItem(**data: Any)`
 :   Nested schema for CampaignMutateRequest.operations_item
@@ -2494,6 +2654,8 @@ Classes
 
     `update_mask: str | Any`
     :   Comma-separated list of field paths to update (e.g., name,status)
+
+<a id="CampaignMutateRequestOperationsItemUpdate"></a>
 
 `CampaignMutateRequestOperationsItemUpdate(**data: Any)`
 :   Campaign fields to update
@@ -2523,6 +2685,8 @@ Classes
     `status: str | Any`
     :   Campaign status (ENABLED or PAUSED)
 
+<a id="CampaignMutateResponse"></a>
+
 `CampaignMutateResponse(**data: Any)`
 :   Response from campaign mutate operation
     
@@ -2545,6 +2709,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.CampaignMutateResponseResultsItem] | Any`
     :   The type of the None singleton.
 
+<a id="CampaignMutateResponseResultsItem"></a>
+
 `CampaignMutateResponseResultsItem(**data: Any)`
 :   Nested schema for CampaignMutateResponse.results_item
     
@@ -2566,6 +2732,8 @@ Classes
 
     `resource_name: str | Any`
     :   Resource name of the mutated campaign
+
+<a id="CampaignSearchResponse"></a>
 
 `CampaignSearchResponse(**data: Any)`
 :   Search response containing campaign data
@@ -2598,6 +2766,8 @@ Classes
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.Campaign] | Any`
     :   The type of the None singleton.
 
+<a id="CampaignSegments"></a>
+
 `CampaignSegments(**data: Any)`
 :   Nested schema for Campaign.segments
     
@@ -2620,6 +2790,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -2641,6 +2813,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -2751,6 +2925,8 @@ Classes
     `segments_hour: int | None`
     :   Hour segment
 
+<a id="GoogleAdsAuthConfig"></a>
+
 `GoogleAdsAuthConfig(**data: Any)`
 :   OAuth2 Authentication
     
@@ -2781,6 +2957,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth2 refresh token
+
+<a id="GoogleAdsCheckResult"></a>
 
 `GoogleAdsCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2815,6 +2993,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GoogleAdsExecuteResult"></a>
+
 `GoogleAdsExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2844,6 +3024,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GoogleAdsExecuteResultWithMeta"></a>
 
 `GoogleAdsExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2902,6 +3084,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsListResult"></a>
+
 `AccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2944,6 +3128,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupAdLabelsListResult"></a>
 
 `AdGroupAdLabelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2988,6 +3174,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupAdsListResult"></a>
+
 `AdGroupAdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3030,6 +3218,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupLabelsListResult"></a>
 
 `AdGroupLabelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3074,6 +3264,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsListResult"></a>
+
 `AdGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3116,6 +3308,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignLabelsListResult"></a>
 
 `CampaignLabelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3160,6 +3354,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResult"></a>
+
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3202,6 +3398,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccessibleCustomersListResult"></a>
+
 `AccessibleCustomersListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3219,6 +3417,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GoogleAdsReplicationConfig"></a>
 
 `GoogleAdsReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Ads.
@@ -3248,6 +3448,8 @@ Classes
     `start_date: str | None`
     :   UTC date in YYYY-MM-DD format from which to start replicating data. Defaults to 2 years ago if not specified.
 
+<a id="LabelMutateRequest"></a>
+
 `LabelMutateRequest(**data: Any)`
 :   Request to create labels
     
@@ -3270,6 +3472,8 @@ Classes
     `operations: list[airbyte_agent_sdk.connectors.google_ads.models.LabelMutateRequestOperationsItem] | Any`
     :   The type of the None singleton.
 
+<a id="LabelMutateRequestOperationsItem"></a>
+
 `LabelMutateRequestOperationsItem(**data: Any)`
 :   Nested schema for LabelMutateRequest.operations_item
     
@@ -3291,6 +3495,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LabelMutateRequestOperationsItemCreate"></a>
 
 `LabelMutateRequestOperationsItemCreate(**data: Any)`
 :   Label to create
@@ -3320,6 +3526,8 @@ Classes
     `text_label: airbyte_agent_sdk.connectors.google_ads.models.LabelMutateRequestOperationsItemCreateTextlabel | Any`
     :   Text label styling
 
+<a id="LabelMutateRequestOperationsItemCreateTextlabel"></a>
+
 `LabelMutateRequestOperationsItemCreateTextlabel(**data: Any)`
 :   Text label styling
     
@@ -3345,6 +3553,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LabelMutateResponse"></a>
+
 `LabelMutateResponse(**data: Any)`
 :   Response from label mutate operation
     
@@ -3366,6 +3576,8 @@ Classes
 
     `results: list[airbyte_agent_sdk.connectors.google_ads.models.LabelMutateResponseResultsItem] | Any`
     :   The type of the None singleton.
+
+<a id="LabelMutateResponseResultsItem"></a>
 
 `LabelMutateResponseResultsItem(**data: Any)`
 :   Nested schema for LabelMutateResponse.results_item

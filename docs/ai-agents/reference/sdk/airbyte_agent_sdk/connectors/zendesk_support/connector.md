@@ -10,6 +10,8 @@ Zendesk-Support connector.
 Classes
 -------
 
+<a id="ArticleAttachmentsQuery"></a>
+
 `ArticleAttachmentsQuery(connector: ZendeskSupportConnector)`
 :   Query class for ArticleAttachments entity operations.
     
@@ -65,6 +67,8 @@ Classes
         Returns:
             ArticleAttachmentsListResult
 
+<a id="ArticlesQuery"></a>
+
 `ArticlesQuery(connector: ZendeskSupportConnector)`
 :   Query class for Articles entity operations.
     
@@ -94,6 +98,8 @@ Classes
         
         Returns:
             ArticlesListResult
+
+<a id="AttachmentsQuery"></a>
 
 `AttachmentsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Attachments entity operations.
@@ -135,6 +141,8 @@ Classes
         Returns:
             Attachment
 
+<a id="AutomationsQuery"></a>
+
 `AutomationsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Automations entity operations.
     
@@ -165,6 +173,8 @@ Classes
         
         Returns:
             AutomationsListResult
+
+<a id="BrandsQuery"></a>
 
 `BrandsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Brands entity operations.
@@ -232,6 +242,8 @@ Classes
         Returns:
             BrandsListResult
 
+<a id="DeletedTicketsQuery"></a>
+
 `DeletedTicketsQuery(connector: ZendeskSupportConnector)`
 :   Query class for DeletedTickets entity operations.
     
@@ -280,6 +292,8 @@ Classes
         Returns:
             DeletedTicketsListResult
 
+<a id="GroupMembershipsQuery"></a>
+
 `GroupMembershipsQuery(connector: ZendeskSupportConnector)`
 :   Query class for GroupMemberships entity operations.
     
@@ -297,6 +311,8 @@ Classes
         
         Returns:
             GroupMembershipsListResult
+
+<a id="GroupsQuery"></a>
 
 `GroupsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Groups entity operations.
@@ -358,6 +374,8 @@ Classes
         Returns:
             GroupsListResult
 
+<a id="MacrosQuery"></a>
+
 `MacrosQuery(connector: ZendeskSupportConnector)`
 :   Query class for Macros entity operations.
     
@@ -393,6 +411,8 @@ Classes
         Returns:
             MacrosListResult
 
+<a id="OrganizationMembershipsQuery"></a>
+
 `OrganizationMembershipsQuery(connector: ZendeskSupportConnector)`
 :   Query class for OrganizationMemberships entity operations.
     
@@ -410,6 +430,8 @@ Classes
         
         Returns:
             OrganizationMembershipsListResult
+
+<a id="OrganizationsQuery"></a>
 
 `OrganizationsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Organizations entity operations.
@@ -476,6 +498,8 @@ Classes
         Returns:
             OrganizationsListResult
 
+<a id="SatisfactionRatingsQuery"></a>
+
 `SatisfactionRatingsQuery(connector: ZendeskSupportConnector)`
 :   Query class for SatisfactionRatings entity operations.
     
@@ -541,6 +565,8 @@ Classes
         Returns:
             SatisfactionRatingsListResult
 
+<a id="SlaPoliciesQuery"></a>
+
 `SlaPoliciesQuery(connector: ZendeskSupportConnector)`
 :   Query class for SlaPolicies entity operations.
     
@@ -568,6 +594,8 @@ Classes
         
         Returns:
             SlaPoliciesListResult
+
+<a id="TagsQuery"></a>
 
 `TagsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Tags entity operations.
@@ -610,6 +638,8 @@ Classes
         
         Returns:
             TagsListResult
+
+<a id="TicketAuditsQuery"></a>
 
 `TicketAuditsQuery(connector: ZendeskSupportConnector)`
 :   Query class for TicketAudits entity operations.
@@ -659,6 +689,8 @@ Classes
         
         Returns:
             TicketAuditsListResult
+
+<a id="TicketCommentsQuery"></a>
 
 `TicketCommentsQuery(connector: ZendeskSupportConnector)`
 :   Query class for TicketComments entity operations.
@@ -719,6 +751,8 @@ Classes
         
         Returns:
             TicketCommentsListResult
+
+<a id="TicketFieldsQuery"></a>
 
 `TicketFieldsQuery(connector: ZendeskSupportConnector)`
 :   Query class for TicketFields entity operations.
@@ -798,6 +832,8 @@ Classes
         Returns:
             TicketFieldsListResult
 
+<a id="TicketFormsQuery"></a>
+
 `TicketFormsQuery(connector: ZendeskSupportConnector)`
 :   Query class for TicketForms entity operations.
     
@@ -866,6 +902,8 @@ Classes
         
         Returns:
             TicketFormsListResult
+
+<a id="TicketMetricsQuery"></a>
 
 `TicketMetricsQuery(connector: ZendeskSupportConnector)`
 :   Query class for TicketMetrics entity operations.
@@ -936,6 +974,8 @@ Classes
         
         Returns:
             TicketMetricsListResult
+
+<a id="TicketsQuery"></a>
 
 `TicketsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Tickets entity operations.
@@ -1031,6 +1071,8 @@ Classes
         Returns:
             TicketsListResult
 
+<a id="TriggersQuery"></a>
+
 `TriggersQuery(connector: ZendeskSupportConnector)`
 :   Query class for Triggers entity operations.
     
@@ -1062,6 +1104,8 @@ Classes
         
         Returns:
             TriggersListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: ZendeskSupportConnector)`
 :   Query class for Users entity operations.
@@ -1154,6 +1198,8 @@ Classes
         Returns:
             UsersListResult
 
+<a id="ViewsQuery"></a>
+
 `ViewsQuery(connector: ZendeskSupportConnector)`
 :   Query class for Views entity operations.
     
@@ -1186,6 +1232,8 @@ Classes
         
         Returns:
             ViewsListResult
+
+<a id="ZendeskSupportConnector"></a>
 
 `ZendeskSupportConnector(auth_config: ZendeskSupportAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Zendesk-Support API connector.

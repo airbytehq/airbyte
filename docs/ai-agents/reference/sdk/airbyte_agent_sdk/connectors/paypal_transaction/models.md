@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -98,6 +102,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalancesSearchResult"></a>
+
 `BalancesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -134,6 +140,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListDisputesSearchResult"></a>
 
 `ListDisputesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -172,6 +180,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListPaymentsSearchResult"></a>
+
 `ListPaymentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -208,6 +218,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListProductsSearchResult"></a>
 
 `ListProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -246,6 +258,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesSearchResult"></a>
+
 `SearchInvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -282,6 +296,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsSearchResult"></a>
 
 `ShowProductDetailsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -320,6 +336,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TransactionsSearchResult"></a>
+
 `TransactionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -335,6 +353,8 @@ Classes
     * airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AuctionInfo"></a>
 
 `AuctionInfo(**data: Any)`
 :   Auction information.
@@ -366,6 +386,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalanceDetail"></a>
 
 `BalanceDetail(**data: Any)`
 :   Balance information for a single currency.
@@ -401,6 +423,8 @@ Classes
     `withheld_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
     :   The type of the None singleton.
 
+<a id="BalancesResponse"></a>
+
 `BalancesResponse(**data: Any)`
 :   Balances response with account balance details.
     
@@ -431,6 +455,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalancesSearchData"></a>
 
 `BalancesSearchData(**data: Any)`
 :   Search result data for balances entity.
@@ -463,6 +489,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CartInfo"></a>
+
 `CartInfo(**data: Any)`
 :   Cart information for the transaction.
     
@@ -490,6 +518,8 @@ Classes
 
     `tax_inclusive: bool | Any`
     :   The type of the None singleton.
+
+<a id="Dispute"></a>
 
 `Dispute(**data: Any)`
 :   A PayPal dispute object.
@@ -546,6 +576,8 @@ Classes
     `update_time: str | Any`
     :   The type of the None singleton.
 
+<a id="DisputeDisputedTransactionsItem"></a>
+
 `DisputeDisputedTransactionsItem(**data: Any)`
 :   Nested schema for Dispute.disputed_transactions_item
     
@@ -571,6 +603,8 @@ Classes
     `seller: airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeDisputedTransactionsItemSeller | Any`
     :   The type of the None singleton.
 
+<a id="DisputeDisputedTransactionsItemSeller"></a>
+
 `DisputeDisputedTransactionsItemSeller(**data: Any)`
 :   Nested schema for DisputeDisputedTransactionsItem.seller
     
@@ -592,6 +626,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DisputeLinksItem"></a>
 
 `DisputeLinksItem(**data: Any)`
 :   Nested schema for Dispute.links_item
@@ -621,6 +657,8 @@ Classes
     `rel: str | Any`
     :   The type of the None singleton.
 
+<a id="DisputesList"></a>
+
 `DisputesList(**data: Any)`
 :   List of disputes.
     
@@ -645,6 +683,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DisputesListLinksItem"></a>
 
 `DisputesListLinksItem(**data: Any)`
 :   Nested schema for DisputesList.links_item
@@ -673,6 +713,8 @@ Classes
 
     `rel: str | Any`
     :   The type of the None singleton.
+
+<a id="IncentiveDetail"></a>
 
 `IncentiveDetail(**data: Any)`
 :   Incentive detail.
@@ -705,6 +747,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncentiveInfo"></a>
+
 `IncentiveInfo(**data: Any)`
 :   Incentive information.
     
@@ -726,6 +770,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Invoice"></a>
 
 `Invoice(**data: Any)`
 :   A PayPal invoice object.
@@ -785,6 +831,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceAmount"></a>
+
 `InvoiceAmount(**data: Any)`
 :   Total invoice amount.
     
@@ -812,6 +860,8 @@ Classes
 
     `value: str | Any`
     :   The type of the None singleton.
+
+<a id="InvoiceAmountBreakdown"></a>
 
 `InvoiceAmountBreakdown(**data: Any)`
 :   Nested schema for InvoiceAmount.breakdown
@@ -847,6 +897,8 @@ Classes
     `tax_total: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceConfiguration"></a>
+
 `InvoiceConfiguration(**data: Any)`
 :   Invoice configuration.
     
@@ -881,6 +933,8 @@ Classes
     `template_id: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceConfigurationPartialPayment"></a>
+
 `InvoiceConfigurationPartialPayment(**data: Any)`
 :   Nested schema for InvoiceConfiguration.partial_payment
     
@@ -905,6 +959,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceDetail"></a>
 
 `InvoiceDetail(**data: Any)`
 :   Invoice detail information.
@@ -951,6 +1007,8 @@ Classes
 
     `terms_and_conditions: str | Any`
     :   Terms and conditions.
+
+<a id="InvoiceDetailMetadata"></a>
 
 `InvoiceDetailMetadata(**data: Any)`
 :   Nested schema for InvoiceDetail.metadata
@@ -1004,6 +1062,8 @@ Classes
     `recipient_view_url: str | Any`
     :   Recipient view URL.
 
+<a id="InvoiceDetailPaymentTerm"></a>
+
 `InvoiceDetailPaymentTerm(**data: Any)`
 :   Nested schema for InvoiceDetail.payment_term
     
@@ -1028,6 +1088,8 @@ Classes
 
     `term_type: str | Any`
     :   Payment term type.
+
+<a id="InvoiceInvoicer"></a>
 
 `InvoiceInvoicer(**data: Any)`
 :   Invoicer details.
@@ -1057,6 +1119,8 @@ Classes
     `name: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceInvoicerName | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceInvoicerName"></a>
+
 `InvoiceInvoicerName(**data: Any)`
 :   Nested schema for InvoiceInvoicer.name
     
@@ -1084,6 +1148,8 @@ Classes
 
     `surname: str | Any`
     :   The type of the None singleton.
+
+<a id="InvoiceItemsItem"></a>
 
 `InvoiceItemsItem(**data: Any)`
 :   Nested schema for Invoice.items_item
@@ -1122,6 +1188,8 @@ Classes
     `unit_of_measure: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceItemsItemTax"></a>
+
 `InvoiceItemsItemTax(**data: Any)`
 :   Nested schema for InvoiceItemsItem.tax
     
@@ -1149,6 +1217,8 @@ Classes
 
     `percent: str | Any`
     :   The type of the None singleton.
+
+<a id="InvoiceLinksItem"></a>
 
 `InvoiceLinksItem(**data: Any)`
 :   Nested schema for Invoice.links_item
@@ -1178,6 +1248,8 @@ Classes
     `rel: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoicePayments"></a>
+
 `InvoicePayments(**data: Any)`
 :   Payment records for this invoice.
     
@@ -1203,6 +1275,8 @@ Classes
     `transactions: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
 
+<a id="InvoicePrimaryRecipientsItem"></a>
+
 `InvoicePrimaryRecipientsItem(**data: Any)`
 :   Nested schema for Invoice.primary_recipients_item
     
@@ -1224,6 +1298,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicePrimaryRecipientsItemBillingInfo"></a>
 
 `InvoicePrimaryRecipientsItemBillingInfo(**data: Any)`
 :   Nested schema for InvoicePrimaryRecipientsItem.billing_info
@@ -1253,6 +1329,8 @@ Classes
     `name: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItemBillingInfoName | Any`
     :   The type of the None singleton.
 
+<a id="InvoicePrimaryRecipientsItemBillingInfoName"></a>
+
 `InvoicePrimaryRecipientsItemBillingInfoName(**data: Any)`
 :   Nested schema for InvoicePrimaryRecipientsItemBillingInfo.name
     
@@ -1281,6 +1359,8 @@ Classes
     `surname: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceRefunds"></a>
+
 `InvoiceRefunds(**data: Any)`
 :   Refund records for this invoice.
     
@@ -1306,6 +1386,8 @@ Classes
     `transactions: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceSearchParams"></a>
+
 `InvoiceSearchParams(**data: Any)`
 :   Parameters for searching invoices.
     
@@ -1327,6 +1409,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceSearchParamsCreationDateRange"></a>
 
 `InvoiceSearchParamsCreationDateRange(**data: Any)`
 :   Filter by invoice creation date range.
@@ -1352,6 +1436,8 @@ Classes
 
     `start: str | Any`
     :   Start date in ISO 8601 format.
+
+<a id="InvoicesList"></a>
 
 `InvoicesList(**data: Any)`
 :   Paginated list of invoices from search.
@@ -1384,6 +1470,8 @@ Classes
     `total_pages: int | Any`
     :   The type of the None singleton.
 
+<a id="InvoicesListLinksItem"></a>
+
 `InvoicesListLinksItem(**data: Any)`
 :   Nested schema for InvoicesList.links_item
     
@@ -1411,6 +1499,8 @@ Classes
 
     `rel: str | Any`
     :   The type of the None singleton.
+
+<a id="ItemDetail"></a>
 
 `ItemDetail(**data: Any)`
 :   Details for a single cart item.
@@ -1458,6 +1548,8 @@ Classes
     `total_item_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
     :   The type of the None singleton.
 
+<a id="ItemDetailTaxAmountsItem"></a>
+
 `ItemDetailTaxAmountsItem(**data: Any)`
 :   Nested schema for ItemDetail.tax_amounts_item
     
@@ -1480,6 +1572,8 @@ Classes
     `tax_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
     :   The type of the None singleton.
 
+<a id="ListDisputesListResultMeta"></a>
+
 `ListDisputesListResultMeta(**data: Any)`
 :   Metadata for list_disputes.Action.LIST operation
     
@@ -1501,6 +1595,8 @@ Classes
 
     `next: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
+
+<a id="ListDisputesSearchData"></a>
 
 `ListDisputesSearchData(**data: Any)`
 :   Search result data for list_disputes entity.
@@ -1560,6 +1656,8 @@ Classes
     `updated_time_cut: str | None`
     :   The cut-off timestamp for the last update.
 
+<a id="ListPaymentsListResultMeta"></a>
+
 `ListPaymentsListResultMeta(**data: Any)`
 :   Metadata for list_payments.Action.LIST operation
     
@@ -1581,6 +1679,8 @@ Classes
 
     `next_id: str | Any`
     :   The type of the None singleton.
+
+<a id="ListPaymentsSearchData"></a>
 
 `ListPaymentsSearchData(**data: Any)`
 :   Search result data for list_payments entity.
@@ -1628,6 +1728,8 @@ Classes
     `update_time: str | None`
     :   The date and time when the payment was last updated.
 
+<a id="ListProductsListResultMeta"></a>
+
 `ListProductsListResultMeta(**data: Any)`
 :   Metadata for list_products.Action.LIST operation
     
@@ -1649,6 +1751,8 @@ Classes
 
     `next: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
+
+<a id="ListProductsSearchData"></a>
 
 `ListProductsSearchData(**data: Any)`
 :   Search result data for list_products entity.
@@ -1684,6 +1788,8 @@ Classes
     `name: str | None`
     :   The name or title of the product
 
+<a id="Money"></a>
+
 `Money(**data: Any)`
 :   Currency amount with code and value.
     
@@ -1708,6 +1814,8 @@ Classes
 
     `value: str | Any`
     :   The type of the None singleton.
+
+<a id="PayerInfo"></a>
 
 `PayerInfo(**data: Any)`
 :   Information about the payer.
@@ -1746,6 +1854,8 @@ Classes
     `payer_status: str | Any`
     :   The type of the None singleton.
 
+<a id="PayerName"></a>
+
 `PayerName(**data: Any)`
 :   Payer name details.
     
@@ -1773,6 +1883,8 @@ Classes
 
     `surname: str | Any`
     :   The type of the None singleton.
+
+<a id="Payment"></a>
 
 `Payment(**data: Any)`
 :   A PayPal payment object.
@@ -1820,6 +1932,8 @@ Classes
     `update_time: str | Any`
     :   The type of the None singleton.
 
+<a id="PaymentLinksItem"></a>
+
 `PaymentLinksItem(**data: Any)`
 :   Nested schema for Payment.links_item
     
@@ -1848,6 +1962,8 @@ Classes
     `rel: str | Any`
     :   The type of the None singleton.
 
+<a id="PaymentPayer"></a>
+
 `PaymentPayer(**data: Any)`
 :   Payer information.
     
@@ -1875,6 +1991,8 @@ Classes
 
     `status: str | Any`
     :   Payer status.
+
+<a id="PaymentPayerPayerInfo"></a>
 
 `PaymentPayerPayerInfo(**data: Any)`
 :   Nested schema for PaymentPayer.payer_info
@@ -1910,6 +2028,8 @@ Classes
     `payer_id: str | Any`
     :   Payer ID.
 
+<a id="PaymentTransactionsItem"></a>
+
 `PaymentTransactionsItem(**data: Any)`
 :   Nested schema for Payment.transactions_item
     
@@ -1938,6 +2058,8 @@ Classes
     `related_resources: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
 
+<a id="PaymentTransactionsItemAmount"></a>
+
 `PaymentTransactionsItemAmount(**data: Any)`
 :   Nested schema for PaymentTransactionsItem.amount
     
@@ -1965,6 +2087,8 @@ Classes
 
     `total: str | Any`
     :   Total amount.
+
+<a id="PaymentTransactionsItemAmountDetails"></a>
 
 `PaymentTransactionsItemAmountDetails(**data: Any)`
 :   Nested schema for PaymentTransactionsItemAmount.details
@@ -2000,6 +2124,8 @@ Classes
     `subtotal: str | Any`
     :   The type of the None singleton.
 
+<a id="PaymentsList"></a>
+
 `PaymentsList(**data: Any)`
 :   List of payments.
     
@@ -2028,6 +2154,8 @@ Classes
     `payments: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Payment] | Any`
     :   The type of the None singleton.
 
+<a id="PaypalTransactionAuthConfig"></a>
+
 `PaypalTransactionAuthConfig(**data: Any)`
 :   PayPal OAuth2 Authentication
     
@@ -2055,6 +2183,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PaypalTransactionCheckResult"></a>
 
 `PaypalTransactionCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2089,6 +2219,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="PaypalTransactionExecuteResult"></a>
+
 `PaypalTransactionExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2118,6 +2250,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PaypalTransactionExecuteResultWithMeta"></a>
 
 `PaypalTransactionExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2174,6 +2308,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListDisputesListResult"></a>
+
 `ListDisputesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2216,6 +2352,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesListResult"></a>
 
 `SearchInvoicesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2260,6 +2398,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListPaymentsListResult"></a>
+
 `ListPaymentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2302,6 +2442,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListProductsListResult"></a>
 
 `ListProductsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2346,6 +2488,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TransactionsListResult"></a>
+
 `TransactionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2388,6 +2532,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalancesListResult"></a>
+
 `BalancesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2405,6 +2551,8 @@ Classes
     * airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="PaypalTransactionReplicationConfig"></a>
 
 `PaypalTransactionReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from PayPal.
@@ -2427,6 +2575,8 @@ Classes
 
     `start_date: str`
     :   Start date for data extraction in ISO 8601 format. Date must be in range from 3 years till 12 hours before present time.
+
+<a id="Product"></a>
 
 `Product(**data: Any)`
 :   A PayPal catalog product (summary).
@@ -2461,6 +2611,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="ProductDetails"></a>
 
 `ProductDetails(**data: Any)`
 :   Detailed catalog product information.
@@ -2511,6 +2663,8 @@ Classes
     `update_time: str | Any`
     :   The type of the None singleton.
 
+<a id="ProductDetailsLinksItem"></a>
+
 `ProductDetailsLinksItem(**data: Any)`
 :   Nested schema for ProductDetails.links_item
     
@@ -2538,6 +2692,8 @@ Classes
 
     `rel: str | Any`
     :   The type of the None singleton.
+
+<a id="ProductLinksItem"></a>
 
 `ProductLinksItem(**data: Any)`
 :   Nested schema for Product.links_item
@@ -2567,6 +2723,8 @@ Classes
     `rel: str | Any`
     :   The type of the None singleton.
 
+<a id="ProductsList"></a>
+
 `ProductsList(**data: Any)`
 :   List of catalog products.
     
@@ -2591,6 +2749,8 @@ Classes
 
     `products: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Product] | Any`
     :   The type of the None singleton.
+
+<a id="ProductsListLinksItem"></a>
 
 `ProductsListLinksItem(**data: Any)`
 :   Nested schema for ProductsList.links_item
@@ -2620,6 +2780,8 @@ Classes
     `rel: str | Any`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesListResultMeta"></a>
+
 `SearchInvoicesListResultMeta(**data: Any)`
 :   Metadata for search_invoices.Action.LIST operation
     
@@ -2641,6 +2803,8 @@ Classes
 
     `next: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesSearchData"></a>
 
 `SearchInvoicesSearchData(**data: Any)`
 :   Search result data for search_invoices entity.
@@ -2703,6 +2867,8 @@ Classes
     `status: str | None`
     :   Current status of the invoice
 
+<a id="ShippingAddress"></a>
+
 `ShippingAddress(**data: Any)`
 :   Shipping address details.
     
@@ -2737,6 +2903,8 @@ Classes
     `postal_code: str | Any`
     :   The type of the None singleton.
 
+<a id="ShippingInfo"></a>
+
 `ShippingInfo(**data: Any)`
 :   Shipping information for the transaction.
     
@@ -2761,6 +2929,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsSearchData"></a>
 
 `ShowProductDetailsSearchData(**data: Any)`
 :   Search result data for show_product_details entity.
@@ -2811,6 +2981,8 @@ Classes
     `update_time: str | None`
     :   The date and time when the product was last updated
 
+<a id="StoreInfo"></a>
+
 `StoreInfo(**data: Any)`
 :   Store information.
     
@@ -2835,6 +3007,8 @@ Classes
 
     `terminal_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Transaction"></a>
 
 `Transaction(**data: Any)`
 :   A single PayPal transaction with full details.
@@ -2881,6 +3055,8 @@ Classes
 
     `transaction_updated_date: str | Any`
     :   The type of the None singleton.
+
+<a id="TransactionInfo"></a>
 
 `TransactionInfo(**data: Any)`
 :   Detailed transaction information.
@@ -2955,6 +3131,8 @@ Classes
     `transaction_updated_date: str | Any`
     :   The type of the None singleton.
 
+<a id="TransactionsList"></a>
+
 `TransactionsList(**data: Any)`
 :   Paginated list of transactions.
     
@@ -3001,6 +3179,8 @@ Classes
     `transaction_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Transaction] | Any`
     :   The type of the None singleton.
 
+<a id="TransactionsListLinksItem"></a>
+
 `TransactionsListLinksItem(**data: Any)`
 :   Nested schema for TransactionsList.links_item
     
@@ -3029,6 +3209,8 @@ Classes
     `rel: str | Any`
     :   The type of the None singleton.
 
+<a id="TransactionsListResultMeta"></a>
+
 `TransactionsListResultMeta(**data: Any)`
 :   Metadata for transactions.Action.LIST operation
     
@@ -3056,6 +3238,8 @@ Classes
 
     `total_pages: int | Any`
     :   The type of the None singleton.
+
+<a id="TransactionsSearchData"></a>
 
 `TransactionsSearchData(**data: Any)`
 :   Search result data for transactions entity.

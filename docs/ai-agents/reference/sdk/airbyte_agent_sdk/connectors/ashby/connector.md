@@ -10,6 +10,8 @@ Ashby connector.
 Classes
 -------
 
+<a id="ApplicationsQuery"></a>
+
 `ApplicationsQuery(connector: AshbyConnector)`
 :   Query class for Applications entity operations.
     
@@ -60,6 +62,8 @@ Classes
         Returns:
             ApplicationsListResult
 
+<a id="ArchiveReasonsQuery"></a>
+
 `ArchiveReasonsQuery(connector: AshbyConnector)`
 :   Query class for ArchiveReasons entity operations.
     
@@ -77,6 +81,8 @@ Classes
         
         Returns:
             ArchiveReasonsListResult
+
+<a id="AshbyConnector"></a>
 
 `AshbyConnector(auth_config: AshbyAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Ashby API connector.
@@ -278,6 +284,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="CandidateTagsQuery"></a>
+
 `CandidateTagsQuery(connector: AshbyConnector)`
 :   Query class for CandidateTags entity operations.
     
@@ -295,6 +303,8 @@ Classes
         
         Returns:
             CandidateTagsListResult
+
+<a id="CandidatesQuery"></a>
 
 `CandidatesQuery(connector: AshbyConnector)`
 :   Query class for Candidates entity operations.
@@ -346,6 +356,8 @@ Classes
         Returns:
             CandidatesListResult
 
+<a id="CustomFieldsQuery"></a>
+
 `CustomFieldsQuery(connector: AshbyConnector)`
 :   Query class for CustomFields entity operations.
     
@@ -363,6 +375,8 @@ Classes
         
         Returns:
             CustomFieldsListResult
+
+<a id="DepartmentsQuery"></a>
 
 `DepartmentsQuery(connector: AshbyConnector)`
 :   Query class for Departments entity operations.
@@ -392,6 +406,8 @@ Classes
         Returns:
             DepartmentsListResult
 
+<a id="FeedbackFormDefinitionsQuery"></a>
+
 `FeedbackFormDefinitionsQuery(connector: AshbyConnector)`
 :   Query class for FeedbackFormDefinitions entity operations.
     
@@ -409,6 +425,8 @@ Classes
         
         Returns:
             FeedbackFormDefinitionsListResult
+
+<a id="JobPostingsQuery"></a>
 
 `JobPostingsQuery(connector: AshbyConnector)`
 :   Query class for JobPostings entity operations.
@@ -460,6 +478,8 @@ Classes
         Returns:
             JobPostingsListResult
 
+<a id="JobsQuery"></a>
+
 `JobsQuery(connector: AshbyConnector)`
 :   Query class for Jobs entity operations.
     
@@ -510,6 +530,8 @@ Classes
         Returns:
             JobsListResult
 
+<a id="LocationsQuery"></a>
+
 `LocationsQuery(connector: AshbyConnector)`
 :   Query class for Locations entity operations.
     
@@ -538,6 +560,8 @@ Classes
         Returns:
             LocationsListResult
 
+<a id="SourcesQuery"></a>
+
 `SourcesQuery(connector: AshbyConnector)`
 :   Query class for Sources entity operations.
     
@@ -555,6 +579,8 @@ Classes
         
         Returns:
             SourcesListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: AshbyConnector)`
 :   Query class for Users entity operations.

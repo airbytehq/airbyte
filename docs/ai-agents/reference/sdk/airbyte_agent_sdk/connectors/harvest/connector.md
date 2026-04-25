@@ -10,6 +10,8 @@ Harvest connector.
 Classes
 -------
 
+<a id="ClientsQuery"></a>
+
 `ClientsQuery(connector: HarvestConnector)`
 :   Query class for Clients entity operations.
     
@@ -66,6 +68,8 @@ Classes
         Returns:
             ClientsListResult
 
+<a id="CompanyQuery"></a>
+
 `CompanyQuery(connector: HarvestConnector)`
 :   Query class for Company entity operations.
     
@@ -107,6 +111,8 @@ Classes
         
         Returns:
             Company
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: HarvestConnector)`
 :   Query class for Contacts entity operations.
@@ -165,6 +171,8 @@ Classes
         Returns:
             ContactsListResult
 
+<a id="EstimateItemCategoriesQuery"></a>
+
 `EstimateItemCategoriesQuery(connector: HarvestConnector)`
 :   Query class for EstimateItemCategories entity operations.
     
@@ -217,6 +225,8 @@ Classes
         
         Returns:
             EstimateItemCategoriesListResult
+
+<a id="EstimatesQuery"></a>
 
 `EstimatesQuery(connector: HarvestConnector)`
 :   Query class for Estimates entity operations.
@@ -277,6 +287,8 @@ Classes
         Returns:
             EstimatesListResult
 
+<a id="ExpenseCategoriesQuery"></a>
+
 `ExpenseCategoriesQuery(connector: HarvestConnector)`
 :   Query class for ExpenseCategories entity operations.
     
@@ -332,6 +344,8 @@ Classes
         
         Returns:
             ExpenseCategoriesListResult
+
+<a id="ExpensesQuery"></a>
 
 `ExpensesQuery(connector: HarvestConnector)`
 :   Query class for Expenses entity operations.
@@ -393,6 +407,8 @@ Classes
         
         Returns:
             ExpensesListResult
+
+<a id="HarvestConnector"></a>
 
 `HarvestConnector(auth_config: HarvestAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Harvest API connector.
@@ -650,6 +666,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="InvoiceItemCategoriesQuery"></a>
+
 `InvoiceItemCategoriesQuery(connector: HarvestConnector)`
 :   Query class for InvoiceItemCategories entity operations.
     
@@ -704,6 +722,8 @@ Classes
         
         Returns:
             InvoiceItemCategoriesListResult
+
+<a id="InvoicesQuery"></a>
 
 `InvoicesQuery(connector: HarvestConnector)`
 :   Query class for Invoices entity operations.
@@ -766,6 +786,8 @@ Classes
         Returns:
             InvoicesListResult
 
+<a id="ProjectsQuery"></a>
+
 `ProjectsQuery(connector: HarvestConnector)`
 :   Query class for Projects entity operations.
     
@@ -826,6 +848,8 @@ Classes
         Returns:
             ProjectsListResult
 
+<a id="RolesQuery"></a>
+
 `RolesQuery(connector: HarvestConnector)`
 :   Query class for Roles entity operations.
     
@@ -880,6 +904,8 @@ Classes
         Returns:
             RolesListResult
 
+<a id="TaskAssignmentsQuery"></a>
+
 `TaskAssignmentsQuery(connector: HarvestConnector)`
 :   Query class for TaskAssignments entity operations.
     
@@ -926,6 +952,8 @@ Classes
         
         Returns:
             TaskAssignmentsListResult
+
+<a id="TasksQuery"></a>
 
 `TasksQuery(connector: HarvestConnector)`
 :   Query class for Tasks entity operations.
@@ -982,6 +1010,8 @@ Classes
         
         Returns:
             TasksListResult
+
+<a id="TimeEntriesQuery"></a>
 
 `TimeEntriesQuery(connector: HarvestConnector)`
 :   Query class for TimeEntries entity operations.
@@ -1044,6 +1074,8 @@ Classes
         Returns:
             TimeEntriesListResult
 
+<a id="TimeProjectsQuery"></a>
+
 `TimeProjectsQuery(connector: HarvestConnector)`
 :   Query class for TimeProjects entity operations.
     
@@ -1093,6 +1125,8 @@ Classes
         Returns:
             TimeProjectsListResult
 
+<a id="TimeTasksQuery"></a>
+
 `TimeTasksQuery(connector: HarvestConnector)`
 :   Query class for TimeTasks entity operations.
     
@@ -1139,6 +1173,8 @@ Classes
         
         Returns:
             TimeTasksListResult
+
+<a id="UserAssignmentsQuery"></a>
 
 `UserAssignmentsQuery(connector: HarvestConnector)`
 :   Query class for UserAssignments entity operations.
@@ -1187,6 +1223,8 @@ Classes
         
         Returns:
             UserAssignmentsListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: HarvestConnector)`
 :   Query class for Users entity operations.

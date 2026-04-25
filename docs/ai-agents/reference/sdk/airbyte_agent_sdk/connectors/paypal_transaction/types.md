@@ -10,6 +10,8 @@ Type definitions for paypal-transaction connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="BalancesAndCondition"></a>
+
 `BalancesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="BalancesAnyCondition"></a>
+
 `BalancesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BalancesAnyValueFilter"></a>
 
 `BalancesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -92,6 +100,8 @@ Classes
     `last_refresh_time: Any`
     :   The timestamp when the balances data was last refreshed.
 
+<a id="BalancesContainsCondition"></a>
+
 `BalancesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -103,6 +113,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BalancesEqCondition"></a>
 
 `BalancesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -116,6 +128,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BalancesFuzzyCondition"></a>
+
 `BalancesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -127,6 +141,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesStringFilter`
     :   The type of the None singleton.
+
+<a id="BalancesGtCondition"></a>
 
 `BalancesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -140,6 +156,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BalancesGteCondition"></a>
+
 `BalancesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -151,6 +169,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BalancesInCondition"></a>
 
 `BalancesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -171,6 +191,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesInFilter`
     :   The type of the None singleton.
+
+<a id="BalancesInFilter"></a>
 
 `BalancesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -193,6 +215,8 @@ Classes
     `last_refresh_time: list[str]`
     :   The timestamp when the balances data was last refreshed.
 
+<a id="BalancesKeywordCondition"></a>
+
 `BalancesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -205,6 +229,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesStringFilter`
     :   The type of the None singleton.
 
+<a id="BalancesLikeCondition"></a>
+
 `BalancesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -216,6 +242,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesStringFilter`
     :   The type of the None singleton.
+
+<a id="BalancesListParams"></a>
 
 `BalancesListParams(*args, **kwargs)`
 :   Parameters for balances.list operation
@@ -232,6 +260,8 @@ Classes
     `currency_code: str`
     :   The type of the None singleton.
 
+<a id="BalancesLtCondition"></a>
+
 `BalancesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -243,6 +273,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BalancesLteCondition"></a>
 
 `BalancesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -256,6 +288,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BalancesNeqCondition"></a>
+
 `BalancesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -267,6 +301,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BalancesNotCondition"></a>
 
 `BalancesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -288,6 +324,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAnyCondition`
     :   The type of the None singleton.
 
+<a id="BalancesOrCondition"></a>
+
 `BalancesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -307,6 +345,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="BalancesSearchFilter"></a>
 
 `BalancesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering balances search queries.
@@ -329,6 +369,8 @@ Classes
     `last_refresh_time: str | None`
     :   The timestamp when the balances data was last refreshed.
 
+<a id="BalancesSearchQuery"></a>
+
 `BalancesSearchQuery(*args, **kwargs)`
 :   Search query for balances entity.
 
@@ -343,6 +385,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.BalancesSortFilter]`
     :   The type of the None singleton.
+
+<a id="BalancesSortFilter"></a>
 
 `BalancesSortFilter(*args, **kwargs)`
 :   Available fields for sorting balances search results.
@@ -365,6 +409,8 @@ Classes
     `last_refresh_time: Literal['asc', 'desc']`
     :   The timestamp when the balances data was last refreshed.
 
+<a id="BalancesStringFilter"></a>
+
 `BalancesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -386,6 +432,8 @@ Classes
     `last_refresh_time: str`
     :   The timestamp when the balances data was last refreshed.
 
+<a id="ListDisputesAndCondition"></a>
+
 `ListDisputesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -406,6 +454,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ListDisputesAnyCondition"></a>
+
 `ListDisputesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -425,6 +475,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesAnyValueFilter"></a>
 
 `ListDisputesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -474,6 +526,8 @@ Classes
     `updated_time_cut: Any`
     :   The cut-off timestamp for the last update.
 
+<a id="ListDisputesContainsCondition"></a>
+
 `ListDisputesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -485,6 +539,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesEqCondition"></a>
 
 `ListDisputesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -498,6 +554,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListDisputesFuzzyCondition"></a>
+
 `ListDisputesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -509,6 +567,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesStringFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesGtCondition"></a>
 
 `ListDisputesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -522,6 +582,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListDisputesGteCondition"></a>
+
 `ListDisputesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -533,6 +595,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesInCondition"></a>
 
 `ListDisputesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -553,6 +617,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesInFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesInFilter"></a>
 
 `ListDisputesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -602,6 +668,8 @@ Classes
     `updated_time_cut: list[str]`
     :   The cut-off timestamp for the last update.
 
+<a id="ListDisputesKeywordCondition"></a>
+
 `ListDisputesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -614,6 +682,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesStringFilter`
     :   The type of the None singleton.
 
+<a id="ListDisputesLikeCondition"></a>
+
 `ListDisputesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -625,6 +695,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesStringFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesListParams"></a>
 
 `ListDisputesListParams(*args, **kwargs)`
 :   Parameters for list_disputes.list operation
@@ -647,6 +719,8 @@ Classes
     `update_time_before: str`
     :   The type of the None singleton.
 
+<a id="ListDisputesLtCondition"></a>
+
 `ListDisputesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -658,6 +732,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesLteCondition"></a>
 
 `ListDisputesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -671,6 +747,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListDisputesNeqCondition"></a>
+
 `ListDisputesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -682,6 +760,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListDisputesNotCondition"></a>
 
 `ListDisputesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -703,6 +783,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ListDisputesOrCondition"></a>
+
 `ListDisputesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -722,6 +804,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ListDisputesSearchFilter"></a>
 
 `ListDisputesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering list_disputes search queries.
@@ -771,6 +855,8 @@ Classes
     `updated_time_cut: str | None`
     :   The cut-off timestamp for the last update.
 
+<a id="ListDisputesSearchQuery"></a>
+
 `ListDisputesSearchQuery(*args, **kwargs)`
 :   Search query for list_disputes entity.
 
@@ -785,6 +871,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListDisputesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ListDisputesSortFilter"></a>
 
 `ListDisputesSortFilter(*args, **kwargs)`
 :   Available fields for sorting list_disputes search results.
@@ -834,6 +922,8 @@ Classes
     `updated_time_cut: Literal['asc', 'desc']`
     :   The cut-off timestamp for the last update.
 
+<a id="ListDisputesStringFilter"></a>
+
 `ListDisputesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -882,6 +972,8 @@ Classes
     `updated_time_cut: str`
     :   The cut-off timestamp for the last update.
 
+<a id="ListPaymentsAndCondition"></a>
+
 `ListPaymentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -902,6 +994,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ListPaymentsAnyCondition"></a>
+
 `ListPaymentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -921,6 +1015,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsAnyValueFilter"></a>
 
 `ListPaymentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -958,6 +1054,8 @@ Classes
     `update_time: Any`
     :   The date and time when the payment was last updated.
 
+<a id="ListPaymentsContainsCondition"></a>
+
 `ListPaymentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -969,6 +1067,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsEqCondition"></a>
 
 `ListPaymentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -982,6 +1082,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListPaymentsFuzzyCondition"></a>
+
 `ListPaymentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -993,6 +1095,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsStringFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsGtCondition"></a>
 
 `ListPaymentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1006,6 +1110,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListPaymentsGteCondition"></a>
+
 `ListPaymentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1017,6 +1123,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsInCondition"></a>
 
 `ListPaymentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1037,6 +1145,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsInFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsInFilter"></a>
 
 `ListPaymentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1074,6 +1184,8 @@ Classes
     `update_time: list[str]`
     :   The date and time when the payment was last updated.
 
+<a id="ListPaymentsKeywordCondition"></a>
+
 `ListPaymentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1086,6 +1198,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsStringFilter`
     :   The type of the None singleton.
 
+<a id="ListPaymentsLikeCondition"></a>
+
 `ListPaymentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1097,6 +1211,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsStringFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsListParams"></a>
 
 `ListPaymentsListParams(*args, **kwargs)`
 :   Parameters for list_payments.list operation
@@ -1119,6 +1235,8 @@ Classes
     `start_time: str`
     :   The type of the None singleton.
 
+<a id="ListPaymentsLtCondition"></a>
+
 `ListPaymentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1130,6 +1248,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsLteCondition"></a>
 
 `ListPaymentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1143,6 +1263,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListPaymentsNeqCondition"></a>
+
 `ListPaymentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1154,6 +1276,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListPaymentsNotCondition"></a>
 
 `ListPaymentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1175,6 +1299,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ListPaymentsOrCondition"></a>
+
 `ListPaymentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1194,6 +1320,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ListPaymentsSearchFilter"></a>
 
 `ListPaymentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering list_payments search queries.
@@ -1231,6 +1359,8 @@ Classes
     `update_time: str | None`
     :   The date and time when the payment was last updated.
 
+<a id="ListPaymentsSearchQuery"></a>
+
 `ListPaymentsSearchQuery(*args, **kwargs)`
 :   Search query for list_payments entity.
 
@@ -1245,6 +1375,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListPaymentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ListPaymentsSortFilter"></a>
 
 `ListPaymentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting list_payments search results.
@@ -1282,6 +1414,8 @@ Classes
     `update_time: Literal['asc', 'desc']`
     :   The date and time when the payment was last updated.
 
+<a id="ListPaymentsStringFilter"></a>
+
 `ListPaymentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1318,6 +1452,8 @@ Classes
     `update_time: str`
     :   The date and time when the payment was last updated.
 
+<a id="ListProductsAndCondition"></a>
+
 `ListProductsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1338,6 +1474,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ListProductsAnyCondition"></a>
+
 `ListProductsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1357,6 +1495,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsAnyValueFilter"></a>
 
 `ListProductsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1382,6 +1522,8 @@ Classes
     `name: Any`
     :   The name or title of the product
 
+<a id="ListProductsContainsCondition"></a>
+
 `ListProductsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1393,6 +1535,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsEqCondition"></a>
 
 `ListProductsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1406,6 +1550,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListProductsFuzzyCondition"></a>
+
 `ListProductsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1417,6 +1563,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsStringFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsGtCondition"></a>
 
 `ListProductsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1430,6 +1578,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListProductsGteCondition"></a>
+
 `ListProductsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1441,6 +1591,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsInCondition"></a>
 
 `ListProductsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1461,6 +1613,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsInFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsInFilter"></a>
 
 `ListProductsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1486,6 +1640,8 @@ Classes
     `name: list[str]`
     :   The name or title of the product
 
+<a id="ListProductsKeywordCondition"></a>
+
 `ListProductsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1498,6 +1654,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsStringFilter`
     :   The type of the None singleton.
 
+<a id="ListProductsLikeCondition"></a>
+
 `ListProductsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1509,6 +1667,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsStringFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsListParams"></a>
 
 `ListProductsListParams(*args, **kwargs)`
 :   Parameters for list_products.list operation
@@ -1525,6 +1685,8 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+<a id="ListProductsLtCondition"></a>
+
 `ListProductsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1536,6 +1698,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsLteCondition"></a>
 
 `ListProductsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1549,6 +1713,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ListProductsNeqCondition"></a>
+
 `ListProductsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1560,6 +1726,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ListProductsNotCondition"></a>
 
 `ListProductsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1581,6 +1749,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ListProductsOrCondition"></a>
+
 `ListProductsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1600,6 +1770,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ListProductsSearchFilter"></a>
 
 `ListProductsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering list_products search queries.
@@ -1625,6 +1797,8 @@ Classes
     `name: str | None`
     :   The name or title of the product
 
+<a id="ListProductsSearchQuery"></a>
+
 `ListProductsSearchQuery(*args, **kwargs)`
 :   Search query for list_products entity.
 
@@ -1639,6 +1813,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ListProductsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ListProductsSortFilter"></a>
 
 `ListProductsSortFilter(*args, **kwargs)`
 :   Available fields for sorting list_products search results.
@@ -1664,6 +1840,8 @@ Classes
     `name: Literal['asc', 'desc']`
     :   The name or title of the product
 
+<a id="ListProductsStringFilter"></a>
+
 `ListProductsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1688,6 +1866,8 @@ Classes
     `name: str`
     :   The name or title of the product
 
+<a id="SearchInvoicesAndCondition"></a>
+
 `SearchInvoicesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1708,6 +1888,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesAnyCondition"></a>
+
 `SearchInvoicesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1727,6 +1909,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesAnyValueFilter"></a>
 
 `SearchInvoicesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1779,6 +1963,8 @@ Classes
     `status: Any`
     :   Current status of the invoice
 
+<a id="SearchInvoicesContainsCondition"></a>
+
 `SearchInvoicesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1790,6 +1976,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesEqCondition"></a>
 
 `SearchInvoicesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1803,6 +1991,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesFuzzyCondition"></a>
+
 `SearchInvoicesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1814,6 +2004,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesStringFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesGtCondition"></a>
 
 `SearchInvoicesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1827,6 +2019,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesGteCondition"></a>
+
 `SearchInvoicesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1838,6 +2032,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesInCondition"></a>
 
 `SearchInvoicesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1858,6 +2054,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesInFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesInFilter"></a>
 
 `SearchInvoicesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1910,6 +2108,8 @@ Classes
     `status: list[str]`
     :   Current status of the invoice
 
+<a id="SearchInvoicesKeywordCondition"></a>
+
 `SearchInvoicesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1922,6 +2122,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesStringFilter`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesLikeCondition"></a>
+
 `SearchInvoicesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1933,6 +2135,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesStringFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesListParams"></a>
 
 `SearchInvoicesListParams(*args, **kwargs)`
 :   Parameters for search_invoices.list operation
@@ -1952,6 +2156,8 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesListParamsCreationDateRange"></a>
+
 `SearchInvoicesListParamsCreationDateRange(*args, **kwargs)`
 :   Filter by invoice creation date range.
 
@@ -1967,6 +2173,8 @@ Classes
     `start: str`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesLtCondition"></a>
+
 `SearchInvoicesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1978,6 +2186,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesLteCondition"></a>
 
 `SearchInvoicesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1991,6 +2201,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesNeqCondition"></a>
+
 `SearchInvoicesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2002,6 +2214,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesNotCondition"></a>
 
 `SearchInvoicesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2023,6 +2237,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAnyCondition`
     :   The type of the None singleton.
 
+<a id="SearchInvoicesOrCondition"></a>
+
 `SearchInvoicesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2042,6 +2258,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesSearchFilter"></a>
 
 `SearchInvoicesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering search_invoices search queries.
@@ -2094,6 +2312,8 @@ Classes
     `status: str | None`
     :   Current status of the invoice
 
+<a id="SearchInvoicesSearchQuery"></a>
+
 `SearchInvoicesSearchQuery(*args, **kwargs)`
 :   Search query for search_invoices entity.
 
@@ -2108,6 +2328,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.SearchInvoicesSortFilter]`
     :   The type of the None singleton.
+
+<a id="SearchInvoicesSortFilter"></a>
 
 `SearchInvoicesSortFilter(*args, **kwargs)`
 :   Available fields for sorting search_invoices search results.
@@ -2160,6 +2382,8 @@ Classes
     `status: Literal['asc', 'desc']`
     :   Current status of the invoice
 
+<a id="SearchInvoicesStringFilter"></a>
+
 `SearchInvoicesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2211,6 +2435,8 @@ Classes
     `status: str`
     :   Current status of the invoice
 
+<a id="ShowProductDetailsAndCondition"></a>
+
 `ShowProductDetailsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2231,6 +2457,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsAnyCondition"></a>
+
 `ShowProductDetailsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2250,6 +2478,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsAnyValueFilter"></a>
 
 `ShowProductDetailsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2290,6 +2520,8 @@ Classes
     `update_time: Any`
     :   The date and time when the product was last updated
 
+<a id="ShowProductDetailsContainsCondition"></a>
+
 `ShowProductDetailsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2301,6 +2533,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsEqCondition"></a>
 
 `ShowProductDetailsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2314,6 +2548,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsFuzzyCondition"></a>
+
 `ShowProductDetailsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2325,6 +2561,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsStringFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsGetParams"></a>
 
 `ShowProductDetailsGetParams(*args, **kwargs)`
 :   Parameters for show_product_details.get operation
@@ -2338,6 +2576,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsGtCondition"></a>
+
 `ShowProductDetailsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2350,6 +2590,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsGteCondition"></a>
+
 `ShowProductDetailsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2361,6 +2603,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsInCondition"></a>
 
 `ShowProductDetailsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2381,6 +2625,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsInFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsInFilter"></a>
 
 `ShowProductDetailsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2421,6 +2667,8 @@ Classes
     `update_time: list[str]`
     :   The date and time when the product was last updated
 
+<a id="ShowProductDetailsKeywordCondition"></a>
+
 `ShowProductDetailsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2432,6 +2680,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsStringFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsLikeCondition"></a>
 
 `ShowProductDetailsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2445,6 +2695,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsStringFilter`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsLtCondition"></a>
+
 `ShowProductDetailsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2456,6 +2708,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsLteCondition"></a>
 
 `ShowProductDetailsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2469,6 +2723,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsNeqCondition"></a>
+
 `ShowProductDetailsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2480,6 +2736,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsNotCondition"></a>
 
 `ShowProductDetailsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2501,6 +2759,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ShowProductDetailsOrCondition"></a>
+
 `ShowProductDetailsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2520,6 +2780,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsSearchFilter"></a>
 
 `ShowProductDetailsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering show_product_details search queries.
@@ -2560,6 +2822,8 @@ Classes
     `update_time: str | None`
     :   The date and time when the product was last updated
 
+<a id="ShowProductDetailsSearchQuery"></a>
+
 `ShowProductDetailsSearchQuery(*args, **kwargs)`
 :   Search query for show_product_details entity.
 
@@ -2574,6 +2838,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.ShowProductDetailsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ShowProductDetailsSortFilter"></a>
 
 `ShowProductDetailsSortFilter(*args, **kwargs)`
 :   Available fields for sorting show_product_details search results.
@@ -2614,6 +2880,8 @@ Classes
     `update_time: Literal['asc', 'desc']`
     :   The date and time when the product was last updated
 
+<a id="ShowProductDetailsStringFilter"></a>
+
 `ShowProductDetailsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2653,6 +2921,8 @@ Classes
     `update_time: str`
     :   The date and time when the product was last updated
 
+<a id="TransactionsAndCondition"></a>
+
 `TransactionsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2673,6 +2943,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TransactionsAnyCondition"></a>
+
 `TransactionsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2692,6 +2964,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsAnyValueFilter"></a>
 
 `TransactionsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2732,6 +3006,8 @@ Classes
     `transaction_updated_date: Any`
     :   Date and time when the transaction was last updated
 
+<a id="TransactionsContainsCondition"></a>
+
 `TransactionsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2743,6 +3019,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsEqCondition"></a>
 
 `TransactionsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2756,6 +3034,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TransactionsFuzzyCondition"></a>
+
 `TransactionsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2767,6 +3047,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsStringFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsGtCondition"></a>
 
 `TransactionsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -2780,6 +3062,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TransactionsGteCondition"></a>
+
 `TransactionsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2791,6 +3075,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsInCondition"></a>
 
 `TransactionsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2811,6 +3097,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsInFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsInFilter"></a>
 
 `TransactionsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2851,6 +3139,8 @@ Classes
     `transaction_updated_date: list[str]`
     :   Date and time when the transaction was last updated
 
+<a id="TransactionsKeywordCondition"></a>
+
 `TransactionsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2863,6 +3153,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsStringFilter`
     :   The type of the None singleton.
 
+<a id="TransactionsLikeCondition"></a>
+
 `TransactionsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2874,6 +3166,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsStringFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsListParams"></a>
 
 `TransactionsListParams(*args, **kwargs)`
 :   Parameters for transactions.list operation
@@ -2914,6 +3208,8 @@ Classes
     `transaction_type: str`
     :   The type of the None singleton.
 
+<a id="TransactionsLtCondition"></a>
+
 `TransactionsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2925,6 +3221,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsLteCondition"></a>
 
 `TransactionsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2938,6 +3236,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TransactionsNeqCondition"></a>
+
 `TransactionsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2949,6 +3249,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TransactionsNotCondition"></a>
 
 `TransactionsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2970,6 +3272,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TransactionsOrCondition"></a>
+
 `TransactionsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2989,6 +3293,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsEqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsNeqCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsGtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsGteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLtCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLteCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsInCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsLikeCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsFuzzyCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsKeywordCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsContainsCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsNotCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAndCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsOrCondition | airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TransactionsSearchFilter"></a>
 
 `TransactionsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering transactions search queries.
@@ -3029,6 +3335,8 @@ Classes
     `transaction_updated_date: str | None`
     :   Date and time when the transaction was last updated
 
+<a id="TransactionsSearchQuery"></a>
+
 `TransactionsSearchQuery(*args, **kwargs)`
 :   Search query for transactions entity.
 
@@ -3043,6 +3351,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.paypal_transaction.types.TransactionsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TransactionsSortFilter"></a>
 
 `TransactionsSortFilter(*args, **kwargs)`
 :   Available fields for sorting transactions search results.
@@ -3082,6 +3392,8 @@ Classes
 
     `transaction_updated_date: Literal['asc', 'desc']`
     :   Date and time when the transaction was last updated
+
+<a id="TransactionsStringFilter"></a>
 
 `TransactionsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

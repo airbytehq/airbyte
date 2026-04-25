@@ -10,6 +10,8 @@ Type definitions for gmail connector.
 Classes
 -------
 
+<a id="DraftsCreateParams"></a>
+
 `DraftsCreateParams(*args, **kwargs)`
 :   Parameters for drafts.create operation
 
@@ -21,6 +23,8 @@ Classes
 
     `message: airbyte_agent_sdk.connectors.gmail.types.DraftsCreateParamsMessage`
     :   The type of the None singleton.
+
+<a id="DraftsCreateParamsMessage"></a>
 
 `DraftsCreateParamsMessage(*args, **kwargs)`
 :   The draft message content
@@ -37,6 +41,8 @@ Classes
     `threadId: str`
     :   The type of the None singleton.
 
+<a id="DraftsDeleteParams"></a>
+
 `DraftsDeleteParams(*args, **kwargs)`
 :   Parameters for drafts.delete operation
 
@@ -48,6 +54,8 @@ Classes
 
     `draft_id: str`
     :   The type of the None singleton.
+
+<a id="DraftsGetParams"></a>
 
 `DraftsGetParams(*args, **kwargs)`
 :   Parameters for drafts.get operation
@@ -63,6 +71,8 @@ Classes
 
     `format: str`
     :   The type of the None singleton.
+
+<a id="DraftsListParams"></a>
 
 `DraftsListParams(*args, **kwargs)`
 :   Parameters for drafts.list operation
@@ -85,6 +95,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="DraftsSendCreateParams"></a>
+
 `DraftsSendCreateParams(*args, **kwargs)`
 :   Parameters for drafts_send.create operation
 
@@ -96,6 +108,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="DraftsUpdateParams"></a>
 
 `DraftsUpdateParams(*args, **kwargs)`
 :   Parameters for drafts.update operation
@@ -112,6 +126,8 @@ Classes
     `message: airbyte_agent_sdk.connectors.gmail.types.DraftsUpdateParamsMessage`
     :   The type of the None singleton.
 
+<a id="DraftsUpdateParamsMessage"></a>
+
 `DraftsUpdateParamsMessage(*args, **kwargs)`
 :   The draft message content
 
@@ -126,6 +142,8 @@ Classes
 
     `threadId: str`
     :   The type of the None singleton.
+
+<a id="LabelsCreateParams"></a>
 
 `LabelsCreateParams(*args, **kwargs)`
 :   Parameters for labels.create operation
@@ -148,6 +166,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="LabelsCreateParamsColor"></a>
+
 `LabelsCreateParamsColor(*args, **kwargs)`
 :   The color to assign to the label
 
@@ -163,6 +183,8 @@ Classes
     `textColor: str`
     :   The type of the None singleton.
 
+<a id="LabelsDeleteParams"></a>
+
 `LabelsDeleteParams(*args, **kwargs)`
 :   Parameters for labels.delete operation
 
@@ -174,6 +196,8 @@ Classes
 
     `label_id: str`
     :   The type of the None singleton.
+
+<a id="LabelsGetParams"></a>
 
 `LabelsGetParams(*args, **kwargs)`
 :   Parameters for labels.get operation
@@ -187,12 +211,16 @@ Classes
     `label_id: str`
     :   The type of the None singleton.
 
+<a id="LabelsListParams"></a>
+
 `LabelsListParams(*args, **kwargs)`
 :   Parameters for labels.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="LabelsUpdateParams"></a>
 
 `LabelsUpdateParams(*args, **kwargs)`
 :   Parameters for labels.update operation
@@ -221,6 +249,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="LabelsUpdateParamsColor"></a>
+
 `LabelsUpdateParamsColor(*args, **kwargs)`
 :   The color to assign to the label
 
@@ -236,6 +266,8 @@ Classes
     `textColor: str`
     :   The type of the None singleton.
 
+<a id="MessagesCreateParams"></a>
+
 `MessagesCreateParams(*args, **kwargs)`
 :   Parameters for messages.create operation
 
@@ -250,6 +282,8 @@ Classes
 
     `thread_id: str`
     :   The type of the None singleton.
+
+<a id="MessagesGetParams"></a>
 
 `MessagesGetParams(*args, **kwargs)`
 :   Parameters for messages.get operation
@@ -268,6 +302,8 @@ Classes
 
     `metadata_headers: str`
     :   The type of the None singleton.
+
+<a id="MessagesListParams"></a>
 
 `MessagesListParams(*args, **kwargs)`
 :   Parameters for messages.list operation
@@ -293,6 +329,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="MessagesTrashCreateParams"></a>
+
 `MessagesTrashCreateParams(*args, **kwargs)`
 :   Parameters for messages_trash.create operation
 
@@ -305,6 +343,8 @@ Classes
     `message_id: str`
     :   The type of the None singleton.
 
+<a id="MessagesUntrashCreateParams"></a>
+
 `MessagesUntrashCreateParams(*args, **kwargs)`
 :   Parameters for messages_untrash.create operation
 
@@ -316,6 +356,8 @@ Classes
 
     `message_id: str`
     :   The type of the None singleton.
+
+<a id="MessagesUpdateParams"></a>
 
 `MessagesUpdateParams(*args, **kwargs)`
 :   Parameters for messages.update operation
@@ -335,12 +377,16 @@ Classes
     `remove_label_ids: list[str]`
     :   The type of the None singleton.
 
+<a id="ProfileGetParams"></a>
+
 `ProfileGetParams(*args, **kwargs)`
 :   Parameters for profile.get operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="ThreadsGetParams"></a>
 
 `ThreadsGetParams(*args, **kwargs)`
 :   Parameters for threads.get operation
@@ -359,6 +405,8 @@ Classes
 
     `thread_id: str`
     :   The type of the None singleton.
+
+<a id="ThreadsListParams"></a>
 
 `ThreadsListParams(*args, **kwargs)`
 :   Parameters for threads.list operation

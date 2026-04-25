@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -103,6 +107,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AlertsSearchResult"></a>
+
 `AlertsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -139,6 +145,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogTypesSearchResult"></a>
 
 `CatalogTypesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -177,6 +185,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomFieldsSearchResult"></a>
+
 `CustomFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -213,6 +223,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EscalationsSearchResult"></a>
 
 `EscalationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -251,6 +263,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncidentRolesSearchResult"></a>
+
 `IncidentRolesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -287,6 +301,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentStatusesSearchResult"></a>
 
 `IncidentStatusesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -325,6 +341,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncidentTimestampsSearchResult"></a>
+
 `IncidentTimestampsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -361,6 +379,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentUpdatesSearchResult"></a>
 
 `IncidentUpdatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -399,6 +419,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncidentsSearchResult"></a>
+
 `IncidentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -435,6 +457,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SchedulesSearchResult"></a>
 
 `SchedulesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -473,6 +497,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SeveritiesSearchResult"></a>
+
 `SeveritiesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -510,6 +536,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -525,6 +553,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Alert"></a>
 
 `Alert(**data: Any)`
 :   An alert ingested from an alert source
@@ -578,6 +608,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AlertAttributesItem"></a>
+
 `AlertAttributesItem(**data: Any)`
 :   Nested schema for Alert.attributes_item
     
@@ -602,6 +634,8 @@ Classes
 
     `value: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemValue | Any | None`
     :   The type of the None singleton.
+
+<a id="AlertAttributesItemAttribute"></a>
 
 `AlertAttributesItemAttribute(**data: Any)`
 :   Nested schema for AlertAttributesItem.attribute
@@ -634,6 +668,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AlertAttributesItemValue"></a>
+
 `AlertAttributesItemValue(**data: Any)`
 :   Nested schema for AlertAttributesItem.value
     
@@ -661,6 +697,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AlertAttributesItemValueCatalogEntry"></a>
 
 `AlertAttributesItemValueCatalogEntry(**data: Any)`
 :   Nested schema for AlertAttributesItemValue.catalog_entry
@@ -690,6 +728,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AlertsListResultMeta"></a>
+
 `AlertsListResultMeta(**data: Any)`
 :   Metadata for alerts.Action.LIST operation
     
@@ -711,6 +751,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AlertsSearchData"></a>
 
 `AlertsSearchData(**data: Any)`
 :   Search result data for alerts entity.
@@ -763,6 +805,8 @@ Classes
 
     `updated_at: str | None`
     :   When the alert was last updated
+
+<a id="CatalogType"></a>
 
 `CatalogType(**data: Any)`
 :   A catalog type defining a category of catalog entries
@@ -834,6 +878,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CatalogTypeSchema"></a>
+
 `CatalogTypeSchema(**data: Any)`
 :   Schema definition for the catalog type
     
@@ -858,6 +904,8 @@ Classes
 
     `version: float | Any | None`
     :   The type of the None singleton.
+
+<a id="CatalogTypeSchemaAttributesItem"></a>
 
 `CatalogTypeSchemaAttributesItem(**data: Any)`
 :   Nested schema for CatalogTypeSchema.attributes_item
@@ -892,6 +940,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CatalogTypesSearchData"></a>
 
 `CatalogTypesSearchData(**data: Any)`
 :   Search result data for catalog_types entity.
@@ -963,6 +1013,8 @@ Classes
     `updated_at: str | None`
     :   When the catalog type was last updated
 
+<a id="CustomField"></a>
+
 `CustomField(**data: Any)`
 :   A custom field definition for incidents
     
@@ -1003,6 +1055,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomFieldsSearchData"></a>
+
 `CustomFieldsSearchData(**data: Any)`
 :   Search result data for custom_fields entity.
     
@@ -1039,6 +1093,8 @@ Classes
 
     `updated_at: str | None`
     :   When the custom field was last updated
+
+<a id="Escalation"></a>
 
 `Escalation(**data: Any)`
 :   An escalation that pages people via escalation paths
@@ -1092,6 +1148,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationCreator"></a>
+
 `EscalationCreator(**data: Any)`
 :   The creator of this escalation
     
@@ -1120,6 +1178,8 @@ Classes
     `workflow: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorWorkflow | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationCreatorAlert"></a>
+
 `EscalationCreatorAlert(**data: Any)`
 :   Nested schema for EscalationCreator.alert
     
@@ -1144,6 +1204,8 @@ Classes
 
     `title: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EscalationCreatorUser"></a>
 
 `EscalationCreatorUser(**data: Any)`
 :   Nested schema for EscalationCreator.user
@@ -1179,6 +1241,8 @@ Classes
     `slack_user_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationCreatorWorkflow"></a>
+
 `EscalationCreatorWorkflow(**data: Any)`
 :   Nested schema for EscalationCreator.workflow
     
@@ -1203,6 +1267,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EscalationEventsItem"></a>
 
 `EscalationEventsItem(**data: Any)`
 :   Nested schema for Escalation.events_item
@@ -1241,6 +1307,8 @@ Classes
     `users: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItemUsersItem] | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationEventsItemChannelsItem"></a>
+
 `EscalationEventsItemChannelsItem(**data: Any)`
 :   Nested schema for EscalationEventsItem.channels_item
     
@@ -1271,6 +1339,8 @@ Classes
 
     `slack_team_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EscalationEventsItemUsersItem"></a>
 
 `EscalationEventsItemUsersItem(**data: Any)`
 :   Nested schema for EscalationEventsItem.users_item
@@ -1306,6 +1376,8 @@ Classes
     `slack_user_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationPriority"></a>
+
 `EscalationPriority(**data: Any)`
 :   Priority of the escalation
     
@@ -1327,6 +1399,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EscalationRelatedAlertsItem"></a>
 
 `EscalationRelatedAlertsItem(**data: Any)`
 :   Nested schema for Escalation.related_alerts_item
@@ -1377,6 +1451,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationRelatedIncidentsItem"></a>
+
 `EscalationRelatedIncidentsItem(**data: Any)`
 :   Nested schema for Escalation.related_incidents_item
     
@@ -1417,6 +1493,8 @@ Classes
     `visibility: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EscalationsListResultMeta"></a>
+
 `EscalationsListResultMeta(**data: Any)`
 :   Metadata for escalations.Action.LIST operation
     
@@ -1438,6 +1516,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EscalationsSearchData"></a>
 
 `EscalationsSearchData(**data: Any)`
 :   Search result data for escalations entity.
@@ -1490,6 +1570,8 @@ Classes
 
     `updated_at: str | None`
     :   When the escalation was last updated
+
+<a id="Incident"></a>
 
 `Incident(**data: Any)`
 :   An incident tracked in incident.io
@@ -1588,6 +1670,8 @@ Classes
     `workload_minutes_working: float | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentCreator"></a>
+
 `IncidentCreator(**data: Any)`
 :   The user who created the incident
     
@@ -1609,6 +1693,8 @@ Classes
 
     `user: airbyte_agent_sdk.connectors.incident_io.models.IncidentCreatorUser | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentCreatorUser"></a>
 
 `IncidentCreatorUser(**data: Any)`
 :   Nested schema for IncidentCreator.user
@@ -1644,6 +1730,8 @@ Classes
     `slack_user_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentCustomFieldEntriesItem"></a>
+
 `IncidentCustomFieldEntriesItem(**data: Any)`
 :   Nested schema for Incident.custom_field_entries_item
     
@@ -1668,6 +1756,8 @@ Classes
 
     `values: list[typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentCustomFieldEntriesItemCustomField"></a>
 
 `IncidentCustomFieldEntriesItemCustomField(**data: Any)`
 :   Nested schema for IncidentCustomFieldEntriesItem.custom_field
@@ -1703,6 +1793,8 @@ Classes
     `options: list[typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentDurationMetricsItem"></a>
+
 `IncidentDurationMetricsItem(**data: Any)`
 :   Nested schema for Incident.duration_metrics_item
     
@@ -1724,6 +1816,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentDurationMetricsItemDurationMetric"></a>
 
 `IncidentDurationMetricsItemDurationMetric(**data: Any)`
 :   Nested schema for IncidentDurationMetricsItem.duration_metric
@@ -1750,6 +1844,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentIncidentRoleAssignmentsItem"></a>
+
 `IncidentIncidentRoleAssignmentsItem(**data: Any)`
 :   Nested schema for Incident.incident_role_assignments_item
     
@@ -1774,6 +1870,8 @@ Classes
 
     `role: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItemRole | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentIncidentRoleAssignmentsItemAssignee"></a>
 
 `IncidentIncidentRoleAssignmentsItemAssignee(**data: Any)`
 :   Nested schema for IncidentIncidentRoleAssignmentsItem.assignee
@@ -1808,6 +1906,8 @@ Classes
 
     `slack_user_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentIncidentRoleAssignmentsItemRole"></a>
 
 `IncidentIncidentRoleAssignmentsItemRole(**data: Any)`
 :   Nested schema for IncidentIncidentRoleAssignmentsItem.role
@@ -1855,6 +1955,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentIncidentStatus"></a>
+
 `IncidentIncidentStatus(**data: Any)`
 :   Current status of the incident
     
@@ -1895,6 +1997,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentIncidentTimestampValuesItem"></a>
+
 `IncidentIncidentTimestampValuesItem(**data: Any)`
 :   Nested schema for Incident.incident_timestamp_values_item
     
@@ -1919,6 +2023,8 @@ Classes
 
     `value: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItemValue | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentIncidentTimestampValuesItemIncidentTimestamp"></a>
 
 `IncidentIncidentTimestampValuesItemIncidentTimestamp(**data: Any)`
 :   Nested schema for IncidentIncidentTimestampValuesItem.incident_timestamp
@@ -1948,6 +2054,8 @@ Classes
     `rank: float | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentIncidentTimestampValuesItemValue"></a>
+
 `IncidentIncidentTimestampValuesItemValue(**data: Any)`
 :   Nested schema for IncidentIncidentTimestampValuesItem.value
     
@@ -1969,6 +2077,8 @@ Classes
 
     `value: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentIncidentType"></a>
 
 `IncidentIncidentType(**data: Any)`
 :   Type of the incident
@@ -2013,6 +2123,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentIoAuthConfig"></a>
+
 `IncidentIoAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -2034,6 +2146,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentIoCheckResult"></a>
 
 `IncidentIoCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2067,6 +2181,8 @@ Classes
 
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
+
+<a id="IncidentIoExecuteResult"></a>
 
 `IncidentIoExecuteResult(**data: Any)`
 :   Response envelope with data only.
@@ -2102,6 +2218,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentIoExecuteResultWithMeta"></a>
 
 `IncidentIoExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2159,6 +2277,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AlertsListResult"></a>
+
 `AlertsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2201,6 +2321,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EscalationsListResult"></a>
 
 `EscalationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2245,6 +2367,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncidentUpdatesListResult"></a>
+
 `IncidentUpdatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2287,6 +2411,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentsListResult"></a>
 
 `IncidentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2331,6 +2457,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SchedulesListResult"></a>
+
 `SchedulesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2374,6 +2502,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2416,6 +2546,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogTypesListResult"></a>
+
 `CatalogTypesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2456,6 +2588,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomFieldsListResult"></a>
 
 `CustomFieldsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2498,6 +2632,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncidentRolesListResult"></a>
+
 `IncidentRolesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2538,6 +2674,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentStatusesListResult"></a>
 
 `IncidentStatusesListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2580,6 +2718,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IncidentTimestampsListResult"></a>
+
 `IncidentTimestampsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2621,6 +2761,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SeveritiesListResult"></a>
+
 `SeveritiesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2638,6 +2780,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IncidentRole"></a>
 
 `IncidentRole(**data: Any)`
 :   A role that can be assigned during an incident
@@ -2685,6 +2829,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentRolesSearchData"></a>
+
 `IncidentRolesSearchData(**data: Any)`
 :   Search result data for incident_roles entity.
     
@@ -2731,6 +2877,8 @@ Classes
     `updated_at: str | None`
     :   When the role was last updated
 
+<a id="IncidentSeverity"></a>
+
 `IncidentSeverity(**data: Any)`
 :   Severity of the incident
     
@@ -2767,6 +2915,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentStatus"></a>
 
 `IncidentStatus(**data: Any)`
 :   A status that an incident can be in
@@ -2808,6 +2958,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentStatusesSearchData"></a>
+
 `IncidentStatusesSearchData(**data: Any)`
 :   Search result data for incident_statuses entity.
     
@@ -2848,6 +3000,8 @@ Classes
     `updated_at: str | None`
     :   When the status was last updated
 
+<a id="IncidentTimestamp"></a>
+
 `IncidentTimestamp(**data: Any)`
 :   A timestamp definition for incidents
     
@@ -2876,6 +3030,8 @@ Classes
     `rank: float | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentTimestampsSearchData"></a>
+
 `IncidentTimestampsSearchData(**data: Any)`
 :   Search result data for incident_timestamps entity.
     
@@ -2903,6 +3059,8 @@ Classes
 
     `rank: float | None`
     :   Rank for ordering
+
+<a id="IncidentUpdate"></a>
 
 `IncidentUpdate(**data: Any)`
 :   An update posted to an incident
@@ -2944,6 +3102,8 @@ Classes
     `updater: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateUpdater | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentUpdateNewIncidentStatus"></a>
+
 `IncidentUpdateNewIncidentStatus(**data: Any)`
 :   New incident status set by this update
     
@@ -2984,6 +3144,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentUpdateNewSeverity"></a>
+
 `IncidentUpdateNewSeverity(**data: Any)`
 :   New severity set by this update
     
@@ -3021,6 +3183,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentUpdateUpdater"></a>
+
 `IncidentUpdateUpdater(**data: Any)`
 :   Who made this update
     
@@ -3042,6 +3206,8 @@ Classes
 
     `user: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateUpdaterUser | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentUpdateUpdaterUser"></a>
 
 `IncidentUpdateUpdaterUser(**data: Any)`
 :   Nested schema for IncidentUpdateUpdater.user
@@ -3077,6 +3243,8 @@ Classes
     `slack_user_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IncidentUpdatesListResultMeta"></a>
+
 `IncidentUpdatesListResultMeta(**data: Any)`
 :   Metadata for incident_updates.Action.LIST operation
     
@@ -3098,6 +3266,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentUpdatesSearchData"></a>
 
 `IncidentUpdatesSearchData(**data: Any)`
 :   Search result data for incident_updates entity.
@@ -3139,6 +3309,8 @@ Classes
     `updater: dict[str, typing.Any] | None`
     :   Who made this update
 
+<a id="IncidentsListResultMeta"></a>
+
 `IncidentsListResultMeta(**data: Any)`
 :   Metadata for incidents.Action.LIST operation
     
@@ -3160,6 +3332,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IncidentsSearchData"></a>
 
 `IncidentsSearchData(**data: Any)`
 :   Search result data for incidents entity.
@@ -3255,6 +3429,8 @@ Classes
     `workload_minutes_working: float | None`
     :   Minutes of workload classified as working
 
+<a id="PaginationMeta"></a>
+
 `PaginationMeta(**data: Any)`
 :   Cursor-based pagination metadata
     
@@ -3279,6 +3455,8 @@ Classes
 
     `page_size: int | Any | None`
     :   The type of the None singleton.
+
+<a id="Schedule"></a>
 
 `Schedule(**data: Any)`
 :   An on-call schedule
@@ -3329,6 +3507,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ScheduleConfig"></a>
+
 `ScheduleConfig(**data: Any)`
 :   Schedule configuration with rotations
     
@@ -3350,6 +3530,8 @@ Classes
 
     `rotations: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItem] | Any | None`
     :   The type of the None singleton.
+
+<a id="ScheduleConfigRotationsItem"></a>
 
 `ScheduleConfigRotationsItem(**data: Any)`
 :   Nested schema for ScheduleConfig.rotations_item
@@ -3385,6 +3567,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ScheduleConfigRotationsItemHandoversItem"></a>
+
 `ScheduleConfigRotationsItemHandoversItem(**data: Any)`
 :   Nested schema for ScheduleConfigRotationsItem.handovers_item
     
@@ -3410,6 +3594,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ScheduleConfigRotationsItemLayersItem"></a>
+
 `ScheduleConfigRotationsItemLayersItem(**data: Any)`
 :   Nested schema for ScheduleConfigRotationsItem.layers_item
     
@@ -3434,6 +3620,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ScheduleCurrentShiftsItem"></a>
 
 `ScheduleCurrentShiftsItem(**data: Any)`
 :   Nested schema for Schedule.current_shifts_item
@@ -3466,6 +3654,8 @@ Classes
     `start_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SchedulesListResultMeta"></a>
+
 `SchedulesListResultMeta(**data: Any)`
 :   Metadata for schedules.Action.LIST operation
     
@@ -3487,6 +3677,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SchedulesSearchData"></a>
 
 `SchedulesSearchData(**data: Any)`
 :   Search result data for schedules entity.
@@ -3531,6 +3723,8 @@ Classes
     `updated_at: str | None`
     :   When the schedule was last updated
 
+<a id="SeveritiesSearchData"></a>
+
 `SeveritiesSearchData(**data: Any)`
 :   Search result data for severities entity.
     
@@ -3568,6 +3762,8 @@ Classes
     `updated_at: str | None`
     :   When the severity was last updated
 
+<a id="Severity"></a>
+
 `Severity(**data: Any)`
 :   A severity level for incidents
     
@@ -3604,6 +3800,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   A user in the incident.io organisation
@@ -3645,6 +3843,8 @@ Classes
     `slack_user_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserBaseRole"></a>
+
 `UserBaseRole(**data: Any)`
 :   Base role assigned to the user
     
@@ -3676,6 +3876,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -3697,6 +3899,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

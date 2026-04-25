@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountsSearchData"></a>
+
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
     
@@ -101,6 +103,8 @@ Classes
     `segments_date: str | None`
     :   Date segment for the report row
 
+<a id="AdGroupAdLabelsSearchData"></a>
+
 `AdGroupAdLabelsSearchData(**data: Any)`
 :   Search result data for ad_group_ad_labels entity.
     
@@ -134,6 +138,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupAdsSearchData"></a>
 
 `AdGroupAdsSearchData(**data: Any)`
 :   Search result data for ad_group_ads entity.
@@ -208,6 +214,8 @@ Classes
     `segments_date: str | None`
     :   Date segment for the report row
 
+<a id="AdGroupLabelsSearchData"></a>
+
 `AdGroupLabelsSearchData(**data: Any)`
 :   Search result data for ad_group_labels entity.
     
@@ -241,6 +249,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupsSearchData"></a>
 
 `AdGroupsSearchData(**data: Any)`
 :   Search result data for ad_groups entity.
@@ -327,6 +337,8 @@ Classes
     `segments_date: str | None`
     :   Date segment for the report row
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -395,6 +407,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -422,6 +436,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -459,6 +475,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -474,6 +492,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdGroupAdLabelsSearchResult"></a>
 
 `AdGroupAdLabelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -491,6 +511,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdGroupAdsSearchResult"></a>
+
 `AdGroupAdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -506,6 +528,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdGroupLabelsSearchResult"></a>
 
 `AdGroupLabelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -523,6 +547,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdGroupsSearchResult"></a>
+
 `AdGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -538,6 +564,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignLabelsSearchResult"></a>
 
 `CampaignLabelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -555,6 +583,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -570,6 +600,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignLabelsSearchData"></a>
 
 `CampaignLabelsSearchData(**data: Any)`
 :   Search result data for campaign_labels entity.
@@ -604,6 +636,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -714,6 +748,8 @@ Classes
     `segments_hour: int | None`
     :   Hour segment
 
+<a id="GoogleAdsAuthConfig"></a>
+
 `GoogleAdsAuthConfig(**data: Any)`
 :   OAuth2 Authentication
     
@@ -744,6 +780,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth2 refresh token
+
+<a id="GoogleAdsConnector"></a>
 
 `GoogleAdsConnector(auth_config: GoogleAdsAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Ads API connector.
@@ -1000,6 +1038,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="GoogleAdsReplicationConfig"></a>
 
 `GoogleAdsReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Ads.

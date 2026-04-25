@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountsSearchData"></a>
+
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
     
@@ -89,6 +91,8 @@ Classes
     `website: str | None`
     :   Account website URL
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -157,6 +161,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -184,6 +190,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -225,6 +233,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -240,6 +250,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchResult"></a>
 
 `CallsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -257,6 +269,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -272,6 +286,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -289,6 +305,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="DealsSearchResult"></a>
+
 `DealsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -304,6 +322,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EventsSearchResult"></a>
 
 `EventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -321,6 +341,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="InvoicesSearchResult"></a>
+
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -336,6 +358,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="LeadsSearchResult"></a>
 
 `LeadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -353,6 +377,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProductsSearchResult"></a>
+
 `ProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -368,6 +394,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="QuotesSearchResult"></a>
 
 `QuotesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -385,6 +413,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -400,6 +430,8 @@ Classes
     * airbyte_agent_sdk.connectors.zoho_crm.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchData"></a>
 
 `CallsSearchData(**data: Any)`
 :   Search result data for calls entity.
@@ -458,6 +490,8 @@ Classes
 
     `subject: str | None`
     :   Subject of the call
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -519,6 +553,8 @@ Classes
 
     `type_: str | None`
     :   Type of campaign (e.g., Email, Webinar, Conference)
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -590,6 +626,8 @@ Classes
     `title: str | None`
     :   Contact's job title
 
+<a id="DealsSearchData"></a>
+
 `DealsSearchData(**data: Any)`
 :   Search result data for deals entity.
     
@@ -645,6 +683,8 @@ Classes
     `type_: str | None`
     :   Type of deal (e.g., New Business, Existing Business)
 
+<a id="EventsSearchData"></a>
+
 `EventsSearchData(**data: Any)`
 :   Search result data for events entity.
     
@@ -690,6 +730,8 @@ Classes
 
     `start_date_time: str | None`
     :   Event start date and time
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -760,6 +802,8 @@ Classes
 
     `terms_and_conditions: str | None`
     :   Terms and conditions text
+
+<a id="LeadsSearchData"></a>
 
 `LeadsSearchData(**data: Any)`
 :   Search result data for leads entity.
@@ -846,6 +890,8 @@ Classes
     `website: str | None`
     :   Lead's website URL
 
+<a id="ProductsSearchData"></a>
+
 `ProductsSearchData(**data: Any)`
 :   Search result data for products entity.
     
@@ -913,6 +959,8 @@ Classes
     `unit_price: float | None`
     :   Unit price of the product
 
+<a id="QuotesSearchData"></a>
+
 `QuotesSearchData(**data: Any)`
 :   Search result data for quotes entity.
     
@@ -974,6 +1022,8 @@ Classes
     `valid_till: str | None`
     :   Date until which the quote is valid
 
+<a id="TasksSearchData"></a>
+
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.
     
@@ -1023,6 +1073,8 @@ Classes
     `subject: str | None`
     :   Subject or title of the task
 
+<a id="ZohoCrmAuthConfig"></a>
+
 `ZohoCrmAuthConfig(**data: Any)`
 :   Zoho CRM OAuth 2.0
     
@@ -1050,6 +1102,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth 2.0 Refresh Token (does not expire)
+
+<a id="ZohoCrmConnector"></a>
 
 `ZohoCrmConnector(auth_config: ZohoCrmAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, dc_region: str | None = None)`
 :   Type-safe Zoho-Crm API connector.

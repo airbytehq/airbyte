@@ -10,6 +10,8 @@ Sendgrid connector.
 Classes
 -------
 
+<a id="BlocksQuery"></a>
+
 `BlocksQuery(connector: SendgridConnector)`
 :   Query class for Blocks entity operations.
     
@@ -54,6 +56,8 @@ Classes
         Returns:
             BlocksListResult
 
+<a id="BouncesQuery"></a>
+
 `BouncesQuery(connector: SendgridConnector)`
 :   Query class for Bounces entity operations.
     
@@ -97,6 +101,8 @@ Classes
         
         Returns:
             BouncesListResult
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: SendgridConnector)`
 :   Query class for Campaigns entity operations.
@@ -143,6 +149,8 @@ Classes
         
         Returns:
             CampaignsListResult
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: SendgridConnector)`
 :   Query class for Contacts entity operations.
@@ -209,6 +217,8 @@ Classes
         Returns:
             ContactsListResult
 
+<a id="GlobalSuppressionsQuery"></a>
+
 `GlobalSuppressionsQuery(connector: SendgridConnector)`
 :   Query class for GlobalSuppressions entity operations.
     
@@ -250,6 +260,8 @@ Classes
         
         Returns:
             GlobalSuppressionsListResult
+
+<a id="InvalidEmailsQuery"></a>
 
 `InvalidEmailsQuery(connector: SendgridConnector)`
 :   Query class for InvalidEmails entity operations.
@@ -293,6 +305,8 @@ Classes
         
         Returns:
             InvalidEmailsListResult
+
+<a id="ListsQuery"></a>
 
 `ListsQuery(connector: SendgridConnector)`
 :   Query class for Lists entity operations.
@@ -346,6 +360,8 @@ Classes
         
         Returns:
             ListsListResult
+
+<a id="SegmentsQuery"></a>
 
 `SegmentsQuery(connector: SendgridConnector)`
 :   Query class for Segments entity operations.
@@ -401,6 +417,8 @@ Classes
         
         Returns:
             SegmentsListResult
+
+<a id="SendgridConnector"></a>
 
 `SendgridConnector(auth_config: SendgridAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Sendgrid API connector.
@@ -602,6 +620,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SinglesendStatsQuery"></a>
+
 `SinglesendStatsQuery(connector: SendgridConnector)`
 :   Query class for SinglesendStats entity operations.
     
@@ -645,6 +665,8 @@ Classes
         
         Returns:
             SinglesendStatsListResult
+
+<a id="SinglesendsQuery"></a>
 
 `SinglesendsQuery(connector: SendgridConnector)`
 :   Query class for Singlesends entity operations.
@@ -703,6 +725,8 @@ Classes
         Returns:
             SinglesendsListResult
 
+<a id="SpamReportsQuery"></a>
+
 `SpamReportsQuery(connector: SendgridConnector)`
 :   Query class for SpamReports entity operations.
     
@@ -720,6 +744,8 @@ Classes
         
         Returns:
             SpamReportsListResult
+
+<a id="SuppressionGroupMembersQuery"></a>
 
 `SuppressionGroupMembersQuery(connector: SendgridConnector)`
 :   Query class for SuppressionGroupMembers entity operations.
@@ -764,6 +790,8 @@ Classes
         
         Returns:
             SuppressionGroupMembersListResult
+
+<a id="SuppressionGroupsQuery"></a>
 
 `SuppressionGroupsQuery(connector: SendgridConnector)`
 :   Query class for SuppressionGroups entity operations.
@@ -814,6 +842,8 @@ Classes
         
         Returns:
             SuppressionGroupsListResult
+
+<a id="TemplatesQuery"></a>
 
 `TemplatesQuery(connector: SendgridConnector)`
 :   Query class for Templates entity operations.

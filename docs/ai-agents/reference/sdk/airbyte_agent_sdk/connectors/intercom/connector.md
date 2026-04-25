@@ -10,6 +10,8 @@ Intercom connector.
 Classes
 -------
 
+<a id="AdminsQuery"></a>
+
 `AdminsQuery(connector: IntercomConnector)`
 :   Query class for Admins entity operations.
     
@@ -32,6 +34,8 @@ Classes
         
         Returns:
             AdminsListResult
+
+<a id="CompaniesQuery"></a>
 
 `CompaniesQuery(connector: IntercomConnector)`
 :   Query class for Companies entity operations.
@@ -134,6 +138,8 @@ Classes
         
         Returns:
             Company
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: IntercomConnector)`
 :   Query class for Contacts entity operations.
@@ -280,6 +286,8 @@ Classes
         Returns:
             Contact
 
+<a id="ConversationsQuery"></a>
+
 `ConversationsQuery(connector: IntercomConnector)`
 :   Query class for Conversations entity operations.
     
@@ -362,6 +370,8 @@ Classes
         
         Returns:
             ConversationsListResult
+
+<a id="IntercomConnector"></a>
 
 `IntercomConnector(auth_config: IntercomAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Intercom API connector.
@@ -563,6 +573,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="InternalArticlesQuery"></a>
+
 `InternalArticlesQuery(connector: IntercomConnector)`
 :   Query class for InternalArticles entity operations.
     
@@ -583,6 +595,8 @@ Classes
         Returns:
             InternalArticle
 
+<a id="NotesQuery"></a>
+
 `NotesQuery(connector: IntercomConnector)`
 :   Query class for Notes entity operations.
     
@@ -601,6 +615,8 @@ Classes
         
         Returns:
             Note
+
+<a id="SegmentsQuery"></a>
 
 `SegmentsQuery(connector: IntercomConnector)`
 :   Query class for Segments entity operations.
@@ -628,6 +644,8 @@ Classes
         
         Returns:
             SegmentsListResult
+
+<a id="TagsQuery"></a>
 
 `TagsQuery(connector: IntercomConnector)`
 :   Query class for Tags entity operations.
@@ -661,6 +679,8 @@ Classes
         
         Returns:
             TagsListResult
+
+<a id="TeamsQuery"></a>
 
 `TeamsQuery(connector: IntercomConnector)`
 :   Query class for Teams entity operations.

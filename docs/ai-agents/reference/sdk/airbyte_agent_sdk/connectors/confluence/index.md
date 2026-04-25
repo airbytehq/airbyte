@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -149,6 +155,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AuditSearchResult"></a>
+
 `AuditSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -164,6 +172,8 @@ Classes
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BlogPostsSearchResult"></a>
 
 `BlogPostsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -181,6 +191,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GroupsSearchResult"></a>
+
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="PagesSearchResult"></a>
 
 `PagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -213,6 +227,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SpacesSearchResult"></a>
+
 `SpacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -228,6 +244,8 @@ Classes
     * airbyte_agent_sdk.connectors.confluence.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AuditSearchData"></a>
 
 `AuditSearchData(**data: Any)`
 :   Search result data for audit entity.
@@ -281,6 +299,8 @@ Classes
     `sys_admin: bool | None`
     :   Indicates if the user triggering the audit event is a system admin.
 
+<a id="BlogPostsSearchData"></a>
+
 `BlogPostsSearchData(**data: Any)`
 :   Search result data for blog_posts entity.
     
@@ -327,6 +347,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="ConfluenceAuthConfig"></a>
+
 `ConfluenceAuthConfig(**data: Any)`
 :   Confluence API Token Authentication - Authenticate using your Atlassian account email and API token
     
@@ -351,6 +373,8 @@ Classes
 
     `username: str`
     :   Your Atlassian account email address
+
+<a id="ConfluenceConnector"></a>
 
 `ConfluenceConnector(auth_config: ConfluenceAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Confluence API connector.
@@ -540,6 +564,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GroupsSearchData"></a>
+
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
     
@@ -570,6 +596,8 @@ Classes
 
     `type_: str | None`
     :   The type of group
+
+<a id="PagesSearchData"></a>
 
 `PagesSearchData(**data: Any)`
 :   Search result data for pages entity.
@@ -631,6 +659,8 @@ Classes
 
     `version: dict[str, typing.Any] | None`
     :   Version information
+
+<a id="SpacesSearchData"></a>
 
 `SpacesSearchData(**data: Any)`
 :   Search result data for spaces entity.

@@ -10,6 +10,8 @@ Async HTTP client with connection pooling, auth injection, metrics, and retry su
 Classes
 -------
 
+<a id="HTTPClient"></a>
+
 `HTTPClient(base_url: str, auth_config: AuthConfig, secrets: dict[str, SecretStr | str], config_values: dict[str, str] | None = None, client: HTTPClientProtocol | None = None, logger: Any | None = None, max_connections: int = 100, max_keepalive_connections: int = 20, timeout: float = 30.0, connect_timeout: float | None = None, read_timeout: float | None = None, on_token_refresh: TokenRefreshCallback = None, retry_config: RetryConfig | None = None)`
 :   Async HTTP client for making API requests with authentication and connection pooling.
     
@@ -81,6 +83,8 @@ Classes
             TimeoutError: If request times out (after all retries if configured)
             NetworkError: If network error occurs (after all retries if configured)
             HTTPClientError: For other client errors
+
+<a id="HTTPMetrics"></a>
 
 `HTTPMetrics()`
 :   Metrics collector for HTTP requests.

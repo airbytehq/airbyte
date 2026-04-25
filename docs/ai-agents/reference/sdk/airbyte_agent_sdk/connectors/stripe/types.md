@@ -10,6 +10,8 @@ Type definitions for stripe connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,12 +33,16 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="BalanceGetParams"></a>
+
 `BalanceGetParams(*args, **kwargs)`
 :   Parameters for balance.get operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="BalanceTransactionsGetParams"></a>
 
 `BalanceTransactionsGetParams(*args, **kwargs)`
 :   Parameters for balance_transactions.get operation
@@ -49,6 +55,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="BalanceTransactionsListParams"></a>
 
 `BalanceTransactionsListParams(*args, **kwargs)`
 :   Parameters for balance_transactions.list operation
@@ -83,6 +91,8 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="BalanceTransactionsListParamsCreated"></a>
+
 `BalanceTransactionsListParamsCreated(*args, **kwargs)`
 :   Nested schema for BalanceTransactionsListParams.created
 
@@ -104,6 +114,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="ChargesAndCondition"></a>
+
 `ChargesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -124,6 +136,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.stripe.types.ChargesEqCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesNeqCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesGtCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesGteCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLtCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLteCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesInCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLikeCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesContainsCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesNotCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesAndCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesOrCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ChargesAnyCondition"></a>
+
 `ChargesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -143,6 +157,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.stripe.types.ChargesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ChargesAnyValueFilter"></a>
 
 `ChargesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -306,6 +322,8 @@ Classes
     `updated: Any`
     :   Timestamp of the last update to this charge object.
 
+<a id="ChargesApiSearchParams"></a>
+
 `ChargesApiSearchParams(*args, **kwargs)`
 :   Parameters for charges.api_search operation
 
@@ -324,6 +342,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="ChargesContainsCondition"></a>
+
 `ChargesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -335,6 +355,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.stripe.types.ChargesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ChargesEqCondition"></a>
 
 `ChargesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -348,6 +370,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.stripe.types.ChargesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChargesFuzzyCondition"></a>
+
 `ChargesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -359,6 +383,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.stripe.types.ChargesStringFilter`
     :   The type of the None singleton.
+
+<a id="ChargesGetParams"></a>
 
 `ChargesGetParams(*args, **kwargs)`
 :   Parameters for charges.get operation
@@ -372,6 +398,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ChargesGtCondition"></a>
+
 `ChargesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -384,6 +412,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.stripe.types.ChargesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChargesGteCondition"></a>
+
 `ChargesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -395,6 +425,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.stripe.types.ChargesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChargesInCondition"></a>
 
 `ChargesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -415,6 +447,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.stripe.types.ChargesInFilter`
     :   The type of the None singleton.
+
+<a id="ChargesInFilter"></a>
 
 `ChargesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -578,6 +612,8 @@ Classes
     `updated: list[int]`
     :   Timestamp of the last update to this charge object.
 
+<a id="ChargesKeywordCondition"></a>
+
 `ChargesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -590,6 +626,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.stripe.types.ChargesStringFilter`
     :   The type of the None singleton.
 
+<a id="ChargesLikeCondition"></a>
+
 `ChargesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -601,6 +639,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.stripe.types.ChargesStringFilter`
     :   The type of the None singleton.
+
+<a id="ChargesListParams"></a>
 
 `ChargesListParams(*args, **kwargs)`
 :   Parameters for charges.list operation
@@ -629,6 +669,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="ChargesListParamsCreated"></a>
+
 `ChargesListParamsCreated(*args, **kwargs)`
 :   Nested schema for ChargesListParams.created
 
@@ -650,6 +692,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="ChargesLtCondition"></a>
+
 `ChargesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -661,6 +705,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.stripe.types.ChargesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChargesLteCondition"></a>
 
 `ChargesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -674,6 +720,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.stripe.types.ChargesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ChargesNeqCondition"></a>
+
 `ChargesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -685,6 +733,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.stripe.types.ChargesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ChargesNotCondition"></a>
 
 `ChargesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -706,6 +756,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.stripe.types.ChargesEqCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesNeqCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesGtCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesGteCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLtCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLteCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesInCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLikeCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesContainsCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesNotCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesAndCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesOrCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ChargesOrCondition"></a>
+
 `ChargesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -725,6 +777,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.stripe.types.ChargesEqCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesNeqCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesGtCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesGteCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLtCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLteCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesInCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesLikeCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesContainsCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesNotCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesAndCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesOrCondition | airbyte_agent_sdk.connectors.stripe.types.ChargesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ChargesSearchFilter"></a>
 
 `ChargesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering charges search queries.
@@ -888,6 +942,8 @@ Classes
     `updated: int | None`
     :   Timestamp of the last update to this charge object.
 
+<a id="ChargesSearchQuery"></a>
+
 `ChargesSearchQuery(*args, **kwargs)`
 :   Search query for charges entity.
 
@@ -902,6 +958,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.stripe.types.ChargesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ChargesSortFilter"></a>
 
 `ChargesSortFilter(*args, **kwargs)`
 :   Available fields for sorting charges search results.
@@ -1065,6 +1123,8 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   Timestamp of the last update to this charge object.
 
+<a id="ChargesStringFilter"></a>
+
 `ChargesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1227,6 +1287,8 @@ Classes
     `updated: str`
     :   Timestamp of the last update to this charge object.
 
+<a id="CustomersAndCondition"></a>
+
 `CustomersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1247,6 +1309,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.stripe.types.CustomersEqCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersGtCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersGteCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLtCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLteCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersInCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersNotCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersAndCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersOrCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CustomersAnyCondition"></a>
+
 `CustomersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1266,6 +1330,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.stripe.types.CustomersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CustomersAnyValueFilter"></a>
 
 `CustomersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1369,6 +1435,8 @@ Classes
     `updated: Any`
     :   Timestamp indicating when the customer object was last updated.
 
+<a id="CustomersApiSearchParams"></a>
+
 `CustomersApiSearchParams(*args, **kwargs)`
 :   Parameters for customers.api_search operation
 
@@ -1387,6 +1455,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="CustomersContainsCondition"></a>
+
 `CustomersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1399,12 +1469,16 @@ Classes
     `contains: airbyte_agent_sdk.connectors.stripe.types.CustomersAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="CustomersCreateParams"></a>
+
 `CustomersCreateParams(*args, **kwargs)`
 :   Parameters for customers.create operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="CustomersDeleteParams"></a>
 
 `CustomersDeleteParams(*args, **kwargs)`
 :   Parameters for customers.delete operation
@@ -1418,6 +1492,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CustomersEqCondition"></a>
+
 `CustomersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -1429,6 +1505,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.stripe.types.CustomersSearchFilter`
     :   The type of the None singleton.
+
+<a id="CustomersFuzzyCondition"></a>
 
 `CustomersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -1442,6 +1520,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.stripe.types.CustomersStringFilter`
     :   The type of the None singleton.
 
+<a id="CustomersGetParams"></a>
+
 `CustomersGetParams(*args, **kwargs)`
 :   Parameters for customers.get operation
 
@@ -1453,6 +1533,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="CustomersGtCondition"></a>
 
 `CustomersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1466,6 +1548,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.stripe.types.CustomersSearchFilter`
     :   The type of the None singleton.
 
+<a id="CustomersGteCondition"></a>
+
 `CustomersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1477,6 +1561,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.stripe.types.CustomersSearchFilter`
     :   The type of the None singleton.
+
+<a id="CustomersInCondition"></a>
 
 `CustomersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1497,6 +1583,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.stripe.types.CustomersInFilter`
     :   The type of the None singleton.
+
+<a id="CustomersInFilter"></a>
 
 `CustomersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1600,6 +1688,8 @@ Classes
     `updated: list[int]`
     :   Timestamp indicating when the customer object was last updated.
 
+<a id="CustomersKeywordCondition"></a>
+
 `CustomersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1612,6 +1702,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.stripe.types.CustomersStringFilter`
     :   The type of the None singleton.
 
+<a id="CustomersLikeCondition"></a>
+
 `CustomersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1623,6 +1715,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.stripe.types.CustomersStringFilter`
     :   The type of the None singleton.
+
+<a id="CustomersListParams"></a>
 
 `CustomersListParams(*args, **kwargs)`
 :   Parameters for customers.list operation
@@ -1648,6 +1742,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="CustomersListParamsCreated"></a>
+
 `CustomersListParamsCreated(*args, **kwargs)`
 :   Nested schema for CustomersListParams.created
 
@@ -1669,6 +1765,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="CustomersLtCondition"></a>
+
 `CustomersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1680,6 +1778,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.stripe.types.CustomersSearchFilter`
     :   The type of the None singleton.
+
+<a id="CustomersLteCondition"></a>
 
 `CustomersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1693,6 +1793,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.stripe.types.CustomersSearchFilter`
     :   The type of the None singleton.
 
+<a id="CustomersNeqCondition"></a>
+
 `CustomersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1704,6 +1806,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.stripe.types.CustomersSearchFilter`
     :   The type of the None singleton.
+
+<a id="CustomersNotCondition"></a>
 
 `CustomersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1725,6 +1829,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.stripe.types.CustomersEqCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersGtCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersGteCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLtCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLteCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersInCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersNotCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersAndCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersOrCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
+<a id="CustomersOrCondition"></a>
+
 `CustomersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1744,6 +1850,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.stripe.types.CustomersEqCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersGtCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersGteCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLtCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLteCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersInCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersNotCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersAndCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersOrCondition | airbyte_agent_sdk.connectors.stripe.types.CustomersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CustomersSearchFilter"></a>
 
 `CustomersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering customers search queries.
@@ -1847,6 +1955,8 @@ Classes
     `updated: int | None`
     :   Timestamp indicating when the customer object was last updated.
 
+<a id="CustomersSearchQuery"></a>
+
 `CustomersSearchQuery(*args, **kwargs)`
 :   Search query for customers entity.
 
@@ -1861,6 +1971,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.stripe.types.CustomersSortFilter]`
     :   The type of the None singleton.
+
+<a id="CustomersSortFilter"></a>
 
 `CustomersSortFilter(*args, **kwargs)`
 :   Available fields for sorting customers search results.
@@ -1964,6 +2076,8 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   Timestamp indicating when the customer object was last updated.
 
+<a id="CustomersStringFilter"></a>
+
 `CustomersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2066,6 +2180,8 @@ Classes
     `updated: str`
     :   Timestamp indicating when the customer object was last updated.
 
+<a id="CustomersUpdateParams"></a>
+
 `CustomersUpdateParams(*args, **kwargs)`
 :   Parameters for customers.update operation
 
@@ -2078,6 +2194,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="DisputesGetParams"></a>
+
 `DisputesGetParams(*args, **kwargs)`
 :   Parameters for disputes.get operation
 
@@ -2089,6 +2207,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="DisputesListParams"></a>
 
 `DisputesListParams(*args, **kwargs)`
 :   Parameters for disputes.list operation
@@ -2117,6 +2237,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="DisputesListParamsCreated"></a>
+
 `DisputesListParamsCreated(*args, **kwargs)`
 :   Nested schema for DisputesListParams.created
 
@@ -2138,6 +2260,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="InvoicesAndCondition"></a>
+
 `InvoicesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2158,6 +2282,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.stripe.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesInCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLikeCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="InvoicesAnyCondition"></a>
+
 `InvoicesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2177,6 +2303,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.stripe.types.InvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesAnyValueFilter"></a>
 
 `InvoicesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2457,6 +2585,8 @@ Classes
     `webhooks_delivered_at: Any`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="InvoicesApiSearchParams"></a>
+
 `InvoicesApiSearchParams(*args, **kwargs)`
 :   Parameters for invoices.api_search operation
 
@@ -2475,6 +2605,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="InvoicesContainsCondition"></a>
+
 `InvoicesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2486,6 +2618,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.stripe.types.InvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesEqCondition"></a>
 
 `InvoicesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2499,6 +2633,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.stripe.types.InvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesFuzzyCondition"></a>
+
 `InvoicesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2510,6 +2646,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.stripe.types.InvoicesStringFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesGetParams"></a>
 
 `InvoicesGetParams(*args, **kwargs)`
 :   Parameters for invoices.get operation
@@ -2523,6 +2661,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="InvoicesGtCondition"></a>
+
 `InvoicesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2535,6 +2675,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.stripe.types.InvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesGteCondition"></a>
+
 `InvoicesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2546,6 +2688,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.stripe.types.InvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesInCondition"></a>
 
 `InvoicesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2566,6 +2710,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.stripe.types.InvoicesInFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesInFilter"></a>
 
 `InvoicesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2846,6 +2992,8 @@ Classes
     `webhooks_delivered_at: list[float]`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="InvoicesKeywordCondition"></a>
+
 `InvoicesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2858,6 +3006,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.stripe.types.InvoicesStringFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesLikeCondition"></a>
+
 `InvoicesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2869,6 +3019,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.stripe.types.InvoicesStringFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesListParams"></a>
 
 `InvoicesListParams(*args, **kwargs)`
 :   Parameters for invoices.list operation
@@ -2906,6 +3058,8 @@ Classes
     `subscription: str`
     :   The type of the None singleton.
 
+<a id="InvoicesListParamsCreated"></a>
+
 `InvoicesListParamsCreated(*args, **kwargs)`
 :   Nested schema for InvoicesListParams.created
 
@@ -2927,6 +3081,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="InvoicesLtCondition"></a>
+
 `InvoicesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2938,6 +3094,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.stripe.types.InvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesLteCondition"></a>
 
 `InvoicesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2951,6 +3109,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.stripe.types.InvoicesSearchFilter`
     :   The type of the None singleton.
 
+<a id="InvoicesNeqCondition"></a>
+
 `InvoicesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2962,6 +3122,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.stripe.types.InvoicesSearchFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesNotCondition"></a>
 
 `InvoicesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2983,6 +3145,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.stripe.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesInCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLikeCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesAnyCondition`
     :   The type of the None singleton.
 
+<a id="InvoicesOrCondition"></a>
+
 `InvoicesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3002,6 +3166,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.stripe.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesInCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesLikeCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.stripe.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchFilter"></a>
 
 `InvoicesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering invoices search queries.
@@ -3282,6 +3448,8 @@ Classes
     `webhooks_delivered_at: float | None`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="InvoicesSearchQuery"></a>
+
 `InvoicesSearchQuery(*args, **kwargs)`
 :   Search query for invoices entity.
 
@@ -3296,6 +3464,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.stripe.types.InvoicesSortFilter]`
     :   The type of the None singleton.
+
+<a id="InvoicesSortFilter"></a>
 
 `InvoicesSortFilter(*args, **kwargs)`
 :   Available fields for sorting invoices search results.
@@ -3576,6 +3746,8 @@ Classes
     `webhooks_delivered_at: Literal['asc', 'desc']`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="InvoicesStringFilter"></a>
+
 `InvoicesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3855,6 +4027,8 @@ Classes
     `webhooks_delivered_at: str`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="PaymentIntentsApiSearchParams"></a>
+
 `PaymentIntentsApiSearchParams(*args, **kwargs)`
 :   Parameters for payment_intents.api_search operation
 
@@ -3873,6 +4047,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="PaymentIntentsGetParams"></a>
+
 `PaymentIntentsGetParams(*args, **kwargs)`
 :   Parameters for payment_intents.get operation
 
@@ -3884,6 +4060,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="PaymentIntentsListParams"></a>
 
 `PaymentIntentsListParams(*args, **kwargs)`
 :   Parameters for payment_intents.list operation
@@ -3912,6 +4090,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="PaymentIntentsListParamsCreated"></a>
+
 `PaymentIntentsListParamsCreated(*args, **kwargs)`
 :   Nested schema for PaymentIntentsListParams.created
 
@@ -3933,6 +4113,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="PayoutsGetParams"></a>
+
 `PayoutsGetParams(*args, **kwargs)`
 :   Parameters for payouts.get operation
 
@@ -3944,6 +4126,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="PayoutsListParams"></a>
 
 `PayoutsListParams(*args, **kwargs)`
 :   Parameters for payouts.list operation
@@ -3975,6 +4159,8 @@ Classes
     `status: str`
     :   The type of the None singleton.
 
+<a id="PayoutsListParamsArrivalDate"></a>
+
 `PayoutsListParamsArrivalDate(*args, **kwargs)`
 :   Nested schema for PayoutsListParams.arrival_date
 
@@ -3995,6 +4181,8 @@ Classes
 
     `lte: int`
     :   The type of the None singleton.
+
+<a id="PayoutsListParamsCreated"></a>
 
 `PayoutsListParamsCreated(*args, **kwargs)`
 :   Nested schema for PayoutsListParams.created
@@ -4017,6 +4205,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="ProductsApiSearchParams"></a>
+
 `ProductsApiSearchParams(*args, **kwargs)`
 :   Parameters for products.api_search operation
 
@@ -4035,12 +4225,16 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="ProductsCreateParams"></a>
+
 `ProductsCreateParams(*args, **kwargs)`
 :   Parameters for products.create operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="ProductsDeleteParams"></a>
 
 `ProductsDeleteParams(*args, **kwargs)`
 :   Parameters for products.delete operation
@@ -4054,6 +4248,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ProductsGetParams"></a>
+
 `ProductsGetParams(*args, **kwargs)`
 :   Parameters for products.get operation
 
@@ -4065,6 +4261,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="ProductsListParams"></a>
 
 `ProductsListParams(*args, **kwargs)`
 :   Parameters for products.list operation
@@ -4099,6 +4297,8 @@ Classes
     `url: str`
     :   The type of the None singleton.
 
+<a id="ProductsListParamsCreated"></a>
+
 `ProductsListParamsCreated(*args, **kwargs)`
 :   Nested schema for ProductsListParams.created
 
@@ -4120,6 +4320,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="ProductsUpdateParams"></a>
+
 `ProductsUpdateParams(*args, **kwargs)`
 :   Parameters for products.update operation
 
@@ -4131,6 +4333,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="RefundsAndCondition"></a>
 
 `RefundsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4152,6 +4356,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.stripe.types.RefundsEqCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsGtCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsGteCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLtCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLteCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsInCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsNotCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsAndCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsOrCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="RefundsAnyCondition"></a>
+
 `RefundsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4171,6 +4377,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.stripe.types.RefundsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="RefundsAnyValueFilter"></a>
 
 `RefundsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4229,6 +4437,8 @@ Classes
     `updated: Any`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="RefundsContainsCondition"></a>
+
 `RefundsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4241,12 +4451,16 @@ Classes
     `contains: airbyte_agent_sdk.connectors.stripe.types.RefundsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="RefundsCreateParams"></a>
+
 `RefundsCreateParams(*args, **kwargs)`
 :   Parameters for refunds.create operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="RefundsEqCondition"></a>
 
 `RefundsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4260,6 +4474,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.stripe.types.RefundsSearchFilter`
     :   The type of the None singleton.
 
+<a id="RefundsFuzzyCondition"></a>
+
 `RefundsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4271,6 +4487,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.stripe.types.RefundsStringFilter`
     :   The type of the None singleton.
+
+<a id="RefundsGetParams"></a>
 
 `RefundsGetParams(*args, **kwargs)`
 :   Parameters for refunds.get operation
@@ -4284,6 +4502,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="RefundsGtCondition"></a>
+
 `RefundsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4296,6 +4516,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.stripe.types.RefundsSearchFilter`
     :   The type of the None singleton.
 
+<a id="RefundsGteCondition"></a>
+
 `RefundsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4307,6 +4529,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.stripe.types.RefundsSearchFilter`
     :   The type of the None singleton.
+
+<a id="RefundsInCondition"></a>
 
 `RefundsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4327,6 +4551,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.stripe.types.RefundsInFilter`
     :   The type of the None singleton.
+
+<a id="RefundsInFilter"></a>
 
 `RefundsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4385,6 +4611,8 @@ Classes
     `updated: list[int]`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="RefundsKeywordCondition"></a>
+
 `RefundsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4397,6 +4625,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.stripe.types.RefundsStringFilter`
     :   The type of the None singleton.
 
+<a id="RefundsLikeCondition"></a>
+
 `RefundsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4408,6 +4638,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.stripe.types.RefundsStringFilter`
     :   The type of the None singleton.
+
+<a id="RefundsListParams"></a>
 
 `RefundsListParams(*args, **kwargs)`
 :   Parameters for refunds.list operation
@@ -4436,6 +4668,8 @@ Classes
     `starting_after: str`
     :   The type of the None singleton.
 
+<a id="RefundsListParamsCreated"></a>
+
 `RefundsListParamsCreated(*args, **kwargs)`
 :   Nested schema for RefundsListParams.created
 
@@ -4457,6 +4691,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="RefundsLtCondition"></a>
+
 `RefundsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4468,6 +4704,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.stripe.types.RefundsSearchFilter`
     :   The type of the None singleton.
+
+<a id="RefundsLteCondition"></a>
 
 `RefundsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4481,6 +4719,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.stripe.types.RefundsSearchFilter`
     :   The type of the None singleton.
 
+<a id="RefundsNeqCondition"></a>
+
 `RefundsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4492,6 +4732,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.stripe.types.RefundsSearchFilter`
     :   The type of the None singleton.
+
+<a id="RefundsNotCondition"></a>
 
 `RefundsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4513,6 +4755,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.stripe.types.RefundsEqCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsGtCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsGteCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLtCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLteCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsInCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsNotCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsAndCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsOrCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsAnyCondition`
     :   The type of the None singleton.
 
+<a id="RefundsOrCondition"></a>
+
 `RefundsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4532,6 +4776,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.stripe.types.RefundsEqCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsGtCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsGteCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLtCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLteCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsInCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsNotCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsAndCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsOrCondition | airbyte_agent_sdk.connectors.stripe.types.RefundsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="RefundsSearchFilter"></a>
 
 `RefundsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering refunds search queries.
@@ -4590,6 +4836,8 @@ Classes
     `updated: int | None`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="RefundsSearchQuery"></a>
+
 `RefundsSearchQuery(*args, **kwargs)`
 :   Search query for refunds entity.
 
@@ -4604,6 +4852,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.stripe.types.RefundsSortFilter]`
     :   The type of the None singleton.
+
+<a id="RefundsSortFilter"></a>
 
 `RefundsSortFilter(*args, **kwargs)`
 :   Available fields for sorting refunds search results.
@@ -4662,6 +4912,8 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="RefundsStringFilter"></a>
+
 `RefundsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4719,6 +4971,8 @@ Classes
     `updated: str`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="SubscriptionsAndCondition"></a>
+
 `SubscriptionsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4739,6 +4993,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.stripe.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLikeCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="SubscriptionsAnyCondition"></a>
+
 `SubscriptionsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4758,6 +5014,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsAnyValueFilter"></a>
 
 `SubscriptionsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4923,6 +5181,8 @@ Classes
     `items(self, /) ‑> Any`
     :   Return a set-like object providing a view on the dict's items.
 
+<a id="SubscriptionsApiSearchParams"></a>
+
 `SubscriptionsApiSearchParams(*args, **kwargs)`
 :   Parameters for subscriptions.api_search operation
 
@@ -4941,6 +5201,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="SubscriptionsContainsCondition"></a>
+
 `SubscriptionsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4952,6 +5214,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsEqCondition"></a>
 
 `SubscriptionsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4965,6 +5229,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SubscriptionsFuzzyCondition"></a>
+
 `SubscriptionsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4976,6 +5242,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsStringFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsGetParams"></a>
 
 `SubscriptionsGetParams(*args, **kwargs)`
 :   Parameters for subscriptions.get operation
@@ -4989,6 +5257,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="SubscriptionsGtCondition"></a>
+
 `SubscriptionsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5001,6 +5271,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SubscriptionsGteCondition"></a>
+
 `SubscriptionsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5012,6 +5284,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsInCondition"></a>
 
 `SubscriptionsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5032,6 +5306,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsInFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsInFilter"></a>
 
 `SubscriptionsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5197,6 +5473,8 @@ Classes
     `items(self, /) ‑> list[dict[str, typing.Any]]`
     :   Return a set-like object providing a view on the dict's items.
 
+<a id="SubscriptionsKeywordCondition"></a>
+
 `SubscriptionsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -5209,6 +5487,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsStringFilter`
     :   The type of the None singleton.
 
+<a id="SubscriptionsLikeCondition"></a>
+
 `SubscriptionsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -5220,6 +5500,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsStringFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsListParams"></a>
 
 `SubscriptionsListParams(*args, **kwargs)`
 :   Parameters for subscriptions.list operation
@@ -5266,6 +5548,8 @@ Classes
     `status: str`
     :   The type of the None singleton.
 
+<a id="SubscriptionsListParamsAutomaticTax"></a>
+
 `SubscriptionsListParamsAutomaticTax(*args, **kwargs)`
 :   Nested schema for SubscriptionsListParams.automatic_tax
 
@@ -5277,6 +5561,8 @@ Classes
 
     `enabled: bool`
     :   The type of the None singleton.
+
+<a id="SubscriptionsListParamsCreated"></a>
 
 `SubscriptionsListParamsCreated(*args, **kwargs)`
 :   Nested schema for SubscriptionsListParams.created
@@ -5299,6 +5585,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="SubscriptionsListParamsCurrentPeriodEnd"></a>
+
 `SubscriptionsListParamsCurrentPeriodEnd(*args, **kwargs)`
 :   Nested schema for SubscriptionsListParams.current_period_end
 
@@ -5319,6 +5607,8 @@ Classes
 
     `lte: int`
     :   The type of the None singleton.
+
+<a id="SubscriptionsListParamsCurrentPeriodStart"></a>
 
 `SubscriptionsListParamsCurrentPeriodStart(*args, **kwargs)`
 :   Nested schema for SubscriptionsListParams.current_period_start
@@ -5341,6 +5631,8 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="SubscriptionsLtCondition"></a>
+
 `SubscriptionsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -5352,6 +5644,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsLteCondition"></a>
 
 `SubscriptionsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -5365,6 +5659,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SubscriptionsNeqCondition"></a>
+
 `SubscriptionsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5376,6 +5672,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SubscriptionsNotCondition"></a>
 
 `SubscriptionsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5397,6 +5695,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLikeCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAnyCondition`
     :   The type of the None singleton.
 
+<a id="SubscriptionsOrCondition"></a>
+
 `SubscriptionsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5416,6 +5716,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.stripe.types.SubscriptionsEqCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsNeqCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsGtCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsGteCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLtCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLteCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsInCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsLikeCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsKeywordCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsContainsCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsNotCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAndCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsOrCondition | airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="SubscriptionsSearchFilter"></a>
 
 `SubscriptionsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering subscriptions search queries.
@@ -5581,6 +5883,8 @@ Classes
     `items(self, /) ‑> dict[str, typing.Any] | None`
     :   Return a set-like object providing a view on the dict's items.
 
+<a id="SubscriptionsSearchQuery"></a>
+
 `SubscriptionsSearchQuery(*args, **kwargs)`
 :   Search query for subscriptions entity.
 
@@ -5595,6 +5899,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.stripe.types.SubscriptionsSortFilter]`
     :   The type of the None singleton.
+
+<a id="SubscriptionsSortFilter"></a>
 
 `SubscriptionsSortFilter(*args, **kwargs)`
 :   Available fields for sorting subscriptions search results.
@@ -5759,6 +6065,8 @@ Classes
 
     `items(self, /) ‑> Literal['asc', 'desc']`
     :   Return a set-like object providing a view on the dict's items.
+
+<a id="SubscriptionsStringFilter"></a>
 
 `SubscriptionsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

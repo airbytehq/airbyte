@@ -10,6 +10,8 @@ Type definitions for clickup-api connector.
 Classes
 -------
 
+<a id="CommentsCreateParams"></a>
+
 `CommentsCreateParams(*args, **kwargs)`
 :   Parameters for comments.create operation
 
@@ -31,6 +33,8 @@ Classes
     `task_id: str`
     :   The type of the None singleton.
 
+<a id="CommentsGetParams"></a>
+
 `CommentsGetParams(*args, **kwargs)`
 :   Parameters for comments.get operation
 
@@ -43,6 +47,8 @@ Classes
     `comment_id: str`
     :   The type of the None singleton.
 
+<a id="CommentsListParams"></a>
+
 `CommentsListParams(*args, **kwargs)`
 :   Parameters for comments.list operation
 
@@ -54,6 +60,8 @@ Classes
 
     `task_id: str`
     :   The type of the None singleton.
+
+<a id="CommentsUpdateParams"></a>
 
 `CommentsUpdateParams(*args, **kwargs)`
 :   Parameters for comments.update operation
@@ -76,6 +84,8 @@ Classes
     `resolved: bool`
     :   The type of the None singleton.
 
+<a id="DocsGetParams"></a>
+
 `DocsGetParams(*args, **kwargs)`
 :   Parameters for docs.get operation
 
@@ -90,6 +100,8 @@ Classes
 
     `workspace_id: str`
     :   The type of the None singleton.
+
+<a id="DocsListParams"></a>
 
 `DocsListParams(*args, **kwargs)`
 :   Parameters for docs.list operation
@@ -106,6 +118,8 @@ Classes
     `workspace_id: str`
     :   The type of the None singleton.
 
+<a id="FoldersGetParams"></a>
+
 `FoldersGetParams(*args, **kwargs)`
 :   Parameters for folders.get operation
 
@@ -117,6 +131,8 @@ Classes
 
     `folder_id: str`
     :   The type of the None singleton.
+
+<a id="FoldersListParams"></a>
 
 `FoldersListParams(*args, **kwargs)`
 :   Parameters for folders.list operation
@@ -130,6 +146,8 @@ Classes
     `space_id: str`
     :   The type of the None singleton.
 
+<a id="GoalsGetParams"></a>
+
 `GoalsGetParams(*args, **kwargs)`
 :   Parameters for goals.get operation
 
@@ -141,6 +159,8 @@ Classes
 
     `goal_id: str`
     :   The type of the None singleton.
+
+<a id="GoalsListParams"></a>
 
 `GoalsListParams(*args, **kwargs)`
 :   Parameters for goals.list operation
@@ -154,6 +174,8 @@ Classes
     `team_id: str`
     :   The type of the None singleton.
 
+<a id="ListsGetParams"></a>
+
 `ListsGetParams(*args, **kwargs)`
 :   Parameters for lists.get operation
 
@@ -165,6 +187,8 @@ Classes
 
     `list_id: str`
     :   The type of the None singleton.
+
+<a id="ListsListParams"></a>
 
 `ListsListParams(*args, **kwargs)`
 :   Parameters for lists.list operation
@@ -178,6 +202,8 @@ Classes
     `folder_id: str`
     :   The type of the None singleton.
 
+<a id="MembersListParams"></a>
+
 `MembersListParams(*args, **kwargs)`
 :   Parameters for members.list operation
 
@@ -189,6 +215,8 @@ Classes
 
     `task_id: str`
     :   The type of the None singleton.
+
+<a id="SpacesGetParams"></a>
 
 `SpacesGetParams(*args, **kwargs)`
 :   Parameters for spaces.get operation
@@ -202,6 +230,8 @@ Classes
     `space_id: str`
     :   The type of the None singleton.
 
+<a id="SpacesListParams"></a>
+
 `SpacesListParams(*args, **kwargs)`
 :   Parameters for spaces.list operation
 
@@ -213,6 +243,8 @@ Classes
 
     `team_id: str`
     :   The type of the None singleton.
+
+<a id="TasksApiSearchParams"></a>
 
 `TasksApiSearchParams(*args, **kwargs)`
 :   Parameters for tasks.api_search operation
@@ -268,6 +300,8 @@ Classes
     `team_id: str`
     :   The type of the None singleton.
 
+<a id="TasksGetParams"></a>
+
 `TasksGetParams(*args, **kwargs)`
 :   Parameters for tasks.get operation
 
@@ -286,6 +320,8 @@ Classes
     `task_id: str`
     :   The type of the None singleton.
 
+<a id="TasksListParams"></a>
+
 `TasksListParams(*args, **kwargs)`
 :   Parameters for tasks.list operation
 
@@ -301,12 +337,16 @@ Classes
     `page: int`
     :   The type of the None singleton.
 
+<a id="TeamsListParams"></a>
+
 `TeamsListParams(*args, **kwargs)`
 :   Parameters for teams.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="TimeTrackingGetParams"></a>
 
 `TimeTrackingGetParams(*args, **kwargs)`
 :   Parameters for time_tracking.get operation
@@ -322,6 +362,8 @@ Classes
 
     `time_entry_id: str`
     :   The type of the None singleton.
+
+<a id="TimeTrackingListParams"></a>
 
 `TimeTrackingListParams(*args, **kwargs)`
 :   Parameters for time_tracking.list operation
@@ -344,12 +386,16 @@ Classes
     `team_id: str`
     :   The type of the None singleton.
 
+<a id="UserGetParams"></a>
+
 `UserGetParams(*args, **kwargs)`
 :   Parameters for user.get operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="ViewTasksListParams"></a>
 
 `ViewTasksListParams(*args, **kwargs)`
 :   Parameters for view_tasks.list operation
@@ -366,6 +412,8 @@ Classes
     `view_id: str`
     :   The type of the None singleton.
 
+<a id="ViewsGetParams"></a>
+
 `ViewsGetParams(*args, **kwargs)`
 :   Parameters for views.get operation
 
@@ -377,6 +425,8 @@ Classes
 
     `view_id: str`
     :   The type of the None singleton.
+
+<a id="ViewsListParams"></a>
 
 `ViewsListParams(*args, **kwargs)`
 :   Parameters for views.list operation

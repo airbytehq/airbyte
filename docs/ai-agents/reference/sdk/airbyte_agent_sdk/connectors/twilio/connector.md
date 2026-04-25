@@ -10,6 +10,8 @@ Twilio connector.
 Classes
 -------
 
+<a id="AccountsQuery"></a>
+
 `AccountsQuery(connector: TwilioConnector)`
 :   Query class for Accounts entity operations.
     
@@ -66,6 +68,8 @@ Classes
         
         Returns:
             AccountsListResult
+
+<a id="AddressesQuery"></a>
 
 `AddressesQuery(connector: TwilioConnector)`
 :   Query class for Addresses entity operations.
@@ -128,6 +132,8 @@ Classes
         
         Returns:
             AddressesListResult
+
+<a id="CallsQuery"></a>
 
 `CallsQuery(connector: TwilioConnector)`
 :   Query class for Calls entity operations.
@@ -193,6 +199,8 @@ Classes
         Returns:
             CallsListResult
 
+<a id="ConferencesQuery"></a>
+
 `ConferencesQuery(connector: TwilioConnector)`
 :   Query class for Conferences entity operations.
     
@@ -250,6 +258,8 @@ Classes
         
         Returns:
             ConferencesListResult
+
+<a id="IncomingPhoneNumbersQuery"></a>
 
 `IncomingPhoneNumbersQuery(connector: TwilioConnector)`
 :   Query class for IncomingPhoneNumbers entity operations.
@@ -309,6 +319,8 @@ Classes
         
         Returns:
             IncomingPhoneNumbersListResult
+
+<a id="MessagesQuery"></a>
 
 `MessagesQuery(connector: TwilioConnector)`
 :   Query class for Messages entity operations.
@@ -376,6 +388,8 @@ Classes
         Returns:
             MessagesListResult
 
+<a id="OutgoingCallerIdsQuery"></a>
+
 `OutgoingCallerIdsQuery(connector: TwilioConnector)`
 :   Query class for OutgoingCallerIds entity operations.
     
@@ -432,6 +446,8 @@ Classes
         
         Returns:
             OutgoingCallerIdsListResult
+
+<a id="QueuesQuery"></a>
 
 `QueuesQuery(connector: TwilioConnector)`
 :   Query class for Queues entity operations.
@@ -491,6 +507,8 @@ Classes
         
         Returns:
             QueuesListResult
+
+<a id="RecordingsQuery"></a>
 
 `RecordingsQuery(connector: TwilioConnector)`
 :   Query class for Recordings entity operations.
@@ -553,6 +571,8 @@ Classes
         Returns:
             RecordingsListResult
 
+<a id="TranscriptionsQuery"></a>
+
 `TranscriptionsQuery(connector: TwilioConnector)`
 :   Query class for Transcriptions entity operations.
     
@@ -612,6 +632,8 @@ Classes
         
         Returns:
             TranscriptionsListResult
+
+<a id="TwilioConnector"></a>
 
 `TwilioConnector(auth_config: TwilioAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Twilio API connector.
@@ -812,6 +834,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="UsageRecordsQuery"></a>
 
 `UsageRecordsQuery(connector: TwilioConnector)`
 :   Query class for UsageRecords entity operations.

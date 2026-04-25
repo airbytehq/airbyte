@@ -10,6 +10,8 @@ Stripe connector.
 Classes
 -------
 
+<a id="BalanceQuery"></a>
+
 `BalanceQuery(connector: StripeConnector)`
 :   Query class for Balance entity operations.
     
@@ -22,6 +24,8 @@ Classes
         
         Returns:
             Balance
+
+<a id="BalanceTransactionsQuery"></a>
 
 `BalanceTransactionsQuery(connector: StripeConnector)`
 :   Query class for BalanceTransactions entity operations.
@@ -56,6 +60,8 @@ Classes
         
         Returns:
             BalanceTransactionsListResult
+
+<a id="ChargesQuery"></a>
 
 `ChargesQuery(connector: StripeConnector)`
 :   Query class for Charges entity operations.
@@ -173,6 +179,8 @@ Classes
         
         Returns:
             ChargesListResult
+
+<a id="CustomersQuery"></a>
 
 `CustomersQuery(connector: StripeConnector)`
 :   Query class for Customers entity operations.
@@ -296,6 +304,8 @@ Classes
         Returns:
             Customer
 
+<a id="DisputesQuery"></a>
+
 `DisputesQuery(connector: StripeConnector)`
 :   Query class for Disputes entity operations.
     
@@ -327,6 +337,8 @@ Classes
         
         Returns:
             DisputesListResult
+
+<a id="InvoicesQuery"></a>
 
 `InvoicesQuery(connector: StripeConnector)`
 :   Query class for Invoices entity operations.
@@ -487,6 +499,8 @@ Classes
         Returns:
             InvoicesListResult
 
+<a id="PaymentIntentsQuery"></a>
+
 `PaymentIntentsQuery(connector: StripeConnector)`
 :   Query class for PaymentIntents entity operations.
     
@@ -531,6 +545,8 @@ Classes
         Returns:
             PaymentIntentsListResult
 
+<a id="PayoutsQuery"></a>
+
 `PayoutsQuery(connector: StripeConnector)`
 :   Query class for Payouts entity operations.
     
@@ -563,6 +579,8 @@ Classes
         
         Returns:
             PayoutsListResult
+
+<a id="ProductsQuery"></a>
 
 `ProductsQuery(connector: StripeConnector)`
 :   Query class for Products entity operations.
@@ -635,6 +653,8 @@ Classes
         
         Returns:
             Product
+
+<a id="RefundsQuery"></a>
 
 `RefundsQuery(connector: StripeConnector)`
 :   Query class for Refunds entity operations.
@@ -711,6 +731,8 @@ Classes
         
         Returns:
             RefundsListResult
+
+<a id="StripeConnector"></a>
 
 `StripeConnector(auth_config: StripeAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Stripe API connector.
@@ -911,6 +933,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="SubscriptionsQuery"></a>
 
 `SubscriptionsQuery(connector: StripeConnector)`
 :   Query class for Subscriptions entity operations.

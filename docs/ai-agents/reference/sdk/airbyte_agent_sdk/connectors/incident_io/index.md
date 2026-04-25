@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -156,6 +162,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AlertsSearchResult"></a>
+
 `AlertsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -171,6 +179,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CatalogTypesSearchResult"></a>
 
 `CatalogTypesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -188,6 +198,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CustomFieldsSearchResult"></a>
+
 `CustomFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -203,6 +215,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EscalationsSearchResult"></a>
 
 `EscalationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -220,6 +234,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="IncidentRolesSearchResult"></a>
+
 `IncidentRolesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -235,6 +251,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IncidentStatusesSearchResult"></a>
 
 `IncidentStatusesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -252,6 +270,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="IncidentTimestampsSearchResult"></a>
+
 `IncidentTimestampsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -267,6 +287,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IncidentUpdatesSearchResult"></a>
 
 `IncidentUpdatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -284,6 +306,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="IncidentsSearchResult"></a>
+
 `IncidentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -299,6 +323,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SchedulesSearchResult"></a>
 
 `SchedulesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -316,6 +342,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SeveritiesSearchResult"></a>
+
 `SeveritiesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -332,6 +360,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -347,6 +377,8 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AlertsSearchData"></a>
 
 `AlertsSearchData(**data: Any)`
 :   Search result data for alerts entity.
@@ -399,6 +431,8 @@ Classes
 
     `updated_at: str | None`
     :   When the alert was last updated
+
+<a id="CatalogTypesSearchData"></a>
 
 `CatalogTypesSearchData(**data: Any)`
 :   Search result data for catalog_types entity.
@@ -470,6 +504,8 @@ Classes
     `updated_at: str | None`
     :   When the catalog type was last updated
 
+<a id="CustomFieldsSearchData"></a>
+
 `CustomFieldsSearchData(**data: Any)`
 :   Search result data for custom_fields entity.
     
@@ -506,6 +542,8 @@ Classes
 
     `updated_at: str | None`
     :   When the custom field was last updated
+
+<a id="EscalationsSearchData"></a>
 
 `EscalationsSearchData(**data: Any)`
 :   Search result data for escalations entity.
@@ -559,6 +597,8 @@ Classes
     `updated_at: str | None`
     :   When the escalation was last updated
 
+<a id="IncidentIoAuthConfig"></a>
+
 `IncidentIoAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -580,6 +620,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IncidentIoConnector"></a>
 
 `IncidentIoConnector(auth_config: IncidentIoAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Incident-Io API connector.
@@ -769,6 +811,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="IncidentRolesSearchData"></a>
+
 `IncidentRolesSearchData(**data: Any)`
 :   Search result data for incident_roles entity.
     
@@ -815,6 +859,8 @@ Classes
     `updated_at: str | None`
     :   When the role was last updated
 
+<a id="IncidentStatusesSearchData"></a>
+
 `IncidentStatusesSearchData(**data: Any)`
 :   Search result data for incident_statuses entity.
     
@@ -855,6 +901,8 @@ Classes
     `updated_at: str | None`
     :   When the status was last updated
 
+<a id="IncidentTimestampsSearchData"></a>
+
 `IncidentTimestampsSearchData(**data: Any)`
 :   Search result data for incident_timestamps entity.
     
@@ -882,6 +930,8 @@ Classes
 
     `rank: float | None`
     :   Rank for ordering
+
+<a id="IncidentUpdatesSearchData"></a>
 
 `IncidentUpdatesSearchData(**data: Any)`
 :   Search result data for incident_updates entity.
@@ -922,6 +972,8 @@ Classes
 
     `updater: dict[str, typing.Any] | None`
     :   Who made this update
+
+<a id="IncidentsSearchData"></a>
 
 `IncidentsSearchData(**data: Any)`
 :   Search result data for incidents entity.
@@ -1017,6 +1069,8 @@ Classes
     `workload_minutes_working: float | None`
     :   Minutes of workload classified as working
 
+<a id="SchedulesSearchData"></a>
+
 `SchedulesSearchData(**data: Any)`
 :   Search result data for schedules entity.
     
@@ -1060,6 +1114,8 @@ Classes
     `updated_at: str | None`
     :   When the schedule was last updated
 
+<a id="SeveritiesSearchData"></a>
+
 `SeveritiesSearchData(**data: Any)`
 :   Search result data for severities entity.
     
@@ -1096,6 +1152,8 @@ Classes
 
     `updated_at: str | None`
     :   When the severity was last updated
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

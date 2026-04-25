@@ -10,6 +10,8 @@ Utility functions for working with connectors.
 Functions
 ---------
 
+<a id="find_matching_auth_options"></a>
+
 `find_matching_auth_options(provided_keys: set[str], auth_options: list[AuthOption]) ‑> list[AuthOption]`
 :   Find auth options that match the provided credential keys.
     
@@ -27,6 +29,8 @@ Functions
     Returns:
         List of AuthOption that match the provided keys
 
+<a id="infer_auth_scheme_name"></a>
+
 `infer_auth_scheme_name(provided_keys: set[str], auth_options: list[AuthOption]) ‑> str | None`
 :   Infer the auth scheme name from provided credential keys.
     
@@ -39,6 +43,8 @@ Functions
     
     Returns:
         The scheme_name if exactly one match, None otherwise
+
+<a id="save_download"></a>
 
 `save_download(download_iterator: AsyncIterator[bytes], path: str | Path, *, overwrite: bool = False) ‑> pathlib._local.Path`
 :   Save a download iterator to a file.

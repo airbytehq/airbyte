@@ -10,6 +10,8 @@ Type definitions for asana connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="AttachmentsAndCondition"></a>
+
 `AttachmentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLikeCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AttachmentsAnyCondition"></a>
+
 `AttachmentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsAnyValueFilter"></a>
 
 `AttachmentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -116,6 +124,8 @@ Classes
     `view_url: Any`
     :   The type of the None singleton.
 
+<a id="AttachmentsContainsCondition"></a>
+
 `AttachmentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -127,6 +137,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsDownloadParams"></a>
 
 `AttachmentsDownloadParams(*args, **kwargs)`
 :   Parameters for attachments.download operation
@@ -143,6 +155,8 @@ Classes
     `range_header: str`
     :   The type of the None singleton.
 
+<a id="AttachmentsEqCondition"></a>
+
 `AttachmentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -154,6 +168,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.asana.types.AttachmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsFuzzyCondition"></a>
 
 `AttachmentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -167,6 +183,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.AttachmentsStringFilter`
     :   The type of the None singleton.
 
+<a id="AttachmentsGetParams"></a>
+
 `AttachmentsGetParams(*args, **kwargs)`
 :   Parameters for attachments.get operation
 
@@ -178,6 +196,8 @@ Classes
 
     `attachment_gid: str`
     :   The type of the None singleton.
+
+<a id="AttachmentsGtCondition"></a>
 
 `AttachmentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -191,6 +211,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.AttachmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AttachmentsGteCondition"></a>
+
 `AttachmentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -202,6 +224,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.AttachmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsInCondition"></a>
 
 `AttachmentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -222,6 +246,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.AttachmentsInFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsInFilter"></a>
 
 `AttachmentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -268,6 +294,8 @@ Classes
     `view_url: list[str]`
     :   The type of the None singleton.
 
+<a id="AttachmentsKeywordCondition"></a>
+
 `AttachmentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -280,6 +308,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.asana.types.AttachmentsStringFilter`
     :   The type of the None singleton.
 
+<a id="AttachmentsLikeCondition"></a>
+
 `AttachmentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -291,6 +321,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.asana.types.AttachmentsStringFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsListParams"></a>
 
 `AttachmentsListParams(*args, **kwargs)`
 :   Parameters for attachments.list operation
@@ -310,6 +342,8 @@ Classes
     `parent: str`
     :   The type of the None singleton.
 
+<a id="AttachmentsLtCondition"></a>
+
 `AttachmentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -321,6 +355,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.AttachmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsLteCondition"></a>
 
 `AttachmentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -334,6 +370,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.AttachmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AttachmentsNeqCondition"></a>
+
 `AttachmentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -345,6 +383,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.AttachmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AttachmentsNotCondition"></a>
 
 `AttachmentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -366,6 +406,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLikeCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AttachmentsOrCondition"></a>
+
 `AttachmentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -385,6 +427,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsEqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNeqCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsGteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLtCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLteCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsInCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsLikeCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsContainsCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsNotCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAndCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsOrCondition | airbyte_agent_sdk.connectors.asana.types.AttachmentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AttachmentsSearchFilter"></a>
 
 `AttachmentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering attachments search queries.
@@ -431,6 +475,8 @@ Classes
     `view_url: str | None`
     :   The type of the None singleton.
 
+<a id="AttachmentsSearchQuery"></a>
+
 `AttachmentsSearchQuery(*args, **kwargs)`
 :   Search query for attachments entity.
 
@@ -445,6 +491,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.AttachmentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AttachmentsSortFilter"></a>
 
 `AttachmentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting attachments search results.
@@ -491,6 +539,8 @@ Classes
     `view_url: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="AttachmentsStringFilter"></a>
+
 `AttachmentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -536,6 +586,8 @@ Classes
     `view_url: str`
     :   The type of the None singleton.
 
+<a id="ProjectSectionsCreateParams"></a>
+
 `ProjectSectionsCreateParams(*args, **kwargs)`
 :   Parameters for project_sections.create operation
 
@@ -550,6 +602,8 @@ Classes
 
     `project_gid: str`
     :   The type of the None singleton.
+
+<a id="ProjectSectionsCreateParamsData"></a>
 
 `ProjectSectionsCreateParamsData(*args, **kwargs)`
 :   Nested schema for ProjectSectionsCreateParams.data
@@ -569,6 +623,8 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="ProjectSectionsListParams"></a>
+
 `ProjectSectionsListParams(*args, **kwargs)`
 :   Parameters for project_sections.list operation
 
@@ -586,6 +642,8 @@ Classes
 
     `project_gid: str`
     :   The type of the None singleton.
+
+<a id="ProjectTasksListParams"></a>
 
 `ProjectTasksListParams(*args, **kwargs)`
 :   Parameters for project_tasks.list operation
@@ -608,6 +666,8 @@ Classes
     `project_gid: str`
     :   The type of the None singleton.
 
+<a id="ProjectsAndCondition"></a>
+
 `ProjectsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -628,6 +688,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProjectsAnyCondition"></a>
+
 `ProjectsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -647,6 +709,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsAnyValueFilter"></a>
 
 `ProjectsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -732,6 +796,8 @@ Classes
     `workspace: Any`
     :   The type of the None singleton.
 
+<a id="ProjectsContainsCondition"></a>
+
 `ProjectsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -744,6 +810,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.asana.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsCreateParams"></a>
+
 `ProjectsCreateParams(*args, **kwargs)`
 :   Parameters for projects.create operation
 
@@ -755,6 +823,8 @@ Classes
 
     `data: airbyte_agent_sdk.connectors.asana.types.ProjectsCreateParamsData`
     :   The type of the None singleton.
+
+<a id="ProjectsCreateParamsData"></a>
 
 `ProjectsCreateParamsData(*args, **kwargs)`
 :   Nested schema for ProjectsCreateParams.data
@@ -798,6 +868,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="ProjectsDeleteParams"></a>
+
 `ProjectsDeleteParams(*args, **kwargs)`
 :   Parameters for projects.delete operation
 
@@ -809,6 +881,8 @@ Classes
 
     `project_gid: str`
     :   The type of the None singleton.
+
+<a id="ProjectsEqCondition"></a>
 
 `ProjectsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -822,6 +896,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.asana.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsFuzzyCondition"></a>
+
 `ProjectsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -833,6 +909,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsGetParams"></a>
 
 `ProjectsGetParams(*args, **kwargs)`
 :   Parameters for projects.get operation
@@ -846,6 +924,8 @@ Classes
     `project_gid: str`
     :   The type of the None singleton.
 
+<a id="ProjectsGtCondition"></a>
+
 `ProjectsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -858,6 +938,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsGteCondition"></a>
+
 `ProjectsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -869,6 +951,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInCondition"></a>
 
 `ProjectsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -889,6 +973,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.ProjectsInFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInFilter"></a>
 
 `ProjectsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -974,6 +1060,8 @@ Classes
     `workspace: list[dict[str, typing.Any]]`
     :   The type of the None singleton.
 
+<a id="ProjectsKeywordCondition"></a>
+
 `ProjectsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -986,6 +1074,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.asana.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsLikeCondition"></a>
+
 `ProjectsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -997,6 +1087,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.asana.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsListParams"></a>
 
 `ProjectsListParams(*args, **kwargs)`
 :   Parameters for projects.list operation
@@ -1022,6 +1114,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="ProjectsLtCondition"></a>
+
 `ProjectsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1033,6 +1127,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsLteCondition"></a>
 
 `ProjectsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1046,6 +1142,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsNeqCondition"></a>
+
 `ProjectsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1057,6 +1155,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsNotCondition"></a>
 
 `ProjectsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1078,6 +1178,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProjectsOrCondition"></a>
+
 `ProjectsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1097,6 +1199,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsInCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.asana.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchFilter"></a>
 
 `ProjectsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering projects search queries.
@@ -1182,6 +1286,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="ProjectsSearchQuery"></a>
+
 `ProjectsSearchQuery(*args, **kwargs)`
 :   Search query for projects entity.
 
@@ -1196,6 +1302,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.ProjectsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProjectsSortFilter"></a>
 
 `ProjectsSortFilter(*args, **kwargs)`
 :   Available fields for sorting projects search results.
@@ -1281,6 +1389,8 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="ProjectsStringFilter"></a>
+
 `ProjectsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1365,6 +1475,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="ProjectsUpdateParams"></a>
+
 `ProjectsUpdateParams(*args, **kwargs)`
 :   Parameters for projects.update operation
 
@@ -1379,6 +1491,8 @@ Classes
 
     `project_gid: str`
     :   The type of the None singleton.
+
+<a id="ProjectsUpdateParamsData"></a>
 
 `ProjectsUpdateParamsData(*args, **kwargs)`
 :   Nested schema for ProjectsUpdateParams.data
@@ -1413,6 +1527,8 @@ Classes
     `start_on: str`
     :   The type of the None singleton.
 
+<a id="SectionTasksCreateParams"></a>
+
 `SectionTasksCreateParams(*args, **kwargs)`
 :   Parameters for section_tasks.create operation
 
@@ -1427,6 +1543,8 @@ Classes
 
     `section_gid: str`
     :   The type of the None singleton.
+
+<a id="SectionTasksCreateParamsData"></a>
 
 `SectionTasksCreateParamsData(*args, **kwargs)`
 :   Nested schema for SectionTasksCreateParams.data
@@ -1445,6 +1563,8 @@ Classes
 
     `task: str`
     :   The type of the None singleton.
+
+<a id="SectionTasksListParams"></a>
 
 `SectionTasksListParams(*args, **kwargs)`
 :   Parameters for section_tasks.list operation
@@ -1467,6 +1587,8 @@ Classes
     `section_gid: str`
     :   The type of the None singleton.
 
+<a id="SectionsAndCondition"></a>
+
 `SectionsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1487,6 +1609,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLikeCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="SectionsAnyCondition"></a>
+
 `SectionsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1506,6 +1630,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.SectionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SectionsAnyValueFilter"></a>
 
 `SectionsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1531,6 +1657,8 @@ Classes
     `resource_type: Any`
     :   The type of the None singleton.
 
+<a id="SectionsContainsCondition"></a>
+
 `SectionsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1542,6 +1670,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.asana.types.SectionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SectionsDeleteParams"></a>
 
 `SectionsDeleteParams(*args, **kwargs)`
 :   Parameters for sections.delete operation
@@ -1555,6 +1685,8 @@ Classes
     `section_gid: str`
     :   The type of the None singleton.
 
+<a id="SectionsEqCondition"></a>
+
 `SectionsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -1566,6 +1698,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.asana.types.SectionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SectionsFuzzyCondition"></a>
 
 `SectionsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -1579,6 +1713,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.SectionsStringFilter`
     :   The type of the None singleton.
 
+<a id="SectionsGetParams"></a>
+
 `SectionsGetParams(*args, **kwargs)`
 :   Parameters for sections.get operation
 
@@ -1590,6 +1726,8 @@ Classes
 
     `section_gid: str`
     :   The type of the None singleton.
+
+<a id="SectionsGtCondition"></a>
 
 `SectionsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1603,6 +1741,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.SectionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SectionsGteCondition"></a>
+
 `SectionsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1614,6 +1754,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.SectionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SectionsInCondition"></a>
 
 `SectionsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1634,6 +1776,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.SectionsInFilter`
     :   The type of the None singleton.
+
+<a id="SectionsInFilter"></a>
 
 `SectionsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1659,6 +1803,8 @@ Classes
     `resource_type: list[str]`
     :   The type of the None singleton.
 
+<a id="SectionsKeywordCondition"></a>
+
 `SectionsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1670,6 +1816,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.asana.types.SectionsStringFilter`
     :   The type of the None singleton.
+
+<a id="SectionsLikeCondition"></a>
 
 `SectionsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1683,6 +1831,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.asana.types.SectionsStringFilter`
     :   The type of the None singleton.
 
+<a id="SectionsLtCondition"></a>
+
 `SectionsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1694,6 +1844,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.SectionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SectionsLteCondition"></a>
 
 `SectionsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1707,6 +1859,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.SectionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="SectionsNeqCondition"></a>
+
 `SectionsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1718,6 +1872,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.SectionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="SectionsNotCondition"></a>
 
 `SectionsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1739,6 +1895,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLikeCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition`
     :   The type of the None singleton.
 
+<a id="SectionsOrCondition"></a>
+
 `SectionsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1758,6 +1916,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.SectionsEqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNeqCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsGteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLtCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLteCondition | airbyte_agent_sdk.connectors.asana.types.SectionsInCondition | airbyte_agent_sdk.connectors.asana.types.SectionsLikeCondition | airbyte_agent_sdk.connectors.asana.types.SectionsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.SectionsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.SectionsContainsCondition | airbyte_agent_sdk.connectors.asana.types.SectionsNotCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAndCondition | airbyte_agent_sdk.connectors.asana.types.SectionsOrCondition | airbyte_agent_sdk.connectors.asana.types.SectionsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="SectionsSearchFilter"></a>
 
 `SectionsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering sections search queries.
@@ -1783,6 +1943,8 @@ Classes
     `resource_type: str | None`
     :   The type of the None singleton.
 
+<a id="SectionsSearchQuery"></a>
+
 `SectionsSearchQuery(*args, **kwargs)`
 :   Search query for sections entity.
 
@@ -1797,6 +1959,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.SectionsSortFilter]`
     :   The type of the None singleton.
+
+<a id="SectionsSortFilter"></a>
 
 `SectionsSortFilter(*args, **kwargs)`
 :   Available fields for sorting sections search results.
@@ -1822,6 +1986,8 @@ Classes
     `resource_type: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="SectionsStringFilter"></a>
+
 `SectionsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1846,6 +2012,8 @@ Classes
     `resource_type: str`
     :   The type of the None singleton.
 
+<a id="SectionsUpdateParams"></a>
+
 `SectionsUpdateParams(*args, **kwargs)`
 :   Parameters for sections.update operation
 
@@ -1861,6 +2029,8 @@ Classes
     `section_gid: str`
     :   The type of the None singleton.
 
+<a id="SectionsUpdateParamsData"></a>
+
 `SectionsUpdateParamsData(*args, **kwargs)`
 :   Nested schema for SectionsUpdateParams.data
 
@@ -1872,6 +2042,8 @@ Classes
 
     `name: str`
     :   The type of the None singleton.
+
+<a id="TagTasksListParams"></a>
 
 `TagTasksListParams(*args, **kwargs)`
 :   Parameters for tag_tasks.list operation
@@ -1890,6 +2062,8 @@ Classes
 
     `tag_gid: str`
     :   The type of the None singleton.
+
+<a id="TagsAndCondition"></a>
 
 `TagsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1911,6 +2085,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsLikeCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TagsAnyCondition"></a>
+
 `TagsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1930,6 +2106,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.TagsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TagsAnyValueFilter"></a>
 
 `TagsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1961,6 +2139,8 @@ Classes
     `workspace: Any`
     :   The type of the None singleton.
 
+<a id="TagsContainsCondition"></a>
+
 `TagsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1972,6 +2152,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.asana.types.TagsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TagsDeleteParams"></a>
 
 `TagsDeleteParams(*args, **kwargs)`
 :   Parameters for tags.delete operation
@@ -1985,6 +2167,8 @@ Classes
     `tag_gid: str`
     :   The type of the None singleton.
 
+<a id="TagsEqCondition"></a>
+
 `TagsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -1996,6 +2180,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.asana.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsFuzzyCondition"></a>
 
 `TagsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -2009,6 +2195,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.TagsStringFilter`
     :   The type of the None singleton.
 
+<a id="TagsGetParams"></a>
+
 `TagsGetParams(*args, **kwargs)`
 :   Parameters for tags.get operation
 
@@ -2020,6 +2208,8 @@ Classes
 
     `tag_gid: str`
     :   The type of the None singleton.
+
+<a id="TagsGtCondition"></a>
 
 `TagsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -2033,6 +2223,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsGteCondition"></a>
+
 `TagsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2044,6 +2236,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsInCondition"></a>
 
 `TagsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2064,6 +2258,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.TagsInFilter`
     :   The type of the None singleton.
+
+<a id="TagsInFilter"></a>
 
 `TagsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2095,6 +2291,8 @@ Classes
     `workspace: list[dict[str, typing.Any]]`
     :   The type of the None singleton.
 
+<a id="TagsKeywordCondition"></a>
+
 `TagsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2106,6 +2304,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.asana.types.TagsStringFilter`
     :   The type of the None singleton.
+
+<a id="TagsLikeCondition"></a>
 
 `TagsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2119,6 +2319,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.asana.types.TagsStringFilter`
     :   The type of the None singleton.
 
+<a id="TagsLtCondition"></a>
+
 `TagsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2130,6 +2332,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsLteCondition"></a>
 
 `TagsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2143,6 +2347,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsNeqCondition"></a>
+
 `TagsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2154,6 +2360,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsNotCondition"></a>
 
 `TagsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2175,6 +2383,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsLikeCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TagsOrCondition"></a>
+
 `TagsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2194,6 +2404,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.TagsEqCondition | airbyte_agent_sdk.connectors.asana.types.TagsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TagsGtCondition | airbyte_agent_sdk.connectors.asana.types.TagsGteCondition | airbyte_agent_sdk.connectors.asana.types.TagsLtCondition | airbyte_agent_sdk.connectors.asana.types.TagsLteCondition | airbyte_agent_sdk.connectors.asana.types.TagsInCondition | airbyte_agent_sdk.connectors.asana.types.TagsLikeCondition | airbyte_agent_sdk.connectors.asana.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TagsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TagsNotCondition | airbyte_agent_sdk.connectors.asana.types.TagsAndCondition | airbyte_agent_sdk.connectors.asana.types.TagsOrCondition | airbyte_agent_sdk.connectors.asana.types.TagsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TagsSearchFilter"></a>
 
 `TagsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tags search queries.
@@ -2225,6 +2437,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="TagsSearchQuery"></a>
+
 `TagsSearchQuery(*args, **kwargs)`
 :   Search query for tags entity.
 
@@ -2239,6 +2453,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.TagsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TagsSortFilter"></a>
 
 `TagsSortFilter(*args, **kwargs)`
 :   Available fields for sorting tags search results.
@@ -2270,6 +2486,8 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="TagsStringFilter"></a>
+
 `TagsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2300,6 +2518,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="TagsUpdateParams"></a>
+
 `TagsUpdateParams(*args, **kwargs)`
 :   Parameters for tags.update operation
 
@@ -2314,6 +2534,8 @@ Classes
 
     `tag_gid: str`
     :   The type of the None singleton.
+
+<a id="TagsUpdateParamsData"></a>
 
 `TagsUpdateParamsData(*args, **kwargs)`
 :   Nested schema for TagsUpdateParams.data
@@ -2333,6 +2555,8 @@ Classes
     `notes: str`
     :   The type of the None singleton.
 
+<a id="TaskDependenciesListParams"></a>
+
 `TaskDependenciesListParams(*args, **kwargs)`
 :   Parameters for task_dependencies.list operation
 
@@ -2350,6 +2574,8 @@ Classes
 
     `task_gid: str`
     :   The type of the None singleton.
+
+<a id="TaskDependentsListParams"></a>
 
 `TaskDependentsListParams(*args, **kwargs)`
 :   Parameters for task_dependents.list operation
@@ -2369,6 +2595,8 @@ Classes
     `task_gid: str`
     :   The type of the None singleton.
 
+<a id="TaskProjectsListParams"></a>
+
 `TaskProjectsListParams(*args, **kwargs)`
 :   Parameters for task_projects.list operation
 
@@ -2387,6 +2615,8 @@ Classes
     `task_gid: str`
     :   The type of the None singleton.
 
+<a id="TaskStoriesCreateParams"></a>
+
 `TaskStoriesCreateParams(*args, **kwargs)`
 :   Parameters for task_stories.create operation
 
@@ -2401,6 +2631,8 @@ Classes
 
     `task_gid: str`
     :   The type of the None singleton.
+
+<a id="TaskStoriesCreateParamsData"></a>
 
 `TaskStoriesCreateParamsData(*args, **kwargs)`
 :   Nested schema for TaskStoriesCreateParams.data
@@ -2420,6 +2652,8 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
+<a id="TaskSubtasksListParams"></a>
+
 `TaskSubtasksListParams(*args, **kwargs)`
 :   Parameters for task_subtasks.list operation
 
@@ -2438,6 +2672,8 @@ Classes
     `task_gid: str`
     :   The type of the None singleton.
 
+<a id="TaskTagsCreateParams"></a>
+
 `TaskTagsCreateParams(*args, **kwargs)`
 :   Parameters for task_tags.create operation
 
@@ -2453,6 +2689,8 @@ Classes
     `task_gid: str`
     :   The type of the None singleton.
 
+<a id="TaskTagsCreateParamsData"></a>
+
 `TaskTagsCreateParamsData(*args, **kwargs)`
 :   Nested schema for TaskTagsCreateParams.data
 
@@ -2464,6 +2702,8 @@ Classes
 
     `tag: str`
     :   The type of the None singleton.
+
+<a id="TaskTagsDeleteParams"></a>
 
 `TaskTagsDeleteParams(*args, **kwargs)`
 :   Parameters for task_tags.delete operation
@@ -2480,6 +2720,8 @@ Classes
     `task_gid: str`
     :   The type of the None singleton.
 
+<a id="TaskTagsDeleteParamsData"></a>
+
 `TaskTagsDeleteParamsData(*args, **kwargs)`
 :   Nested schema for TaskTagsDeleteParams.data
 
@@ -2491,6 +2733,8 @@ Classes
 
     `tag: str`
     :   The type of the None singleton.
+
+<a id="TasksAndCondition"></a>
 
 `TasksAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2512,6 +2756,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksLikeCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TasksAnyCondition"></a>
+
 `TasksAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2531,6 +2777,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.TasksAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TasksAnyValueFilter"></a>
 
 `TasksAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2649,6 +2897,8 @@ Classes
     `workspace: Any`
     :   The type of the None singleton.
 
+<a id="TasksContainsCondition"></a>
+
 `TasksContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2661,6 +2911,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.asana.types.TasksAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="TasksCreateParams"></a>
+
 `TasksCreateParams(*args, **kwargs)`
 :   Parameters for tasks.create operation
 
@@ -2672,6 +2924,8 @@ Classes
 
     `data: airbyte_agent_sdk.connectors.asana.types.TasksCreateParamsData`
     :   The type of the None singleton.
+
+<a id="TasksCreateParamsData"></a>
 
 `TasksCreateParamsData(*args, **kwargs)`
 :   Nested schema for TasksCreateParams.data
@@ -2724,6 +2978,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="TasksDeleteParams"></a>
+
 `TasksDeleteParams(*args, **kwargs)`
 :   Parameters for tasks.delete operation
 
@@ -2735,6 +2991,8 @@ Classes
 
     `task_gid: str`
     :   The type of the None singleton.
+
+<a id="TasksEqCondition"></a>
 
 `TasksEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2748,6 +3006,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.asana.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksFuzzyCondition"></a>
+
 `TasksFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2759,6 +3019,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.TasksStringFilter`
     :   The type of the None singleton.
+
+<a id="TasksGetParams"></a>
 
 `TasksGetParams(*args, **kwargs)`
 :   Parameters for tasks.get operation
@@ -2772,6 +3034,8 @@ Classes
     `task_gid: str`
     :   The type of the None singleton.
 
+<a id="TasksGtCondition"></a>
+
 `TasksGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2784,6 +3048,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksGteCondition"></a>
+
 `TasksGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2795,6 +3061,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksInCondition"></a>
 
 `TasksInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2815,6 +3083,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.TasksInFilter`
     :   The type of the None singleton.
+
+<a id="TasksInFilter"></a>
 
 `TasksInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2933,6 +3203,8 @@ Classes
     `workspace: list[dict[str, typing.Any]]`
     :   The type of the None singleton.
 
+<a id="TasksKeywordCondition"></a>
+
 `TasksKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2945,6 +3217,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.asana.types.TasksStringFilter`
     :   The type of the None singleton.
 
+<a id="TasksLikeCondition"></a>
+
 `TasksLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2956,6 +3230,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.asana.types.TasksStringFilter`
     :   The type of the None singleton.
+
+<a id="TasksListParams"></a>
 
 `TasksListParams(*args, **kwargs)`
 :   Parameters for tasks.list operation
@@ -2990,6 +3266,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="TasksLtCondition"></a>
+
 `TasksLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3001,6 +3279,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksLteCondition"></a>
 
 `TasksLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3014,6 +3294,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksNeqCondition"></a>
+
 `TasksNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3025,6 +3307,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksNotCondition"></a>
 
 `TasksNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3046,6 +3330,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksLikeCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition`
     :   The type of the None singleton.
 
+<a id="TasksOrCondition"></a>
+
 `TasksOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3065,6 +3351,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.TasksEqCondition | airbyte_agent_sdk.connectors.asana.types.TasksNeqCondition | airbyte_agent_sdk.connectors.asana.types.TasksGtCondition | airbyte_agent_sdk.connectors.asana.types.TasksGteCondition | airbyte_agent_sdk.connectors.asana.types.TasksLtCondition | airbyte_agent_sdk.connectors.asana.types.TasksLteCondition | airbyte_agent_sdk.connectors.asana.types.TasksInCondition | airbyte_agent_sdk.connectors.asana.types.TasksLikeCondition | airbyte_agent_sdk.connectors.asana.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TasksContainsCondition | airbyte_agent_sdk.connectors.asana.types.TasksNotCondition | airbyte_agent_sdk.connectors.asana.types.TasksAndCondition | airbyte_agent_sdk.connectors.asana.types.TasksOrCondition | airbyte_agent_sdk.connectors.asana.types.TasksAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TasksSearchFilter"></a>
 
 `TasksSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tasks search queries.
@@ -3183,6 +3471,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="TasksSearchQuery"></a>
+
 `TasksSearchQuery(*args, **kwargs)`
 :   Search query for tasks entity.
 
@@ -3197,6 +3487,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.TasksSortFilter]`
     :   The type of the None singleton.
+
+<a id="TasksSortFilter"></a>
 
 `TasksSortFilter(*args, **kwargs)`
 :   Available fields for sorting tasks search results.
@@ -3315,6 +3607,8 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="TasksStringFilter"></a>
+
 `TasksStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3432,6 +3726,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="TasksUpdateParams"></a>
+
 `TasksUpdateParams(*args, **kwargs)`
 :   Parameters for tasks.update operation
 
@@ -3446,6 +3742,8 @@ Classes
 
     `task_gid: str`
     :   The type of the None singleton.
+
+<a id="TasksUpdateParamsData"></a>
 
 `TasksUpdateParamsData(*args, **kwargs)`
 :   Nested schema for TasksUpdateParams.data
@@ -3480,6 +3778,8 @@ Classes
     `start_on: str`
     :   The type of the None singleton.
 
+<a id="TeamProjectsListParams"></a>
+
 `TeamProjectsListParams(*args, **kwargs)`
 :   Parameters for team_projects.list operation
 
@@ -3501,6 +3801,8 @@ Classes
     `team_gid: str`
     :   The type of the None singleton.
 
+<a id="TeamUsersListParams"></a>
+
 `TeamUsersListParams(*args, **kwargs)`
 :   Parameters for team_users.list operation
 
@@ -3518,6 +3820,8 @@ Classes
 
     `team_gid: str`
     :   The type of the None singleton.
+
+<a id="TeamsAndCondition"></a>
 
 `TeamsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3539,6 +3843,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TeamsAnyCondition"></a>
+
 `TeamsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3558,6 +3864,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsAnyValueFilter"></a>
 
 `TeamsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3589,6 +3897,8 @@ Classes
     `resource_type: Any`
     :   The type of the None singleton.
 
+<a id="TeamsContainsCondition"></a>
+
 `TeamsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3600,6 +3910,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.asana.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsEqCondition"></a>
 
 `TeamsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3613,6 +3925,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.asana.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsFuzzyCondition"></a>
+
 `TeamsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3624,6 +3938,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsGetParams"></a>
 
 `TeamsGetParams(*args, **kwargs)`
 :   Parameters for teams.get operation
@@ -3637,6 +3953,8 @@ Classes
     `team_gid: str`
     :   The type of the None singleton.
 
+<a id="TeamsGtCondition"></a>
+
 `TeamsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3649,6 +3967,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsGteCondition"></a>
+
 `TeamsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3660,6 +3980,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInCondition"></a>
 
 `TeamsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3680,6 +4002,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.TeamsInFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInFilter"></a>
 
 `TeamsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3711,6 +4035,8 @@ Classes
     `resource_type: list[str]`
     :   The type of the None singleton.
 
+<a id="TeamsKeywordCondition"></a>
+
 `TeamsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3722,6 +4048,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.asana.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsLikeCondition"></a>
 
 `TeamsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3735,6 +4063,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.asana.types.TeamsStringFilter`
     :   The type of the None singleton.
 
+<a id="TeamsLtCondition"></a>
+
 `TeamsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3746,6 +4076,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsLteCondition"></a>
 
 `TeamsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3759,6 +4091,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsNeqCondition"></a>
+
 `TeamsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3770,6 +4104,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsNotCondition"></a>
 
 `TeamsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3791,6 +4127,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TeamsOrCondition"></a>
+
 `TeamsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3810,6 +4148,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.TeamsEqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsGteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLtCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLteCondition | airbyte_agent_sdk.connectors.asana.types.TeamsInCondition | airbyte_agent_sdk.connectors.asana.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.asana.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.asana.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.asana.types.TeamsNotCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAndCondition | airbyte_agent_sdk.connectors.asana.types.TeamsOrCondition | airbyte_agent_sdk.connectors.asana.types.TeamsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TeamsSearchFilter"></a>
 
 `TeamsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering teams search queries.
@@ -3841,6 +4181,8 @@ Classes
     `resource_type: str | None`
     :   The type of the None singleton.
 
+<a id="TeamsSearchQuery"></a>
+
 `TeamsSearchQuery(*args, **kwargs)`
 :   Search query for teams entity.
 
@@ -3855,6 +4197,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.TeamsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TeamsSortFilter"></a>
 
 `TeamsSortFilter(*args, **kwargs)`
 :   Available fields for sorting teams search results.
@@ -3886,6 +4230,8 @@ Classes
     `resource_type: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="TeamsStringFilter"></a>
+
 `TeamsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3916,6 +4262,8 @@ Classes
     `resource_type: str`
     :   The type of the None singleton.
 
+<a id="UserTeamsListParams"></a>
+
 `UserTeamsListParams(*args, **kwargs)`
 :   Parameters for user_teams.list operation
 
@@ -3937,6 +4285,8 @@ Classes
     `user_gid: str`
     :   The type of the None singleton.
 
+<a id="UsersAndCondition"></a>
+
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3957,6 +4307,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersLikeCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3976,6 +4328,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4004,6 +4358,8 @@ Classes
     `workspaces: Any`
     :   The type of the None singleton.
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4015,6 +4371,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.asana.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4028,6 +4386,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.asana.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4039,6 +4399,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -4052,6 +4414,8 @@ Classes
     `user_gid: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4064,6 +4428,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4075,6 +4441,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4095,6 +4463,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4123,6 +4493,8 @@ Classes
     `workspaces: list[list[typing.Any]]`
     :   The type of the None singleton.
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4135,6 +4507,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.asana.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersLikeCondition"></a>
+
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4146,6 +4520,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.asana.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
@@ -4168,6 +4544,8 @@ Classes
     `workspace: str`
     :   The type of the None singleton.
 
+<a id="UsersLtCondition"></a>
+
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4179,6 +4557,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
 
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4192,6 +4572,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4203,6 +4585,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4224,6 +4608,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersLikeCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4243,6 +4629,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.UsersEqCondition | airbyte_agent_sdk.connectors.asana.types.UsersNeqCondition | airbyte_agent_sdk.connectors.asana.types.UsersGtCondition | airbyte_agent_sdk.connectors.asana.types.UsersGteCondition | airbyte_agent_sdk.connectors.asana.types.UsersLtCondition | airbyte_agent_sdk.connectors.asana.types.UsersLteCondition | airbyte_agent_sdk.connectors.asana.types.UsersInCondition | airbyte_agent_sdk.connectors.asana.types.UsersLikeCondition | airbyte_agent_sdk.connectors.asana.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.asana.types.UsersContainsCondition | airbyte_agent_sdk.connectors.asana.types.UsersNotCondition | airbyte_agent_sdk.connectors.asana.types.UsersAndCondition | airbyte_agent_sdk.connectors.asana.types.UsersOrCondition | airbyte_agent_sdk.connectors.asana.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -4271,6 +4659,8 @@ Classes
     `workspaces: list[typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -4285,6 +4675,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -4313,6 +4705,8 @@ Classes
     `workspaces: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="UsersStringFilter"></a>
+
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4340,6 +4734,8 @@ Classes
     `workspaces: str`
     :   The type of the None singleton.
 
+<a id="WorkspaceMembershipsCreateParams"></a>
+
 `WorkspaceMembershipsCreateParams(*args, **kwargs)`
 :   Parameters for workspace_memberships.create operation
 
@@ -4355,6 +4751,8 @@ Classes
     `workspace_gid: str`
     :   The type of the None singleton.
 
+<a id="WorkspaceMembershipsCreateParamsData"></a>
+
 `WorkspaceMembershipsCreateParamsData(*args, **kwargs)`
 :   Nested schema for WorkspaceMembershipsCreateParams.data
 
@@ -4366,6 +4764,8 @@ Classes
 
     `user: str`
     :   The type of the None singleton.
+
+<a id="WorkspaceProjectsListParams"></a>
 
 `WorkspaceProjectsListParams(*args, **kwargs)`
 :   Parameters for workspace_projects.list operation
@@ -4388,6 +4788,8 @@ Classes
     `workspace_gid: str`
     :   The type of the None singleton.
 
+<a id="WorkspaceTagsCreateParams"></a>
+
 `WorkspaceTagsCreateParams(*args, **kwargs)`
 :   Parameters for workspace_tags.create operation
 
@@ -4402,6 +4804,8 @@ Classes
 
     `workspace_gid: str`
     :   The type of the None singleton.
+
+<a id="WorkspaceTagsCreateParamsData"></a>
 
 `WorkspaceTagsCreateParamsData(*args, **kwargs)`
 :   Nested schema for WorkspaceTagsCreateParams.data
@@ -4421,6 +4825,8 @@ Classes
     `notes: str`
     :   The type of the None singleton.
 
+<a id="WorkspaceTagsListParams"></a>
+
 `WorkspaceTagsListParams(*args, **kwargs)`
 :   Parameters for workspace_tags.list operation
 
@@ -4438,6 +4844,8 @@ Classes
 
     `workspace_gid: str`
     :   The type of the None singleton.
+
+<a id="WorkspaceTaskSearchListParams"></a>
 
 `WorkspaceTaskSearchListParams(*args, **kwargs)`
 :   Parameters for workspace_task_search.list operation
@@ -4505,6 +4913,8 @@ Classes
     `workspace_gid: str`
     :   The type of the None singleton.
 
+<a id="WorkspaceTeamsListParams"></a>
+
 `WorkspaceTeamsListParams(*args, **kwargs)`
 :   Parameters for workspace_teams.list operation
 
@@ -4523,6 +4933,8 @@ Classes
     `workspace_gid: str`
     :   The type of the None singleton.
 
+<a id="WorkspaceUsersListParams"></a>
+
 `WorkspaceUsersListParams(*args, **kwargs)`
 :   Parameters for workspace_users.list operation
 
@@ -4540,6 +4952,8 @@ Classes
 
     `workspace_gid: str`
     :   The type of the None singleton.
+
+<a id="WorkspacesAndCondition"></a>
 
 `WorkspacesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4561,6 +4975,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="WorkspacesAnyCondition"></a>
+
 `WorkspacesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4580,6 +4996,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesAnyValueFilter"></a>
 
 `WorkspacesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4605,6 +5023,8 @@ Classes
     `resource_type: Any`
     :   The type of the None singleton.
 
+<a id="WorkspacesContainsCondition"></a>
+
 `WorkspacesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4616,6 +5036,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesEqCondition"></a>
 
 `WorkspacesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4629,6 +5051,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.asana.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesFuzzyCondition"></a>
+
 `WorkspacesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4640,6 +5064,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.asana.types.WorkspacesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesGetParams"></a>
 
 `WorkspacesGetParams(*args, **kwargs)`
 :   Parameters for workspaces.get operation
@@ -4653,6 +5079,8 @@ Classes
     `workspace_gid: str`
     :   The type of the None singleton.
 
+<a id="WorkspacesGtCondition"></a>
+
 `WorkspacesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4665,6 +5093,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.asana.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesGteCondition"></a>
+
 `WorkspacesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4676,6 +5106,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.asana.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesInCondition"></a>
 
 `WorkspacesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4696,6 +5128,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.asana.types.WorkspacesInFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesInFilter"></a>
 
 `WorkspacesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4721,6 +5155,8 @@ Classes
     `resource_type: list[str]`
     :   The type of the None singleton.
 
+<a id="WorkspacesKeywordCondition"></a>
+
 `WorkspacesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4733,6 +5169,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.asana.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesLikeCondition"></a>
+
 `WorkspacesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4744,6 +5182,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.asana.types.WorkspacesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesListParams"></a>
 
 `WorkspacesListParams(*args, **kwargs)`
 :   Parameters for workspaces.list operation
@@ -4760,6 +5200,8 @@ Classes
     `offset: str`
     :   The type of the None singleton.
 
+<a id="WorkspacesLtCondition"></a>
+
 `WorkspacesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4771,6 +5213,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.asana.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesLteCondition"></a>
 
 `WorkspacesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4784,6 +5228,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.asana.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkspacesNeqCondition"></a>
+
 `WorkspacesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4795,6 +5241,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.asana.types.WorkspacesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkspacesNotCondition"></a>
 
 `WorkspacesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4816,6 +5264,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
+<a id="WorkspacesOrCondition"></a>
+
 `WorkspacesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4835,6 +5285,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.asana.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="WorkspacesSearchFilter"></a>
 
 `WorkspacesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering workspaces search queries.
@@ -4860,6 +5312,8 @@ Classes
     `resource_type: str | None`
     :   The type of the None singleton.
 
+<a id="WorkspacesSearchQuery"></a>
+
 `WorkspacesSearchQuery(*args, **kwargs)`
 :   Search query for workspaces entity.
 
@@ -4874,6 +5328,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.asana.types.WorkspacesSortFilter]`
     :   The type of the None singleton.
+
+<a id="WorkspacesSortFilter"></a>
 
 `WorkspacesSortFilter(*args, **kwargs)`
 :   Available fields for sorting workspaces search results.
@@ -4898,6 +5354,8 @@ Classes
 
     `resource_type: Literal['asc', 'desc']`
     :   The type of the None singleton.
+
+<a id="WorkspacesStringFilter"></a>
 
 `WorkspacesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

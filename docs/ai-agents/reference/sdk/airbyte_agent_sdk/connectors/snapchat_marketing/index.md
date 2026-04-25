@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AdaccountsSearchData"></a>
+
 `AdaccountsSearchData(**data: Any)`
 :   Search result data for adaccounts entity.
     
@@ -86,6 +88,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AdsSearchData"></a>
+
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
     
@@ -140,6 +144,8 @@ Classes
 
     `updated_at: str | None`
     :   Last update timestamp
+
+<a id="AdsquadsSearchData"></a>
 
 `AdsquadsSearchData(**data: Any)`
 :   Search result data for adsquads entity.
@@ -244,6 +250,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -312,6 +320,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -339,6 +349,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -377,6 +389,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdaccountsSearchResult"></a>
+
 `AdaccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -392,6 +406,8 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdsSearchResult"></a>
 
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -409,6 +425,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdsquadsSearchResult"></a>
+
 `AdsquadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -424,6 +442,8 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchResult"></a>
 
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -441,6 +461,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CreativesSearchResult"></a>
+
 `CreativesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -456,6 +478,8 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MediaSearchResult"></a>
 
 `MediaSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -473,6 +497,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OrganizationsSearchResult"></a>
+
 `OrganizationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -489,6 +515,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SegmentsSearchResult"></a>
+
 `SegmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -504,6 +532,8 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -556,6 +586,8 @@ Classes
 
     `updated_at: str | None`
     :   Last update timestamp
+
+<a id="CreativesSearchData"></a>
 
 `CreativesSearchData(**data: Any)`
 :   Search result data for creatives entity.
@@ -636,6 +668,8 @@ Classes
     `web_view_properties: dict[str, typing.Any] | None`
     :   Web view properties
 
+<a id="MediaSearchData"></a>
+
 `MediaSearchData(**data: Any)`
 :   Search result data for media entity.
     
@@ -705,6 +739,8 @@ Classes
 
     `visibility: str | None`
     :   Media visibility setting
+
+<a id="OrganizationsSearchData"></a>
 
 `OrganizationsSearchData(**data: Any)`
 :   Search result data for organizations entity.
@@ -791,6 +827,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="SegmentsSearchData"></a>
+
 `SegmentsSearchData(**data: Any)`
 :   Search result data for segments entity.
     
@@ -852,6 +890,8 @@ Classes
     `visible_to: list[typing.Any] | None`
     :   Visibility settings
 
+<a id="SnapchatMarketingAuthConfig"></a>
+
 `SnapchatMarketingAuthConfig(**data: Any)`
 :   Authentication
     
@@ -879,6 +919,8 @@ Classes
 
     `refresh_token: str`
     :   Refresh Token to renew the expired Access Token
+
+<a id="SnapchatMarketingConnector"></a>
 
 `SnapchatMarketingConnector(auth_config: SnapchatMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Snapchat-Marketing API connector.
@@ -1135,6 +1177,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="SnapchatMarketingReplicationConfig"></a>
 
 `SnapchatMarketingReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Snapchat Marketing.

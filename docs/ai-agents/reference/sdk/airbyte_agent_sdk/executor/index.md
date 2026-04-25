@@ -16,6 +16,8 @@ Sub-modules
 Classes
 -------
 
+<a id="ActionNotSupportedError"></a>
+
 `ActionNotSupportedError(*args, **kwargs)`
 :   Raised when an action is not supported for an entity.
 
@@ -26,6 +28,8 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="EntityNotFoundError"></a>
+
 `EntityNotFoundError(*args, **kwargs)`
 :   Raised when an entity is not found in the connector.
 
@@ -35,6 +39,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="ExecutionConfig"></a>
 
 `ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None)`
 :   Configuration for connector execution.
@@ -68,6 +74,8 @@ Classes
 
     `params: dict[str, typing.Any] | None`
     :   The type of the None singleton.
+
+<a id="ExecutionResult"></a>
 
 `ExecutionResult(success: bool, data: dict[str, Any] | AsyncIterator[bytes], error: str | None = None, meta: dict[str, Any] | None = None)`
 :   Result of a connector execution.
@@ -120,6 +128,8 @@ Classes
     `success: bool`
     :   The type of the None singleton.
 
+<a id="ExecutorError"></a>
+
 `ExecutorError(*args, **kwargs)`
 :   Base exception for executor errors.
 
@@ -135,6 +145,8 @@ Classes
     * airbyte_agent_sdk.executor.models.EntityNotFoundError
     * airbyte_agent_sdk.executor.models.InvalidParameterError
     * airbyte_agent_sdk.executor.models.MissingParameterError
+
+<a id="ExecutorProtocol"></a>
 
 `ExecutorProtocol(*args, **kwargs)`
 :   Protocol for connector execution.
@@ -196,6 +208,8 @@ Classes
         
             Execution errors (entity not found, invalid operation) are returned
             in ExecutionResult.error instead of being raised.
+
+<a id="HostedExecutor"></a>
 
 `HostedExecutor(airbyte_client_id: str, airbyte_client_secret: str, connector_id: str | None = None, workspace_name: str | None = None, connector_definition_id: str | None = None, organization_id: str | None = None, model: Any | None = None)`
 :   Executor that proxies execution through the Airbyte Cloud API.
@@ -338,6 +352,8 @@ Classes
             # Shorthand form:
             result = await executor.execute("customers", "list", params=\{"limit": 10\})
 
+<a id="InvalidParameterError"></a>
+
 `InvalidParameterError(*args, **kwargs)`
 :   Raised when a parameter has an invalid type or value.
 
@@ -347,6 +363,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="LocalExecutor"></a>
 
 `LocalExecutor(config_path: str | None = None, model: ConnectorModel | None = None, secrets: dict[str, SecretStr] | None = None, auth_config: dict[str, SecretStr] | None = None, auth_scheme: str | None = None, enable_logging: bool = False, log_file: str | None = None, execution_context: str | None = None, max_connections: int = 100, max_keepalive_connections: int = 20, max_logs: int | None = 10000, config_values: dict[str, str] | None = None, on_token_refresh: TokenRefreshCallback = None, retry_config: RetryConfig | None = None)`
 :   Async executor for Entity×Action operations with direct HTTP execution.
@@ -463,6 +481,8 @@ Classes
                 ("Customer", "get", \{"id": "cus_123"\}),
                 ("attachments", "download", \{"id": "att_456"\}),
             ])
+
+<a id="MissingParameterError"></a>
 
 `MissingParameterError(*args, **kwargs)`
 :   Raised when a required parameter is missing.

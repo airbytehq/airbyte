@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -105,6 +109,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesSearchResult"></a>
+
 `BranchesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -141,6 +147,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommitsSearchResult"></a>
 
 `CommitsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -179,6 +187,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupMembersSearchResult"></a>
+
 `GroupMembersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -215,6 +225,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesSearchResult"></a>
 
 `GroupMilestonesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -253,6 +265,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupsSearchResult"></a>
+
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -289,6 +303,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -327,6 +343,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MergeRequestsSearchResult"></a>
+
 `MergeRequestsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -363,6 +381,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PipelinesSearchResult"></a>
 
 `PipelinesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -401,6 +421,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectMembersSearchResult"></a>
+
 `ProjectMembersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -437,6 +459,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesSearchResult"></a>
 
 `ProjectMilestonesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -475,6 +499,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -511,6 +537,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReleasesSearchResult"></a>
 
 `ReleasesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -549,6 +577,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TagsSearchResult"></a>
+
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -586,6 +616,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -601,6 +633,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Branch"></a>
 
 `Branch(**data: Any)`
 :   GitLab branch
@@ -648,6 +682,8 @@ Classes
     `web_url: str | Any`
     :   The type of the None singleton.
 
+<a id="BranchesListResultMeta"></a>
+
 `BranchesListResultMeta(**data: Any)`
 :   Metadata for branches.Action.LIST operation
     
@@ -669,6 +705,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BranchesSearchData"></a>
 
 `BranchesSearchData(**data: Any)`
 :   Search result data for branches entity.
@@ -721,6 +759,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the branch
+
+<a id="Commit"></a>
 
 `Commit(**data: Any)`
 :   GitLab commit
@@ -789,6 +829,8 @@ Classes
     `web_url: str | Any`
     :   The type of the None singleton.
 
+<a id="CommitStats"></a>
+
 `CommitStats(**data: Any)`
 :   Commit stats
     
@@ -817,6 +859,8 @@ Classes
     `total: int | Any`
     :   Total changes
 
+<a id="CommitsListResultMeta"></a>
+
 `CommitsListResultMeta(**data: Any)`
 :   Metadata for commits.Action.LIST operation
     
@@ -838,6 +882,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CommitsSearchData"></a>
 
 `CommitsSearchData(**data: Any)`
 :   Search result data for commits entity.
@@ -906,6 +952,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the commit
 
+<a id="GitlabCheckResult"></a>
+
 `GitlabCheckResult(**data: Any)`
 :   Result of a health check operation.
     
@@ -939,6 +987,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GitlabExecuteResult"></a>
+
 `GitlabExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -967,6 +1017,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GitlabExecuteResultWithMeta"></a>
 
 `GitlabExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1032,6 +1084,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesListResult"></a>
+
 `BranchesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1074,6 +1128,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommitsListResult"></a>
 
 `CommitsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1118,6 +1174,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupsListResult"></a>
+
 `GroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1160,6 +1218,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesListResult"></a>
 
 `IssuesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1204,6 +1264,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupMembersListResult"></a>
+
 `GroupMembersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1246,6 +1308,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectMembersListResult"></a>
 
 `ProjectMembersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1290,6 +1354,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MergeRequestsListResult"></a>
+
 `MergeRequestsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1332,6 +1398,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesListResult"></a>
 
 `GroupMilestonesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1376,6 +1444,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesListResult"></a>
+
 `ProjectMilestonesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1418,6 +1488,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PipelinesListResult"></a>
 
 `PipelinesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1462,6 +1534,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResult"></a>
+
 `ProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1504,6 +1578,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReleasesListResult"></a>
 
 `ReleasesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1548,6 +1624,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TagsListResult"></a>
+
 `TagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1591,6 +1669,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1609,6 +1689,8 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.GitlabExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GitlabOauth20AuthConfig"></a>
 
 `GitlabOauth20AuthConfig(**data: Any)`
 :   OAuth2.0
@@ -1641,6 +1723,8 @@ Classes
     `refresh_token: str`
     :   The key to refresh the expired access token.
 
+<a id="GitlabPersonalAccessTokenAuthConfig"></a>
+
 `GitlabPersonalAccessTokenAuthConfig(**data: Any)`
 :   Personal Access Token
     
@@ -1663,6 +1747,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GitlabReplicationConfig"></a>
+
 `GitlabReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from GitLab.
     
@@ -1684,6 +1770,8 @@ Classes
 
     `start_date: str | None`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. If not set, all data will be replicated.
+
+<a id="Group"></a>
 
 `Group(**data: Any)`
 :   GitLab group
@@ -1854,6 +1942,8 @@ Classes
     `wiki_access_level: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GroupMembersListResultMeta"></a>
+
 `GroupMembersListResultMeta(**data: Any)`
 :   Metadata for group_members.Action.LIST operation
     
@@ -1875,6 +1965,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GroupMembersSearchData"></a>
 
 `GroupMembersSearchData(**data: Any)`
 :   Search result data for group_members entity.
@@ -1934,6 +2026,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the member profile
 
+<a id="GroupMilestonesListResultMeta"></a>
+
 `GroupMilestonesListResultMeta(**data: Any)`
 :   Metadata for group_milestones.Action.LIST operation
     
@@ -1955,6 +2049,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesSearchData"></a>
 
 `GroupMilestonesSearchData(**data: Any)`
 :   Search result data for group_milestones entity.
@@ -2011,6 +2107,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the milestone
 
+<a id="GroupsListResultMeta"></a>
+
 `GroupsListResultMeta(**data: Any)`
 :   Metadata for groups.Action.LIST operation
     
@@ -2032,6 +2130,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GroupsSearchData"></a>
 
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
@@ -2126,6 +2226,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the group
+
+<a id="Issue"></a>
 
 `Issue(**data: Any)`
 :   GitLab issue
@@ -2278,6 +2380,8 @@ Classes
     `weight: int | Any | None`
     :   The type of the None singleton.
 
+<a id="IssuesListResultMeta"></a>
+
 `IssuesListResultMeta(**data: Any)`
 :   Metadata for issues.Action.LIST operation
     
@@ -2299,6 +2403,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -2430,6 +2536,8 @@ Classes
     `weight: int | None`
     :   Weight of the issue
 
+<a id="Member"></a>
+
 `Member(**data: Any)`
 :   GitLab group or project member
     
@@ -2487,6 +2595,8 @@ Classes
 
     `web_url: str | Any`
     :   The type of the None singleton.
+
+<a id="MergeRequest"></a>
 
 `MergeRequest(**data: Any)`
 :   GitLab merge request
@@ -2693,6 +2803,8 @@ Classes
     `work_in_progress: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="MergeRequestsListResultMeta"></a>
+
 `MergeRequestsListResultMeta(**data: Any)`
 :   Metadata for merge_requests.Action.LIST operation
     
@@ -2714,6 +2826,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="MergeRequestsSearchData"></a>
 
 `MergeRequestsSearchData(**data: Any)`
 :   Search result data for merge_requests entity.
@@ -2884,6 +2998,8 @@ Classes
     `work_in_progress: bool | None`
     :   Whether the merge request is a work in progress
 
+<a id="Milestone"></a>
+
 `Milestone(**data: Any)`
 :   GitLab milestone
     
@@ -2942,6 +3058,8 @@ Classes
     `web_url: str | Any`
     :   The type of the None singleton.
 
+<a id="Pipeline"></a>
+
 `Pipeline(**data: Any)`
 :   GitLab CI/CD pipeline
     
@@ -2994,6 +3112,8 @@ Classes
     `web_url: str | Any`
     :   The type of the None singleton.
 
+<a id="PipelinesListResultMeta"></a>
+
 `PipelinesListResultMeta(**data: Any)`
 :   Metadata for pipelines.Action.LIST operation
     
@@ -3015,6 +3135,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PipelinesSearchData"></a>
 
 `PipelinesSearchData(**data: Any)`
 :   Search result data for pipelines entity.
@@ -3067,6 +3189,8 @@ Classes
 
     `web_url: str | None`
     :   Web URL of the pipeline
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   GitLab project
@@ -3450,6 +3574,8 @@ Classes
     `wiki_enabled: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectMembersListResultMeta"></a>
+
 `ProjectMembersListResultMeta(**data: Any)`
 :   Metadata for project_members.Action.LIST operation
     
@@ -3471,6 +3597,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectMembersSearchData"></a>
 
 `ProjectMembersSearchData(**data: Any)`
 :   Search result data for project_members entity.
@@ -3530,6 +3658,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the member profile
 
+<a id="ProjectMilestonesListResultMeta"></a>
+
 `ProjectMilestonesListResultMeta(**data: Any)`
 :   Metadata for project_milestones.Action.LIST operation
     
@@ -3551,6 +3681,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesSearchData"></a>
 
 `ProjectMilestonesSearchData(**data: Any)`
 :   Search result data for project_milestones entity.
@@ -3607,6 +3739,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the milestone
 
+<a id="ProjectsListResultMeta"></a>
+
 `ProjectsListResultMeta(**data: Any)`
 :   Metadata for projects.Action.LIST operation
     
@@ -3628,6 +3762,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -3885,6 +4021,8 @@ Classes
     `wiki_enabled: bool | None`
     :   Whether wiki is enabled
 
+<a id="Release"></a>
+
 `Release(**data: Any)`
 :   GitLab release
     
@@ -3946,6 +4084,8 @@ Classes
     `upcoming_release: bool | Any`
     :   The type of the None singleton.
 
+<a id="ReleasesListResultMeta"></a>
+
 `ReleasesListResultMeta(**data: Any)`
 :   Metadata for releases.Action.LIST operation
     
@@ -3967,6 +4107,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ReleasesSearchData"></a>
 
 `ReleasesSearchData(**data: Any)`
 :   Search result data for releases entity.
@@ -4038,6 +4180,8 @@ Classes
     `upcoming_release: bool | None`
     :   Whether this is an upcoming release
 
+<a id="Tag"></a>
+
 `Tag(**data: Any)`
 :   GitLab repository tag
     
@@ -4078,6 +4222,8 @@ Classes
     `target: str | Any`
     :   The type of the None singleton.
 
+<a id="TagsListResultMeta"></a>
+
 `TagsListResultMeta(**data: Any)`
 :   Metadata for tags.Action.LIST operation
     
@@ -4099,6 +4245,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TagsSearchData"></a>
 
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
@@ -4143,6 +4291,8 @@ Classes
     `target: str | None`
     :   SHA the tag points to
 
+<a id="User"></a>
+
 `User(**data: Any)`
 :   GitLab user
     
@@ -4186,6 +4336,8 @@ Classes
     `web_url: str | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -4207,6 +4359,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

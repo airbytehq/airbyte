@@ -10,6 +10,8 @@ Type definitions for salesforce connector.
 Classes
 -------
 
+<a id="AccountsAndCondition"></a>
+
 `AccountsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -30,6 +32,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AccountsAnyCondition"></a>
+
 `AccountsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -49,6 +53,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountsAnyValueFilter"></a>
 
 `AccountsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -149,6 +155,8 @@ Classes
     `website: Any`
     :   Website URL for the account
 
+<a id="AccountsApiSearchParams"></a>
+
 `AccountsApiSearchParams(*args, **kwargs)`
 :   Parameters for accounts.api_search operation
 
@@ -160,6 +168,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="AccountsContainsCondition"></a>
 
 `AccountsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
@@ -173,6 +183,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="AccountsEqCondition"></a>
+
 `AccountsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -185,6 +197,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.salesforce.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsFuzzyCondition"></a>
+
 `AccountsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -196,6 +210,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.AccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountsGetParams"></a>
 
 `AccountsGetParams(*args, **kwargs)`
 :   Parameters for accounts.get operation
@@ -212,6 +228,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AccountsGtCondition"></a>
+
 `AccountsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -224,6 +242,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.salesforce.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsGteCondition"></a>
+
 `AccountsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -235,6 +255,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.salesforce.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsInCondition"></a>
 
 `AccountsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -255,6 +277,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.salesforce.types.AccountsInFilter`
     :   The type of the None singleton.
+
+<a id="AccountsInFilter"></a>
 
 `AccountsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -355,6 +379,8 @@ Classes
     `website: list[str]`
     :   Website URL for the account
 
+<a id="AccountsKeywordCondition"></a>
+
 `AccountsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -366,6 +392,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.salesforce.types.AccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountsLikeCondition"></a>
 
 `AccountsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -379,6 +407,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.salesforce.types.AccountsStringFilter`
     :   The type of the None singleton.
 
+<a id="AccountsListParams"></a>
+
 `AccountsListParams(*args, **kwargs)`
 :   Parameters for accounts.list operation
 
@@ -390,6 +420,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="AccountsLtCondition"></a>
 
 `AccountsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -403,6 +435,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.salesforce.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsLteCondition"></a>
+
 `AccountsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -415,6 +449,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.salesforce.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsNeqCondition"></a>
+
 `AccountsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -426,6 +462,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.salesforce.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsNotCondition"></a>
 
 `AccountsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -447,6 +485,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AccountsOrCondition"></a>
+
 `AccountsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -466,6 +506,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AccountsSearchFilter"></a>
 
 `AccountsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering accounts search queries.
@@ -566,6 +608,8 @@ Classes
     `website: str | None`
     :   Website URL for the account
 
+<a id="AccountsSearchQuery"></a>
+
 `AccountsSearchQuery(*args, **kwargs)`
 :   Search query for accounts entity.
 
@@ -580,6 +624,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AccountsSortFilter"></a>
 
 `AccountsSortFilter(*args, **kwargs)`
 :   Available fields for sorting accounts search results.
@@ -680,6 +726,8 @@ Classes
     `website: Literal['asc', 'desc']`
     :   Website URL for the account
 
+<a id="AccountsStringFilter"></a>
+
 `AccountsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -779,6 +827,8 @@ Classes
     `website: str`
     :   Website URL for the account
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -800,6 +850,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="AttachmentsDownloadParams"></a>
+
 `AttachmentsDownloadParams(*args, **kwargs)`
 :   Parameters for attachments.download operation
 
@@ -814,6 +866,8 @@ Classes
 
     `range_header: str`
     :   The type of the None singleton.
+
+<a id="AttachmentsGetParams"></a>
 
 `AttachmentsGetParams(*args, **kwargs)`
 :   Parameters for attachments.get operation
@@ -830,6 +884,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AttachmentsListParams"></a>
+
 `AttachmentsListParams(*args, **kwargs)`
 :   Parameters for attachments.list operation
 
@@ -842,6 +898,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CampaignsApiSearchParams"></a>
+
 `CampaignsApiSearchParams(*args, **kwargs)`
 :   Parameters for campaigns.api_search operation
 
@@ -853,6 +911,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="CampaignsGetParams"></a>
 
 `CampaignsGetParams(*args, **kwargs)`
 :   Parameters for campaigns.get operation
@@ -869,6 +929,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CampaignsListParams"></a>
+
 `CampaignsListParams(*args, **kwargs)`
 :   Parameters for campaigns.list operation
 
@@ -881,6 +943,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CasesApiSearchParams"></a>
+
 `CasesApiSearchParams(*args, **kwargs)`
 :   Parameters for cases.api_search operation
 
@@ -892,6 +956,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="CasesGetParams"></a>
 
 `CasesGetParams(*args, **kwargs)`
 :   Parameters for cases.get operation
@@ -908,6 +974,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CasesListParams"></a>
+
 `CasesListParams(*args, **kwargs)`
 :   Parameters for cases.list operation
 
@@ -919,6 +987,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="ContactsAndCondition"></a>
 
 `ContactsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -940,6 +1010,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ContactsAnyCondition"></a>
+
 `ContactsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -959,6 +1031,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ContactsAnyValueFilter"></a>
 
 `ContactsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1047,6 +1121,8 @@ Classes
     `title: Any`
     :   Job title of the contact
 
+<a id="ContactsApiSearchParams"></a>
+
 `ContactsApiSearchParams(*args, **kwargs)`
 :   Parameters for contacts.api_search operation
 
@@ -1058,6 +1134,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
@@ -1071,6 +1149,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ContactsEqCondition"></a>
+
 `ContactsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -1083,6 +1163,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.salesforce.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsFuzzyCondition"></a>
+
 `ContactsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1094,6 +1176,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.ContactsStringFilter`
     :   The type of the None singleton.
+
+<a id="ContactsGetParams"></a>
 
 `ContactsGetParams(*args, **kwargs)`
 :   Parameters for contacts.get operation
@@ -1110,6 +1194,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ContactsGtCondition"></a>
+
 `ContactsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1122,6 +1208,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.salesforce.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsGteCondition"></a>
+
 `ContactsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1133,6 +1221,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.salesforce.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsInCondition"></a>
 
 `ContactsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1153,6 +1243,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.salesforce.types.ContactsInFilter`
     :   The type of the None singleton.
+
+<a id="ContactsInFilter"></a>
 
 `ContactsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1241,6 +1333,8 @@ Classes
     `title: list[str]`
     :   Job title of the contact
 
+<a id="ContactsKeywordCondition"></a>
+
 `ContactsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1252,6 +1346,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.salesforce.types.ContactsStringFilter`
     :   The type of the None singleton.
+
+<a id="ContactsLikeCondition"></a>
 
 `ContactsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1265,6 +1361,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.salesforce.types.ContactsStringFilter`
     :   The type of the None singleton.
 
+<a id="ContactsListParams"></a>
+
 `ContactsListParams(*args, **kwargs)`
 :   Parameters for contacts.list operation
 
@@ -1276,6 +1374,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="ContactsLtCondition"></a>
 
 `ContactsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1289,6 +1389,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.salesforce.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsLteCondition"></a>
+
 `ContactsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1301,6 +1403,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.salesforce.types.ContactsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ContactsNeqCondition"></a>
+
 `ContactsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1312,6 +1416,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.salesforce.types.ContactsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ContactsNotCondition"></a>
 
 `ContactsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1333,6 +1439,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ContactsOrCondition"></a>
+
 `ContactsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1352,6 +1460,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ContactsSearchFilter"></a>
 
 `ContactsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering contacts search queries.
@@ -1440,6 +1550,8 @@ Classes
     `title: str | None`
     :   Job title of the contact
 
+<a id="ContactsSearchQuery"></a>
+
 `ContactsSearchQuery(*args, **kwargs)`
 :   Search query for contacts entity.
 
@@ -1454,6 +1566,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ContactsSortFilter"></a>
 
 `ContactsSortFilter(*args, **kwargs)`
 :   Available fields for sorting contacts search results.
@@ -1542,6 +1656,8 @@ Classes
     `title: Literal['asc', 'desc']`
     :   Job title of the contact
 
+<a id="ContactsStringFilter"></a>
+
 `ContactsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1629,6 +1745,8 @@ Classes
     `title: str`
     :   Job title of the contact
 
+<a id="ContentVersionsDownloadParams"></a>
+
 `ContentVersionsDownloadParams(*args, **kwargs)`
 :   Parameters for content_versions.download operation
 
@@ -1643,6 +1761,8 @@ Classes
 
     `range_header: str`
     :   The type of the None singleton.
+
+<a id="ContentVersionsGetParams"></a>
 
 `ContentVersionsGetParams(*args, **kwargs)`
 :   Parameters for content_versions.get operation
@@ -1659,6 +1779,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ContentVersionsListParams"></a>
+
 `ContentVersionsListParams(*args, **kwargs)`
 :   Parameters for content_versions.list operation
 
@@ -1671,6 +1793,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="EventsApiSearchParams"></a>
+
 `EventsApiSearchParams(*args, **kwargs)`
 :   Parameters for events.api_search operation
 
@@ -1682,6 +1806,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="EventsGetParams"></a>
 
 `EventsGetParams(*args, **kwargs)`
 :   Parameters for events.get operation
@@ -1698,6 +1824,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="EventsListParams"></a>
+
 `EventsListParams(*args, **kwargs)`
 :   Parameters for events.list operation
 
@@ -1709,6 +1837,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="LeadsAndCondition"></a>
 
 `LeadsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1730,6 +1860,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="LeadsAnyCondition"></a>
+
 `LeadsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1749,6 +1881,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="LeadsAnyValueFilter"></a>
 
 `LeadsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1861,6 +1995,8 @@ Classes
     `website: Any`
     :   Website URL for the lead's company
 
+<a id="LeadsApiSearchParams"></a>
+
 `LeadsApiSearchParams(*args, **kwargs)`
 :   Parameters for leads.api_search operation
 
@@ -1872,6 +2008,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="LeadsContainsCondition"></a>
 
 `LeadsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
@@ -1885,6 +2023,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="LeadsEqCondition"></a>
+
 `LeadsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -1897,6 +2037,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.salesforce.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsFuzzyCondition"></a>
+
 `LeadsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1908,6 +2050,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.LeadsStringFilter`
     :   The type of the None singleton.
+
+<a id="LeadsGetParams"></a>
 
 `LeadsGetParams(*args, **kwargs)`
 :   Parameters for leads.get operation
@@ -1924,6 +2068,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="LeadsGtCondition"></a>
+
 `LeadsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1936,6 +2082,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.salesforce.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsGteCondition"></a>
+
 `LeadsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1947,6 +2095,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.salesforce.types.LeadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="LeadsInCondition"></a>
 
 `LeadsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1967,6 +2117,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.salesforce.types.LeadsInFilter`
     :   The type of the None singleton.
+
+<a id="LeadsInFilter"></a>
 
 `LeadsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2079,6 +2231,8 @@ Classes
     `website: list[str]`
     :   Website URL for the lead's company
 
+<a id="LeadsKeywordCondition"></a>
+
 `LeadsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2090,6 +2244,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.salesforce.types.LeadsStringFilter`
     :   The type of the None singleton.
+
+<a id="LeadsLikeCondition"></a>
 
 `LeadsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2103,6 +2259,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.salesforce.types.LeadsStringFilter`
     :   The type of the None singleton.
 
+<a id="LeadsListParams"></a>
+
 `LeadsListParams(*args, **kwargs)`
 :   Parameters for leads.list operation
 
@@ -2114,6 +2272,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="LeadsLtCondition"></a>
 
 `LeadsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2127,6 +2287,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.salesforce.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsLteCondition"></a>
+
 `LeadsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2139,6 +2301,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.salesforce.types.LeadsSearchFilter`
     :   The type of the None singleton.
 
+<a id="LeadsNeqCondition"></a>
+
 `LeadsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2150,6 +2314,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.salesforce.types.LeadsSearchFilter`
     :   The type of the None singleton.
+
+<a id="LeadsNotCondition"></a>
 
 `LeadsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2171,6 +2337,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition`
     :   The type of the None singleton.
 
+<a id="LeadsOrCondition"></a>
+
 `LeadsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2190,6 +2358,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="LeadsSearchFilter"></a>
 
 `LeadsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering leads search queries.
@@ -2302,6 +2472,8 @@ Classes
     `website: str | None`
     :   Website URL for the lead's company
 
+<a id="LeadsSearchQuery"></a>
+
 `LeadsSearchQuery(*args, **kwargs)`
 :   Search query for leads entity.
 
@@ -2316,6 +2488,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsSortFilter]`
     :   The type of the None singleton.
+
+<a id="LeadsSortFilter"></a>
 
 `LeadsSortFilter(*args, **kwargs)`
 :   Available fields for sorting leads search results.
@@ -2428,6 +2602,8 @@ Classes
     `website: Literal['asc', 'desc']`
     :   Website URL for the lead's company
 
+<a id="LeadsStringFilter"></a>
+
 `LeadsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2539,6 +2715,8 @@ Classes
     `website: str`
     :   Website URL for the lead's company
 
+<a id="NotesApiSearchParams"></a>
+
 `NotesApiSearchParams(*args, **kwargs)`
 :   Parameters for notes.api_search operation
 
@@ -2550,6 +2728,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="NotesGetParams"></a>
 
 `NotesGetParams(*args, **kwargs)`
 :   Parameters for notes.get operation
@@ -2566,6 +2746,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="NotesListParams"></a>
+
 `NotesListParams(*args, **kwargs)`
 :   Parameters for notes.list operation
 
@@ -2577,6 +2759,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="OpportunitiesAndCondition"></a>
 
 `OpportunitiesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2598,6 +2782,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="OpportunitiesAnyCondition"></a>
+
 `OpportunitiesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2617,6 +2803,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OpportunitiesAnyValueFilter"></a>
 
 `OpportunitiesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2705,6 +2893,8 @@ Classes
     `type_: Any`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="OpportunitiesApiSearchParams"></a>
+
 `OpportunitiesApiSearchParams(*args, **kwargs)`
 :   Parameters for opportunities.api_search operation
 
@@ -2716,6 +2906,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="OpportunitiesContainsCondition"></a>
 
 `OpportunitiesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
@@ -2729,6 +2921,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="OpportunitiesEqCondition"></a>
+
 `OpportunitiesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -2741,6 +2935,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OpportunitiesFuzzyCondition"></a>
+
 `OpportunitiesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2752,6 +2948,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStringFilter`
     :   The type of the None singleton.
+
+<a id="OpportunitiesGetParams"></a>
 
 `OpportunitiesGetParams(*args, **kwargs)`
 :   Parameters for opportunities.get operation
@@ -2768,6 +2966,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="OpportunitiesGtCondition"></a>
+
 `OpportunitiesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2780,6 +2980,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OpportunitiesGteCondition"></a>
+
 `OpportunitiesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2791,6 +2993,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSearchFilter`
     :   The type of the None singleton.
+
+<a id="OpportunitiesInCondition"></a>
 
 `OpportunitiesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2811,6 +3015,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInFilter`
     :   The type of the None singleton.
+
+<a id="OpportunitiesInFilter"></a>
 
 `OpportunitiesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2899,6 +3105,8 @@ Classes
     `type_: list[str]`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="OpportunitiesKeywordCondition"></a>
+
 `OpportunitiesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2910,6 +3118,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStringFilter`
     :   The type of the None singleton.
+
+<a id="OpportunitiesLikeCondition"></a>
 
 `OpportunitiesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2923,6 +3133,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStringFilter`
     :   The type of the None singleton.
 
+<a id="OpportunitiesListParams"></a>
+
 `OpportunitiesListParams(*args, **kwargs)`
 :   Parameters for opportunities.list operation
 
@@ -2934,6 +3146,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="OpportunitiesLtCondition"></a>
 
 `OpportunitiesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2947,6 +3161,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OpportunitiesLteCondition"></a>
+
 `OpportunitiesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2959,6 +3175,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OpportunitiesNeqCondition"></a>
+
 `OpportunitiesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2970,6 +3188,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSearchFilter`
     :   The type of the None singleton.
+
+<a id="OpportunitiesNotCondition"></a>
 
 `OpportunitiesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2991,6 +3211,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition`
     :   The type of the None singleton.
 
+<a id="OpportunitiesOrCondition"></a>
+
 `OpportunitiesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3010,6 +3232,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="OpportunitiesSearchFilter"></a>
 
 `OpportunitiesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering opportunities search queries.
@@ -3098,6 +3322,8 @@ Classes
     `type_: str | None`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="OpportunitiesSearchQuery"></a>
+
 `OpportunitiesSearchQuery(*args, **kwargs)`
 :   Search query for opportunities entity.
 
@@ -3112,6 +3338,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSortFilter]`
     :   The type of the None singleton.
+
+<a id="OpportunitiesSortFilter"></a>
 
 `OpportunitiesSortFilter(*args, **kwargs)`
 :   Available fields for sorting opportunities search results.
@@ -3200,6 +3428,8 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="OpportunitiesStringFilter"></a>
+
 `OpportunitiesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3287,6 +3517,8 @@ Classes
     `type_: str`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="QueryListParams"></a>
+
 `QueryListParams(*args, **kwargs)`
 :   Parameters for query.list operation
 
@@ -3298,6 +3530,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="ReportsGetParams"></a>
 
 `ReportsGetParams(*args, **kwargs)`
 :   Parameters for reports.get operation
@@ -3314,6 +3548,8 @@ Classes
     `include_details: bool`
     :   The type of the None singleton.
 
+<a id="ReportsListParams"></a>
+
 `ReportsListParams(*args, **kwargs)`
 :   Parameters for reports.list operation
 
@@ -3321,12 +3557,16 @@ Classes
 
     * builtins.dict
 
+<a id="SobjectsListParams"></a>
+
 `SobjectsListParams(*args, **kwargs)`
 :   Parameters for sobjects.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="TasksAndCondition"></a>
 
 `TasksAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3348,6 +3588,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TasksAnyCondition"></a>
+
 `TasksAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3367,6 +3609,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.salesforce.types.TasksAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TasksAnyValueFilter"></a>
 
 `TasksAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3449,6 +3693,8 @@ Classes
     `who_id: Any`
     :   ID of the related person (Contact or Lead)
 
+<a id="TasksApiSearchParams"></a>
+
 `TasksApiSearchParams(*args, **kwargs)`
 :   Parameters for tasks.api_search operation
 
@@ -3460,6 +3706,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="TasksContainsCondition"></a>
 
 `TasksContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
@@ -3473,6 +3721,8 @@ Classes
     `contains: airbyte_agent_sdk.connectors.salesforce.types.TasksAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="TasksEqCondition"></a>
+
 `TasksEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -3485,6 +3735,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.salesforce.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksFuzzyCondition"></a>
+
 `TasksFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3496,6 +3748,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.salesforce.types.TasksStringFilter`
     :   The type of the None singleton.
+
+<a id="TasksGetParams"></a>
 
 `TasksGetParams(*args, **kwargs)`
 :   Parameters for tasks.get operation
@@ -3512,6 +3766,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TasksGtCondition"></a>
+
 `TasksGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3524,6 +3780,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.salesforce.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksGteCondition"></a>
+
 `TasksGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3535,6 +3793,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.salesforce.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksInCondition"></a>
 
 `TasksInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3555,6 +3815,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.salesforce.types.TasksInFilter`
     :   The type of the None singleton.
+
+<a id="TasksInFilter"></a>
 
 `TasksInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3637,6 +3899,8 @@ Classes
     `who_id: list[str]`
     :   ID of the related person (Contact or Lead)
 
+<a id="TasksKeywordCondition"></a>
+
 `TasksKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3648,6 +3912,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.salesforce.types.TasksStringFilter`
     :   The type of the None singleton.
+
+<a id="TasksLikeCondition"></a>
 
 `TasksLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3661,6 +3927,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.salesforce.types.TasksStringFilter`
     :   The type of the None singleton.
 
+<a id="TasksListParams"></a>
+
 `TasksListParams(*args, **kwargs)`
 :   Parameters for tasks.list operation
 
@@ -3672,6 +3940,8 @@ Classes
 
     `q: str`
     :   The type of the None singleton.
+
+<a id="TasksLtCondition"></a>
 
 `TasksLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3685,6 +3955,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.salesforce.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksLteCondition"></a>
+
 `TasksLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3697,6 +3969,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.salesforce.types.TasksSearchFilter`
     :   The type of the None singleton.
 
+<a id="TasksNeqCondition"></a>
+
 `TasksNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3708,6 +3982,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.salesforce.types.TasksSearchFilter`
     :   The type of the None singleton.
+
+<a id="TasksNotCondition"></a>
 
 `TasksNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3729,6 +4005,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition`
     :   The type of the None singleton.
 
+<a id="TasksOrCondition"></a>
+
 `TasksOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3748,6 +4026,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLikeCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TasksSearchFilter"></a>
 
 `TasksSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tasks search queries.
@@ -3830,6 +4110,8 @@ Classes
     `who_id: str | None`
     :   ID of the related person (Contact or Lead)
 
+<a id="TasksSearchQuery"></a>
+
 `TasksSearchQuery(*args, **kwargs)`
 :   Search query for tasks entity.
 
@@ -3844,6 +4126,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.TasksSortFilter]`
     :   The type of the None singleton.
+
+<a id="TasksSortFilter"></a>
 
 `TasksSortFilter(*args, **kwargs)`
 :   Available fields for sorting tasks search results.
@@ -3925,6 +4209,8 @@ Classes
 
     `who_id: Literal['asc', 'desc']`
     :   ID of the related person (Contact or Lead)
+
+<a id="TasksStringFilter"></a>
 
 `TasksStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

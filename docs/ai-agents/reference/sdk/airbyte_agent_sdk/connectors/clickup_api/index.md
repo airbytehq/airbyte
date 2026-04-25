@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="ClickupApiAuthConfig"></a>
+
 `ClickupApiAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -108,6 +112,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ClickupApiConnector"></a>
 
 `ClickupApiConnector(auth_config: ClickupApiAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Clickup-Api API connector.

@@ -10,6 +10,8 @@ Github connector.
 Classes
 -------
 
+<a id="BranchesQuery"></a>
+
 `BranchesQuery(connector: GithubConnector)`
 :   Query class for Branches entity operations.
     
@@ -65,6 +67,8 @@ Classes
         
         Returns:
             BranchesListResult
+
+<a id="CommentsQuery"></a>
 
 `CommentsQuery(connector: GithubConnector)`
 :   Query class for Comments entity operations.
@@ -142,6 +146,8 @@ Classes
         Returns:
             CommentsListResult
 
+<a id="CommitsQuery"></a>
+
 `CommitsQuery(connector: GithubConnector)`
 :   Query class for Commits entity operations.
     
@@ -177,6 +183,8 @@ Classes
         Returns:
             CommitsListResult
 
+<a id="DirectoryContentQuery"></a>
+
 `DirectoryContentQuery(connector: GithubConnector)`
 :   Query class for DirectoryContent entity operations.
     
@@ -200,6 +208,8 @@ Classes
         
                 Returns:
                     DirectoryContentListResult
+
+<a id="DiscussionsQuery"></a>
 
 `DiscussionsQuery(connector: GithubConnector)`
 :   Query class for Discussions entity operations.
@@ -250,6 +260,8 @@ Classes
         Returns:
             DiscussionsListResult
 
+<a id="FileContentQuery"></a>
+
 `FileContentQuery(connector: GithubConnector)`
 :   Query class for FileContent entity operations.
     
@@ -272,6 +284,8 @@ Classes
         
                 Returns:
                     dict[str, Any]
+
+<a id="GithubConnector"></a>
 
 `GithubConnector(auth_config: GithubAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Github API connector.
@@ -529,6 +543,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="IssuesQuery"></a>
+
 `IssuesQuery(connector: GithubConnector)`
 :   Query class for Issues entity operations.
     
@@ -640,6 +656,8 @@ Classes
                 Returns:
                     IssueResponse
 
+<a id="LabelsQuery"></a>
+
 `LabelsQuery(connector: GithubConnector)`
 :   Query class for Labels entity operations.
     
@@ -673,6 +691,8 @@ Classes
         
         Returns:
             LabelsListResult
+
+<a id="MilestonesQuery"></a>
 
 `MilestonesQuery(connector: GithubConnector)`
 :   Query class for Milestones entity operations.
@@ -709,6 +729,8 @@ Classes
         Returns:
             MilestonesListResult
 
+<a id="OrgRepositoriesQuery"></a>
+
 `OrgRepositoriesQuery(connector: GithubConnector)`
 :   Query class for OrgRepositories entity operations.
     
@@ -728,6 +750,8 @@ Classes
         
         Returns:
             OrgRepositoriesListResult
+
+<a id="OrganizationsQuery"></a>
 
 `OrganizationsQuery(connector: GithubConnector)`
 :   Query class for Organizations entity operations.
@@ -782,6 +806,8 @@ Classes
         Returns:
             OrganizationsListResult
 
+<a id="PrCommentsQuery"></a>
+
 `PrCommentsQuery(connector: GithubConnector)`
 :   Query class for PrComments entity operations.
     
@@ -820,6 +846,8 @@ Classes
         Returns:
             PrCommentsListResult
 
+<a id="ProjectItemsQuery"></a>
+
 `ProjectItemsQuery(connector: GithubConnector)`
 :   Query class for ProjectItems entity operations.
     
@@ -842,6 +870,8 @@ Classes
         
                 Returns:
                     ProjectItemsListResult
+
+<a id="ProjectsQuery"></a>
 
 `ProjectsQuery(connector: GithubConnector)`
 :   Query class for Projects entity operations.
@@ -876,6 +906,8 @@ Classes
         
                 Returns:
                     ProjectsListResult
+
+<a id="PullRequestsQuery"></a>
 
 `PullRequestsQuery(connector: GithubConnector)`
 :   Query class for PullRequests entity operations.
@@ -966,6 +998,8 @@ Classes
         Returns:
             PullRequestsListResult
 
+<a id="ReleasesQuery"></a>
+
 `ReleasesQuery(connector: GithubConnector)`
 :   Query class for Releases entity operations.
     
@@ -999,6 +1033,8 @@ Classes
         
         Returns:
             ReleasesListResult
+
+<a id="RepositoriesQuery"></a>
 
 `RepositoriesQuery(connector: GithubConnector)`
 :   Query class for Repositories entity operations.
@@ -1075,6 +1111,8 @@ Classes
                 Returns:
                     RepositoriesListResult
 
+<a id="ReviewsQuery"></a>
+
 `ReviewsQuery(connector: GithubConnector)`
 :   Query class for Reviews entity operations.
     
@@ -1096,6 +1134,8 @@ Classes
         
         Returns:
             ReviewsListResult
+
+<a id="StargazersQuery"></a>
 
 `StargazersQuery(connector: GithubConnector)`
 :   Query class for Stargazers entity operations.
@@ -1139,6 +1179,8 @@ Classes
         
         Returns:
             StargazersListResult
+
+<a id="TagsQuery"></a>
 
 `TagsQuery(connector: GithubConnector)`
 :   Query class for Tags entity operations.
@@ -1196,6 +1238,8 @@ Classes
         Returns:
             TagsListResult
 
+<a id="TeamsQuery"></a>
+
 `TeamsQuery(connector: GithubConnector)`
 :   Query class for Teams entity operations.
     
@@ -1249,6 +1293,8 @@ Classes
         
         Returns:
             TeamsListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: GithubConnector)`
 :   Query class for Users entity operations.
@@ -1316,6 +1362,8 @@ Classes
         Returns:
             UsersListResult
 
+<a id="ViewerQuery"></a>
+
 `ViewerQuery(connector: GithubConnector)`
 :   Query class for Viewer entity operations.
     
@@ -1335,6 +1383,8 @@ Classes
         
                 Returns:
                     dict[str, Any]
+
+<a id="ViewerRepositoriesQuery"></a>
 
 `ViewerRepositoriesQuery(connector: GithubConnector)`
 :   Query class for ViewerRepositories entity operations.

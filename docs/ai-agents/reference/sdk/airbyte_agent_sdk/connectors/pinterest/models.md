@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Ad"></a>
+
 `Ad(**data: Any)`
 :   Pinterest ad object
     
@@ -131,6 +133,8 @@ Classes
     `view_tracking_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdAccount"></a>
+
 `AdAccount(**data: Any)`
 :   Pinterest ad account object
     
@@ -174,6 +178,8 @@ Classes
     `updated_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AdAccountOwner"></a>
+
 `AdAccountOwner(**data: Any)`
 :   Owner details of the ad account
     
@@ -198,6 +204,8 @@ Classes
 
     `username: str | Any | None`
     :   Username of the owner
+
+<a id="AdAccountsList"></a>
 
 `AdAccountsList(**data: Any)`
 :   Paginated list of ad accounts
@@ -224,6 +232,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountsListResultMeta"></a>
+
 `AdAccountsListResultMeta(**data: Any)`
 :   Metadata for ad_accounts.Action.LIST operation
     
@@ -245,6 +255,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdAccountsSearchData"></a>
 
 `AdAccountsSearchData(**data: Any)`
 :   Search result data for ad_accounts entity.
@@ -288,6 +300,8 @@ Classes
 
     `updated_time: int | None`
     :   Timestamp when the ad account was last updated (Unix seconds)
+
+<a id="AdGroup"></a>
 
 `AdGroup(**data: Any)`
 :   Pinterest ad group object
@@ -404,6 +418,8 @@ Classes
     `updated_time: float | Any | None`
     :   The type of the None singleton.
 
+<a id="AdGroupTrackingUrls"></a>
+
 `AdGroupTrackingUrls(**data: Any)`
 :   Third-party tracking URLs
     
@@ -438,6 +454,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsList"></a>
+
 `AdGroupsList(**data: Any)`
 :   Paginated list of ad groups
     
@@ -463,6 +481,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdGroupsListResultMeta"></a>
+
 `AdGroupsListResultMeta(**data: Any)`
 :   Metadata for ad_groups.Action.LIST operation
     
@@ -484,6 +504,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupsSearchData"></a>
 
 `AdGroupsSearchData(**data: Any)`
 :   Search result data for ad_groups entity.
@@ -579,6 +601,8 @@ Classes
     `updated_time: float | None`
     :   Last update timestamp (Unix seconds)
 
+<a id="AdTrackingUrls"></a>
+
 `AdTrackingUrls(**data: Any)`
 :   Third-party tracking URLs
     
@@ -613,6 +637,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsList"></a>
+
 `AdsList(**data: Any)`
 :   Paginated list of ads
     
@@ -638,6 +664,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsListResultMeta"></a>
+
 `AdsListResultMeta(**data: Any)`
 :   Metadata for ads.Action.LIST operation
     
@@ -659,6 +687,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsSearchData"></a>
 
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
@@ -763,6 +793,8 @@ Classes
     `view_tracking_url: str | None`
     :   View tracking URL
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -790,6 +822,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -855,6 +889,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountsSearchResult"></a>
+
 `AdAccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -891,6 +927,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupsSearchResult"></a>
 
 `AdGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -929,6 +967,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsSearchResult"></a>
+
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -965,6 +1005,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AudiencesSearchResult"></a>
 
 `AudiencesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1003,6 +1045,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardPinsSearchResult"></a>
+
 `BoardPinsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1039,6 +1083,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardSectionsSearchResult"></a>
 
 `BoardSectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1077,6 +1123,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardsSearchResult"></a>
+
 `BoardsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1113,6 +1161,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchResult"></a>
 
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1151,6 +1201,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsFeedsSearchResult"></a>
+
 `CatalogsFeedsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1187,6 +1239,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogsProductGroupsSearchResult"></a>
 
 `CatalogsProductGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1225,6 +1279,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsSearchResult"></a>
+
 `CatalogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1261,6 +1317,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ConversionTagsSearchResult"></a>
 
 `ConversionTagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1299,6 +1357,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerListsSearchResult"></a>
+
 `CustomerListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1336,6 +1396,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="KeywordsSearchResult"></a>
+
 `KeywordsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1351,6 +1413,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Audience"></a>
 
 `Audience(**data: Any)`
 :   Pinterest audience object
@@ -1407,6 +1471,8 @@ Classes
     `updated_timestamp: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AudienceRule"></a>
+
 `AudienceRule(**data: Any)`
 :   Audience targeting rules
     
@@ -1447,6 +1513,8 @@ Classes
     `visitor_source_id: str | Any | None`
     :   Visitor source ID
 
+<a id="AudiencesList"></a>
+
 `AudiencesList(**data: Any)`
 :   Paginated list of audiences
     
@@ -1472,6 +1540,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AudiencesListResultMeta"></a>
+
 `AudiencesListResultMeta(**data: Any)`
 :   Metadata for audiences.Action.LIST operation
     
@@ -1493,6 +1563,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AudiencesSearchData"></a>
 
 `AudiencesSearchData(**data: Any)`
 :   Search result data for audiences entity.
@@ -1545,6 +1617,8 @@ Classes
 
     `updated_timestamp: int | None`
     :   Last update time (Unix seconds)
+
+<a id="Board"></a>
 
 `Board(**data: Any)`
 :   Pinterest board object
@@ -1601,6 +1675,8 @@ Classes
     `privacy: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BoardMedia"></a>
+
 `BoardMedia(**data: Any)`
 :   Media content for the board
     
@@ -1626,6 +1702,8 @@ Classes
     `pin_thumbnail_urls: list[str] | Any | None`
     :   Thumbnail URLs of pins
 
+<a id="BoardOwner"></a>
+
 `BoardOwner(**data: Any)`
 :   Board owner details
     
@@ -1647,6 +1725,8 @@ Classes
 
     `username: str | Any | None`
     :   Username of the board owner
+
+<a id="BoardPin"></a>
 
 `BoardPin(**data: Any)`
 :   Pinterest pin on a board
@@ -1724,6 +1804,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BoardPinBoardOwner"></a>
+
 `BoardPinBoardOwner(**data: Any)`
 :   Board owner info
     
@@ -1746,6 +1828,8 @@ Classes
     `username: str | Any | None`
     :   Username of the board owner
 
+<a id="BoardPinMedia"></a>
+
 `BoardPinMedia(**data: Any)`
 :   Media content
     
@@ -1767,6 +1851,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardPinsList"></a>
 
 `BoardPinsList(**data: Any)`
 :   Paginated list of board pins
@@ -1793,6 +1879,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardPinsListResultMeta"></a>
+
 `BoardPinsListResultMeta(**data: Any)`
 :   Metadata for board_pins.Action.LIST operation
     
@@ -1814,6 +1902,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardPinsSearchData"></a>
 
 `BoardPinsSearchData(**data: Any)`
 :   Search result data for board_pins entity.
@@ -1885,6 +1975,8 @@ Classes
     `title: str | None`
     :   Pin title
 
+<a id="BoardSection"></a>
+
 `BoardSection(**data: Any)`
 :   Pinterest board section object
     
@@ -1909,6 +2001,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BoardSectionsList"></a>
 
 `BoardSectionsList(**data: Any)`
 :   Paginated list of board sections
@@ -1935,6 +2029,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardSectionsListResultMeta"></a>
+
 `BoardSectionsListResultMeta(**data: Any)`
 :   Metadata for board_sections.Action.LIST operation
     
@@ -1956,6 +2052,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardSectionsSearchData"></a>
 
 `BoardSectionsSearchData(**data: Any)`
 :   Search result data for board_sections entity.
@@ -1982,6 +2080,8 @@ Classes
     `name: str | None`
     :   Name of the board section
 
+<a id="BoardsList"></a>
+
 `BoardsList(**data: Any)`
 :   Paginated list of boards
     
@@ -2007,6 +2107,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardsListResultMeta"></a>
+
 `BoardsListResultMeta(**data: Any)`
 :   Metadata for boards.Action.LIST operation
     
@@ -2028,6 +2130,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardsSearchData"></a>
 
 `BoardsSearchData(**data: Any)`
 :   Search result data for boards entity.
@@ -2080,6 +2184,8 @@ Classes
 
     `privacy: str | None`
     :   Board privacy setting
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   Pinterest campaign object
@@ -2163,6 +2269,8 @@ Classes
     `updated_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignTrackingUrls"></a>
+
 `CampaignTrackingUrls(**data: Any)`
 :   Third-party tracking URLs
     
@@ -2197,6 +2305,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsList"></a>
+
 `CampaignsList(**data: Any)`
 :   Paginated list of campaigns
     
@@ -2222,6 +2332,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -2243,6 +2355,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -2314,6 +2428,8 @@ Classes
     `updated_time: int | None`
     :   Last update timestamp (Unix seconds)
 
+<a id="Catalog"></a>
+
 `Catalog(**data: Any)`
 :   Pinterest catalog object
     
@@ -2347,6 +2463,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CatalogsFeed"></a>
 
 `CatalogsFeed(**data: Any)`
 :   Pinterest catalog feed object
@@ -2406,6 +2524,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CatalogsFeedPreferredProcessingSchedule"></a>
+
 `CatalogsFeedPreferredProcessingSchedule(**data: Any)`
 :   Preferred processing schedule
     
@@ -2430,6 +2550,8 @@ Classes
 
     `timezone: str | Any | None`
     :   Timezone for processing
+
+<a id="CatalogsFeedsList"></a>
 
 `CatalogsFeedsList(**data: Any)`
 :   Paginated list of catalog feeds
@@ -2456,6 +2578,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsFeedsListResultMeta"></a>
+
 `CatalogsFeedsListResultMeta(**data: Any)`
 :   Metadata for catalogs_feeds.Action.LIST operation
     
@@ -2477,6 +2601,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogsFeedsSearchData"></a>
 
 `CatalogsFeedsSearchData(**data: Any)`
 :   Search result data for catalogs_feeds entity.
@@ -2536,6 +2662,8 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the feed was last updated
 
+<a id="CatalogsList"></a>
+
 `CatalogsList(**data: Any)`
 :   Paginated list of catalogs
     
@@ -2561,6 +2689,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsListResultMeta"></a>
+
 `CatalogsListResultMeta(**data: Any)`
 :   Metadata for catalogs.Action.LIST operation
     
@@ -2582,6 +2712,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogsProductGroup"></a>
 
 `CatalogsProductGroup(**data: Any)`
 :   Pinterest catalog product group object
@@ -2629,6 +2761,8 @@ Classes
     `updated_at: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CatalogsProductGroupsList"></a>
+
 `CatalogsProductGroupsList(**data: Any)`
 :   Paginated list of catalog product groups
     
@@ -2654,6 +2788,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsProductGroupsListResultMeta"></a>
+
 `CatalogsProductGroupsListResultMeta(**data: Any)`
 :   Metadata for catalogs_product_groups.Action.LIST operation
     
@@ -2675,6 +2811,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogsProductGroupsSearchData"></a>
 
 `CatalogsProductGroupsSearchData(**data: Any)`
 :   Search result data for catalogs_product_groups entity.
@@ -2722,6 +2860,8 @@ Classes
     `updated_at: int | None`
     :   Last update timestamp (Unix seconds)
 
+<a id="CatalogsSearchData"></a>
+
 `CatalogsSearchData(**data: Any)`
 :   Search result data for catalogs entity.
     
@@ -2755,6 +2895,8 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the catalog was last updated
+
+<a id="ConversionTag"></a>
 
 `ConversionTag(**data: Any)`
 :   Pinterest conversion tag object
@@ -2802,6 +2944,8 @@ Classes
     `version: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ConversionTagConfigs"></a>
+
 `ConversionTagConfigs(**data: Any)`
 :   Tag configurations
     
@@ -2842,6 +2986,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversionTagsList"></a>
+
 `ConversionTagsList(**data: Any)`
 :   Paginated list of conversion tags
     
@@ -2867,6 +3013,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversionTagsListResultMeta"></a>
+
 `ConversionTagsListResultMeta(**data: Any)`
 :   Metadata for conversion_tags.Action.LIST operation
     
@@ -2888,6 +3036,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ConversionTagsSearchData"></a>
 
 `ConversionTagsSearchData(**data: Any)`
 :   Search result data for conversion_tags entity.
@@ -2934,6 +3084,8 @@ Classes
 
     `version: str | None`
     :   Version number
+
+<a id="CustomerList"></a>
 
 `CustomerList(**data: Any)`
 :   Pinterest customer list object
@@ -2984,6 +3136,8 @@ Classes
     `updated_time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomerListsList"></a>
+
 `CustomerListsList(**data: Any)`
 :   Paginated list of customer lists
     
@@ -3009,6 +3163,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerListsListResultMeta"></a>
+
 `CustomerListsListResultMeta(**data: Any)`
 :   Metadata for customer_lists.Action.LIST operation
     
@@ -3030,6 +3186,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomerListsSearchData"></a>
 
 `CustomerListsSearchData(**data: Any)`
 :   Search result data for customer_lists entity.
@@ -3080,6 +3238,8 @@ Classes
     `updated_time: int | None`
     :   Last update time (Unix seconds)
 
+<a id="Keyword"></a>
+
 `Keyword(**data: Any)`
 :   Pinterest keyword object
     
@@ -3123,6 +3283,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="KeywordsList"></a>
+
 `KeywordsList(**data: Any)`
 :   Paginated list of keywords
     
@@ -3148,6 +3310,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="KeywordsListResultMeta"></a>
+
 `KeywordsListResultMeta(**data: Any)`
 :   Metadata for keywords.Action.LIST operation
     
@@ -3169,6 +3333,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="KeywordsSearchData"></a>
 
 `KeywordsSearchData(**data: Any)`
 :   Search result data for keywords entity.
@@ -3213,6 +3379,8 @@ Classes
     `value: str | None`
     :   Keyword text value
 
+<a id="PinterestAuthConfig"></a>
+
 `PinterestAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -3240,6 +3408,8 @@ Classes
 
     `refresh_token: str`
     :   Pinterest OAuth2 refresh token.
+
+<a id="PinterestCheckResult"></a>
 
 `PinterestCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -3274,6 +3444,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="PinterestExecuteResult"></a>
+
 `PinterestExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3302,6 +3474,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PinterestExecuteResultWithMeta"></a>
 
 `PinterestExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3367,6 +3541,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountsListResult"></a>
+
 `AdAccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3409,6 +3585,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdGroupsListResult"></a>
 
 `AdGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3453,6 +3631,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsListResult"></a>
+
 `AdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3495,6 +3675,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AudiencesListResult"></a>
 
 `AudiencesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3539,6 +3721,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardPinsListResult"></a>
+
 `BoardPinsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3581,6 +3765,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardSectionsListResult"></a>
 
 `BoardSectionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3625,6 +3811,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardsListResult"></a>
+
 `BoardsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3667,6 +3855,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsListResult"></a>
 
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3711,6 +3901,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsListResult"></a>
+
 `CatalogsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3753,6 +3945,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogsFeedsListResult"></a>
 
 `CatalogsFeedsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3797,6 +3991,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogsProductGroupsListResult"></a>
+
 `CatalogsProductGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3839,6 +4035,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ConversionTagsListResult"></a>
 
 `ConversionTagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3883,6 +4081,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomerListsListResult"></a>
+
 `CustomerListsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3926,6 +4126,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="KeywordsListResult"></a>
+
 `KeywordsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3944,6 +4146,8 @@ Classes
     * airbyte_agent_sdk.connectors.pinterest.models.PinterestExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="PinterestReplicationConfig"></a>
 
 `PinterestReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Pinterest.

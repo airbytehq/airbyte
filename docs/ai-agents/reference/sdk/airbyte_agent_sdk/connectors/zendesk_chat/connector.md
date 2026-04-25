@@ -10,6 +10,8 @@ Zendesk-Chat connector.
 Classes
 -------
 
+<a id="AccountsQuery"></a>
+
 `AccountsQuery(connector: ZendeskChatConnector)`
 :   Query class for Accounts entity operations.
     
@@ -22,6 +24,8 @@ Classes
         
         Returns:
             Account
+
+<a id="AgentTimelineQuery"></a>
 
 `AgentTimelineQuery(connector: ZendeskChatConnector)`
 :   Query class for AgentTimeline entity operations.
@@ -41,6 +45,8 @@ Classes
         
         Returns:
             AgentTimelineListResult
+
+<a id="AgentsQuery"></a>
 
 `AgentsQuery(connector: ZendeskChatConnector)`
 :   Query class for Agents entity operations.
@@ -101,6 +107,8 @@ Classes
         Returns:
             AgentsListResult
 
+<a id="BansQuery"></a>
+
 `BansQuery(connector: ZendeskChatConnector)`
 :   Query class for Bans entity operations.
     
@@ -128,6 +136,8 @@ Classes
         
         Returns:
             BansListResult
+
+<a id="ChatsQuery"></a>
 
 `ChatsQuery(connector: ZendeskChatConnector)`
 :   Query class for Chats entity operations.
@@ -189,6 +199,8 @@ Classes
         Returns:
             ChatsListResult
 
+<a id="DepartmentsQuery"></a>
+
 `DepartmentsQuery(connector: ZendeskChatConnector)`
 :   Query class for Departments entity operations.
     
@@ -238,6 +250,8 @@ Classes
         Returns:
             DepartmentsListResult
 
+<a id="GoalsQuery"></a>
+
 `GoalsQuery(connector: ZendeskChatConnector)`
 :   Query class for Goals entity operations.
     
@@ -260,6 +274,8 @@ Classes
         
         Returns:
             GoalsListResult
+
+<a id="RolesQuery"></a>
 
 `RolesQuery(connector: ZendeskChatConnector)`
 :   Query class for Roles entity operations.
@@ -284,6 +300,8 @@ Classes
         Returns:
             RolesListResult
 
+<a id="RoutingSettingsQuery"></a>
+
 `RoutingSettingsQuery(connector: ZendeskChatConnector)`
 :   Query class for RoutingSettings entity operations.
     
@@ -296,6 +314,8 @@ Classes
         
         Returns:
             RoutingSettings
+
+<a id="ShortcutsQuery"></a>
 
 `ShortcutsQuery(connector: ZendeskChatConnector)`
 :   Query class for Shortcuts entity operations.
@@ -346,6 +366,8 @@ Classes
         Returns:
             ShortcutsListResult
 
+<a id="SkillsQuery"></a>
+
 `SkillsQuery(connector: ZendeskChatConnector)`
 :   Query class for Skills entity operations.
     
@@ -368,6 +390,8 @@ Classes
         
         Returns:
             SkillsListResult
+
+<a id="TriggersQuery"></a>
 
 `TriggersQuery(connector: ZendeskChatConnector)`
 :   Query class for Triggers entity operations.
@@ -406,6 +430,8 @@ Classes
         
         Returns:
             TriggersListResult
+
+<a id="ZendeskChatConnector"></a>
 
 `ZendeskChatConnector(auth_config: ZendeskChatAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Zendesk-Chat API connector.

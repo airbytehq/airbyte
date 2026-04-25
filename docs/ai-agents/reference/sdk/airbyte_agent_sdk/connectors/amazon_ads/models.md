@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AccountInfo"></a>
+
 `AccountInfo(**data: Any)`
 :   Information about the advertiser's account associated with a profile
     
@@ -50,6 +52,8 @@ Classes
     `valid_payment_method: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -77,6 +81,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -129,6 +135,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProfilesSearchResult"></a>
+
 `ProfilesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -144,6 +152,8 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmazonAdsAuthConfig"></a>
 
 `AmazonAdsAuthConfig(**data: Any)`
 :   OAuth2 Authentication
@@ -172,6 +182,8 @@ Classes
 
     `refresh_token: str`
     :   The refresh token obtained from the OAuth authorization flow
+
+<a id="AmazonAdsCheckResult"></a>
 
 `AmazonAdsCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -206,6 +218,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="AmazonAdsExecuteResult"></a>
+
 `AmazonAdsExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -235,6 +249,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AmazonAdsExecuteResultWithMeta"></a>
 
 `AmazonAdsExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -296,6 +312,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PortfoliosListResult"></a>
+
 `PortfoliosListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -338,6 +356,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SponsoredBrandsAdGroupsListResult"></a>
 
 `SponsoredBrandsAdGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -382,6 +402,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SponsoredBrandsCampaignsListResult"></a>
+
 `SponsoredBrandsCampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -424,6 +446,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SponsoredProductAdGroupsListResult"></a>
 
 `SponsoredProductAdGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -468,6 +492,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SponsoredProductCampaignsListResult"></a>
+
 `SponsoredProductCampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -510,6 +536,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SponsoredProductKeywordsListResult"></a>
 
 `SponsoredProductKeywordsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -554,6 +582,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SponsoredProductNegativeKeywordsListResult"></a>
+
 `SponsoredProductNegativeKeywordsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -596,6 +626,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SponsoredProductNegativeTargetsListResult"></a>
 
 `SponsoredProductNegativeTargetsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -640,6 +672,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SponsoredProductProductAdsListResult"></a>
+
 `SponsoredProductProductAdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -683,6 +717,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SponsoredProductTargetsListResult"></a>
+
 `SponsoredProductTargetsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -725,6 +761,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProfilesListResult"></a>
+
 `ProfilesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -742,6 +780,8 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_ads.models.AmazonAdsExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignBudget"></a>
 
 `CampaignBudget(**data: Any)`
 :   Budget configuration for a campaign
@@ -768,6 +808,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DynamicBidding"></a>
+
 `DynamicBidding(**data: Any)`
 :   Dynamic bidding settings for a campaign
     
@@ -793,6 +835,8 @@ Classes
     `strategy: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DynamicBiddingPlacementbiddingItem"></a>
+
 `DynamicBiddingPlacementbiddingItem(**data: Any)`
 :   Nested schema for DynamicBidding.placementBidding_item
     
@@ -817,6 +861,8 @@ Classes
 
     `placement: str | Any | None`
     :   The placement type
+
+<a id="Portfolio"></a>
 
 `Portfolio(**data: Any)`
 :   A portfolio is a container for grouping campaigns together for organizational
@@ -862,6 +908,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PortfolioBudget"></a>
+
 `PortfolioBudget(**data: Any)`
 :   Budget configuration for a portfolio
     
@@ -896,6 +944,8 @@ Classes
     `start_date: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PortfoliosListResultMeta"></a>
+
 `PortfoliosListResultMeta(**data: Any)`
 :   Metadata for portfolios.Action.LIST operation
     
@@ -917,6 +967,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Profile"></a>
 
 `Profile(**data: Any)`
 :   An advertising profile represents an advertiser's account in a specific marketplace.
@@ -956,6 +1008,8 @@ Classes
     `timezone: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProfilesSearchData"></a>
+
 `ProfilesSearchData(**data: Any)`
 :   Search result data for profiles entity.
     
@@ -992,6 +1046,8 @@ Classes
 
     `timezone: str | None`
     :   The type of the None singleton.
+
+<a id="SponsoredBrandsAdGroup"></a>
 
 `SponsoredBrandsAdGroup(**data: Any)`
 :   An ad group within a Sponsored Brands campaign. Ad groups organize ads and targeting
@@ -1031,6 +1087,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredBrandsAdGroupsListResultMeta"></a>
+
 `SponsoredBrandsAdGroupsListResultMeta(**data: Any)`
 :   Metadata for sponsored_brands_ad_groups.Action.LIST operation
     
@@ -1052,6 +1110,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredBrandsCampaign"></a>
 
 `SponsoredBrandsCampaign(**data: Any)`
 :   A Sponsored Brands campaign. Sponsored Brands campaigns help drive discovery and sales
@@ -1118,6 +1178,8 @@ Classes
     `tags: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredBrandsCampaignsListResultMeta"></a>
+
 `SponsoredBrandsCampaignsListResultMeta(**data: Any)`
 :   Metadata for sponsored_brands_campaigns.Action.LIST operation
     
@@ -1139,6 +1201,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductAdGroup"></a>
 
 `SponsoredProductAdGroup(**data: Any)`
 :   An ad group within a Sponsored Products campaign. Ad groups contain ads and targeting
@@ -1178,6 +1242,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredProductAdGroupsListResultMeta"></a>
+
 `SponsoredProductAdGroupsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_ad_groups.Action.LIST operation
     
@@ -1199,6 +1265,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductCampaign"></a>
 
 `SponsoredProductCampaign(**data: Any)`
 :   A Sponsored Products campaign promotes individual product listings on Amazon.
@@ -1272,6 +1340,8 @@ Classes
     `targeting_type: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredProductCampaignsListResultMeta"></a>
+
 `SponsoredProductCampaignsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_campaigns.Action.LIST operation
     
@@ -1293,6 +1363,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductKeyword"></a>
 
 `SponsoredProductKeyword(**data: Any)`
 :   A keyword within a Sponsored Products ad group. Keywords are used in manual targeting
@@ -1338,6 +1410,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredProductKeywordsListResultMeta"></a>
+
 `SponsoredProductKeywordsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_keywords.Action.LIST operation
     
@@ -1359,6 +1433,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductNegativeKeyword"></a>
 
 `SponsoredProductNegativeKeyword(**data: Any)`
 :   A negative keyword within a Sponsored Products ad group. Negative keywords prevent
@@ -1401,6 +1477,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredProductNegativeKeywordsListResultMeta"></a>
+
 `SponsoredProductNegativeKeywordsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_negative_keywords.Action.LIST operation
     
@@ -1422,6 +1500,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductNegativeTarget"></a>
 
 `SponsoredProductNegativeTarget(**data: Any)`
 :   A negative targeting clause within a Sponsored Products ad group. Negative targeting
@@ -1467,6 +1547,8 @@ Classes
     `target_id: Any`
     :   The type of the None singleton.
 
+<a id="SponsoredProductNegativeTargetExpressionItem"></a>
+
 `SponsoredProductNegativeTargetExpressionItem(**data: Any)`
 :   Nested schema for SponsoredProductNegativeTarget.expression_item
     
@@ -1491,6 +1573,8 @@ Classes
 
     `value: str | Any | None`
     :   The expression value
+
+<a id="SponsoredProductNegativeTargetResolvedexpressionItem"></a>
 
 `SponsoredProductNegativeTargetResolvedexpressionItem(**data: Any)`
 :   Nested schema for SponsoredProductNegativeTarget.resolvedExpression_item
@@ -1517,6 +1601,8 @@ Classes
     `value: str | Any | None`
     :   The resolved expression value
 
+<a id="SponsoredProductNegativeTargetsListResultMeta"></a>
+
 `SponsoredProductNegativeTargetsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_negative_targets.Action.LIST operation
     
@@ -1538,6 +1624,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductProductAd"></a>
 
 `SponsoredProductProductAd(**data: Any)`
 :   A product ad within a Sponsored Products ad group. Product ads associate an
@@ -1580,6 +1668,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SponsoredProductProductAdsListResultMeta"></a>
+
 `SponsoredProductProductAdsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_product_ads.Action.LIST operation
     
@@ -1601,6 +1691,8 @@ Classes
 
     `next_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SponsoredProductTarget"></a>
 
 `SponsoredProductTarget(**data: Any)`
 :   A targeting clause within a Sponsored Products ad group. Targeting clauses define
@@ -1649,6 +1741,8 @@ Classes
     `target_id: Any`
     :   The type of the None singleton.
 
+<a id="SponsoredProductTargetExpressionItem"></a>
+
 `SponsoredProductTargetExpressionItem(**data: Any)`
 :   Nested schema for SponsoredProductTarget.expression_item
     
@@ -1674,6 +1768,8 @@ Classes
     `value: str | Any | None`
     :   The expression value
 
+<a id="SponsoredProductTargetResolvedexpressionItem"></a>
+
 `SponsoredProductTargetResolvedexpressionItem(**data: Any)`
 :   Nested schema for SponsoredProductTarget.resolvedExpression_item
     
@@ -1698,6 +1794,8 @@ Classes
 
     `value: str | Any | None`
     :   The resolved expression value
+
+<a id="SponsoredProductTargetsListResultMeta"></a>
 
 `SponsoredProductTargetsListResultMeta(**data: Any)`
 :   Metadata for sponsored_product_targets.Action.LIST operation

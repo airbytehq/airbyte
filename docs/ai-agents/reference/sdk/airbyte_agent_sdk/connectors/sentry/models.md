@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -95,6 +99,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsSearchResult"></a>
+
 `EventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -131,6 +137,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -169,6 +177,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ReleasesSearchResult"></a>
+
 `ReleasesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -221,6 +233,8 @@ Classes
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Event"></a>
 
 `Event(**data: Any)`
 :   A Sentry event (individual error occurrence).
@@ -325,6 +339,8 @@ Classes
     `user: airbyte_agent_sdk.connectors.sentry.models.EventUser | Any | None`
     :   The type of the None singleton.
 
+<a id="EventGroupingconfig"></a>
+
 `EventGroupingconfig(**data: Any)`
 :   Grouping configuration.
     
@@ -350,6 +366,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventMetadata"></a>
+
 `EventMetadata(**data: Any)`
 :   Event metadata.
     
@@ -371,6 +389,8 @@ Classes
 
     `title: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EventTagsItem"></a>
 
 `EventTagsItem(**data: Any)`
 :   Nested schema for Event.tags_item
@@ -396,6 +416,8 @@ Classes
 
     `value: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EventUser"></a>
 
 `EventUser(**data: Any)`
 :   User associated with the event.
@@ -431,6 +453,8 @@ Classes
     `username: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EventsListResultMeta"></a>
+
 `EventsListResultMeta(**data: Any)`
 :   Metadata for events.Action.LIST operation
     
@@ -452,6 +476,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EventsSearchData"></a>
 
 `EventsSearchData(**data: Any)`
 :   Search result data for events entity.
@@ -558,6 +584,8 @@ Classes
 
     `user: dict[str, typing.Any] | None`
     :   User associated with the event.
+
+<a id="Issue"></a>
 
 `Issue(**data: Any)`
 :   A Sentry issue (group of similar events).
@@ -671,6 +699,8 @@ Classes
     `user_count: int | Any | None`
     :   The type of the None singleton.
 
+<a id="IssueMetadata"></a>
+
 `IssueMetadata(**data: Any)`
 :   Issue metadata.
     
@@ -702,6 +732,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IssueProject"></a>
+
 `IssueProject(**data: Any)`
 :   Project this issue belongs to.
     
@@ -730,6 +762,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IssuesListResultMeta"></a>
+
 `IssuesListResultMeta(**data: Any)`
 :   Metadata for issues.Action.LIST operation
     
@@ -751,6 +785,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -863,6 +899,8 @@ Classes
 
     `user_count: int | None`
     :   Number of users affected.
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   A Sentry project (summary view from list endpoint).
@@ -997,6 +1035,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectAvatar"></a>
+
 `ProjectAvatar(**data: Any)`
 :   Project avatar information.
     
@@ -1024,6 +1064,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectDetail"></a>
 
 `ProjectDetail(**data: Any)`
 :   Detailed project information.
@@ -1281,6 +1323,8 @@ Classes
     `verify_ssl: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectDetailAvatar"></a>
+
 `ProjectDetailAvatar(**data: Any)`
 :   Project avatar information.
     
@@ -1308,6 +1352,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectDetailOrganization"></a>
 
 `ProjectDetailOrganization(**data: Any)`
 :   Organization this project belongs to.
@@ -1337,6 +1383,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectDetailTeam"></a>
+
 `ProjectDetailTeam(**data: Any)`
 :   Primary team for this project.
     
@@ -1364,6 +1412,8 @@ Classes
 
     `slug: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectDetailTeamsItem"></a>
 
 `ProjectDetailTeamsItem(**data: Any)`
 :   Nested schema for ProjectDetail.teams_item
@@ -1393,6 +1443,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectOrganization"></a>
+
 `ProjectOrganization(**data: Any)`
 :   Organization this project belongs to.
     
@@ -1421,6 +1473,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectsListResultMeta"></a>
+
 `ProjectsListResultMeta(**data: Any)`
 :   Metadata for projects.Action.LIST operation
     
@@ -1442,6 +1496,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -1540,6 +1596,8 @@ Classes
     `status: str | None`
     :   Project status.
 
+<a id="Release"></a>
+
 `Release(**data: Any)`
 :   A Sentry release.
     
@@ -1625,6 +1683,8 @@ Classes
     `version_info: airbyte_agent_sdk.connectors.sentry.models.ReleaseVersioninfo | Any | None`
     :   The type of the None singleton.
 
+<a id="ReleaseAuthorsItem"></a>
+
 `ReleaseAuthorsItem(**data: Any)`
 :   Nested schema for Release.authors_item
     
@@ -1649,6 +1709,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ReleaseProjectsItem"></a>
 
 `ReleaseProjectsItem(**data: Any)`
 :   Nested schema for Release.projects_item
@@ -1687,6 +1749,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ReleaseVersioninfo"></a>
+
 `ReleaseVersioninfo(**data: Any)`
 :   Parsed version information.
     
@@ -1717,6 +1781,8 @@ Classes
 
     `version: airbyte_agent_sdk.connectors.sentry.models.ReleaseVersioninfoVersion | Any | None`
     :   The type of the None singleton.
+
+<a id="ReleaseVersioninfoVersion"></a>
 
 `ReleaseVersioninfoVersion(**data: Any)`
 :   Nested schema for ReleaseVersioninfo.version
@@ -1758,6 +1824,8 @@ Classes
     `raw: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ReleasesListResultMeta"></a>
+
 `ReleasesListResultMeta(**data: Any)`
 :   Metadata for releases.Action.LIST operation
     
@@ -1779,6 +1847,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ReleasesSearchData"></a>
 
 `ReleasesSearchData(**data: Any)`
 :   Search result data for releases entity.
@@ -1865,6 +1935,8 @@ Classes
     `version_info: dict[str, typing.Any] | None`
     :   Parsed version information.
 
+<a id="SentryAuthConfig"></a>
+
 `SentryAuthConfig(**data: Any)`
 :   Authentication Token
     
@@ -1886,6 +1958,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SentryCheckResult"></a>
 
 `SentryCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1920,6 +1994,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="SentryExecuteResult"></a>
+
 `SentryExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1948,6 +2024,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SentryExecuteResultWithMeta"></a>
 
 `SentryExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2003,6 +2081,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsListResult"></a>
+
 `EventsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2045,6 +2125,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesListResult"></a>
 
 `IssuesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2089,6 +2171,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResult"></a>
+
 `ProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2132,6 +2216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ReleasesListResult"></a>
+
 `ReleasesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2150,6 +2236,8 @@ Classes
     * airbyte_agent_sdk.connectors.sentry.models.SentryExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SentryReplicationConfig"></a>
 
 `SentryReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Sentry.

@@ -10,6 +10,8 @@ Mailchimp connector.
 Classes
 -------
 
+<a id="AutomationsQuery"></a>
+
 `AutomationsQuery(connector: MailchimpConnector)`
 :   Query class for Automations entity operations.
     
@@ -32,6 +34,8 @@ Classes
         
         Returns:
             AutomationsListResult
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: MailchimpConnector)`
 :   Query class for Campaigns entity operations.
@@ -115,6 +119,8 @@ Classes
         Returns:
             CampaignsListResult
 
+<a id="EmailActivityQuery"></a>
+
 `EmailActivityQuery(connector: MailchimpConnector)`
 :   Query class for EmailActivity entity operations.
     
@@ -167,6 +173,8 @@ Classes
         Returns:
             EmailActivityListResult
 
+<a id="InterestCategoriesQuery"></a>
+
 `InterestCategoriesQuery(connector: MailchimpConnector)`
 :   Query class for InterestCategories entity operations.
     
@@ -196,6 +204,8 @@ Classes
         
         Returns:
             InterestCategoriesListResult
+
+<a id="InterestsQuery"></a>
 
 `InterestsQuery(connector: MailchimpConnector)`
 :   Query class for Interests entity operations.
@@ -228,6 +238,8 @@ Classes
         
         Returns:
             InterestsListResult
+
+<a id="ListMembersQuery"></a>
 
 `ListMembersQuery(connector: MailchimpConnector)`
 :   Query class for ListMembers entity operations.
@@ -271,6 +283,8 @@ Classes
         
         Returns:
             ListMembersListResult
+
+<a id="ListsQuery"></a>
 
 `ListsQuery(connector: MailchimpConnector)`
 :   Query class for Lists entity operations.
@@ -349,6 +363,8 @@ Classes
         
         Returns:
             ListsListResult
+
+<a id="MailchimpConnector"></a>
 
 `MailchimpConnector(auth_config: MailchimpAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, data_center: str | None = None)`
 :   Type-safe Mailchimp API connector.
@@ -538,6 +554,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ReportsQuery"></a>
+
 `ReportsQuery(connector: MailchimpConnector)`
 :   Query class for Reports entity operations.
     
@@ -617,6 +635,8 @@ Classes
         Returns:
             ReportsListResult
 
+<a id="SegmentMembersQuery"></a>
+
 `SegmentMembersQuery(connector: MailchimpConnector)`
 :   Query class for SegmentMembers entity operations.
     
@@ -636,6 +656,8 @@ Classes
         
         Returns:
             SegmentMembersListResult
+
+<a id="SegmentsQuery"></a>
 
 `SegmentsQuery(connector: MailchimpConnector)`
 :   Query class for Segments entity operations.
@@ -672,6 +694,8 @@ Classes
         Returns:
             SegmentsListResult
 
+<a id="TagsQuery"></a>
+
 `TagsQuery(connector: MailchimpConnector)`
 :   Query class for Tags entity operations.
     
@@ -689,6 +713,8 @@ Classes
         
         Returns:
             TagsListResult
+
+<a id="UnsubscribesQuery"></a>
 
 `UnsubscribesQuery(connector: MailchimpConnector)`
 :   Query class for Unsubscribes entity operations.

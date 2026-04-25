@@ -10,6 +10,8 @@ Type definitions for amplitude connector.
 Classes
 -------
 
+<a id="ActiveUsersAndCondition"></a>
+
 `ActiveUsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -29,6 +31,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ActiveUsersAnyCondition"></a>
 
 `ActiveUsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -50,6 +54,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ActiveUsersAnyValueFilter"></a>
+
 `ActiveUsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -65,6 +71,8 @@ Classes
     `statistics: Any`
     :   The statistics related to the active users for the given date
 
+<a id="ActiveUsersContainsCondition"></a>
+
 `ActiveUsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -76,6 +84,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ActiveUsersEqCondition"></a>
 
 `ActiveUsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -89,6 +99,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActiveUsersFuzzyCondition"></a>
+
 `ActiveUsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -100,6 +112,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStringFilter`
     :   The type of the None singleton.
+
+<a id="ActiveUsersGtCondition"></a>
 
 `ActiveUsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -113,6 +127,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActiveUsersGteCondition"></a>
+
 `ActiveUsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -124,6 +140,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="ActiveUsersInCondition"></a>
 
 `ActiveUsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -145,6 +163,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInFilter`
     :   The type of the None singleton.
 
+<a id="ActiveUsersInFilter"></a>
+
 `ActiveUsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -160,6 +180,8 @@ Classes
     `statistics: list[dict[str, typing.Any]]`
     :   The statistics related to the active users for the given date
 
+<a id="ActiveUsersKeywordCondition"></a>
+
 `ActiveUsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -172,6 +194,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStringFilter`
     :   The type of the None singleton.
 
+<a id="ActiveUsersLikeCondition"></a>
+
 `ActiveUsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -183,6 +207,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStringFilter`
     :   The type of the None singleton.
+
+<a id="ActiveUsersListParams"></a>
 
 `ActiveUsersListParams(*args, **kwargs)`
 :   Parameters for active_users.list operation
@@ -208,6 +234,8 @@ Classes
     `start: str`
     :   The type of the None singleton.
 
+<a id="ActiveUsersLtCondition"></a>
+
 `ActiveUsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -219,6 +247,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="ActiveUsersLteCondition"></a>
 
 `ActiveUsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -232,6 +262,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="ActiveUsersNeqCondition"></a>
+
 `ActiveUsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -243,6 +275,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="ActiveUsersNotCondition"></a>
 
 `ActiveUsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -264,6 +298,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="ActiveUsersOrCondition"></a>
+
 `ActiveUsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -284,6 +320,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ActiveUsersSearchFilter"></a>
+
 `ActiveUsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering active_users search queries.
 
@@ -298,6 +336,8 @@ Classes
 
     `statistics: dict[str, typing.Any] | None`
     :   The statistics related to the active users for the given date
+
+<a id="ActiveUsersSearchQuery"></a>
 
 `ActiveUsersSearchQuery(*args, **kwargs)`
 :   Search query for active_users entity.
@@ -314,6 +354,8 @@ Classes
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSortFilter]`
     :   The type of the None singleton.
 
+<a id="ActiveUsersSortFilter"></a>
+
 `ActiveUsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting active_users search results.
 
@@ -329,6 +371,8 @@ Classes
     `statistics: Literal['asc', 'desc']`
     :   The statistics related to the active users for the given date
 
+<a id="ActiveUsersStringFilter"></a>
+
 `ActiveUsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -343,6 +387,8 @@ Classes
 
     `statistics: str`
     :   The statistics related to the active users for the given date
+
+<a id="AirbyteSearchParams"></a>
 
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
@@ -365,6 +411,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="AnnotationsAndCondition"></a>
+
 `AnnotationsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -385,6 +433,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AnnotationsAnyCondition"></a>
+
 `AnnotationsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -404,6 +454,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsAnyValueFilter"></a>
 
 `AnnotationsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -426,6 +478,8 @@ Classes
     `label: Any`
     :   The label assigned to the annotation
 
+<a id="AnnotationsContainsCondition"></a>
+
 `AnnotationsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -437,6 +491,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsEqCondition"></a>
 
 `AnnotationsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -450,6 +506,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AnnotationsFuzzyCondition"></a>
+
 `AnnotationsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -461,6 +519,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStringFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsGetParams"></a>
 
 `AnnotationsGetParams(*args, **kwargs)`
 :   Parameters for annotations.get operation
@@ -474,6 +534,8 @@ Classes
     `annotation_id: str`
     :   The type of the None singleton.
 
+<a id="AnnotationsGtCondition"></a>
+
 `AnnotationsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -486,6 +548,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AnnotationsGteCondition"></a>
+
 `AnnotationsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -497,6 +561,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsInCondition"></a>
 
 `AnnotationsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -517,6 +583,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsInFilter"></a>
 
 `AnnotationsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -539,6 +607,8 @@ Classes
     `label: list[str]`
     :   The label assigned to the annotation
 
+<a id="AnnotationsKeywordCondition"></a>
+
 `AnnotationsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -550,6 +620,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStringFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsLikeCondition"></a>
 
 `AnnotationsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -563,12 +635,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStringFilter`
     :   The type of the None singleton.
 
+<a id="AnnotationsListParams"></a>
+
 `AnnotationsListParams(*args, **kwargs)`
 :   Parameters for annotations.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="AnnotationsLtCondition"></a>
 
 `AnnotationsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -582,6 +658,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AnnotationsLteCondition"></a>
+
 `AnnotationsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -594,6 +672,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AnnotationsNeqCondition"></a>
+
 `AnnotationsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -605,6 +685,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AnnotationsNotCondition"></a>
 
 `AnnotationsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -626,6 +708,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AnnotationsOrCondition"></a>
+
 `AnnotationsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -645,6 +729,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AnnotationsSearchFilter"></a>
 
 `AnnotationsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering annotations search queries.
@@ -667,6 +753,8 @@ Classes
     `label: str | None`
     :   The label assigned to the annotation
 
+<a id="AnnotationsSearchQuery"></a>
+
 `AnnotationsSearchQuery(*args, **kwargs)`
 :   Search query for annotations entity.
 
@@ -681,6 +769,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AnnotationsSortFilter"></a>
 
 `AnnotationsSortFilter(*args, **kwargs)`
 :   Available fields for sorting annotations search results.
@@ -703,6 +793,8 @@ Classes
     `label: Literal['asc', 'desc']`
     :   The label assigned to the annotation
 
+<a id="AnnotationsStringFilter"></a>
+
 `AnnotationsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -724,6 +816,8 @@ Classes
     `label: str`
     :   The label assigned to the annotation
 
+<a id="AverageSessionLengthAndCondition"></a>
+
 `AverageSessionLengthAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -743,6 +837,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthAnyCondition"></a>
 
 `AverageSessionLengthAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -764,6 +860,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthAnyValueFilter"></a>
+
 `AverageSessionLengthAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -779,6 +877,8 @@ Classes
     `length: Any`
     :   The duration of the session in seconds
 
+<a id="AverageSessionLengthContainsCondition"></a>
+
 `AverageSessionLengthContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -790,6 +890,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthEqCondition"></a>
 
 `AverageSessionLengthEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -803,6 +905,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSearchFilter`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthFuzzyCondition"></a>
+
 `AverageSessionLengthFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -814,6 +918,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStringFilter`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthGtCondition"></a>
 
 `AverageSessionLengthGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -827,6 +933,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSearchFilter`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthGteCondition"></a>
+
 `AverageSessionLengthGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -838,6 +946,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSearchFilter`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthInCondition"></a>
 
 `AverageSessionLengthInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -859,6 +969,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInFilter`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthInFilter"></a>
+
 `AverageSessionLengthInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -874,6 +986,8 @@ Classes
     `length: list[float]`
     :   The duration of the session in seconds
 
+<a id="AverageSessionLengthKeywordCondition"></a>
+
 `AverageSessionLengthKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -886,6 +1000,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStringFilter`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthLikeCondition"></a>
+
 `AverageSessionLengthLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -897,6 +1013,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStringFilter`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthListParams"></a>
 
 `AverageSessionLengthListParams(*args, **kwargs)`
 :   Parameters for average_session_length.list operation
@@ -913,6 +1031,8 @@ Classes
     `start: str`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthLtCondition"></a>
+
 `AverageSessionLengthLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -924,6 +1044,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSearchFilter`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthLteCondition"></a>
 
 `AverageSessionLengthLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -937,6 +1059,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSearchFilter`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthNeqCondition"></a>
+
 `AverageSessionLengthNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -948,6 +1072,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSearchFilter`
     :   The type of the None singleton.
+
+<a id="AverageSessionLengthNotCondition"></a>
 
 `AverageSessionLengthNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -969,6 +1095,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthOrCondition"></a>
+
 `AverageSessionLengthOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -989,6 +1117,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthSearchFilter"></a>
+
 `AverageSessionLengthSearchFilter(*args, **kwargs)`
 :   Available fields for filtering average_session_length search queries.
 
@@ -1003,6 +1133,8 @@ Classes
 
     `length: float | None`
     :   The duration of the session in seconds
+
+<a id="AverageSessionLengthSearchQuery"></a>
 
 `AverageSessionLengthSearchQuery(*args, **kwargs)`
 :   Search query for average_session_length entity.
@@ -1019,6 +1151,8 @@ Classes
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSortFilter]`
     :   The type of the None singleton.
 
+<a id="AverageSessionLengthSortFilter"></a>
+
 `AverageSessionLengthSortFilter(*args, **kwargs)`
 :   Available fields for sorting average_session_length search results.
 
@@ -1034,6 +1168,8 @@ Classes
     `length: Literal['asc', 'desc']`
     :   The duration of the session in seconds
 
+<a id="AverageSessionLengthStringFilter"></a>
+
 `AverageSessionLengthStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1048,6 +1184,8 @@ Classes
 
     `length: str`
     :   The duration of the session in seconds
+
+<a id="CohortsAndCondition"></a>
 
 `CohortsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1069,6 +1207,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CohortsAnyCondition"></a>
+
 `CohortsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1088,6 +1228,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CohortsAnyValueFilter"></a>
 
 `CohortsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1176,6 +1318,8 @@ Classes
     `viewers: Any`
     :   Users or viewers who have access to the cohort data
 
+<a id="CohortsContainsCondition"></a>
+
 `CohortsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1187,6 +1331,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CohortsEqCondition"></a>
 
 `CohortsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1200,6 +1346,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.amplitude.types.CohortsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CohortsFuzzyCondition"></a>
+
 `CohortsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1211,6 +1359,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.amplitude.types.CohortsStringFilter`
     :   The type of the None singleton.
+
+<a id="CohortsGetParams"></a>
 
 `CohortsGetParams(*args, **kwargs)`
 :   Parameters for cohorts.get operation
@@ -1224,6 +1374,8 @@ Classes
     `cohort_id: str`
     :   The type of the None singleton.
 
+<a id="CohortsGtCondition"></a>
+
 `CohortsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1236,6 +1388,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.amplitude.types.CohortsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CohortsGteCondition"></a>
+
 `CohortsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1247,6 +1401,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.amplitude.types.CohortsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CohortsInCondition"></a>
 
 `CohortsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1267,6 +1423,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.amplitude.types.CohortsInFilter`
     :   The type of the None singleton.
+
+<a id="CohortsInFilter"></a>
 
 `CohortsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1355,6 +1513,8 @@ Classes
     `viewers: list[list[typing.Any]]`
     :   Users or viewers who have access to the cohort data
 
+<a id="CohortsKeywordCondition"></a>
+
 `CohortsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1366,6 +1526,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.amplitude.types.CohortsStringFilter`
     :   The type of the None singleton.
+
+<a id="CohortsLikeCondition"></a>
 
 `CohortsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1379,12 +1541,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.amplitude.types.CohortsStringFilter`
     :   The type of the None singleton.
 
+<a id="CohortsListParams"></a>
+
 `CohortsListParams(*args, **kwargs)`
 :   Parameters for cohorts.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="CohortsLtCondition"></a>
 
 `CohortsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1398,6 +1564,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.amplitude.types.CohortsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CohortsLteCondition"></a>
+
 `CohortsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1410,6 +1578,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.amplitude.types.CohortsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CohortsNeqCondition"></a>
+
 `CohortsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1421,6 +1591,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.amplitude.types.CohortsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CohortsNotCondition"></a>
 
 `CohortsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1442,6 +1614,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CohortsOrCondition"></a>
+
 `CohortsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1461,6 +1635,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CohortsSearchFilter"></a>
 
 `CohortsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering cohorts search queries.
@@ -1549,6 +1725,8 @@ Classes
     `viewers: list[typing.Any] | None`
     :   Users or viewers who have access to the cohort data
 
+<a id="CohortsSearchQuery"></a>
+
 `CohortsSearchQuery(*args, **kwargs)`
 :   Search query for cohorts entity.
 
@@ -1563,6 +1741,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CohortsSortFilter"></a>
 
 `CohortsSortFilter(*args, **kwargs)`
 :   Available fields for sorting cohorts search results.
@@ -1651,6 +1831,8 @@ Classes
     `viewers: Literal['asc', 'desc']`
     :   Users or viewers who have access to the cohort data
 
+<a id="CohortsStringFilter"></a>
+
 `CohortsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1738,6 +1920,8 @@ Classes
     `viewers: str`
     :   Users or viewers who have access to the cohort data
 
+<a id="EventsListAndCondition"></a>
+
 `EventsListAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1758,6 +1942,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition]`
     :   The type of the None singleton.
 
+<a id="EventsListAnyCondition"></a>
+
 `EventsListAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1777,6 +1963,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="EventsListAnyValueFilter"></a>
 
 `EventsListAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1829,6 +2017,8 @@ Classes
     `value: Any`
     :   Raw event name in the data
 
+<a id="EventsListContainsCondition"></a>
+
 `EventsListContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1840,6 +2030,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="EventsListEqCondition"></a>
 
 `EventsListEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1853,6 +2045,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.amplitude.types.EventsListSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsListFuzzyCondition"></a>
+
 `EventsListFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1864,6 +2058,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.amplitude.types.EventsListStringFilter`
     :   The type of the None singleton.
+
+<a id="EventsListGtCondition"></a>
 
 `EventsListGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1877,6 +2073,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.amplitude.types.EventsListSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsListGteCondition"></a>
+
 `EventsListGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1888,6 +2086,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.amplitude.types.EventsListSearchFilter`
     :   The type of the None singleton.
+
+<a id="EventsListInCondition"></a>
 
 `EventsListInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1908,6 +2108,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.amplitude.types.EventsListInFilter`
     :   The type of the None singleton.
+
+<a id="EventsListInFilter"></a>
 
 `EventsListInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1960,6 +2162,8 @@ Classes
     `value: list[str]`
     :   Raw event name in the data
 
+<a id="EventsListKeywordCondition"></a>
+
 `EventsListKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1971,6 +2175,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.amplitude.types.EventsListStringFilter`
     :   The type of the None singleton.
+
+<a id="EventsListLikeCondition"></a>
 
 `EventsListLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1984,12 +2190,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.amplitude.types.EventsListStringFilter`
     :   The type of the None singleton.
 
+<a id="EventsListListParams"></a>
+
 `EventsListListParams(*args, **kwargs)`
 :   Parameters for events_list.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="EventsListLtCondition"></a>
 
 `EventsListLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2003,6 +2213,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.amplitude.types.EventsListSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsListLteCondition"></a>
+
 `EventsListLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2015,6 +2227,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.amplitude.types.EventsListSearchFilter`
     :   The type of the None singleton.
 
+<a id="EventsListNeqCondition"></a>
+
 `EventsListNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2026,6 +2240,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.amplitude.types.EventsListSearchFilter`
     :   The type of the None singleton.
+
+<a id="EventsListNotCondition"></a>
 
 `EventsListNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2047,6 +2263,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition`
     :   The type of the None singleton.
 
+<a id="EventsListOrCondition"></a>
+
 `EventsListOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2066,6 +2284,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLikeCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition]`
     :   The type of the None singleton.
+
+<a id="EventsListSearchFilter"></a>
 
 `EventsListSearchFilter(*args, **kwargs)`
 :   Available fields for filtering events_list search queries.
@@ -2118,6 +2338,8 @@ Classes
     `value: str | None`
     :   Raw event name in the data
 
+<a id="EventsListSearchQuery"></a>
+
 `EventsListSearchQuery(*args, **kwargs)`
 :   Search query for events_list entity.
 
@@ -2132,6 +2354,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListSortFilter]`
     :   The type of the None singleton.
+
+<a id="EventsListSortFilter"></a>
 
 `EventsListSortFilter(*args, **kwargs)`
 :   Available fields for sorting events_list search results.
@@ -2183,6 +2407,8 @@ Classes
 
     `value: Literal['asc', 'desc']`
     :   Raw event name in the data
+
+<a id="EventsListStringFilter"></a>
 
 `EventsListStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

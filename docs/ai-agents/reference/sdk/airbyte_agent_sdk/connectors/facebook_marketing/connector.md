@@ -10,6 +10,8 @@ Facebook-Marketing connector.
 Classes
 -------
 
+<a id="AdAccountQuery"></a>
+
 `AdAccountQuery(connector: FacebookMarketingConnector)`
 :   Query class for AdAccount entity operations.
     
@@ -60,6 +62,8 @@ Classes
         
         Returns:
             AdAccount
+
+<a id="AdAccountsQuery"></a>
 
 `AdAccountsQuery(connector: FacebookMarketingConnector)`
 :   Query class for AdAccounts entity operations.
@@ -113,6 +117,8 @@ Classes
         Returns:
             AdAccountsListResult
 
+<a id="AdCreativesQuery"></a>
+
 `AdCreativesQuery(connector: FacebookMarketingConnector)`
 :   Query class for AdCreatives entity operations.
     
@@ -165,6 +171,8 @@ Classes
         Returns:
             AdCreativesListResult
 
+<a id="AdLibraryQuery"></a>
+
 `AdLibraryQuery(connector: FacebookMarketingConnector)`
 :   Query class for AdLibrary entity operations.
     
@@ -196,6 +204,8 @@ Classes
         
         Returns:
             AdLibraryListResult
+
+<a id="AdSetsQuery"></a>
 
 `AdSetsQuery(connector: FacebookMarketingConnector)`
 :   Query class for AdSets entity operations.
@@ -284,6 +294,8 @@ Classes
         Returns:
             UpdateResponse
 
+<a id="AdsInsightsQuery"></a>
+
 `AdsInsightsQuery(connector: FacebookMarketingConnector)`
 :   Query class for AdsInsights entity operations.
     
@@ -348,6 +360,8 @@ Classes
         
         Returns:
             AdsInsightsListResult
+
+<a id="AdsQuery"></a>
 
 `AdsQuery(connector: FacebookMarketingConnector)`
 :   Query class for Ads entity operations.
@@ -430,6 +444,8 @@ Classes
         
         Returns:
             UpdateResponse
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: FacebookMarketingConnector)`
 :   Query class for Campaigns entity operations.
@@ -517,6 +533,8 @@ Classes
         Returns:
             UpdateResponse
 
+<a id="CurrentUserQuery"></a>
+
 `CurrentUserQuery(connector: FacebookMarketingConnector)`
 :   Query class for CurrentUser entity operations.
     
@@ -533,6 +551,8 @@ Classes
         
         Returns:
             CurrentUser
+
+<a id="CustomConversionsQuery"></a>
 
 `CustomConversionsQuery(connector: FacebookMarketingConnector)`
 :   Query class for CustomConversions entity operations.
@@ -584,6 +604,8 @@ Classes
         
         Returns:
             CustomConversionsListResult
+
+<a id="FacebookMarketingConnector"></a>
 
 `FacebookMarketingConnector(auth_config: FacebookMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Facebook-Marketing API connector.
@@ -841,6 +863,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ImagesQuery"></a>
+
 `ImagesQuery(connector: FacebookMarketingConnector)`
 :   Query class for Images entity operations.
     
@@ -894,6 +918,8 @@ Classes
         Returns:
             ImagesListResult
 
+<a id="PixelStatsQuery"></a>
+
 `PixelStatsQuery(connector: FacebookMarketingConnector)`
 :   Query class for PixelStats entity operations.
     
@@ -913,6 +939,8 @@ Classes
         
         Returns:
             PixelStatsListResult
+
+<a id="PixelsQuery"></a>
 
 `PixelsQuery(connector: FacebookMarketingConnector)`
 :   Query class for Pixels entity operations.
@@ -944,6 +972,8 @@ Classes
         
         Returns:
             PixelsListResult
+
+<a id="VideosQuery"></a>
 
 `VideosQuery(connector: FacebookMarketingConnector)`
 :   Query class for Videos entity operations.
