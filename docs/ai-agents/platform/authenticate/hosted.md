@@ -23,7 +23,7 @@ The typical authentication flow for hosted mode involves these steps:
 
 1. **Get an application token** using your Airbyte credentials.
 
-2. **Generate a Scoped Token** for the customer.
+2. **Generate a Scoped Token** for the workspace.
 
 3. **Create a connector** using the end-user's API credentials. Airbyte stores these credentials securely.
 
@@ -42,7 +42,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <scoped_token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<your_customer_name>",
+    "workspace_name": "<your_workspace_name>",
     "connector_type": "github",
     "name": "My GitHub Connector",
     "credentials": {
@@ -60,7 +60,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <scoped_token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<your_customer_name>",
+    "workspace_name": "<your_workspace_name>",
     "connector_type": "hubspot",
     "name": "My HubSpot Connector",
     "credentials": {

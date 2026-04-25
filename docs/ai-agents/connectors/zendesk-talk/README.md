@@ -36,7 +36,7 @@ The Zendesk-Talk connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-zendesk-talk
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -48,8 +48,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_zendesk_talk import ZendeskTalkConnector
-from airbyte_agent_zendesk_talk.models import ZendeskTalkApiTokenAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_talk import ZendeskTalkConnector
+from airbyte_agent_sdk.connectors.zendesk_talk.models import ZendeskTalkApiTokenAuthConfig
 
 connector = ZendeskTalkConnector(
     auth_config=ZendeskTalkApiTokenAuthConfig(
@@ -72,11 +72,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_zendesk_talk import ZendeskTalkConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_talk import ZendeskTalkConnector, AirbyteAuthConfig
 
 connector = ZendeskTalkConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -97,17 +97,17 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Phone Numbers | [List](./REFERENCE.md#phone-numbers-list), [Get](./REFERENCE.md#phone-numbers-get), [Search](./REFERENCE.md#phone-numbers-search) |
-| Addresses | [List](./REFERENCE.md#addresses-list), [Get](./REFERENCE.md#addresses-get), [Search](./REFERENCE.md#addresses-search) |
-| Greetings | [List](./REFERENCE.md#greetings-list), [Get](./REFERENCE.md#greetings-get), [Search](./REFERENCE.md#greetings-search) |
-| Greeting Categories | [List](./REFERENCE.md#greeting-categories-list), [Get](./REFERENCE.md#greeting-categories-get), [Search](./REFERENCE.md#greeting-categories-search) |
-| Ivrs | [List](./REFERENCE.md#ivrs-list), [Get](./REFERENCE.md#ivrs-get), [Search](./REFERENCE.md#ivrs-search) |
-| Agents Activity | [List](./REFERENCE.md#agents-activity-list), [Search](./REFERENCE.md#agents-activity-search) |
-| Agents Overview | [List](./REFERENCE.md#agents-overview-list), [Search](./REFERENCE.md#agents-overview-search) |
-| Account Overview | [List](./REFERENCE.md#account-overview-list), [Search](./REFERENCE.md#account-overview-search) |
-| Current Queue Activity | [List](./REFERENCE.md#current-queue-activity-list), [Search](./REFERENCE.md#current-queue-activity-search) |
-| Calls | [List](./REFERENCE.md#calls-list), [Search](./REFERENCE.md#calls-search) |
-| Call Legs | [List](./REFERENCE.md#call-legs-list), [Search](./REFERENCE.md#call-legs-search) |
+| Phone Numbers | [List](./REFERENCE.md#phone-numbers-list), [Get](./REFERENCE.md#phone-numbers-get), [Context Store Search](./REFERENCE.md#phone-numbers-context-store-search) |
+| Addresses | [List](./REFERENCE.md#addresses-list), [Get](./REFERENCE.md#addresses-get), [Context Store Search](./REFERENCE.md#addresses-context-store-search) |
+| Greetings | [List](./REFERENCE.md#greetings-list), [Get](./REFERENCE.md#greetings-get), [Context Store Search](./REFERENCE.md#greetings-context-store-search) |
+| Greeting Categories | [List](./REFERENCE.md#greeting-categories-list), [Get](./REFERENCE.md#greeting-categories-get), [Context Store Search](./REFERENCE.md#greeting-categories-context-store-search) |
+| Ivrs | [List](./REFERENCE.md#ivrs-list), [Get](./REFERENCE.md#ivrs-get), [Context Store Search](./REFERENCE.md#ivrs-context-store-search) |
+| Agents Activity | [List](./REFERENCE.md#agents-activity-list), [Context Store Search](./REFERENCE.md#agents-activity-context-store-search) |
+| Agents Overview | [List](./REFERENCE.md#agents-overview-list), [Context Store Search](./REFERENCE.md#agents-overview-context-store-search) |
+| Account Overview | [List](./REFERENCE.md#account-overview-list), [Context Store Search](./REFERENCE.md#account-overview-context-store-search) |
+| Current Queue Activity | [List](./REFERENCE.md#current-queue-activity-list), [Context Store Search](./REFERENCE.md#current-queue-activity-context-store-search) |
+| Calls | [List](./REFERENCE.md#calls-list), [Context Store Search](./REFERENCE.md#calls-context-store-search) |
+| Call Legs | [List](./REFERENCE.md#call-legs-list), [Context Store Search](./REFERENCE.md#call-legs-context-store-search) |
 
 
 ### Authentication
@@ -120,7 +120,6 @@ See the official [Zendesk-Talk API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.8
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-talk/CHANGELOG.md)
+- **Package version:** 1.0.2
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** unknown

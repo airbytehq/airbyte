@@ -8,8 +8,8 @@ The Airtable connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Bases | [List](#bases-list), [Search](#bases-search) |
-| Tables | [List](#tables-list), [Search](#tables-search) |
+| Bases | [List](#bases-list), [Context Store Search](#bases-context-store-search) |
+| Tables | [List](#tables-list), [Context Store Search](#tables-context-store-search) |
 | Records | [List](#records-list), [Get](#records-get) |
 
 ## Bases
@@ -56,16 +56,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `permissionLevel` | `string \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `offset` | `string \| null` |  |
+
 </details>
 
-### Bases Search
+### Bases Context Store Search
 
 Search and filter bases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await airtable.bases.search(
+await airtable.bases.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -78,7 +84,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "bases",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -180,14 +186,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Tables Search
+### Tables Context Store Search
 
 Search and filter tables records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await airtable.tables.search(
+await airtable.tables.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -200,7 +206,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tables",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -302,6 +308,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `createdTime` | `string \| null` |  |
 | `fields` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `offset` | `string \| null` |  |
 
 </details>
 

@@ -51,7 +51,7 @@ The Zendesk-Chat connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-zendesk-chat
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -63,8 +63,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_zendesk_chat import ZendeskChatConnector
-from airbyte_agent_zendesk_chat.models import ZendeskChatAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+from airbyte_agent_sdk.connectors.zendesk_chat.models import ZendeskChatAuthConfig
 
 connector = ZendeskChatConnector(
     auth_config=ZendeskChatAuthConfig(
@@ -86,11 +86,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_zendesk_chat import ZendeskChatConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector, AirbyteAuthConfig
 
 connector = ZendeskChatConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -112,17 +112,17 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accounts | [Get](./REFERENCE.md#accounts-get) |
-| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Search](./REFERENCE.md#agents-search) |
+| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Context Store Search](./REFERENCE.md#agents-context-store-search) |
 | Agent Timeline | [List](./REFERENCE.md#agent-timeline-list) |
 | Bans | [List](./REFERENCE.md#bans-list), [Get](./REFERENCE.md#bans-get) |
-| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Search](./REFERENCE.md#chats-search) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
+| Chats | [List](./REFERENCE.md#chats-list), [Get](./REFERENCE.md#chats-get), [Context Store Search](./REFERENCE.md#chats-context-store-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
 | Goals | [List](./REFERENCE.md#goals-list), [Get](./REFERENCE.md#goals-get) |
 | Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get) |
 | Routing Settings | [Get](./REFERENCE.md#routing-settings-get) |
-| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get), [Search](./REFERENCE.md#shortcuts-search) |
+| Shortcuts | [List](./REFERENCE.md#shortcuts-list), [Get](./REFERENCE.md#shortcuts-get), [Context Store Search](./REFERENCE.md#shortcuts-context-store-search) |
 | Skills | [List](./REFERENCE.md#skills-list), [Get](./REFERENCE.md#skills-get) |
-| Triggers | [List](./REFERENCE.md#triggers-list), [Search](./REFERENCE.md#triggers-search) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Context Store Search](./REFERENCE.md#triggers-context-store-search) |
 
 
 ### Authentication
@@ -135,7 +135,6 @@ See the official [Zendesk-Chat API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.72
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-chat/CHANGELOG.md)
+- **Package version:** 0.1.10
+- **Connector version:** 0.1.10
+- **Generated with Connector SDK commit SHA:** unknown

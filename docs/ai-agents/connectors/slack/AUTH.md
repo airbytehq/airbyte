@@ -22,8 +22,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_slack import SlackConnector
-from airbyte_agent_slack.models import SlackOauth20AuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.connectors.slack.models import SlackOauth20AuthenticationAuthConfig
 
 connector = SlackConnector(
     auth_config=SlackOauth20AuthenticationAuthConfig(
@@ -40,17 +40,17 @@ connector = SlackConnector(
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_token` | `str` | Yes | Your Slack Bot Token (xoxb-) or User Token (xoxp-) |
+| `bot_key` | `str` | Yes | Your Slack Bot Key (xoxb-) or User Token (xoxp-) |
 
 Example request:
 
 ```python
-from airbyte_agent_slack import SlackConnector
-from airbyte_agent_slack.models import SlackTokenAuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.connectors.slack.models import SlackTokenAuthenticationAuthConfig
 
 connector = SlackConnector(
     auth_config=SlackTokenAuthenticationAuthConfig(
-        api_token="<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
+        bot_key="<Your Slack Bot Key (xoxb-) or User Token (xoxp-)>"
     )
 )
 ```
@@ -86,7 +86,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Slack",
     "name": "My Slack Connector",
     "credentials": {
@@ -113,7 +113,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Slack") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -124,7 +124,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Slack",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -150,7 +150,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_token` | `str` | Yes | Your Slack Bot Token (xoxb-) or User Token (xoxp-) |
+| `bot_key` | `str` | Yes | Your Slack Bot Key (xoxb-) or User Token (xoxp-) |
 
 `replication_config` fields you need:
 
@@ -168,11 +168,11 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Slack",
     "name": "My Slack Connector",
     "credentials": {
-      "api_token": "<Your Slack Bot Token (xoxb-) or User Token (xoxp-)>"
+      "bot_key": "<Your Slack Bot Key (xoxb-) or User Token (xoxp-)>"
     },
     "replication_config": {
       "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>",
@@ -190,11 +190,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_slack import SlackConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.slack import SlackConnector, AirbyteAuthConfig
 
 connector = SlackConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
