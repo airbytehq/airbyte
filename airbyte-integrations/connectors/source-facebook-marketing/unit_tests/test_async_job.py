@@ -538,7 +538,8 @@ class TestInsightAsyncJob:
     )
     def test_split_job_by_fields_parent_not_enough_fields(self, api, fields):
         """
-        If there are <=1 non-PK fields, splitting by fields is impossible and should raise.
+        If there are <=1 non-PK fields, splitting by fields is impossible and should raise
+        with transient_error so the platform can retry the sync.
         """
         from source_facebook_marketing.streams.async_job import InsightAsyncJob
 
@@ -560,7 +561,41 @@ class TestInsightAsyncJob:
 
         from airbyte_cdk.models import FailureType
 
-        assert exc_info.value.failure_type == FailureType.system_error
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    def test_split_by_fields_parent_sentry_scenario(self, api):
+        """
+        Reproduces the exact Sentry crash from oncall#12088:
+        pk=['date_start', 'account_id', 'ad_id'], only non-PK field is 'social_spend'.
+        The terminal split condition must raise transient_error (not system_error)
+        so the platform can retry.
+        """
+        from source_facebook_marketing.streams.async_job import InsightAsyncJob
+
+        from airbyte_cdk.models import FailureType
+
+        interval = DateInterval(date(2024, 1, 1), date(2024, 1, 1))
+        pk = ["date_start", "account_id", "ad_id"]
+        params = {
+            "time_increment": 1,
+            "breakdowns": [],
+            "fields": ["date_start", "account_id", "ad_id", "social_spend"],
+        }
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad(1),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+        )
+
+        with pytest.raises(AirbyteTracedException, match="Cannot split by fields") as exc_info:
+            job._split_by_fields_parent()
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        assert "social_spend" in exc_info.value.internal_message
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_start_failure_generic(self, mocker, api):
