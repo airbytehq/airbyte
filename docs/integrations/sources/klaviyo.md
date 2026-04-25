@@ -121,6 +121,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.17.7 | 2026-04-24 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
 | 2.17.6 | 2026-04-21 | [75707](https://github.com/airbytehq/airbyte/pull/75707) | Update dependencies |
 | 2.17.5 | 2026-04-15 | [75180](https://github.com/airbytehq/airbyte/pull/75180) | Restore `subscriptions` field to profiles stream `additional-fields[profile]` parameter, fixing a regression introduced in v2.16.x where the subscriptions data was no longer fetched from the Klaviyo API |
 | 2.17.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

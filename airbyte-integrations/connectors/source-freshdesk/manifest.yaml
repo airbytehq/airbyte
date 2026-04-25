@@ -1685,6 +1685,16 @@ spec:
         order: 4
         title: Lookback Window
         default: 14
+      subscription_tier:
+        type: string
+        title: Subscription Plan/Tier
+        description: Your API subscription tier (affects rate limits)
+        enum:
+          - growth
+          - pro
+          - enterprise
+        default: growth
+        order: 5
       num_workers:
         type: integer
         title: Number of Concurrent Threads
@@ -1695,7 +1705,7 @@ spec:
         default: 5
         minimum: 2
         maximum: 16
-        order: 5
+        order: 6
     additionalProperties: true
 
 metadata:
@@ -3745,13 +3755,10 @@ concurrency_level:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: FixedWindowCallRatePolicy
-      period: "PT1M"
-      # due to lack for support for interpolated string for the call_limit field, this has been
-      # hardcoded to 50 which is the default rate for free plan
-      # in the near term use "{{ config.get('requests_per_minute')}}"
-      # long term is to utilize the `rate_limit_plan` field in config and specifying for each endpoint
-      call_limit: 50
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ {'growth': 200, 'pro': 400, 'enterprise': 700}.get(config.get('subscription_tier', 'growth'), 200) }}"
+          interval: "PT1M"
       matchers:
         - method: GET
           url_base: "https://{{ config['domain'] }}/api/v2/"
