@@ -22,8 +22,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_notion import NotionConnector
-from airbyte_agent_notion.models import NotionOauth20AuthConfig
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionOauth20AuthConfig
 
 connector = NotionConnector(
     auth_config=NotionOauth20AuthConfig(
@@ -45,8 +45,8 @@ connector = NotionConnector(
 Example request:
 
 ```python
-from airbyte_agent_notion import NotionConnector
-from airbyte_agent_notion.models import NotionAccessTokenAuthConfig
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
 
 connector = NotionConnector(
     auth_config=NotionAccessTokenAuthConfig(
@@ -78,7 +78,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Notion",
     "name": "My Notion Connector",
     "credentials": {
@@ -101,8 +101,8 @@ By default, Airbyte uses its own OAuth app credentials. You can override these w
 **Python SDK**
 
 ```python
-from airbyte_agent_notion import NotionConnector, AirbyteAuthConfig
-from airbyte_agent_notion.models import NotionOAuthCredentials
+from airbyte_agent_sdk.connectors.notion import NotionConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.notion.models import NotionOAuthCredentials
 
 await NotionConnector.configure_oauth_app_parameters(
     airbyte_config=AirbyteAuthConfig(
@@ -158,7 +158,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Notion") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -169,7 +169,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Notion",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -205,7 +205,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Notion",
     "name": "My Notion Connector",
     "credentials": {
@@ -222,11 +222,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_notion import NotionConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.notion import NotionConnector, AirbyteAuthConfig
 
 connector = NotionConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"

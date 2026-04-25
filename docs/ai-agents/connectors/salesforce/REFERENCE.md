@@ -9,17 +9,18 @@ The Salesforce connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Sobjects | [List](#sobjects-list) |
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Search](#accounts-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
-| Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Search](#leads-search) |
-| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [API Search](#opportunities-api-search), [Search](#opportunities-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search), [Search](#tasks-search) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Context Store Search](#accounts-context-store-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
+| Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Context Store Search](#leads-context-store-search) |
+| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [API Search](#opportunities-api-search), [Context Store Search](#opportunities-context-store-search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search), [Context Store Search](#tasks-context-store-search) |
 | Events | [List](#events-list), [Get](#events-get), [API Search](#events-api-search) |
 | Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [API Search](#campaigns-api-search) |
 | Cases | [List](#cases-list), [Get](#cases-get), [API Search](#cases-api-search) |
 | Notes | [List](#notes-list), [Get](#notes-get), [API Search](#notes-api-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
+| Reports | [List](#reports-list), [Get](#reports-get) |
 | Query | [List](#query-list) |
 
 ## Sobjects
@@ -244,14 +245,14 @@ Examples:
 
 </details>
 
-### Accounts Search
+### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.accounts.search(
+await salesforce.accounts.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -264,7 +265,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -530,14 +531,14 @@ Examples:
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.contacts.search(
+await salesforce.contacts.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -550,7 +551,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -808,14 +809,14 @@ Examples:
 
 </details>
 
-### Leads Search
+### Leads Context Store Search
 
 Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.leads.search(
+await salesforce.leads.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -828,7 +829,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -1102,14 +1103,14 @@ Examples:
 
 </details>
 
-### Opportunities Search
+### Opportunities Context Store Search
 
 Search and filter opportunities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.opportunities.search(
+await salesforce.opportunities.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -1122,7 +1123,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -1380,14 +1381,14 @@ Examples:
 
 </details>
 
-### Tasks Search
+### Tasks Context Store Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.tasks.search(
+await salesforce.tasks.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -1400,7 +1401,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -2504,6 +2505,114 @@ Obtain this ID from the list or get action.
  |
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
+
+## Reports
+
+### Reports List
+
+Returns a list of reports available in the Salesforce org.
+Each report includes metadata such as Id, Name, Format, Description, and URL.
+This uses the Analytics REST API, not SOQL.
+
+
+#### Python SDK
+
+```python
+await salesforce.reports.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reports",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `null \| string` |  |
+| `url` | `null \| string` |  |
+| `describeUrl` | `null \| string` |  |
+| `instancesUrl` | `null \| string` |  |
+
+
+</details>
+
+### Reports Get
+
+Executes a report synchronously and returns the report data results.
+Returns both metadata and the executed data including fact maps, aggregates, and detail rows.
+First use the list action to find available reports, then use this action to run a report and get its data.
+Note: Large reports may be truncated. For reports with more than 2,000 detail rows, consider using async report runs.
+
+
+#### Python SDK
+
+```python
+await salesforce.reports.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reports",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Salesforce Report ID (18-character ID starting with '00O').
+Obtain this ID from the list action.
+ |
+| `includeDetails` | `boolean` | No | Whether to include detail rows in the report results. Defaults to true.
+Set to false to get only summary/aggregate data.
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `attributes` | `null \| object` |  |
+| `reportMetadata` | `null \| object` |  |
+| `reportExtendedMetadata` | `null \| object` |  |
+| `factMap` | `null \| object` |  |
+| `groupingsDown` | `null \| object` |  |
+| `groupingsAcross` | `null \| object` |  |
+| `hasDetailRows` | `null \| boolean` |  |
+| `allData` | `null \| boolean` |  |
+
+
+</details>
 
 ## Query
 

@@ -8,14 +8,21 @@ The Slack connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Search](#channels-search) |
-| Channel Messages | [List](#channel-messages-list), [Search](#channel-messages-search) |
-| Threads | [List](#threads-list), [Search](#threads-search) |
-| Messages | [Create](#messages-create), [Update](#messages-update) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Context Store Search](#channels-context-store-search) |
+| Channel Messages | [List](#channel-messages-list), [Context Store Search](#channel-messages-context-store-search) |
+| Threads | [List](#threads-list), [Context Store Search](#threads-context-store-search) |
+| Messages | [Create](#messages-create), [Update](#messages-update), [Delete](#messages-delete) |
 | Channel Topics | [Create](#channel-topics-create) |
 | Channel Purposes | [Create](#channel-purposes-create) |
-| Reactions | [Create](#reactions-create) |
+| Channel Invites | [Create](#channel-invites-create) |
+| Reactions | [Create](#reactions-create), [Delete](#reactions-delete) |
+| Ephemeral Messages | [Create](#ephemeral-messages-create) |
+| Scheduled Messages | [Create](#scheduled-messages-create) |
+| Channel Archives | [Create](#channel-archives-create) |
+| Channel Kicks | [Create](#channel-kicks-create) |
+| Pins | [Create](#pins-create) |
+| Bookmarks | [Create](#bookmarks-create) |
 
 ## Users
 
@@ -153,14 +160,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await slack.users.search(
+await slack.users.context_store_search(
     query={"filter": {"eq": {"color": "<str>"}}}
 )
 ```
@@ -173,7 +180,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"color": "<str>"}}}
     }
@@ -575,14 +582,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Channels Search
+### Channels Context Store Search
 
 Search and filter channels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await slack.channels.search(
+await slack.channels.context_store_search(
     query={"filter": {"eq": {"context_team_id": "<str>"}}}
 )
 ```
@@ -595,7 +602,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "channels",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"context_team_id": "<str>"}}}
     }
@@ -812,14 +819,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Channel Messages Search
+### Channel Messages Context Store Search
 
 Search and filter channel messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await slack.channel_messages.search(
+await slack.channel_messages.context_store_search(
     query={"filter": {"eq": {"type": "<str>"}}}
 )
 ```
@@ -832,7 +839,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "channel_messages",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"type": "<str>"}}}
     }
@@ -1025,14 +1032,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Threads Search
+### Threads Context Store Search
 
 Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await slack.threads.search(
+await slack.threads.context_store_search(
     query={"filter": {"eq": {"type": "<str>"}}}
 )
 ```
@@ -1045,7 +1052,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "threads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"type": "<str>"}}}
     }
@@ -1246,6 +1253,58 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Messages Delete
+
+Deletes a message from a channel. When used with a bot token, may only delete messages posted by that bot.
+
+#### Python SDK
+
+```python
+await slack.messages.delete(
+    channel="<str>",
+    ts="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "delete",
+    "params": {
+        "channel": "<str>",
+        "ts": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID containing the message to be deleted |
+| `ts` | `string` | Yes | Timestamp of the message to be deleted |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `channel` | `string \| null` |  |
+| `ts` | `string \| null` |  |
+
+
+</details>
+
 ## Channel Topics
 
 ### Channel Topics Create
@@ -1410,6 +1469,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+## Channel Invites
+
+### Channel Invites Create
+
+Invites one or more users to a public or private channel
+
+#### Python SDK
+
+```python
+await slack.channel_invites.create(
+    channel="<str>",
+    users="<str>",
+    force=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_invites",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "users": "<str>",
+        "force": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | The ID of the public or private channel to invite user(s) to |
+| `users` | `string` | Yes | A comma separated list of user IDs. Up to 1000 users may be listed. |
+| `force` | `boolean` | No | When set to true and multiple user IDs are provided, continue inviting the valid ones while disregarding invalid IDs. Defaults to false. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
+
+
+</details>
+
 ## Reactions
 
 ### Reactions Create
@@ -1461,6 +1605,421 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `ok` | `boolean` |  |
+
+
+</details>
+
+### Reactions Delete
+
+Removes a reaction (emoji) from a message
+
+#### Python SDK
+
+```python
+await slack.reactions.delete(
+    channel="<str>",
+    timestamp="<str>",
+    name="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reactions",
+    "action": "delete",
+    "params": {
+        "channel": "<str>",
+        "timestamp": "<str>",
+        "name": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID containing the message |
+| `timestamp` | `string` | Yes | Timestamp of the message to remove reaction from |
+| `name` | `string` | Yes | Reaction emoji name to remove (without colons, e.g., "thumbsup") |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
+
+</details>
+
+## Ephemeral Messages
+
+### Ephemeral Messages Create
+
+Sends an ephemeral message to a user in a channel. Ephemeral messages are visible only to the target user and do not persist across sessions.
+
+#### Python SDK
+
+```python
+await slack.ephemeral_messages.create(
+    channel="<str>",
+    user="<str>",
+    text="<str>",
+    thread_ts="<str>",
+    blocks="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ephemeral_messages",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "user": "<str>",
+        "text": "<str>",
+        "thread_ts": "<str>",
+        "blocks": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel, private group, or IM channel to send the ephemeral message to. Can be an encoded ID or a name. |
+| `user` | `string` | Yes | ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument. |
+| `text` | `string` | Yes | Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided. |
+| `thread_ts` | `string` | No | Provide another message's ts value to post this ephemeral message in a thread. The thread must already be active. |
+| `blocks` | `string` | No | A JSON-based array of structured blocks, presented as a URL-encoded string. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `message_ts` | `string \| null` |  |
+
+
+</details>
+
+## Scheduled Messages
+
+### Scheduled Messages Create
+
+Schedules a message for delivery to a channel at a specified time in the future. Messages can be scheduled up to 120 days in advance.
+
+#### Python SDK
+
+```python
+await slack.scheduled_messages.create(
+    channel="<str>",
+    text="<str>",
+    post_at=0,
+    thread_ts="<str>",
+    reply_broadcast=True,
+    unfurl_links=True,
+    unfurl_media=True
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "scheduled_messages",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "text": "<str>",
+        "post_at": 0,
+        "thread_ts": "<str>",
+        "reply_broadcast": True,
+        "unfurl_links": True,
+        "unfurl_media": True
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel, private group, or DM channel to send the scheduled message to. Can be an encoded ID or a name. |
+| `text` | `string` | Yes | Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided. |
+| `post_at` | `integer` | Yes | Unix timestamp representing the future time the message should post to Slack. Must be within 120 days. |
+| `thread_ts` | `string` | No | Provide another message's ts value to make this message a reply. Avoid using a reply's ts value; use its parent instead. |
+| `reply_broadcast` | `boolean` | No | Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel. Defaults to false. |
+| `unfurl_links` | `boolean` | No | Pass true to enable unfurling of primarily text-based content. |
+| `unfurl_media` | `boolean` | No | Pass false to disable unfurling of media content. |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `channel` | `string \| null` |  |
+| `scheduled_message_id` | `string \| null` |  |
+| `post_at` | `integer \| null` |  |
+| `message` | `object \| any` |  |
+
+
+</details>
+
+## Channel Archives
+
+### Channel Archives Create
+
+Archives a conversation. Not all types of conversations can be archived.
+
+#### Python SDK
+
+```python
+await slack.channel_archives.create(
+    channel="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_archives",
+    "action": "create",
+    "params": {
+        "channel": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to archive |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
+
+</details>
+
+## Channel Kicks
+
+### Channel Kicks Create
+
+Removes a user from a public or private channel
+
+#### Python SDK
+
+```python
+await slack.channel_kicks.create(
+    channel="<str>",
+    user="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_kicks",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "user": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to remove the user from |
+| `user` | `string` | Yes | User ID to be removed from the channel |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+| `errors` | `object \| null` |  |
+
+
+</details>
+
+## Pins
+
+### Pins Create
+
+Pins a message to a particular channel. Both channel and timestamp are required.
+
+#### Python SDK
+
+```python
+await slack.pins.create(
+    channel="<str>",
+    timestamp="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pins",
+    "action": "create",
+    "params": {
+        "channel": "<str>",
+        "timestamp": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | Channel ID to pin the message to |
+| `timestamp` | `string` | Yes | Timestamp of the message to pin |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ok` | `boolean` |  |
+
+
+</details>
+
+## Bookmarks
+
+### Bookmarks Create
+
+Adds a bookmark (link) to a channel. Bookmarks appear in the channel header for easy access.
+
+#### Python SDK
+
+```python
+await slack.bookmarks.create(
+    channel_id="<str>",
+    title="<str>",
+    type="<str>",
+    link="<str>",
+    emoji="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "bookmarks",
+    "action": "create",
+    "params": {
+        "channel_id": "<str>",
+        "title": "<str>",
+        "type": "<str>",
+        "link": "<str>",
+        "emoji": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel_id` | `string` | Yes | Channel ID to add the bookmark to |
+| `title` | `string` | Yes | Title for the bookmark |
+| `type` | `string` | Yes | Type of the bookmark (e.g., "link") |
+| `link` | `string` | No | URL to bookmark (required for link type). Must begin with http:// or https://. |
+| `emoji` | `string` | No | Emoji tag to apply to the bookmark (e.g., ":rocket:") |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string \| null` |  |
+| `channel_id` | `string \| null` |  |
+| `title` | `string \| null` |  |
+| `link` | `string \| null` |  |
+| `emoji` | `string \| null` |  |
+| `icon_url` | `string \| null` |  |
+| `type` | `string \| null` |  |
+| `entity_id` | `string \| null` |  |
+| `date_created` | `integer \| null` |  |
+| `date_updated` | `integer \| null` |  |
+| `rank` | `string \| null` |  |
+| `last_updated_by_user_id` | `string \| null` |  |
+| `last_updated_by_team_id` | `string \| null` |  |
+| `shortcut_id` | `string \| null` |  |
+| `app_id` | `string \| null` |  |
 
 
 </details>
