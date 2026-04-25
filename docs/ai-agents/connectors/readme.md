@@ -6,31 +6,9 @@ import AgentConnectorRegistry from '@site/src/components/AgentConnectorRegistry'
 
 # Agent connectors
 
-Airbyte's agent connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use in the Airbyte Agents platform, using any of Airbyte's [supported interfaces](../interfaces/).
+Airbyte's agent connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use in the Airbyte Agents platform, using any of Airbyte's [supported interfaces](../interfaces/). 
 
-## Connector structure
-
-Each connector is a standalone Python package in the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk).
-
-Inside each connector folder, you can find the following.
-
-- The Python client
-- Connector-specific documentation (the same as the documentation on this site)
-- Typed methods generated from Airbyte's connector definitions
-- Validation + error handling
-
-```text
-connectors/
-├── stripe/
-│   ├── airbyte_agent_stripe/
-│   ├── pyproject.toml
-│   └── README.md
-│   └── AUTH.md
-│   └── REFERENCE.md
-├── github/
-│   └── ...
-└── ...
-```
+Airbyte's connectors are open source, and you can find them in the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk/tree/main/airbyte_agent_sdk/connectors).
 
 ## How agent connectors differ from data replication connectors
 
