@@ -54,38 +54,46 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 <details>
   <summary>Expand to review scopes</summary>
 
-
-| Stream                      | Required Scope                                                                                               |
-| :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
-| `campaigns`                 | `content`                                                                                                    |
-| `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
-| `contact_lists`             | `crm.lists.read`                                                                                             |
-| `contacts`                  | `crm.objects.contacts.read`                                                                                  |
-| `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
-| Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
-| `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
-| `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
-| `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
-| `email_events`              | `content`                                                                                                    |
-| `email_subscriptions`       | `content`                                                                                                    |
-| `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
-| `engagements_emails`        | `sales-email-read`                                                                                           |
-| `forms`                     | `forms`                                                                                                      |
-| `form_submissions`          | `forms`                                                                                                      |
-| `goals`                     | `crm.objects.goals.read`                                                                                     |
-| `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
-| `list_memberships`          | `crm.lists.read`                                                                                             |
-| `line_items`                | `e-commerce`                                                                                                 |
-| `owners`                    | `crm.objects.owners.read`                                                                                    |
-| `products`                  | `e-commerce`                                                                                                 |
-| `property_history`          | `crm.objects.contacts.read`                                                                                  |
-| `subscription_changes`      | `content`                                                                                                    |
-| `tickets`                   | `tickets`                                                                                                    |
-| `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
-| `account_details`           | `oauth`                                                                                                      |
-| `deal_splits`               | `crm.objects.deals.read`                                                                                     |
-| `properties`                | No additional scopes required                                                                                |
-| `workflows`                 | `automation`                                                                                                 |
+| Stream                         | Required scopes                                                                                              |
+| :----------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `account_details`              | `oauth`                                                                                                      |
+| `campaigns`                    | `crm.lists.read`                                                                                             |
+| `companies`                    | `crm.objects.contacts.read`, `crm.objects.companies.read`                                                    |
+| `companies_property_history`   | `crm.objects.companies.read`                                                                                 |
+| `contact_lists`                | `crm.lists.read`                                                                                             |
+| `contacts`                     | `crm.objects.contacts.read`                                                                                  |
+| `contacts_property_history`    | `crm.objects.contacts.read`                                                                                  |
+| Custom CRM Objects             | `crm.objects.custom.read`                                                                                    |
+| `deal_pipelines`               | `crm.objects.contacts.read`                                                                                  |
+| `deal_splits`                  | `crm.objects.deals.read`                                                                                     |
+| `deals`                        | `crm.objects.deals.read`                                                                                     |
+| `deals_archived`               | `contacts`, `crm.objects.deals.read`                                                                         |
+| `deals_property_history`       | `crm.objects.deals.read`                                                                                     |
+| `email_events`                 | `content`                                                                                                    |
+| `email_subscriptions`          | `content`                                                                                                    |
+| `engagements`                  | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
+| `engagements_calls`            | `crm.objects.contacts.read`                                                                                  |
+| `engagements_emails`           | `crm.objects.contacts.read`, `sales-email-read`                                                              |
+| `engagements_meetings`         | `crm.objects.contacts.read`                                                                                  |
+| `engagements_notes`            | `crm.objects.contacts.read`                                                                                  |
+| `engagements_tasks`            | `crm.objects.contacts.read`                                                                                  |
+| `forms`                        | `forms`                                                                                                      |
+| `form_submissions`             | `forms`                                                                                                      |
+| `goals`                        | `crm.objects.goals.read`                                                                                     |
+| `leads`                        | `crm.objects.contacts.read`, `crm.objects.companies.read`, `crm.objects.leads.read`                          |
+| `line_items`                   | `e-commerce`, `crm.objects.line_items.read`                                                                  |
+| `list_memberships`             | `crm.lists.read`                                                                                             |
+| `marketing_emails`             | `content`                                                                                                    |
+| `owners`                       | `crm.objects.owners.read`                                                                                    |
+| `owners_archived`              | `crm.objects.owners.read`                                                                                    |
+| `products`                     | `e-commerce`                                                                                                 |
+| `properties`                   | No additional scopes required                                                                                |
+| `subscription_changes`         | `content`                                                                                                    |
+| `ticket_pipelines`             | `tickets`, `crm.objects.contacts.read`, `crm.objects.companies.read`, `crm.objects.deals.read`, `crm.schemas.contacts.read`, `crm.schemas.companies.read`, `crm.schemas.deals.read`, `crm.schemas.custom.read`, `crm.schemas.quotes.read`, `crm.schemas.line_items.read`, `e-commerce` |
+| `tickets`                      | `tickets`                                                                                                    |
+| `users`                        | `crm.objects.users.read`, `settings.users.read`                                                              |
+| `workflows`                    | `automation`                                                                                                 |
+| Web Analytics streams (experimental) | `crm.objects.contacts.read`, `business-intelligence`                                                   |
 
 </details>
 
@@ -320,16 +328,14 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - **403 Forbidden Error**
 
-  - Hubspot has **scopes** for each API call.
-  - Each stream is tied to a scope and will need access to that scope to sync data.
-  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
-  - Additional permissions:
+  - HubSpot has **scopes** for each API call.
+  - Each stream is tied to a scope and needs access to that scope to sync data.
+  - Review the HubSpot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  - Some streams also require specific HubSpot product tiers:
 
-    `feedback_submissions`: Service Hub Professional account
+    `marketing_emails`: Marketing Hub Starter or higher.
 
-    `marketing_emails`: Market Hub Starter account
-
-    `workflows`: Sales, Service, and Marketing Hub Professional accounts
+    `workflows`: Sales, Service, or Marketing Hub Professional or higher.
 
 - Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
@@ -346,7 +352,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
+| 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Align OAuth `optional_scopes` with the scopes the connector's streams actually use. Removes invalid scopes (`files`, `files.ui_hidden.read`, `forms-uploaded-files`, `crm.objects.feedback_submissions.read`) and adds missing ones (`crm.objects.courses.read`, `crm.objects.projects.read`, `crm.objects.quotes.read`) |
 | 6.5.3 | 2026-04-20 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |
 | 6.5.1 | 2026-04-16 | [76395](https://github.com/airbytehq/airbyte/pull/76395) | Fix Avro serialization for `listId` in the `list_memberships` stream (emit as string) and ignore `400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST` responses so lists with an `objectTypeId` that is not active for the portal (e.g. Leads, `0-136`) are skipped instead of failing the sync |
