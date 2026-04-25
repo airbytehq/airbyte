@@ -5,7 +5,7 @@ sidebar_label: Developer Quickstart
 
 # Developer Quickstart
 
-This section is for developers who want to build agents that use Airbyte connectors. There are two paths depending on how you prefer to work.
+This section is for developers who want to build agents that use Airbyte connectors. Pick a path based on how you prefer to work.
 
 ```mermaid
 flowchart TD
@@ -24,7 +24,7 @@ flowchart TD
 
 ## Tutorials
 
-Step-by-step walkthroughs that take you from an empty project to a working agent in approximately 15 minutes. Each tutorial uses a different Python framework, but all of them follow the same pattern: create a project, install the Airbyte Agent SDK, connect to a data source, and execute operations.
+Step-by-step guides that take you from an empty project to a working agent in approximately 15 minutes. Each tutorial uses a different Python framework, but all of them follow the same pattern: create a project, install the Airbyte Agent SDK, connect to a data source, and execute operations.
 
 Pick the framework you use:
 

@@ -42,7 +42,7 @@ flowchart LR
 
 ### Connect
 
-Airbyte provides a growing library of open-source, type-safe [agent connectors](../connectors) that plug agents into SaaS APIs like Salesforce, HubSpot, Stripe, Jira, Zendesk, GitHub, and dozens more.
+Airbyte provides a growing library of open source, type safe [agent connectors](../connectors) that plug agents into SaaS APIs like Salesforce, HubSpot, Stripe, Jira, Zendesk, GitHub, and dozens more.
 
 The platform handles the hard parts:
 
