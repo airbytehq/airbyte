@@ -326,6 +326,7 @@ jobs:
       - name: Verify required status checks pass
         if: steps.check-open.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
         id: verify-checks
+        continue-on-error: true
         uses: actions/github-script@v8
         env:
           REQUIRED_CHECKS_JSON: ${{ needs.list-candidates.outputs.required-checks }}
@@ -559,6 +560,7 @@ jobs:
           --body "Auto-approved by auto-merge workflow (bypass-ci)."
 
       - name: Force squash merge PR
+        id: force-merge-pr
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
@@ -586,13 +588,16 @@ jobs:
           VALID_PATHS: ${{ steps.validate-paths.outputs.valid }}
           ELIGIBLE: ${{ steps.eligible.outputs.result }}
           DRY_RUN: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true' }}
+          MERGE_OUTCOME: ${{ steps.force-merge-pr.outcome }}
         run: |
           link="[#${PR_NUMBER}](https://github.com/airbytehq/airbyte/pull/${PR_NUMBER})"
           if [ "$ELIGIBLE" = "true" ]; then
             if [ "$DRY_RUN" = "true" ]; then
               echo "| ${link} | ${PR_TITLE} | :yellow_circle: Would force-merge (dry-run) |" >> "$GITHUB_STEP_SUMMARY"
-            else
+            elif [ "$MERGE_OUTCOME" = "success" ]; then
               echo "| ${link} | ${PR_TITLE} | :green_circle: Force-merged |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| ${link} | ${PR_TITLE} | :red_circle: Force-merge failed |" >> "$GITHUB_STEP_SUMMARY"
             fi
           else
             reason=""
