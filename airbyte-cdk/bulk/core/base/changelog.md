@@ -1,3 +1,7 @@
+## Version 1.0.3
+
+Use AIRBYTE_EDITION env var instead of DEPLOYMENT_MODE for the AIRBYTE_CLOUD_DEPLOYMENT feature flag, matching the platform's current environment variable.
+
 ## Version 1.0.2
 
 Improved null handling for array types.

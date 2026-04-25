@@ -23,8 +23,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector
-from airbyte_agent_amazon_seller_partner.models import AmazonSellerPartnerAuthConfig
+from airbyte_agent_sdk.connectors.amazon_seller_partner import AmazonSellerPartnerConnector
+from airbyte_agent_sdk.connectors.amazon_seller_partner.models import AmazonSellerPartnerAuthConfig
 
 connector = AmazonSellerPartnerConnector(
     auth_config=AmazonSellerPartnerAuthConfig(
@@ -60,7 +60,7 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. |
+| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in ISO 8601 format (e.g. 2024-01-01T00:00:00Z). Any data before this date will not be replicated. This sets the earliest date for order creation and financial event queries. For most sellers, a start date of 1-2 years ago is a good default. Must include the time component and Z timezone suffix. |
 
 Example request:
 
@@ -69,7 +69,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Amazon-Seller-Partner",
     "name": "My Amazon-Seller-Partner Connector",
     "credentials": {
@@ -79,7 +79,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "access_token": "<Access token (optional if refresh_token is provided).>"
     },
     "replication_config": {
-      "replication_start_date": "<UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.>"
+      "replication_start_date": "<UTC date and time in ISO 8601 format (e.g. 2024-01-01T00:00:00Z). Any data before this date will not be replicated. This sets the earliest date for order creation and financial event queries. For most sellers, a start date of 1-2 years ago is a good default. Must include the time component and Z timezone suffix.>"
     }
   }'
 ```
@@ -95,7 +95,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Amazon-Seller-Partner") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -106,7 +106,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Amazon-Seller-Partner",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -135,11 +135,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.amazon_seller_partner import AmazonSellerPartnerConnector, AirbyteAuthConfig
 
 connector = AmazonSellerPartnerConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -169,8 +169,8 @@ The Amazon-Seller-Partner connector requires the following configuration variabl
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| `region` | `string` | Yes | na | The SP-API endpoint URL based on seller region:
-- NA (North America: US, CA, MX, BR): https://sellingpartnerapi-na.amazon.com
-- EU (Europe/Middle East/Africa/India): https://sellingpartnerapi-eu.amazon.com
-- FE (Far East: JP, AU, SG): https://sellingpartnerapi-fe.amazon.com
- |
+| `region` | `string` | Yes | na | The seller's marketplace region. This determines both the API endpoint and the marketplace ID used for queries. Select the country code where you sell:
+North America (NA endpoint): US (Amazon.com), CA (Amazon.ca), MX (Amazon.com.mx), BR (Amazon.com.br)
+Europe (EU endpoint): DE (Amazon.de), FR (Amazon.fr), IT (Amazon.it), ES (Amazon.es), UK/GB (Amazon.co.uk), NL (Amazon.nl), SE (Amazon.se), PL (Amazon.pl), BE (Amazon.com.be), TR (Amazon.com.tr), EG (Amazon.eg), SA (Amazon.sa), AE (Amazon.ae), IN (Amazon.in), ZA (Amazon.co.za)
+Far East (FE endpoint): JP (Amazon.co.jp), AU (Amazon.com.au), SG (Amazon.sg)
+The region is automatically mapped to the correct API endpoint (na/eu/fe) and marketplace ID. You only need to specify your country code. |

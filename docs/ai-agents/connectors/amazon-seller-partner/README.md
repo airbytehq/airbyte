@@ -9,16 +9,20 @@ Connector for the Amazon Selling Partner API (SP-API). Provides access to seller
 
 The Amazon-Seller-Partner connector is optimized to handle prompts like these.
 
-- List all recent orders
-- Show me order items for a specific order
-- List financial event groups
-- Show recent financial events
-- Search catalog items by keyword
-- List recent reports
-- What are my top-selling products by order volume?
-- Show orders from the last 30 days with status Shipped
-- Find financial events related to refunds
-- Which orders have the highest total value?
+- List all orders from the last 7 days
+- Show me shipped orders from January 2024
+- Show me order items for order 111-2222222-3333333
+- List financial event groups from the last 90 days
+- Show refund events from last month
+- Search the catalog for wireless headphones
+- Look up product details for ASIN B08N5WRWNW
+- List completed reports from this week
+- What are my top-selling products by order volume this month?
+- Show orders with status Shipped from the last 30 days
+- Find all refund financial events from last quarter
+- Which orders have the highest total value this week?
+- How many orders were canceled in the last 60 days?
+- What service fees were charged last month?
 
 ## Unsupported questions
 
@@ -28,11 +32,12 @@ The Amazon-Seller-Partner connector isn't currently able to handle prompts like 
 - Cancel an order
 - Submit a new report request
 - Update product listings
+- Change the marketplace region
 
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-amazon-seller-partner
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -44,8 +49,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector
-from airbyte_agent_amazon_seller_partner.models import AmazonSellerPartnerAuthConfig
+from airbyte_agent_sdk.connectors.amazon_seller_partner import AmazonSellerPartnerConnector
+from airbyte_agent_sdk.connectors.amazon_seller_partner.models import AmazonSellerPartnerAuthConfig
 
 connector = AmazonSellerPartnerConnector(
     auth_config=AmazonSellerPartnerAuthConfig(
@@ -70,11 +75,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.amazon_seller_partner import AmazonSellerPartnerConnector, AirbyteAuthConfig
 
 connector = AmazonSellerPartnerConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -95,10 +100,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Search](./REFERENCE.md#orders-search) |
-| Order Items | [List](./REFERENCE.md#order-items-list), [Search](./REFERENCE.md#order-items-search) |
-| List Financial Event Groups | [List](./REFERENCE.md#list-financial-event-groups-list), [Search](./REFERENCE.md#list-financial-event-groups-search) |
-| List Financial Events | [List](./REFERENCE.md#list-financial-events-list), [Search](./REFERENCE.md#list-financial-events-search) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
+| Order Items | [List](./REFERENCE.md#order-items-list), [Context Store Search](./REFERENCE.md#order-items-context-store-search) |
+| List Financial Event Groups | [List](./REFERENCE.md#list-financial-event-groups-list), [Context Store Search](./REFERENCE.md#list-financial-event-groups-context-store-search) |
+| List Financial Events | [List](./REFERENCE.md#list-financial-events-list), [Context Store Search](./REFERENCE.md#list-financial-events-context-store-search) |
 | Catalog Items | [List](./REFERENCE.md#catalog-items-list), [Get](./REFERENCE.md#catalog-items-get) |
 | Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
 
@@ -113,7 +118,6 @@ See the official [Amazon-Seller-Partner API reference](https://developer-docs.am
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amazon-seller-partner/CHANGELOG.md)
+- **Package version:** 1.0.5
+- **Connector version:** 1.0.5
+- **Generated with Connector SDK commit SHA:** unknown

@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 import backoff
 from facebook_business.adobjects.ad import Ad
@@ -15,11 +15,18 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from facebook_business.exceptions import FacebookRequestError
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
-from source_facebook_marketing.streams.common import retry_pattern
+from source_facebook_marketing.streams.common import retry_pattern, traced_exception
 
 from ..utils import DateInterval
+
+
+if TYPE_CHECKING:
+    from source_facebook_marketing.streams.async_job_manager import APILimit
 
 
 logger = logging.getLogger("airbyte")
@@ -406,7 +413,11 @@ class InsightAsyncJob(AsyncJob):
 
         ids = self._collect_child_ids(pk_name=pk_name, level=level)
         if not ids:
-            raise ValueError(f"No child IDs at level={level}")
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned no data for the requested breakdown level.",
+                internal_message=f"No child IDs at level={level} for edge_object={self._edge_object}, interval={self._interval}",
+                failure_type=FailureType.system_error,
+            )
 
         return [
             InsightAsyncJob(
@@ -444,8 +455,14 @@ class InsightAsyncJob(AsyncJob):
         for attempt in range(1, self.MAX_ID_COLLECTION_ATTEMPTS + 1):
             try:
                 id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
+            except FacebookRequestError as e:
+                raise traced_exception(e) from e
             except Exception as e:
-                raise ValueError(f"Failed to start ID-collection at level={level}: {e}") from e
+                raise AirbyteTracedException(
+                    message="Facebook Insights API request failed during data retrieval.",
+                    internal_message=f"Failed to start ID-collection job at level={level}: {e}",
+                    failure_type=FailureType.transient_error,
+                ) from e
 
             start_ts = ab_datetime_now()
             while True:
@@ -463,7 +480,11 @@ class InsightAsyncJob(AsyncJob):
                     )
                     break
                 if (ab_datetime_now() - start_ts) > self._job_timeout:
-                    raise ValueError(f"ID-collection timed out for level={level}")
+                    raise AirbyteTracedException(
+                        message="Facebook Insights API request timed out during data retrieval.",
+                        internal_message=f"ID-collection timed out for level={level} after {self._job_timeout}",
+                        failure_type=FailureType.transient_error,
+                    )
                 time.sleep(30)
 
             if status == Status.COMPLETED:
@@ -472,12 +493,20 @@ class InsightAsyncJob(AsyncJob):
             if attempt < self.MAX_ID_COLLECTION_ATTEMPTS:
                 time.sleep(30)
         else:
-            raise ValueError(f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts: {last_status}")
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned a transient failure during data retrieval.",
+                internal_message=f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts: {last_status}",
+                failure_type=FailureType.transient_error,
+            )
 
         try:
             result_cursor = id_job.get_result(params={"limit": self.page_size})
         except FacebookBadObjectError as e:
-            raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
+            raise AirbyteTracedException(
+                message="Facebook Insights API returned an invalid response during data retrieval.",
+                internal_message=f"Failed to fetch ID-collection results for level={level}: {e}",
+                failure_type=FailureType.transient_error,
+            ) from e
 
         ids = {row[pk_name] for row in result_cursor if pk_name in row}
         logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
@@ -487,7 +516,11 @@ class InsightAsyncJob(AsyncJob):
         all_fields: List[str] = list(self._params.get("fields", []))
         split_candidates = [f for f in all_fields if f not in self._primary_key]
         if len(split_candidates) <= 1:
-            raise ValueError("Cannot split by fields: not enough non-PK fields")
+            raise AirbyteTracedException(
+                message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
+                internal_message=f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, pk={self._primary_key})",
+                failure_type=FailureType.system_error,
+            )
 
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
