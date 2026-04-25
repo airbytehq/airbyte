@@ -212,6 +212,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
 | 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
 | 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |

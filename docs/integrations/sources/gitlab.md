@@ -136,6 +136,7 @@ The connector silently skips any group, project, or resource that returns an HTT
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.25 | 2026-04-21 | [76608](https://github.com/airbytehq/airbyte/pull/76608) | Update dependencies |
 | 4.4.24 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.4.23 | 2026-04-09 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Promote 4.4.23-rc.5 to GA: HTTPAPIBudget with concurrency 8 |
 | 4.4.23-rc.5 | 2026-04-01 | [75994](https://github.com/airbytehq/airbyte/pull/75994) | Revert concurrency to 8 with HTTPAPIBudget for progressive rollout tuning |

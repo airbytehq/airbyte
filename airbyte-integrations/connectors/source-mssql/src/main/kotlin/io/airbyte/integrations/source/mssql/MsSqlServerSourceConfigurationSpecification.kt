@@ -37,6 +37,10 @@ import jakarta.inject.Singleton
  * `MicronautPropertiesFriendly.*`.
  */
 @JsonSchemaTitle("MSSQL Source Spec")
+@JsonSchemaInject(
+    json =
+        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"entra_id","title":"Microsoft Entra ID"}]}"""
+)
 @JsonPropertyOrder(
     value = ["host", "port", "database", "username", "replication_method"],
 )
@@ -46,13 +50,15 @@ import jakarta.inject.Singleton
 class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
-    @JsonSchemaInject(json = """{"order":0}""")
+    @JsonSchemaInject(json = """{"order":0,"group":"db"}""")
     @JsonPropertyDescription("The hostname of the database.")
     lateinit var host: String
 
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
-    @JsonSchemaInject(json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"]}""")
+    @JsonSchemaInject(
+        json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"],"group":"db"}"""
+    )
     @JsonSchemaDefault("1433")
     @JsonPropertyDescription(
         "The port of the database.",
@@ -62,7 +68,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonProperty("database")
     @JsonSchemaTitle("Database")
     @JsonPropertyDescription("The name of the database.")
-    @JsonSchemaInject(json = """{"order":2, "examples":["master"]}""")
+    @JsonSchemaInject(json = """{"order":2, "examples":["master"],"group":"db"}""")
     lateinit var database: String
 
     @JsonProperty("schemas")
@@ -75,15 +81,23 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 
     @JsonProperty("username")
     @JsonSchemaTitle("Username")
-    @JsonPropertyDescription("The username which is used to access the database.")
-    @JsonSchemaInject(json = """{"order":4}""")
-    lateinit var username: String
+    @JsonPropertyDescription(
+        "The username which is used to access the database. " +
+            "Not required if Microsoft Entra ID authentication is configured below.",
+    )
+    @JsonSchemaInject(json = """{"order":4,"always_show":true,"group":"auth"}""")
+    var username: String? = null
 
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
-    @JsonPropertyDescription("The password associated with the username.")
-    @JsonSchemaInject(json = """{"order":5,"airbyte_secret":true}""")
-    lateinit var password: String
+    @JsonPropertyDescription(
+        "The password associated with the username. " +
+            "Not required if Microsoft Entra ID authentication is configured below.",
+    )
+    @JsonSchemaInject(
+        json = """{"order":5,"airbyte_secret":true,"always_show":true,"group":"auth"}"""
+    )
+    var password: String? = null
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -94,6 +108,37 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     )
     @JsonSchemaInject(json = """{"order":6}""")
     var jdbcUrlParams: String? = null
+
+    @JsonProperty("client_id")
+    @JsonSchemaTitle("Entra ID Client ID")
+    @JsonPropertyDescription(
+        "Application (client) ID of a Microsoft Entra ID service principal. " +
+            "When provided together with Client Secret, Entra ID authentication is used " +
+            "instead of username and password.",
+    )
+    @JsonSchemaInject(json = """{"order":7,"group":"entra_id"}""")
+    var clientId: String? = null
+
+    @JsonProperty("client_secret")
+    @JsonSchemaTitle("Entra ID Client Secret")
+    @JsonPropertyDescription(
+        "Client secret for the Microsoft Entra ID service principal. " +
+            "When provided together with Client ID, Entra ID authentication is used " +
+            "instead of username and password.",
+    )
+    @JsonSchemaInject(json = """{"order":8,"airbyte_secret":true,"group":"entra_id"}""")
+    var clientSecret: String? = null
+
+    @JsonProperty("tenant_id")
+    @JsonSchemaTitle("Entra ID Tenant ID")
+    @JsonPropertyDescription(
+        "Optional Microsoft Entra tenant ID. If omitted, the driver uses the tenant " +
+            "inferred from the service principal.",
+    )
+    @JsonSchemaInject(
+        json = """{"order":9,"group":"entra_id","airbyte_hidden":true}""",
+    )
+    var tenantId: String? = null
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "ssl_mode")
@@ -111,7 +156,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8,"default":"required"}""")
+    @JsonSchemaInject(json = """{"order":10,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -131,7 +176,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
         "Whether to initiate an SSH tunnel before connecting to the database, " +
             "and if so, which kind of authentication to use.",
     )
-    @JsonSchemaInject(json = """{"order":9}""")
+    @JsonSchemaInject(json = """{"order":11}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -149,26 +194,26 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":12,"display_type":"radio"}""")
     fun getIncrementalValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replicationMethod.asCursorMethodConfiguration()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":11}""")
+    @JsonSchemaInject(json = """{"order":13}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    @JsonSchemaInject(json = """{"order":12}""")
+    @JsonSchemaInject(json = """{"order":14}""")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13}""")
+    @JsonSchemaInject(json = """{"order":15}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
