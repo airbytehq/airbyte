@@ -51,7 +51,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `resourceNames` | `array<object>` |  |
+| `resourceNames` | `array<string>` |  |
 
 
 </details>
