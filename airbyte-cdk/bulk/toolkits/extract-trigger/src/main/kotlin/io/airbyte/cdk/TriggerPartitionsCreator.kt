@@ -7,6 +7,8 @@ package io.airbyte.cdk
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.JdbcCursorPartition
 import io.airbyte.cdk.read.JdbcPartition
@@ -18,6 +20,7 @@ import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
+import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
@@ -66,7 +69,14 @@ class TriggerPartitionsCreator<
         override suspend fun run() {}
 
         override fun checkpoint(): PartitionReadCheckpoint =
-            PartitionReadCheckpoint(partition.completeState, 0)
+            PartitionReadCheckpoint(
+                partition.completeState,
+                0,
+                when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                    SOCKET -> generatePartitionId(4)
+                    STDIO -> null
+                }
+            )
 
         override fun releaseResources() {}
     }
