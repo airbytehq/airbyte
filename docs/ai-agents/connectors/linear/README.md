@@ -27,6 +27,11 @@ The Linear connector is optimized to handle prompts like these.
 - Create a new issue in the 'Backend Improvements' project
 - Add a recent issue to a specific project
 - Move an issue to a different project
+- Create a new project called 'Q3 Platform Migration'
+- Update the description of the 'Backend Improvements' project
+- Change the target date of a project to next month
+- Mark a project as started
+- Set a project lead for the 'API Redesign' project
 - Analyze the workload distribution across my development team
 - What are the top priority issues in our current sprint?
 - Identify the most active projects in our organization right now
@@ -47,7 +52,7 @@ The Linear connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-linear
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -59,8 +64,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_linear import LinearConnector
-from airbyte_agent_linear.models import LinearAuthConfig
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
 
 connector = LinearConnector(
     auth_config=LinearAuthConfig(
@@ -82,11 +87,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_linear import LinearConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.linear import LinearConnector, AirbyteAuthConfig
 
 connector = LinearConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -107,11 +112,12 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Search](./REFERENCE.md#issues-search) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update), [Search](./REFERENCE.md#comments-search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Create](./REFERENCE.md#projects-create), [Update](./REFERENCE.md#projects-update), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
+| Workflow States | [List](./REFERENCE.md#workflow-states-list), [Context Store Search](./REFERENCE.md#workflow-states-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
 
 
 ### Authentication
@@ -124,7 +130,6 @@ See the official [Linear API reference](https://linear.app/developers/graphql).
 
 ## Version information
 
-- **Package version:** 0.19.122
-- **Connector version:** 0.1.14
-- **Generated with Connector SDK commit SHA:** 4a9d86940cf9c8e65c0668776b4d8f4e129753ec
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/linear/CHANGELOG.md)
+- **Package version:** 0.1.19
+- **Connector version:** 0.1.19
+- **Generated with Connector SDK commit SHA:** unknown

@@ -8,38 +8,38 @@ The Shopify connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Get](#customers-get) |
+| Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search) |
 | Orders | [List](#orders-list), [Get](#orders-get) |
 | Products | [List](#products-list), [Get](#products-get) |
-| Product Variants | [List](#product-variants-list), [Get](#product-variants-get) |
-| Product Images | [List](#product-images-list), [Get](#product-images-get) |
-| Abandoned Checkouts | [List](#abandoned-checkouts-list) |
-| Locations | [List](#locations-list), [Get](#locations-get) |
-| Inventory Levels | [List](#inventory-levels-list) |
-| Inventory Items | [List](#inventory-items-list), [Get](#inventory-items-get) |
-| Shop | [Get](#shop-get) |
-| Price Rules | [List](#price-rules-list), [Get](#price-rules-get) |
-| Discount Codes | [List](#discount-codes-list), [Get](#discount-codes-get) |
-| Custom Collections | [List](#custom-collections-list), [Get](#custom-collections-get) |
-| Smart Collections | [List](#smart-collections-list), [Get](#smart-collections-get) |
-| Collects | [List](#collects-list), [Get](#collects-get) |
-| Draft Orders | [List](#draft-orders-list), [Get](#draft-orders-get) |
-| Fulfillments | [List](#fulfillments-list), [Get](#fulfillments-get) |
-| Order Refunds | [List](#order-refunds-list), [Get](#order-refunds-get) |
+| Product Variants | [List](#product-variants-list), [Get](#product-variants-get), [Context Store Search](#product-variants-context-store-search) |
+| Product Images | [List](#product-images-list), [Get](#product-images-get), [Context Store Search](#product-images-context-store-search) |
+| Abandoned Checkouts | [List](#abandoned-checkouts-list), [Context Store Search](#abandoned-checkouts-context-store-search) |
+| Locations | [List](#locations-list), [Get](#locations-get), [Context Store Search](#locations-context-store-search) |
+| Inventory Levels | [List](#inventory-levels-list), [Context Store Search](#inventory-levels-context-store-search) |
+| Inventory Items | [List](#inventory-items-list), [Get](#inventory-items-get), [Context Store Search](#inventory-items-context-store-search) |
+| Shop | [Get](#shop-get), [Context Store Search](#shop-context-store-search) |
+| Price Rules | [List](#price-rules-list), [Get](#price-rules-get), [Context Store Search](#price-rules-context-store-search) |
+| Discount Codes | [List](#discount-codes-list), [Get](#discount-codes-get), [Context Store Search](#discount-codes-context-store-search) |
+| Custom Collections | [List](#custom-collections-list), [Get](#custom-collections-get), [Context Store Search](#custom-collections-context-store-search) |
+| Smart Collections | [List](#smart-collections-list), [Get](#smart-collections-get), [Context Store Search](#smart-collections-context-store-search) |
+| Collects | [List](#collects-list), [Get](#collects-get), [Context Store Search](#collects-context-store-search) |
+| Draft Orders | [List](#draft-orders-list), [Get](#draft-orders-get), [Context Store Search](#draft-orders-context-store-search) |
+| Fulfillments | [List](#fulfillments-list), [Get](#fulfillments-get), [Context Store Search](#fulfillments-context-store-search) |
+| Order Refunds | [List](#order-refunds-list), [Get](#order-refunds-get), [Context Store Search](#order-refunds-context-store-search) |
 | Transactions | [List](#transactions-list), [Get](#transactions-get) |
-| Tender Transactions | [List](#tender-transactions-list) |
-| Countries | [List](#countries-list), [Get](#countries-get) |
-| Metafield Shops | [List](#metafield-shops-list), [Get](#metafield-shops-get) |
-| Metafield Customers | [List](#metafield-customers-list) |
-| Metafield Products | [List](#metafield-products-list) |
-| Metafield Orders | [List](#metafield-orders-list) |
-| Metafield Draft Orders | [List](#metafield-draft-orders-list) |
-| Metafield Locations | [List](#metafield-locations-list) |
-| Metafield Product Variants | [List](#metafield-product-variants-list) |
-| Metafield Smart Collections | [List](#metafield-smart-collections-list) |
-| Metafield Product Images | [List](#metafield-product-images-list) |
+| Tender Transactions | [List](#tender-transactions-list), [Context Store Search](#tender-transactions-context-store-search) |
+| Countries | [List](#countries-list), [Get](#countries-get), [Context Store Search](#countries-context-store-search) |
+| Metafield Shops | [List](#metafield-shops-list), [Get](#metafield-shops-get), [Context Store Search](#metafield-shops-context-store-search) |
+| Metafield Customers | [List](#metafield-customers-list), [Context Store Search](#metafield-customers-context-store-search) |
+| Metafield Products | [List](#metafield-products-list), [Context Store Search](#metafield-products-context-store-search) |
+| Metafield Orders | [List](#metafield-orders-list), [Context Store Search](#metafield-orders-context-store-search) |
+| Metafield Draft Orders | [List](#metafield-draft-orders-list), [Context Store Search](#metafield-draft-orders-context-store-search) |
+| Metafield Locations | [List](#metafield-locations-list), [Context Store Search](#metafield-locations-context-store-search) |
+| Metafield Product Variants | [List](#metafield-product-variants-list), [Context Store Search](#metafield-product-variants-context-store-search) |
+| Metafield Smart Collections | [List](#metafield-smart-collections-list), [Context Store Search](#metafield-smart-collections-context-store-search) |
+| Metafield Product Images | [List](#metafield-product-images-list), [Context Store Search](#metafield-product-images-context-store-search) |
 | Customer Address | [List](#customer-address-list), [Get](#customer-address-get) |
-| Fulfillment Orders | [List](#fulfillment-orders-list), [Get](#fulfillment-orders-get) |
+| Fulfillment Orders | [List](#fulfillment-orders-list), [Get](#fulfillment-orders-get), [Context Store Search](#fulfillment-orders-context-store-search) |
 
 ## Customers
 
@@ -226,6 +226,84 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `admin_graphql_api_id` | `string \| null` |  |
 | `default_address` | `object \| any` |  |
 
+
+</details>
+
+### Customers Context Store Search
+
+Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.customers.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the customer |
+| `email` | `string` | Primary email address of the customer |
+| `phone` | `string` | Primary phone number of the customer |
+| `first_name` | `string` | First name of the customer |
+| `last_name` | `string` | Last name of the customer |
+| `state` | `string` | Account state (`disabled`, `invited`, `enabled`, `declined`) |
+| `orders_count` | `integer` | Number of orders placed by the customer |
+| `total_spent` | `string` | Total lifetime amount spent by the customer |
+| `currency` | `string` | ISO 4217 currency code for the customer's total spend |
+| `created_at` | `string` | ISO 8601 timestamp when the customer record was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the customer record was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the customer |
+| `data[].email` | `string` | Primary email address of the customer |
+| `data[].phone` | `string` | Primary phone number of the customer |
+| `data[].first_name` | `string` | First name of the customer |
+| `data[].last_name` | `string` | Last name of the customer |
+| `data[].state` | `string` | Account state (`disabled`, `invited`, `enabled`, `declined`) |
+| `data[].orders_count` | `integer` | Number of orders placed by the customer |
+| `data[].total_spent` | `string` | Total lifetime amount spent by the customer |
+| `data[].currency` | `string` | ISO 4217 currency code for the customer's total spend |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the customer record was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the customer record was last updated |
 
 </details>
 
@@ -1116,6 +1194,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Product Variants Context Store Search
+
+Search and filter product variants records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.product_variants.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "product_variants",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the product variant |
+| `product_id` | `integer` | Identifier of the parent product |
+| `title` | `string` | Display title of the variant |
+| `sku` | `string` | Stock keeping unit for the variant |
+| `price` | `string` | Price of the variant in the shop's currency |
+| `compare_at_price` | `string` | Original (compare-at) price of the variant, if set |
+| `position` | `integer` | Display position of the variant within the product |
+| `inventory_policy` | `string` | Behaviour when out of stock (`deny` or `continue`) |
+| `created_at` | `string` | ISO 8601 timestamp when the variant was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the variant was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the product variant |
+| `data[].product_id` | `integer` | Identifier of the parent product |
+| `data[].title` | `string` | Display title of the variant |
+| `data[].sku` | `string` | Stock keeping unit for the variant |
+| `data[].price` | `string` | Price of the variant in the shop's currency |
+| `data[].compare_at_price` | `string` | Original (compare-at) price of the variant, if set |
+| `data[].position` | `integer` | Display position of the variant within the product |
+| `data[].inventory_policy` | `string` | Behaviour when out of stock (`deny` or `continue`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the variant was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the variant was last updated |
+
+</details>
+
 ## Product Images
 
 ### Product Images List
@@ -1239,6 +1393,80 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `variant_ids` | `array \| null` |  |
 | `admin_graphql_api_id` | `string \| null` |  |
 
+
+</details>
+
+### Product Images Context Store Search
+
+Search and filter product images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.product_images.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "product_images",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the product image |
+| `product_id` | `integer` | Identifier of the product the image belongs to |
+| `position` | `integer` | Display position of the image within the product |
+| `alt` | `string` | Alt text for the image |
+| `width` | `integer` | Image width in pixels |
+| `height` | `integer` | Image height in pixels |
+| `src` | `string` | Public URL of the image |
+| `created_at` | `string` | ISO 8601 timestamp when the image was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the image was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the product image |
+| `data[].product_id` | `integer` | Identifier of the product the image belongs to |
+| `data[].position` | `integer` | Display position of the image within the product |
+| `data[].alt` | `string` | Alt text for the image |
+| `data[].width` | `integer` | Image width in pixels |
+| `data[].height` | `integer` | Image height in pixels |
+| `data[].src` | `string` | Public URL of the image |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the image was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the image was last updated |
 
 </details>
 
@@ -1371,6 +1599,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Abandoned Checkouts Context Store Search
+
+Search and filter abandoned checkouts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.abandoned_checkouts.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "abandoned_checkouts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the abandoned checkout |
+| `token` | `string` | Unique token identifying the checkout |
+| `email` | `string` | Email address provided for the checkout |
+| `phone` | `string` | Phone number provided for the checkout |
+| `name` | `string` | Shopify-assigned display name for the checkout (e.g. `#C12345`) |
+| `currency` | `string` | ISO 4217 currency code for the checkout totals |
+| `total_price` | `string` | Total price of the checkout in the shop's currency |
+| `created_at` | `string` | ISO 8601 timestamp when the checkout was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the checkout was last updated |
+| `completed_at` | `string` | ISO 8601 timestamp when the checkout was completed, if applicable |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the abandoned checkout |
+| `data[].token` | `string` | Unique token identifying the checkout |
+| `data[].email` | `string` | Email address provided for the checkout |
+| `data[].phone` | `string` | Phone number provided for the checkout |
+| `data[].name` | `string` | Shopify-assigned display name for the checkout (e.g. `#C12345`) |
+| `data[].currency` | `string` | ISO 4217 currency code for the checkout totals |
+| `data[].total_price` | `string` | Total price of the checkout in the shop's currency |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the checkout was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the checkout was last updated |
+| `data[].completed_at` | `string` | ISO 8601 timestamp when the checkout was completed, if applicable |
+
+</details>
+
 ## Locations
 
 ### Locations List
@@ -1498,6 +1802,84 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Locations Context Store Search
+
+Search and filter locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.locations.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "locations",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the location |
+| `name` | `string` | Display name of the location |
+| `address1` | `string` | Primary street address of the location |
+| `city` | `string` | City of the location |
+| `province` | `string` | Province, state, or region of the location |
+| `country` | `string` | Country name of the location |
+| `country_code` | `string` | ISO 3166-1 alpha-2 country code of the location |
+| `phone` | `string` | Phone number for the location |
+| `active` | `boolean` | Whether the location is currently active |
+| `created_at` | `string` | ISO 8601 timestamp when the location was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the location was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the location |
+| `data[].name` | `string` | Display name of the location |
+| `data[].address1` | `string` | Primary street address of the location |
+| `data[].city` | `string` | City of the location |
+| `data[].province` | `string` | Province, state, or region of the location |
+| `data[].country` | `string` | Country name of the location |
+| `data[].country_code` | `string` | ISO 3166-1 alpha-2 country code of the location |
+| `data[].phone` | `string` | Phone number for the location |
+| `data[].active` | `boolean` | Whether the location is currently active |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the location was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the location was last updated |
+
+</details>
+
 ## Inventory Levels
 
 ### Inventory Levels List
@@ -1555,6 +1937,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_url` | `string` |  |
+
+</details>
+
+### Inventory Levels Context Store Search
+
+Search and filter inventory levels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.inventory_levels.context_store_search(
+    query={"filter": {"eq": {"inventory_item_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "inventory_levels",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"inventory_item_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `inventory_item_id` | `integer` | Identifier of the inventory item |
+| `location_id` | `integer` | Identifier of the location holding the inventory |
+| `available` | `integer` | Number of units available at the location |
+| `updated_at` | `string` | ISO 8601 timestamp when the inventory level was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].inventory_item_id` | `integer` | Identifier of the inventory item |
+| `data[].location_id` | `integer` | Identifier of the location holding the inventory |
+| `data[].available` | `integer` | Number of units available at the location |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the inventory level was last updated |
 
 </details>
 
@@ -1683,6 +2129,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Inventory Items Context Store Search
+
+Search and filter inventory items records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.inventory_items.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "inventory_items",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the inventory item |
+| `sku` | `string` | Stock keeping unit associated with the inventory item |
+| `tracked` | `boolean` | Whether Shopify is tracking inventory for this item |
+| `requires_shipping` | `boolean` | Whether the item requires shipping |
+| `country_code_of_origin` | `string` | ISO country code of the item's country of origin |
+| `created_at` | `string` | ISO 8601 timestamp when the inventory item was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the inventory item was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the inventory item |
+| `data[].sku` | `string` | Stock keeping unit associated with the inventory item |
+| `data[].tracked` | `boolean` | Whether Shopify is tracking inventory for this item |
+| `data[].requires_shipping` | `boolean` | Whether the item requires shipping |
+| `data[].country_code_of_origin` | `string` | ISO country code of the item's country of origin |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the inventory item was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the inventory item was last updated |
+
+</details>
+
 ## Shop
 
 ### Shop Get
@@ -1771,6 +2287,84 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `transactional_sms_disabled` | `boolean \| null` |  |
 | `marketing_sms_consent_enabled_at_checkout` | `boolean \| null` |  |
 
+
+</details>
+
+### Shop Context Store Search
+
+Search and filter shop records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.shop.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "shop",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the shop |
+| `name` | `string` | Display name of the shop |
+| `email` | `string` | Primary contact email for the shop |
+| `domain` | `string` | Custom domain configured for the shop, if any |
+| `myshopify_domain` | `string` | Canonical `*.myshopify.com` domain for the shop |
+| `country_code` | `string` | ISO 3166-1 alpha-2 country code of the shop |
+| `currency` | `string` | ISO 4217 currency code used by the shop |
+| `timezone` | `string` | Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`) |
+| `plan_name` | `string` | Shopify plan identifier (e.g. `shopify_plus`, `basic`) |
+| `created_at` | `string` | ISO 8601 timestamp when the shop was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the shop was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the shop |
+| `data[].name` | `string` | Display name of the shop |
+| `data[].email` | `string` | Primary contact email for the shop |
+| `data[].domain` | `string` | Custom domain configured for the shop, if any |
+| `data[].myshopify_domain` | `string` | Canonical `*.myshopify.com` domain for the shop |
+| `data[].country_code` | `string` | ISO 3166-1 alpha-2 country code of the shop |
+| `data[].currency` | `string` | ISO 4217 currency code used by the shop |
+| `data[].timezone` | `string` | Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`) |
+| `data[].plan_name` | `string` | Shopify plan identifier (e.g. `shopify_plus`, `basic`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the shop was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the shop was last updated |
 
 </details>
 
@@ -1934,6 +2528,84 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Price Rules Context Store Search
+
+Search and filter price rules records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.price_rules.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "price_rules",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the price rule |
+| `title` | `string` | Administrative title of the price rule |
+| `value_type` | `string` | How the discount value is interpreted (`fixed_amount` or `percentage`) |
+| `value` | `string` | Discount value applied by the rule |
+| `target_type` | `string` | Type of target the rule applies to (`line_item` or `shipping_line`) |
+| `target_selection` | `string` | Which target items the rule applies to (`all` or `entitled`) |
+| `allocation_method` | `string` | How the discount is allocated (`each` or `across`) |
+| `starts_at` | `string` | ISO 8601 timestamp when the rule starts being active |
+| `ends_at` | `string` | ISO 8601 timestamp when the rule stops being active, if applicable |
+| `created_at` | `string` | ISO 8601 timestamp when the rule was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the rule was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the price rule |
+| `data[].title` | `string` | Administrative title of the price rule |
+| `data[].value_type` | `string` | How the discount value is interpreted (`fixed_amount` or `percentage`) |
+| `data[].value` | `string` | Discount value applied by the rule |
+| `data[].target_type` | `string` | Type of target the rule applies to (`line_item` or `shipping_line`) |
+| `data[].target_selection` | `string` | Which target items the rule applies to (`all` or `entitled`) |
+| `data[].allocation_method` | `string` | How the discount is allocated (`each` or `across`) |
+| `data[].starts_at` | `string` | ISO 8601 timestamp when the rule starts being active |
+| `data[].ends_at` | `string` | ISO 8601 timestamp when the rule stops being active, if applicable |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the rule was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the rule was last updated |
+
+</details>
+
 ## Discount Codes
 
 ### Discount Codes List
@@ -2047,6 +2719,74 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `string \| null` |  |
 | `updated_at` | `string \| null` |  |
 
+
+</details>
+
+### Discount Codes Context Store Search
+
+Search and filter discount codes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.discount_codes.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "discount_codes",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the discount code |
+| `price_rule_id` | `integer` | Identifier of the parent price rule |
+| `code` | `string` | Discount code string shoppers enter at checkout |
+| `usage_count` | `integer` | Number of times the code has been redeemed |
+| `created_at` | `string` | ISO 8601 timestamp when the code was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the code was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the discount code |
+| `data[].price_rule_id` | `integer` | Identifier of the parent price rule |
+| `data[].code` | `string` | Discount code string shoppers enter at checkout |
+| `data[].usage_count` | `integer` | Number of times the code has been redeemed |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the code was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the code was last updated |
 
 </details>
 
@@ -2171,6 +2911,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `image` | `object \| null` |  |
 | `products_count` | `integer \| null` |  |
 
+
+</details>
+
+### Custom Collections Context Store Search
+
+Search and filter custom collections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.custom_collections.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "custom_collections",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the custom collection |
+| `handle` | `string` | URL-friendly handle for the custom collection |
+| `title` | `string` | Display title of the custom collection |
+| `sort_order` | `string` | How products are sorted within the collection (e.g. `best-selling`) |
+| `published_scope` | `string` | Publishing scope (`web` or `global`) |
+| `published_at` | `string` | ISO 8601 timestamp when the collection was published |
+| `updated_at` | `string` | ISO 8601 timestamp when the collection was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the custom collection |
+| `data[].handle` | `string` | URL-friendly handle for the custom collection |
+| `data[].title` | `string` | Display title of the custom collection |
+| `data[].sort_order` | `string` | How products are sorted within the collection (e.g. `best-selling`) |
+| `data[].published_scope` | `string` | Publishing scope (`web` or `global`) |
+| `data[].published_at` | `string` | ISO 8601 timestamp when the collection was published |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the collection was last updated |
 
 </details>
 
@@ -2302,6 +3112,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Smart Collections Context Store Search
+
+Search and filter smart collections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.smart_collections.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "smart_collections",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the smart collection |
+| `handle` | `string` | URL-friendly handle for the smart collection |
+| `title` | `string` | Display title of the smart collection |
+| `sort_order` | `string` | How products are sorted within the collection |
+| `published_scope` | `string` | Publishing scope (`web` or `global`) |
+| `published_at` | `string` | ISO 8601 timestamp when the collection was published |
+| `updated_at` | `string` | ISO 8601 timestamp when the collection was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the smart collection |
+| `data[].handle` | `string` | URL-friendly handle for the smart collection |
+| `data[].title` | `string` | Display title of the smart collection |
+| `data[].sort_order` | `string` | How products are sorted within the collection |
+| `data[].published_scope` | `string` | Publishing scope (`web` or `global`) |
+| `data[].published_at` | `string` | ISO 8601 timestamp when the collection was published |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the collection was last updated |
+
+</details>
+
 ## Collects
 
 ### Collects List
@@ -2411,6 +3291,74 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `integer \| null` |  |
 | `sort_value` | `string \| null` |  |
 
+
+</details>
+
+### Collects Context Store Search
+
+Search and filter collects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.collects.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "collects",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the collect |
+| `collection_id` | `integer` | Identifier of the collection the product belongs to |
+| `product_id` | `integer` | Identifier of the product in the collection |
+| `position` | `integer` | Position of the product within the collection |
+| `created_at` | `string` | ISO 8601 timestamp when the collect was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the collect was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the collect |
+| `data[].collection_id` | `integer` | Identifier of the collection the product belongs to |
+| `data[].product_id` | `integer` | Identifier of the product in the collection |
+| `data[].position` | `integer` | Position of the product within the collection |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the collect was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the collect was last updated |
 
 </details>
 
@@ -2635,6 +3583,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Draft Orders Context Store Search
+
+Search and filter draft orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.draft_orders.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "draft_orders",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the draft order |
+| `name` | `string` | Shopify-assigned display name for the draft order (e.g. `#D12345`) |
+| `email` | `string` | Email address associated with the draft order |
+| `status` | `string` | Status of the draft order (`open`, `invoice_sent`, `completed`) |
+| `currency` | `string` | ISO 4217 currency code for the draft order totals |
+| `total_price` | `string` | Total price of the draft order |
+| `order_id` | `integer` | Identifier of the completed order, if the draft has been completed |
+| `created_at` | `string` | ISO 8601 timestamp when the draft order was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the draft order was last updated |
+| `completed_at` | `string` | ISO 8601 timestamp when the draft order was completed, if applicable |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the draft order |
+| `data[].name` | `string` | Shopify-assigned display name for the draft order (e.g. `#D12345`) |
+| `data[].email` | `string` | Email address associated with the draft order |
+| `data[].status` | `string` | Status of the draft order (`open`, `invoice_sent`, `completed`) |
+| `data[].currency` | `string` | ISO 4217 currency code for the draft order totals |
+| `data[].total_price` | `string` | Total price of the draft order |
+| `data[].order_id` | `integer` | Identifier of the completed order, if the draft has been completed |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the draft order was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the draft order was last updated |
+| `data[].completed_at` | `string` | ISO 8601 timestamp when the draft order was completed, if applicable |
+
+</details>
+
 ## Fulfillments
 
 ### Fulfillments List
@@ -2838,6 +3862,80 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Fulfillments Context Store Search
+
+Search and filter fulfillments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.fulfillments.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "fulfillments",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the fulfillment |
+| `order_id` | `integer` | Identifier of the parent order |
+| `status` | `string` | Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`) |
+| `shipment_status` | `string` | Carrier shipment status (e.g. `delivered`, `in_transit`) |
+| `tracking_company` | `string` | Name of the shipping carrier |
+| `tracking_number` | `string` | Primary tracking number for the shipment |
+| `location_id` | `integer` | Identifier of the fulfilling location |
+| `created_at` | `string` | ISO 8601 timestamp when the fulfillment was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the fulfillment was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the fulfillment |
+| `data[].order_id` | `integer` | Identifier of the parent order |
+| `data[].status` | `string` | Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`) |
+| `data[].shipment_status` | `string` | Carrier shipment status (e.g. `delivered`, `in_transit`) |
+| `data[].tracking_company` | `string` | Name of the shipping carrier |
+| `data[].tracking_number` | `string` | Primary tracking number for the shipment |
+| `data[].location_id` | `integer` | Identifier of the fulfilling location |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the fulfillment was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the fulfillment was last updated |
+
+</details>
+
 ## Order Refunds
 
 ### Order Refunds List
@@ -3017,6 +4115,74 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `admin_graphql_api_id` | `string \| null` |  |
 | `refund_shipping_lines` | `array \| null` |  |
 
+
+</details>
+
+### Order Refunds Context Store Search
+
+Search and filter order refunds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.order_refunds.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "order_refunds",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the refund |
+| `order_id` | `integer` | Identifier of the refunded order |
+| `user_id` | `integer` | Identifier of the staff user who processed the refund |
+| `note` | `string` | Merchant-provided note explaining the refund |
+| `created_at` | `string` | ISO 8601 timestamp when the refund was created |
+| `processed_at` | `string` | ISO 8601 timestamp when the refund was processed |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the refund |
+| `data[].order_id` | `integer` | Identifier of the refunded order |
+| `data[].user_id` | `integer` | Identifier of the staff user who processed the refund |
+| `data[].note` | `string` | Merchant-provided note explaining the refund |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the refund was created |
+| `data[].processed_at` | `string` | ISO 8601 timestamp when the refund was processed |
 
 </details>
 
@@ -3235,6 +4401,78 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tender Transactions Context Store Search
+
+Search and filter tender transactions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.tender_transactions.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tender_transactions",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the tender transaction |
+| `order_id` | `integer` | Identifier of the order the transaction belongs to |
+| `user_id` | `integer` | Identifier of the staff user who processed the transaction |
+| `amount` | `string` | Amount of the transaction in the shop's currency |
+| `currency` | `string` | ISO 4217 currency code for the transaction amount |
+| `payment_method` | `string` | Payment method used (e.g. `credit_card`, `paypal`) |
+| `test` | `boolean` | Whether the transaction was a test transaction |
+| `processed_at` | `string` | ISO 8601 timestamp when the transaction was processed |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the tender transaction |
+| `data[].order_id` | `integer` | Identifier of the order the transaction belongs to |
+| `data[].user_id` | `integer` | Identifier of the staff user who processed the transaction |
+| `data[].amount` | `string` | Amount of the transaction in the shop's currency |
+| `data[].currency` | `string` | ISO 4217 currency code for the transaction amount |
+| `data[].payment_method` | `string` | Payment method used (e.g. `credit_card`, `paypal`) |
+| `data[].test` | `boolean` | Whether the transaction was a test transaction |
+| `data[].processed_at` | `string` | ISO 8601 timestamp when the transaction was processed |
+
+</details>
+
 ## Countries
 
 ### Countries List
@@ -3339,6 +4577,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `tax` | `number \| null` |  |
 | `provinces` | `array \| null` |  |
 
+
+</details>
+
+### Countries Context Store Search
+
+Search and filter countries records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.countries.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "countries",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the country tax row |
+| `name` | `string` | Human-readable country name |
+| `code` | `string` | ISO 3166-1 alpha-2 country code |
+| `tax_name` | `string` | Localized name of the tax applied in this country |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the country tax row |
+| `data[].name` | `string` | Human-readable country name |
+| `data[].code` | `string` | ISO 3166-1 alpha-2 country code |
+| `data[].tax_name` | `string` | Localized name of the tax applied in this country |
 
 </details>
 
@@ -3463,6 +4765,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Metafield Shops Context Store Search
+
+Search and filter metafield shops records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_shops.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_shops",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+</details>
+
 ## Metafield Customers
 
 ### Metafield Customers List
@@ -3529,6 +4907,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Customers Context Store Search
+
+Search and filter metafield customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_customers.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_customers",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
 
 </details>
 
@@ -3601,6 +5055,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Metafield Products Context Store Search
+
+Search and filter metafield products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_products.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_products",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+</details>
+
 ## Metafield Orders
 
 ### Metafield Orders List
@@ -3667,6 +5197,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Orders Context Store Search
+
+Search and filter metafield orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_orders.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_orders",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
 
 </details>
 
@@ -3739,6 +5345,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Metafield Draft Orders Context Store Search
+
+Search and filter metafield draft orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_draft_orders.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_draft_orders",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+</details>
+
 ## Metafield Locations
 
 ### Metafield Locations List
@@ -3805,6 +5487,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Locations Context Store Search
+
+Search and filter metafield locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_locations.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_locations",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
 
 </details>
 
@@ -3877,6 +5635,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Metafield Product Variants Context Store Search
+
+Search and filter metafield product variants records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_product_variants.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_product_variants",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+</details>
+
 ## Metafield Smart Collections
 
 ### Metafield Smart Collections List
@@ -3943,6 +5777,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Smart Collections Context Store Search
+
+Search and filter metafield smart collections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_smart_collections.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_smart_collections",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
 
 </details>
 
@@ -4015,6 +5925,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page_url` | `string` |  |
+
+</details>
+
+### Metafield Product Images Context Store Search
+
+Search and filter metafield product images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.metafield_product_images.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "metafield_product_images",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the metafield |
+| `namespace` | `string` | Namespace group for the metafield |
+| `key` | `string` | Key of the metafield within its namespace |
+| `value` | `string` | Serialized value stored in the metafield |
+| `type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `description` | `string` | Human-readable description of the metafield |
+| `owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the metafield |
+| `data[].namespace` | `string` | Namespace group for the metafield |
+| `data[].key` | `string` | Key of the metafield within its namespace |
+| `data[].value` | `string` | Serialized value stored in the metafield |
+| `data[].type` | `string` | Shopify metafield type (e.g. `single_line_text_field`, `json`) |
+| `data[].description` | `string` | Human-readable description of the metafield |
+| `data[].owner_id` | `integer` | Identifier of the resource that owns this metafield |
+| `data[].owner_resource` | `string` | Resource type that owns this metafield (e.g. `product`, `customer`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the metafield was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the metafield was last updated |
 
 </details>
 
@@ -4289,6 +6275,78 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `string \| null` |  |
 | `updated_at` | `string \| null` |  |
 
+
+</details>
+
+### Fulfillment Orders Context Store Search
+
+Search and filter fulfillment orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await shopify.fulfillment_orders.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "fulfillment_orders",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the fulfillment order |
+| `order_id` | `integer` | Identifier of the parent order |
+| `shop_id` | `integer` | Identifier of the shop that owns the fulfillment order |
+| `assigned_location_id` | `integer` | Identifier of the location assigned to fulfill the order |
+| `status` | `string` | Fulfillment order status (e.g. `open`, `in_progress`, `closed`) |
+| `request_status` | `string` | Status of the fulfillment request (e.g. `unsubmitted`, `submitted`) |
+| `created_at` | `string` | ISO 8601 timestamp when the fulfillment order was created |
+| `updated_at` | `string` | ISO 8601 timestamp when the fulfillment order was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the fulfillment order |
+| `data[].order_id` | `integer` | Identifier of the parent order |
+| `data[].shop_id` | `integer` | Identifier of the shop that owns the fulfillment order |
+| `data[].assigned_location_id` | `integer` | Identifier of the location assigned to fulfill the order |
+| `data[].status` | `string` | Fulfillment order status (e.g. `open`, `in_progress`, `closed`) |
+| `data[].request_status` | `string` | Status of the fulfillment request (e.g. `unsubmitted`, `submitted`) |
+| `data[].created_at` | `string` | ISO 8601 timestamp when the fulfillment order was created |
+| `data[].updated_at` | `string` | ISO 8601 timestamp when the fulfillment order was last updated |
 
 </details>
 
