@@ -33,7 +33,7 @@ The Granola connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-granola
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -45,8 +45,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_granola import GranolaConnector
-from airbyte_agent_granola.models import GranolaAuthConfig
+from airbyte_agent_sdk.connectors.granola import GranolaConnector
+from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
@@ -68,11 +68,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_granola import GranolaConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.granola import GranolaConnector, AirbyteAuthConfig
 
 connector = GranolaConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -93,7 +93,7 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Search](./REFERENCE.md#notes-search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Context Store Search](./REFERENCE.md#notes-context-store-search) |
 
 
 ### Authentication
@@ -106,7 +106,6 @@ See the official [Granola API reference](https://docs.granola.ai/introduction).
 
 ## Version information
 
-- **Package version:** 0.1.20
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/granola/CHANGELOG.md)
+- **Package version:** 1.0.6
+- **Connector version:** 1.0.6
+- **Generated with Connector SDK commit SHA:** unknown

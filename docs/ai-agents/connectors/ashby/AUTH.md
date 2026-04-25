@@ -22,8 +22,8 @@ This authentication method isn't available for this connector.
 Example request:
 
 ```python
-from airbyte_agent_ashby import AshbyConnector
-from airbyte_agent_ashby.models import AshbyAuthConfig
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.connectors.ashby.models import AshbyAuthConfig
 
 connector = AshbyConnector(
     auth_config=AshbyAuthConfig(
@@ -66,7 +66,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Ashby",
     "name": "My Ashby Connector",
     "credentials": {
@@ -86,11 +86,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_ashby import AshbyConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector, AirbyteAuthConfig
 
 connector = AshbyConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"

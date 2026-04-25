@@ -36,7 +36,7 @@ The Hubspot connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-hubspot
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -48,8 +48,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector
-from airbyte_agent_hubspot.models import HubspotPrivateAppAuthConfig
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotPrivateAppAuthConfig
 
 connector = HubspotConnector(
     auth_config=HubspotPrivateAppAuthConfig(
@@ -71,11 +71,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector, AirbyteAuthConfig
 
 connector = HubspotConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -96,9 +96,9 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Search](./REFERENCE.md#contacts-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [API Search](./REFERENCE.md#companies-api_search), [Search](./REFERENCE.md#companies-search) |
-| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [API Search](./REFERENCE.md#deals-api_search), [Search](./REFERENCE.md#deals-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
+| Deals | [List](./REFERENCE.md#deals-list), [Get](./REFERENCE.md#deals-get), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search) |
 | Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [API Search](./REFERENCE.md#tickets-api_search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
@@ -114,7 +114,6 @@ See the official [Hubspot API reference](https://developers.hubspot.com/docs/api
 
 ## Version information
 
-- **Package version:** 0.15.126
-- **Connector version:** 0.1.16
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/hubspot/CHANGELOG.md)
+- **Package version:** 0.1.18
+- **Connector version:** 0.1.18
+- **Generated with Connector SDK commit SHA:** unknown

@@ -8,14 +8,14 @@ The Google-Search-Console connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Sites | [List](#sites-list), [Get](#sites-get), [Search](#sites-search) |
-| Sitemaps | [List](#sitemaps-list), [Get](#sitemaps-get), [Search](#sitemaps-search) |
-| Search Analytics By Date | [List](#search-analytics-by-date-list), [Search](#search-analytics-by-date-search) |
-| Search Analytics By Country | [List](#search-analytics-by-country-list), [Search](#search-analytics-by-country-search) |
-| Search Analytics By Device | [List](#search-analytics-by-device-list), [Search](#search-analytics-by-device-search) |
-| Search Analytics By Page | [List](#search-analytics-by-page-list), [Search](#search-analytics-by-page-search) |
-| Search Analytics By Query | [List](#search-analytics-by-query-list), [Search](#search-analytics-by-query-search) |
-| Search Analytics All Fields | [List](#search-analytics-all-fields-list), [Search](#search-analytics-all-fields-search) |
+| Sites | [List](#sites-list), [Get](#sites-get), [Context Store Search](#sites-context-store-search) |
+| Sitemaps | [List](#sitemaps-list), [Get](#sitemaps-get), [Context Store Search](#sitemaps-context-store-search) |
+| Search Analytics By Date | [List](#search-analytics-by-date-list), [Context Store Search](#search-analytics-by-date-context-store-search) |
+| Search Analytics By Country | [List](#search-analytics-by-country-list), [Context Store Search](#search-analytics-by-country-context-store-search) |
+| Search Analytics By Device | [List](#search-analytics-by-device-list), [Context Store Search](#search-analytics-by-device-context-store-search) |
+| Search Analytics By Page | [List](#search-analytics-by-page-list), [Context Store Search](#search-analytics-by-page-context-store-search) |
+| Search Analytics By Query | [List](#search-analytics-by-query-list), [Context Store Search](#search-analytics-by-query-context-store-search) |
+| Search Analytics All Fields | [List](#search-analytics-all-fields-list), [Context Store Search](#search-analytics-all-fields-context-store-search) |
 
 ## Sites
 
@@ -105,14 +105,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Sites Search
+### Sites Context Store Search
 
 Search and filter sites records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.sites.search(
+await google_search_console.sites.context_store_search(
     query={"filter": {"eq": {"permissionLevel": "<str>"}}}
 )
 ```
@@ -125,7 +125,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "sites",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"permissionLevel": "<str>"}}}
     }
@@ -288,14 +288,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Sitemaps Search
+### Sitemaps Context Store Search
 
 Search and filter sitemaps records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.sitemaps.search(
+await google_search_console.sitemaps.context_store_search(
     query={"filter": {"eq": {"contents": []}}}
 )
 ```
@@ -308,7 +308,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "sitemaps",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"contents": []}}}
     }
@@ -429,16 +429,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `null \| number` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `response_aggregation_type` | `null \| string` |  |
+
 </details>
 
-### Search Analytics By Date Search
+### Search Analytics By Date Context Store Search
 
 Search and filter search analytics by date records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.search_analytics_by_date.search(
+await google_search_console.search_analytics_by_date.context_store_search(
     query={"filter": {"eq": {"clicks": 0}}}
 )
 ```
@@ -451,7 +457,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_analytics_by_date",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"clicks": 0}}}
     }
@@ -568,16 +574,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `null \| number` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `response_aggregation_type` | `null \| string` |  |
+
 </details>
 
-### Search Analytics By Country Search
+### Search Analytics By Country Context Store Search
 
 Search and filter search analytics by country records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.search_analytics_by_country.search(
+await google_search_console.search_analytics_by_country.context_store_search(
     query={"filter": {"eq": {"clicks": 0}}}
 )
 ```
@@ -590,7 +602,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_analytics_by_country",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"clicks": 0}}}
     }
@@ -709,16 +721,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `null \| number` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `response_aggregation_type` | `null \| string` |  |
+
 </details>
 
-### Search Analytics By Device Search
+### Search Analytics By Device Context Store Search
 
 Search and filter search analytics by device records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.search_analytics_by_device.search(
+await google_search_console.search_analytics_by_device.context_store_search(
     query={"filter": {"eq": {"clicks": 0}}}
 )
 ```
@@ -731,7 +749,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_analytics_by_device",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"clicks": 0}}}
     }
@@ -850,16 +868,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `null \| number` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `response_aggregation_type` | `null \| string` |  |
+
 </details>
 
-### Search Analytics By Page Search
+### Search Analytics By Page Context Store Search
 
 Search and filter search analytics by page records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.search_analytics_by_page.search(
+await google_search_console.search_analytics_by_page.context_store_search(
     query={"filter": {"eq": {"clicks": 0}}}
 )
 ```
@@ -872,7 +896,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_analytics_by_page",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"clicks": 0}}}
     }
@@ -991,16 +1015,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `null \| number` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `response_aggregation_type` | `null \| string` |  |
+
 </details>
 
-### Search Analytics By Query Search
+### Search Analytics By Query Context Store Search
 
 Search and filter search analytics by query records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.search_analytics_by_query.search(
+await google_search_console.search_analytics_by_query.context_store_search(
     query={"filter": {"eq": {"clicks": 0}}}
 )
 ```
@@ -1013,7 +1043,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_analytics_by_query",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"clicks": 0}}}
     }
@@ -1132,16 +1162,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `position` | `null \| number` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `response_aggregation_type` | `null \| string` |  |
+
 </details>
 
-### Search Analytics All Fields Search
+### Search Analytics All Fields Context Store Search
 
 Search and filter search analytics all fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_search_console.search_analytics_all_fields.search(
+await google_search_console.search_analytics_all_fields.context_store_search(
     query={"filter": {"eq": {"clicks": 0}}}
 )
 ```
@@ -1154,7 +1190,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "search_analytics_all_fields",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"clicks": 0}}}
     }
