@@ -59,4 +59,4 @@ You connect once. Data unifies automatically. Agents act with full context.
 
 A single connector credential gives an agent the ability to fetch live data, search across an indexed store, and write changes back, all through one consistent interface. Adding a new data source extends every layer at once: the agent can immediately connect, search, and act on the new system.
 
-To see this in practice, start with a [tutorial](../get-started/tutorials).
+To see this in practice, start with a [tutorial](../get-started/developer-quickstart/tutorials).
