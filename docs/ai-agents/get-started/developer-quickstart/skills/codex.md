@@ -65,4 +65,4 @@ AIRBYTE_CLIENT_SECRET=your_client_secret
 AIRBYTE_WORKSPACE_NAME=your_workspace_name
 ```
 
-See [Manage your user profile](../../admin/profile.md) for where to find these credentials in the Airbyte Agents web app.
+See [Manage your user profile](../../../admin/profile.md) for where to find these credentials in the Airbyte Agents web app.
