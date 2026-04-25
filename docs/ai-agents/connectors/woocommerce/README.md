@@ -41,7 +41,7 @@ The Woocommerce connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-woocommerce
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -53,8 +53,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_woocommerce import WoocommerceConnector
-from airbyte_agent_woocommerce.models import WoocommerceAuthConfig
+from airbyte_agent_sdk.connectors.woocommerce import WoocommerceConnector
+from airbyte_agent_sdk.connectors.woocommerce.models import WoocommerceAuthConfig
 
 connector = WoocommerceConnector(
     auth_config=WoocommerceAuthConfig(
@@ -77,11 +77,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_woocommerce import WoocommerceConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.woocommerce import WoocommerceConnector, AirbyteAuthConfig
 
 connector = WoocommerceConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -102,22 +102,22 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Search](./REFERENCE.md#customers-search) |
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Search](./REFERENCE.md#orders-search) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Search](./REFERENCE.md#products-search) |
-| Coupons | [List](./REFERENCE.md#coupons-list), [Get](./REFERENCE.md#coupons-get), [Search](./REFERENCE.md#coupons-search) |
-| Product Categories | [List](./REFERENCE.md#product-categories-list), [Get](./REFERENCE.md#product-categories-get), [Search](./REFERENCE.md#product-categories-search) |
-| Product Tags | [List](./REFERENCE.md#product-tags-list), [Get](./REFERENCE.md#product-tags-get), [Search](./REFERENCE.md#product-tags-search) |
-| Product Reviews | [List](./REFERENCE.md#product-reviews-list), [Get](./REFERENCE.md#product-reviews-get), [Search](./REFERENCE.md#product-reviews-search) |
-| Product Attributes | [List](./REFERENCE.md#product-attributes-list), [Get](./REFERENCE.md#product-attributes-get), [Search](./REFERENCE.md#product-attributes-search) |
-| Product Variations | [List](./REFERENCE.md#product-variations-list), [Get](./REFERENCE.md#product-variations-get), [Search](./REFERENCE.md#product-variations-search) |
-| Order Notes | [List](./REFERENCE.md#order-notes-list), [Get](./REFERENCE.md#order-notes-get), [Search](./REFERENCE.md#order-notes-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get), [Search](./REFERENCE.md#refunds-search) |
-| Payment Gateways | [List](./REFERENCE.md#payment-gateways-list), [Get](./REFERENCE.md#payment-gateways-get), [Search](./REFERENCE.md#payment-gateways-search) |
-| Shipping Methods | [List](./REFERENCE.md#shipping-methods-list), [Get](./REFERENCE.md#shipping-methods-get), [Search](./REFERENCE.md#shipping-methods-search) |
-| Shipping Zones | [List](./REFERENCE.md#shipping-zones-list), [Get](./REFERENCE.md#shipping-zones-get), [Search](./REFERENCE.md#shipping-zones-search) |
-| Tax Rates | [List](./REFERENCE.md#tax-rates-list), [Get](./REFERENCE.md#tax-rates-get), [Search](./REFERENCE.md#tax-rates-search) |
-| Tax Classes | [List](./REFERENCE.md#tax-classes-list), [Search](./REFERENCE.md#tax-classes-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
+| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Context Store Search](./REFERENCE.md#products-context-store-search) |
+| Coupons | [List](./REFERENCE.md#coupons-list), [Get](./REFERENCE.md#coupons-get), [Context Store Search](./REFERENCE.md#coupons-context-store-search) |
+| Product Categories | [List](./REFERENCE.md#product-categories-list), [Get](./REFERENCE.md#product-categories-get), [Context Store Search](./REFERENCE.md#product-categories-context-store-search) |
+| Product Tags | [List](./REFERENCE.md#product-tags-list), [Get](./REFERENCE.md#product-tags-get), [Context Store Search](./REFERENCE.md#product-tags-context-store-search) |
+| Product Reviews | [List](./REFERENCE.md#product-reviews-list), [Get](./REFERENCE.md#product-reviews-get), [Context Store Search](./REFERENCE.md#product-reviews-context-store-search) |
+| Product Attributes | [List](./REFERENCE.md#product-attributes-list), [Get](./REFERENCE.md#product-attributes-get), [Context Store Search](./REFERENCE.md#product-attributes-context-store-search) |
+| Product Variations | [List](./REFERENCE.md#product-variations-list), [Get](./REFERENCE.md#product-variations-get), [Context Store Search](./REFERENCE.md#product-variations-context-store-search) |
+| Order Notes | [List](./REFERENCE.md#order-notes-list), [Get](./REFERENCE.md#order-notes-get), [Context Store Search](./REFERENCE.md#order-notes-context-store-search) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get), [Context Store Search](./REFERENCE.md#refunds-context-store-search) |
+| Payment Gateways | [List](./REFERENCE.md#payment-gateways-list), [Get](./REFERENCE.md#payment-gateways-get), [Context Store Search](./REFERENCE.md#payment-gateways-context-store-search) |
+| Shipping Methods | [List](./REFERENCE.md#shipping-methods-list), [Get](./REFERENCE.md#shipping-methods-get), [Context Store Search](./REFERENCE.md#shipping-methods-context-store-search) |
+| Shipping Zones | [List](./REFERENCE.md#shipping-zones-list), [Get](./REFERENCE.md#shipping-zones-get), [Context Store Search](./REFERENCE.md#shipping-zones-context-store-search) |
+| Tax Rates | [List](./REFERENCE.md#tax-rates-list), [Get](./REFERENCE.md#tax-rates-get), [Context Store Search](./REFERENCE.md#tax-rates-context-store-search) |
+| Tax Classes | [List](./REFERENCE.md#tax-classes-list), [Context Store Search](./REFERENCE.md#tax-classes-context-store-search) |
 
 
 ### Authentication
@@ -130,7 +130,6 @@ See the official [Woocommerce API reference](https://woocommerce.github.io/wooco
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/woocommerce/CHANGELOG.md)
+- **Package version:** 1.0.4
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** unknown

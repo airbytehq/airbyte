@@ -122,7 +122,7 @@ The Pinterest source connector supports the following
   \(Incremental\)
 - [Campaigns](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list)
   \(Incremental\)
-- [Campaign analytics](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list)
+- [Campaign analytics](https://developers.pinterest.com/docs/api/v5/#operation/campaigns/analytics)
   \(Incremental\)
 - [Campaign Analytics Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
@@ -132,9 +132,9 @@ The Pinterest source connector supports the following
   \(Incremental\)
 - [Ad Group Analytics](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
   \(Incremental\)
-- [Ad Group Report](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Ad Group Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics)
+- [Ad Group Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
 - [Ads](https://developers.pinterest.com/docs/api/v5/#operation/ads/list) \(Incremental\)
 - [Ad analytics](https://developers.pinterest.com/docs/api/v5/#operation/ads/analytics)
@@ -216,7 +216,7 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.27 | 2026-03-26 | [75485](https://github.com/airbytehq/airbyte/pull/75485) | Improve error message for account_id exceeding maximum length; add maxLength validation to spec |
+| 2.1.27 | 2026-04-07 | [75485](https://github.com/airbytehq/airbyte/pull/75485) | Add maxLength validation to account_id field to reject values longer than 18 characters at config time |
 | 2.1.26 | 2026-03-17 | [74453](https://github.com/airbytehq/airbyte/pull/74453) | Update dependencies |
 | 2.1.25 | 2026-03-09 | [74339](https://github.com/airbytehq/airbyte/pull/74339) | Add TOTAL_IMPRESSION column to custom reports |
 | 2.1.24 | 2026-03-09 | [74120](https://github.com/airbytehq/airbyte/pull/74120) | Fix custom reports `engagement_window_days` and `view_window_days` default values from array `[30]` to integer `30`; fix `or 30` fallback to correctly handle `0` as a valid value |

@@ -73,6 +73,7 @@ The Pylon API enforces per-endpoint rate limits. The Issues endpoint allows 10 r
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.0.6 | 2026-04-21 | [76721](https://github.com/airbytehq/airbyte/pull/76721) | Update dependencies |
 | 0.0.5 | 2026-03-31 | [75855](https://github.com/airbytehq/airbyte/pull/75855) | Update dependencies |
 | 0.0.4 | 2026-03-17 | [74921](https://github.com/airbytehq/airbyte/pull/74921) | Update dependencies |
 | 0.0.3 | 2026-02-24 | [73850](https://github.com/airbytehq/airbyte/pull/73850) | Update dependencies |

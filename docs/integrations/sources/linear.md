@@ -11,18 +11,20 @@ This page contains the setup guide and reference information for the [Linear](ht
 ## Prerequisites
 
 - A Linear account
-- A Linear API key
+- A Linear personal API key
 
 ## Setup guide
 
-### Step 1: Obtain a Linear API key
+### Step 1: Obtain a Linear personal API key
 
 1. Log in to your [Linear](https://linear.app/) account.
 2. Navigate to **Settings** by clicking your workspace name in the sidebar.
 3. Select **Security & access** from the settings menu.
 4. Scroll to the **Personal API keys** section.
-5. Click **Create key** to generate a new API key.
-6. Copy the API key and store it securely. You will need it to configure the connector.
+5. Click **Create key**, give the key a descriptive label (for example, `airbyte`), and click **Create**.
+6. Copy the API key and store it securely. Linear only displays the key once.
+
+The API key inherits your user's permissions in the workspace. The connector can only sync data you can see in Linear.
 
 For more information, see the [Linear API documentation](https://developers.linear.app/docs/graphql/working-with-the-graphql-api).
 
@@ -32,36 +34,44 @@ For more information, see the [Linear API documentation](https://developers.line
 2. Select **Linear** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. Enter your **API key** from Step 1.
-5. Click **Set up source** and wait for the connection test to complete.
+5. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
+6. Click **Set up source** and wait for the connection test to complete.
 
 ## Supported sync modes
 
-The Linear source connector supports the following sync mode:
+The Linear source connector supports the following sync modes:
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---append)
+- [Incremental - Append](https://docs.airbyte.com/cloud/core-concepts/#incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/cloud/core-concepts/#incremental-append--deduped)
+
+Streams that support incremental sync use the `updatedAt` field as the cursor. The Start Date you set when configuring the connector is the lower bound for the first incremental sync. Subsequent syncs use the most recent `updatedAt` value from the previous sync as the new lower bound.
+
+The following streams are full-refresh only because Linear's GraphQL API does not expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, and `customer_tiers`.
 
 ## Supported streams
 
-The Linear source connector supports the following streams:
+The Linear source connector supports the following streams. Streams marked as incremental use `updatedAt` as the cursor field.
 
-| Stream Name | Description |
-|-------------|-------------|
-| teams | Teams in your Linear workspace |
-| users | Users in your Linear workspace |
-| cycles | Sprint cycles for teams |
-| issues | Issues and tasks |
-| comments | Comments on issues |
-| projects | Projects for organizing issues |
-| customers | Customer records (if using Linear's customer features) |
-| attachments | File attachments on issues |
-| issue_labels | Labels for categorizing issues |
-| customer_needs | Customer needs linked to issues |
-| customer_tiers | Customer tier definitions |
-| issue_relations | Relationships between issues |
-| workflow_states | Workflow states (statuses) for issues |
-| project_statuses | Status definitions for projects |
-| customer_statuses | Status definitions for customers |
-| project_milestones | Milestones within projects |
+| Stream | Incremental | Description |
+|--------|:-----------:|-------------|
+| `attachments` | Yes | File and link attachments on issues. |
+| `comments` | Yes | Comments posted on issues. |
+| `customer_needs` | Yes | Customer needs associated with issues. |
+| `customers` | Yes | Customer records tracked in Linear's customer requests feature. |
+| `customer_statuses` | No | Status definitions for customer records. |
+| `customer_tiers` | No | Tier definitions for customer records. |
+| `cycles` | Yes | Cycles (sprints) for each team. |
+| `issue_labels` | Yes | Labels that can be applied to issues. |
+| `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
+| `issues` | Yes | Issues in every team, including archived issues. |
+| `project_milestones` | Yes | Milestones defined inside projects. |
+| `project_statuses` | No | Status definitions for projects. |
+| `projects` | Yes | Projects across all teams. |
+| `teams` | Yes | Teams in your Linear workspace. |
+| `users` | Yes | Users in your Linear workspace. |
+| `workflow_states` | Yes | Workflow states (for example, Todo, In Progress, Done) defined by each team. |
 
 ## Limitations and troubleshooting
 
@@ -80,6 +90,8 @@ The connector retrieves data that the authenticated user has access to. If you c
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.1 | 2026-04-21 | [76654](https://github.com/airbytehq/airbyte/pull/76654) | Update dependencies |
+| 0.1.0 | 2026-04-17 | [76429](https://github.com/airbytehq/airbyte/pull/76429) | Add incremental sync support for 12 streams using the `updatedAt` cursor field |
 | 0.0.36 | 2026-03-31 | [75720](https://github.com/airbytehq/airbyte/pull/75720) | Update dependencies |
 | 0.0.35 | 2026-03-17 | [75023](https://github.com/airbytehq/airbyte/pull/75023) | Update dependencies |
 | 0.0.34 | 2026-03-03 | [74239](https://github.com/airbytehq/airbyte/pull/74239) | Update dependencies |

@@ -30,6 +30,7 @@ Airbyte connector for Thinkific, allowing you to seamlessly sync data like users
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2026-04-21 | [76791](https://github.com/airbytehq/airbyte/pull/76791) | Update dependencies |
 | 0.0.35 | 2026-03-10 | [74545](https://github.com/airbytehq/airbyte/pull/74545) | Update dependencies |
 | 0.0.34 | 2026-02-24 | [73843](https://github.com/airbytehq/airbyte/pull/73843) | Update dependencies |
 | 0.0.33 | 2026-01-20 | [72141](https://github.com/airbytehq/airbyte/pull/72141) | Update dependencies |
