@@ -56,9 +56,9 @@ uv add airbyte-agent-sdk
 
 **Get started:** Follow one of the step-by-step tutorials in the [Developer Quickstart](developer-quickstart):
 
-- [Pydantic AI tutorial](developer-quickstart/tutorials/quickstarts/tutorial-pydantic)
-- [LangChain tutorial](developer-quickstart/tutorials/quickstarts/tutorial-langchain)
-- [FastMCP tutorial](developer-quickstart/tutorials/quickstarts/tutorial-fastmcp)
+- [Pydantic AI tutorial](developer-quickstart/tutorial-pydantic)
+- [LangChain tutorial](developer-quickstart/tutorial-langchain)
+- [FastMCP tutorial](developer-quickstart/tutorial-fastmcp)
 
 ## HTTP API
 

@@ -28,9 +28,9 @@ Step-by-step guides that take you from an empty project to a working agent in ap
 
 Pick the framework you use:
 
-- [**Pydantic AI**](tutorials/quickstarts/tutorial-pydantic) — Build an agent with Pydantic AI and the Airbyte Agent SDK.
-- [**LangChain**](tutorials/quickstarts/tutorial-langchain) — Build an agent with LangChain, LangGraph, and the Airbyte Agent SDK.
-- [**FastMCP**](tutorials/quickstarts/tutorial-fastmcp) — Build an MCP server with FastMCP and the Airbyte Agent SDK.
+- [**Pydantic AI**](tutorial-pydantic) — Build an agent with Pydantic AI and the Airbyte Agent SDK.
+- [**LangChain**](tutorial-langchain) — Build an agent with LangChain, LangGraph, and the Airbyte Agent SDK.
+- [**FastMCP**](tutorial-fastmcp) — Build an MCP server with FastMCP and the Airbyte Agent SDK.
 
 ## Skills
 

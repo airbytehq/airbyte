@@ -26,10 +26,10 @@ Before you begin this tutorial, ensure you have the following.
 - [Python](https://www.python.org/downloads/) version 3.13 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
-- Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../../../admin/profile) for details.
+- Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
 - A GitHub connector added to your Airbyte Agents workspace. Add one of these two ways:
-    - **Web app (recommended)**: Go to [Credentials](https://app.airbyte.ai/credentials) in the Airbyte Agents web app, add a GitHub connector, and authenticate it with a [GitHub personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient for this tutorial) or OAuth. See [Add a connector](../../../../interfaces/ui/add-connector) for details.
-    - **API**: Create a connector with `POST /api/v1/integrations/connectors` and store your GitHub credentials. See [Add a connector](../../../../interfaces/api/add-connector) for details.
+    - **Web app (recommended)**: Go to [Credentials](https://app.airbyte.ai/credentials) in the Airbyte Agents web app, add a GitHub connector, and authenticate it with a [GitHub personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient for this tutorial) or OAuth. See [Add a connector](../../interfaces/ui/add-connector) for details.
+    - **API**: Create a connector with `POST /api/v1/integrations/connectors` and store your GitHub credentials. See [Add a connector](../../interfaces/api/add-connector) for details.
 - An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but LangChain supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
@@ -256,7 +256,7 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- **Add another connector.** The same `connect(...)` + `execute(...)` pattern covers the full [Airbyte agent connectors catalog](../../../../connectors). Add Slack, Stripe, Salesforce, or any other connector in the web app, then call `slack = connect("slack")` in your agent and register a second tool with another `@tool` / `@SlackConnector.tool_utils` stack. Your agent now reads GitHub and posts to Slack with no additional OAuth setup.
+- **Add another connector.** The same `connect(...)` + `execute(...)` pattern covers the full [Airbyte agent connectors catalog](../../connectors). Add Slack, Stripe, Salesforce, or any other connector in the web app, then call `slack = connect("slack")` in your agent and register a second tool with another `@tool` / `@SlackConnector.tool_utils` stack. Your agent now reads GitHub and posts to Slack with no additional OAuth setup.
 - **Use write actions.** Connectors expose create, update, and post actions alongside the read ones. Ask the agent to file an issue, comment on a PR, or send a Slack message, and `execute` carries the write through with the stored OAuth token.
 - **Let your AI assistant scaffold the next agent.** The Airbyte agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new agent without retyping them. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
 - **Reach the same connectors from any MCP client.** Airbyte Agents exposes the same connectors through a hosted MCP endpoint that works with Claude Code, Cursor, and ChatGPT. See the [FastMCP tutorial](./tutorial-fastmcp) for a local-server variant you can run yourself.
