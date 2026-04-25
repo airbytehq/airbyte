@@ -106,7 +106,7 @@ Use Airbyte agent Connectors when you want:
 
 <Grid columns="2">
 
-<CardWithIcon title="Tutorials" description="Get started with the Airbyte Agents and its connectors. Even if you've never built an AI agent before, you can have one working for you in 15 minutes or less." ctaText="Tutorials" ctaLink="/ai-agents/get-started/tutorials/" icon="fa-cloud" />
+<CardWithIcon title="Tutorials" description="Get started with the Airbyte Agents and its connectors. Even if you've never built an AI agent before, you can have one working for you in 15 minutes or less." ctaText="Tutorials" ctaLink="/ai-agents/get-started/developer-quickstart/" icon="fa-cloud" />
 
 <CardWithIcon title="Web app" description="Use the Airbyte Agents web app to talk to an Airbyte-hosted agent in Chats, or define Automations that run on a schedule or webhook." ctaText="Web app docs" ctaLink="/ai-agents/interfaces/ui/" icon="fa-robot" />
 

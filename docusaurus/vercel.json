@@ -985,6 +985,56 @@
       "source": "/ai-agents/interfaces/api/enable-connector",
       "destination": "/ai-agents/interfaces/api/add-connector",
       "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials",
+      "destination": "/ai-agents/get-started/developer-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts",
+      "destination": "/ai-agents/get-started/developer-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
+      "destination": "/ai-agents/get-started/developer-quickstart/tutorial-pydantic",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-langchain",
+      "destination": "/ai-agents/get-started/developer-quickstart/tutorial-langchain",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-fastmcp",
+      "destination": "/ai-agents/get-started/developer-quickstart/tutorial-fastmcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/recipes",
+      "destination": "/ai-agents/get-started/developer-quickstart/recipes",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills/claude-code",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills/claude-code",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills/codex",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills/codex",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills/lovable",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills/lovable",
+      "statusCode": 301
     }
   ]
 }
