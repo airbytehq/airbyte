@@ -605,7 +605,12 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition =
             factory
-                .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint), DataChannelMedium.SOCKET))
+                .create(
+                    stream.bootstrap(
+                        opaqueStateValue(cursor = cursorCheckpoint),
+                        DataChannelMedium.SOCKET,
+                    )
+                )
                 .asPartition()
         factory.assertFailures()
 
@@ -648,7 +653,12 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition =
             factory
-                .create(stream.bootstrap(opaqueStateValue(cursor = cursorCheckpoint), DataChannelMedium.STDIO))
+                .create(
+                    stream.bootstrap(
+                        opaqueStateValue(cursor = cursorCheckpoint),
+                        DataChannelMedium.STDIO,
+                    )
+                )
                 .asPartition()
         factory.assertFailures()
 

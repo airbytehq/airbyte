@@ -20,11 +20,11 @@ import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
-import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
