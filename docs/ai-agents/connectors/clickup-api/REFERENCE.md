@@ -8,17 +8,17 @@ The Clickup-Api connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| User | [Get](#user-get) |
-| Teams | [List](#teams-list) |
-| Spaces | [List](#spaces-list), [Get](#spaces-get) |
-| Folders | [List](#folders-list), [Get](#folders-get) |
-| Lists | [List](#lists-list), [Get](#lists-get) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search) |
-| Comments | [List](#comments-list), [Create](#comments-create), [Get](#comments-get), [Update](#comments-update) |
-| Goals | [List](#goals-list), [Get](#goals-get) |
+| User | [Get](#user-get), [Context Store Search](#user-context-store-search) |
+| Teams | [List](#teams-list), [Context Store Search](#teams-context-store-search) |
+| Spaces | [List](#spaces-list), [Get](#spaces-get), [Context Store Search](#spaces-context-store-search) |
+| Folders | [List](#folders-list), [Get](#folders-get), [Context Store Search](#folders-context-store-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search), [Context Store Search](#tasks-context-store-search) |
+| Comments | [List](#comments-list), [Create](#comments-create), [Get](#comments-get), [Update](#comments-update), [Context Store Search](#comments-context-store-search) |
+| Goals | [List](#goals-list), [Get](#goals-get), [Context Store Search](#goals-context-store-search) |
 | Views | [List](#views-list), [Get](#views-get) |
 | View Tasks | [List](#view-tasks-list) |
-| Time Tracking | [List](#time-tracking-list), [Get](#time-tracking-get) |
+| Time Tracking | [List](#time-tracking-list), [Get](#time-tracking-get), [Context Store Search](#time-tracking-context-store-search) |
 | Members | [List](#members-list) |
 | Docs | [List](#docs-list), [Get](#docs-get) |
 
@@ -68,6 +68,66 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### User Context Store Search
+
+Search and filter user records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.user.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "user",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique identifier for the user |
+| `username` | `string` | Display name of the user |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique identifier for the user |
+| `data[].username` | `string` | Display name of the user |
+
+</details>
+
 ## Teams
 
 ### Teams List
@@ -107,6 +167,66 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `avatar` | `string \| null` |  |
 | `members` | `array<object>` |  |
 
+
+</details>
+
+### Teams Context Store Search
+
+Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.teams.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the team (workspace) |
+| `name` | `string` | Name of the team |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the team (workspace) |
+| `data[].name` | `string` | Name of the team |
 
 </details>
 
@@ -221,6 +341,68 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `features` | `object` |  |
 | `archived` | `boolean` |  |
 
+
+</details>
+
+### Spaces Context Store Search
+
+Search and filter spaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.spaces.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spaces",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the space |
+| `name` | `string` | Name of the space |
+| `private` | `boolean` | Whether the space is private |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the space |
+| `data[].name` | `string` | Name of the space |
+| `data[].private` | `boolean` | Whether the space is private |
 
 </details>
 
@@ -339,6 +521,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `lists` | `array<object>` |  |
 | `permission_level` | `string \| null` |  |
 
+
+</details>
+
+### Folders Context Store Search
+
+Search and filter folders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.folders.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "folders",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the folder |
+| `name` | `string` | Name of the folder |
+| `hidden` | `boolean` | Whether the folder is hidden from the sidebar |
+| `task_count` | `string` | Number of tasks contained in the folder |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the folder |
+| `data[].name` | `string` | Name of the folder |
+| `data[].hidden` | `boolean` | Whether the folder is hidden from the sidebar |
+| `data[].task_count` | `string` | Number of tasks contained in the folder |
 
 </details>
 
@@ -472,6 +718,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Lists Context Store Search
+
+Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.lists.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "lists",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the list |
+| `name` | `string` | Name of the list |
+| `archived` | `boolean` | Whether the list has been archived |
+| `due_date` | `string` | Due date for the list, in ClickUp timestamp format |
+| `start_date` | `string` | Start date for the list, in ClickUp timestamp format |
+| `priority` | `string` | Priority assigned to the list |
+| `task_count` | `integer` | Number of tasks contained in the list |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the list |
+| `data[].name` | `string` | Name of the list |
+| `data[].archived` | `boolean` | Whether the list has been archived |
+| `data[].due_date` | `string` | Due date for the list, in ClickUp timestamp format |
+| `data[].start_date` | `string` | Start date for the list, in ClickUp timestamp format |
+| `data[].priority` | `string` | Priority assigned to the list |
+| `data[].task_count` | `integer` | Number of tasks contained in the list |
+
+</details>
+
 ## Tasks
 
 ### Tasks List
@@ -558,6 +874,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `permission_level` | `string \| null` |  |
 | `attachments` | `array<object>` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `last_page` | `boolean \| null` |  |
 
 </details>
 
@@ -751,6 +1073,86 @@ Operators: = (contains), == (exact), \<, \<=, \>, \>=, !=, !==, IS NULL, IS NOT 
 | `permission_level` | `string \| null` |  |
 | `attachments` | `array<object>` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `last_page` | `boolean \| null` |  |
+
+</details>
+
+### Tasks Context Store Search
+
+Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.tasks.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the task |
+| `name` | `string` | Name of the task |
+| `date_created` | `string` | Creation timestamp of the task, in ClickUp timestamp format |
+| `date_updated` | `string` | Last update timestamp of the task, in ClickUp timestamp format |
+| `date_closed` | `string` | Timestamp when the task was closed, in ClickUp timestamp format |
+| `due_date` | `string` | Due date for the task, in ClickUp timestamp format |
+| `start_date` | `string` | Start date for the task, in ClickUp timestamp format |
+| `parent` | `string` | ID of the parent task, if this task is a subtask |
+| `url` | `string` | Permalink URL to view the task in ClickUp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the task |
+| `data[].name` | `string` | Name of the task |
+| `data[].date_created` | `string` | Creation timestamp of the task, in ClickUp timestamp format |
+| `data[].date_updated` | `string` | Last update timestamp of the task, in ClickUp timestamp format |
+| `data[].date_closed` | `string` | Timestamp when the task was closed, in ClickUp timestamp format |
+| `data[].due_date` | `string` | Due date for the task, in ClickUp timestamp format |
+| `data[].start_date` | `string` | Start date for the task, in ClickUp timestamp format |
+| `data[].parent` | `string` | ID of the parent task, if this task is a subtask |
+| `data[].url` | `string` | Permalink URL to view the task in ClickUp |
 
 </details>
 
@@ -969,6 +1371,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `comment_id` | `string` | Yes | The ID of the comment |
 
 
+### Comments Context Store Search
+
+Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.comments.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the comment |
+| `comment_text` | `string` | Plain-text content of the comment |
+| `date` | `string` | Timestamp when the comment was posted, in ClickUp timestamp format |
+| `reply_count` | `number` | Number of replies on the comment |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the comment |
+| `data[].comment_text` | `string` | Plain-text content of the comment |
+| `data[].date` | `string` | Timestamp when the comment was posted, in ClickUp timestamp format |
+| `data[].reply_count` | `number` | Number of replies on the comment |
+
+</details>
+
 ## Goals
 
 ### Goals List
@@ -1098,6 +1564,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `history` | `array<object>` |  |
 | `pretty_url` | `string \| null` |  |
 
+
+</details>
+
+### Goals Context Store Search
+
+Search and filter goals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.goals.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "goals",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the goal |
+| `name` | `string` | Name of the goal |
+| `description` | `string` | Description of the goal |
+| `archived` | `boolean` | Whether the goal has been archived |
+| `pinned` | `boolean` | Whether the goal is pinned to the top of the list |
+| `private` | `boolean` | Whether the goal is private to its owners |
+| `date_created` | `string` | Creation timestamp of the goal, in ClickUp timestamp format |
+| `due_date` | `string` | Due date for the goal, in ClickUp timestamp format |
+| `percent_completed` | `number` | Completion percentage of the goal, between 0 and 100 |
+| `team_id` | `string` | Identifier of the team that owns the goal |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the goal |
+| `data[].name` | `string` | Name of the goal |
+| `data[].description` | `string` | Description of the goal |
+| `data[].archived` | `boolean` | Whether the goal has been archived |
+| `data[].pinned` | `boolean` | Whether the goal is pinned to the top of the list |
+| `data[].private` | `boolean` | Whether the goal is private to its owners |
+| `data[].date_created` | `string` | Creation timestamp of the goal, in ClickUp timestamp format |
+| `data[].due_date` | `string` | Due date for the goal, in ClickUp timestamp format |
+| `data[].percent_completed` | `number` | Completion percentage of the goal, between 0 and 100 |
+| `data[].team_id` | `string` | Identifier of the team that owns the goal |
 
 </details>
 
@@ -1322,6 +1864,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attachments` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `last_page` | `boolean \| null` |  |
+
 </details>
 
 ## Time Tracking
@@ -1446,6 +1994,66 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Time Tracking Context Store Search
+
+Search and filter time tracking records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await clickup_api.time_tracking.context_store_search(
+    query={"filter": {"eq": {"time": 0.0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "time_tracking",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"time": 0.0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `time` | `number` | Total tracked time in milliseconds |
+| `user` | `object` | User who tracked the time |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].time` | `number` | Total tracked time in milliseconds |
+| `data[].user` | `object` | User who tracked the time |
+
+</details>
+
 ## Members
 
 ### Members List
@@ -1535,6 +2143,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `workspace_id` | `string` | Yes | The ID of the workspace |
+| `cursor` | `string` | No | Cursor for pagination to the next page of results |
 
 
 <details>
@@ -1556,6 +2165,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `workspace_id` | `integer \| null` |  |
 | `content` | `string \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string \| null` |  |
 
 </details>
 

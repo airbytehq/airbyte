@@ -3,8 +3,10 @@
 The Amazon-Ads agent connector is a Python package that equips AI agents to interact with Amazon-Ads through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Amazon Ads is Amazon's advertising platform that enables sellers and vendors to promote their
-products across Amazon's marketplace. This connector provides access to advertising profiles
-for managing and analyzing advertising campaigns across different marketplaces.
+products across Amazon's marketplace. This connector provides access to advertising profiles,
+portfolios, Sponsored Products campaigns (including ad groups, keywords, product ads, targets,
+and negative keywords/targets), and Sponsored Brands campaigns and ad groups for managing and
+analyzing advertising campaigns across different marketplaces.
 
 
 ## Example questions
@@ -16,8 +18,17 @@ The Amazon-Ads connector is optimized to handle prompts like these.
 - What marketplaces do I have advertising profiles in?
 - List all portfolios for one of my profiles
 - Show me all sponsored product campaigns
+- List all ad groups in my SP campaigns
+- Show me all keywords in my sponsored product campaigns
+- What product ads are currently running?
+- Show me all targeting clauses for my campaigns
+- List negative keywords across my ad groups
+- Show me all sponsored brands campaigns
+- List ad groups in my sponsored brands campaigns
 - What campaigns are currently enabled?
 - Find campaigns with a specific targeting type
+- Which ad groups have the highest default bid?
+- What keywords are using broad match type?
 
 ## Unsupported questions
 
@@ -31,7 +42,7 @@ The Amazon-Ads connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-amazon-ads
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -43,8 +54,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_amazon_ads import AmazonAdsConnector
-from airbyte_agent_amazon_ads.models import AmazonAdsAuthConfig
+from airbyte_agent_sdk.connectors.amazon_ads import AmazonAdsConnector
+from airbyte_agent_sdk.connectors.amazon_ads.models import AmazonAdsAuthConfig
 
 connector = AmazonAdsConnector(
     auth_config=AmazonAdsAuthConfig(
@@ -68,11 +79,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_amazon_ads import AmazonAdsConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.amazon_ads import AmazonAdsConnector, AirbyteAuthConfig
 
 connector = AmazonAdsConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -93,9 +104,17 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get), [Search](./REFERENCE.md#profiles-search) |
+| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get), [Context Store Search](./REFERENCE.md#profiles-context-store-search) |
 | Portfolios | [List](./REFERENCE.md#portfolios-list), [Get](./REFERENCE.md#portfolios-get) |
 | Sponsored Product Campaigns | [List](./REFERENCE.md#sponsored-product-campaigns-list), [Get](./REFERENCE.md#sponsored-product-campaigns-get) |
+| Sponsored Product Ad Groups | [List](./REFERENCE.md#sponsored-product-ad-groups-list) |
+| Sponsored Product Keywords | [List](./REFERENCE.md#sponsored-product-keywords-list) |
+| Sponsored Product Product Ads | [List](./REFERENCE.md#sponsored-product-product-ads-list) |
+| Sponsored Product Targets | [List](./REFERENCE.md#sponsored-product-targets-list) |
+| Sponsored Product Negative Keywords | [List](./REFERENCE.md#sponsored-product-negative-keywords-list) |
+| Sponsored Product Negative Targets | [List](./REFERENCE.md#sponsored-product-negative-targets-list) |
+| Sponsored Brands Campaigns | [List](./REFERENCE.md#sponsored-brands-campaigns-list) |
+| Sponsored Brands Ad Groups | [List](./REFERENCE.md#sponsored-brands-ad-groups-list) |
 
 
 ### Authentication
@@ -108,7 +127,6 @@ See the official [Amazon-Ads API reference](https://advertising.amazon.com/API/d
 
 ## Version information
 
-- **Package version:** 0.1.70
-- **Connector version:** 1.0.9
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amazon-ads/CHANGELOG.md)
+- **Package version:** 1.0.10
+- **Connector version:** 1.0.10
+- **Generated with Connector SDK commit SHA:** unknown
