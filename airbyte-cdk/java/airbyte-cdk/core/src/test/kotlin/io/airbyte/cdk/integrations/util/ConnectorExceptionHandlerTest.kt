@@ -154,9 +154,7 @@ internal class ConnectorExceptionHandlerTest {
     @Test
     fun `test getExternalMessage() with HikariPool connection timeout`() {
         val e =
-            Exception(
-                "HikariPool-1 - Connection is not available, request timed out after 10001ms"
-            )
+            Exception("HikariPool-1 - Connection is not available, request timed out after 10001ms")
         val actualMessage = exceptionHandler.getExternalMessage(e)
         assertEquals("Connection pool timed out.", actualMessage)
     }
@@ -164,9 +162,7 @@ internal class ConnectorExceptionHandlerTest {
     @Test
     fun `test checkErrorType() with HikariPool timeout is TRANSIENT`() {
         val e =
-            Exception(
-                "HikariPool-1 - Connection is not available, request timed out after 10001ms"
-            )
+            Exception("HikariPool-1 - Connection is not available, request timed out after 10001ms")
         assertEquals(true, exceptionHandler.checkErrorType(e, FailureType.TRANSIENT))
         assertEquals(false, exceptionHandler.checkErrorType(e, FailureType.CONFIG))
     }
