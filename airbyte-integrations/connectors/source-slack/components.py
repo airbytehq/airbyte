@@ -146,10 +146,6 @@ class ChannelsRetriever(SimpleRetriever):
         for stream_data in self._read_pages(record_generator, _slice):
             if self.should_join_to_channel(self.config, stream_data):
                 self.join_channel(self.config, stream_data)
-            elif not self.config["join_channels"] and not stream_data.get("is_member"):
-                # Skip non-member channels when auto-join is disabled to prevent
-                # child streams from creating cursors for inaccessible channels.
-                continue
 
             yield stream_data
 
