@@ -44,7 +44,7 @@ Add the MCP server to your Claude Code command line tool.
 
 5. Select **Authenticate**. Your web browser opens.
 
-6. If you're not logged into the Airbyte, log in now.
+6. If you're not logged into Airbyte, log in now.
 
 7. Grant access to the Airbyte Agent MCP.
 
@@ -75,7 +75,7 @@ Add the MCP server to your Cursor app.
 
 5. Find the Airbyte MCP server and click **Connect**.
 
-6. If you're not logged into the Airbyte, log in now.
+6. If you're not logged into Airbyte, log in now.
 
 7. Grant access to the Airbyte Agent MCP.
 
@@ -84,9 +84,9 @@ Add the MCP server to your Cursor app.
 </TabItem>
 <TabItem value="vscode" label="VS Code">
 
-Add the MCP server to Visual Studio Code. The Agent Engine provides a one-click install button for both the stable and Insiders builds. If you prefer to configure VS Code manually, use the Command Palette or edit `mcp.json` directly.
+Add the MCP server to Visual Studio Code. Airbyte Agents provides a one-click install button for both the stable and Insiders builds. If you prefer to configure VS Code manually, use the Command Palette or edit `mcp.json` directly.
 
-#### Option 1: One-click install from the Agent Engine (recommended)
+#### Option 1: One-click install from Airbyte Agents (recommended)
 
 1. Sign into [app.airbyte.ai](https://app.airbyte.ai).
 
@@ -94,7 +94,7 @@ Add the MCP server to Visual Studio Code. The Agent Engine provides a one-click 
 
 3. Select **Add to VS Code**, or **Add to VS Code Insiders** for Insiders builds. A new tab opens at `vscode.dev/redirect` (or `insiders.vscode.dev/redirect`) and hands the install off to VS Code.
 
-4. Confirm the install in VS Code. The Airbyte Agent Engine server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
+4. Confirm the install in VS Code. The Airbyte Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
 
 5. VS Code detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
 
@@ -112,7 +112,7 @@ If VS Code isn't installed, the click lands on the `vscode.dev` help page instea
 
 3. Enter the server URL: `https://mcp.airbyte.ai/mcp`
 
-4. Enter a server name, such as `Airbyte Agent Engine`.
+4. Enter a server name, such as `Airbyte Agent MCP`.
 
 5. Choose whether to install the server in your user profile (**Global**) or the current workspace.
 
@@ -127,7 +127,7 @@ Run **MCP: Open User Configuration** from the Command Palette to open your user 
 ```json
 {
   "servers": {
-    "Airbyte Agent Engine": {
+    "Airbyte Agent MCP": {
       "type": "http",
       "url": "https://mcp.airbyte.ai/mcp"
     }
@@ -152,7 +152,7 @@ Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `cla
 
 5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
 
-6. If you're not logged into the Airbyte, log in now.
+6. If you're not logged into Airbyte, log in now.
 
 7. Grant access to the Airbyte Agent MCP.
 
@@ -171,7 +171,7 @@ Add the MCP server to your Codex command line tool.
 
 2. Codex detects that the server requires OAuth and opens your browser.
 
-3. If you're not logged into the Airbyte, log in now.
+3. If you're not logged into Airbyte, log in now.
 
 4. Grant access to the Airbyte Agent MCP.
 
@@ -185,32 +185,29 @@ Add the MCP server to your Codex command line tool.
 ChatGPT supports remote MCP servers through its [Developer Mode](https://platform.openai.com/docs/guides/developer-mode) feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
 
 :::note Admin access required for Business and Enterprise/Education plans
-On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create apps. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
+On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create connectors. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
 :::
 
 1. Open [ChatGPT](https://chatgpt.com) on the web.
 
-2. Go to **Settings** > **Apps** > **Advanced settings**.
+2. Go to **Settings** > **Apps & Connectors** > **Advanced settings** (at the bottom of the page).
 
 3. Toggle **Developer mode** to **ON**.
 
-4. Go back to the apps screen.
+4. Go back to **Settings** > **Apps & Connectors**.
 
-5. Click **Create app** next to "Advanced settings." This button only appears when Developer Mode is enabled.
+5. Click **Create**. This button only appears when Developer Mode is enabled.
 
-6. Enter the server details:
+6. Enter the connector details:
 
-    - **Name**: `Airbyte Agents`
-    - **Server URL**: `https://mcp.airbyte.ai/mcp`
-    - **Authentication**: Select **OAuth**
+    - **Connector name**: `Airbyte Agents`
+    - **Connector URL**: `https://mcp.airbyte.ai/mcp`
 
-7. Accept ChatGPT's disclaimer and click **Create**. The app appears under **Drafts** in your Apps settings.
+7. Click **Create**. ChatGPT connects to the MCP server and detects its tools. The connector appears under **Settings** > **Apps & Connectors**.
 
-8. If you're not logged into the Airbyte, log in now.
+8. If you're not logged into Airbyte, log in now and grant access.
 
-9. Grant access to the Airbyte Agent MCP.
-
-10. Open a new conversation to start using the MCP server.
+9. Open a new conversation to start using the MCP server.
 
 </TabItem>
 <TabItem value="other" label="Other clients">
@@ -399,17 +396,17 @@ For the complete list of connectors and their supported entities, see [Agent con
 - Make sure you visited the credential URL the agent provided and completed the form in the browser.
 - If the flow timed out, ask the agent to start a new credential flow.
 
-### ChatGPT doesn't show the "Create app" button
+### ChatGPT doesn't show the "Create" button
 
-- Verify that Developer Mode is toggled on in **Settings** > **Apps** > **Advanced settings**.
+- Verify that Developer Mode is toggled on in **Settings** > **Apps & Connectors** > **Advanced settings**.
 - Make sure your ChatGPT plan supports Developer Mode. It requires Pro, Plus, Business, Enterprise, or Education. Free plans don't have access.
-- After enabling Developer Mode, go back to the main **Apps** screen. The **Create app** button appears next to "Advanced settings."
+- After enabling Developer Mode, go back to **Settings** > **Apps & Connectors**. The **Create** button appears at the top of the page.
 
 ### ChatGPT can't connect to the MCP server
 
 - Confirm the server URL is exactly `https://mcp.airbyte.ai/mcp` with no trailing slash or extra path.
-- If the OAuth flow doesn't complete, try deleting the app in **Settings** > **Apps** and creating it again.
-- On Business, Enterprise, and Education plans, you must be a workspace owner or admin to create apps. On Pro and Plus plans, any user can enable Developer Mode directly.
+- If the OAuth flow doesn't complete, try deleting the connector in **Settings** > **Apps & Connectors** and creating it again.
+- On Business, Enterprise, and Education plans, you must be a workspace owner or admin to create connectors. On Pro and Plus plans, any user can enable Developer Mode directly.
 
 ### ChatGPT doesn't use the MCP server tools
 
