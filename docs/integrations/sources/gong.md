@@ -59,11 +59,15 @@ This source syncs the following streams:
 | Stream | Sync Mode | Description |
 | :----- | :-------- | :---------- |
 | [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
-| [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
-| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences |
-| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media |
+| [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps. Private calls are excluded. |
+| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences. Transcripts for private calls are excluded. |
+| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media. Private calls are excluded. |
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
+
+### Private calls
+
+Starting with version 1.1.0, the connector excludes calls marked as private (`isPrivate: true` in the Gong API) from the `calls` and `extensive calls` streams. Because `call transcripts` is a substream of `calls`, transcripts for private calls are also excluded. Gong requires this behavior for OAuth app listing approval, and the Gong API does not expose a server-side filter for this field, so the connector applies the filter client-side after fetching records.
 
 ### Performance considerations
 
@@ -78,6 +82,7 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.1.0 | 2026-04-20 | [76454](https://github.com/airbytehq/airbyte/pull/76454) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
 | 1.1.1 | 2026-04-21 | [76593](https://github.com/airbytehq/airbyte/pull/76593) | Update dependencies |
 | 1.1.0 | 2026-04-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
 | 1.0.1 | 2026-04-10 | [76229](https://github.com/airbytehq/airbyte/pull/76229) | Set deadlineAction to auto_upgrade for 1.0.0 breaking change |

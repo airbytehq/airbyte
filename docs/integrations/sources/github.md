@@ -72,6 +72,8 @@ Repositories with the wrong name or repositories that do not exist or have the w
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
+10. **Max Waiting Time (Optional)** - Maximum time in minutes to wait when the connector is rate-limited by the GitHub API. Defaults to 10 minutes. Valid range: 1 to 60 minutes.
 
 ### For Airbyte Open Source:
 
@@ -158,7 +160,8 @@ This connector outputs the following incremental streams:
 
    - read all records;
    - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
+
+   Consider this behavior when using these incremental streams, because it may affect your API call limits.
 
 4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**

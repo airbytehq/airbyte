@@ -34,7 +34,7 @@ The Monday connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-monday
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -46,8 +46,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_monday import MondayConnector
-from airbyte_agent_monday.models import MondayApiTokenAuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayApiTokenAuthenticationAuthConfig
 
 connector = MondayConnector(
     auth_config=MondayApiTokenAuthenticationAuthConfig(
@@ -69,11 +69,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_monday import MondayConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector, AirbyteAuthConfig
 
 connector = MondayConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -94,14 +94,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Search](./REFERENCE.md#boards-search) |
-| Items | [List](./REFERENCE.md#items-list), [Get](./REFERENCE.md#items-get), [Search](./REFERENCE.md#items-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Search](./REFERENCE.md#tags-search) |
-| Updates | [List](./REFERENCE.md#updates-list), [Get](./REFERENCE.md#updates-get), [Search](./REFERENCE.md#updates-search) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Search](./REFERENCE.md#workspaces-search) |
-| Activity Logs | [List](./REFERENCE.md#activity-logs-list), [Search](./REFERENCE.md#activity-logs-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search) |
+| Items | [List](./REFERENCE.md#items-list), [Get](./REFERENCE.md#items-get), [Context Store Search](./REFERENCE.md#items-context-store-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
+| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
+| Updates | [List](./REFERENCE.md#updates-list), [Get](./REFERENCE.md#updates-get), [Context Store Search](./REFERENCE.md#updates-context-store-search) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search) |
+| Activity Logs | [List](./REFERENCE.md#activity-logs-list), [Context Store Search](./REFERENCE.md#activity-logs-context-store-search) |
 
 
 ### Authentication
@@ -114,7 +114,6 @@ See the official [Monday API reference](https://developer.monday.com/api-referen
 
 ## Version information
 
-- **Package version:** 0.1.15
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/monday/CHANGELOG.md)
+- **Package version:** 1.0.3
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** unknown
