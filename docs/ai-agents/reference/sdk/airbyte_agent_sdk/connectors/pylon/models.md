@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Account"></a>
+
 `Account(**data: Any)`
 :   Account type definition
     
@@ -74,6 +76,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountChannel"></a>
+
 `AccountChannel(**data: Any)`
 :   AccountChannel type definition
     
@@ -101,6 +105,8 @@ Classes
 
     `source: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AccountCreateParams"></a>
 
 `AccountCreateParams(**data: Any)`
 :   AccountCreateParams type definition
@@ -139,6 +145,8 @@ Classes
     `tags: list[str] | Any`
     :   The type of the None singleton.
 
+<a id="AccountResponse"></a>
+
 `AccountResponse(**data: Any)`
 :   AccountResponse type definition
     
@@ -163,6 +171,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="AccountUpdateParams"></a>
 
 `AccountUpdateParams(**data: Any)`
 :   AccountUpdateParams type definition
@@ -204,6 +214,8 @@ Classes
     `tags: list[str] | Any`
     :   The type of the None singleton.
 
+<a id="AccountsListResultMeta"></a>
+
 `AccountsListResultMeta(**data: Any)`
 :   Metadata for accounts.Action.LIST operation
     
@@ -228,6 +240,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AccountsResponse"></a>
 
 `AccountsResponse(**data: Any)`
 :   AccountsResponse type definition
@@ -256,6 +270,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Article"></a>
 
 `Article(**data: Any)`
 :   Article type definition
@@ -300,6 +316,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ArticleCreateParams"></a>
+
 `ArticleCreateParams(**data: Any)`
 :   ArticleCreateParams type definition
     
@@ -334,6 +352,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="ArticleResponse"></a>
+
 `ArticleResponse(**data: Any)`
 :   ArticleResponse type definition
     
@@ -358,6 +378,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="ArticleUpdateParams"></a>
 
 `ArticleUpdateParams(**data: Any)`
 :   ArticleUpdateParams type definition
@@ -384,6 +406,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="CSATResponse"></a>
+
 `CSATResponse(**data: Any)`
 :   CSATResponse type definition
     
@@ -408,6 +432,8 @@ Classes
 
     `score: int | Any | None`
     :   The type of the None singleton.
+
+<a id="Collection"></a>
 
 `Collection(**data: Any)`
 :   Collection type definition
@@ -443,6 +469,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CollectionCreateParams"></a>
+
 `CollectionCreateParams(**data: Any)`
 :   CollectionCreateParams type definition
     
@@ -471,6 +499,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="CollectionResponse"></a>
+
 `CollectionResponse(**data: Any)`
 :   CollectionResponse type definition
     
@@ -495,6 +525,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   Contact type definition
@@ -548,6 +580,8 @@ Classes
     `portal_role_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactCreateParams"></a>
+
 `ContactCreateParams(**data: Any)`
 :   ContactCreateParams type definition
     
@@ -579,6 +613,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="ContactResponse"></a>
+
 `ContactResponse(**data: Any)`
 :   ContactResponse type definition
     
@@ -603,6 +639,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="ContactUpdateParams"></a>
 
 `ContactUpdateParams(**data: Any)`
 :   ContactUpdateParams type definition
@@ -632,6 +670,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -656,6 +696,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactsResponse"></a>
 
 `ContactsResponse(**data: Any)`
 :   ContactsResponse type definition
@@ -684,6 +726,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="CustomField"></a>
 
 `CustomField(**data: Any)`
 :   CustomField type definition
@@ -746,6 +790,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomFieldResponse"></a>
+
 `CustomFieldResponse(**data: Any)`
 :   CustomFieldResponse type definition
     
@@ -770,6 +816,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="CustomFieldValue"></a>
 
 `CustomFieldValue(**data: Any)`
 :   CustomFieldValue type definition
@@ -799,6 +847,8 @@ Classes
     `values: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomFieldsListResultMeta"></a>
+
 `CustomFieldsListResultMeta(**data: Any)`
 :   Metadata for custom_fields.Action.LIST operation
     
@@ -823,6 +873,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CustomFieldsResponse"></a>
 
 `CustomFieldsResponse(**data: Any)`
 :   CustomFieldsResponse type definition
@@ -851,6 +903,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="EmailMessageInfo"></a>
 
 `EmailMessageInfo(**data: Any)`
 :   EmailMessageInfo type definition
@@ -886,6 +940,8 @@ Classes
     `to_emails: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="ExternalIssue"></a>
+
 `ExternalIssue(**data: Any)`
 :   ExternalIssue type definition
     
@@ -914,6 +970,8 @@ Classes
     `source: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IntegrationUserId"></a>
+
 `IntegrationUserId(**data: Any)`
 :   IntegrationUserId type definition
     
@@ -938,6 +996,8 @@ Classes
 
     `source: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Issue"></a>
 
 `Issue(**data: Any)`
 :   Issue type definition
@@ -1051,6 +1111,8 @@ Classes
     `type_: Any`
     :   The type of the None singleton.
 
+<a id="IssueChatWidgetInfo"></a>
+
 `IssueChatWidgetInfo(**data: Any)`
 :   IssueChatWidgetInfo type definition
     
@@ -1072,6 +1134,8 @@ Classes
 
     `page_url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IssueCreateParams"></a>
 
 `IssueCreateParams(**data: Any)`
 :   IssueCreateParams type definition
@@ -1119,6 +1183,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueNote"></a>
+
 `IssueNote(**data: Any)`
 :   IssueNote type definition
     
@@ -1146,6 +1212,8 @@ Classes
 
     `timestamp: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IssueNoteCreateParams"></a>
 
 `IssueNoteCreateParams(**data: Any)`
 :   IssueNoteCreateParams type definition
@@ -1175,6 +1243,8 @@ Classes
     `thread_id: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueNoteResponse"></a>
+
 `IssueNoteResponse(**data: Any)`
 :   IssueNoteResponse type definition
     
@@ -1199,6 +1269,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueResponse"></a>
 
 `IssueResponse(**data: Any)`
 :   IssueResponse type definition
@@ -1225,6 +1297,8 @@ Classes
     `request_id: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueThread"></a>
+
 `IssueThread(**data: Any)`
 :   IssueThread type definition
     
@@ -1250,6 +1324,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IssueThreadCreateParams"></a>
+
 `IssueThreadCreateParams(**data: Any)`
 :   IssueThreadCreateParams type definition
     
@@ -1271,6 +1347,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueThreadResponse"></a>
 
 `IssueThreadResponse(**data: Any)`
 :   IssueThreadResponse type definition
@@ -1296,6 +1374,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueUpdateParams"></a>
 
 `IssueUpdateParams(**data: Any)`
 :   IssueUpdateParams type definition
@@ -1331,6 +1411,8 @@ Classes
     `team_id: str | Any`
     :   The type of the None singleton.
 
+<a id="IssuesListResultMeta"></a>
+
 `IssuesListResultMeta(**data: Any)`
 :   Metadata for issues.Action.LIST operation
     
@@ -1355,6 +1437,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="IssuesResponse"></a>
 
 `IssuesResponse(**data: Any)`
 :   IssuesResponse type definition
@@ -1384,6 +1468,8 @@ Classes
     `request_id: str | Any`
     :   The type of the None singleton.
 
+<a id="MeResponse"></a>
+
 `MeResponse(**data: Any)`
 :   MeResponse type definition
     
@@ -1408,6 +1494,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Message"></a>
 
 `Message(**data: Any)`
 :   Message type definition
@@ -1455,6 +1543,8 @@ Classes
     `timestamp: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageAuthor"></a>
+
 `MessageAuthor(**data: Any)`
 :   MessageAuthor type definition
     
@@ -1486,6 +1576,8 @@ Classes
     `user: Any`
     :   The type of the None singleton.
 
+<a id="MessagesListResultMeta"></a>
+
 `MessagesListResultMeta(**data: Any)`
 :   Metadata for messages.Action.LIST operation
     
@@ -1510,6 +1602,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="MessagesResponse"></a>
 
 `MessagesResponse(**data: Any)`
 :   MessagesResponse type definition
@@ -1538,6 +1632,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Milestone"></a>
 
 `Milestone(**data: Any)`
 :   Milestone type definition
@@ -1576,6 +1672,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MilestoneCreateParams"></a>
+
 `MilestoneCreateParams(**data: Any)`
 :   MilestoneCreateParams type definition
     
@@ -1604,6 +1702,8 @@ Classes
     `project_id: str | Any`
     :   The type of the None singleton.
 
+<a id="MilestoneResponse"></a>
+
 `MilestoneResponse(**data: Any)`
 :   MilestoneResponse type definition
     
@@ -1628,6 +1728,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="MilestoneUpdateParams"></a>
 
 `MilestoneUpdateParams(**data: Any)`
 :   MilestoneUpdateParams type definition
@@ -1654,6 +1756,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="MiniAccount"></a>
+
 `MiniAccount(**data: Any)`
 :   MiniAccount type definition
     
@@ -1675,6 +1779,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MiniContact"></a>
 
 `MiniContact(**data: Any)`
 :   MiniContact type definition
@@ -1701,6 +1807,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MiniTeam"></a>
+
 `MiniTeam(**data: Any)`
 :   MiniTeam type definition
     
@@ -1722,6 +1830,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MiniUser"></a>
 
 `MiniUser(**data: Any)`
 :   MiniUser type definition
@@ -1747,6 +1857,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="NumberMetadata"></a>
 
 `NumberMetadata(**data: Any)`
 :   NumberMetadata type definition
@@ -1776,6 +1888,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="Pagination"></a>
+
 `Pagination(**data: Any)`
 :   Pagination type definition
     
@@ -1800,6 +1914,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   Project type definition
@@ -1850,6 +1966,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectCreateParams"></a>
+
 `ProjectCreateParams(**data: Any)`
 :   ProjectCreateParams type definition
     
@@ -1884,6 +2002,8 @@ Classes
     `start_date: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectResponse"></a>
+
 `ProjectResponse(**data: Any)`
 :   ProjectResponse type definition
     
@@ -1908,6 +2028,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="ProjectUpdateParams"></a>
 
 `ProjectUpdateParams(**data: Any)`
 :   ProjectUpdateParams type definition
@@ -1937,6 +2059,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="PylonAuthConfig"></a>
+
 `PylonAuthConfig(**data: Any)`
 :   API Token Authentication
     
@@ -1958,6 +2082,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PylonCheckResult"></a>
 
 `PylonCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1992,6 +2118,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="PylonExecuteResult"></a>
+
 `PylonExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2020,6 +2148,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PylonExecuteResultWithMeta"></a>
 
 `PylonExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2081,6 +2211,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsListResult"></a>
+
 `AccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2123,6 +2255,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsListResult"></a>
 
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2167,6 +2301,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomFieldsListResult"></a>
+
 `CustomFieldsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2209,6 +2345,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesListResult"></a>
 
 `IssuesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2253,6 +2391,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MessagesListResult"></a>
+
 `MessagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2295,6 +2435,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsListResult"></a>
 
 `TagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2339,6 +2481,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResult"></a>
+
 `TeamsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2381,6 +2525,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketFormsListResult"></a>
 
 `TicketFormsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2425,6 +2571,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UserRolesListResult"></a>
+
 `UserRolesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2468,6 +2616,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2486,6 +2636,8 @@ Classes
     * airbyte_agent_sdk.connectors.pylon.models.PylonExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SelectMetadata"></a>
 
 `SelectMetadata(**data: Any)`
 :   SelectMetadata type definition
@@ -2508,6 +2660,8 @@ Classes
 
     `options: list[airbyte_agent_sdk.connectors.pylon.models.SelectOption] | Any | None`
     :   The type of the None singleton.
+
+<a id="SelectOption"></a>
 
 `SelectOption(**data: Any)`
 :   SelectOption type definition
@@ -2533,6 +2687,8 @@ Classes
 
     `slug: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SlackInfo"></a>
 
 `SlackInfo(**data: Any)`
 :   SlackInfo type definition
@@ -2561,6 +2717,8 @@ Classes
 
     `workspace_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Tag"></a>
 
 `Tag(**data: Any)`
 :   Tag type definition
@@ -2593,6 +2751,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TagCreateParams"></a>
+
 `TagCreateParams(**data: Any)`
 :   TagCreateParams type definition
     
@@ -2621,6 +2781,8 @@ Classes
     `value: str | Any`
     :   The type of the None singleton.
 
+<a id="TagResponse"></a>
+
 `TagResponse(**data: Any)`
 :   TagResponse type definition
     
@@ -2645,6 +2807,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="TagUpdateParams"></a>
 
 `TagUpdateParams(**data: Any)`
 :   TagUpdateParams type definition
@@ -2671,6 +2835,8 @@ Classes
     `value: str | Any`
     :   The type of the None singleton.
 
+<a id="TagsListResultMeta"></a>
+
 `TagsListResultMeta(**data: Any)`
 :   Metadata for tags.Action.LIST operation
     
@@ -2695,6 +2861,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TagsResponse"></a>
 
 `TagsResponse(**data: Any)`
 :   TagsResponse type definition
@@ -2723,6 +2891,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="Task"></a>
 
 `Task(**data: Any)`
 :   Task type definition
@@ -2773,6 +2943,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TaskCreateParams"></a>
+
 `TaskCreateParams(**data: Any)`
 :   TaskCreateParams type definition
     
@@ -2813,6 +2985,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="TaskResponse"></a>
+
 `TaskResponse(**data: Any)`
 :   TaskResponse type definition
     
@@ -2837,6 +3011,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="TaskUpdateParams"></a>
 
 `TaskUpdateParams(**data: Any)`
 :   TaskUpdateParams type definition
@@ -2869,6 +3045,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="Team"></a>
+
 `Team(**data: Any)`
 :   Team type definition
     
@@ -2897,6 +3075,8 @@ Classes
     `users: list[airbyte_agent_sdk.connectors.pylon.models.MiniUser] | Any | None`
     :   The type of the None singleton.
 
+<a id="TeamCreateParams"></a>
+
 `TeamCreateParams(**data: Any)`
 :   TeamCreateParams type definition
     
@@ -2918,6 +3098,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="TeamResponse"></a>
 
 `TeamResponse(**data: Any)`
 :   TeamResponse type definition
@@ -2944,6 +3126,8 @@ Classes
     `request_id: str | Any`
     :   The type of the None singleton.
 
+<a id="TeamUpdateParams"></a>
+
 `TeamUpdateParams(**data: Any)`
 :   TeamUpdateParams type definition
     
@@ -2965,6 +3149,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="TeamsListResultMeta"></a>
 
 `TeamsListResultMeta(**data: Any)`
 :   Metadata for teams.Action.LIST operation
@@ -2990,6 +3176,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TeamsResponse"></a>
 
 `TeamsResponse(**data: Any)`
 :   TeamsResponse type definition
@@ -3018,6 +3206,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="TicketForm"></a>
 
 `TicketForm(**data: Any)`
 :   TicketForm type definition
@@ -3059,6 +3249,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketFormField"></a>
+
 `TicketFormField(**data: Any)`
 :   TicketFormField type definition
     
@@ -3090,6 +3282,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketFormsListResultMeta"></a>
+
 `TicketFormsListResultMeta(**data: Any)`
 :   Metadata for ticket_forms.Action.LIST operation
     
@@ -3114,6 +3308,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketFormsResponse"></a>
 
 `TicketFormsResponse(**data: Any)`
 :   TicketFormsResponse type definition
@@ -3142,6 +3338,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   User type definition
@@ -3183,6 +3381,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserResponse"></a>
+
 `UserResponse(**data: Any)`
 :   UserResponse type definition
     
@@ -3207,6 +3407,8 @@ Classes
 
     `request_id: str | Any`
     :   The type of the None singleton.
+
+<a id="UserRole"></a>
 
 `UserRole(**data: Any)`
 :   UserRole type definition
@@ -3236,6 +3438,8 @@ Classes
     `slug: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserRolesListResultMeta"></a>
+
 `UserRolesListResultMeta(**data: Any)`
 :   Metadata for user_roles.Action.LIST operation
     
@@ -3260,6 +3464,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UserRolesResponse"></a>
 
 `UserRolesResponse(**data: Any)`
 :   UserRolesResponse type definition
@@ -3289,6 +3495,8 @@ Classes
     `request_id: str | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -3313,6 +3521,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersResponse"></a>
 
 `UsersResponse(**data: Any)`
 :   UsersResponse type definition

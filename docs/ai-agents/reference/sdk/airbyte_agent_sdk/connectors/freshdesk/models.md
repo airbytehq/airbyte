@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Agent"></a>
+
 `Agent(**data: Any)`
 :   A Freshdesk agent
     
@@ -101,6 +103,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AgentContact"></a>
+
 `AgentContact(**data: Any)`
 :   Contact details of the agent
     
@@ -153,6 +157,8 @@ Classes
     `updated_at: str | Any | None`
     :   Contact update timestamp
 
+<a id="AgentsListResultMeta"></a>
+
 `AgentsListResultMeta(**data: Any)`
 :   Metadata for agents.Action.LIST operation
     
@@ -174,6 +180,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AgentsSearchData"></a>
 
 `AgentsSearchData(**data: Any)`
 :   Search result data for agents entity.
@@ -227,6 +235,8 @@ Classes
     `updated_at: str | None`
     :   Agent last update timestamp
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -254,6 +264,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -308,6 +320,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentsSearchResult"></a>
+
 `AgentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -344,6 +358,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GroupsSearchResult"></a>
 
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -382,6 +398,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketsSearchResult"></a>
+
 `TicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -397,6 +415,8 @@ Classes
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CompaniesListResultMeta"></a>
 
 `CompaniesListResultMeta(**data: Any)`
 :   Metadata for companies.Action.LIST operation
@@ -419,6 +439,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Company"></a>
 
 `Company(**data: Any)`
 :   A Freshdesk company
@@ -480,6 +502,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   A Freshdesk contact (customer)
@@ -596,6 +620,8 @@ Classes
     `visitor_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -618,6 +644,8 @@ Classes
     `next: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FreshdeskAuthConfig"></a>
+
 `FreshdeskAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -639,6 +667,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FreshdeskCheckResult"></a>
 
 `FreshdeskCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -673,6 +703,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="FreshdeskExecuteResult"></a>
+
 `FreshdeskExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -701,6 +733,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FreshdeskExecuteResultWithMeta"></a>
 
 `FreshdeskExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -762,6 +796,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentsListResult"></a>
+
 `AgentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -804,6 +840,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CompaniesListResult"></a>
 
 `CompaniesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -848,6 +886,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ContactsListResult"></a>
+
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -890,6 +930,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GroupsListResult"></a>
 
 `GroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -934,6 +976,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RolesListResult"></a>
+
 `RolesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -976,6 +1020,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SatisfactionRatingsListResult"></a>
 
 `SatisfactionRatingsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1020,6 +1066,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SurveysListResult"></a>
+
 `SurveysListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1062,6 +1110,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketFieldsListResult"></a>
 
 `TicketFieldsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1106,6 +1156,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketsListResult"></a>
+
 `TicketsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1149,6 +1201,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TimeEntriesListResult"></a>
+
 `TimeEntriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1167,6 +1221,8 @@ Classes
     * airbyte_agent_sdk.connectors.freshdesk.models.FreshdeskExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Group"></a>
 
 `Group(**data: Any)`
 :   A Freshdesk group
@@ -1226,6 +1282,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GroupsListResultMeta"></a>
+
 `GroupsListResultMeta(**data: Any)`
 :   Metadata for groups.Action.LIST operation
     
@@ -1247,6 +1305,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GroupsSearchData"></a>
 
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
@@ -1297,6 +1357,8 @@ Classes
     `updated_at: str | None`
     :   Group last update timestamp
 
+<a id="Role"></a>
+
 `Role(**data: Any)`
 :   A Freshdesk role
     
@@ -1337,6 +1399,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="RolesListResultMeta"></a>
+
 `RolesListResultMeta(**data: Any)`
 :   Metadata for roles.Action.LIST operation
     
@@ -1358,6 +1422,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SatisfactionRating"></a>
 
 `SatisfactionRating(**data: Any)`
 :   A Freshdesk satisfaction rating
@@ -1408,6 +1474,8 @@ Classes
     `user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="SatisfactionRatingsListResultMeta"></a>
+
 `SatisfactionRatingsListResultMeta(**data: Any)`
 :   Metadata for satisfaction_ratings.Action.LIST operation
     
@@ -1429,6 +1497,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Survey"></a>
 
 `Survey(**data: Any)`
 :   A Freshdesk survey
@@ -1467,6 +1537,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SurveyQuestionsItem"></a>
+
 `SurveyQuestionsItem(**data: Any)`
 :   Nested schema for Survey.questions_item
     
@@ -1495,6 +1567,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SurveysListResultMeta"></a>
+
 `SurveysListResultMeta(**data: Any)`
 :   Metadata for surveys.Action.LIST operation
     
@@ -1516,6 +1590,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Ticket"></a>
 
 `Ticket(**data: Any)`
 :   A Freshdesk support ticket
@@ -1653,6 +1729,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketField"></a>
+
 `TicketField(**data: Any)`
 :   A Freshdesk ticket field definition
     
@@ -1729,6 +1807,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketFieldsListResultMeta"></a>
+
 `TicketFieldsListResultMeta(**data: Any)`
 :   Metadata for ticket_fields.Action.LIST operation
     
@@ -1751,6 +1831,8 @@ Classes
     `next: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TicketsListResultMeta"></a>
+
 `TicketsListResultMeta(**data: Any)`
 :   Metadata for tickets.Action.LIST operation
     
@@ -1772,6 +1854,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketsSearchData"></a>
 
 `TicketsSearchData(**data: Any)`
 :   Search result data for tickets entity.
@@ -1894,6 +1978,8 @@ Classes
     `updated_at: str | None`
     :   Ticket last update timestamp
 
+<a id="TimeEntriesListResultMeta"></a>
+
 `TimeEntriesListResultMeta(**data: Any)`
 :   Metadata for time_entries.Action.LIST operation
     
@@ -1915,6 +2001,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TimeEntry"></a>
 
 `TimeEntry(**data: Any)`
 :   A Freshdesk time entry

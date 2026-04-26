@@ -10,6 +10,8 @@ Amazon-Ads connector.
 Classes
 -------
 
+<a id="AmazonAdsConnector"></a>
+
 `AmazonAdsConnector(auth_config: AmazonAdsAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, region: str | None = None)`
 :   Type-safe Amazon-Ads API connector.
     
@@ -256,6 +258,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="PortfoliosQuery"></a>
+
 `PortfoliosQuery(connector: AmazonAdsConnector)`
 :   Query class for Portfolios entity operations.
     
@@ -285,6 +289,8 @@ Classes
         
                 Returns:
                     PortfoliosListResult
+
+<a id="ProfilesQuery"></a>
 
 `ProfilesQuery(connector: AmazonAdsConnector)`
 :   Query class for Profiles entity operations.
@@ -349,6 +355,8 @@ Classes
                 Returns:
                     ProfilesListResult
 
+<a id="SponsoredBrandsAdGroupsQuery"></a>
+
 `SponsoredBrandsAdGroupsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredBrandsAdGroups entity operations.
     
@@ -369,6 +377,8 @@ Classes
         
                 Returns:
                     SponsoredBrandsAdGroupsListResult
+
+<a id="SponsoredBrandsCampaignsQuery"></a>
 
 `SponsoredBrandsCampaignsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredBrandsCampaigns entity operations.
@@ -391,6 +401,8 @@ Classes
                 Returns:
                     SponsoredBrandsCampaignsListResult
 
+<a id="SponsoredProductAdGroupsQuery"></a>
+
 `SponsoredProductAdGroupsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductAdGroups entity operations.
     
@@ -411,6 +423,8 @@ Classes
         
                 Returns:
                     SponsoredProductAdGroupsListResult
+
+<a id="SponsoredProductCampaignsQuery"></a>
 
 `SponsoredProductCampaignsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductCampaigns entity operations.
@@ -444,6 +458,8 @@ Classes
                 Returns:
                     SponsoredProductCampaignsListResult
 
+<a id="SponsoredProductKeywordsQuery"></a>
+
 `SponsoredProductKeywordsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductKeywords entity operations.
     
@@ -464,6 +480,8 @@ Classes
         
                 Returns:
                     SponsoredProductKeywordsListResult
+
+<a id="SponsoredProductNegativeKeywordsQuery"></a>
 
 `SponsoredProductNegativeKeywordsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductNegativeKeywords entity operations.
@@ -486,6 +504,8 @@ Classes
                 Returns:
                     SponsoredProductNegativeKeywordsListResult
 
+<a id="SponsoredProductNegativeTargetsQuery"></a>
+
 `SponsoredProductNegativeTargetsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductNegativeTargets entity operations.
     
@@ -507,6 +527,8 @@ Classes
                 Returns:
                     SponsoredProductNegativeTargetsListResult
 
+<a id="SponsoredProductProductAdsQuery"></a>
+
 `SponsoredProductProductAdsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductProductAds entity operations.
     
@@ -527,6 +549,8 @@ Classes
         
                 Returns:
                     SponsoredProductProductAdsListResult
+
+<a id="SponsoredProductTargetsQuery"></a>
 
 `SponsoredProductTargetsQuery(connector: AmazonAdsConnector)`
 :   Query class for SponsoredProductTargets entity operations.

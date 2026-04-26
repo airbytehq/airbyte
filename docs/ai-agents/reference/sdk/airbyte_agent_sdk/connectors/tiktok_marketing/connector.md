@@ -10,6 +10,8 @@ Tiktok-Marketing connector.
 Classes
 -------
 
+<a id="AdGroupsQuery"></a>
+
 `AdGroupsQuery(connector: TiktokMarketingConnector)`
 :   Query class for AdGroups entity operations.
     
@@ -63,6 +65,8 @@ Classes
         
         Returns:
             AdGroupsListResult
+
+<a id="AdGroupsReportsDailyQuery"></a>
 
 `AdGroupsReportsDailyQuery(connector: TiktokMarketingConnector)`
 :   Query class for AdGroupsReportsDaily entity operations.
@@ -160,6 +164,8 @@ Classes
         Returns:
             AdGroupsReportsDailyListResult
 
+<a id="AdsQuery"></a>
+
 `AdsQuery(connector: TiktokMarketingConnector)`
 :   Query class for Ads entity operations.
     
@@ -215,6 +221,8 @@ Classes
         
         Returns:
             AdsListResult
+
+<a id="AdsReportsDailyQuery"></a>
 
 `AdsReportsDailyQuery(connector: TiktokMarketingConnector)`
 :   Query class for AdsReportsDaily entity operations.
@@ -315,6 +323,8 @@ Classes
         Returns:
             AdsReportsDailyListResult
 
+<a id="AdvertisersQuery"></a>
+
 `AdvertisersQuery(connector: TiktokMarketingConnector)`
 :   Query class for Advertisers entity operations.
     
@@ -384,6 +394,8 @@ Classes
         
         Returns:
             AdvertisersListResult
+
+<a id="AdvertisersReportsDailyQuery"></a>
 
 `AdvertisersReportsDailyQuery(connector: TiktokMarketingConnector)`
 :   Query class for AdvertisersReportsDaily entity operations.
@@ -464,6 +476,8 @@ Classes
         Returns:
             AdvertisersReportsDailyListResult
 
+<a id="AudiencesQuery"></a>
+
 `AudiencesQuery(connector: TiktokMarketingConnector)`
 :   Query class for Audiences entity operations.
     
@@ -511,6 +525,8 @@ Classes
         
         Returns:
             AudiencesListResult
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: TiktokMarketingConnector)`
 :   Query class for Campaigns entity operations.
@@ -575,6 +591,8 @@ Classes
         
         Returns:
             CampaignsListResult
+
+<a id="CampaignsReportsDailyQuery"></a>
 
 `CampaignsReportsDailyQuery(connector: TiktokMarketingConnector)`
 :   Query class for CampaignsReportsDaily entity operations.
@@ -654,6 +672,8 @@ Classes
         Returns:
             CampaignsReportsDailyListResult
 
+<a id="CreativeAssetsImagesQuery"></a>
+
 `CreativeAssetsImagesQuery(connector: TiktokMarketingConnector)`
 :   Query class for CreativeAssetsImages entity operations.
     
@@ -703,6 +723,8 @@ Classes
         
         Returns:
             CreativeAssetsImagesListResult
+
+<a id="CreativeAssetsVideosQuery"></a>
 
 `CreativeAssetsVideosQuery(connector: TiktokMarketingConnector)`
 :   Query class for CreativeAssetsVideos entity operations.
@@ -754,6 +776,8 @@ Classes
         
         Returns:
             CreativeAssetsVideosListResult
+
+<a id="TiktokMarketingConnector"></a>
 
 `TiktokMarketingConnector(auth_config: TiktokMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Tiktok-Marketing API connector.

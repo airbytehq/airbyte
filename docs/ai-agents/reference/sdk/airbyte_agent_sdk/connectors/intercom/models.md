@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Admin"></a>
+
 `Admin(**data: Any)`
 :   Admin object
     
@@ -65,6 +67,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdminPriorityLevel"></a>
+
 `AdminPriorityLevel(**data: Any)`
 :   Admin priority level settings
     
@@ -89,6 +93,8 @@ Classes
 
     `secondary_admin_ids: list[int] | Any`
     :   The type of the None singleton.
+
+<a id="AdminReference"></a>
 
 `AdminReference(**data: Any)`
 :   Admin reference
@@ -115,6 +121,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AdminsList"></a>
+
 `AdminsList(**data: Any)`
 :   List of admins
     
@@ -139,6 +147,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
 
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
@@ -167,6 +177,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -222,6 +234,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CompaniesSearchResult"></a>
+
 `CompaniesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -258,6 +272,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -296,6 +312,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversationsSearchResult"></a>
+
 `ConversationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -333,6 +351,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsSearchResult"></a>
+
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -348,6 +368,8 @@ Classes
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Attachment"></a>
 
 `Attachment(**data: Any)`
 :   Message attachment
@@ -389,6 +411,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="Author"></a>
+
 `Author(**data: Any)`
 :   Message author
     
@@ -420,6 +444,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="Avatar"></a>
+
 `Avatar(**data: Any)`
 :   Avatar image
     
@@ -444,6 +470,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CompaniesList"></a>
 
 `CompaniesList(**data: Any)`
 :   Paginated list of companies
@@ -475,6 +503,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CompaniesListPages"></a>
 
 `CompaniesListPages(**data: Any)`
 :   Pagination metadata
@@ -510,6 +540,8 @@ Classes
     `type_: str | Any | None`
     :   Type of pagination
 
+<a id="CompaniesListPagesNext"></a>
+
 `CompaniesListPagesNext(**data: Any)`
 :   Cursor for next page
     
@@ -535,6 +567,8 @@ Classes
     `starting_after: str | Any | None`
     :   Cursor for next page
 
+<a id="CompaniesListResultMeta"></a>
+
 `CompaniesListResultMeta(**data: Any)`
 :   Metadata for companies.Action.LIST operation
     
@@ -556,6 +590,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CompaniesSearchData"></a>
 
 `CompaniesSearchData(**data: Any)`
 :   Search result data for companies entity.
@@ -629,6 +665,8 @@ Classes
 
     `website: str | None`
     :   The website of the company
+
+<a id="Company"></a>
 
 `Company(**data: Any)`
 :   Company object
@@ -706,6 +744,8 @@ Classes
     `website: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CompanyCreateParams"></a>
+
 `CompanyCreateParams(**data: Any)`
 :   CompanyCreateParams type definition
     
@@ -749,6 +789,8 @@ Classes
     `website: str | Any`
     :   The type of the None singleton.
 
+<a id="CompanyPlan"></a>
+
 `CompanyPlan(**data: Any)`
 :   Company plan
     
@@ -776,6 +818,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CompanyReference"></a>
 
 `CompanyReference(**data: Any)`
 :   Company reference
@@ -805,6 +849,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CompanySegments"></a>
+
 `CompanySegments(**data: Any)`
 :   Segments for company
     
@@ -830,6 +876,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CompanyTags"></a>
+
 `CompanyTags(**data: Any)`
 :   Tags on company
     
@@ -854,6 +902,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CompanyUpdateParams"></a>
 
 `CompanyUpdateParams(**data: Any)`
 :   CompanyUpdateParams type definition
@@ -894,6 +944,8 @@ Classes
 
     `website: str | Any`
     :   The type of the None singleton.
+
+<a id="Contact"></a>
 
 `Contact(**data: Any)`
 :   Contact object representing a user or lead
@@ -1046,6 +1098,8 @@ Classes
     `workspace_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactCompanies"></a>
+
 `ContactCompanies(**data: Any)`
 :   Companies associated with contact
     
@@ -1070,6 +1124,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactCreateParams"></a>
 
 `ContactCreateParams(**data: Any)`
 :   ContactCreateParams type definition
@@ -1123,6 +1179,8 @@ Classes
     `unsubscribed_from_emails: bool | Any`
     :   The type of the None singleton.
 
+<a id="ContactNotes"></a>
+
 `ContactNotes(**data: Any)`
 :   Notes associated with contact
     
@@ -1147,6 +1205,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactReference"></a>
 
 `ContactReference(**data: Any)`
 :   Contact reference
@@ -1173,6 +1233,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ContactTags"></a>
+
 `ContactTags(**data: Any)`
 :   Tags associated with contact
     
@@ -1197,6 +1259,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactUpdateParams"></a>
 
 `ContactUpdateParams(**data: Any)`
 :   ContactUpdateParams type definition
@@ -1250,6 +1314,8 @@ Classes
     `unsubscribed_from_emails: bool | Any`
     :   The type of the None singleton.
 
+<a id="ContactsList"></a>
+
 `ContactsList(**data: Any)`
 :   Paginated list of contacts
     
@@ -1280,6 +1346,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactsListPages"></a>
 
 `ContactsListPages(**data: Any)`
 :   Pagination metadata
@@ -1315,6 +1383,8 @@ Classes
     `type_: str | Any | None`
     :   Type of pagination
 
+<a id="ContactsListPagesNext"></a>
+
 `ContactsListPagesNext(**data: Any)`
 :   Cursor for next page
     
@@ -1340,6 +1410,8 @@ Classes
     `starting_after: str | Any | None`
     :   Cursor for next page
 
+<a id="ContactsListResultMeta"></a>
+
 `ContactsListResultMeta(**data: Any)`
 :   Metadata for contacts.Action.LIST operation
     
@@ -1361,6 +1433,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -1543,6 +1617,8 @@ Classes
     `workspace_id: str | None`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="Conversation"></a>
+
 `Conversation(**data: Any)`
 :   Conversation object
     
@@ -1631,6 +1707,8 @@ Classes
     `waiting_since: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ConversationContacts"></a>
+
 `ConversationContacts(**data: Any)`
 :   Contacts in conversation
     
@@ -1655,6 +1733,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ConversationPart"></a>
 
 `ConversationPart(**data: Any)`
 :   Conversation part (message, note, action)
@@ -1711,6 +1791,8 @@ Classes
     `updated_at: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ConversationPartsReference"></a>
+
 `ConversationPartsReference(**data: Any)`
 :   Reference to conversation parts
     
@@ -1738,6 +1820,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ConversationRating"></a>
 
 `ConversationRating(**data: Any)`
 :   Conversation rating
@@ -1772,6 +1856,8 @@ Classes
 
     `teammate: Any`
     :   The type of the None singleton.
+
+<a id="ConversationSource"></a>
 
 `ConversationSource(**data: Any)`
 :   Conversation source
@@ -1818,6 +1904,8 @@ Classes
 
     `url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ConversationStatistics"></a>
 
 `ConversationStatistics(**data: Any)`
 :   Conversation statistics
@@ -1895,6 +1983,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ConversationTags"></a>
+
 `ConversationTags(**data: Any)`
 :   Tags on conversation
     
@@ -1920,6 +2010,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ConversationTeammates"></a>
+
 `ConversationTeammates(**data: Any)`
 :   Teammates in conversation
     
@@ -1944,6 +2036,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ConversationsList"></a>
 
 `ConversationsList(**data: Any)`
 :   Paginated list of conversations
@@ -1975,6 +2069,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ConversationsListPages"></a>
 
 `ConversationsListPages(**data: Any)`
 :   Pagination metadata
@@ -2010,6 +2106,8 @@ Classes
     `type_: str | Any | None`
     :   Type of pagination
 
+<a id="ConversationsListPagesNext"></a>
+
 `ConversationsListPagesNext(**data: Any)`
 :   Cursor for next page
     
@@ -2035,6 +2133,8 @@ Classes
     `starting_after: str | Any | None`
     :   Cursor for next page
 
+<a id="ConversationsListResultMeta"></a>
+
 `ConversationsListResultMeta(**data: Any)`
 :   Metadata for conversations.Action.LIST operation
     
@@ -2056,6 +2156,8 @@ Classes
 
     `next_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ConversationsSearchData"></a>
 
 `ConversationsSearchData(**data: Any)`
 :   Search result data for conversations entity.
@@ -2175,6 +2277,8 @@ Classes
     `waiting_since: int | None`
     :   Timestamp since waiting for a response
 
+<a id="FirstContactReply"></a>
+
 `FirstContactReply(**data: Any)`
 :   First contact reply info
     
@@ -2203,6 +2307,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IntercomAuthConfig"></a>
+
 `IntercomAuthConfig(**data: Any)`
 :   Access Token Authentication
     
@@ -2224,6 +2330,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IntercomCheckResult"></a>
 
 `IntercomCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2258,6 +2366,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="IntercomExecuteResult"></a>
+
 `IntercomExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2290,6 +2400,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IntercomExecuteResultWithMeta"></a>
 
 `IntercomExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2344,6 +2456,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CompaniesListResult"></a>
+
 `CompaniesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2386,6 +2500,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ContactsListResult"></a>
 
 `ContactsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2430,6 +2546,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversationsListResult"></a>
+
 `ConversationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2472,6 +2590,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdminsListResult"></a>
+
 `AdminsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2512,6 +2632,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SegmentsListResult"></a>
 
 `SegmentsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2554,6 +2676,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TagsListResult"></a>
+
 `TagsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2595,6 +2719,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResult"></a>
+
 `TeamsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2612,6 +2738,8 @@ Classes
     * airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IntercomReplicationConfig"></a>
 
 `IntercomReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Intercom.
@@ -2634,6 +2762,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+<a id="InternalArticle"></a>
 
 `InternalArticle(**data: Any)`
 :   Internal article object
@@ -2678,6 +2808,8 @@ Classes
     `updated_at: int | Any | None`
     :   The type of the None singleton.
 
+<a id="InternalArticleCreateParams"></a>
+
 `InternalArticleCreateParams(**data: Any)`
 :   InternalArticleCreateParams type definition
     
@@ -2708,6 +2840,8 @@ Classes
 
     `title: str | Any`
     :   The type of the None singleton.
+
+<a id="Location"></a>
 
 `Location(**data: Any)`
 :   Location information
@@ -2746,6 +2880,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="Note"></a>
+
 `Note(**data: Any)`
 :   Note object on a contact
     
@@ -2783,6 +2919,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="NoteCreateParams"></a>
+
 `NoteCreateParams(**data: Any)`
 :   NoteCreateParams type definition
     
@@ -2807,6 +2945,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="NoteReference"></a>
 
 `NoteReference(**data: Any)`
 :   Note reference
@@ -2835,6 +2975,8 @@ Classes
 
     `url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Pages"></a>
 
 `Pages(**data: Any)`
 :   Pagination metadata
@@ -2870,6 +3012,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PagesNext"></a>
+
 `PagesNext(**data: Any)`
 :   Cursor for next page
     
@@ -2894,6 +3038,8 @@ Classes
 
     `starting_after: str | Any | None`
     :   Cursor for next page
+
+<a id="Segment"></a>
 
 `Segment(**data: Any)`
 :   Segment object
@@ -2935,6 +3081,8 @@ Classes
     `updated_at: int | Any | None`
     :   The type of the None singleton.
 
+<a id="SegmentsList"></a>
+
 `SegmentsList(**data: Any)`
 :   List of segments
     
@@ -2959,6 +3107,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SlaApplied"></a>
 
 `SlaApplied(**data: Any)`
 :   SLA applied to conversation
@@ -2988,6 +3138,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SocialProfile"></a>
+
 `SocialProfile(**data: Any)`
 :   Social profile
     
@@ -3016,6 +3168,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SocialProfiles"></a>
+
 `SocialProfiles(**data: Any)`
 :   Social profiles
     
@@ -3040,6 +3194,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Tag"></a>
 
 `Tag(**data: Any)`
 :   Tag object
@@ -3075,6 +3231,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TagCreateParams"></a>
+
 `TagCreateParams(**data: Any)`
 :   TagCreateParams type definition
     
@@ -3096,6 +3254,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="TagReference"></a>
 
 `TagReference(**data: Any)`
 :   Tag reference
@@ -3125,6 +3285,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TagsList"></a>
+
 `TagsList(**data: Any)`
 :   List of tags
     
@@ -3149,6 +3311,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Team"></a>
 
 `Team(**data: Any)`
 :   Team object
@@ -3184,6 +3348,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TeamsList"></a>
+
 `TeamsList(**data: Any)`
 :   List of teams
     
@@ -3208,6 +3374,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.

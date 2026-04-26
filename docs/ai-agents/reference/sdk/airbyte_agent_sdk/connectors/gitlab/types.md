@@ -10,6 +10,8 @@ Type definitions for gitlab connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="BranchesAndCondition"></a>
+
 `BranchesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="BranchesAnyCondition"></a>
+
 `BranchesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BranchesAnyValueFilter"></a>
 
 `BranchesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -113,6 +121,8 @@ Classes
     `web_url: Any`
     :   Web URL of the branch
 
+<a id="BranchesContainsCondition"></a>
+
 `BranchesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -124,6 +134,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BranchesEqCondition"></a>
 
 `BranchesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -137,6 +149,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.BranchesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BranchesFuzzyCondition"></a>
+
 `BranchesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -148,6 +162,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.BranchesStringFilter`
     :   The type of the None singleton.
+
+<a id="BranchesGetParams"></a>
 
 `BranchesGetParams(*args, **kwargs)`
 :   Parameters for branches.get operation
@@ -164,6 +180,8 @@ Classes
     `project_id: str`
     :   The type of the None singleton.
 
+<a id="BranchesGtCondition"></a>
+
 `BranchesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -176,6 +194,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.BranchesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BranchesGteCondition"></a>
+
 `BranchesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -187,6 +207,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.BranchesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BranchesInCondition"></a>
 
 `BranchesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -207,6 +229,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.BranchesInFilter`
     :   The type of the None singleton.
+
+<a id="BranchesInFilter"></a>
 
 `BranchesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -250,6 +274,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the branch
 
+<a id="BranchesKeywordCondition"></a>
+
 `BranchesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -262,6 +288,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.BranchesStringFilter`
     :   The type of the None singleton.
 
+<a id="BranchesLikeCondition"></a>
+
 `BranchesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -273,6 +301,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.BranchesStringFilter`
     :   The type of the None singleton.
+
+<a id="BranchesListParams"></a>
 
 `BranchesListParams(*args, **kwargs)`
 :   Parameters for branches.list operation
@@ -295,6 +325,8 @@ Classes
     `search: str`
     :   The type of the None singleton.
 
+<a id="BranchesLtCondition"></a>
+
 `BranchesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -306,6 +338,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.BranchesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BranchesLteCondition"></a>
 
 `BranchesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -319,6 +353,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.BranchesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BranchesNeqCondition"></a>
+
 `BranchesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -330,6 +366,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.BranchesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BranchesNotCondition"></a>
 
 `BranchesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -351,6 +389,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition`
     :   The type of the None singleton.
 
+<a id="BranchesOrCondition"></a>
+
 `BranchesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -370,6 +410,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="BranchesSearchFilter"></a>
 
 `BranchesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering branches search queries.
@@ -413,6 +455,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the branch
 
+<a id="BranchesSearchQuery"></a>
+
 `BranchesSearchQuery(*args, **kwargs)`
 :   Search query for branches entity.
 
@@ -427,6 +471,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesSortFilter]`
     :   The type of the None singleton.
+
+<a id="BranchesSortFilter"></a>
 
 `BranchesSortFilter(*args, **kwargs)`
 :   Available fields for sorting branches search results.
@@ -470,6 +516,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the branch
 
+<a id="BranchesStringFilter"></a>
+
 `BranchesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -512,6 +560,8 @@ Classes
     `web_url: str`
     :   Web URL of the branch
 
+<a id="CommitsAndCondition"></a>
+
 `CommitsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -532,6 +582,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CommitsAnyCondition"></a>
+
 `CommitsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -551,6 +603,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CommitsAnyValueFilter"></a>
 
 `CommitsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -609,6 +663,8 @@ Classes
     `web_url: Any`
     :   Web URL of the commit
 
+<a id="CommitsContainsCondition"></a>
+
 `CommitsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -620,6 +676,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CommitsEqCondition"></a>
 
 `CommitsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -633,6 +691,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.CommitsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CommitsFuzzyCondition"></a>
+
 `CommitsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -644,6 +704,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.CommitsStringFilter`
     :   The type of the None singleton.
+
+<a id="CommitsGetParams"></a>
 
 `CommitsGetParams(*args, **kwargs)`
 :   Parameters for commits.get operation
@@ -663,6 +725,8 @@ Classes
     `stats: bool`
     :   The type of the None singleton.
 
+<a id="CommitsGtCondition"></a>
+
 `CommitsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -675,6 +739,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.CommitsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CommitsGteCondition"></a>
+
 `CommitsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -686,6 +752,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.CommitsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommitsInCondition"></a>
 
 `CommitsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -706,6 +774,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.CommitsInFilter`
     :   The type of the None singleton.
+
+<a id="CommitsInFilter"></a>
 
 `CommitsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -764,6 +834,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the commit
 
+<a id="CommitsKeywordCondition"></a>
+
 `CommitsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -776,6 +848,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.CommitsStringFilter`
     :   The type of the None singleton.
 
+<a id="CommitsLikeCondition"></a>
+
 `CommitsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -787,6 +861,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.CommitsStringFilter`
     :   The type of the None singleton.
+
+<a id="CommitsListParams"></a>
 
 `CommitsListParams(*args, **kwargs)`
 :   Parameters for commits.list operation
@@ -818,6 +894,8 @@ Classes
     `with_stats: bool`
     :   The type of the None singleton.
 
+<a id="CommitsLtCondition"></a>
+
 `CommitsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -829,6 +907,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.CommitsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommitsLteCondition"></a>
 
 `CommitsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -842,6 +922,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.CommitsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CommitsNeqCondition"></a>
+
 `CommitsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -853,6 +935,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.CommitsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommitsNotCondition"></a>
 
 `CommitsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -874,6 +958,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CommitsOrCondition"></a>
+
 `CommitsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -893,6 +979,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CommitsSearchFilter"></a>
 
 `CommitsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering commits search queries.
@@ -951,6 +1039,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the commit
 
+<a id="CommitsSearchQuery"></a>
+
 `CommitsSearchQuery(*args, **kwargs)`
 :   Search query for commits entity.
 
@@ -965,6 +1055,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CommitsSortFilter"></a>
 
 `CommitsSortFilter(*args, **kwargs)`
 :   Available fields for sorting commits search results.
@@ -1023,6 +1115,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the commit
 
+<a id="CommitsStringFilter"></a>
+
 `CommitsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1080,6 +1174,8 @@ Classes
     `web_url: str`
     :   Web URL of the commit
 
+<a id="GroupMembersAndCondition"></a>
+
 `GroupMembersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1100,6 +1196,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="GroupMembersAnyCondition"></a>
+
 `GroupMembersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1119,6 +1217,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersAnyValueFilter"></a>
 
 `GroupMembersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1168,6 +1268,8 @@ Classes
     `web_url: Any`
     :   Web URL of the member profile
 
+<a id="GroupMembersContainsCondition"></a>
+
 `GroupMembersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1179,6 +1281,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersEqCondition"></a>
 
 `GroupMembersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1192,6 +1296,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupMembersFuzzyCondition"></a>
+
 `GroupMembersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1203,6 +1309,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersGetParams"></a>
 
 `GroupMembersGetParams(*args, **kwargs)`
 :   Parameters for group_members.get operation
@@ -1219,6 +1327,8 @@ Classes
     `user_id: str`
     :   The type of the None singleton.
 
+<a id="GroupMembersGtCondition"></a>
+
 `GroupMembersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1231,6 +1341,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupMembersGteCondition"></a>
+
 `GroupMembersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1242,6 +1354,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersInCondition"></a>
 
 `GroupMembersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1262,6 +1376,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersInFilter"></a>
 
 `GroupMembersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1311,6 +1427,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the member profile
 
+<a id="GroupMembersKeywordCondition"></a>
+
 `GroupMembersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1323,6 +1441,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStringFilter`
     :   The type of the None singleton.
 
+<a id="GroupMembersLikeCondition"></a>
+
 `GroupMembersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1334,6 +1454,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersListParams"></a>
 
 `GroupMembersListParams(*args, **kwargs)`
 :   Parameters for group_members.list operation
@@ -1356,6 +1478,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="GroupMembersLtCondition"></a>
+
 `GroupMembersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1367,6 +1491,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersLteCondition"></a>
 
 `GroupMembersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1380,6 +1506,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupMembersNeqCondition"></a>
+
 `GroupMembersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1391,6 +1519,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupMembersNotCondition"></a>
 
 `GroupMembersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1412,6 +1542,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition`
     :   The type of the None singleton.
 
+<a id="GroupMembersOrCondition"></a>
+
 `GroupMembersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1431,6 +1563,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="GroupMembersSearchFilter"></a>
 
 `GroupMembersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering group_members search queries.
@@ -1480,6 +1614,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the member profile
 
+<a id="GroupMembersSearchQuery"></a>
+
 `GroupMembersSearchQuery(*args, **kwargs)`
 :   Search query for group_members entity.
 
@@ -1494,6 +1630,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSortFilter]`
     :   The type of the None singleton.
+
+<a id="GroupMembersSortFilter"></a>
 
 `GroupMembersSortFilter(*args, **kwargs)`
 :   Available fields for sorting group_members search results.
@@ -1543,6 +1681,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the member profile
 
+<a id="GroupMembersStringFilter"></a>
+
 `GroupMembersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1591,6 +1731,8 @@ Classes
     `web_url: str`
     :   Web URL of the member profile
 
+<a id="GroupMilestonesAndCondition"></a>
+
 `GroupMilestonesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1611,6 +1753,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesAnyCondition"></a>
+
 `GroupMilestonesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1630,6 +1774,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesAnyValueFilter"></a>
 
 `GroupMilestonesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1676,6 +1822,8 @@ Classes
     `web_url: Any`
     :   Web URL of the milestone
 
+<a id="GroupMilestonesContainsCondition"></a>
+
 `GroupMilestonesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1687,6 +1835,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesEqCondition"></a>
 
 `GroupMilestonesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1700,6 +1850,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesFuzzyCondition"></a>
+
 `GroupMilestonesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1711,6 +1863,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesGetParams"></a>
 
 `GroupMilestonesGetParams(*args, **kwargs)`
 :   Parameters for group_milestones.get operation
@@ -1727,6 +1881,8 @@ Classes
     `milestone_id: str`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesGtCondition"></a>
+
 `GroupMilestonesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1739,6 +1895,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesGteCondition"></a>
+
 `GroupMilestonesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1750,6 +1908,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesInCondition"></a>
 
 `GroupMilestonesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1770,6 +1930,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesInFilter"></a>
 
 `GroupMilestonesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1816,6 +1978,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the milestone
 
+<a id="GroupMilestonesKeywordCondition"></a>
+
 `GroupMilestonesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1828,6 +1992,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStringFilter`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesLikeCondition"></a>
+
 `GroupMilestonesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1839,6 +2005,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesListParams"></a>
 
 `GroupMilestonesListParams(*args, **kwargs)`
 :   Parameters for group_milestones.list operation
@@ -1864,6 +2032,8 @@ Classes
     `state: str`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesLtCondition"></a>
+
 `GroupMilestonesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1875,6 +2045,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesLteCondition"></a>
 
 `GroupMilestonesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1888,6 +2060,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesNeqCondition"></a>
+
 `GroupMilestonesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1899,6 +2073,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesNotCondition"></a>
 
 `GroupMilestonesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1920,6 +2096,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition`
     :   The type of the None singleton.
 
+<a id="GroupMilestonesOrCondition"></a>
+
 `GroupMilestonesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1939,6 +2117,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesSearchFilter"></a>
 
 `GroupMilestonesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering group_milestones search queries.
@@ -1985,6 +2165,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the milestone
 
+<a id="GroupMilestonesSearchQuery"></a>
+
 `GroupMilestonesSearchQuery(*args, **kwargs)`
 :   Search query for group_milestones entity.
 
@@ -1999,6 +2181,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSortFilter]`
     :   The type of the None singleton.
+
+<a id="GroupMilestonesSortFilter"></a>
 
 `GroupMilestonesSortFilter(*args, **kwargs)`
 :   Available fields for sorting group_milestones search results.
@@ -2045,6 +2229,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the milestone
 
+<a id="GroupMilestonesStringFilter"></a>
+
 `GroupMilestonesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2090,6 +2276,8 @@ Classes
     `web_url: str`
     :   Web URL of the milestone
 
+<a id="GroupsAndCondition"></a>
+
 `GroupsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2110,6 +2298,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="GroupsAnyCondition"></a>
+
 `GroupsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2129,6 +2319,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupsAnyValueFilter"></a>
 
 `GroupsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2214,6 +2406,8 @@ Classes
     `web_url: Any`
     :   Web URL of the group
 
+<a id="GroupsContainsCondition"></a>
+
 `GroupsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2225,6 +2419,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupsEqCondition"></a>
 
 `GroupsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2238,6 +2434,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.GroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupsFuzzyCondition"></a>
+
 `GroupsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2249,6 +2447,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.GroupsStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupsGetParams"></a>
 
 `GroupsGetParams(*args, **kwargs)`
 :   Parameters for groups.get operation
@@ -2262,6 +2462,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="GroupsGtCondition"></a>
+
 `GroupsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2274,6 +2476,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.GroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupsGteCondition"></a>
+
 `GroupsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2285,6 +2489,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.GroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupsInCondition"></a>
 
 `GroupsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2305,6 +2511,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.GroupsInFilter`
     :   The type of the None singleton.
+
+<a id="GroupsInFilter"></a>
 
 `GroupsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2390,6 +2598,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the group
 
+<a id="GroupsKeywordCondition"></a>
+
 `GroupsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2402,6 +2612,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.GroupsStringFilter`
     :   The type of the None singleton.
 
+<a id="GroupsLikeCondition"></a>
+
 `GroupsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2413,6 +2625,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.GroupsStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupsListParams"></a>
 
 `GroupsListParams(*args, **kwargs)`
 :   Parameters for groups.list operation
@@ -2441,6 +2655,8 @@ Classes
     `sort: str`
     :   The type of the None singleton.
 
+<a id="GroupsLtCondition"></a>
+
 `GroupsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2452,6 +2668,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.GroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupsLteCondition"></a>
 
 `GroupsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2465,6 +2683,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.GroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupsNeqCondition"></a>
+
 `GroupsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2476,6 +2696,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.GroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupsNotCondition"></a>
 
 `GroupsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2497,6 +2719,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
+<a id="GroupsOrCondition"></a>
+
 `GroupsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2516,6 +2740,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="GroupsSearchFilter"></a>
 
 `GroupsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering groups search queries.
@@ -2601,6 +2827,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the group
 
+<a id="GroupsSearchQuery"></a>
+
 `GroupsSearchQuery(*args, **kwargs)`
 :   Search query for groups entity.
 
@@ -2615,6 +2843,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsSortFilter]`
     :   The type of the None singleton.
+
+<a id="GroupsSortFilter"></a>
 
 `GroupsSortFilter(*args, **kwargs)`
 :   Available fields for sorting groups search results.
@@ -2700,6 +2930,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the group
 
+<a id="GroupsStringFilter"></a>
+
 `GroupsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2784,6 +3016,8 @@ Classes
     `web_url: str`
     :   Web URL of the group
 
+<a id="IssuesAndCondition"></a>
+
 `IssuesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2804,6 +3038,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IssuesAnyCondition"></a>
+
 `IssuesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2823,6 +3059,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssuesAnyValueFilter"></a>
 
 `IssuesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2944,6 +3182,8 @@ Classes
     `weight: Any`
     :   Weight of the issue
 
+<a id="IssuesContainsCondition"></a>
+
 `IssuesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2955,6 +3195,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssuesEqCondition"></a>
 
 `IssuesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2968,6 +3210,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesFuzzyCondition"></a>
+
 `IssuesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2979,6 +3223,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.IssuesStringFilter`
     :   The type of the None singleton.
+
+<a id="IssuesGetParams"></a>
 
 `IssuesGetParams(*args, **kwargs)`
 :   Parameters for issues.get operation
@@ -2995,6 +3241,8 @@ Classes
     `project_id: str`
     :   The type of the None singleton.
 
+<a id="IssuesGtCondition"></a>
+
 `IssuesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3007,6 +3255,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesGteCondition"></a>
+
 `IssuesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3018,6 +3268,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesInCondition"></a>
 
 `IssuesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3038,6 +3290,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.IssuesInFilter`
     :   The type of the None singleton.
+
+<a id="IssuesInFilter"></a>
 
 `IssuesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3159,6 +3413,8 @@ Classes
     `weight: list[int]`
     :   Weight of the issue
 
+<a id="IssuesKeywordCondition"></a>
+
 `IssuesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3171,6 +3427,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.IssuesStringFilter`
     :   The type of the None singleton.
 
+<a id="IssuesLikeCondition"></a>
+
 `IssuesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3182,6 +3440,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.IssuesStringFilter`
     :   The type of the None singleton.
+
+<a id="IssuesListParams"></a>
 
 `IssuesListParams(*args, **kwargs)`
 :   Parameters for issues.list operation
@@ -3225,6 +3485,8 @@ Classes
     `updated_before: str`
     :   The type of the None singleton.
 
+<a id="IssuesLtCondition"></a>
+
 `IssuesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3236,6 +3498,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesLteCondition"></a>
 
 `IssuesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3249,6 +3513,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesNeqCondition"></a>
+
 `IssuesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3260,6 +3526,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesNotCondition"></a>
 
 `IssuesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3281,6 +3549,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
+<a id="IssuesOrCondition"></a>
+
 `IssuesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3300,6 +3570,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IssuesSearchFilter"></a>
 
 `IssuesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering issues search queries.
@@ -3421,6 +3693,8 @@ Classes
     `weight: int | None`
     :   Weight of the issue
 
+<a id="IssuesSearchQuery"></a>
+
 `IssuesSearchQuery(*args, **kwargs)`
 :   Search query for issues entity.
 
@@ -3435,6 +3709,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesSortFilter]`
     :   The type of the None singleton.
+
+<a id="IssuesSortFilter"></a>
 
 `IssuesSortFilter(*args, **kwargs)`
 :   Available fields for sorting issues search results.
@@ -3556,6 +3832,8 @@ Classes
     `weight: Literal['asc', 'desc']`
     :   Weight of the issue
 
+<a id="IssuesStringFilter"></a>
+
 `IssuesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3676,6 +3954,8 @@ Classes
     `weight: str`
     :   Weight of the issue
 
+<a id="MergeRequestsAndCondition"></a>
+
 `MergeRequestsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3696,6 +3976,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="MergeRequestsAnyCondition"></a>
+
 `MergeRequestsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3715,6 +3997,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsAnyValueFilter"></a>
 
 `MergeRequestsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3875,6 +4159,8 @@ Classes
     `work_in_progress: Any`
     :   Whether the merge request is a work in progress
 
+<a id="MergeRequestsContainsCondition"></a>
+
 `MergeRequestsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3886,6 +4172,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsEqCondition"></a>
 
 `MergeRequestsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3899,6 +4187,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSearchFilter`
     :   The type of the None singleton.
 
+<a id="MergeRequestsFuzzyCondition"></a>
+
 `MergeRequestsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3910,6 +4200,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStringFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsGetParams"></a>
 
 `MergeRequestsGetParams(*args, **kwargs)`
 :   Parameters for merge_requests.get operation
@@ -3926,6 +4218,8 @@ Classes
     `project_id: str`
     :   The type of the None singleton.
 
+<a id="MergeRequestsGtCondition"></a>
+
 `MergeRequestsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3938,6 +4232,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSearchFilter`
     :   The type of the None singleton.
 
+<a id="MergeRequestsGteCondition"></a>
+
 `MergeRequestsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3949,6 +4245,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSearchFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsInCondition"></a>
 
 `MergeRequestsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3969,6 +4267,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsInFilter"></a>
 
 `MergeRequestsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4129,6 +4429,8 @@ Classes
     `work_in_progress: list[bool]`
     :   Whether the merge request is a work in progress
 
+<a id="MergeRequestsKeywordCondition"></a>
+
 `MergeRequestsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4141,6 +4443,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStringFilter`
     :   The type of the None singleton.
 
+<a id="MergeRequestsLikeCondition"></a>
+
 `MergeRequestsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4152,6 +4456,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStringFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsListParams"></a>
 
 `MergeRequestsListParams(*args, **kwargs)`
 :   Parameters for merge_requests.list operation
@@ -4195,6 +4501,8 @@ Classes
     `updated_before: str`
     :   The type of the None singleton.
 
+<a id="MergeRequestsLtCondition"></a>
+
 `MergeRequestsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4206,6 +4514,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSearchFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsLteCondition"></a>
 
 `MergeRequestsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4219,6 +4529,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSearchFilter`
     :   The type of the None singleton.
 
+<a id="MergeRequestsNeqCondition"></a>
+
 `MergeRequestsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4230,6 +4542,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSearchFilter`
     :   The type of the None singleton.
+
+<a id="MergeRequestsNotCondition"></a>
 
 `MergeRequestsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4251,6 +4565,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition`
     :   The type of the None singleton.
 
+<a id="MergeRequestsOrCondition"></a>
+
 `MergeRequestsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4270,6 +4586,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="MergeRequestsSearchFilter"></a>
 
 `MergeRequestsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering merge_requests search queries.
@@ -4430,6 +4748,8 @@ Classes
     `work_in_progress: bool | None`
     :   Whether the merge request is a work in progress
 
+<a id="MergeRequestsSearchQuery"></a>
+
 `MergeRequestsSearchQuery(*args, **kwargs)`
 :   Search query for merge_requests entity.
 
@@ -4444,6 +4764,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSortFilter]`
     :   The type of the None singleton.
+
+<a id="MergeRequestsSortFilter"></a>
 
 `MergeRequestsSortFilter(*args, **kwargs)`
 :   Available fields for sorting merge_requests search results.
@@ -4604,6 +4926,8 @@ Classes
     `work_in_progress: Literal['asc', 'desc']`
     :   Whether the merge request is a work in progress
 
+<a id="MergeRequestsStringFilter"></a>
+
 `MergeRequestsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4763,6 +5087,8 @@ Classes
     `work_in_progress: str`
     :   Whether the merge request is a work in progress
 
+<a id="PipelinesAndCondition"></a>
+
 `PipelinesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4783,6 +5109,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="PipelinesAnyCondition"></a>
+
 `PipelinesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4802,6 +5130,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesAnyValueFilter"></a>
 
 `PipelinesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4845,6 +5175,8 @@ Classes
     `web_url: Any`
     :   Web URL of the pipeline
 
+<a id="PipelinesContainsCondition"></a>
+
 `PipelinesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4856,6 +5188,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesEqCondition"></a>
 
 `PipelinesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4869,6 +5203,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.PipelinesSearchFilter`
     :   The type of the None singleton.
 
+<a id="PipelinesFuzzyCondition"></a>
+
 `PipelinesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4880,6 +5216,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.PipelinesStringFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesGetParams"></a>
 
 `PipelinesGetParams(*args, **kwargs)`
 :   Parameters for pipelines.get operation
@@ -4896,6 +5234,8 @@ Classes
     `project_id: str`
     :   The type of the None singleton.
 
+<a id="PipelinesGtCondition"></a>
+
 `PipelinesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4908,6 +5248,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.PipelinesSearchFilter`
     :   The type of the None singleton.
 
+<a id="PipelinesGteCondition"></a>
+
 `PipelinesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4919,6 +5261,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.PipelinesSearchFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesInCondition"></a>
 
 `PipelinesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4939,6 +5283,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.PipelinesInFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesInFilter"></a>
 
 `PipelinesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4982,6 +5328,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the pipeline
 
+<a id="PipelinesKeywordCondition"></a>
+
 `PipelinesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4994,6 +5342,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.PipelinesStringFilter`
     :   The type of the None singleton.
 
+<a id="PipelinesLikeCondition"></a>
+
 `PipelinesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -5005,6 +5355,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.PipelinesStringFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesListParams"></a>
 
 `PipelinesListParams(*args, **kwargs)`
 :   Parameters for pipelines.list operation
@@ -5036,6 +5388,8 @@ Classes
     `status: str`
     :   The type of the None singleton.
 
+<a id="PipelinesLtCondition"></a>
+
 `PipelinesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -5047,6 +5401,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.PipelinesSearchFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesLteCondition"></a>
 
 `PipelinesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -5060,6 +5416,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.PipelinesSearchFilter`
     :   The type of the None singleton.
 
+<a id="PipelinesNeqCondition"></a>
+
 `PipelinesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5071,6 +5429,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.PipelinesSearchFilter`
     :   The type of the None singleton.
+
+<a id="PipelinesNotCondition"></a>
 
 `PipelinesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5092,6 +5452,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition`
     :   The type of the None singleton.
 
+<a id="PipelinesOrCondition"></a>
+
 `PipelinesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5111,6 +5473,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="PipelinesSearchFilter"></a>
 
 `PipelinesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering pipelines search queries.
@@ -5154,6 +5518,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the pipeline
 
+<a id="PipelinesSearchQuery"></a>
+
 `PipelinesSearchQuery(*args, **kwargs)`
 :   Search query for pipelines entity.
 
@@ -5168,6 +5534,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesSortFilter]`
     :   The type of the None singleton.
+
+<a id="PipelinesSortFilter"></a>
 
 `PipelinesSortFilter(*args, **kwargs)`
 :   Available fields for sorting pipelines search results.
@@ -5211,6 +5579,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the pipeline
 
+<a id="PipelinesStringFilter"></a>
+
 `PipelinesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -5253,6 +5623,8 @@ Classes
     `web_url: str`
     :   Web URL of the pipeline
 
+<a id="ProjectMembersAndCondition"></a>
+
 `ProjectMembersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5273,6 +5645,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProjectMembersAnyCondition"></a>
+
 `ProjectMembersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5292,6 +5666,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersAnyValueFilter"></a>
 
 `ProjectMembersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -5341,6 +5717,8 @@ Classes
     `web_url: Any`
     :   Web URL of the member profile
 
+<a id="ProjectMembersContainsCondition"></a>
+
 `ProjectMembersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -5352,6 +5730,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersEqCondition"></a>
 
 `ProjectMembersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -5365,6 +5745,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMembersFuzzyCondition"></a>
+
 `ProjectMembersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -5376,6 +5758,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersGetParams"></a>
 
 `ProjectMembersGetParams(*args, **kwargs)`
 :   Parameters for project_members.get operation
@@ -5392,6 +5776,8 @@ Classes
     `user_id: str`
     :   The type of the None singleton.
 
+<a id="ProjectMembersGtCondition"></a>
+
 `ProjectMembersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5404,6 +5790,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMembersGteCondition"></a>
+
 `ProjectMembersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5415,6 +5803,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersInCondition"></a>
 
 `ProjectMembersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5435,6 +5825,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersInFilter"></a>
 
 `ProjectMembersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5484,6 +5876,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the member profile
 
+<a id="ProjectMembersKeywordCondition"></a>
+
 `ProjectMembersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -5496,6 +5890,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMembersLikeCondition"></a>
+
 `ProjectMembersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -5507,6 +5903,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersListParams"></a>
 
 `ProjectMembersListParams(*args, **kwargs)`
 :   Parameters for project_members.list operation
@@ -5529,6 +5927,8 @@ Classes
     `query: str`
     :   The type of the None singleton.
 
+<a id="ProjectMembersLtCondition"></a>
+
 `ProjectMembersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -5540,6 +5940,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersLteCondition"></a>
 
 `ProjectMembersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -5553,6 +5955,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMembersNeqCondition"></a>
+
 `ProjectMembersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5564,6 +5968,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMembersNotCondition"></a>
 
 `ProjectMembersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5585,6 +5991,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProjectMembersOrCondition"></a>
+
 `ProjectMembersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5604,6 +6012,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProjectMembersSearchFilter"></a>
 
 `ProjectMembersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering project_members search queries.
@@ -5653,6 +6063,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the member profile
 
+<a id="ProjectMembersSearchQuery"></a>
+
 `ProjectMembersSearchQuery(*args, **kwargs)`
 :   Search query for project_members entity.
 
@@ -5667,6 +6079,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProjectMembersSortFilter"></a>
 
 `ProjectMembersSortFilter(*args, **kwargs)`
 :   Available fields for sorting project_members search results.
@@ -5716,6 +6130,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the member profile
 
+<a id="ProjectMembersStringFilter"></a>
+
 `ProjectMembersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -5764,6 +6180,8 @@ Classes
     `web_url: str`
     :   Web URL of the member profile
 
+<a id="ProjectMilestonesAndCondition"></a>
+
 `ProjectMilestonesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5784,6 +6202,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesAnyCondition"></a>
+
 `ProjectMilestonesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5803,6 +6223,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesAnyValueFilter"></a>
 
 `ProjectMilestonesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -5849,6 +6271,8 @@ Classes
     `web_url: Any`
     :   Web URL of the milestone
 
+<a id="ProjectMilestonesContainsCondition"></a>
+
 `ProjectMilestonesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -5860,6 +6284,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesEqCondition"></a>
 
 `ProjectMilestonesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -5873,6 +6299,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesFuzzyCondition"></a>
+
 `ProjectMilestonesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -5884,6 +6312,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesGetParams"></a>
 
 `ProjectMilestonesGetParams(*args, **kwargs)`
 :   Parameters for project_milestones.get operation
@@ -5900,6 +6330,8 @@ Classes
     `project_id: str`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesGtCondition"></a>
+
 `ProjectMilestonesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5912,6 +6344,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesGteCondition"></a>
+
 `ProjectMilestonesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5923,6 +6357,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesInCondition"></a>
 
 `ProjectMilestonesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5943,6 +6379,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesInFilter"></a>
 
 `ProjectMilestonesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5989,6 +6427,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the milestone
 
+<a id="ProjectMilestonesKeywordCondition"></a>
+
 `ProjectMilestonesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -6001,6 +6441,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesLikeCondition"></a>
+
 `ProjectMilestonesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -6012,6 +6454,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesListParams"></a>
 
 `ProjectMilestonesListParams(*args, **kwargs)`
 :   Parameters for project_milestones.list operation
@@ -6037,6 +6481,8 @@ Classes
     `state: str`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesLtCondition"></a>
+
 `ProjectMilestonesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -6048,6 +6494,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesLteCondition"></a>
 
 `ProjectMilestonesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -6061,6 +6509,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesNeqCondition"></a>
+
 `ProjectMilestonesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -6072,6 +6522,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesNotCondition"></a>
 
 `ProjectMilestonesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -6093,6 +6545,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProjectMilestonesOrCondition"></a>
+
 `ProjectMilestonesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -6112,6 +6566,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesSearchFilter"></a>
 
 `ProjectMilestonesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering project_milestones search queries.
@@ -6158,6 +6614,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the milestone
 
+<a id="ProjectMilestonesSearchQuery"></a>
+
 `ProjectMilestonesSearchQuery(*args, **kwargs)`
 :   Search query for project_milestones entity.
 
@@ -6172,6 +6630,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProjectMilestonesSortFilter"></a>
 
 `ProjectMilestonesSortFilter(*args, **kwargs)`
 :   Available fields for sorting project_milestones search results.
@@ -6218,6 +6678,8 @@ Classes
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the milestone
 
+<a id="ProjectMilestonesStringFilter"></a>
+
 `ProjectMilestonesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -6263,6 +6725,8 @@ Classes
     `web_url: str`
     :   Web URL of the milestone
 
+<a id="ProjectsAndCondition"></a>
+
 `ProjectsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -6283,6 +6747,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProjectsAnyCondition"></a>
+
 `ProjectsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -6302,6 +6768,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsAnyValueFilter"></a>
 
 `ProjectsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -6549,6 +7017,8 @@ Classes
     `wiki_enabled: Any`
     :   Whether wiki is enabled
 
+<a id="ProjectsContainsCondition"></a>
+
 `ProjectsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -6560,6 +7030,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsEqCondition"></a>
 
 `ProjectsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -6573,6 +7045,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsFuzzyCondition"></a>
+
 `ProjectsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -6584,6 +7058,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsGetParams"></a>
 
 `ProjectsGetParams(*args, **kwargs)`
 :   Parameters for projects.get operation
@@ -6600,6 +7076,8 @@ Classes
     `statistics: bool`
     :   The type of the None singleton.
 
+<a id="ProjectsGtCondition"></a>
+
 `ProjectsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -6612,6 +7090,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsGteCondition"></a>
+
 `ProjectsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -6623,6 +7103,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInCondition"></a>
 
 `ProjectsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -6643,6 +7125,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.ProjectsInFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInFilter"></a>
 
 `ProjectsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -6890,6 +7374,8 @@ Classes
     `wiki_enabled: list[bool]`
     :   Whether wiki is enabled
 
+<a id="ProjectsKeywordCondition"></a>
+
 `ProjectsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -6902,6 +7388,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsLikeCondition"></a>
+
 `ProjectsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -6913,6 +7401,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsListParams"></a>
 
 `ProjectsListParams(*args, **kwargs)`
 :   Parameters for projects.list operation
@@ -6944,6 +7434,8 @@ Classes
     `sort: str`
     :   The type of the None singleton.
 
+<a id="ProjectsLtCondition"></a>
+
 `ProjectsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -6955,6 +7447,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsLteCondition"></a>
 
 `ProjectsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -6968,6 +7462,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsNeqCondition"></a>
+
 `ProjectsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -6979,6 +7475,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsNotCondition"></a>
 
 `ProjectsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -7000,6 +7498,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProjectsOrCondition"></a>
+
 `ProjectsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -7019,6 +7519,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchFilter"></a>
 
 `ProjectsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering projects search queries.
@@ -7266,6 +7768,8 @@ Classes
     `wiki_enabled: bool | None`
     :   Whether wiki is enabled
 
+<a id="ProjectsSearchQuery"></a>
+
 `ProjectsSearchQuery(*args, **kwargs)`
 :   Search query for projects entity.
 
@@ -7280,6 +7784,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProjectsSortFilter"></a>
 
 `ProjectsSortFilter(*args, **kwargs)`
 :   Available fields for sorting projects search results.
@@ -7527,6 +8033,8 @@ Classes
     `wiki_enabled: Literal['asc', 'desc']`
     :   Whether wiki is enabled
 
+<a id="ProjectsStringFilter"></a>
+
 `ProjectsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -7773,6 +8281,8 @@ Classes
     `wiki_enabled: str`
     :   Whether wiki is enabled
 
+<a id="ReleasesAndCondition"></a>
+
 `ReleasesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -7793,6 +8303,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ReleasesAnyCondition"></a>
+
 `ReleasesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -7812,6 +8324,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesAnyValueFilter"></a>
 
 `ReleasesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -7873,6 +8387,8 @@ Classes
     `upcoming_release: Any`
     :   Whether this is an upcoming release
 
+<a id="ReleasesContainsCondition"></a>
+
 `ReleasesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -7884,6 +8400,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesEqCondition"></a>
 
 `ReleasesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -7897,6 +8415,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.ReleasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ReleasesFuzzyCondition"></a>
+
 `ReleasesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -7908,6 +8428,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.ReleasesStringFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesGetParams"></a>
 
 `ReleasesGetParams(*args, **kwargs)`
 :   Parameters for releases.get operation
@@ -7924,6 +8446,8 @@ Classes
     `tag_name: str`
     :   The type of the None singleton.
 
+<a id="ReleasesGtCondition"></a>
+
 `ReleasesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -7936,6 +8460,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.ReleasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ReleasesGteCondition"></a>
+
 `ReleasesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -7947,6 +8473,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.ReleasesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesInCondition"></a>
 
 `ReleasesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -7967,6 +8495,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.ReleasesInFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesInFilter"></a>
 
 `ReleasesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -8028,6 +8558,8 @@ Classes
     `upcoming_release: list[bool]`
     :   Whether this is an upcoming release
 
+<a id="ReleasesKeywordCondition"></a>
+
 `ReleasesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -8040,6 +8572,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.ReleasesStringFilter`
     :   The type of the None singleton.
 
+<a id="ReleasesLikeCondition"></a>
+
 `ReleasesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -8051,6 +8585,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.ReleasesStringFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesListParams"></a>
 
 `ReleasesListParams(*args, **kwargs)`
 :   Parameters for releases.list operation
@@ -8076,6 +8612,8 @@ Classes
     `sort: str`
     :   The type of the None singleton.
 
+<a id="ReleasesLtCondition"></a>
+
 `ReleasesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -8087,6 +8625,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.ReleasesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesLteCondition"></a>
 
 `ReleasesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -8100,6 +8640,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.ReleasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="ReleasesNeqCondition"></a>
+
 `ReleasesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -8111,6 +8653,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.ReleasesSearchFilter`
     :   The type of the None singleton.
+
+<a id="ReleasesNotCondition"></a>
 
 `ReleasesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -8132,6 +8676,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
+<a id="ReleasesOrCondition"></a>
+
 `ReleasesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -8151,6 +8697,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ReleasesSearchFilter"></a>
 
 `ReleasesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering releases search queries.
@@ -8212,6 +8760,8 @@ Classes
     `upcoming_release: bool | None`
     :   Whether this is an upcoming release
 
+<a id="ReleasesSearchQuery"></a>
+
 `ReleasesSearchQuery(*args, **kwargs)`
 :   Search query for releases entity.
 
@@ -8226,6 +8776,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesSortFilter]`
     :   The type of the None singleton.
+
+<a id="ReleasesSortFilter"></a>
 
 `ReleasesSortFilter(*args, **kwargs)`
 :   Available fields for sorting releases search results.
@@ -8287,6 +8839,8 @@ Classes
     `upcoming_release: Literal['asc', 'desc']`
     :   Whether this is an upcoming release
 
+<a id="ReleasesStringFilter"></a>
+
 `ReleasesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -8347,6 +8901,8 @@ Classes
     `upcoming_release: str`
     :   Whether this is an upcoming release
 
+<a id="TagsAndCondition"></a>
+
 `TagsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -8367,6 +8923,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TagsAnyCondition"></a>
+
 `TagsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -8386,6 +8944,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.TagsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TagsAnyValueFilter"></a>
 
 `TagsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -8420,6 +8980,8 @@ Classes
     `target: Any`
     :   SHA the tag points to
 
+<a id="TagsContainsCondition"></a>
+
 `TagsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -8431,6 +8993,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.TagsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TagsEqCondition"></a>
 
 `TagsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -8444,6 +9008,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsFuzzyCondition"></a>
+
 `TagsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -8455,6 +9021,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.TagsStringFilter`
     :   The type of the None singleton.
+
+<a id="TagsGetParams"></a>
 
 `TagsGetParams(*args, **kwargs)`
 :   Parameters for tags.get operation
@@ -8471,6 +9039,8 @@ Classes
     `tag_name: str`
     :   The type of the None singleton.
 
+<a id="TagsGtCondition"></a>
+
 `TagsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -8483,6 +9053,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsGteCondition"></a>
+
 `TagsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -8494,6 +9066,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsInCondition"></a>
 
 `TagsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -8514,6 +9088,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.TagsInFilter`
     :   The type of the None singleton.
+
+<a id="TagsInFilter"></a>
 
 `TagsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -8548,6 +9124,8 @@ Classes
     `target: list[str]`
     :   SHA the tag points to
 
+<a id="TagsKeywordCondition"></a>
+
 `TagsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -8560,6 +9138,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.TagsStringFilter`
     :   The type of the None singleton.
 
+<a id="TagsLikeCondition"></a>
+
 `TagsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -8571,6 +9151,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.TagsStringFilter`
     :   The type of the None singleton.
+
+<a id="TagsListParams"></a>
 
 `TagsListParams(*args, **kwargs)`
 :   Parameters for tags.list operation
@@ -8599,6 +9181,8 @@ Classes
     `sort: str`
     :   The type of the None singleton.
 
+<a id="TagsLtCondition"></a>
+
 `TagsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -8610,6 +9194,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsLteCondition"></a>
 
 `TagsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -8623,6 +9209,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.TagsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TagsNeqCondition"></a>
+
 `TagsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -8634,6 +9222,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.TagsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TagsNotCondition"></a>
 
 `TagsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -8655,6 +9245,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TagsOrCondition"></a>
+
 `TagsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -8674,6 +9266,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TagsSearchFilter"></a>
 
 `TagsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tags search queries.
@@ -8708,6 +9302,8 @@ Classes
     `target: str | None`
     :   SHA the tag points to
 
+<a id="TagsSearchQuery"></a>
+
 `TagsSearchQuery(*args, **kwargs)`
 :   Search query for tags entity.
 
@@ -8722,6 +9318,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.TagsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TagsSortFilter"></a>
 
 `TagsSortFilter(*args, **kwargs)`
 :   Available fields for sorting tags search results.
@@ -8756,6 +9354,8 @@ Classes
     `target: Literal['asc', 'desc']`
     :   SHA the tag points to
 
+<a id="TagsStringFilter"></a>
+
 `TagsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -8789,6 +9389,8 @@ Classes
     `target: str`
     :   SHA the tag points to
 
+<a id="UsersAndCondition"></a>
+
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -8809,6 +9411,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -8828,6 +9432,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.gitlab.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -8859,6 +9465,8 @@ Classes
     `web_url: Any`
     :   Web URL of the user profile
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -8870,6 +9478,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.gitlab.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -8883,6 +9493,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.gitlab.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -8894,6 +9506,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.gitlab.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -8907,6 +9521,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -8919,6 +9535,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.gitlab.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -8930,6 +9548,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.gitlab.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -8950,6 +9570,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.gitlab.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -8981,6 +9603,8 @@ Classes
     `web_url: list[str]`
     :   Web URL of the user profile
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -8993,6 +9617,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gitlab.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersLikeCondition"></a>
+
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -9004,6 +9630,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.gitlab.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
@@ -9026,6 +9654,8 @@ Classes
     `search: str`
     :   The type of the None singleton.
 
+<a id="UsersLtCondition"></a>
+
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -9037,6 +9667,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.gitlab.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
 
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -9050,6 +9682,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.gitlab.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -9061,6 +9695,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.gitlab.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -9082,6 +9718,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -9101,6 +9739,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -9132,6 +9772,8 @@ Classes
     `web_url: str | None`
     :   Web URL of the user profile
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -9146,6 +9788,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -9176,6 +9820,8 @@ Classes
 
     `web_url: Literal['asc', 'desc']`
     :   Web URL of the user profile
+
+<a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

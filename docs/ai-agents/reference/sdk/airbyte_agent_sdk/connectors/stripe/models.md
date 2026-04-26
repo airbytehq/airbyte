@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -96,6 +100,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChargesSearchResult"></a>
+
 `ChargesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -132,6 +138,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomersSearchResult"></a>
 
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -170,6 +178,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoicesSearchResult"></a>
+
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RefundsSearchResult"></a>
 
 `RefundsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -244,6 +256,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionsSearchResult"></a>
+
 `SubscriptionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -259,6 +273,8 @@ Classes
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Balance"></a>
 
 `Balance(**data: Any)`
 :   Balance type definition
@@ -303,6 +319,8 @@ Classes
     `refund_and_dispute_prefunding: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefunding | Any | None`
     :   The type of the None singleton.
 
+<a id="BalanceAvailableItem"></a>
+
 `BalanceAvailableItem(**data: Any)`
 :   Nested schema for Balance.available_item
     
@@ -330,6 +348,8 @@ Classes
 
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceAvailableItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
+
+<a id="BalanceAvailableItemSourceTypes"></a>
 
 `BalanceAvailableItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
@@ -359,6 +379,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalanceConnectReservedItem"></a>
+
 `BalanceConnectReservedItem(**data: Any)`
 :   Nested schema for Balance.connect_reserved_item
     
@@ -387,6 +409,8 @@ Classes
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceConnectReservedItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
 
+<a id="BalanceConnectReservedItemSourceTypes"></a>
+
 `BalanceConnectReservedItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
     
@@ -414,6 +438,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalanceInstantAvailableItem"></a>
 
 `BalanceInstantAvailableItem(**data: Any)`
 :   Nested schema for Balance.instant_available_item
@@ -446,6 +472,8 @@ Classes
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
 
+<a id="BalanceInstantAvailableItemNetAvailableItem"></a>
+
 `BalanceInstantAvailableItemNetAvailableItem(**data: Any)`
 :   Nested schema for BalanceInstantAvailableItem.net_available_item
     
@@ -473,6 +501,8 @@ Classes
 
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemNetAvailableItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
+
+<a id="BalanceInstantAvailableItemNetAvailableItemSourceTypes"></a>
 
 `BalanceInstantAvailableItemNetAvailableItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
@@ -502,6 +532,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalanceInstantAvailableItemSourceTypes"></a>
+
 `BalanceInstantAvailableItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
     
@@ -530,6 +562,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalanceIssuing"></a>
+
 `BalanceIssuing(**data: Any)`
 :   Funds that are available for use with Issuing cards
     
@@ -551,6 +585,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalanceIssuingAvailableItem"></a>
 
 `BalanceIssuingAvailableItem(**data: Any)`
 :   Nested schema for BalanceIssuing.available_item
@@ -580,6 +616,8 @@ Classes
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceIssuingAvailableItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
 
+<a id="BalanceIssuingAvailableItemSourceTypes"></a>
+
 `BalanceIssuingAvailableItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
     
@@ -607,6 +645,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalancePendingItem"></a>
 
 `BalancePendingItem(**data: Any)`
 :   Nested schema for Balance.pending_item
@@ -636,6 +676,8 @@ Classes
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalancePendingItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
 
+<a id="BalancePendingItemSourceTypes"></a>
+
 `BalancePendingItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
     
@@ -664,6 +706,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalanceRefundAndDisputePrefunding"></a>
+
 `BalanceRefundAndDisputePrefunding(**data: Any)`
 :   Funds reserved for covering future refunds or disputes
     
@@ -688,6 +732,8 @@ Classes
 
     `pending: list[airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingPendingItem] | Any`
     :   Pending funds for refunds and disputes
+
+<a id="BalanceRefundAndDisputePrefundingAvailableItem"></a>
 
 `BalanceRefundAndDisputePrefundingAvailableItem(**data: Any)`
 :   Nested schema for BalanceRefundAndDisputePrefunding.available_item
@@ -717,6 +763,8 @@ Classes
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingAvailableItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
 
+<a id="BalanceRefundAndDisputePrefundingAvailableItemSourceTypes"></a>
+
 `BalanceRefundAndDisputePrefundingAvailableItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
     
@@ -744,6 +792,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalanceRefundAndDisputePrefundingPendingItem"></a>
 
 `BalanceRefundAndDisputePrefundingPendingItem(**data: Any)`
 :   Nested schema for BalanceRefundAndDisputePrefunding.pending_item
@@ -773,6 +823,8 @@ Classes
     `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingPendingItemSourceTypes | Any | None`
     :   Breakdown of balance by source types
 
+<a id="BalanceRefundAndDisputePrefundingPendingItemSourceTypes"></a>
+
 `BalanceRefundAndDisputePrefundingPendingItemSourceTypes(**data: Any)`
 :   Breakdown of balance by source types
     
@@ -800,6 +852,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BalanceTransaction"></a>
 
 `BalanceTransaction(**data: Any)`
 :   BalanceTransaction type definition
@@ -868,6 +922,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="BalanceTransactionFeeDetailsItem"></a>
+
 `BalanceTransactionFeeDetailsItem(**data: Any)`
 :   Nested schema for BalanceTransaction.fee_details_item
     
@@ -902,6 +958,8 @@ Classes
     `type_: str | Any`
     :   Type of the fee
 
+<a id="BalanceTransactionList"></a>
+
 `BalanceTransactionList(**data: Any)`
 :   BalanceTransactionList type definition
     
@@ -933,6 +991,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="BalanceTransactionsListResultMeta"></a>
+
 `BalanceTransactionsListResultMeta(**data: Any)`
 :   Metadata for balance_transactions.Action.LIST operation
     
@@ -954,6 +1014,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Charge"></a>
 
 `Charge(**data: Any)`
 :   Charge type definition
@@ -1124,6 +1186,8 @@ Classes
     `transfer_group: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChargeBillingDetails"></a>
+
 `ChargeBillingDetails(**data: Any)`
 :   Billing information associated with the payment method
     
@@ -1157,6 +1221,8 @@ Classes
 
     `tax_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ChargeBillingDetailsAddress"></a>
 
 `ChargeBillingDetailsAddress(**data: Any)`
 :   Nested schema for ChargeBillingDetails.address
@@ -1195,6 +1261,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChargeFraudDetails"></a>
+
 `ChargeFraudDetails(**data: Any)`
 :   Information on fraud assessments for the charge
     
@@ -1219,6 +1287,8 @@ Classes
 
     `user_report: str | Any | None`
     :   Assessments from you or your users. Possible values are `fraudulent` and `safe`
+
+<a id="ChargeList"></a>
 
 `ChargeList(**data: Any)`
 :   ChargeList type definition
@@ -1250,6 +1320,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="ChargeOutcome"></a>
 
 `ChargeOutcome(**data: Any)`
 :   Details about whether the payment was accepted, and why
@@ -1297,6 +1369,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="ChargePaymentMethodDetails"></a>
+
 `ChargePaymentMethodDetails(**data: Any)`
 :   Details about the payment method at the time of the transaction
     
@@ -1321,6 +1395,8 @@ Classes
 
     `type_: str | Any`
     :   The type of the None singleton.
+
+<a id="ChargePaymentMethodDetailsCard"></a>
 
 `ChargePaymentMethodDetailsCard(**data: Any)`
 :   Nested schema for ChargePaymentMethodDetails.card
@@ -1407,6 +1483,8 @@ Classes
     `wallet: dict[str, typing.Any] | Any | None`
     :   Digital wallet details if used
 
+<a id="ChargePaymentMethodDetailsCardChecks"></a>
+
 `ChargePaymentMethodDetailsCardChecks(**data: Any)`
 :   Check results by Card networks on Card address and CVC
     
@@ -1435,6 +1513,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChargePaymentMethodDetailsCardExtendedAuthorization"></a>
+
 `ChargePaymentMethodDetailsCardExtendedAuthorization(**data: Any)`
 :   Extended authorization details
     
@@ -1456,6 +1536,8 @@ Classes
 
     `status: str | Any`
     :   The type of the None singleton.
+
+<a id="ChargePaymentMethodDetailsCardIncrementalAuthorization"></a>
 
 `ChargePaymentMethodDetailsCardIncrementalAuthorization(**data: Any)`
 :   Incremental authorization details
@@ -1479,6 +1561,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="ChargePaymentMethodDetailsCardMulticapture"></a>
+
 `ChargePaymentMethodDetailsCardMulticapture(**data: Any)`
 :   Multicapture details
     
@@ -1501,6 +1585,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="ChargePaymentMethodDetailsCardNetworkToken"></a>
+
 `ChargePaymentMethodDetailsCardNetworkToken(**data: Any)`
 :   Network token details
     
@@ -1522,6 +1608,8 @@ Classes
 
     `used: bool | Any`
     :   The type of the None singleton.
+
+<a id="ChargePaymentMethodDetailsCardOvercapture"></a>
 
 `ChargePaymentMethodDetailsCardOvercapture(**data: Any)`
 :   Overcapture details
@@ -1547,6 +1635,8 @@ Classes
 
     `status: str | Any`
     :   The type of the None singleton.
+
+<a id="ChargePresentmentDetails"></a>
 
 `ChargePresentmentDetails(**data: Any)`
 :   Currency presentation information for multi-currency charges
@@ -1575,6 +1665,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChargeRefunds"></a>
 
 `ChargeRefunds(**data: Any)`
 :   A list of refunds that have been applied to the charge
@@ -1610,6 +1702,8 @@ Classes
     `url: str | Any`
     :   URL to access the refunds list
 
+<a id="ChargeSearchResult"></a>
+
 `ChargeSearchResult(**data: Any)`
 :   ChargeSearchResult type definition
     
@@ -1644,6 +1738,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="ChargesListResultMeta"></a>
+
 `ChargesListResultMeta(**data: Any)`
 :   Metadata for charges.Action.LIST operation
     
@@ -1665,6 +1761,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChargesSearchData"></a>
 
 `ChargesSearchData(**data: Any)`
 :   Search result data for charges entity.
@@ -1838,6 +1936,8 @@ Classes
     `updated: int | None`
     :   Timestamp of the last update to this charge object.
 
+<a id="Customer"></a>
+
 `Customer(**data: Any)`
 :   Customer type definition
     
@@ -1947,6 +2047,8 @@ Classes
     `test_clock: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomerAddress"></a>
+
 `CustomerAddress(**data: Any)`
 :   The customer's address
     
@@ -1983,6 +2085,8 @@ Classes
 
     `state: str | Any | None`
     :   State, county, province, or region
+
+<a id="CustomerCashBalance"></a>
 
 `CustomerCashBalance(**data: Any)`
 :   The current funds being held by Stripe on behalf of the customer
@@ -2021,6 +2125,8 @@ Classes
     `settings: airbyte_agent_sdk.connectors.stripe.models.CustomerCashBalanceSettings | Any`
     :   A hash of settings for this cash balance
 
+<a id="CustomerCashBalanceSettings"></a>
+
 `CustomerCashBalanceSettings(**data: Any)`
 :   A hash of settings for this cash balance
     
@@ -2045,6 +2151,8 @@ Classes
 
     `using_merchant_default: bool | Any`
     :   A flag to indicate if reconciliation mode returned is the user's default or is specific to this customer cash balance
+
+<a id="CustomerCreateParams"></a>
 
 `CustomerCreateParams(**data: Any)`
 :   CustomerCreateParams type definition
@@ -2083,6 +2191,8 @@ Classes
     `phone: str | Any`
     :   The type of the None singleton.
 
+<a id="CustomerCreateParamsAddress"></a>
+
 `CustomerCreateParamsAddress(**data: Any)`
 :   The customer's address
     
@@ -2120,6 +2230,8 @@ Classes
     `state: str | Any`
     :   State, county, province, or region
 
+<a id="CustomerDeletedResponse"></a>
+
 `CustomerDeletedResponse(**data: Any)`
 :   CustomerDeletedResponse type definition
     
@@ -2147,6 +2259,8 @@ Classes
 
     `object_: str | Any`
     :   The type of the None singleton.
+
+<a id="CustomerDiscount"></a>
 
 `CustomerDiscount(**data: Any)`
 :   Describes the current discount active on the customer, if there is one
@@ -2206,6 +2320,8 @@ Classes
     `subscription_item: str | Any | None`
     :   The subscription item that this coupon is applied to
 
+<a id="CustomerDiscountSource"></a>
+
 `CustomerDiscountSource(**data: Any)`
 :   The source of the discount
     
@@ -2230,6 +2346,8 @@ Classes
 
     `type_: str | Any`
     :   The source type of the discount
+
+<a id="CustomerInvoiceSettings"></a>
 
 `CustomerInvoiceSettings(**data: Any)`
 :   The customer's default invoice settings
@@ -2262,6 +2380,8 @@ Classes
     `rendering_options: airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettingsRenderingOptions | Any | None`
     :   Default options for invoice PDF rendering for this customer
 
+<a id="CustomerInvoiceSettingsCustomFieldsItem"></a>
+
 `CustomerInvoiceSettingsCustomFieldsItem(**data: Any)`
 :   Nested schema for CustomerInvoiceSettings.custom_fields_item
     
@@ -2287,6 +2407,8 @@ Classes
     `value: str | Any`
     :   The value of the custom field
 
+<a id="CustomerInvoiceSettingsRenderingOptions"></a>
+
 `CustomerInvoiceSettingsRenderingOptions(**data: Any)`
 :   Default options for invoice PDF rendering for this customer
     
@@ -2311,6 +2433,8 @@ Classes
 
     `template: str | Any | None`
     :   ID of the invoice rendering template to be used for this customer's invoices
+
+<a id="CustomerList"></a>
 
 `CustomerList(**data: Any)`
 :   CustomerList type definition
@@ -2342,6 +2466,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="CustomerSearchResult"></a>
 
 `CustomerSearchResult(**data: Any)`
 :   CustomerSearchResult type definition
@@ -2377,6 +2503,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="CustomerShipping"></a>
+
 `CustomerShipping(**data: Any)`
 :   Mailing and shipping address for the customer
     
@@ -2404,6 +2532,8 @@ Classes
 
     `phone: str | Any | None`
     :   Customer phone (including extension)
+
+<a id="CustomerShippingAddress"></a>
 
 `CustomerShippingAddress(**data: Any)`
 :   Customer shipping address
@@ -2442,6 +2572,8 @@ Classes
     `state: str | Any | None`
     :   State, county, province, or region
 
+<a id="CustomerSources"></a>
+
 `CustomerSources(**data: Any)`
 :   The customer's payment sources, if any
     
@@ -2472,6 +2604,8 @@ Classes
 
     `url: str | Any`
     :   The URL where this list can be accessed
+
+<a id="CustomerSourcesDataItem"></a>
 
 `CustomerSourcesDataItem(**data: Any)`
 :   Nested schema for CustomerSources.data_item
@@ -2540,6 +2674,8 @@ Classes
     `status: str | Any`
     :   The status of the bank account
 
+<a id="CustomerSubscriptions"></a>
+
 `CustomerSubscriptions(**data: Any)`
 :   The customer's current subscriptions, if any
     
@@ -2570,6 +2706,8 @@ Classes
 
     `url: str | Any`
     :   The URL where this list can be accessed
+
+<a id="CustomerUpdateParams"></a>
 
 `CustomerUpdateParams(**data: Any)`
 :   CustomerUpdateParams type definition
@@ -2608,6 +2746,8 @@ Classes
     `phone: str | Any`
     :   The type of the None singleton.
 
+<a id="CustomerUpdateParamsAddress"></a>
+
 `CustomerUpdateParamsAddress(**data: Any)`
 :   The customer's address
     
@@ -2645,6 +2785,8 @@ Classes
     `state: str | Any`
     :   State, county, province, or region
 
+<a id="CustomersApiSearchResultMeta"></a>
+
 `CustomersApiSearchResultMeta(**data: Any)`
 :   Metadata for customers.Action.API_SEARCH operation
     
@@ -2667,6 +2809,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersListResultMeta"></a>
+
 `CustomersListResultMeta(**data: Any)`
 :   Metadata for customers.Action.LIST operation
     
@@ -2688,6 +2832,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomersSearchData"></a>
 
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
@@ -2801,6 +2947,8 @@ Classes
     `updated: int | None`
     :   Timestamp indicating when the customer object was last updated.
 
+<a id="Dispute"></a>
+
 `Dispute(**data: Any)`
 :   Dispute type definition
     
@@ -2871,6 +3019,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="DisputeEvidenceDetails"></a>
+
 `DisputeEvidenceDetails(**data: Any)`
 :   Information about the evidence submission
     
@@ -2901,6 +3051,8 @@ Classes
 
     `submission_count: int | Any`
     :   The number of times evidence has been submitted
+
+<a id="DisputeList"></a>
 
 `DisputeList(**data: Any)`
 :   DisputeList type definition
@@ -2933,6 +3085,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="DisputesListResultMeta"></a>
+
 `DisputesListResultMeta(**data: Any)`
 :   Metadata for disputes.Action.LIST operation
     
@@ -2954,6 +3108,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Invoice"></a>
 
 `Invoice(**data: Any)`
 :   Invoice type definition
@@ -3244,6 +3400,8 @@ Classes
     `webhooks_delivered_at: int | Any | None`
     :   The type of the None singleton.
 
+<a id="InvoiceAutomaticTax"></a>
+
 `InvoiceAutomaticTax(**data: Any)`
 :   Settings and latest results for automatic tax lookup for this invoice
     
@@ -3278,6 +3436,8 @@ Classes
     `status: str | Any | None`
     :   The status of the most recent automated tax calculation for this invoice
 
+<a id="InvoiceAutomaticTaxLiability"></a>
+
 `InvoiceAutomaticTaxLiability(**data: Any)`
 :   The account that's liable for tax
     
@@ -3302,6 +3462,8 @@ Classes
 
     `type_: str | Any`
     :   Type of the account referenced
+
+<a id="InvoiceConfirmationSecret"></a>
 
 `InvoiceConfirmationSecret(**data: Any)`
 :   The confirmation secret associated with this invoice
@@ -3328,6 +3490,8 @@ Classes
     `type_: str | Any`
     :   The type of client_secret
 
+<a id="InvoiceCustomFieldsItem"></a>
+
 `InvoiceCustomFieldsItem(**data: Any)`
 :   Nested schema for Invoice.custom_fields_item
     
@@ -3352,6 +3516,8 @@ Classes
 
     `value: str | Any`
     :   The value of the custom field
+
+<a id="InvoiceCustomerAddress"></a>
 
 `InvoiceCustomerAddress(**data: Any)`
 :   The customer's address
@@ -3390,6 +3556,8 @@ Classes
     `state: str | Any | None`
     :   State, county, province, or region
 
+<a id="InvoiceCustomerShipping"></a>
+
 `InvoiceCustomerShipping(**data: Any)`
 :   The customer's shipping information
     
@@ -3417,6 +3585,8 @@ Classes
 
     `phone: str | Any | None`
     :   Customer phone (including extension)
+
+<a id="InvoiceCustomerShippingAddress"></a>
 
 `InvoiceCustomerShippingAddress(**data: Any)`
 :   Customer shipping address
@@ -3455,6 +3625,8 @@ Classes
     `state: str | Any | None`
     :   State, county, province, or region
 
+<a id="InvoiceCustomerTaxIdsItem"></a>
+
 `InvoiceCustomerTaxIdsItem(**data: Any)`
 :   Nested schema for Invoice.customer_tax_ids_item
     
@@ -3479,6 +3651,8 @@ Classes
 
     `value: str | Any | None`
     :   The value of the tax ID
+
+<a id="InvoiceDefaultTaxRatesItem"></a>
 
 `InvoiceDefaultTaxRatesItem(**data: Any)`
 :   Nested schema for Invoice.default_tax_rates_item
@@ -3553,6 +3727,8 @@ Classes
     `tax_type: str | Any | None`
     :   The high-level tax type
 
+<a id="InvoiceDefaultTaxRatesItemFlatAmount"></a>
+
 `InvoiceDefaultTaxRatesItemFlatAmount(**data: Any)`
 :   The amount of the tax rate when the rate_type is flat_amount
     
@@ -3577,6 +3753,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceDiscount"></a>
 
 `InvoiceDiscount(**data: Any)`
 :   The discount applied to the invoice
@@ -3635,6 +3813,8 @@ Classes
 
     `subscription_item: str | Any | None`
     :   The type of the None singleton.
+
+<a id="InvoiceDiscountCoupon"></a>
 
 `InvoiceDiscountCoupon(**data: Any)`
 :   Nested schema for InvoiceDiscount.coupon
@@ -3700,6 +3880,8 @@ Classes
     `valid: bool | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceFromInvoice"></a>
+
 `InvoiceFromInvoice(**data: Any)`
 :   Details of the invoice that was cloned
     
@@ -3725,6 +3907,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceIssuer"></a>
+
 `InvoiceIssuer(**data: Any)`
 :   The connected account that issues the invoice
     
@@ -3749,6 +3933,8 @@ Classes
 
     `type_: str | Any`
     :   Type of the account referenced
+
+<a id="InvoiceLastFinalizationError"></a>
 
 `InvoiceLastFinalizationError(**data: Any)`
 :   The error encountered during the last finalization attempt
@@ -3796,6 +3982,8 @@ Classes
     `type_: str | Any`
     :   The type of error returned
 
+<a id="InvoiceLines"></a>
+
 `InvoiceLines(**data: Any)`
 :   The individual line items that make up the invoice
     
@@ -3829,6 +4017,8 @@ Classes
 
     `url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="InvoiceLinesDataItem"></a>
 
 `InvoiceLinesDataItem(**data: Any)`
 :   Nested schema for InvoiceLines.data_item
@@ -3891,6 +4081,8 @@ Classes
     `quantity: int | Any | None`
     :   The quantity of the subscription
 
+<a id="InvoiceLinesDataItemDiscountAmountsItem"></a>
+
 `InvoiceLinesDataItemDiscountAmountsItem(**data: Any)`
 :   Nested schema for InvoiceLinesDataItem.discount_amounts_item
     
@@ -3916,6 +4108,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceLinesDataItemPeriod"></a>
+
 `InvoiceLinesDataItemPeriod(**data: Any)`
 :   The period this line_item covers
     
@@ -3940,6 +4134,8 @@ Classes
 
     `start: int | Any`
     :   The start of the period
+
+<a id="InvoiceList"></a>
 
 `InvoiceList(**data: Any)`
 :   InvoiceList type definition
@@ -3972,6 +4168,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceParent"></a>
+
 `InvoiceParent(**data: Any)`
 :   The parent that generated this invoice
     
@@ -4000,6 +4198,8 @@ Classes
     `type_: str | Any`
     :   The type of parent that generated this invoice
 
+<a id="InvoiceParentQuoteDetails"></a>
+
 `InvoiceParentQuoteDetails(**data: Any)`
 :   Details about the quote that generated this invoice
     
@@ -4021,6 +4221,8 @@ Classes
 
     `quote: str | Any`
     :   The quote that generated this invoice
+
+<a id="InvoiceParentSubscriptionDetails"></a>
 
 `InvoiceParentSubscriptionDetails(**data: Any)`
 :   Details about the subscription that generated this invoice
@@ -4050,6 +4252,8 @@ Classes
     `subscription_proration_date: int | Any | None`
     :   Only set for upcoming invoices that preview prorations
 
+<a id="InvoicePaymentSettings"></a>
+
 `InvoicePaymentSettings(**data: Any)`
 :   Configuration settings for the PaymentIntent that is generated when the invoice is finalized
     
@@ -4077,6 +4281,8 @@ Classes
 
     `payment_method_types: list[str] | Any | None`
     :   The list of payment method types to provide to the invoice's PaymentIntent
+
+<a id="InvoicePayments"></a>
 
 `InvoicePayments(**data: Any)`
 :   Payments for this invoice
@@ -4108,6 +4314,8 @@ Classes
 
     `url: str | Any`
     :   The URL where this list can be accessed
+
+<a id="InvoicePaymentsDataItem"></a>
 
 `InvoicePaymentsDataItem(**data: Any)`
 :   Nested schema for InvoicePayments.data_item
@@ -4158,6 +4366,8 @@ Classes
     `status: str | Any`
     :   The status of the payment
 
+<a id="InvoiceRendering"></a>
+
 `InvoiceRendering(**data: Any)`
 :   The rendering-related settings that control how the invoice is displayed
     
@@ -4189,6 +4399,8 @@ Classes
     `template_version: int | Any | None`
     :   Version of the rendering template that the invoice is using
 
+<a id="InvoiceRenderingPdf"></a>
+
 `InvoiceRenderingPdf(**data: Any)`
 :   Invoice pdf rendering options
     
@@ -4210,6 +4422,8 @@ Classes
 
     `page_size: str | Any | None`
     :   Page size of invoice pdf
+
+<a id="InvoiceSearchResult"></a>
 
 `InvoiceSearchResult(**data: Any)`
 :   InvoiceSearchResult type definition
@@ -4245,6 +4459,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="InvoiceShippingCost"></a>
+
 `InvoiceShippingCost(**data: Any)`
 :   The details of the cost of shipping
     
@@ -4279,6 +4495,8 @@ Classes
     `taxes: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingCostTaxesItem] | Any | None`
     :   The taxes applied to the shipping rate
 
+<a id="InvoiceShippingCostTaxesItem"></a>
+
 `InvoiceShippingCostTaxesItem(**data: Any)`
 :   Nested schema for InvoiceShippingCost.taxes_item
     
@@ -4307,6 +4525,8 @@ Classes
     `taxable_amount: int | Any | None`
     :   The amount on which tax is calculated
 
+<a id="InvoiceShippingDetails"></a>
+
 `InvoiceShippingDetails(**data: Any)`
 :   Shipping details for the invoice
     
@@ -4334,6 +4554,8 @@ Classes
 
     `phone: str | Any | None`
     :   Recipient phone
+
+<a id="InvoiceShippingDetailsAddress"></a>
 
 `InvoiceShippingDetailsAddress(**data: Any)`
 :   Shipping address
@@ -4372,6 +4594,8 @@ Classes
     `state: str | Any | None`
     :   State, county, province, or region
 
+<a id="InvoiceStatusTransitions"></a>
+
 `InvoiceStatusTransitions(**data: Any)`
 :   Status transition timestamps
     
@@ -4403,6 +4627,8 @@ Classes
     `voided_at: int | Any | None`
     :   The time that the invoice was voided
 
+<a id="InvoiceSubscriptionDetails"></a>
+
 `InvoiceSubscriptionDetails(**data: Any)`
 :   Details about the subscription that this invoice was prepared for, if any
     
@@ -4424,6 +4650,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceThresholdReason"></a>
 
 `InvoiceThresholdReason(**data: Any)`
 :   If billing_reason is set to subscription_threshold this returns more information
@@ -4450,6 +4678,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InvoiceThresholdReasonItemReasonsItem"></a>
+
 `InvoiceThresholdReasonItemReasonsItem(**data: Any)`
 :   Nested schema for InvoiceThresholdReason.item_reasons_item
     
@@ -4475,6 +4705,8 @@ Classes
     `usage_gte: int | Any`
     :   The quantity threshold boundary that applied to the given line item
 
+<a id="InvoiceTotalDiscountAmountsItem"></a>
+
 `InvoiceTotalDiscountAmountsItem(**data: Any)`
 :   Nested schema for Invoice.total_discount_amounts_item
     
@@ -4499,6 +4731,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceTotalPretaxCreditAmountsItem"></a>
 
 `InvoiceTotalPretaxCreditAmountsItem(**data: Any)`
 :   Nested schema for Invoice.total_pretax_credit_amounts_item
@@ -4530,6 +4764,8 @@ Classes
 
     `type_: str | Any`
     :   Type of the pretax credit amount referenced
+
+<a id="InvoiceTotalTaxAmountsItem"></a>
 
 `InvoiceTotalTaxAmountsItem(**data: Any)`
 :   Nested schema for Invoice.total_tax_amounts_item
@@ -4564,6 +4800,8 @@ Classes
 
     `taxable_amount: int | Any`
     :   The amount on which tax is calculated
+
+<a id="InvoiceTotalTaxesItem"></a>
 
 `InvoiceTotalTaxesItem(**data: Any)`
 :   Nested schema for Invoice.total_taxes_item
@@ -4602,6 +4840,8 @@ Classes
     `type_: str | Any`
     :   The type of tax information
 
+<a id="InvoicesListResultMeta"></a>
+
 `InvoicesListResultMeta(**data: Any)`
 :   Metadata for invoices.Action.LIST operation
     
@@ -4623,6 +4863,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -4913,6 +5155,8 @@ Classes
     `webhooks_delivered_at: float | None`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="PaymentIntent"></a>
+
 `PaymentIntent(**data: Any)`
 :   PaymentIntent type definition
     
@@ -4989,6 +5233,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="PaymentIntentList"></a>
+
 `PaymentIntentList(**data: Any)`
 :   PaymentIntentList type definition
     
@@ -5019,6 +5265,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="PaymentIntentSearchResult"></a>
 
 `PaymentIntentSearchResult(**data: Any)`
 :   PaymentIntentSearchResult type definition
@@ -5054,6 +5302,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="PaymentIntentsApiSearchResultMeta"></a>
+
 `PaymentIntentsApiSearchResultMeta(**data: Any)`
 :   Metadata for payment_intents.Action.API_SEARCH operation
     
@@ -5076,6 +5326,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PaymentIntentsListResultMeta"></a>
+
 `PaymentIntentsListResultMeta(**data: Any)`
 :   Metadata for payment_intents.Action.LIST operation
     
@@ -5097,6 +5349,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Payout"></a>
 
 `Payout(**data: Any)`
 :   Payout type definition
@@ -5201,6 +5455,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="PayoutList"></a>
+
 `PayoutList(**data: Any)`
 :   PayoutList type definition
     
@@ -5232,6 +5488,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="PayoutTraceId"></a>
+
 `PayoutTraceId(**data: Any)`
 :   A string that identifies this payout as part of a group
     
@@ -5257,6 +5515,8 @@ Classes
     `value: str | Any | None`
     :   The trace ID value
 
+<a id="PayoutsListResultMeta"></a>
+
 `PayoutsListResultMeta(**data: Any)`
 :   Metadata for payouts.Action.LIST operation
     
@@ -5278,6 +5538,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Product"></a>
 
 `Product(**data: Any)`
 :   Product type definition
@@ -5361,6 +5623,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProductCreateParams"></a>
+
 `ProductCreateParams(**data: Any)`
 :   ProductCreateParams type definition
     
@@ -5419,6 +5683,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="ProductCreateParamsMarketingFeaturesItem"></a>
+
 `ProductCreateParamsMarketingFeaturesItem(**data: Any)`
 :   Nested schema for ProductCreateParams.marketing_features_item
     
@@ -5440,6 +5706,8 @@ Classes
 
     `name: str | Any`
     :   The marketing feature name. Up to 80 characters long
+
+<a id="ProductCreateParamsPackageDimensions"></a>
 
 `ProductCreateParamsPackageDimensions(**data: Any)`
 :   The dimensions of this product for shipping purposes
@@ -5472,6 +5740,8 @@ Classes
     `width: float | Any`
     :   Width, in inches
 
+<a id="ProductDeletedResponse"></a>
+
 `ProductDeletedResponse(**data: Any)`
 :   ProductDeletedResponse type definition
     
@@ -5500,6 +5770,8 @@ Classes
     `object_: str | Any`
     :   The type of the None singleton.
 
+<a id="ProductFeaturesItem"></a>
+
 `ProductFeaturesItem(**data: Any)`
 :   Nested schema for Product.features_item
     
@@ -5521,6 +5793,8 @@ Classes
 
     `name: str | Any`
     :   The feature name
+
+<a id="ProductList"></a>
 
 `ProductList(**data: Any)`
 :   ProductList type definition
@@ -5553,6 +5827,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="ProductMarketingFeaturesItem"></a>
+
 `ProductMarketingFeaturesItem(**data: Any)`
 :   Nested schema for Product.marketing_features_item
     
@@ -5574,6 +5850,8 @@ Classes
 
     `name: str | Any | None`
     :   The marketing feature name. Up to 80 characters long
+
+<a id="ProductPackageDimensions"></a>
 
 `ProductPackageDimensions(**data: Any)`
 :   The dimensions of this product for shipping purposes
@@ -5605,6 +5883,8 @@ Classes
 
     `width: float | Any`
     :   Width, in inches
+
+<a id="ProductSearchResult"></a>
 
 `ProductSearchResult(**data: Any)`
 :   ProductSearchResult type definition
@@ -5639,6 +5919,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="ProductUpdateParams"></a>
 
 `ProductUpdateParams(**data: Any)`
 :   ProductUpdateParams type definition
@@ -5698,6 +5980,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="ProductUpdateParamsMarketingFeaturesItem"></a>
+
 `ProductUpdateParamsMarketingFeaturesItem(**data: Any)`
 :   Nested schema for ProductUpdateParams.marketing_features_item
     
@@ -5719,6 +6003,8 @@ Classes
 
     `name: str | Any`
     :   The marketing feature name. Up to 80 characters long
+
+<a id="ProductUpdateParamsPackageDimensions"></a>
 
 `ProductUpdateParamsPackageDimensions(**data: Any)`
 :   The dimensions of this product for shipping purposes
@@ -5751,6 +6037,8 @@ Classes
     `width: float | Any`
     :   Width, in inches
 
+<a id="ProductsApiSearchResultMeta"></a>
+
 `ProductsApiSearchResultMeta(**data: Any)`
 :   Metadata for products.Action.API_SEARCH operation
     
@@ -5773,6 +6061,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductsListResultMeta"></a>
+
 `ProductsListResultMeta(**data: Any)`
 :   Metadata for products.Action.LIST operation
     
@@ -5794,6 +6084,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Refund"></a>
 
 `Refund(**data: Any)`
 :   Refund type definition
@@ -5877,6 +6169,8 @@ Classes
     `transfer_reversal: str | Any | None`
     :   The type of the None singleton.
 
+<a id="RefundCreateParams"></a>
+
 `RefundCreateParams(**data: Any)`
 :   RefundCreateParams type definition
     
@@ -5916,6 +6210,8 @@ Classes
 
     `reverse_transfer: bool | Any`
     :   The type of the None singleton.
+
+<a id="RefundDestinationDetails"></a>
 
 `RefundDestinationDetails(**data: Any)`
 :   Transaction-specific details for the refund
@@ -6044,6 +6340,8 @@ Classes
     `zip: dict[str, typing.Any] | Any | None`
     :   If this is a zip refund, this hash contains the transaction specific details
 
+<a id="RefundDestinationDetailsBlik"></a>
+
 `RefundDestinationDetailsBlik(**data: Any)`
 :   If this is a blik refund, this hash contains the transaction specific details
     
@@ -6072,6 +6370,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsBrBankTransfer"></a>
+
 `RefundDestinationDetailsBrBankTransfer(**data: Any)`
 :   If this is a br_bank_transfer refund, this hash contains the transaction specific details
     
@@ -6096,6 +6396,8 @@ Classes
 
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
+
+<a id="RefundDestinationDetailsCard"></a>
 
 `RefundDestinationDetailsCard(**data: Any)`
 :   If this is a card refund, this hash contains the transaction specific details
@@ -6128,6 +6430,8 @@ Classes
     `type_: str | Any`
     :   The type of refund
 
+<a id="RefundDestinationDetailsCrypto"></a>
+
 `RefundDestinationDetailsCrypto(**data: Any)`
 :   If this is a crypto refund, this hash contains the transaction specific details
     
@@ -6149,6 +6453,8 @@ Classes
 
     `reference: str | Any | None`
     :   The transaction hash of the refund
+
+<a id="RefundDestinationDetailsEuBankTransfer"></a>
 
 `RefundDestinationDetailsEuBankTransfer(**data: Any)`
 :   If this is a eu_bank_transfer refund, this hash contains the transaction specific details
@@ -6175,6 +6481,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsGbBankTransfer"></a>
+
 `RefundDestinationDetailsGbBankTransfer(**data: Any)`
 :   If this is a gb_bank_transfer refund, this hash contains the transaction specific details
     
@@ -6199,6 +6507,8 @@ Classes
 
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
+
+<a id="RefundDestinationDetailsJpBankTransfer"></a>
 
 `RefundDestinationDetailsJpBankTransfer(**data: Any)`
 :   If this is a jp_bank_transfer refund, this hash contains the transaction specific details
@@ -6225,6 +6535,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsMbWay"></a>
+
 `RefundDestinationDetailsMbWay(**data: Any)`
 :   If this is a mb_way refund, this hash contains the transaction specific details
     
@@ -6249,6 +6561,8 @@ Classes
 
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
+
+<a id="RefundDestinationDetailsMultibanco"></a>
 
 `RefundDestinationDetailsMultibanco(**data: Any)`
 :   If this is a multibanco refund, this hash contains the transaction specific details
@@ -6275,6 +6589,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsMxBankTransfer"></a>
+
 `RefundDestinationDetailsMxBankTransfer(**data: Any)`
 :   If this is a mx_bank_transfer refund, this hash contains the transaction specific details
     
@@ -6299,6 +6615,8 @@ Classes
 
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
+
+<a id="RefundDestinationDetailsP24"></a>
 
 `RefundDestinationDetailsP24(**data: Any)`
 :   If this is a p24 refund, this hash contains the transaction specific details
@@ -6325,6 +6643,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsPaypal"></a>
+
 `RefundDestinationDetailsPaypal(**data: Any)`
 :   If this is a paypal refund, this hash contains the transaction specific details
     
@@ -6346,6 +6666,8 @@ Classes
 
     `network_decline_code: str | Any | None`
     :   For refunds declined by the network, a decline code provided by the network
+
+<a id="RefundDestinationDetailsSwish"></a>
 
 `RefundDestinationDetailsSwish(**data: Any)`
 :   If this is a swish refund, this hash contains the transaction specific details
@@ -6375,6 +6697,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsThBankTransfer"></a>
+
 `RefundDestinationDetailsThBankTransfer(**data: Any)`
 :   If this is a th_bank_transfer refund, this hash contains the transaction specific details
     
@@ -6400,6 +6724,8 @@ Classes
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
 
+<a id="RefundDestinationDetailsUsBankTransfer"></a>
+
 `RefundDestinationDetailsUsBankTransfer(**data: Any)`
 :   If this is a us_bank_transfer refund, this hash contains the transaction specific details
     
@@ -6424,6 +6750,8 @@ Classes
 
     `reference_status: str | Any | None`
     :   Status of the reference on the refund
+
+<a id="RefundList"></a>
 
 `RefundList(**data: Any)`
 :   RefundList type definition
@@ -6459,6 +6787,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="RefundNextAction"></a>
+
 `RefundNextAction(**data: Any)`
 :   If the refund has a status of requires_action, this property describes what the refund needs to continue processing
     
@@ -6483,6 +6813,8 @@ Classes
 
     `type_: str | Any`
     :   Type of the next action to perform
+
+<a id="RefundNextActionDisplayDetails"></a>
 
 `RefundNextActionDisplayDetails(**data: Any)`
 :   Contains the refund details
@@ -6509,6 +6841,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RefundNextActionDisplayDetailsEmailSent"></a>
+
 `RefundNextActionDisplayDetailsEmailSent(**data: Any)`
 :   Contains information about the email sent to the customer
     
@@ -6534,6 +6868,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RefundsListResultMeta"></a>
+
 `RefundsListResultMeta(**data: Any)`
 :   Metadata for refunds.Action.LIST operation
     
@@ -6555,6 +6891,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RefundsSearchData"></a>
 
 `RefundsSearchData(**data: Any)`
 :   Search result data for refunds entity.
@@ -6623,6 +6961,8 @@ Classes
     `updated: int | None`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="StripeAuthConfig"></a>
+
 `StripeAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -6644,6 +6984,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StripeCheckResult"></a>
 
 `StripeCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -6678,6 +7020,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="StripeExecuteResult"></a>
+
 `StripeExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -6709,6 +7053,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StripeExecuteResultWithMeta"></a>
 
 `StripeExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -6773,6 +7119,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BalanceTransactionsListResult"></a>
+
 `BalanceTransactionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -6815,6 +7163,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChargesListResult"></a>
 
 `ChargesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -6859,6 +7209,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersApiSearchResult"></a>
+
 `CustomersApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -6901,6 +7253,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomersListResult"></a>
 
 `CustomersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -6945,6 +7299,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DisputesListResult"></a>
+
 `DisputesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -6987,6 +7343,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesListResult"></a>
 
 `InvoicesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -7031,6 +7389,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PaymentIntentsApiSearchResult"></a>
+
 `PaymentIntentsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -7073,6 +7433,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PaymentIntentsListResult"></a>
 
 `PaymentIntentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -7117,6 +7479,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PayoutsListResult"></a>
+
 `PayoutsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -7159,6 +7523,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductsApiSearchResult"></a>
 
 `ProductsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -7203,6 +7569,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductsListResult"></a>
+
 `ProductsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -7245,6 +7613,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RefundsListResult"></a>
 
 `RefundsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -7289,6 +7659,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionsListResult"></a>
+
 `SubscriptionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -7331,6 +7703,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChargesApiSearchResult"></a>
+
 `ChargesApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -7371,6 +7745,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesApiSearchResult"></a>
 
 `InvoicesApiSearchResult(**data: Any)`
 :   Response envelope with data only.
@@ -7413,6 +7789,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionsApiSearchResult"></a>
+
 `SubscriptionsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -7430,6 +7808,8 @@ Classes
     * airbyte_agent_sdk.connectors.stripe.models.StripeExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="StripeReplicationConfig"></a>
 
 `StripeReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Stripe.
@@ -7452,6 +7832,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Subscription"></a>
 
 `Subscription(**data: Any)`
 :   Subscription type definition
@@ -7622,6 +8004,8 @@ Classes
     `trial_start: int | Any | None`
     :   The type of the None singleton.
 
+<a id="SubscriptionAutomaticTax"></a>
+
 `SubscriptionAutomaticTax(**data: Any)`
 :   Automatic tax settings for this subscription
     
@@ -7650,6 +8034,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionAutomaticTaxLiability"></a>
+
 `SubscriptionAutomaticTaxLiability(**data: Any)`
 :   The account that's liable for tax
     
@@ -7674,6 +8060,8 @@ Classes
 
     `type_: str | Any`
     :   Type of the account referenced
+
+<a id="SubscriptionBillingCycleAnchorConfig"></a>
 
 `SubscriptionBillingCycleAnchorConfig(**data: Any)`
 :   The fixed values used to calculate the billing_cycle_anchor
@@ -7709,6 +8097,8 @@ Classes
     `second: int | Any | None`
     :   The second of the minute of the billing_cycle_anchor
 
+<a id="SubscriptionBillingMode"></a>
+
 `SubscriptionBillingMode(**data: Any)`
 :   Controls how prorations and invoices for subscriptions are calculated and orchestrated
     
@@ -7737,6 +8127,8 @@ Classes
     `updated_at: int | Any | None`
     :   Details on when the current billing_mode was adopted
 
+<a id="SubscriptionBillingModeFlexible"></a>
+
 `SubscriptionBillingModeFlexible(**data: Any)`
 :   Configure behavior for flexible billing mode
     
@@ -7758,6 +8150,8 @@ Classes
 
     `proration_discounts: str | Any`
     :   Controls how invoices and invoice items display proration amounts and discount amounts
+
+<a id="SubscriptionBillingThresholds"></a>
 
 `SubscriptionBillingThresholds(**data: Any)`
 :   Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period
@@ -7783,6 +8177,8 @@ Classes
 
     `reset_billing_cycle_anchor: bool | Any | None`
     :   Indicates if the billing_cycle_anchor should be reset when a threshold is reached
+
+<a id="SubscriptionCancellationDetails"></a>
 
 `SubscriptionCancellationDetails(**data: Any)`
 :   Details about why this subscription was cancelled
@@ -7811,6 +8207,8 @@ Classes
 
     `reason: str | Any | None`
     :   Why this subscription was canceled
+
+<a id="SubscriptionDefaultTaxRatesItem"></a>
 
 `SubscriptionDefaultTaxRatesItem(**data: Any)`
 :   Nested schema for Subscription.default_tax_rates_item
@@ -7885,6 +8283,8 @@ Classes
     `tax_type: str | Any | None`
     :   The high-level tax type
 
+<a id="SubscriptionDefaultTaxRatesItemFlatAmount"></a>
+
 `SubscriptionDefaultTaxRatesItemFlatAmount(**data: Any)`
 :   The amount of the tax rate when the rate_type is flat_amount
     
@@ -7909,6 +8309,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionInvoiceSettings"></a>
 
 `SubscriptionInvoiceSettings(**data: Any)`
 :   All invoices will be billed using the specified settings
@@ -7935,6 +8337,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionInvoiceSettingsIssuer"></a>
+
 `SubscriptionInvoiceSettingsIssuer(**data: Any)`
 :   The connected account that issues the invoice
     
@@ -7959,6 +8363,8 @@ Classes
 
     `type_: str | Any`
     :   Type of the account referenced
+
+<a id="SubscriptionItems"></a>
 
 `SubscriptionItems(**data: Any)`
 :   List of subscription items, each with an attached price
@@ -7993,6 +8399,8 @@ Classes
 
     `url: str | Any`
     :   The URL where this list can be accessed
+
+<a id="SubscriptionItemsDataItem"></a>
 
 `SubscriptionItemsDataItem(**data: Any)`
 :   Nested schema for SubscriptionItems.data_item
@@ -8052,6 +8460,8 @@ Classes
     `tax_rates: list[dict[str, typing.Any]] | Any | None`
     :   The tax rates which apply to this subscription_item
 
+<a id="SubscriptionItemsDataItemBillingThresholds"></a>
+
 `SubscriptionItemsDataItemBillingThresholds(**data: Any)`
 :   Define thresholds at which an invoice will be sent
     
@@ -8073,6 +8483,8 @@ Classes
 
     `usage_gte: int | Any | None`
     :   Usage threshold that triggers the subscription to create an invoice
+
+<a id="SubscriptionList"></a>
 
 `SubscriptionList(**data: Any)`
 :   SubscriptionList type definition
@@ -8105,6 +8517,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="SubscriptionPauseCollection"></a>
+
 `SubscriptionPauseCollection(**data: Any)`
 :   If specified, payment collection for this subscription will be paused
     
@@ -8130,6 +8544,8 @@ Classes
     `resumes_at: int | Any | None`
     :   The time after which the subscription will resume collecting payments
 
+<a id="SubscriptionPaymentSettings"></a>
+
 `SubscriptionPaymentSettings(**data: Any)`
 :   Payment settings passed on to invoices created by the subscription
     
@@ -8154,6 +8570,8 @@ Classes
 
     `payment_method_types: list[str] | Any | None`
     :   The list of payment method types to provide to every invoice
+
+<a id="SubscriptionSearchResult"></a>
 
 `SubscriptionSearchResult(**data: Any)`
 :   SubscriptionSearchResult type definition
@@ -8189,6 +8607,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="SubscriptionTrialSettings"></a>
+
 `SubscriptionTrialSettings(**data: Any)`
 :   Settings related to subscription trials
     
@@ -8210,6 +8630,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionTrialSettingsEndBehavior"></a>
 
 `SubscriptionTrialSettingsEndBehavior(**data: Any)`
 :   Nested schema for SubscriptionTrialSettings.end_behavior
@@ -8233,6 +8655,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionsListResultMeta"></a>
+
 `SubscriptionsListResultMeta(**data: Any)`
 :   Metadata for subscriptions.Action.LIST operation
     
@@ -8254,6 +8678,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionsSearchData"></a>
 
 `SubscriptionsSearchData(**data: Any)`
 :   Search result data for subscriptions entity.

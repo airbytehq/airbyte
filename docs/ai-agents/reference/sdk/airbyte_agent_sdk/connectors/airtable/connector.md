@@ -10,6 +10,8 @@ Airtable connector.
 Classes
 -------
 
+<a id="AirtableConnector"></a>
+
 `AirtableConnector(auth_config: AirtableAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Airtable API connector.
     
@@ -198,6 +200,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="BasesQuery"></a>
+
 `BasesQuery(connector: AirtableConnector)`
 :   Query class for Bases entity operations.
     
@@ -240,6 +244,8 @@ Classes
         Returns:
             BasesListResult
 
+<a id="RecordsQuery"></a>
+
 `RecordsQuery(connector: AirtableConnector)`
 :   Query class for Records entity operations.
     
@@ -274,6 +280,8 @@ Classes
         
         Returns:
             RecordsListResult
+
+<a id="TablesQuery"></a>
 
 `TablesQuery(connector: AirtableConnector)`
 :   Query class for Tables entity operations.

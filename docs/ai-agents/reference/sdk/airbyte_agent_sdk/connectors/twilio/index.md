@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountsSearchData"></a>
+
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
     
@@ -61,6 +63,8 @@ Classes
 
     `uri: str | None`
     :   The URI for accessing the account resource
+
+<a id="AddressesSearchData"></a>
 
 `AddressesSearchData(**data: Any)`
 :   Search result data for addresses entity.
@@ -113,6 +117,8 @@ Classes
 
     `verified: bool | None`
     :   Whether the address has been verified
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -182,6 +188,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -209,6 +217,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -250,6 +260,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -265,6 +277,8 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AddressesSearchResult"></a>
 
 `AddressesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -282,6 +296,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CallsSearchResult"></a>
+
 `CallsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -297,6 +313,8 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ConferencesSearchResult"></a>
 
 `ConferencesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -314,6 +332,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="IncomingPhoneNumbersSearchResult"></a>
+
 `IncomingPhoneNumbersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -329,6 +349,8 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MessagesSearchResult"></a>
 
 `MessagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -346,6 +368,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OutgoingCallerIdsSearchResult"></a>
+
 `OutgoingCallerIdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -361,6 +385,8 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="QueuesSearchResult"></a>
 
 `QueuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -378,6 +404,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="RecordingsSearchResult"></a>
+
 `RecordingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -393,6 +421,8 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TranscriptionsSearchResult"></a>
 
 `TranscriptionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -410,6 +440,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsageRecordsSearchResult"></a>
+
 `UsageRecordsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -425,6 +457,8 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchData"></a>
 
 `CallsSearchData(**data: Any)`
 :   Search result data for calls entity.
@@ -484,6 +518,8 @@ Classes
     `to: str | None`
     :   The phone number that received the call
 
+<a id="ConferencesSearchData"></a>
+
 `ConferencesSearchData(**data: Any)`
 :   Search result data for conferences entity.
     
@@ -523,6 +559,8 @@ Classes
 
     `status: str | None`
     :   The current status of the conference
+
+<a id="IncomingPhoneNumbersSearchData"></a>
 
 `IncomingPhoneNumbersSearchData(**data: Any)`
 :   Search result data for incoming_phone_numbers entity.
@@ -566,6 +604,8 @@ Classes
 
     `status: str | None`
     :   Status of the phone number
+
+<a id="MessagesSearchData"></a>
 
 `MessagesSearchData(**data: Any)`
 :   Search result data for messages entity.
@@ -631,6 +671,8 @@ Classes
     `to: str | None`
     :   The phone number or recipient ID the message was sent to
 
+<a id="OutgoingCallerIdsSearchData"></a>
+
 `OutgoingCallerIdsSearchData(**data: Any)`
 :   Search result data for outgoing_caller_ids entity.
     
@@ -667,6 +709,8 @@ Classes
 
     `sid: str | None`
     :   The unique identifier
+
+<a id="QueuesSearchData"></a>
 
 `QueuesSearchData(**data: Any)`
 :   Search result data for queues entity.
@@ -710,6 +754,8 @@ Classes
 
     `sid: str | None`
     :   The unique identifier for the queue
+
+<a id="RecordingsSearchData"></a>
 
 `RecordingsSearchData(**data: Any)`
 :   Search result data for recordings entity.
@@ -760,6 +806,8 @@ Classes
     `status: str | None`
     :   The status of the recording
 
+<a id="TranscriptionsSearchData"></a>
+
 `TranscriptionsSearchData(**data: Any)`
 :   Search result data for transcriptions entity.
     
@@ -806,6 +854,8 @@ Classes
     `status: str | None`
     :   The status of the transcription
 
+<a id="TwilioAuthConfig"></a>
+
 `TwilioAuthConfig(**data: Any)`
 :   Twilio Authentication
     
@@ -830,6 +880,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TwilioConnector"></a>
 
 `TwilioConnector(auth_config: TwilioAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Twilio API connector.
@@ -1031,6 +1083,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="TwilioReplicationConfig"></a>
+
 `TwilioReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Twilio.
     
@@ -1052,6 +1106,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data before this date will not be replicated.
+
+<a id="UsageRecordsSearchData"></a>
 
 `UsageRecordsSearchData(**data: Any)`
 :   Search result data for usage_records entity.

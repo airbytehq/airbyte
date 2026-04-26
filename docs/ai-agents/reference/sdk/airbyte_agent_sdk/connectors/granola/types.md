@@ -10,6 +10,8 @@ Type definitions for granola connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="NotesAndCondition"></a>
+
 `NotesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesLikeCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="NotesAnyCondition"></a>
+
 `NotesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.granola.types.NotesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="NotesAnyValueFilter"></a>
 
 `NotesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -116,6 +124,8 @@ Classes
     `updated_at: Any`
     :   The last update time of the note in ISO 8601 format.
 
+<a id="NotesContainsCondition"></a>
+
 `NotesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -127,6 +137,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.granola.types.NotesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="NotesEqCondition"></a>
 
 `NotesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -140,6 +152,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.granola.types.NotesSearchFilter`
     :   The type of the None singleton.
 
+<a id="NotesFuzzyCondition"></a>
+
 `NotesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -151,6 +165,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.granola.types.NotesStringFilter`
     :   The type of the None singleton.
+
+<a id="NotesGetParams"></a>
 
 `NotesGetParams(*args, **kwargs)`
 :   Parameters for notes.get operation
@@ -167,6 +183,8 @@ Classes
     `note_id: str`
     :   The type of the None singleton.
 
+<a id="NotesGtCondition"></a>
+
 `NotesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -179,6 +197,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.granola.types.NotesSearchFilter`
     :   The type of the None singleton.
 
+<a id="NotesGteCondition"></a>
+
 `NotesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -190,6 +210,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.granola.types.NotesSearchFilter`
     :   The type of the None singleton.
+
+<a id="NotesInCondition"></a>
 
 `NotesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -210,6 +232,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.granola.types.NotesInFilter`
     :   The type of the None singleton.
+
+<a id="NotesInFilter"></a>
 
 `NotesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -256,6 +280,8 @@ Classes
     `updated_at: list[str]`
     :   The last update time of the note in ISO 8601 format.
 
+<a id="NotesKeywordCondition"></a>
+
 `NotesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -268,6 +294,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.granola.types.NotesStringFilter`
     :   The type of the None singleton.
 
+<a id="NotesLikeCondition"></a>
+
 `NotesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -279,6 +307,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.granola.types.NotesStringFilter`
     :   The type of the None singleton.
+
+<a id="NotesListParams"></a>
 
 `NotesListParams(*args, **kwargs)`
 :   Parameters for notes.list operation
@@ -301,6 +331,8 @@ Classes
     `page_size: int`
     :   The type of the None singleton.
 
+<a id="NotesLtCondition"></a>
+
 `NotesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -312,6 +344,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.granola.types.NotesSearchFilter`
     :   The type of the None singleton.
+
+<a id="NotesLteCondition"></a>
 
 `NotesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -325,6 +359,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.granola.types.NotesSearchFilter`
     :   The type of the None singleton.
 
+<a id="NotesNeqCondition"></a>
+
 `NotesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -336,6 +372,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.granola.types.NotesSearchFilter`
     :   The type of the None singleton.
+
+<a id="NotesNotCondition"></a>
 
 `NotesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -357,6 +395,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesLikeCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition`
     :   The type of the None singleton.
 
+<a id="NotesOrCondition"></a>
+
 `NotesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -376,6 +416,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesLikeCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="NotesSearchFilter"></a>
 
 `NotesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering notes search queries.
@@ -422,6 +464,8 @@ Classes
     `updated_at: str | None`
     :   The last update time of the note in ISO 8601 format.
 
+<a id="NotesSearchQuery"></a>
+
 `NotesSearchQuery(*args, **kwargs)`
 :   Search query for notes entity.
 
@@ -436,6 +480,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.granola.types.NotesSortFilter]`
     :   The type of the None singleton.
+
+<a id="NotesSortFilter"></a>
 
 `NotesSortFilter(*args, **kwargs)`
 :   Available fields for sorting notes search results.
@@ -481,6 +527,8 @@ Classes
 
     `updated_at: Literal['asc', 'desc']`
     :   The last update time of the note in ISO 8601 format.
+
+<a id="NotesStringFilter"></a>
 
 `NotesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

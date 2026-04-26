@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -101,6 +105,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesSearchResult"></a>
+
 `BranchesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -137,6 +143,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsSearchResult"></a>
 
 `CommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -175,6 +183,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssuesSearchResult"></a>
+
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +221,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrganizationsSearchResult"></a>
 
 `OrganizationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -249,6 +261,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PullRequestsSearchResult"></a>
+
 `PullRequestsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -285,6 +299,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RepositoriesSearchResult"></a>
 
 `RepositoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -323,6 +339,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StargazersSearchResult"></a>
+
 `StargazersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -359,6 +377,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -397,6 +417,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsSearchResult"></a>
+
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -434,6 +456,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -449,6 +473,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BranchesListResultMeta"></a>
 
 `BranchesListResultMeta(**data: Any)`
 :   Metadata for branches.Action.LIST operation
@@ -475,6 +501,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesSearchData"></a>
+
 `BranchesSearchData(**data: Any)`
 :   Search result data for branches entity.
     
@@ -493,6 +521,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentCreateParams"></a>
 
 `CommentCreateParams(**data: Any)`
 :   CommentCreateParams type definition
@@ -515,6 +545,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentResponse"></a>
 
 `CommentResponse(**data: Any)`
 :   CommentResponse type definition
@@ -571,6 +603,8 @@ Classes
     `user: airbyte_agent_sdk.connectors.github.models.CommentResponseUser | Any | None`
     :   The type of the None singleton.
 
+<a id="CommentResponseReactions"></a>
+
 `CommentResponseReactions(**data: Any)`
 :   Reaction counts
     
@@ -617,6 +651,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="CommentResponseUser"></a>
+
 `CommentResponseUser(**data: Any)`
 :   The user who created the comment
     
@@ -660,6 +696,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="CommentsListResultMeta"></a>
+
 `CommentsListResultMeta(**data: Any)`
 :   Metadata for comments.Action.LIST operation
     
@@ -685,6 +723,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsSearchData"></a>
+
 `CommentsSearchData(**data: Any)`
 :   Search result data for comments entity.
     
@@ -703,6 +743,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommitsListResultMeta"></a>
 
 `CommitsListResultMeta(**data: Any)`
 :   Metadata for commits.Action.LIST operation
@@ -728,6 +770,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DiscussionsApiSearchResultMeta"></a>
 
 `DiscussionsApiSearchResultMeta(**data: Any)`
 :   Metadata for discussions.Action.API_SEARCH operation
@@ -757,6 +801,8 @@ Classes
     `total_count: int | Any`
     :   The type of the None singleton.
 
+<a id="DiscussionsListResultMeta"></a>
+
 `DiscussionsListResultMeta(**data: Any)`
 :   Metadata for discussions.Action.LIST operation
     
@@ -781,6 +827,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GithubCheckResult"></a>
 
 `GithubCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -815,6 +863,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GithubExecuteResult"></a>
+
 `GithubExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -844,6 +894,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GithubExecuteResultWithMeta"></a>
 
 `GithubExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -921,6 +973,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BranchesListResult"></a>
+
 `BranchesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -963,6 +1017,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsListResult"></a>
 
 `CommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1007,6 +1063,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommitsListResult"></a>
+
 `CommitsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1049,6 +1107,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DiscussionsApiSearchResult"></a>
 
 `DiscussionsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1093,6 +1153,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DiscussionsListResult"></a>
+
 `DiscussionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1135,6 +1197,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesApiSearchResult"></a>
 
 `IssuesApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1179,6 +1243,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssuesListResult"></a>
+
 `IssuesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1221,6 +1287,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LabelsListResult"></a>
 
 `LabelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1265,6 +1333,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MilestonesListResult"></a>
+
 `MilestonesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1307,6 +1377,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrgRepositoriesListResult"></a>
 
 `OrgRepositoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1351,6 +1423,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrganizationsListResult"></a>
+
 `OrganizationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1393,6 +1467,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PrCommentsListResult"></a>
 
 `PrCommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1437,6 +1513,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectItemsListResult"></a>
+
 `ProjectItemsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1479,6 +1557,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectsListResult"></a>
 
 `ProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1523,6 +1603,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PullRequestsApiSearchResult"></a>
+
 `PullRequestsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1565,6 +1647,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PullRequestsListResult"></a>
 
 `PullRequestsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1609,6 +1693,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ReleasesListResult"></a>
+
 `ReleasesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1651,6 +1737,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RepositoriesApiSearchResult"></a>
 
 `RepositoriesApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1695,6 +1783,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RepositoriesListResult"></a>
+
 `RepositoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1737,6 +1827,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReviewsListResult"></a>
 
 `ReviewsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1781,6 +1873,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StargazersListResult"></a>
+
 `StargazersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1823,6 +1917,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsListResult"></a>
 
 `TagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1867,6 +1963,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResult"></a>
+
 `TeamsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1909,6 +2007,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersApiSearchResult"></a>
 
 `UsersApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1953,6 +2053,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1996,6 +2098,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ViewerRepositoriesListResult"></a>
+
 `ViewerRepositoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2038,6 +2142,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DirectoryContentListResult"></a>
+
 `DirectoryContentListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2055,6 +2161,8 @@ Classes
     * airbyte_agent_sdk.connectors.github.models.GithubExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GithubOauth2AuthConfig"></a>
 
 `GithubOauth2AuthConfig(**data: Any)`
 :   OAuth 2
@@ -2078,6 +2186,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GithubPersonalAccessTokenAuthConfig"></a>
+
 `GithubPersonalAccessTokenAuthConfig(**data: Any)`
 :   Personal Access Token
     
@@ -2100,6 +2210,8 @@ Classes
     `token: str`
     :   GitHub personal access token (fine-grained or classic)
 
+<a id="GithubReplicationConfig"></a>
+
 `GithubReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from GitHub.
     
@@ -2121,6 +2233,8 @@ Classes
 
     `repositories: str`
     :   List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for all repositories from organization
+
+<a id="IssueCreateParams"></a>
 
 `IssueCreateParams(**data: Any)`
 :   IssueCreateParams type definition
@@ -2155,6 +2269,8 @@ Classes
 
     `title: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueResponse"></a>
 
 `IssueResponse(**data: Any)`
 :   IssueResponse type definition
@@ -2277,6 +2393,8 @@ Classes
     `user: airbyte_agent_sdk.connectors.github.models.IssueResponseUser | Any | None`
     :   The type of the None singleton.
 
+<a id="IssueResponseAssignee"></a>
+
 `IssueResponseAssignee(**data: Any)`
 :   Primary user assigned to this issue
     
@@ -2319,6 +2437,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueResponseAssigneesItem"></a>
 
 `IssueResponseAssigneesItem(**data: Any)`
 :   Nested schema for IssueResponse.assignees_item
@@ -2363,6 +2483,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueResponseIssueDependenciesSummary"></a>
+
 `IssueResponseIssueDependenciesSummary(**data: Any)`
 :   Summary of issue dependencies
     
@@ -2393,6 +2515,8 @@ Classes
 
     `total_blocking: int | Any`
     :   The type of the None singleton.
+
+<a id="IssueResponseLabelsItem"></a>
 
 `IssueResponseLabelsItem(**data: Any)`
 :   Nested schema for IssueResponse.labels_item
@@ -2433,6 +2557,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueResponseReactions"></a>
 
 `IssueResponseReactions(**data: Any)`
 :   Reaction counts
@@ -2480,6 +2606,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueResponseSubIssuesSummary"></a>
+
 `IssueResponseSubIssuesSummary(**data: Any)`
 :   Summary of sub-issues
     
@@ -2507,6 +2635,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="IssueResponseUser"></a>
 
 `IssueResponseUser(**data: Any)`
 :   The user who created the issue
@@ -2551,6 +2681,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueUpdateParams"></a>
+
 `IssueUpdateParams(**data: Any)`
 :   IssueUpdateParams type definition
     
@@ -2591,6 +2723,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="IssuesApiSearchResultMeta"></a>
+
 `IssuesApiSearchResultMeta(**data: Any)`
 :   Metadata for issues.Action.API_SEARCH operation
     
@@ -2619,6 +2753,8 @@ Classes
     `total_count: int | Any`
     :   The type of the None singleton.
 
+<a id="IssuesListResultMeta"></a>
+
 `IssuesListResultMeta(**data: Any)`
 :   Metadata for issues.Action.LIST operation
     
@@ -2644,6 +2780,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssuesSearchData"></a>
+
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
     
@@ -2662,6 +2800,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LabelsListResultMeta"></a>
 
 `LabelsListResultMeta(**data: Any)`
 :   Metadata for labels.Action.LIST operation
@@ -2688,6 +2828,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MilestonesListResultMeta"></a>
+
 `MilestonesListResultMeta(**data: Any)`
 :   Metadata for milestones.Action.LIST operation
     
@@ -2712,6 +2854,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrgRepositoriesListResultMeta"></a>
 
 `OrgRepositoriesListResultMeta(**data: Any)`
 :   Metadata for org_repositories.Action.LIST operation
@@ -2738,6 +2882,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrganizationsListResultMeta"></a>
+
 `OrganizationsListResultMeta(**data: Any)`
 :   Metadata for organizations.Action.LIST operation
     
@@ -2763,6 +2909,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrganizationsSearchData"></a>
+
 `OrganizationsSearchData(**data: Any)`
 :   Search result data for organizations entity.
     
@@ -2781,6 +2929,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PrCommentsListResultMeta"></a>
 
 `PrCommentsListResultMeta(**data: Any)`
 :   Metadata for pr_comments.Action.LIST operation
@@ -2807,6 +2957,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectItemsListResultMeta"></a>
+
 `ProjectItemsListResultMeta(**data: Any)`
 :   Metadata for project_items.Action.LIST operation
     
@@ -2832,6 +2984,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResultMeta"></a>
+
 `ProjectsListResultMeta(**data: Any)`
 :   Metadata for projects.Action.LIST operation
     
@@ -2856,6 +3010,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PullRequestCreateParams"></a>
 
 `PullRequestCreateParams(**data: Any)`
 :   PullRequestCreateParams type definition
@@ -2893,6 +3049,8 @@ Classes
 
     `title: str | Any`
     :   The type of the None singleton.
+
+<a id="PullRequestResponse"></a>
 
 `PullRequestResponse(**data: Any)`
 :   PullRequestResponse type definition
@@ -3006,6 +3164,8 @@ Classes
     `user: airbyte_agent_sdk.connectors.github.models.PullRequestResponseUser | Any | None`
     :   The type of the None singleton.
 
+<a id="PullRequestResponseAssigneesItem"></a>
+
 `PullRequestResponseAssigneesItem(**data: Any)`
 :   Nested schema for PullRequestResponse.assignees_item
     
@@ -3049,6 +3209,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="PullRequestResponseBase"></a>
+
 `PullRequestResponseBase(**data: Any)`
 :   The base branch
     
@@ -3077,6 +3239,8 @@ Classes
     `sha: str | Any`
     :   The type of the None singleton.
 
+<a id="PullRequestResponseHead"></a>
+
 `PullRequestResponseHead(**data: Any)`
 :   The head branch
     
@@ -3104,6 +3268,8 @@ Classes
 
     `sha: str | Any`
     :   The type of the None singleton.
+
+<a id="PullRequestResponseLabelsItem"></a>
 
 `PullRequestResponseLabelsItem(**data: Any)`
 :   Nested schema for PullRequestResponse.labels_item
@@ -3144,6 +3310,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="PullRequestResponseUser"></a>
 
 `PullRequestResponseUser(**data: Any)`
 :   The user who created the pull request
@@ -3188,6 +3356,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="PullRequestsApiSearchResultMeta"></a>
+
 `PullRequestsApiSearchResultMeta(**data: Any)`
 :   Metadata for pull_requests.Action.API_SEARCH operation
     
@@ -3216,6 +3386,8 @@ Classes
     `total_count: int | Any`
     :   The type of the None singleton.
 
+<a id="PullRequestsListResultMeta"></a>
+
 `PullRequestsListResultMeta(**data: Any)`
 :   Metadata for pull_requests.Action.LIST operation
     
@@ -3241,6 +3413,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PullRequestsSearchData"></a>
+
 `PullRequestsSearchData(**data: Any)`
 :   Search result data for pull_requests entity.
     
@@ -3259,6 +3433,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReleasesListResultMeta"></a>
 
 `ReleasesListResultMeta(**data: Any)`
 :   Metadata for releases.Action.LIST operation
@@ -3284,6 +3460,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RepositoriesApiSearchResultMeta"></a>
 
 `RepositoriesApiSearchResultMeta(**data: Any)`
 :   Metadata for repositories.Action.API_SEARCH operation
@@ -3313,6 +3491,8 @@ Classes
     `total_count: int | Any`
     :   The type of the None singleton.
 
+<a id="RepositoriesListResultMeta"></a>
+
 `RepositoriesListResultMeta(**data: Any)`
 :   Metadata for repositories.Action.LIST operation
     
@@ -3338,6 +3518,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RepositoriesSearchData"></a>
+
 `RepositoriesSearchData(**data: Any)`
 :   Search result data for repositories entity.
     
@@ -3356,6 +3538,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReviewsListResultMeta"></a>
 
 `ReviewsListResultMeta(**data: Any)`
 :   Metadata for reviews.Action.LIST operation
@@ -3382,6 +3566,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StargazersListResultMeta"></a>
+
 `StargazersListResultMeta(**data: Any)`
 :   Metadata for stargazers.Action.LIST operation
     
@@ -3407,6 +3593,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="StargazersSearchData"></a>
+
 `StargazersSearchData(**data: Any)`
 :   Search result data for stargazers entity.
     
@@ -3425,6 +3613,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsListResultMeta"></a>
 
 `TagsListResultMeta(**data: Any)`
 :   Metadata for tags.Action.LIST operation
@@ -3451,6 +3641,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TagsSearchData"></a>
+
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
     
@@ -3469,6 +3661,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamsListResultMeta"></a>
 
 `TeamsListResultMeta(**data: Any)`
 :   Metadata for teams.Action.LIST operation
@@ -3495,6 +3689,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsSearchData"></a>
+
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
     
@@ -3513,6 +3709,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersApiSearchResultMeta"></a>
 
 `UsersApiSearchResultMeta(**data: Any)`
 :   Metadata for users.Action.API_SEARCH operation
@@ -3542,6 +3740,8 @@ Classes
     `total_count: int | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -3567,6 +3767,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchData"></a>
+
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
     
@@ -3585,6 +3787,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ViewerRepositoriesListResultMeta"></a>
 
 `ViewerRepositoriesListResultMeta(**data: Any)`
 :   Metadata for viewer_repositories.Action.LIST operation

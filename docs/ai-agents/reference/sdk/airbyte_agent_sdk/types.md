@@ -10,6 +10,8 @@ Type definitions for Airbyte SDK.
 Classes
 -------
 
+<a id="Action"></a>
+
 `Action(*args, **kwds)`
 :   Supported actions for Entity operations.
     
@@ -51,6 +53,8 @@ Classes
 
     `UPDATE`
     :   The type of the None singleton.
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -120,6 +124,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AuthConfig"></a>
+
 `AuthConfig(**data: Any)`
 :   Authentication configuration supporting single or multiple auth methods.
     
@@ -183,6 +189,8 @@ Classes
         Returns:
             True if multiple auth options are available, False for single-auth
 
+<a id="AuthOption"></a>
+
 `AuthOption(**data: Any)`
 :   A single authentication option in a multi-auth connector.
     
@@ -226,6 +234,8 @@ Classes
     `user_config_spec: airbyte_agent_sdk.schema.security.AuthConfigSpec | None`
     :   The type of the None singleton.
 
+<a id="AuthType"></a>
+
 `AuthType(*args, **kwds)`
 :   Supported authentication types.
 
@@ -250,6 +260,8 @@ Classes
 
     `OAUTH2`
     :   The type of the None singleton.
+
+<a id="ConnectorModel"></a>
 
 `ConnectorModel(**data: Any)`
 :   Complete connector model loaded from YAML definition.
@@ -309,6 +321,8 @@ Classes
     `version: str`
     :   The type of the None singleton.
 
+<a id="ContentType"></a>
+
 `ContentType(*args, **kwds)`
 :   Supported content types for request bodies.
 
@@ -330,6 +344,8 @@ Classes
 
     `MULTIPART_RELATED`
     :   The type of the None singleton.
+
+<a id="EndpointDefinition"></a>
 
 `EndpointDefinition(**data: Any)`
 :   Definition of an API endpoint.
@@ -431,6 +447,8 @@ Classes
     `upload_file_param: str | None`
     :   The type of the None singleton.
 
+<a id="EntityDefinition"></a>
+
 `EntityDefinition(**data: Any)`
 :   Definition of an API entity.
     
@@ -470,6 +488,8 @@ Classes
 
     `stream_name: str | None`
     :   The type of the None singleton.
+
+<a id="ParameterLocation"></a>
 
 `ParameterLocation(*args, **kwds)`
 :   Location of operation parameters.

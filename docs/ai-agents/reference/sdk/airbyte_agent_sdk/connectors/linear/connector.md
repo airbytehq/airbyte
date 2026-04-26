@@ -10,6 +10,8 @@ Linear connector.
 Classes
 -------
 
+<a id="CommentsQuery"></a>
+
 `CommentsQuery(connector: LinearConnector)`
 :   Query class for Comments entity operations.
     
@@ -97,6 +99,8 @@ Classes
         
         Returns:
             CommentMutationPayload
+
+<a id="IssuesQuery"></a>
 
 `IssuesQuery(connector: LinearConnector)`
 :   Query class for Issues entity operations.
@@ -234,6 +238,8 @@ Classes
         
                 Returns:
                     IssueMutationPayload
+
+<a id="LinearConnector"></a>
 
 `LinearConnector(auth_config: LinearAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Linear API connector.
@@ -423,6 +429,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ProjectsQuery"></a>
+
 `ProjectsQuery(connector: LinearConnector)`
 :   Query class for Projects entity operations.
     
@@ -547,6 +555,8 @@ Classes
                 Returns:
                     ProjectMutationPayload
 
+<a id="TeamsQuery"></a>
+
 `TeamsQuery(connector: LinearConnector)`
 :   Query class for Teams entity operations.
     
@@ -637,6 +647,8 @@ Classes
         Returns:
             TeamsListResult
 
+<a id="UsersQuery"></a>
+
 `UsersQuery(connector: LinearConnector)`
 :   Query class for Users entity operations.
     
@@ -706,6 +718,8 @@ Classes
         
         Returns:
             UsersListResult
+
+<a id="WorkflowStatesQuery"></a>
 
 `WorkflowStatesQuery(connector: LinearConnector)`
 :   Query class for WorkflowStates entity operations.

@@ -10,6 +10,8 @@ Authentication strategy pattern implementation for HTTP client.
 Functions
 ---------
 
+<a id="extract_secret_value"></a>
+
 `extract_secret_value(value: SecretStr | str | None) ‑> str`
 :   Extract the actual value from SecretStr or return plain string.
     
@@ -38,6 +40,8 @@ Functions
 Classes
 -------
 
+<a id="APIKeyAuthConfig"></a>
+
 `APIKeyAuthConfig(*args, **kwargs)`
 :   Configuration for API key authentication.
     
@@ -57,6 +61,8 @@ Classes
     `prefix: str`
     :   The type of the None singleton.
 
+<a id="APIKeyAuthSecrets"></a>
+
 `APIKeyAuthSecrets(*args, **kwargs)`
 :   Required secrets for API key authentication.
     
@@ -71,6 +77,8 @@ Classes
 
     `api_key: pydantic.types.SecretStr | str`
     :   The type of the None singleton.
+
+<a id="APIKeyAuthStrategy"></a>
 
 `APIKeyAuthStrategy()`
 :   Strategy for API key authentication.
@@ -101,6 +109,8 @@ Classes
         
         Args:
             secrets: API key credentials to validate
+
+<a id="AuthStrategy"></a>
 
 `AuthStrategy()`
 :   Abstract base class for authentication strategies.
@@ -189,6 +199,8 @@ Classes
         Raises:
             AuthenticationError: If required credentials are missing
 
+<a id="AuthStrategyFactory"></a>
+
 `AuthStrategyFactory()`
 :   Factory for creating authentication strategies.
 
@@ -213,6 +225,8 @@ Classes
             auth_type: Authentication type to register
             strategy: Strategy instance to use for this auth type
 
+<a id="BasicAuthSecrets"></a>
+
 `BasicAuthSecrets(*args, **kwargs)`
 :   Required secrets for HTTP Basic authentication.
     
@@ -231,6 +245,8 @@ Classes
 
     `username: pydantic.types.SecretStr | str`
     :   The type of the None singleton.
+
+<a id="BasicAuthStrategy"></a>
 
 `BasicAuthStrategy()`
 :   Strategy for HTTP Basic authentication.
@@ -262,6 +278,8 @@ Classes
         Args:
             secrets: Basic auth credentials to validate
 
+<a id="BearerAuthConfig"></a>
+
 `BearerAuthConfig(*args, **kwargs)`
 :   Configuration for Bearer token authentication.
     
@@ -281,6 +299,8 @@ Classes
     `prefix: str`
     :   The type of the None singleton.
 
+<a id="BearerAuthSecrets"></a>
+
 `BearerAuthSecrets(*args, **kwargs)`
 :   Required secrets for Bearer authentication.
     
@@ -295,6 +315,8 @@ Classes
 
     `token: pydantic.types.SecretStr | str`
     :   The type of the None singleton.
+
+<a id="BearerAuthStrategy"></a>
 
 `BearerAuthStrategy()`
 :   Strategy for Bearer token authentication.
@@ -325,6 +347,8 @@ Classes
         
         Args:
             secrets: Bearer token credentials to validate
+
+<a id="OAuth2AuthConfig"></a>
 
 `OAuth2AuthConfig(*args, **kwargs)`
 :   Configuration for OAuth 2.0 authentication.
@@ -420,6 +444,8 @@ Classes
     `subdomain: str`
     :   The type of the None singleton.
 
+<a id="OAuth2AuthSecrets"></a>
+
 `OAuth2AuthSecrets(*args, **kwargs)`
 :   Required secrets for OAuth 2.0 authentication.
     
@@ -446,6 +472,8 @@ Classes
 
     `access_token: pydantic.types.SecretStr | str`
     :   The type of the None singleton.
+
+<a id="OAuth2AuthStrategy"></a>
 
 `OAuth2AuthStrategy()`
 :   Strategy for OAuth 2.0 authentication with token refresh support.
@@ -552,6 +580,8 @@ Classes
         Raises:
             AuthenticationError: If neither access_token nor refresh_token is present
 
+<a id="OAuth2RefreshSecrets"></a>
+
 `OAuth2RefreshSecrets(*args, **kwargs)`
 :   Extended OAuth2 secrets including optional refresh-related fields.
     
@@ -629,6 +659,8 @@ Classes
     `token_type: str`
     :   The type of the None singleton.
 
+<a id="OAuth2TokenRefresher"></a>
+
 `OAuth2TokenRefresher(http_client: httpx.AsyncClient | None = None, config_values: dict[str, str] | None = None)`
 :   Handles OAuth2 token refresh HTTP requests.
     
@@ -676,6 +708,8 @@ Classes
         
         Raises:
             AuthenticationError: If refresh fails or required fields missing
+
+<a id="TokenRefreshResult"></a>
 
 `TokenRefreshResult(tokens: dict[str, str], extracted_values: dict[str, str] | None = None)`
 :   Result of an OAuth2 token refresh operation.

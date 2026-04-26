@@ -10,6 +10,8 @@ Monday connector.
 Classes
 -------
 
+<a id="ActivityLogsQuery"></a>
+
 `ActivityLogsQuery(connector: MondayConnector)`
 :   Query class for ActivityLogs entity operations.
     
@@ -57,6 +59,8 @@ Classes
         
         Returns:
             ActivityLogsListResult
+
+<a id="BoardsQuery"></a>
 
 `BoardsQuery(connector: MondayConnector)`
 :   Query class for Boards entity operations.
@@ -123,6 +127,8 @@ Classes
         Returns:
             BoardsListResult
 
+<a id="ItemsQuery"></a>
+
 `ItemsQuery(connector: MondayConnector)`
 :   Query class for Items entity operations.
     
@@ -185,6 +191,8 @@ Classes
         
         Returns:
             ItemsListResult
+
+<a id="MondayConnector"></a>
 
 `MondayConnector(auth_config: MondayAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Monday API connector.
@@ -428,6 +436,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="TagsQuery"></a>
+
 `TagsQuery(connector: MondayConnector)`
 :   Query class for Tags entity operations.
     
@@ -465,6 +475,8 @@ Classes
         
         Returns:
             TagsListResult
+
+<a id="TeamsQuery"></a>
 
 `TeamsQuery(connector: MondayConnector)`
 :   Query class for Teams entity operations.
@@ -514,6 +526,8 @@ Classes
         
         Returns:
             TeamsListResult
+
+<a id="UpdatesQuery"></a>
 
 `UpdatesQuery(connector: MondayConnector)`
 :   Query class for Updates entity operations.
@@ -573,6 +587,8 @@ Classes
         
         Returns:
             UpdatesListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: MondayConnector)`
 :   Query class for Users entity operations.
@@ -643,6 +659,8 @@ Classes
         
         Returns:
             UsersListResult
+
+<a id="WorkspacesQuery"></a>
 
 `WorkspacesQuery(connector: MondayConnector)`
 :   Query class for Workspaces entity operations.

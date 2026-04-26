@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -149,6 +155,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChargesSearchResult"></a>
+
 `ChargesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -164,6 +172,8 @@ Classes
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CustomersSearchResult"></a>
 
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -181,6 +191,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="InvoicesSearchResult"></a>
+
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="RefundsSearchResult"></a>
 
 `RefundsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -213,6 +227,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SubscriptionsSearchResult"></a>
+
 `SubscriptionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -228,6 +244,8 @@ Classes
     * airbyte_agent_sdk.connectors.stripe.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChargesSearchData"></a>
 
 `ChargesSearchData(**data: Any)`
 :   Search result data for charges entity.
@@ -401,6 +419,8 @@ Classes
     `updated: int | None`
     :   Timestamp of the last update to this charge object.
 
+<a id="CustomersSearchData"></a>
+
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
     
@@ -512,6 +532,8 @@ Classes
 
     `updated: int | None`
     :   Timestamp indicating when the customer object was last updated.
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -802,6 +824,8 @@ Classes
     `webhooks_delivered_at: float | None`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="RefundsSearchData"></a>
+
 `RefundsSearchData(**data: Any)`
 :   Search result data for refunds entity.
     
@@ -869,6 +893,8 @@ Classes
     `updated: int | None`
     :   Timestamp indicating when the refund was last updated.
 
+<a id="StripeAuthConfig"></a>
+
 `StripeAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -890,6 +916,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StripeConnector"></a>
 
 `StripeConnector(auth_config: StripeAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Stripe API connector.
@@ -1091,6 +1119,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="StripeReplicationConfig"></a>
+
 `StripeReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Stripe.
     
@@ -1112,6 +1142,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionsSearchData"></a>
 
 `SubscriptionsSearchData(**data: Any)`
 :   Search result data for subscriptions entity.

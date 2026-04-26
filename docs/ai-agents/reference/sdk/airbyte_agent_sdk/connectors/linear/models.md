@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -97,6 +101,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsSearchResult"></a>
+
 `CommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -133,6 +139,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -171,6 +179,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -207,6 +217,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamsSearchResult"></a>
 
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -245,6 +257,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -282,6 +296,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesSearchResult"></a>
+
 `WorkflowStatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -297,6 +313,8 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Comment"></a>
 
 `Comment(**data: Any)`
 :   Linear comment object
@@ -335,6 +353,8 @@ Classes
     `user: Any`
     :   The type of the None singleton.
 
+<a id="CommentCreateParams"></a>
+
 `CommentCreateParams(**data: Any)`
 :   Parameters for creating a comment
     
@@ -360,6 +380,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentCreateResponse"></a>
+
 `CommentCreateResponse(**data: Any)`
 :   GraphQL response for comment creation
     
@@ -382,6 +404,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentCreateResponseData"></a>
+
 `CommentCreateResponseData(**data: Any)`
 :   Nested schema for CommentCreateResponse.data
     
@@ -403,6 +427,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentMutationPayload"></a>
 
 `CommentMutationPayload(**data: Any)`
 :   Comment mutation result
@@ -429,6 +455,8 @@ Classes
     `success: bool | Any`
     :   The type of the None singleton.
 
+<a id="CommentResponse"></a>
+
 `CommentResponse(**data: Any)`
 :   GraphQL response for single comment
     
@@ -451,6 +479,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentResponseData"></a>
+
 `CommentResponseData(**data: Any)`
 :   Nested schema for CommentResponse.data
     
@@ -472,6 +502,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentUpdateParams"></a>
 
 `CommentUpdateParams(**data: Any)`
 :   Parameters for updating a comment
@@ -498,6 +530,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentUpdateResponse"></a>
+
 `CommentUpdateResponse(**data: Any)`
 :   GraphQL response for comment update
     
@@ -519,6 +553,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentUpdateResponseData"></a>
 
 `CommentUpdateResponseData(**data: Any)`
 :   Nested schema for CommentUpdateResponse.data
@@ -542,6 +578,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsListResponse"></a>
+
 `CommentsListResponse(**data: Any)`
 :   GraphQL response for comments list
     
@@ -563,6 +601,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsListResponseData"></a>
 
 `CommentsListResponseData(**data: Any)`
 :   Nested schema for CommentsListResponse.data
@@ -586,6 +626,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsListResponseDataIssue"></a>
+
 `CommentsListResponseDataIssue(**data: Any)`
 :   Nested schema for CommentsListResponseData.issue
     
@@ -607,6 +649,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsListResponseDataIssueComments"></a>
 
 `CommentsListResponseDataIssueComments(**data: Any)`
 :   Nested schema for CommentsListResponseDataIssue.comments
@@ -633,6 +677,8 @@ Classes
     `page_info: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssueCommentsPageinfo | Any`
     :   Pagination information
 
+<a id="CommentsListResponseDataIssueCommentsPageinfo"></a>
+
 `CommentsListResponseDataIssueCommentsPageinfo(**data: Any)`
 :   Pagination information
     
@@ -658,6 +704,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsListResultMeta"></a>
+
 `CommentsListResultMeta(**data: Any)`
 :   Metadata for comments.Action.LIST operation
     
@@ -682,6 +730,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsSearchData"></a>
 
 `CommentsSearchData(**data: Any)`
 :   Search result data for comments entity.
@@ -747,6 +797,8 @@ Classes
     `user_id: str | None`
     :   The type of the None singleton.
 
+<a id="Issue"></a>
+
 `Issue(**data: Any)`
 :   Linear issue object
     
@@ -796,6 +848,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueCreateParams"></a>
+
 `IssueCreateParams(**data: Any)`
 :   Parameters for creating an issue
     
@@ -833,6 +887,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueCreateResponse"></a>
+
 `IssueCreateResponse(**data: Any)`
 :   GraphQL response for issue creation
     
@@ -855,6 +911,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueCreateResponseData"></a>
+
 `IssueCreateResponseData(**data: Any)`
 :   Nested schema for IssueCreateResponse.data
     
@@ -876,6 +934,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueMutationPayload"></a>
 
 `IssueMutationPayload(**data: Any)`
 :   Issue mutation result
@@ -902,6 +962,8 @@ Classes
     `success: bool | Any`
     :   The type of the None singleton.
 
+<a id="IssueResponse"></a>
+
 `IssueResponse(**data: Any)`
 :   GraphQL response for single issue
     
@@ -924,6 +986,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueResponseData"></a>
+
 `IssueResponseData(**data: Any)`
 :   Nested schema for IssueResponse.data
     
@@ -945,6 +1009,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueUpdateParams"></a>
 
 `IssueUpdateParams(**data: Any)`
 :   Parameters for updating an issue. All fields except id are optional for partial updates.
@@ -989,6 +1055,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueUpdateResponse"></a>
+
 `IssueUpdateResponse(**data: Any)`
 :   GraphQL response for issue update
     
@@ -1011,6 +1079,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueUpdateResponseData"></a>
+
 `IssueUpdateResponseData(**data: Any)`
 :   Nested schema for IssueUpdateResponse.data
     
@@ -1032,6 +1102,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueWithState"></a>
 
 `IssueWithState(**data: Any)`
 :   Issue object with state ID and assignee ID included
@@ -1079,6 +1151,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="IssuesListResponse"></a>
+
 `IssuesListResponse(**data: Any)`
 :   GraphQL response for issues list
     
@@ -1101,6 +1175,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssuesListResponseData"></a>
+
 `IssuesListResponseData(**data: Any)`
 :   Nested schema for IssuesListResponse.data
     
@@ -1122,6 +1198,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesListResponseDataIssues"></a>
 
 `IssuesListResponseDataIssues(**data: Any)`
 :   Nested schema for IssuesListResponseData.issues
@@ -1148,6 +1226,8 @@ Classes
     `page_info: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseDataIssuesPageinfo | Any`
     :   Pagination information
 
+<a id="IssuesListResponseDataIssuesPageinfo"></a>
+
 `IssuesListResponseDataIssuesPageinfo(**data: Any)`
 :   Pagination information
     
@@ -1173,6 +1253,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssuesListResultMeta"></a>
+
 `IssuesListResultMeta(**data: Any)`
 :   Metadata for issues.Action.LIST operation
     
@@ -1197,6 +1279,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -1376,6 +1460,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="LinearAuthConfig"></a>
+
 `LinearAuthConfig(**data: Any)`
 :   Linear API Key Authentication - Authenticate using your Linear API key
     
@@ -1397,6 +1483,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LinearCheckResult"></a>
 
 `LinearCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1431,6 +1519,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="LinearExecuteResult"></a>
+
 `LinearExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1459,6 +1549,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LinearExecuteResultWithMeta"></a>
 
 `LinearExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1516,6 +1608,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsListResult"></a>
+
 `CommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1558,6 +1652,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesListResult"></a>
 
 `IssuesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1602,6 +1698,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResult"></a>
+
 `ProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1644,6 +1742,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamsListResult"></a>
 
 `TeamsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1688,6 +1788,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1731,6 +1833,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesListResult"></a>
+
 `WorkflowStatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1749,6 +1853,8 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.LinearExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   Linear project object
@@ -1796,6 +1902,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectCreateParams"></a>
+
 `ProjectCreateParams(**data: Any)`
 :   Parameters for creating a project
     
@@ -1836,6 +1944,8 @@ Classes
     `team_ids: list[str] | Any`
     :   The type of the None singleton.
 
+<a id="ProjectCreateResponse"></a>
+
 `ProjectCreateResponse(**data: Any)`
 :   GraphQL response for project creation
     
@@ -1858,6 +1968,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectCreateResponseData"></a>
+
 `ProjectCreateResponseData(**data: Any)`
 :   Nested schema for ProjectCreateResponse.data
     
@@ -1879,6 +1991,8 @@ Classes
 
     `project_create: airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload | Any`
     :   The type of the None singleton.
+
+<a id="ProjectMutationPayload"></a>
 
 `ProjectMutationPayload(**data: Any)`
 :   Project mutation result
@@ -1905,6 +2019,8 @@ Classes
     `success: bool | Any`
     :   The type of the None singleton.
 
+<a id="ProjectResponse"></a>
+
 `ProjectResponse(**data: Any)`
 :   GraphQL response for single project
     
@@ -1927,6 +2043,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectResponseData"></a>
+
 `ProjectResponseData(**data: Any)`
 :   Nested schema for ProjectResponse.data
     
@@ -1948,6 +2066,8 @@ Classes
 
     `project: airbyte_agent_sdk.connectors.linear.models.Project | Any`
     :   The type of the None singleton.
+
+<a id="ProjectUpdateParams"></a>
 
 `ProjectUpdateParams(**data: Any)`
 :   Parameters for updating a project. All fields except id are optional for partial updates.
@@ -1990,6 +2110,8 @@ Classes
     `target_date: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectUpdateResponse"></a>
+
 `ProjectUpdateResponse(**data: Any)`
 :   GraphQL response for project update
     
@@ -2011,6 +2133,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectUpdateResponseData"></a>
 
 `ProjectUpdateResponseData(**data: Any)`
 :   Nested schema for ProjectUpdateResponse.data
@@ -2034,6 +2158,8 @@ Classes
     `project_update: airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload | Any`
     :   The type of the None singleton.
 
+<a id="ProjectsListResponse"></a>
+
 `ProjectsListResponse(**data: Any)`
 :   GraphQL response for projects list
     
@@ -2056,6 +2182,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResponseData"></a>
+
 `ProjectsListResponseData(**data: Any)`
 :   Nested schema for ProjectsListResponse.data
     
@@ -2077,6 +2205,8 @@ Classes
 
     `projects: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseDataProjects | Any`
     :   The type of the None singleton.
+
+<a id="ProjectsListResponseDataProjects"></a>
 
 `ProjectsListResponseDataProjects(**data: Any)`
 :   Nested schema for ProjectsListResponseData.projects
@@ -2103,6 +2233,8 @@ Classes
     `page_info: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseDataProjectsPageinfo | Any`
     :   Pagination information
 
+<a id="ProjectsListResponseDataProjectsPageinfo"></a>
+
 `ProjectsListResponseDataProjectsPageinfo(**data: Any)`
 :   Pagination information
     
@@ -2128,6 +2260,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsListResultMeta"></a>
+
 `ProjectsListResultMeta(**data: Any)`
 :   Metadata for projects.Action.LIST operation
     
@@ -2152,6 +2286,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -2292,6 +2428,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="Team"></a>
+
 `Team(**data: Any)`
 :   Linear team object
     
@@ -2332,6 +2470,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="TeamResponse"></a>
+
 `TeamResponse(**data: Any)`
 :   GraphQL response for single team
     
@@ -2353,6 +2493,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamResponseData"></a>
 
 `TeamResponseData(**data: Any)`
 :   Nested schema for TeamResponse.data
@@ -2376,6 +2518,8 @@ Classes
     `team: airbyte_agent_sdk.connectors.linear.models.Team | Any`
     :   The type of the None singleton.
 
+<a id="TeamsListResponse"></a>
+
 `TeamsListResponse(**data: Any)`
 :   GraphQL response for teams list
     
@@ -2398,6 +2542,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResponseData"></a>
+
 `TeamsListResponseData(**data: Any)`
 :   Nested schema for TeamsListResponse.data
     
@@ -2419,6 +2565,8 @@ Classes
 
     `teams: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseDataTeams | Any`
     :   The type of the None singleton.
+
+<a id="TeamsListResponseDataTeams"></a>
 
 `TeamsListResponseDataTeams(**data: Any)`
 :   Nested schema for TeamsListResponseData.teams
@@ -2445,6 +2593,8 @@ Classes
     `page_info: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseDataTeamsPageinfo | Any`
     :   Pagination information
 
+<a id="TeamsListResponseDataTeamsPageinfo"></a>
+
 `TeamsListResponseDataTeamsPageinfo(**data: Any)`
 :   Pagination information
     
@@ -2470,6 +2620,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResultMeta"></a>
+
 `TeamsListResultMeta(**data: Any)`
 :   Metadata for teams.Action.LIST operation
     
@@ -2494,6 +2646,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
@@ -2634,6 +2788,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="User"></a>
+
 `User(**data: Any)`
 :   Linear user object
     
@@ -2677,6 +2833,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="UserResponse"></a>
+
 `UserResponse(**data: Any)`
 :   GraphQL response for single user
     
@@ -2698,6 +2856,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UserResponseData"></a>
 
 `UserResponseData(**data: Any)`
 :   Nested schema for UserResponse.data
@@ -2721,6 +2881,8 @@ Classes
     `user: airbyte_agent_sdk.connectors.linear.models.User | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResponse"></a>
+
 `UsersListResponse(**data: Any)`
 :   GraphQL response for users list
     
@@ -2743,6 +2905,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResponseData"></a>
+
 `UsersListResponseData(**data: Any)`
 :   Nested schema for UsersListResponse.data
     
@@ -2764,6 +2928,8 @@ Classes
 
     `users: airbyte_agent_sdk.connectors.linear.models.UsersListResponseDataUsers | Any`
     :   The type of the None singleton.
+
+<a id="UsersListResponseDataUsers"></a>
 
 `UsersListResponseDataUsers(**data: Any)`
 :   Nested schema for UsersListResponseData.users
@@ -2790,6 +2956,8 @@ Classes
     `page_info: airbyte_agent_sdk.connectors.linear.models.UsersListResponseDataUsersPageinfo | Any`
     :   Pagination information
 
+<a id="UsersListResponseDataUsersPageinfo"></a>
+
 `UsersListResponseDataUsersPageinfo(**data: Any)`
 :   Pagination information
     
@@ -2815,6 +2983,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -2839,6 +3009,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
@@ -2919,6 +3091,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="WorkflowState"></a>
+
 `WorkflowState(**data: Any)`
 :   Linear workflow state object representing a status in a team's workflow
     
@@ -2962,6 +3136,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesListResponse"></a>
+
 `WorkflowStatesListResponse(**data: Any)`
 :   GraphQL response for workflow states list
     
@@ -2984,6 +3160,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesListResponseData"></a>
+
 `WorkflowStatesListResponseData(**data: Any)`
 :   Nested schema for WorkflowStatesListResponse.data
     
@@ -3005,6 +3183,8 @@ Classes
 
     `workflow_states: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseDataWorkflowstates | Any`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesListResponseDataWorkflowstates"></a>
 
 `WorkflowStatesListResponseDataWorkflowstates(**data: Any)`
 :   Nested schema for WorkflowStatesListResponseData.workflowStates
@@ -3031,6 +3211,8 @@ Classes
     `page_info: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseDataWorkflowstatesPageinfo | Any`
     :   Pagination information
 
+<a id="WorkflowStatesListResponseDataWorkflowstatesPageinfo"></a>
+
 `WorkflowStatesListResponseDataWorkflowstatesPageinfo(**data: Any)`
 :   Pagination information
     
@@ -3056,6 +3238,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesListResultMeta"></a>
+
 `WorkflowStatesListResultMeta(**data: Any)`
 :   Metadata for workflow_states.Action.LIST operation
     
@@ -3080,6 +3264,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesSearchData"></a>
 
 `WorkflowStatesSearchData(**data: Any)`
 :   Search result data for workflow_states entity.

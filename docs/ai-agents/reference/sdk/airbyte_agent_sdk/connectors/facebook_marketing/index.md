@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AdAccountSearchData"></a>
+
 `AdAccountSearchData(**data: Any)`
 :   Search result data for ad_account entity.
     
@@ -70,6 +72,8 @@ Classes
 
     `timezone_name: str | None`
     :   Timezone name
+
+<a id="AdAccountsSearchData"></a>
 
 `AdAccountsSearchData(**data: Any)`
 :   Search result data for ad_accounts entity.
@@ -123,6 +127,8 @@ Classes
     `timezone_name: str | None`
     :   Timezone name
 
+<a id="AdCreativesSearchData"></a>
+
 `AdCreativesSearchData(**data: Any)`
 :   Search result data for ad_creatives entity.
     
@@ -171,6 +177,8 @@ Classes
 
     `title: str | None`
     :   Ad title
+
+<a id="AdSetsSearchData"></a>
 
 `AdSetsSearchData(**data: Any)`
 :   Search result data for ad_sets entity.
@@ -232,6 +240,8 @@ Classes
 
     `updated_time: str | None`
     :   Last update time
+
+<a id="AdsInsightsSearchData"></a>
 
 `AdsInsightsSearchData(**data: Any)`
 :   Search result data for ads_insights entity.
@@ -309,6 +319,8 @@ Classes
     `spend: float | None`
     :   Amount spent
 
+<a id="AdsSearchData"></a>
+
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
     
@@ -354,6 +366,8 @@ Classes
 
     `updated_time: str | None`
     :   Last update time
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -423,6 +437,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -450,6 +466,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -490,6 +508,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdAccountSearchResult"></a>
+
 `AdAccountSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -505,6 +525,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdAccountsSearchResult"></a>
 
 `AdAccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -522,6 +544,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdCreativesSearchResult"></a>
+
 `AdCreativesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -537,6 +561,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdSetsSearchResult"></a>
 
 `AdSetsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -554,6 +580,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AdsInsightsSearchResult"></a>
+
 `AdsInsightsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -569,6 +597,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AdsSearchResult"></a>
 
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -586,6 +616,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -601,6 +633,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CustomConversionsSearchResult"></a>
 
 `CustomConversionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -618,6 +652,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ImagesSearchResult"></a>
+
 `ImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -634,6 +670,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="VideosSearchResult"></a>
+
 `VideosSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -649,6 +687,8 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -708,6 +748,8 @@ Classes
     `updated_time: str | None`
     :   Last update time
 
+<a id="CustomConversionsSearchData"></a>
+
 `CustomConversionsSearchData(**data: Any)`
 :   Search result data for custom_conversions entity.
     
@@ -753,6 +795,8 @@ Classes
 
     `name: str | None`
     :   Custom Conversion name
+
+<a id="FacebookMarketingConnector"></a>
 
 `FacebookMarketingConnector(auth_config: FacebookMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Facebook-Marketing API connector.
@@ -1010,6 +1054,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="FacebookMarketingReplicationConfig"></a>
+
 `FacebookMarketingReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Facebook Marketing.
     
@@ -1031,6 +1077,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ImagesSearchData"></a>
 
 `ImagesSearchData(**data: Any)`
 :   Search result data for images entity.
@@ -1083,6 +1131,8 @@ Classes
 
     `width: int | None`
     :   Image width
+
+<a id="VideosSearchData"></a>
 
 `VideosSearchData(**data: Any)`
 :   Search result data for videos entity.

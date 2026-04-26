@@ -10,6 +10,8 @@ Orb connector.
 Classes
 -------
 
+<a id="CustomersQuery"></a>
+
 `CustomersQuery(connector: OrbConnector)`
 :   Query class for Customers entity operations.
     
@@ -69,6 +71,8 @@ Classes
         
         Returns:
             CustomersListResult
+
+<a id="InvoicesQuery"></a>
 
 `InvoicesQuery(connector: OrbConnector)`
 :   Query class for Invoices entity operations.
@@ -142,6 +146,8 @@ Classes
         
         Returns:
             InvoicesListResult
+
+<a id="OrbConnector"></a>
 
 `OrbConnector(auth_config: OrbAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Orb API connector.
@@ -343,6 +349,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="PlansQuery"></a>
+
 `PlansQuery(connector: OrbConnector)`
 :   Query class for Plans entity operations.
     
@@ -398,6 +406,8 @@ Classes
         
         Returns:
             PlansListResult
+
+<a id="SubscriptionsQuery"></a>
 
 `SubscriptionsQuery(connector: OrbConnector)`
 :   Query class for Subscriptions entity operations.

@@ -10,6 +10,8 @@ Hosted executor for proxying operations through the cloud API.
 Classes
 -------
 
+<a id="HostedExecutor"></a>
+
 `HostedExecutor(airbyte_client_id: str, airbyte_client_secret: str, connector_id: str | None = None, workspace_name: str | None = None, connector_definition_id: str | None = None, organization_id: str | None = None, model: Any | None = None)`
 :   Executor that proxies execution through the Airbyte Cloud API.
     

@@ -10,6 +10,8 @@ Type definitions for linear connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CommentsAndCondition"></a>
+
 `CommentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -51,6 +55,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linear.types.CommentsEqCondition | airbyte_agent_sdk.connectors.linear.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.linear.types.CommentsGtCondition | airbyte_agent_sdk.connectors.linear.types.CommentsGteCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLtCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLteCondition | airbyte_agent_sdk.connectors.linear.types.CommentsInCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.linear.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.linear.types.CommentsNotCondition | airbyte_agent_sdk.connectors.linear.types.CommentsAndCondition | airbyte_agent_sdk.connectors.linear.types.CommentsOrCondition | airbyte_agent_sdk.connectors.linear.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CommentsAnyCondition"></a>
+
 `CommentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -70,6 +76,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linear.types.CommentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CommentsAnyValueFilter"></a>
 
 `CommentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -125,6 +133,8 @@ Classes
     `user_id: Any`
     :   The type of the None singleton.
 
+<a id="CommentsContainsCondition"></a>
+
 `CommentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -136,6 +146,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linear.types.CommentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CommentsCreateParams"></a>
 
 `CommentsCreateParams(*args, **kwargs)`
 :   Parameters for comments.create operation
@@ -152,6 +164,8 @@ Classes
     `issue_id: str`
     :   The type of the None singleton.
 
+<a id="CommentsEqCondition"></a>
+
 `CommentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -163,6 +177,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.linear.types.CommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommentsFuzzyCondition"></a>
 
 `CommentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -176,6 +192,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.linear.types.CommentsStringFilter`
     :   The type of the None singleton.
 
+<a id="CommentsGetParams"></a>
+
 `CommentsGetParams(*args, **kwargs)`
 :   Parameters for comments.get operation
 
@@ -187,6 +205,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="CommentsGtCondition"></a>
 
 `CommentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -200,6 +220,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linear.types.CommentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CommentsGteCondition"></a>
+
 `CommentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -211,6 +233,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linear.types.CommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommentsInCondition"></a>
 
 `CommentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -231,6 +255,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linear.types.CommentsInFilter`
     :   The type of the None singleton.
+
+<a id="CommentsInFilter"></a>
 
 `CommentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -286,6 +312,8 @@ Classes
     `user_id: list[str]`
     :   The type of the None singleton.
 
+<a id="CommentsKeywordCondition"></a>
+
 `CommentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -298,6 +326,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linear.types.CommentsStringFilter`
     :   The type of the None singleton.
 
+<a id="CommentsLikeCondition"></a>
+
 `CommentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -309,6 +339,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linear.types.CommentsStringFilter`
     :   The type of the None singleton.
+
+<a id="CommentsListParams"></a>
 
 `CommentsListParams(*args, **kwargs)`
 :   Parameters for comments.list operation
@@ -328,6 +360,8 @@ Classes
     `issue_id: str`
     :   The type of the None singleton.
 
+<a id="CommentsLtCondition"></a>
+
 `CommentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -339,6 +373,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linear.types.CommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommentsLteCondition"></a>
 
 `CommentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -352,6 +388,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linear.types.CommentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CommentsNeqCondition"></a>
+
 `CommentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -363,6 +401,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linear.types.CommentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CommentsNotCondition"></a>
 
 `CommentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -384,6 +424,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linear.types.CommentsEqCondition | airbyte_agent_sdk.connectors.linear.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.linear.types.CommentsGtCondition | airbyte_agent_sdk.connectors.linear.types.CommentsGteCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLtCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLteCondition | airbyte_agent_sdk.connectors.linear.types.CommentsInCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.linear.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.linear.types.CommentsNotCondition | airbyte_agent_sdk.connectors.linear.types.CommentsAndCondition | airbyte_agent_sdk.connectors.linear.types.CommentsOrCondition | airbyte_agent_sdk.connectors.linear.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CommentsOrCondition"></a>
+
 `CommentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -403,6 +445,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linear.types.CommentsEqCondition | airbyte_agent_sdk.connectors.linear.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.linear.types.CommentsGtCondition | airbyte_agent_sdk.connectors.linear.types.CommentsGteCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLtCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLteCondition | airbyte_agent_sdk.connectors.linear.types.CommentsInCondition | airbyte_agent_sdk.connectors.linear.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.linear.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.linear.types.CommentsNotCondition | airbyte_agent_sdk.connectors.linear.types.CommentsAndCondition | airbyte_agent_sdk.connectors.linear.types.CommentsOrCondition | airbyte_agent_sdk.connectors.linear.types.CommentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CommentsSearchFilter"></a>
 
 `CommentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering comments search queries.
@@ -458,6 +502,8 @@ Classes
     `user_id: str | None`
     :   The type of the None singleton.
 
+<a id="CommentsSearchQuery"></a>
+
 `CommentsSearchQuery(*args, **kwargs)`
 :   Search query for comments entity.
 
@@ -472,6 +518,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linear.types.CommentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CommentsSortFilter"></a>
 
 `CommentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting comments search results.
@@ -527,6 +575,8 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="CommentsStringFilter"></a>
+
 `CommentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -581,6 +631,8 @@ Classes
     `user_id: str`
     :   The type of the None singleton.
 
+<a id="CommentsUpdateParams"></a>
+
 `CommentsUpdateParams(*args, **kwargs)`
 :   Parameters for comments.update operation
 
@@ -595,6 +647,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="IssuesAndCondition"></a>
 
 `IssuesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -616,6 +670,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linear.types.IssuesEqCondition | airbyte_agent_sdk.connectors.linear.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.linear.types.IssuesGtCondition | airbyte_agent_sdk.connectors.linear.types.IssuesGteCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLtCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLteCondition | airbyte_agent_sdk.connectors.linear.types.IssuesInCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.linear.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.linear.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.linear.types.IssuesNotCondition | airbyte_agent_sdk.connectors.linear.types.IssuesAndCondition | airbyte_agent_sdk.connectors.linear.types.IssuesOrCondition | airbyte_agent_sdk.connectors.linear.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IssuesAnyCondition"></a>
+
 `IssuesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -635,6 +691,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linear.types.IssuesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssuesAnyValueFilter"></a>
 
 `IssuesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -804,6 +862,8 @@ Classes
     `url: Any`
     :   The type of the None singleton.
 
+<a id="IssuesContainsCondition"></a>
+
 `IssuesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -815,6 +875,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linear.types.IssuesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IssuesCreateParams"></a>
 
 `IssuesCreateParams(*args, **kwargs)`
 :   Parameters for issues.create operation
@@ -843,6 +905,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="IssuesEqCondition"></a>
+
 `IssuesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -854,6 +918,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.linear.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesFuzzyCondition"></a>
 
 `IssuesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -867,6 +933,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.linear.types.IssuesStringFilter`
     :   The type of the None singleton.
 
+<a id="IssuesGetParams"></a>
+
 `IssuesGetParams(*args, **kwargs)`
 :   Parameters for issues.get operation
 
@@ -878,6 +946,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="IssuesGtCondition"></a>
 
 `IssuesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -891,6 +961,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linear.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesGteCondition"></a>
+
 `IssuesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -902,6 +974,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linear.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesInCondition"></a>
 
 `IssuesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -922,6 +996,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linear.types.IssuesInFilter`
     :   The type of the None singleton.
+
+<a id="IssuesInFilter"></a>
 
 `IssuesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1091,6 +1167,8 @@ Classes
     `url: list[str]`
     :   The type of the None singleton.
 
+<a id="IssuesKeywordCondition"></a>
+
 `IssuesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1103,6 +1181,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linear.types.IssuesStringFilter`
     :   The type of the None singleton.
 
+<a id="IssuesLikeCondition"></a>
+
 `IssuesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1114,6 +1194,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linear.types.IssuesStringFilter`
     :   The type of the None singleton.
+
+<a id="IssuesListParams"></a>
 
 `IssuesListParams(*args, **kwargs)`
 :   Parameters for issues.list operation
@@ -1130,6 +1212,8 @@ Classes
     `first: int`
     :   The type of the None singleton.
 
+<a id="IssuesLtCondition"></a>
+
 `IssuesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1141,6 +1225,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linear.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesLteCondition"></a>
 
 `IssuesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1154,6 +1240,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linear.types.IssuesSearchFilter`
     :   The type of the None singleton.
 
+<a id="IssuesNeqCondition"></a>
+
 `IssuesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1165,6 +1253,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linear.types.IssuesSearchFilter`
     :   The type of the None singleton.
+
+<a id="IssuesNotCondition"></a>
 
 `IssuesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1186,6 +1276,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linear.types.IssuesEqCondition | airbyte_agent_sdk.connectors.linear.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.linear.types.IssuesGtCondition | airbyte_agent_sdk.connectors.linear.types.IssuesGteCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLtCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLteCondition | airbyte_agent_sdk.connectors.linear.types.IssuesInCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.linear.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.linear.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.linear.types.IssuesNotCondition | airbyte_agent_sdk.connectors.linear.types.IssuesAndCondition | airbyte_agent_sdk.connectors.linear.types.IssuesOrCondition | airbyte_agent_sdk.connectors.linear.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
+<a id="IssuesOrCondition"></a>
+
 `IssuesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1205,6 +1297,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linear.types.IssuesEqCondition | airbyte_agent_sdk.connectors.linear.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.linear.types.IssuesGtCondition | airbyte_agent_sdk.connectors.linear.types.IssuesGteCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLtCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLteCondition | airbyte_agent_sdk.connectors.linear.types.IssuesInCondition | airbyte_agent_sdk.connectors.linear.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.linear.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.linear.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.linear.types.IssuesNotCondition | airbyte_agent_sdk.connectors.linear.types.IssuesAndCondition | airbyte_agent_sdk.connectors.linear.types.IssuesOrCondition | airbyte_agent_sdk.connectors.linear.types.IssuesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IssuesSearchFilter"></a>
 
 `IssuesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering issues search queries.
@@ -1374,6 +1468,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="IssuesSearchQuery"></a>
+
 `IssuesSearchQuery(*args, **kwargs)`
 :   Search query for issues entity.
 
@@ -1388,6 +1484,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linear.types.IssuesSortFilter]`
     :   The type of the None singleton.
+
+<a id="IssuesSortFilter"></a>
 
 `IssuesSortFilter(*args, **kwargs)`
 :   Available fields for sorting issues search results.
@@ -1557,6 +1655,8 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="IssuesStringFilter"></a>
+
 `IssuesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1725,6 +1825,8 @@ Classes
     `url: str`
     :   The type of the None singleton.
 
+<a id="IssuesUpdateParams"></a>
+
 `IssuesUpdateParams(*args, **kwargs)`
 :   Parameters for issues.update operation
 
@@ -1755,6 +1857,8 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
+<a id="ProjectsAndCondition"></a>
+
 `ProjectsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1775,6 +1879,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linear.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsInCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ProjectsAnyCondition"></a>
+
 `ProjectsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1794,6 +1900,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linear.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsAnyValueFilter"></a>
 
 `ProjectsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1924,6 +2032,8 @@ Classes
     `url: Any`
     :   The type of the None singleton.
 
+<a id="ProjectsContainsCondition"></a>
+
 `ProjectsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1935,6 +2045,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linear.types.ProjectsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsCreateParams"></a>
 
 `ProjectsCreateParams(*args, **kwargs)`
 :   Parameters for projects.create operation
@@ -1966,6 +2078,8 @@ Classes
     `team_ids: list[str]`
     :   The type of the None singleton.
 
+<a id="ProjectsEqCondition"></a>
+
 `ProjectsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
 
@@ -1977,6 +2091,8 @@ Classes
 
     `eq: airbyte_agent_sdk.connectors.linear.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsFuzzyCondition"></a>
 
 `ProjectsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
@@ -1990,6 +2106,8 @@ Classes
     `fuzzy: airbyte_agent_sdk.connectors.linear.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsGetParams"></a>
+
 `ProjectsGetParams(*args, **kwargs)`
 :   Parameters for projects.get operation
 
@@ -2001,6 +2119,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="ProjectsGtCondition"></a>
 
 `ProjectsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -2014,6 +2134,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linear.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsGteCondition"></a>
+
 `ProjectsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2025,6 +2147,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linear.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInCondition"></a>
 
 `ProjectsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2045,6 +2169,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linear.types.ProjectsInFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsInFilter"></a>
 
 `ProjectsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2175,6 +2301,8 @@ Classes
     `url: list[str]`
     :   The type of the None singleton.
 
+<a id="ProjectsKeywordCondition"></a>
+
 `ProjectsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2187,6 +2315,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linear.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsLikeCondition"></a>
+
 `ProjectsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2198,6 +2328,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linear.types.ProjectsStringFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsListParams"></a>
 
 `ProjectsListParams(*args, **kwargs)`
 :   Parameters for projects.list operation
@@ -2214,6 +2346,8 @@ Classes
     `first: int`
     :   The type of the None singleton.
 
+<a id="ProjectsLtCondition"></a>
+
 `ProjectsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2225,6 +2359,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linear.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsLteCondition"></a>
 
 `ProjectsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2238,6 +2374,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linear.types.ProjectsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ProjectsNeqCondition"></a>
+
 `ProjectsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2249,6 +2387,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linear.types.ProjectsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ProjectsNotCondition"></a>
 
 `ProjectsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2270,6 +2410,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linear.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsInCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ProjectsOrCondition"></a>
+
 `ProjectsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2289,6 +2431,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linear.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsInCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.linear.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchFilter"></a>
 
 `ProjectsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering projects search queries.
@@ -2419,6 +2563,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="ProjectsSearchQuery"></a>
+
 `ProjectsSearchQuery(*args, **kwargs)`
 :   Search query for projects entity.
 
@@ -2433,6 +2579,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linear.types.ProjectsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ProjectsSortFilter"></a>
 
 `ProjectsSortFilter(*args, **kwargs)`
 :   Available fields for sorting projects search results.
@@ -2563,6 +2711,8 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="ProjectsStringFilter"></a>
+
 `ProjectsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2692,6 +2842,8 @@ Classes
     `url: str`
     :   The type of the None singleton.
 
+<a id="ProjectsUpdateParams"></a>
+
 `ProjectsUpdateParams(*args, **kwargs)`
 :   Parameters for projects.update operation
 
@@ -2722,6 +2874,8 @@ Classes
     `target_date: str`
     :   The type of the None singleton.
 
+<a id="TeamsAndCondition"></a>
+
 `TeamsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2742,6 +2896,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linear.types.TeamsEqCondition | airbyte_agent_sdk.connectors.linear.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.linear.types.TeamsGtCondition | airbyte_agent_sdk.connectors.linear.types.TeamsGteCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLtCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLteCondition | airbyte_agent_sdk.connectors.linear.types.TeamsInCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.linear.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.linear.types.TeamsNotCondition | airbyte_agent_sdk.connectors.linear.types.TeamsAndCondition | airbyte_agent_sdk.connectors.linear.types.TeamsOrCondition | airbyte_agent_sdk.connectors.linear.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TeamsAnyCondition"></a>
+
 `TeamsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2761,6 +2917,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linear.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsAnyValueFilter"></a>
 
 `TeamsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2891,6 +3049,8 @@ Classes
     `updated_at: Any`
     :   The type of the None singleton.
 
+<a id="TeamsContainsCondition"></a>
+
 `TeamsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2902,6 +3062,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linear.types.TeamsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TeamsEqCondition"></a>
 
 `TeamsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2915,6 +3077,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linear.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsFuzzyCondition"></a>
+
 `TeamsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2926,6 +3090,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linear.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsGetParams"></a>
 
 `TeamsGetParams(*args, **kwargs)`
 :   Parameters for teams.get operation
@@ -2939,6 +3105,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TeamsGtCondition"></a>
+
 `TeamsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2951,6 +3119,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linear.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsGteCondition"></a>
+
 `TeamsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2962,6 +3132,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linear.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInCondition"></a>
 
 `TeamsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2982,6 +3154,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linear.types.TeamsInFilter`
     :   The type of the None singleton.
+
+<a id="TeamsInFilter"></a>
 
 `TeamsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3112,6 +3286,8 @@ Classes
     `updated_at: list[str]`
     :   The type of the None singleton.
 
+<a id="TeamsKeywordCondition"></a>
+
 `TeamsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3124,6 +3300,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linear.types.TeamsStringFilter`
     :   The type of the None singleton.
 
+<a id="TeamsLikeCondition"></a>
+
 `TeamsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3135,6 +3313,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linear.types.TeamsStringFilter`
     :   The type of the None singleton.
+
+<a id="TeamsListParams"></a>
 
 `TeamsListParams(*args, **kwargs)`
 :   Parameters for teams.list operation
@@ -3151,6 +3331,8 @@ Classes
     `first: int`
     :   The type of the None singleton.
 
+<a id="TeamsLtCondition"></a>
+
 `TeamsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3162,6 +3344,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linear.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsLteCondition"></a>
 
 `TeamsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3175,6 +3359,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linear.types.TeamsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TeamsNeqCondition"></a>
+
 `TeamsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3186,6 +3372,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linear.types.TeamsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TeamsNotCondition"></a>
 
 `TeamsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3207,6 +3395,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linear.types.TeamsEqCondition | airbyte_agent_sdk.connectors.linear.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.linear.types.TeamsGtCondition | airbyte_agent_sdk.connectors.linear.types.TeamsGteCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLtCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLteCondition | airbyte_agent_sdk.connectors.linear.types.TeamsInCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.linear.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.linear.types.TeamsNotCondition | airbyte_agent_sdk.connectors.linear.types.TeamsAndCondition | airbyte_agent_sdk.connectors.linear.types.TeamsOrCondition | airbyte_agent_sdk.connectors.linear.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TeamsOrCondition"></a>
+
 `TeamsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3226,6 +3416,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linear.types.TeamsEqCondition | airbyte_agent_sdk.connectors.linear.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.linear.types.TeamsGtCondition | airbyte_agent_sdk.connectors.linear.types.TeamsGteCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLtCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLteCondition | airbyte_agent_sdk.connectors.linear.types.TeamsInCondition | airbyte_agent_sdk.connectors.linear.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.linear.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.linear.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.linear.types.TeamsNotCondition | airbyte_agent_sdk.connectors.linear.types.TeamsAndCondition | airbyte_agent_sdk.connectors.linear.types.TeamsOrCondition | airbyte_agent_sdk.connectors.linear.types.TeamsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TeamsSearchFilter"></a>
 
 `TeamsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering teams search queries.
@@ -3356,6 +3548,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="TeamsSearchQuery"></a>
+
 `TeamsSearchQuery(*args, **kwargs)`
 :   Search query for teams entity.
 
@@ -3370,6 +3564,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linear.types.TeamsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TeamsSortFilter"></a>
 
 `TeamsSortFilter(*args, **kwargs)`
 :   Available fields for sorting teams search results.
@@ -3500,6 +3696,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="TeamsStringFilter"></a>
+
 `TeamsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3629,6 +3827,8 @@ Classes
     `updated_at: str`
     :   The type of the None singleton.
 
+<a id="UsersAndCondition"></a>
+
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3649,6 +3849,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linear.types.UsersEqCondition | airbyte_agent_sdk.connectors.linear.types.UsersNeqCondition | airbyte_agent_sdk.connectors.linear.types.UsersGtCondition | airbyte_agent_sdk.connectors.linear.types.UsersGteCondition | airbyte_agent_sdk.connectors.linear.types.UsersLtCondition | airbyte_agent_sdk.connectors.linear.types.UsersLteCondition | airbyte_agent_sdk.connectors.linear.types.UsersInCondition | airbyte_agent_sdk.connectors.linear.types.UsersLikeCondition | airbyte_agent_sdk.connectors.linear.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.linear.types.UsersContainsCondition | airbyte_agent_sdk.connectors.linear.types.UsersNotCondition | airbyte_agent_sdk.connectors.linear.types.UsersAndCondition | airbyte_agent_sdk.connectors.linear.types.UsersOrCondition | airbyte_agent_sdk.connectors.linear.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3668,6 +3870,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linear.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3738,6 +3942,8 @@ Classes
     `url: Any`
     :   The type of the None singleton.
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3749,6 +3955,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linear.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3762,6 +3970,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linear.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3773,6 +3983,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linear.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -3786,6 +3998,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3798,6 +4012,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linear.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3809,6 +4025,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linear.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3829,6 +4047,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linear.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3899,6 +4119,8 @@ Classes
     `url: list[str]`
     :   The type of the None singleton.
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3911,6 +4133,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linear.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersLikeCondition"></a>
+
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3922,6 +4146,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linear.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
@@ -3938,6 +4164,8 @@ Classes
     `first: int`
     :   The type of the None singleton.
 
+<a id="UsersLtCondition"></a>
+
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3949,6 +4177,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linear.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
 
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3962,6 +4192,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linear.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3973,6 +4205,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linear.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3994,6 +4228,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linear.types.UsersEqCondition | airbyte_agent_sdk.connectors.linear.types.UsersNeqCondition | airbyte_agent_sdk.connectors.linear.types.UsersGtCondition | airbyte_agent_sdk.connectors.linear.types.UsersGteCondition | airbyte_agent_sdk.connectors.linear.types.UsersLtCondition | airbyte_agent_sdk.connectors.linear.types.UsersLteCondition | airbyte_agent_sdk.connectors.linear.types.UsersInCondition | airbyte_agent_sdk.connectors.linear.types.UsersLikeCondition | airbyte_agent_sdk.connectors.linear.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.linear.types.UsersContainsCondition | airbyte_agent_sdk.connectors.linear.types.UsersNotCondition | airbyte_agent_sdk.connectors.linear.types.UsersAndCondition | airbyte_agent_sdk.connectors.linear.types.UsersOrCondition | airbyte_agent_sdk.connectors.linear.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4013,6 +4249,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linear.types.UsersEqCondition | airbyte_agent_sdk.connectors.linear.types.UsersNeqCondition | airbyte_agent_sdk.connectors.linear.types.UsersGtCondition | airbyte_agent_sdk.connectors.linear.types.UsersGteCondition | airbyte_agent_sdk.connectors.linear.types.UsersLtCondition | airbyte_agent_sdk.connectors.linear.types.UsersLteCondition | airbyte_agent_sdk.connectors.linear.types.UsersInCondition | airbyte_agent_sdk.connectors.linear.types.UsersLikeCondition | airbyte_agent_sdk.connectors.linear.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.linear.types.UsersContainsCondition | airbyte_agent_sdk.connectors.linear.types.UsersNotCondition | airbyte_agent_sdk.connectors.linear.types.UsersAndCondition | airbyte_agent_sdk.connectors.linear.types.UsersOrCondition | airbyte_agent_sdk.connectors.linear.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -4083,6 +4321,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -4097,6 +4337,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linear.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -4167,6 +4409,8 @@ Classes
     `url: Literal['asc', 'desc']`
     :   The type of the None singleton.
 
+<a id="UsersStringFilter"></a>
+
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4236,6 +4480,8 @@ Classes
     `url: str`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesAndCondition"></a>
+
 `WorkflowStatesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4256,6 +4502,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linear.types.WorkflowStatesEqCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesNeqCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesGtCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesGteCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLtCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLteCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesInCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLikeCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesKeywordCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesContainsCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesNotCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAndCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesOrCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesAnyCondition"></a>
+
 `WorkflowStatesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4275,6 +4523,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesAnyValueFilter"></a>
 
 `WorkflowStatesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4318,6 +4568,8 @@ Classes
     `updated_at: Any`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesContainsCondition"></a>
+
 `WorkflowStatesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4329,6 +4581,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesEqCondition"></a>
 
 `WorkflowStatesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4342,6 +4596,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesFuzzyCondition"></a>
+
 `WorkflowStatesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4353,6 +4609,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesGtCondition"></a>
 
 `WorkflowStatesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -4366,6 +4624,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesGteCondition"></a>
+
 `WorkflowStatesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4377,6 +4637,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesInCondition"></a>
 
 `WorkflowStatesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4397,6 +4659,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesInFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesInFilter"></a>
 
 `WorkflowStatesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4440,6 +4704,8 @@ Classes
     `updated_at: list[str]`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesKeywordCondition"></a>
+
 `WorkflowStatesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4452,6 +4718,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesStringFilter`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesLikeCondition"></a>
+
 `WorkflowStatesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4463,6 +4731,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesStringFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesListParams"></a>
 
 `WorkflowStatesListParams(*args, **kwargs)`
 :   Parameters for workflow_states.list operation
@@ -4479,6 +4749,8 @@ Classes
     `first: int`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesLtCondition"></a>
+
 `WorkflowStatesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4490,6 +4762,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesLteCondition"></a>
 
 `WorkflowStatesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4503,6 +4777,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesNeqCondition"></a>
+
 `WorkflowStatesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4514,6 +4790,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesNotCondition"></a>
 
 `WorkflowStatesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4535,6 +4813,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linear.types.WorkflowStatesEqCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesNeqCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesGtCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesGteCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLtCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLteCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesInCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLikeCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesKeywordCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesContainsCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesNotCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAndCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesOrCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAnyCondition`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesOrCondition"></a>
+
 `WorkflowStatesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4554,6 +4834,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linear.types.WorkflowStatesEqCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesNeqCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesGtCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesGteCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLtCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLteCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesInCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesLikeCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesFuzzyCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesKeywordCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesContainsCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesNotCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAndCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesOrCondition | airbyte_agent_sdk.connectors.linear.types.WorkflowStatesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesSearchFilter"></a>
 
 `WorkflowStatesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering workflow_states search queries.
@@ -4597,6 +4879,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="WorkflowStatesSearchQuery"></a>
+
 `WorkflowStatesSearchQuery(*args, **kwargs)`
 :   Search query for workflow_states entity.
 
@@ -4611,6 +4895,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linear.types.WorkflowStatesSortFilter]`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesSortFilter"></a>
 
 `WorkflowStatesSortFilter(*args, **kwargs)`
 :   Available fields for sorting workflow_states search results.
@@ -4653,6 +4939,8 @@ Classes
 
     `updated_at: Literal['asc', 'desc']`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesStringFilter"></a>
 
 `WorkflowStatesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -150,6 +156,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CommentsSearchResult"></a>
+
 `CommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -165,6 +173,8 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -182,6 +192,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -197,6 +209,8 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TeamsSearchResult"></a>
 
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -214,6 +228,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -230,6 +246,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WorkflowStatesSearchResult"></a>
+
 `WorkflowStatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -245,6 +263,8 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CommentsSearchData"></a>
 
 `CommentsSearchData(**data: Any)`
 :   Search result data for comments entity.
@@ -309,6 +329,8 @@ Classes
 
     `user_id: str | None`
     :   The type of the None singleton.
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -488,6 +510,8 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
+<a id="LinearAuthConfig"></a>
+
 `LinearAuthConfig(**data: Any)`
 :   Linear API Key Authentication - Authenticate using your Linear API key
     
@@ -509,6 +533,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LinearConnector"></a>
 
 `LinearConnector(auth_config: LinearAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Linear API connector.
@@ -698,6 +724,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ProjectsSearchData"></a>
+
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
     
@@ -836,6 +864,8 @@ Classes
 
     `url: str | None`
     :   The type of the None singleton.
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
@@ -976,6 +1006,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="UsersSearchData"></a>
+
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
     
@@ -1054,6 +1086,8 @@ Classes
 
     `url: str | None`
     :   The type of the None singleton.
+
+<a id="WorkflowStatesSearchData"></a>
 
 `WorkflowStatesSearchData(**data: Any)`
 :   Search result data for workflow_states entity.

@@ -128,6 +128,103 @@ jobs:
           done
           echo "Added Docusaurus frontmatter to all generated files (excluding readme.md)"
 
+      - name: Resolve pdoc3 Cross-References
+        run: |
+          # pdoc3 generates same-page anchor links (#SymbolName) that assume
+          # every symbol lives on a single HTML page. In Docusaurus each
+          # module is its own page, so these anchors are broken.
+          #
+          # This step:
+          #   1. Adds <a id="SymbolName"></a> anchors before each
+          #      function/class definition so same-page links work.
+          #   2. Rewrites cross-page #anchor links to relative file paths
+          #      (e.g. index.md#connect) so inter-module references work.
+          python3 << 'PYEOF'
+          import re
+          from collections import defaultdict
+          from pathlib import Path
+
+          base_dir = Path("docs/ai-agents/reference/sdk")
+
+          # ── Build symbol index ──────────────────────────────────────
+          symbol_files: dict[str, set[str]] = defaultdict(set)
+          file_symbols: dict[str, set[str]] = defaultdict(set)
+
+          for md_path in base_dir.rglob("*.md"):
+              if md_path.name.lower() == "readme.md":
+                  continue
+              rel = str(md_path.relative_to(base_dir))
+              content = md_path.read_text(encoding="utf-8")
+              for m in re.finditer(r"^`(\w+)\(", content, re.MULTILINE):
+                  sym = m.group(1)
+                  symbol_files[sym].add(rel)
+                  file_symbols[rel].add(sym)
+
+          print(f"Indexed {len(symbol_files)} symbols across {len(file_symbols)} files")
+
+          # ── Add anchors and resolve links ───────────────────────────
+          for md_path in base_dir.rglob("*.md"):
+              if md_path.name.lower() == "readme.md":
+                  continue
+              rel = str(md_path.relative_to(base_dir))
+              content = md_path.read_text(encoding="utf-8")
+              original = content
+
+              # 1. Insert HTML anchor IDs before symbol definitions.
+              def _add_anchor(m: re.Match) -> str:
+                  return f'<a id="{m.group(1)}"></a>\n\n`{m.group(1)}('
+              content = re.sub(
+                  r"^`(\w+)\(", _add_anchor, content, flags=re.MULTILINE,
+              )
+
+              # 2. Resolve [text](#anchor) links.
+              current_dir = str(Path(rel).parent)
+
+              def _resolve_link(m: re.Match) -> str:
+                  text, anchor = m.group(1), m.group(2)
+
+                  # Same-page symbol — keep the anchor link as-is.
+                  if anchor in file_symbols[rel]:
+                      return m.group(0)
+
+                  candidates = symbol_files.get(anchor)
+                  if not candidates:
+                      # Unknown symbol — drop the link, keep display text.
+                      return text
+
+                  # Pick the best target: prefer index.md in the same
+                  # directory, then any index.md, then first alphabetically.
+                  target = None
+                  for c in sorted(candidates):
+                      if (
+                          Path(c).name == "index.md"
+                          and str(Path(c).parent) == current_dir
+                      ):
+                          target = c
+                          break
+                  if target is None:
+                      for c in sorted(candidates):
+                          if Path(c).name == "index.md":
+                              target = c
+                              break
+                  if target is None:
+                      target = sorted(candidates)[0]
+
+                  from os.path import relpath
+                  target_rel = relpath(target, current_dir)
+                  return f"[{text}]({target_rel}#{anchor})"
+
+              content = re.sub(
+                  r"\[([^\]]+)\]\(#(\w+)\)", _resolve_link, content,
+              )
+
+              if content != original:
+                  md_path.write_text(content, encoding="utf-8")
+                  print(f"Resolved: {md_path}")
+
+          print("Cross-reference resolution complete")
+          PYEOF
+
       - name: Sanitize for MDX Compatibility
         run: |
           # Docusaurus uses MDX which interprets { and } as JSX expressions,

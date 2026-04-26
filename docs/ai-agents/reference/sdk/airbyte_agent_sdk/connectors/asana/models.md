@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -99,6 +103,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AttachmentsSearchResult"></a>
+
 `AttachmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -135,6 +141,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchResult"></a>
 
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -173,6 +181,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SectionsSearchResult"></a>
+
 `SectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -209,6 +219,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -247,6 +259,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -283,6 +297,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamsSearchResult"></a>
 
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -321,6 +337,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -358,6 +376,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspacesSearchResult"></a>
+
 `WorkspacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -373,6 +393,8 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AsanaCheckResult"></a>
 
 `AsanaCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -407,6 +429,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="AsanaExecuteResult"></a>
+
 `AsanaExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -435,6 +459,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AsanaExecuteResultWithMeta"></a>
 
 `AsanaExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -507,6 +533,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AttachmentsListResult"></a>
+
 `AttachmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -549,6 +577,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectsListResult"></a>
 
 `ProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -593,6 +623,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskProjectsListResult"></a>
+
 `TaskProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -635,6 +667,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamProjectsListResult"></a>
 
 `TeamProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -679,6 +713,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceProjectsListResult"></a>
+
 `WorkspaceProjectsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -721,6 +757,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectSectionsListResult"></a>
 
 `ProjectSectionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -765,6 +803,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceTagsListResult"></a>
+
 `WorkspaceTagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -807,6 +847,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectTasksListResult"></a>
 
 `ProjectTasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -851,6 +893,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SectionTasksListResult"></a>
+
 `SectionTasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -893,6 +937,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagTasksListResult"></a>
 
 `TagTasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -937,6 +983,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskDependenciesListResult"></a>
+
 `TaskDependenciesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -979,6 +1027,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TaskDependentsListResult"></a>
 
 `TaskDependentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1023,6 +1073,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskSubtasksListResult"></a>
+
 `TaskSubtasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1065,6 +1117,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TasksListResult"></a>
 
 `TasksListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1109,6 +1163,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceTaskSearchListResult"></a>
+
 `WorkspaceTaskSearchListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1151,6 +1207,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UserTeamsListResult"></a>
 
 `UserTeamsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1195,6 +1253,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceTeamsListResult"></a>
+
 `WorkspaceTeamsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1237,6 +1297,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamUsersListResult"></a>
 
 `TeamUsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1281,6 +1343,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1323,6 +1387,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="WorkspaceUsersListResult"></a>
 
 `WorkspaceUsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1367,6 +1433,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspacesListResult"></a>
+
 `WorkspacesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1385,6 +1453,8 @@ Classes
     * airbyte_agent_sdk.connectors.asana.models.AsanaExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AsanaOauth2AuthConfig"></a>
 
 `AsanaOauth2AuthConfig(**data: Any)`
 :   OAuth 2
@@ -1417,6 +1487,8 @@ Classes
     `refresh_token: str`
     :   OAuth refresh token for automatic token renewal
 
+<a id="AsanaPersonalAccessTokenAuthConfig"></a>
+
 `AsanaPersonalAccessTokenAuthConfig(**data: Any)`
 :   Personal Access Token
     
@@ -1438,6 +1510,8 @@ Classes
 
     `token: str`
     :   Your Asana Personal Access Token. Generate one at https://app.asana.com/0/my-apps
+
+<a id="Attachment"></a>
 
 `Attachment(**data: Any)`
 :   Full attachment object
@@ -1491,6 +1565,8 @@ Classes
     `view_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AttachmentCompact"></a>
+
 `AttachmentCompact(**data: Any)`
 :   Compact attachment object
     
@@ -1521,6 +1597,8 @@ Classes
 
     `resource_type: str | Any`
     :   The type of the None singleton.
+
+<a id="AttachmentParent"></a>
 
 `AttachmentParent(**data: Any)`
 :   The parent object this attachment is attached to
@@ -1553,6 +1631,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="AttachmentResponse"></a>
+
 `AttachmentResponse(**data: Any)`
 :   Attachment response wrapper
     
@@ -1574,6 +1654,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AttachmentsList"></a>
 
 `AttachmentsList(**data: Any)`
 :   Paginated list of attachments containing compact attachment objects
@@ -1599,6 +1681,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.AttachmentsListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="AttachmentsListNextPage"></a>
 
 `AttachmentsListNextPage(**data: Any)`
 :   Nested schema for AttachmentsList.next_page
@@ -1628,6 +1712,8 @@ Classes
     `uri: str | Any`
     :   The type of the None singleton.
 
+<a id="AttachmentsListResultMeta"></a>
+
 `AttachmentsListResultMeta(**data: Any)`
 :   Metadata for attachments.Action.LIST operation
     
@@ -1649,6 +1735,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="AttachmentsSearchData"></a>
 
 `AttachmentsSearchData(**data: Any)`
 :   Search result data for attachments entity.
@@ -1705,6 +1793,8 @@ Classes
     `view_url: str | None`
     :   The type of the None singleton.
 
+<a id="EmptyResponse"></a>
+
 `EmptyResponse(**data: Any)`
 :   Empty response returned by delete operations
     
@@ -1726,6 +1816,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   Full project object
@@ -1836,6 +1928,8 @@ Classes
     `workspace: airbyte_agent_sdk.connectors.asana.models.ProjectWorkspace | Any`
     :   The type of the None singleton.
 
+<a id="ProjectCompact"></a>
+
 `ProjectCompact(**data: Any)`
 :   Compact project object
     
@@ -1863,6 +1957,8 @@ Classes
 
     `resource_type: str | Any`
     :   The type of the None singleton.
+
+<a id="ProjectCompletedBy"></a>
 
 `ProjectCompletedBy(**data: Any)`
 :   Nested schema for Project.completed_by
@@ -1892,6 +1988,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectCreateParams"></a>
+
 `ProjectCreateParams(**data: Any)`
 :   Parameters for creating a new project
     
@@ -1913,6 +2011,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectCreateParamsData"></a>
 
 `ProjectCreateParamsData(**data: Any)`
 :   Nested schema for ProjectCreateParams.data
@@ -1966,6 +2066,8 @@ Classes
     `workspace: str | Any`
     :   GID of the workspace to create the project in
 
+<a id="ProjectCurrentStatus"></a>
+
 `ProjectCurrentStatus(**data: Any)`
 :   Nested schema for Project.current_status
     
@@ -2012,6 +2114,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectCurrentStatusAuthor"></a>
+
 `ProjectCurrentStatusAuthor(**data: Any)`
 :   Nested schema for ProjectCurrentStatus.author
     
@@ -2040,6 +2144,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectCurrentStatusCreatedBy"></a>
+
 `ProjectCurrentStatusCreatedBy(**data: Any)`
 :   Nested schema for ProjectCurrentStatus.created_by
     
@@ -2067,6 +2173,8 @@ Classes
 
     `resource_type: str | Any`
     :   The type of the None singleton.
+
+<a id="ProjectCurrentStatusUpdate"></a>
 
 `ProjectCurrentStatusUpdate(**data: Any)`
 :   Nested schema for Project.current_status_update
@@ -2099,6 +2207,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectFollowersItem"></a>
+
 `ProjectFollowersItem(**data: Any)`
 :   Nested schema for Project.followers_item
     
@@ -2126,6 +2236,8 @@ Classes
 
     `resource_type: str | Any`
     :   The type of the None singleton.
+
+<a id="ProjectMembersItem"></a>
 
 `ProjectMembersItem(**data: Any)`
 :   Nested schema for Project.members_item
@@ -2155,6 +2267,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectOwner"></a>
+
 `ProjectOwner(**data: Any)`
 :   Nested schema for Project.owner
     
@@ -2183,6 +2297,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectResponse"></a>
+
 `ProjectResponse(**data: Any)`
 :   Project response wrapper
     
@@ -2204,6 +2320,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectSectionsListResultMeta"></a>
 
 `ProjectSectionsListResultMeta(**data: Any)`
 :   Metadata for project_sections.Action.LIST operation
@@ -2227,6 +2345,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectTasksListResultMeta"></a>
+
 `ProjectTasksListResultMeta(**data: Any)`
 :   Metadata for project_tasks.Action.LIST operation
     
@@ -2248,6 +2368,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectTeam"></a>
 
 `ProjectTeam(**data: Any)`
 :   Nested schema for Project.team
@@ -2277,6 +2399,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectUpdateParams"></a>
+
 `ProjectUpdateParams(**data: Any)`
 :   Parameters for updating an existing project
     
@@ -2298,6 +2422,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectUpdateParamsData"></a>
 
 `ProjectUpdateParamsData(**data: Any)`
 :   Nested schema for ProjectUpdateParams.data
@@ -2342,6 +2468,8 @@ Classes
     `start_on: str | Any`
     :   Start date in YYYY-MM-DD format
 
+<a id="ProjectWorkspace"></a>
+
 `ProjectWorkspace(**data: Any)`
 :   Nested schema for Project.workspace
     
@@ -2370,6 +2498,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectsList"></a>
+
 `ProjectsList(**data: Any)`
 :   Paginated list of projects containing compact project objects
     
@@ -2394,6 +2524,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.ProjectsListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectsListNextPage"></a>
 
 `ProjectsListNextPage(**data: Any)`
 :   Nested schema for ProjectsList.next_page
@@ -2423,6 +2555,8 @@ Classes
     `uri: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectsListResultMeta"></a>
+
 `ProjectsListResultMeta(**data: Any)`
 :   Metadata for projects.Action.LIST operation
     
@@ -2444,6 +2578,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -2539,6 +2675,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="Section"></a>
+
 `Section(**data: Any)`
 :   Full section object
     
@@ -2573,6 +2711,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="SectionAddTaskParams"></a>
+
 `SectionAddTaskParams(**data: Any)`
 :   Parameters for adding a task to a section
     
@@ -2594,6 +2734,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SectionAddTaskParamsData"></a>
 
 `SectionAddTaskParamsData(**data: Any)`
 :   Nested schema for SectionAddTaskParams.data
@@ -2623,6 +2765,8 @@ Classes
     `task: str | Any`
     :   The GID of the task to add to this section
 
+<a id="SectionCompact"></a>
+
 `SectionCompact(**data: Any)`
 :   Compact section object
     
@@ -2651,6 +2795,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="SectionCreateParams"></a>
+
 `SectionCreateParams(**data: Any)`
 :   Parameters for creating a new section in a project
     
@@ -2672,6 +2818,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SectionCreateParamsData"></a>
 
 `SectionCreateParamsData(**data: Any)`
 :   Nested schema for SectionCreateParams.data
@@ -2701,6 +2849,8 @@ Classes
     `name: str | Any`
     :   The name of the section (this is displayed as the column header in board view)
 
+<a id="SectionProject"></a>
+
 `SectionProject(**data: Any)`
 :   Nested schema for Section.project
     
@@ -2729,6 +2879,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="SectionResponse"></a>
+
 `SectionResponse(**data: Any)`
 :   Section response wrapper
     
@@ -2750,6 +2902,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SectionTasksListResultMeta"></a>
 
 `SectionTasksListResultMeta(**data: Any)`
 :   Metadata for section_tasks.Action.LIST operation
@@ -2773,6 +2927,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="SectionUpdateParams"></a>
+
 `SectionUpdateParams(**data: Any)`
 :   Parameters for updating an existing section
     
@@ -2795,6 +2951,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SectionUpdateParamsData"></a>
+
 `SectionUpdateParamsData(**data: Any)`
 :   Nested schema for SectionUpdateParams.data
     
@@ -2816,6 +2974,8 @@ Classes
 
     `name: str | Any`
     :   The new name of the section
+
+<a id="SectionsList"></a>
 
 `SectionsList(**data: Any)`
 :   Paginated list of sections containing compact section objects
@@ -2841,6 +3001,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.SectionsListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="SectionsListNextPage"></a>
 
 `SectionsListNextPage(**data: Any)`
 :   Nested schema for SectionsList.next_page
@@ -2869,6 +3031,8 @@ Classes
 
     `uri: str | Any`
     :   The type of the None singleton.
+
+<a id="SectionsSearchData"></a>
 
 `SectionsSearchData(**data: Any)`
 :   Search result data for sections entity.
@@ -2903,6 +3067,8 @@ Classes
 
     `resource_type: str | None`
     :   The type of the None singleton.
+
+<a id="Story"></a>
 
 `Story(**data: Any)`
 :   A story represents an activity associated with an object in Asana
@@ -2953,6 +3119,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="StoryCreateParams"></a>
+
 `StoryCreateParams(**data: Any)`
 :   Parameters for creating a comment (story) on a task
     
@@ -2974,6 +3142,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StoryCreateParamsData"></a>
 
 `StoryCreateParamsData(**data: Any)`
 :   Nested schema for StoryCreateParams.data
@@ -3003,6 +3173,8 @@ Classes
     `text: str | Any`
     :   The plain text body of the comment
 
+<a id="StoryCreatedBy"></a>
+
 `StoryCreatedBy(**data: Any)`
 :   Nested schema for Story.created_by
     
@@ -3031,6 +3203,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="StoryResponse"></a>
+
 `StoryResponse(**data: Any)`
 :   Story response wrapper
     
@@ -3052,6 +3226,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="StoryTarget"></a>
 
 `StoryTarget(**data: Any)`
 :   Nested schema for Story.target
@@ -3080,6 +3256,8 @@ Classes
 
     `resource_type: str | Any`
     :   The type of the None singleton.
+
+<a id="Tag"></a>
 
 `Tag(**data: Any)`
 :   Full tag object
@@ -3127,6 +3305,8 @@ Classes
     `workspace: airbyte_agent_sdk.connectors.asana.models.TagWorkspace | Any`
     :   The type of the None singleton.
 
+<a id="TagCompact"></a>
+
 `TagCompact(**data: Any)`
 :   Compact tag object
     
@@ -3155,6 +3335,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="TagCreateParams"></a>
+
 `TagCreateParams(**data: Any)`
 :   Parameters for creating a new tag in a workspace
     
@@ -3176,6 +3358,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagCreateParamsData"></a>
 
 `TagCreateParamsData(**data: Any)`
 :   Nested schema for TagCreateParams.data
@@ -3205,6 +3389,8 @@ Classes
     `notes: str | Any`
     :   Free-form textual description of the tag
 
+<a id="TagResponse"></a>
+
 `TagResponse(**data: Any)`
 :   Tag response wrapper
     
@@ -3226,6 +3412,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagTasksListResultMeta"></a>
 
 `TagTasksListResultMeta(**data: Any)`
 :   Metadata for tag_tasks.Action.LIST operation
@@ -3249,6 +3437,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="TagUpdateParams"></a>
+
 `TagUpdateParams(**data: Any)`
 :   Parameters for updating an existing tag
     
@@ -3270,6 +3460,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagUpdateParamsData"></a>
 
 `TagUpdateParamsData(**data: Any)`
 :   Nested schema for TagUpdateParams.data
@@ -3299,6 +3491,8 @@ Classes
     `notes: str | Any`
     :   Free-form textual description of the tag
 
+<a id="TagWorkspace"></a>
+
 `TagWorkspace(**data: Any)`
 :   Nested schema for Tag.workspace
     
@@ -3327,6 +3521,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="TagsList"></a>
+
 `TagsList(**data: Any)`
 :   Paginated list of tags containing compact tag objects
     
@@ -3351,6 +3547,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.TagsListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="TagsListNextPage"></a>
 
 `TagsListNextPage(**data: Any)`
 :   Nested schema for TagsList.next_page
@@ -3379,6 +3577,8 @@ Classes
 
     `uri: str | Any`
     :   The type of the None singleton.
+
+<a id="TagsSearchData"></a>
 
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
@@ -3420,6 +3620,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="Task"></a>
+
 `Task(**data: Any)`
 :   Full task object
     
@@ -3441,6 +3643,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TaskAddTagParams"></a>
 
 `TaskAddTagParams(**data: Any)`
 :   Parameters for adding a tag to a task
@@ -3464,6 +3668,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskAddTagParamsData"></a>
+
 `TaskAddTagParamsData(**data: Any)`
 :   Nested schema for TaskAddTagParams.data
     
@@ -3485,6 +3691,8 @@ Classes
 
     `tag: str | Any`
     :   The GID of the tag to add to the task
+
+<a id="TaskCompact"></a>
 
 `TaskCompact(**data: Any)`
 :   Compact task object
@@ -3520,6 +3728,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="TaskCompactCreatedBy"></a>
+
 `TaskCompactCreatedBy(**data: Any)`
 :   User who created the task
     
@@ -3545,6 +3755,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="TaskCreateParams"></a>
+
 `TaskCreateParams(**data: Any)`
 :   Parameters for creating a new task
     
@@ -3566,6 +3778,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TaskCreateParamsData"></a>
 
 `TaskCreateParamsData(**data: Any)`
 :   Nested schema for TaskCreateParams.data
@@ -3628,6 +3842,8 @@ Classes
     `workspace: str | Any`
     :   GID of the workspace to create the task in
 
+<a id="TaskDependenciesListResultMeta"></a>
+
 `TaskDependenciesListResultMeta(**data: Any)`
 :   Metadata for task_dependencies.Action.LIST operation
     
@@ -3649,6 +3865,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="TaskDependentsListResultMeta"></a>
 
 `TaskDependentsListResultMeta(**data: Any)`
 :   Metadata for task_dependents.Action.LIST operation
@@ -3672,6 +3890,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="TaskProjectsListResultMeta"></a>
+
 `TaskProjectsListResultMeta(**data: Any)`
 :   Metadata for task_projects.Action.LIST operation
     
@@ -3693,6 +3913,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="TaskRemoveTagParams"></a>
 
 `TaskRemoveTagParams(**data: Any)`
 :   Parameters for removing a tag from a task
@@ -3716,6 +3938,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskRemoveTagParamsData"></a>
+
 `TaskRemoveTagParamsData(**data: Any)`
 :   Nested schema for TaskRemoveTagParams.data
     
@@ -3737,6 +3961,8 @@ Classes
 
     `tag: str | Any`
     :   The GID of the tag to remove from the task
+
+<a id="TaskResponse"></a>
 
 `TaskResponse(**data: Any)`
 :   Task response wrapper
@@ -3760,6 +3986,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TaskSubtasksListResultMeta"></a>
+
 `TaskSubtasksListResultMeta(**data: Any)`
 :   Metadata for task_subtasks.Action.LIST operation
     
@@ -3782,6 +4010,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="TaskUpdateParams"></a>
+
 `TaskUpdateParams(**data: Any)`
 :   Parameters for updating an existing task
     
@@ -3803,6 +4033,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TaskUpdateParamsData"></a>
 
 `TaskUpdateParamsData(**data: Any)`
 :   Nested schema for TaskUpdateParams.data
@@ -3847,6 +4079,8 @@ Classes
     `start_on: str | Any`
     :   Start date in YYYY-MM-DD format
 
+<a id="TasksList"></a>
+
 `TasksList(**data: Any)`
 :   Paginated list of tasks containing compact task objects
     
@@ -3871,6 +4105,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.TasksListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="TasksListNextPage"></a>
 
 `TasksListNextPage(**data: Any)`
 :   Nested schema for TasksList.next_page
@@ -3900,6 +4136,8 @@ Classes
     `uri: str | Any`
     :   The type of the None singleton.
 
+<a id="TasksListResultMeta"></a>
+
 `TasksListResultMeta(**data: Any)`
 :   Metadata for tasks.Action.LIST operation
     
@@ -3921,6 +4159,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="TasksSearchData"></a>
 
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.
@@ -4049,6 +4289,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="Team"></a>
+
 `Team(**data: Any)`
 :   Full team object
     
@@ -4083,6 +4325,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="TeamCompact"></a>
+
 `TeamCompact(**data: Any)`
 :   Compact team object
     
@@ -4110,6 +4354,8 @@ Classes
 
     `resource_type: str | Any`
     :   The type of the None singleton.
+
+<a id="TeamOrganization"></a>
 
 `TeamOrganization(**data: Any)`
 :   Nested schema for Team.organization
@@ -4139,6 +4385,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="TeamProjectsListResultMeta"></a>
+
 `TeamProjectsListResultMeta(**data: Any)`
 :   Metadata for team_projects.Action.LIST operation
     
@@ -4160,6 +4408,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="TeamResponse"></a>
 
 `TeamResponse(**data: Any)`
 :   Team response wrapper
@@ -4183,6 +4433,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamUsersListResultMeta"></a>
+
 `TeamUsersListResultMeta(**data: Any)`
 :   Metadata for team_users.Action.LIST operation
     
@@ -4204,6 +4456,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="TeamsList"></a>
 
 `TeamsList(**data: Any)`
 :   Paginated list of teams containing compact team objects
@@ -4229,6 +4483,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.TeamsListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="TeamsListNextPage"></a>
 
 `TeamsListNextPage(**data: Any)`
 :   Nested schema for TeamsList.next_page
@@ -4257,6 +4513,8 @@ Classes
 
     `uri: str | Any`
     :   The type of the None singleton.
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
@@ -4298,6 +4556,8 @@ Classes
     `resource_type: str | None`
     :   The type of the None singleton.
 
+<a id="User"></a>
+
 `User(**data: Any)`
 :   Full user object
     
@@ -4335,6 +4595,8 @@ Classes
     `workspaces: list[airbyte_agent_sdk.connectors.asana.models.UserWorkspacesItem] | Any`
     :   The type of the None singleton.
 
+<a id="UserCompact"></a>
+
 `UserCompact(**data: Any)`
 :   Compact user object
     
@@ -4363,6 +4625,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="UserResponse"></a>
+
 `UserResponse(**data: Any)`
 :   User response wrapper
     
@@ -4385,6 +4649,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UserTeamsListResultMeta"></a>
+
 `UserTeamsListResultMeta(**data: Any)`
 :   Metadata for user_teams.Action.LIST operation
     
@@ -4406,6 +4672,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="UserWorkspacesItem"></a>
 
 `UserWorkspacesItem(**data: Any)`
 :   Nested schema for User.workspaces_item
@@ -4435,6 +4703,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="UsersList"></a>
+
 `UsersList(**data: Any)`
 :   Paginated list of users containing compact user objects
     
@@ -4459,6 +4729,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.UsersListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersListNextPage"></a>
 
 `UsersListNextPage(**data: Any)`
 :   Nested schema for UsersList.next_page
@@ -4488,6 +4760,8 @@ Classes
     `uri: str | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -4509,6 +4783,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
@@ -4547,6 +4823,8 @@ Classes
     `workspaces: list[typing.Any] | None`
     :   The type of the None singleton.
 
+<a id="Workspace"></a>
+
 `Workspace(**data: Any)`
 :   Full workspace object
     
@@ -4581,6 +4859,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="WorkspaceAddUserParams"></a>
+
 `WorkspaceAddUserParams(**data: Any)`
 :   Parameters for adding a user to a workspace or organization
     
@@ -4603,6 +4883,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceAddUserParamsData"></a>
+
 `WorkspaceAddUserParamsData(**data: Any)`
 :   Nested schema for WorkspaceAddUserParams.data
     
@@ -4624,6 +4906,8 @@ Classes
 
     `user: str | Any`
     :   A user GID or email address to add to the workspace
+
+<a id="WorkspaceCompact"></a>
 
 `WorkspaceCompact(**data: Any)`
 :   Compact workspace object
@@ -4653,6 +4937,8 @@ Classes
     `resource_type: str | Any`
     :   The type of the None singleton.
 
+<a id="WorkspaceProjectsListResultMeta"></a>
+
 `WorkspaceProjectsListResultMeta(**data: Any)`
 :   Metadata for workspace_projects.Action.LIST operation
     
@@ -4674,6 +4960,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="WorkspaceResponse"></a>
 
 `WorkspaceResponse(**data: Any)`
 :   Workspace response wrapper
@@ -4697,6 +4985,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceTagsListResultMeta"></a>
+
 `WorkspaceTagsListResultMeta(**data: Any)`
 :   Metadata for workspace_tags.Action.LIST operation
     
@@ -4718,6 +5008,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="WorkspaceTaskSearchListResultMeta"></a>
 
 `WorkspaceTaskSearchListResultMeta(**data: Any)`
 :   Metadata for workspace_task_search.Action.LIST operation
@@ -4741,6 +5033,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="WorkspaceTeamsListResultMeta"></a>
+
 `WorkspaceTeamsListResultMeta(**data: Any)`
 :   Metadata for workspace_teams.Action.LIST operation
     
@@ -4763,6 +5057,8 @@ Classes
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="WorkspaceUsersListResultMeta"></a>
+
 `WorkspaceUsersListResultMeta(**data: Any)`
 :   Metadata for workspace_users.Action.LIST operation
     
@@ -4784,6 +5080,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="WorkspacesList"></a>
 
 `WorkspacesList(**data: Any)`
 :   Paginated list of workspaces containing compact workspace objects
@@ -4809,6 +5107,8 @@ Classes
 
     `next_page: airbyte_agent_sdk.connectors.asana.models.WorkspacesListNextPage | Any | None`
     :   The type of the None singleton.
+
+<a id="WorkspacesListNextPage"></a>
 
 `WorkspacesListNextPage(**data: Any)`
 :   Nested schema for WorkspacesList.next_page
@@ -4838,6 +5138,8 @@ Classes
     `uri: str | Any`
     :   The type of the None singleton.
 
+<a id="WorkspacesListResultMeta"></a>
+
 `WorkspacesListResultMeta(**data: Any)`
 :   Metadata for workspaces.Action.LIST operation
     
@@ -4859,6 +5161,8 @@ Classes
 
     `next_page: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
+
+<a id="WorkspacesSearchData"></a>
 
 `WorkspacesSearchData(**data: Any)`
 :   Search result data for workspaces entity.

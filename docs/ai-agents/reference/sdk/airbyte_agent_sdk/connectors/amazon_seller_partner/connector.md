@@ -10,6 +10,8 @@ Amazon-Seller-Partner connector.
 Classes
 -------
 
+<a id="AmazonSellerPartnerConnector"></a>
+
 `AmazonSellerPartnerConnector(auth_config: AmazonSellerPartnerAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, region: str | None = None)`
 :   Type-safe Amazon-Seller-Partner API connector.
     
@@ -270,6 +272,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="CatalogItemsQuery"></a>
+
 `CatalogItemsQuery(connector: AmazonSellerPartnerConnector)`
 :   Query class for CatalogItems entity operations.
     
@@ -304,6 +308,8 @@ Classes
         
         Returns:
             CatalogItemsListResult
+
+<a id="ListFinancialEventGroupsQuery"></a>
 
 `ListFinancialEventGroupsQuery(connector: AmazonSellerPartnerConnector)`
 :   Query class for ListFinancialEventGroups entity operations.
@@ -357,6 +363,8 @@ Classes
         
         Returns:
             ListFinancialEventGroupsListResult
+
+<a id="ListFinancialEventsQuery"></a>
 
 `ListFinancialEventsQuery(connector: AmazonSellerPartnerConnector)`
 :   Query class for ListFinancialEvents entity operations.
@@ -435,6 +443,8 @@ Classes
         Returns:
             ListFinancialEventsListResult
 
+<a id="OrderItemsQuery"></a>
+
 `OrderItemsQuery(connector: AmazonSellerPartnerConnector)`
 :   Query class for OrderItems entity operations.
     
@@ -511,6 +521,8 @@ Classes
         
         Returns:
             OrderItemsListResult
+
+<a id="OrdersQuery"></a>
 
 `OrdersQuery(connector: AmazonSellerPartnerConnector)`
 :   Query class for Orders entity operations.
@@ -601,6 +613,8 @@ Classes
         
         Returns:
             OrdersListResult
+
+<a id="ReportsQuery"></a>
 
 `ReportsQuery(connector: AmazonSellerPartnerConnector)`
 :   Query class for Reports entity operations.

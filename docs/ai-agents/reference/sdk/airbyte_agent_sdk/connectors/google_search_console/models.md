@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -99,6 +103,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsAllFieldsSearchResult"></a>
+
 `SearchAnalyticsAllFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -135,6 +141,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByCountrySearchResult"></a>
 
 `SearchAnalyticsByCountrySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -173,6 +181,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByDateSearchResult"></a>
+
 `SearchAnalyticsByDateSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -209,6 +219,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByDeviceSearchResult"></a>
 
 `SearchAnalyticsByDeviceSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -247,6 +259,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByPageSearchResult"></a>
+
 `SearchAnalyticsByPageSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -283,6 +297,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByQuerySearchResult"></a>
 
 `SearchAnalyticsByQuerySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -321,6 +337,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SitemapsSearchResult"></a>
+
 `SitemapsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -358,6 +376,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SitesSearchResult"></a>
+
 `SitesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -373,6 +393,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GoogleSearchConsoleAuthConfig"></a>
 
 `GoogleSearchConsoleAuthConfig(**data: Any)`
 :   OAuth2 Authentication
@@ -401,6 +423,8 @@ Classes
 
     `refresh_token: str`
     :   The refresh token for obtaining new access tokens.
+
+<a id="GoogleSearchConsoleCheckResult"></a>
 
 `GoogleSearchConsoleCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -435,6 +459,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GoogleSearchConsoleExecuteResult"></a>
+
 `GoogleSearchConsoleExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -465,6 +491,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GoogleSearchConsoleExecuteResultWithMeta"></a>
 
 `GoogleSearchConsoleExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -522,6 +550,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsAllFieldsListResult"></a>
+
 `SearchAnalyticsAllFieldsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -564,6 +594,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByCountryListResult"></a>
 
 `SearchAnalyticsByCountryListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -608,6 +640,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByDateListResult"></a>
+
 `SearchAnalyticsByDateListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -650,6 +684,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByDeviceListResult"></a>
 
 `SearchAnalyticsByDeviceListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -694,6 +730,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByPageListResult"></a>
+
 `SearchAnalyticsByPageListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -737,6 +775,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByQueryListResult"></a>
+
 `SearchAnalyticsByQueryListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -779,6 +819,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SitesListResult"></a>
+
 `SitesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -820,6 +862,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SitemapsListResult"></a>
+
 `SitemapsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -837,6 +881,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_search_console.models.GoogleSearchConsoleExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GoogleSearchConsoleReplicationConfig"></a>
 
 `GoogleSearchConsoleReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Search Console.
@@ -863,6 +909,8 @@ Classes
     `start_date: str | None`
     :   UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated.
 
+<a id="SearchAnalyticsAllFieldsListResultMeta"></a>
+
 `SearchAnalyticsAllFieldsListResultMeta(**data: Any)`
 :   Metadata for search_analytics_all_fields.Action.LIST operation
     
@@ -884,6 +932,8 @@ Classes
 
     `response_aggregation_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsAllFieldsRequest"></a>
 
 `SearchAnalyticsAllFieldsRequest(**data: Any)`
 :   Request body for search analytics query grouped by all dimensions.
@@ -927,6 +977,8 @@ Classes
 
     `type_: str | Any`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsAllFieldsSearchData"></a>
 
 `SearchAnalyticsAllFieldsSearchData(**data: Any)`
 :   Search result data for search_analytics_all_fields entity.
@@ -980,6 +1032,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site from which the data originates
 
+<a id="SearchAnalyticsByCountryListResultMeta"></a>
+
 `SearchAnalyticsByCountryListResultMeta(**data: Any)`
 :   Metadata for search_analytics_by_country.Action.LIST operation
     
@@ -1001,6 +1055,8 @@ Classes
 
     `response_aggregation_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByCountryRequest"></a>
 
 `SearchAnalyticsByCountryRequest(**data: Any)`
 :   Request body for search analytics query grouped by date and country.
@@ -1045,6 +1101,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByCountrySearchData"></a>
+
 `SearchAnalyticsByCountrySearchData(**data: Any)`
 :   Search result data for search_analytics_by_country entity.
     
@@ -1088,6 +1146,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByDateListResultMeta"></a>
+
 `SearchAnalyticsByDateListResultMeta(**data: Any)`
 :   Metadata for search_analytics_by_date.Action.LIST operation
     
@@ -1109,6 +1169,8 @@ Classes
 
     `response_aggregation_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByDateRequest"></a>
 
 `SearchAnalyticsByDateRequest(**data: Any)`
 :   Request body for search analytics query grouped by date.
@@ -1153,6 +1215,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByDateSearchData"></a>
+
 `SearchAnalyticsByDateSearchData(**data: Any)`
 :   Search result data for search_analytics_by_date entity.
     
@@ -1193,6 +1257,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByDeviceListResultMeta"></a>
+
 `SearchAnalyticsByDeviceListResultMeta(**data: Any)`
 :   Metadata for search_analytics_by_device.Action.LIST operation
     
@@ -1214,6 +1280,8 @@ Classes
 
     `response_aggregation_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByDeviceRequest"></a>
 
 `SearchAnalyticsByDeviceRequest(**data: Any)`
 :   Request body for search analytics query grouped by date and device.
@@ -1258,6 +1326,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByDeviceSearchData"></a>
+
 `SearchAnalyticsByDeviceSearchData(**data: Any)`
 :   Search result data for search_analytics_by_device entity.
     
@@ -1301,6 +1371,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which search analytics data is being provided
 
+<a id="SearchAnalyticsByPageListResultMeta"></a>
+
 `SearchAnalyticsByPageListResultMeta(**data: Any)`
 :   Metadata for search_analytics_by_page.Action.LIST operation
     
@@ -1322,6 +1394,8 @@ Classes
 
     `response_aggregation_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByPageRequest"></a>
 
 `SearchAnalyticsByPageRequest(**data: Any)`
 :   Request body for search analytics query grouped by date and page.
@@ -1366,6 +1440,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByPageSearchData"></a>
+
 `SearchAnalyticsByPageSearchData(**data: Any)`
 :   Search result data for search_analytics_by_page entity.
     
@@ -1409,6 +1485,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByQueryListResultMeta"></a>
+
 `SearchAnalyticsByQueryListResultMeta(**data: Any)`
 :   Metadata for search_analytics_by_query.Action.LIST operation
     
@@ -1430,6 +1508,8 @@ Classes
 
     `response_aggregation_type: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsByQueryRequest"></a>
 
 `SearchAnalyticsByQueryRequest(**data: Any)`
 :   Request body for search analytics query grouped by date and query.
@@ -1474,6 +1554,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="SearchAnalyticsByQuerySearchData"></a>
+
 `SearchAnalyticsByQuerySearchData(**data: Any)`
 :   Search result data for search_analytics_by_query entity.
     
@@ -1517,6 +1599,8 @@ Classes
     `site_url: str | None`
     :   The URL of the site for which the search analytics data is captured
 
+<a id="SearchAnalyticsResponse"></a>
+
 `SearchAnalyticsResponse(**data: Any)`
 :   Response containing search analytics data.
     
@@ -1541,6 +1625,8 @@ Classes
 
     `rows: list[airbyte_agent_sdk.connectors.google_search_console.models.SearchAnalyticsRow] | Any`
     :   The type of the None singleton.
+
+<a id="SearchAnalyticsRow"></a>
 
 `SearchAnalyticsRow(**data: Any)`
 :   A row of search analytics data.
@@ -1576,6 +1662,8 @@ Classes
     `position: float | Any | None`
     :   The type of the None singleton.
 
+<a id="Site"></a>
+
 `Site(**data: Any)`
 :   A Search Console site resource.
     
@@ -1600,6 +1688,8 @@ Classes
 
     `site_url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Sitemap"></a>
 
 `Sitemap(**data: Any)`
 :   A sitemap resource with details about a submitted sitemap.
@@ -1647,6 +1737,8 @@ Classes
     `warnings: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SitemapContent"></a>
+
 `SitemapContent(**data: Any)`
 :   Information about a specific content type in a sitemap.
     
@@ -1675,6 +1767,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SitemapsList"></a>
+
 `SitemapsList(**data: Any)`
 :   Response containing a list of sitemaps.
     
@@ -1696,6 +1790,8 @@ Classes
 
     `sitemap: list[airbyte_agent_sdk.connectors.google_search_console.models.Sitemap] | Any`
     :   The type of the None singleton.
+
+<a id="SitemapsSearchData"></a>
 
 `SitemapsSearchData(**data: Any)`
 :   Search result data for sitemaps entity.
@@ -1743,6 +1839,8 @@ Classes
     `warnings: str | None`
     :   Warnings encountered while processing the sitemaps
 
+<a id="SitesList"></a>
+
 `SitesList(**data: Any)`
 :   Response containing a list of sites.
     
@@ -1764,6 +1862,8 @@ Classes
 
     `site_entry: list[airbyte_agent_sdk.connectors.google_search_console.models.Site] | Any`
     :   The type of the None singleton.
+
+<a id="SitesSearchData"></a>
 
 `SitesSearchData(**data: Any)`
 :   Search result data for sites entity.

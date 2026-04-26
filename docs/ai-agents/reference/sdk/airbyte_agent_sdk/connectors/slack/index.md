@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesSearchResult"></a>
+
 `ChannelMessagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChannelsSearchResult"></a>
 
 `ChannelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ThreadsSearchResult"></a>
+
 `ThreadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChannelMessagesSearchData"></a>
 
 `ChannelMessagesSearchData(**data: Any)`
 :   Search result data for channel_messages entity.
@@ -284,6 +300,8 @@ Classes
 
     `user: str | None`
     :   User ID who sent the message.
+
+<a id="ChannelsSearchData"></a>
 
 `ChannelsSearchData(**data: Any)`
 :   Search result data for channels entity.
@@ -396,6 +414,8 @@ Classes
 
     `updated: int | None`
     :   The timestamp when the channel was last updated.
+
+<a id="SlackConnector"></a>
 
 `SlackConnector(auth_config: SlackAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Slack API connector.
@@ -653,6 +673,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SlackReplicationConfig"></a>
+
 `SlackReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Slack.
     
@@ -680,6 +702,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+<a id="ThreadsSearchData"></a>
 
 `ThreadsSearchData(**data: Any)`
 :   Search result data for threads entity.
@@ -747,6 +771,8 @@ Classes
 
     `user: str | None`
     :   User ID who sent the message.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

@@ -10,6 +10,8 @@ Pylon connector.
 Classes
 -------
 
+<a id="AccountsQuery"></a>
+
 `AccountsQuery(connector: PylonConnector)`
 :   Query class for Accounts entity operations.
     
@@ -69,6 +71,8 @@ Classes
         Returns:
             AccountResponse
 
+<a id="ArticlesQuery"></a>
+
 `ArticlesQuery(connector: PylonConnector)`
 :   Query class for Articles entity operations.
     
@@ -104,6 +108,8 @@ Classes
         Returns:
             ArticleResponse
 
+<a id="CollectionsQuery"></a>
+
 `CollectionsQuery(connector: PylonConnector)`
 :   Query class for Collections entity operations.
     
@@ -123,6 +129,8 @@ Classes
         
         Returns:
             CollectionResponse
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: PylonConnector)`
 :   Query class for Contacts entity operations.
@@ -177,6 +185,8 @@ Classes
         Returns:
             ContactResponse
 
+<a id="CustomFieldsQuery"></a>
+
 `CustomFieldsQuery(connector: PylonConnector)`
 :   Query class for CustomFields entity operations.
     
@@ -205,6 +215,8 @@ Classes
         Returns:
             CustomFieldsListResult
 
+<a id="IssueNotesQuery"></a>
+
 `IssueNotesQuery(connector: PylonConnector)`
 :   Query class for IssueNotes entity operations.
     
@@ -225,6 +237,8 @@ Classes
         Returns:
             IssueNoteResponse
 
+<a id="IssueThreadsQuery"></a>
+
 `IssueThreadsQuery(connector: PylonConnector)`
 :   Query class for IssueThreads entity operations.
     
@@ -242,6 +256,8 @@ Classes
         
         Returns:
             IssueThreadResponse
+
+<a id="IssuesQuery"></a>
 
 `IssuesQuery(connector: PylonConnector)`
 :   Query class for Issues entity operations.
@@ -305,6 +321,8 @@ Classes
         Returns:
             IssueResponse
 
+<a id="MeQuery"></a>
+
 `MeQuery(connector: PylonConnector)`
 :   Query class for Me entity operations.
     
@@ -317,6 +335,8 @@ Classes
         
         Returns:
             User
+
+<a id="MessagesQuery"></a>
 
 `MessagesQuery(connector: PylonConnector)`
 :   Query class for Messages entity operations.
@@ -335,6 +355,8 @@ Classes
         
         Returns:
             MessagesListResult
+
+<a id="MilestonesQuery"></a>
 
 `MilestonesQuery(connector: PylonConnector)`
 :   Query class for Milestones entity operations.
@@ -366,6 +388,8 @@ Classes
         
         Returns:
             MilestoneResponse
+
+<a id="ProjectsQuery"></a>
 
 `ProjectsQuery(connector: PylonConnector)`
 :   Query class for Projects entity operations.
@@ -400,6 +424,8 @@ Classes
         
         Returns:
             ProjectResponse
+
+<a id="PylonConnector"></a>
 
 `PylonConnector(auth_config: PylonAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Pylon API connector.
@@ -589,6 +615,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="TagsQuery"></a>
+
 `TagsQuery(connector: PylonConnector)`
 :   Query class for Tags entity operations.
     
@@ -640,6 +668,8 @@ Classes
         Returns:
             TagResponse
 
+<a id="TasksQuery"></a>
+
 `TasksQuery(connector: PylonConnector)`
 :   Query class for Tasks entity operations.
     
@@ -676,6 +706,8 @@ Classes
         
         Returns:
             TaskResponse
+
+<a id="TeamsQuery"></a>
 
 `TeamsQuery(connector: PylonConnector)`
 :   Query class for Teams entity operations.
@@ -725,6 +757,8 @@ Classes
         Returns:
             TeamResponse
 
+<a id="TicketFormsQuery"></a>
+
 `TicketFormsQuery(connector: PylonConnector)`
 :   Query class for TicketForms entity operations.
     
@@ -742,6 +776,8 @@ Classes
         Returns:
             TicketFormsListResult
 
+<a id="UserRolesQuery"></a>
+
 `UserRolesQuery(connector: PylonConnector)`
 :   Query class for UserRoles entity operations.
     
@@ -758,6 +794,8 @@ Classes
         
         Returns:
             UserRolesListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: PylonConnector)`
 :   Query class for Users entity operations.

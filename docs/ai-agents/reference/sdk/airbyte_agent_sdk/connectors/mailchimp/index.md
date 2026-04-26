@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EmailActivitySearchResult"></a>
 
 `EmailActivitySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ListsSearchResult"></a>
+
 `ListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ReportsSearchResult"></a>
+
 `ReportsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -297,6 +313,8 @@ Classes
     `web_id: int | None`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="EmailActivitySearchData"></a>
+
 `EmailActivitySearchData(**data: Any)`
 :   Search result data for email_activity entity.
     
@@ -345,6 +363,8 @@ Classes
 
     `url: str | None`
     :   If the action is a 'click', the URL on which the member clicked.
+
+<a id="ListsSearchData"></a>
 
 `ListsSearchData(**data: Any)`
 :   Search result data for lists entity.
@@ -428,6 +448,8 @@ Classes
     `web_id: int | None`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="MailchimpAuthConfig"></a>
+
 `MailchimpAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -449,6 +471,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MailchimpConnector"></a>
 
 `MailchimpConnector(auth_config: MailchimpAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, data_center: str | None = None)`
 :   Type-safe Mailchimp API connector.
@@ -637,6 +661,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="ReportsSearchData"></a>
 
 `ReportsSearchData(**data: Any)`
 :   Search result data for reports entity.

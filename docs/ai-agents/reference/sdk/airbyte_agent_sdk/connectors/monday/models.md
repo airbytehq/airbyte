@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="ActivityLog"></a>
+
 `ActivityLog(**data: Any)`
 :   Monday.com activity log entry
     
@@ -49,6 +51,8 @@ Classes
 
     `user_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ActivityLogsSearchData"></a>
 
 `ActivityLogsSearchData(**data: Any)`
 :   Search result data for activity_logs entity.
@@ -96,6 +100,8 @@ Classes
     `user_id: str | None`
     :   ID of the user who performed the action
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -123,6 +129,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -182,6 +190,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ActivityLogsSearchResult"></a>
+
 `ActivityLogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -218,6 +228,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardsSearchResult"></a>
 
 `BoardsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -256,6 +268,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemsSearchResult"></a>
+
 `ItemsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -292,6 +306,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -330,6 +346,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsSearchResult"></a>
+
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -366,6 +384,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UpdatesSearchResult"></a>
 
 `UpdatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -404,6 +424,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -441,6 +463,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspacesSearchResult"></a>
+
 `WorkspacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -456,6 +480,8 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Board"></a>
 
 `Board(**data: Any)`
 :   Monday.com board object
@@ -527,6 +553,8 @@ Classes
     `workspace: airbyte_agent_sdk.connectors.monday.models.BoardWorkspace | Any | None`
     :   The type of the None singleton.
 
+<a id="BoardColumnsItem"></a>
+
 `BoardColumnsItem(**data: Any)`
 :   Nested schema for Board.columns_item
     
@@ -567,6 +595,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="BoardCreator"></a>
+
 `BoardCreator(**data: Any)`
 :   Board creator
     
@@ -588,6 +618,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardGroupsItem"></a>
 
 `BoardGroupsItem(**data: Any)`
 :   Nested schema for Board.groups_item
@@ -626,6 +658,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BoardOwnersItem"></a>
+
 `BoardOwnersItem(**data: Any)`
 :   Nested schema for Board.owners_item
     
@@ -647,6 +681,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardSubscribersItem"></a>
 
 `BoardSubscribersItem(**data: Any)`
 :   Nested schema for Board.subscribers_item
@@ -670,6 +706,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardTagsItem"></a>
+
 `BoardTagsItem(**data: Any)`
 :   Nested schema for Board.tags_item
     
@@ -692,6 +730,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BoardTopGroup"></a>
+
 `BoardTopGroup(**data: Any)`
 :   Top group on the board
     
@@ -713,6 +753,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardViewsItem"></a>
 
 `BoardViewsItem(**data: Any)`
 :   Nested schema for Board.views_item
@@ -748,6 +790,8 @@ Classes
     `view_specific_data_str: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BoardWorkspace"></a>
+
 `BoardWorkspace(**data: Any)`
 :   Workspace the board belongs to
     
@@ -778,6 +822,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BoardsSearchData"></a>
 
 `BoardsSearchData(**data: Any)`
 :   Search result data for boards entity.
@@ -858,6 +904,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   Workspace the board belongs to
 
+<a id="Item"></a>
+
 `Item(**data: Any)`
 :   Monday.com item object
     
@@ -910,6 +958,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ItemBoard"></a>
+
 `ItemBoard(**data: Any)`
 :   Board the item belongs to
     
@@ -934,6 +984,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ItemColumnValuesItem"></a>
 
 `ItemColumnValuesItem(**data: Any)`
 :   Nested schema for Item.column_values_item
@@ -966,6 +1018,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ItemGroup"></a>
+
 `ItemGroup(**data: Any)`
 :   Group the item belongs to
     
@@ -987,6 +1041,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ItemParentItem"></a>
 
 `ItemParentItem(**data: Any)`
 :   Parent item (for subitems)
@@ -1010,6 +1066,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemSubscribersItem"></a>
+
 `ItemSubscribersItem(**data: Any)`
 :   Nested schema for Item.subscribers_item
     
@@ -1031,6 +1089,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ItemsSearchData"></a>
 
 `ItemsSearchData(**data: Any)`
 :   Search result data for items entity.
@@ -1093,6 +1153,8 @@ Classes
     `updates: list[typing.Any] | None`
     :   Item updates
 
+<a id="MondayApiTokenAuthenticationAuthConfig"></a>
+
 `MondayApiTokenAuthenticationAuthConfig(**data: Any)`
 :   API Token Authentication
     
@@ -1114,6 +1176,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MondayCheckResult"></a>
 
 `MondayCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1147,6 +1211,8 @@ Classes
 
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
+
+<a id="MondayExecuteResult"></a>
 
 `MondayExecuteResult(**data: Any)`
 :   Response envelope with data only.
@@ -1184,6 +1250,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MondayExecuteResultWithMeta"></a>
 
 `MondayExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1231,6 +1299,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ActivityLogsListResult"></a>
+
 `ActivityLogsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1271,6 +1341,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BoardsListResult"></a>
 
 `BoardsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -1313,6 +1385,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ItemsListResult"></a>
+
 `ItemsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1353,6 +1427,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsListResult"></a>
 
 `TagsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -1395,6 +1471,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TeamsListResult"></a>
+
 `TeamsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1435,6 +1513,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UpdatesListResult"></a>
 
 `UpdatesListResult(**data: Any)`
 :   Response envelope with data only.
@@ -1477,6 +1557,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1518,6 +1600,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspacesListResult"></a>
+
 `WorkspacesListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1535,6 +1619,8 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MondayOauth20AuthenticationAuthConfig"></a>
 
 `MondayOauth20AuthenticationAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
@@ -1564,6 +1650,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="Tag"></a>
+
 `Tag(**data: Any)`
 :   Monday.com tag object
     
@@ -1592,6 +1680,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TagsSearchData"></a>
+
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
     
@@ -1619,6 +1709,8 @@ Classes
 
     `name: str | None`
     :   Tag name
+
+<a id="Team"></a>
 
 `Team(**data: Any)`
 :   Monday.com team object
@@ -1651,6 +1743,8 @@ Classes
     `users: list[airbyte_agent_sdk.connectors.monday.models.TeamUsersItem | None] | Any | None`
     :   The type of the None singleton.
 
+<a id="TeamUsersItem"></a>
+
 `TeamUsersItem(**data: Any)`
 :   Nested schema for Team.users_item
     
@@ -1672,6 +1766,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
@@ -1703,6 +1799,8 @@ Classes
 
     `users: list[typing.Any] | None`
     :   Team members
+
+<a id="Update"></a>
 
 `Update(**data: Any)`
 :   Monday.com update (comment/post) object
@@ -1749,6 +1847,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UpdateAssetsItem"></a>
 
 `UpdateAssetsItem(**data: Any)`
 :   Nested schema for Update.assets_item
@@ -1799,6 +1899,8 @@ Classes
     `url_thumbnail: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UpdateAssetsItemUploadedBy"></a>
+
 `UpdateAssetsItemUploadedBy(**data: Any)`
 :   Nested schema for UpdateAssetsItem.uploaded_by
     
@@ -1820,6 +1922,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UpdateRepliesItem"></a>
 
 `UpdateRepliesItem(**data: Any)`
 :   Nested schema for Update.replies_item
@@ -1857,6 +1961,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UpdatesSearchData"></a>
 
 `UpdatesSearchData(**data: Any)`
 :   Search result data for updates entity.
@@ -1903,6 +2009,8 @@ Classes
 
     `updated_at: str | None`
     :   When the update was last modified
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   Monday.com user object
@@ -1998,6 +2106,8 @@ Classes
     `utc_hours_diff: int | Any | None`
     :   The type of the None singleton.
 
+<a id="UsersSearchData"></a>
+
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
     
@@ -2092,6 +2202,8 @@ Classes
     `utc_hours_diff: int | None`
     :   UTC hours difference for the user's timezone
 
+<a id="Workspace"></a>
+
 `Workspace(**data: Any)`
 :   Monday.com workspace object
     
@@ -2147,6 +2259,8 @@ Classes
     `users_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceUsersSubscribersItem | None] | Any | None`
     :   The type of the None singleton.
 
+<a id="WorkspaceAccountProduct"></a>
+
 `WorkspaceAccountProduct(**data: Any)`
 :   Account product info
     
@@ -2172,6 +2286,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceOwnersSubscribersItem"></a>
+
 `WorkspaceOwnersSubscribersItem(**data: Any)`
 :   Nested schema for Workspace.owners_subscribers_item
     
@@ -2194,6 +2310,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceSettings"></a>
+
 `WorkspaceSettings(**data: Any)`
 :   Workspace settings
     
@@ -2215,6 +2333,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="WorkspaceSettingsIcon"></a>
 
 `WorkspaceSettingsIcon(**data: Any)`
 :   Nested schema for WorkspaceSettings.icon
@@ -2241,6 +2361,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorkspaceTeamOwnersSubscribersItem"></a>
+
 `WorkspaceTeamOwnersSubscribersItem(**data: Any)`
 :   Nested schema for Workspace.team_owners_subscribers_item
     
@@ -2265,6 +2387,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="WorkspaceTeamsSubscribersItem"></a>
 
 `WorkspaceTeamsSubscribersItem(**data: Any)`
 :   Nested schema for Workspace.teams_subscribers_item
@@ -2291,6 +2415,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="WorkspaceUsersSubscribersItem"></a>
+
 `WorkspaceUsersSubscribersItem(**data: Any)`
 :   Nested schema for Workspace.users_subscribers_item
     
@@ -2312,6 +2438,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="WorkspacesSearchData"></a>
 
 `WorkspacesSearchData(**data: Any)`
 :   Search result data for workspaces entity.

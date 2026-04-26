@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AgentsSearchData"></a>
+
 `AgentsSearchData(**data: Any)`
 :   Search result data for agents entity.
     
@@ -64,6 +66,8 @@ Classes
 
     `role_id: int | None`
     :   Agent role ID
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -133,6 +137,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -160,6 +166,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -195,6 +203,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AgentsSearchResult"></a>
+
 `AgentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -210,6 +220,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChatsSearchResult"></a>
 
 `ChatsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -227,6 +239,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="DepartmentsSearchResult"></a>
+
 `DepartmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -242,6 +256,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ShortcutsSearchResult"></a>
 
 `ShortcutsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -259,6 +275,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TriggersSearchResult"></a>
+
 `TriggersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -274,6 +292,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_chat.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ChatsSearchData"></a>
 
 `ChatsSearchData(**data: Any)`
 :   Search result data for chats entity.
@@ -321,6 +341,8 @@ Classes
     `update_timestamp: str | None`
     :   Last update timestamp
 
+<a id="DepartmentsSearchData"></a>
+
 `DepartmentsSearchData(**data: Any)`
 :   Search result data for departments entity.
     
@@ -351,6 +373,8 @@ Classes
 
     `name: str | None`
     :   Department name
+
+<a id="ShortcutsSearchData"></a>
 
 `ShortcutsSearchData(**data: Any)`
 :   Search result data for shortcuts entity.
@@ -383,6 +407,8 @@ Classes
     `tags: list[typing.Any] | None`
     :   Tags applied when shortcut is used
 
+<a id="TriggersSearchData"></a>
+
 `TriggersSearchData(**data: Any)`
 :   Search result data for triggers entity.
     
@@ -411,6 +437,8 @@ Classes
     `name: str | None`
     :   Trigger name
 
+<a id="ZendeskChatAuthConfig"></a>
+
 `ZendeskChatAuthConfig(**data: Any)`
 :   OAuth 2.0 Access Token - Authenticate using an OAuth 2.0 access token from Zendesk
     
@@ -432,6 +460,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskChatConnector"></a>
 
 `ZendeskChatConnector(auth_config: ZendeskChatAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Zendesk-Chat API connector.
@@ -632,6 +662,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="ZendeskChatReplicationConfig"></a>
 
 `ZendeskChatReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Zendesk Chat.

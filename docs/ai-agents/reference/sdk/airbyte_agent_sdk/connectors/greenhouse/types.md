@@ -10,6 +10,8 @@ Type definitions for greenhouse connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="ApplicationAttachmentDownloadParams"></a>
+
 `ApplicationAttachmentDownloadParams(*args, **kwargs)`
 :   Parameters for application_attachment.download operation
 
@@ -48,6 +52,8 @@ Classes
 
     `range_header: str`
     :   The type of the None singleton.
+
+<a id="ApplicationsAndCondition"></a>
 
 `ApplicationsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -69,6 +75,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ApplicationsAnyCondition"></a>
+
 `ApplicationsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -88,6 +96,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsAnyValueFilter"></a>
 
 `ApplicationsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -158,6 +168,8 @@ Classes
     `status: Any`
     :   Status of the application.
 
+<a id="ApplicationsContainsCondition"></a>
+
 `ApplicationsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -169,6 +181,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsEqCondition"></a>
 
 `ApplicationsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -182,6 +196,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ApplicationsFuzzyCondition"></a>
+
 `ApplicationsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -193,6 +209,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsGetParams"></a>
 
 `ApplicationsGetParams(*args, **kwargs)`
 :   Parameters for applications.get operation
@@ -206,6 +224,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ApplicationsGtCondition"></a>
+
 `ApplicationsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -218,6 +238,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ApplicationsGteCondition"></a>
+
 `ApplicationsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -229,6 +251,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsInCondition"></a>
 
 `ApplicationsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -249,6 +273,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsInFilter"></a>
 
 `ApplicationsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -319,6 +345,8 @@ Classes
     `status: list[str]`
     :   Status of the application.
 
+<a id="ApplicationsKeywordCondition"></a>
+
 `ApplicationsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -331,6 +359,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
 
+<a id="ApplicationsLikeCondition"></a>
+
 `ApplicationsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -342,6 +372,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsListParams"></a>
 
 `ApplicationsListParams(*args, **kwargs)`
 :   Parameters for applications.list operation
@@ -373,6 +405,8 @@ Classes
     `status: str`
     :   The type of the None singleton.
 
+<a id="ApplicationsLtCondition"></a>
+
 `ApplicationsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -384,6 +418,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsLteCondition"></a>
 
 `ApplicationsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -397,6 +433,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ApplicationsNeqCondition"></a>
+
 `ApplicationsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -408,6 +446,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ApplicationsNotCondition"></a>
 
 `ApplicationsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -429,6 +469,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ApplicationsOrCondition"></a>
+
 `ApplicationsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -448,6 +490,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ApplicationsSearchFilter"></a>
 
 `ApplicationsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering applications search queries.
@@ -518,6 +562,8 @@ Classes
     `status: str | None`
     :   Status of the application.
 
+<a id="ApplicationsSearchQuery"></a>
+
 `ApplicationsSearchQuery(*args, **kwargs)`
 :   Search query for applications entity.
 
@@ -532,6 +578,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ApplicationsSortFilter"></a>
 
 `ApplicationsSortFilter(*args, **kwargs)`
 :   Available fields for sorting applications search results.
@@ -602,6 +650,8 @@ Classes
     `status: Literal['asc', 'desc']`
     :   Status of the application.
 
+<a id="ApplicationsStringFilter"></a>
+
 `ApplicationsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -671,6 +721,8 @@ Classes
     `status: str`
     :   Status of the application.
 
+<a id="CandidateAttachmentDownloadParams"></a>
+
 `CandidateAttachmentDownloadParams(*args, **kwargs)`
 :   Parameters for candidate_attachment.download operation
 
@@ -688,6 +740,8 @@ Classes
 
     `range_header: str`
     :   The type of the None singleton.
+
+<a id="CandidatesAndCondition"></a>
 
 `CandidatesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -709,6 +763,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CandidatesAnyCondition"></a>
+
 `CandidatesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -728,6 +784,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesAnyValueFilter"></a>
 
 `CandidatesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -816,6 +874,8 @@ Classes
     `website_addresses: Any`
     :   List of candidate's website addresses
 
+<a id="CandidatesContainsCondition"></a>
+
 `CandidatesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -827,6 +887,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesEqCondition"></a>
 
 `CandidatesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -840,6 +902,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CandidatesFuzzyCondition"></a>
+
 `CandidatesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -851,6 +915,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesGetParams"></a>
 
 `CandidatesGetParams(*args, **kwargs)`
 :   Parameters for candidates.get operation
@@ -864,6 +930,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CandidatesGtCondition"></a>
+
 `CandidatesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -876,6 +944,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CandidatesGteCondition"></a>
+
 `CandidatesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -887,6 +957,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesInCondition"></a>
 
 `CandidatesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -907,6 +979,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesInFilter"></a>
 
 `CandidatesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -995,6 +1069,8 @@ Classes
     `website_addresses: list[list[typing.Any]]`
     :   List of candidate's website addresses
 
+<a id="CandidatesKeywordCondition"></a>
+
 `CandidatesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1007,6 +1083,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
 
+<a id="CandidatesLikeCondition"></a>
+
 `CandidatesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1018,6 +1096,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesListParams"></a>
 
 `CandidatesListParams(*args, **kwargs)`
 :   Parameters for candidates.list operation
@@ -1034,6 +1114,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="CandidatesLtCondition"></a>
+
 `CandidatesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1045,6 +1127,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesLteCondition"></a>
 
 `CandidatesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1058,6 +1142,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CandidatesNeqCondition"></a>
+
 `CandidatesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1069,6 +1155,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CandidatesNotCondition"></a>
 
 `CandidatesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1090,6 +1178,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
     :   The type of the None singleton.
 
+<a id="CandidatesOrCondition"></a>
+
 `CandidatesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1109,6 +1199,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CandidatesSearchFilter"></a>
 
 `CandidatesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering candidates search queries.
@@ -1197,6 +1289,8 @@ Classes
     `website_addresses: list[typing.Any] | None`
     :   List of candidate's website addresses
 
+<a id="CandidatesSearchQuery"></a>
+
 `CandidatesSearchQuery(*args, **kwargs)`
 :   Search query for candidates entity.
 
@@ -1211,6 +1305,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSortFilter]`
     :   The type of the None singleton.
+
+<a id="CandidatesSortFilter"></a>
 
 `CandidatesSortFilter(*args, **kwargs)`
 :   Available fields for sorting candidates search results.
@@ -1299,6 +1395,8 @@ Classes
     `website_addresses: Literal['asc', 'desc']`
     :   List of candidate's website addresses
 
+<a id="CandidatesStringFilter"></a>
+
 `CandidatesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1386,6 +1484,8 @@ Classes
     `website_addresses: str`
     :   List of candidate's website addresses
 
+<a id="DepartmentsAndCondition"></a>
+
 `DepartmentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1406,6 +1506,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="DepartmentsAnyCondition"></a>
+
 `DepartmentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1425,6 +1527,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsAnyValueFilter"></a>
 
 `DepartmentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1456,6 +1560,8 @@ Classes
     `parent_id: Any`
     :   Unique ID of the parent department of this department.
 
+<a id="DepartmentsContainsCondition"></a>
+
 `DepartmentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1467,6 +1573,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsEqCondition"></a>
 
 `DepartmentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1480,6 +1588,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="DepartmentsFuzzyCondition"></a>
+
 `DepartmentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1491,6 +1601,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsGetParams"></a>
 
 `DepartmentsGetParams(*args, **kwargs)`
 :   Parameters for departments.get operation
@@ -1504,6 +1616,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="DepartmentsGtCondition"></a>
+
 `DepartmentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1516,6 +1630,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="DepartmentsGteCondition"></a>
+
 `DepartmentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1527,6 +1643,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsInCondition"></a>
 
 `DepartmentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1547,6 +1665,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsInFilter"></a>
 
 `DepartmentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1578,6 +1698,8 @@ Classes
     `parent_id: list[int]`
     :   Unique ID of the parent department of this department.
 
+<a id="DepartmentsKeywordCondition"></a>
+
 `DepartmentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1590,6 +1712,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
 
+<a id="DepartmentsLikeCondition"></a>
+
 `DepartmentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1601,6 +1725,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsListParams"></a>
 
 `DepartmentsListParams(*args, **kwargs)`
 :   Parameters for departments.list operation
@@ -1617,6 +1743,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="DepartmentsLtCondition"></a>
+
 `DepartmentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1628,6 +1756,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsLteCondition"></a>
 
 `DepartmentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1641,6 +1771,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="DepartmentsNeqCondition"></a>
+
 `DepartmentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1652,6 +1784,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="DepartmentsNotCondition"></a>
 
 `DepartmentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1673,6 +1807,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="DepartmentsOrCondition"></a>
+
 `DepartmentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1692,6 +1828,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="DepartmentsSearchFilter"></a>
 
 `DepartmentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering departments search queries.
@@ -1723,6 +1861,8 @@ Classes
     `parent_id: int | None`
     :   Unique ID of the parent department of this department.
 
+<a id="DepartmentsSearchQuery"></a>
+
 `DepartmentsSearchQuery(*args, **kwargs)`
 :   Search query for departments entity.
 
@@ -1737,6 +1877,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="DepartmentsSortFilter"></a>
 
 `DepartmentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting departments search results.
@@ -1768,6 +1910,8 @@ Classes
     `parent_id: Literal['asc', 'desc']`
     :   Unique ID of the parent department of this department.
 
+<a id="DepartmentsStringFilter"></a>
+
 `DepartmentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1798,6 +1942,8 @@ Classes
     `parent_id: str`
     :   Unique ID of the parent department of this department.
 
+<a id="JobPostsAndCondition"></a>
+
 `JobPostsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1818,6 +1964,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="JobPostsAnyCondition"></a>
+
 `JobPostsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1837,6 +1985,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsAnyValueFilter"></a>
 
 `JobPostsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1892,6 +2042,8 @@ Classes
     `updated_at: Any`
     :   Date and time when the job post was last updated.
 
+<a id="JobPostsContainsCondition"></a>
+
 `JobPostsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1903,6 +2055,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsEqCondition"></a>
 
 `JobPostsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1916,6 +2070,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSearchFilter`
     :   The type of the None singleton.
 
+<a id="JobPostsFuzzyCondition"></a>
+
 `JobPostsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1927,6 +2083,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsGetParams"></a>
 
 `JobPostsGetParams(*args, **kwargs)`
 :   Parameters for job_posts.get operation
@@ -1940,6 +2098,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="JobPostsGtCondition"></a>
+
 `JobPostsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1952,6 +2112,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSearchFilter`
     :   The type of the None singleton.
 
+<a id="JobPostsGteCondition"></a>
+
 `JobPostsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1963,6 +2125,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSearchFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsInCondition"></a>
 
 `JobPostsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1983,6 +2147,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsInFilter"></a>
 
 `JobPostsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2038,6 +2204,8 @@ Classes
     `updated_at: list[str]`
     :   Date and time when the job post was last updated.
 
+<a id="JobPostsKeywordCondition"></a>
+
 `JobPostsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2050,6 +2218,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
 
+<a id="JobPostsLikeCondition"></a>
+
 `JobPostsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2061,6 +2231,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsListParams"></a>
 
 `JobPostsListParams(*args, **kwargs)`
 :   Parameters for job_posts.list operation
@@ -2083,6 +2255,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="JobPostsLtCondition"></a>
+
 `JobPostsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2094,6 +2268,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSearchFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsLteCondition"></a>
 
 `JobPostsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2107,6 +2283,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSearchFilter`
     :   The type of the None singleton.
 
+<a id="JobPostsNeqCondition"></a>
+
 `JobPostsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2118,6 +2296,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSearchFilter`
     :   The type of the None singleton.
+
+<a id="JobPostsNotCondition"></a>
 
 `JobPostsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2139,6 +2319,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
     :   The type of the None singleton.
 
+<a id="JobPostsOrCondition"></a>
+
 `JobPostsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2158,6 +2340,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="JobPostsSearchFilter"></a>
 
 `JobPostsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering job_posts search queries.
@@ -2213,6 +2397,8 @@ Classes
     `updated_at: str | None`
     :   Date and time when the job post was last updated.
 
+<a id="JobPostsSearchQuery"></a>
+
 `JobPostsSearchQuery(*args, **kwargs)`
 :   Search query for job_posts entity.
 
@@ -2227,6 +2413,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSortFilter]`
     :   The type of the None singleton.
+
+<a id="JobPostsSortFilter"></a>
 
 `JobPostsSortFilter(*args, **kwargs)`
 :   Available fields for sorting job_posts search results.
@@ -2282,6 +2470,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Date and time when the job post was last updated.
 
+<a id="JobPostsStringFilter"></a>
+
 `JobPostsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2336,6 +2526,8 @@ Classes
     `updated_at: str`
     :   Date and time when the job post was last updated.
 
+<a id="JobsAndCondition"></a>
+
 `JobsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2356,6 +2548,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="JobsAnyCondition"></a>
+
 `JobsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2375,6 +2569,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="JobsAnyValueFilter"></a>
 
 `JobsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2439,6 +2635,8 @@ Classes
     `updated_at: Any`
     :   The date and time the job was last updated
 
+<a id="JobsContainsCondition"></a>
+
 `JobsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2450,6 +2648,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="JobsEqCondition"></a>
 
 `JobsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2463,6 +2663,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.JobsSearchFilter`
     :   The type of the None singleton.
 
+<a id="JobsFuzzyCondition"></a>
+
 `JobsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2474,6 +2676,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
+
+<a id="JobsGetParams"></a>
 
 `JobsGetParams(*args, **kwargs)`
 :   Parameters for jobs.get operation
@@ -2487,6 +2691,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="JobsGtCondition"></a>
+
 `JobsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2499,6 +2705,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.JobsSearchFilter`
     :   The type of the None singleton.
 
+<a id="JobsGteCondition"></a>
+
 `JobsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2510,6 +2718,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.JobsSearchFilter`
     :   The type of the None singleton.
+
+<a id="JobsInCondition"></a>
 
 `JobsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2530,6 +2740,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.JobsInFilter`
     :   The type of the None singleton.
+
+<a id="JobsInFilter"></a>
 
 `JobsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2594,6 +2806,8 @@ Classes
     `updated_at: list[str]`
     :   The date and time the job was last updated
 
+<a id="JobsKeywordCondition"></a>
+
 `JobsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2606,6 +2820,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
 
+<a id="JobsLikeCondition"></a>
+
 `JobsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2617,6 +2833,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
+
+<a id="JobsListParams"></a>
 
 `JobsListParams(*args, **kwargs)`
 :   Parameters for jobs.list operation
@@ -2633,6 +2851,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="JobsLtCondition"></a>
+
 `JobsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2644,6 +2864,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.JobsSearchFilter`
     :   The type of the None singleton.
+
+<a id="JobsLteCondition"></a>
 
 `JobsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2657,6 +2879,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.JobsSearchFilter`
     :   The type of the None singleton.
 
+<a id="JobsNeqCondition"></a>
+
 `JobsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2668,6 +2892,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.JobsSearchFilter`
     :   The type of the None singleton.
+
+<a id="JobsNotCondition"></a>
 
 `JobsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2689,6 +2915,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
     :   The type of the None singleton.
 
+<a id="JobsOrCondition"></a>
+
 `JobsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2708,6 +2936,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="JobsSearchFilter"></a>
 
 `JobsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering jobs search queries.
@@ -2772,6 +3002,8 @@ Classes
     `updated_at: str | None`
     :   The date and time the job was last updated
 
+<a id="JobsSearchQuery"></a>
+
 `JobsSearchQuery(*args, **kwargs)`
 :   Search query for jobs entity.
 
@@ -2786,6 +3018,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsSortFilter]`
     :   The type of the None singleton.
+
+<a id="JobsSortFilter"></a>
 
 `JobsSortFilter(*args, **kwargs)`
 :   Available fields for sorting jobs search results.
@@ -2850,6 +3084,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The date and time the job was last updated
 
+<a id="JobsStringFilter"></a>
+
 `JobsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2913,6 +3149,8 @@ Classes
     `updated_at: str`
     :   The date and time the job was last updated
 
+<a id="OffersAndCondition"></a>
+
 `OffersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2933,6 +3171,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="OffersAnyCondition"></a>
+
 `OffersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2952,6 +3192,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OffersAnyValueFilter"></a>
 
 `OffersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3004,6 +3246,8 @@ Classes
     `version: Any`
     :   Version of the offer data
 
+<a id="OffersContainsCondition"></a>
+
 `OffersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3015,6 +3259,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OffersEqCondition"></a>
 
 `OffersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3028,6 +3274,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.OffersSearchFilter`
     :   The type of the None singleton.
 
+<a id="OffersFuzzyCondition"></a>
+
 `OffersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3039,6 +3287,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
+
+<a id="OffersGetParams"></a>
 
 `OffersGetParams(*args, **kwargs)`
 :   Parameters for offers.get operation
@@ -3052,6 +3302,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="OffersGtCondition"></a>
+
 `OffersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3064,6 +3316,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.OffersSearchFilter`
     :   The type of the None singleton.
 
+<a id="OffersGteCondition"></a>
+
 `OffersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3075,6 +3329,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.OffersSearchFilter`
     :   The type of the None singleton.
+
+<a id="OffersInCondition"></a>
 
 `OffersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3095,6 +3351,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.OffersInFilter`
     :   The type of the None singleton.
+
+<a id="OffersInFilter"></a>
 
 `OffersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3147,6 +3405,8 @@ Classes
     `version: list[int]`
     :   Version of the offer data
 
+<a id="OffersKeywordCondition"></a>
+
 `OffersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3159,6 +3419,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
 
+<a id="OffersLikeCondition"></a>
+
 `OffersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3170,6 +3432,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
+
+<a id="OffersListParams"></a>
 
 `OffersListParams(*args, **kwargs)`
 :   Parameters for offers.list operation
@@ -3195,6 +3459,8 @@ Classes
     `resolved_after: str`
     :   The type of the None singleton.
 
+<a id="OffersLtCondition"></a>
+
 `OffersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3206,6 +3472,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.OffersSearchFilter`
     :   The type of the None singleton.
+
+<a id="OffersLteCondition"></a>
 
 `OffersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3219,6 +3487,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.OffersSearchFilter`
     :   The type of the None singleton.
 
+<a id="OffersNeqCondition"></a>
+
 `OffersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3230,6 +3500,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.OffersSearchFilter`
     :   The type of the None singleton.
+
+<a id="OffersNotCondition"></a>
 
 `OffersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3251,6 +3523,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
     :   The type of the None singleton.
 
+<a id="OffersOrCondition"></a>
+
 `OffersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3270,6 +3544,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="OffersSearchFilter"></a>
 
 `OffersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering offers search queries.
@@ -3322,6 +3598,8 @@ Classes
     `version: int | None`
     :   Version of the offer data
 
+<a id="OffersSearchQuery"></a>
+
 `OffersSearchQuery(*args, **kwargs)`
 :   Search query for offers entity.
 
@@ -3336,6 +3614,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersSortFilter]`
     :   The type of the None singleton.
+
+<a id="OffersSortFilter"></a>
 
 `OffersSortFilter(*args, **kwargs)`
 :   Available fields for sorting offers search results.
@@ -3388,6 +3668,8 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version of the offer data
 
+<a id="OffersStringFilter"></a>
+
 `OffersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3439,6 +3721,8 @@ Classes
     `version: str`
     :   Version of the offer data
 
+<a id="OfficesAndCondition"></a>
+
 `OfficesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3459,6 +3743,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="OfficesAnyCondition"></a>
+
 `OfficesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3478,6 +3764,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OfficesAnyValueFilter"></a>
 
 `OfficesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3515,6 +3803,8 @@ Classes
     `primary_contact_user_id: Any`
     :   User ID of the primary contact person for this office
 
+<a id="OfficesContainsCondition"></a>
+
 `OfficesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3526,6 +3816,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="OfficesEqCondition"></a>
 
 `OfficesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3539,6 +3831,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.OfficesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OfficesFuzzyCondition"></a>
+
 `OfficesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3550,6 +3844,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
+
+<a id="OfficesGetParams"></a>
 
 `OfficesGetParams(*args, **kwargs)`
 :   Parameters for offices.get operation
@@ -3563,6 +3859,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="OfficesGtCondition"></a>
+
 `OfficesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3575,6 +3873,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.OfficesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OfficesGteCondition"></a>
+
 `OfficesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3586,6 +3886,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.OfficesSearchFilter`
     :   The type of the None singleton.
+
+<a id="OfficesInCondition"></a>
 
 `OfficesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3606,6 +3908,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.OfficesInFilter`
     :   The type of the None singleton.
+
+<a id="OfficesInFilter"></a>
 
 `OfficesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3643,6 +3947,8 @@ Classes
     `primary_contact_user_id: list[int]`
     :   User ID of the primary contact person for this office
 
+<a id="OfficesKeywordCondition"></a>
+
 `OfficesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3655,6 +3961,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
 
+<a id="OfficesLikeCondition"></a>
+
 `OfficesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3666,6 +3974,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
+
+<a id="OfficesListParams"></a>
 
 `OfficesListParams(*args, **kwargs)`
 :   Parameters for offices.list operation
@@ -3682,6 +3992,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="OfficesLtCondition"></a>
+
 `OfficesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3693,6 +4005,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.OfficesSearchFilter`
     :   The type of the None singleton.
+
+<a id="OfficesLteCondition"></a>
 
 `OfficesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3706,6 +4020,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.OfficesSearchFilter`
     :   The type of the None singleton.
 
+<a id="OfficesNeqCondition"></a>
+
 `OfficesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3717,6 +4033,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.OfficesSearchFilter`
     :   The type of the None singleton.
+
+<a id="OfficesNotCondition"></a>
 
 `OfficesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3738,6 +4056,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
     :   The type of the None singleton.
 
+<a id="OfficesOrCondition"></a>
+
 `OfficesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3757,6 +4077,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="OfficesSearchFilter"></a>
 
 `OfficesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering offices search queries.
@@ -3794,6 +4116,8 @@ Classes
     `primary_contact_user_id: int | None`
     :   User ID of the primary contact person for this office
 
+<a id="OfficesSearchQuery"></a>
+
 `OfficesSearchQuery(*args, **kwargs)`
 :   Search query for offices entity.
 
@@ -3808,6 +4132,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesSortFilter]`
     :   The type of the None singleton.
+
+<a id="OfficesSortFilter"></a>
 
 `OfficesSortFilter(*args, **kwargs)`
 :   Available fields for sorting offices search results.
@@ -3845,6 +4171,8 @@ Classes
     `primary_contact_user_id: Literal['asc', 'desc']`
     :   User ID of the primary contact person for this office
 
+<a id="OfficesStringFilter"></a>
+
 `OfficesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3881,6 +4209,8 @@ Classes
     `primary_contact_user_id: str`
     :   User ID of the primary contact person for this office
 
+<a id="ScheduledInterviewsGetParams"></a>
+
 `ScheduledInterviewsGetParams(*args, **kwargs)`
 :   Parameters for scheduled_interviews.get operation
 
@@ -3892,6 +4222,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="ScheduledInterviewsListParams"></a>
 
 `ScheduledInterviewsListParams(*args, **kwargs)`
 :   Parameters for scheduled_interviews.list operation
@@ -3926,6 +4258,8 @@ Classes
     `updated_before: str`
     :   The type of the None singleton.
 
+<a id="SourcesAndCondition"></a>
+
 `SourcesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3945,6 +4279,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="SourcesAnyCondition"></a>
 
 `SourcesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3966,6 +4302,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="SourcesAnyValueFilter"></a>
+
 `SourcesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -3984,6 +4322,8 @@ Classes
     `type_: Any`
     :   Type of the data source
 
+<a id="SourcesContainsCondition"></a>
+
 `SourcesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3995,6 +4335,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="SourcesEqCondition"></a>
 
 `SourcesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4008,6 +4350,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.SourcesSearchFilter`
     :   The type of the None singleton.
 
+<a id="SourcesFuzzyCondition"></a>
+
 `SourcesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4019,6 +4363,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
+
+<a id="SourcesGtCondition"></a>
 
 `SourcesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -4032,6 +4378,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.SourcesSearchFilter`
     :   The type of the None singleton.
 
+<a id="SourcesGteCondition"></a>
+
 `SourcesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4043,6 +4391,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.SourcesSearchFilter`
     :   The type of the None singleton.
+
+<a id="SourcesInCondition"></a>
 
 `SourcesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4064,6 +4414,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.greenhouse.types.SourcesInFilter`
     :   The type of the None singleton.
 
+<a id="SourcesInFilter"></a>
+
 `SourcesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -4082,6 +4434,8 @@ Classes
     `type_: list[dict[str, typing.Any]]`
     :   Type of the data source
 
+<a id="SourcesKeywordCondition"></a>
+
 `SourcesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4094,6 +4448,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
 
+<a id="SourcesLikeCondition"></a>
+
 `SourcesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4105,6 +4461,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
+
+<a id="SourcesListParams"></a>
 
 `SourcesListParams(*args, **kwargs)`
 :   Parameters for sources.list operation
@@ -4121,6 +4479,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="SourcesLtCondition"></a>
+
 `SourcesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4132,6 +4492,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.SourcesSearchFilter`
     :   The type of the None singleton.
+
+<a id="SourcesLteCondition"></a>
 
 `SourcesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4145,6 +4507,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.SourcesSearchFilter`
     :   The type of the None singleton.
 
+<a id="SourcesNeqCondition"></a>
+
 `SourcesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4156,6 +4520,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.SourcesSearchFilter`
     :   The type of the None singleton.
+
+<a id="SourcesNotCondition"></a>
 
 `SourcesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4177,6 +4543,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
     :   The type of the None singleton.
 
+<a id="SourcesOrCondition"></a>
+
 `SourcesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4197,6 +4565,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="SourcesSearchFilter"></a>
+
 `SourcesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering sources search queries.
 
@@ -4215,6 +4585,8 @@ Classes
     `type_: dict[str, typing.Any] | None`
     :   Type of the data source
 
+<a id="SourcesSearchQuery"></a>
+
 `SourcesSearchQuery(*args, **kwargs)`
 :   Search query for sources entity.
 
@@ -4229,6 +4601,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesSortFilter]`
     :   The type of the None singleton.
+
+<a id="SourcesSortFilter"></a>
 
 `SourcesSortFilter(*args, **kwargs)`
 :   Available fields for sorting sources search results.
@@ -4248,6 +4622,8 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of the data source
 
+<a id="SourcesStringFilter"></a>
+
 `SourcesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4265,6 +4641,8 @@ Classes
 
     `type_: str`
     :   Type of the data source
+
+<a id="UsersAndCondition"></a>
 
 `UsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4286,6 +4664,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="UsersAnyCondition"></a>
+
 `UsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4305,6 +4685,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersAnyValueFilter"></a>
 
 `UsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4357,6 +4739,8 @@ Classes
     `updated_at: Any`
     :   The date and time when the user account was last updated.
 
+<a id="UsersContainsCondition"></a>
+
 `UsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4368,6 +4752,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="UsersEqCondition"></a>
 
 `UsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4381,6 +4767,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.greenhouse.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersFuzzyCondition"></a>
+
 `UsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4392,6 +4780,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersGetParams"></a>
 
 `UsersGetParams(*args, **kwargs)`
 :   Parameters for users.get operation
@@ -4405,6 +4795,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="UsersGtCondition"></a>
+
 `UsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4417,6 +4809,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.greenhouse.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersGteCondition"></a>
+
 `UsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4428,6 +4822,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.greenhouse.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersInCondition"></a>
 
 `UsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4448,6 +4844,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.greenhouse.types.UsersInFilter`
     :   The type of the None singleton.
+
+<a id="UsersInFilter"></a>
 
 `UsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4500,6 +4898,8 @@ Classes
     `updated_at: list[str]`
     :   The date and time when the user account was last updated.
 
+<a id="UsersKeywordCondition"></a>
+
 `UsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4512,6 +4912,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
 
+<a id="UsersLikeCondition"></a>
+
 `UsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4523,6 +4925,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
+
+<a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
 :   Parameters for users.list operation
@@ -4551,6 +4955,8 @@ Classes
     `updated_before: str`
     :   The type of the None singleton.
 
+<a id="UsersLtCondition"></a>
+
 `UsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4562,6 +4968,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.greenhouse.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersLteCondition"></a>
 
 `UsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4575,6 +4983,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.greenhouse.types.UsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="UsersNeqCondition"></a>
+
 `UsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4586,6 +4996,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.greenhouse.types.UsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="UsersNotCondition"></a>
 
 `UsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4607,6 +5019,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="UsersOrCondition"></a>
+
 `UsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4626,6 +5040,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="UsersSearchFilter"></a>
 
 `UsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering users search queries.
@@ -4678,6 +5094,8 @@ Classes
     `updated_at: str | None`
     :   The date and time when the user account was last updated.
 
+<a id="UsersSearchQuery"></a>
+
 `UsersSearchQuery(*args, **kwargs)`
 :   Search query for users entity.
 
@@ -4692,6 +5110,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="UsersSortFilter"></a>
 
 `UsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting users search results.
@@ -4743,6 +5163,8 @@ Classes
 
     `updated_at: Literal['asc', 'desc']`
     :   The date and time when the user account was last updated.
+
+<a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

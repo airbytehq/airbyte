@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Ad"></a>
+
 `Ad(**data: Any)`
 :   Snapchat ad object
     
@@ -67,6 +69,8 @@ Classes
 
     `updated_at: str | Any`
     :   The type of the None singleton.
+
+<a id="AdAccount"></a>
 
 `AdAccount(**data: Any)`
 :   Snapchat ad account object
@@ -135,6 +139,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="AdAccountRegulations"></a>
+
 `AdAccountRegulations(**data: Any)`
 :   Regulatory settings
     
@@ -156,6 +162,8 @@ Classes
 
     `restricted_delivery_signals: bool | Any`
     :   Whether restricted delivery signals are enabled
+
+<a id="AdSquad"></a>
 
 `AdSquad(**data: Any)`
 :   Snapchat ad squad object
@@ -260,6 +268,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="AdSquadSkadnetworkProperties"></a>
+
 `AdSquadSkadnetworkProperties(**data: Any)`
 :   SKAdNetwork properties
     
@@ -287,6 +297,8 @@ Classes
 
     `status: str | Any`
     :   The type of the None singleton.
+
+<a id="AdSquadTargeting"></a>
 
 `AdSquadTargeting(**data: Any)`
 :   Targeting specification
@@ -328,6 +340,8 @@ Classes
     `regulated_content: bool | Any`
     :   The type of the None singleton.
 
+<a id="AdSquadTargetingAutoExpansionOptions"></a>
+
 `AdSquadTargetingAutoExpansionOptions(**data: Any)`
 :   Nested schema for AdSquadTargeting.auto_expansion_options
     
@@ -350,6 +364,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdSquadTargetingAutoExpansionOptionsInterestExpansionOption"></a>
+
 `AdSquadTargetingAutoExpansionOptionsInterestExpansionOption(**data: Any)`
 :   Nested schema for AdSquadTargetingAutoExpansionOptions.interest_expansion_option
     
@@ -371,6 +387,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdSquadTargetingGeosItem"></a>
 
 `AdSquadTargetingGeosItem(**data: Any)`
 :   Nested schema for AdSquadTargeting.geos_item
@@ -397,6 +415,8 @@ Classes
     `operation: str | Any`
     :   The type of the None singleton.
 
+<a id="AdaccountsListResultMeta"></a>
+
 `AdaccountsListResultMeta(**data: Any)`
 :   Metadata for adaccounts.Action.LIST operation
     
@@ -418,6 +438,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="AdaccountsSearchData"></a>
 
 `AdaccountsSearchData(**data: Any)`
 :   Search result data for adaccounts entity.
@@ -486,6 +508,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AdsListResultMeta"></a>
+
 `AdsListResultMeta(**data: Any)`
 :   Metadata for ads.Action.LIST operation
     
@@ -507,6 +531,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="AdsSearchData"></a>
 
 `AdsSearchData(**data: Any)`
 :   Search result data for ads entity.
@@ -563,6 +589,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AdsquadsListResultMeta"></a>
+
 `AdsquadsListResultMeta(**data: Any)`
 :   Metadata for adsquads.Action.LIST operation
     
@@ -584,6 +612,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="AdsquadsSearchData"></a>
 
 `AdsquadsSearchData(**data: Any)`
 :   Search result data for adsquads entity.
@@ -688,6 +718,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -715,6 +747,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -774,6 +808,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdaccountsSearchResult"></a>
+
 `AdaccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -810,6 +846,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsSearchResult"></a>
 
 `AdsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -848,6 +886,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsquadsSearchResult"></a>
+
 `AdsquadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -884,6 +924,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchResult"></a>
 
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -922,6 +964,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativesSearchResult"></a>
+
 `CreativesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -958,6 +1002,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MediaSearchResult"></a>
 
 `MediaSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -996,6 +1042,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrganizationsSearchResult"></a>
+
 `OrganizationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1033,6 +1081,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SegmentsSearchResult"></a>
+
 `SegmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1048,6 +1098,8 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   Snapchat campaign object
@@ -1107,6 +1159,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignObjectiveV2Properties"></a>
+
 `CampaignObjectiveV2Properties(**data: Any)`
 :   Objective V2 properties for the campaign
     
@@ -1132,6 +1186,8 @@ Classes
     `objective_v2_type: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -1153,6 +1209,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -1205,6 +1263,8 @@ Classes
 
     `updated_at: str | None`
     :   Last update timestamp
+
+<a id="Creative"></a>
 
 `Creative(**data: Any)`
 :   Snapchat creative object
@@ -1285,6 +1345,8 @@ Classes
     `web_view_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CreativeWebViewProperties | Any`
     :   The type of the None singleton.
 
+<a id="CreativeAdToPlaceProperties"></a>
+
 `CreativeAdToPlaceProperties(**data: Any)`
 :   Ad-to-place properties
     
@@ -1306,6 +1368,8 @@ Classes
 
     `place_id: str | Any`
     :   The type of the None singleton.
+
+<a id="CreativeWebViewProperties"></a>
 
 `CreativeWebViewProperties(**data: Any)`
 :   Web view properties
@@ -1341,6 +1405,8 @@ Classes
     `use_immersive_mode: bool | Any`
     :   The type of the None singleton.
 
+<a id="CreativesListResultMeta"></a>
+
 `CreativesListResultMeta(**data: Any)`
 :   Metadata for creatives.Action.LIST operation
     
@@ -1362,6 +1428,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="CreativesSearchData"></a>
 
 `CreativesSearchData(**data: Any)`
 :   Search result data for creatives entity.
@@ -1442,6 +1510,8 @@ Classes
     `web_view_properties: dict[str, typing.Any] | None`
     :   Web view properties
 
+<a id="Media"></a>
+
 `Media(**data: Any)`
 :   Snapchat media object
     
@@ -1512,6 +1582,8 @@ Classes
     `visibility: str | Any`
     :   The type of the None singleton.
 
+<a id="MediaImageMetadata"></a>
+
 `MediaImageMetadata(**data: Any)`
 :   Image-specific metadata
     
@@ -1540,6 +1612,8 @@ Classes
     `width_px: int | Any`
     :   The type of the None singleton.
 
+<a id="MediaListResultMeta"></a>
+
 `MediaListResultMeta(**data: Any)`
 :   Metadata for media.Action.LIST operation
     
@@ -1561,6 +1635,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="MediaSearchData"></a>
 
 `MediaSearchData(**data: Any)`
 :   Search result data for media entity.
@@ -1631,6 +1707,8 @@ Classes
 
     `visibility: str | None`
     :   Media visibility setting
+
+<a id="Organization"></a>
 
 `Organization(**data: Any)`
 :   Snapchat organization object
@@ -1726,6 +1804,8 @@ Classes
     `verification_request_id: str | Any`
     :   The type of the None singleton.
 
+<a id="OrganizationConfigurationSettings"></a>
+
 `OrganizationConfigurationSettings(**data: Any)`
 :   Organization configuration settings
     
@@ -1748,6 +1828,8 @@ Classes
     `notifications_enabled: bool | Any`
     :   Whether notifications are enabled
 
+<a id="OrganizationsListResultMeta"></a>
+
 `OrganizationsListResultMeta(**data: Any)`
 :   Metadata for organizations.Action.LIST operation
     
@@ -1769,6 +1851,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="OrganizationsSearchData"></a>
 
 `OrganizationsSearchData(**data: Any)`
 :   Search result data for organizations entity.
@@ -1855,6 +1939,8 @@ Classes
     `updated_at: str | None`
     :   Last update timestamp
 
+<a id="Segment"></a>
+
 `Segment(**data: Any)`
 :   Snapchat audience segment object
     
@@ -1919,6 +2005,8 @@ Classes
     `visible_to: list[str] | Any`
     :   The type of the None singleton.
 
+<a id="SegmentsListResultMeta"></a>
+
 `SegmentsListResultMeta(**data: Any)`
 :   Metadata for segments.Action.LIST operation
     
@@ -1940,6 +2028,8 @@ Classes
 
     `next_link: str | Any`
     :   The type of the None singleton.
+
+<a id="SegmentsSearchData"></a>
 
 `SegmentsSearchData(**data: Any)`
 :   Search result data for segments entity.
@@ -2002,6 +2092,8 @@ Classes
     `visible_to: list[typing.Any] | None`
     :   Visibility settings
 
+<a id="SnapchatMarketingAuthConfig"></a>
+
 `SnapchatMarketingAuthConfig(**data: Any)`
 :   Authentication
     
@@ -2029,6 +2121,8 @@ Classes
 
     `refresh_token: str`
     :   Refresh Token to renew the expired Access Token
+
+<a id="SnapchatMarketingCheckResult"></a>
 
 `SnapchatMarketingCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2063,6 +2157,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="SnapchatMarketingExecuteResult"></a>
+
 `SnapchatMarketingExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2091,6 +2187,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SnapchatMarketingExecuteResultWithMeta"></a>
 
 `SnapchatMarketingExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2150,6 +2248,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdaccountsListResult"></a>
+
 `AdaccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2192,6 +2292,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdsquadsListResult"></a>
 
 `AdsquadsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2236,6 +2338,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdsListResult"></a>
+
 `AdsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2278,6 +2382,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsListResult"></a>
 
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2322,6 +2428,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativesListResult"></a>
+
 `CreativesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2364,6 +2472,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MediaListResult"></a>
 
 `MediaListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2408,6 +2518,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrganizationsListResult"></a>
+
 `OrganizationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2451,6 +2563,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SegmentsListResult"></a>
+
 `SegmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2469,6 +2583,8 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.SnapchatMarketingExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SnapchatMarketingReplicationConfig"></a>
 
 `SnapchatMarketingReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Snapchat Marketing.

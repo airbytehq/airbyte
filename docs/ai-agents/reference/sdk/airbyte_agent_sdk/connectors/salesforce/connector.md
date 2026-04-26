@@ -10,6 +10,8 @@ Salesforce connector.
 Classes
 -------
 
+<a id="AccountsQuery"></a>
+
 `AccountsQuery(connector: SalesforceConnector)`
 :   Query class for Accounts entity operations.
     
@@ -117,6 +119,8 @@ Classes
                 Returns:
                     AccountsListResult
 
+<a id="AttachmentsQuery"></a>
+
 `AttachmentsQuery(connector: SalesforceConnector)`
 :   Query class for Attachments entity operations.
     
@@ -191,6 +195,8 @@ Classes
                 Returns:
                     AttachmentsListResult
 
+<a id="CampaignsQuery"></a>
+
 `CampaignsQuery(connector: SalesforceConnector)`
 :   Query class for Campaigns entity operations.
     
@@ -244,6 +250,8 @@ Classes
                 Returns:
                     CampaignsListResult
 
+<a id="CasesQuery"></a>
+
 `CasesQuery(connector: SalesforceConnector)`
 :   Query class for Cases entity operations.
     
@@ -296,6 +304,8 @@ Classes
         
                 Returns:
                     CasesListResult
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: SalesforceConnector)`
 :   Query class for Contacts entity operations.
@@ -398,6 +408,8 @@ Classes
                 Returns:
                     ContactsListResult
 
+<a id="ContentVersionsQuery"></a>
+
 `ContentVersionsQuery(connector: SalesforceConnector)`
 :   Query class for ContentVersions entity operations.
     
@@ -471,6 +483,8 @@ Classes
                 Returns:
                     ContentVersionsListResult
 
+<a id="EventsQuery"></a>
+
 `EventsQuery(connector: SalesforceConnector)`
 :   Query class for Events entity operations.
     
@@ -523,6 +537,8 @@ Classes
         
                 Returns:
                     EventsListResult
+
+<a id="LeadsQuery"></a>
 
 `LeadsQuery(connector: SalesforceConnector)`
 :   Query class for Leads entity operations.
@@ -633,6 +649,8 @@ Classes
                 Returns:
                     LeadsListResult
 
+<a id="NotesQuery"></a>
+
 `NotesQuery(connector: SalesforceConnector)`
 :   Query class for Notes entity operations.
     
@@ -685,6 +703,8 @@ Classes
         
                 Returns:
                     NotesListResult
+
+<a id="OpportunitiesQuery"></a>
 
 `OpportunitiesQuery(connector: SalesforceConnector)`
 :   Query class for Opportunities entity operations.
@@ -787,6 +807,8 @@ Classes
                 Returns:
                     OpportunitiesListResult
 
+<a id="QueryQuery"></a>
+
 `QueryQuery(connector: SalesforceConnector)`
 :   Query class for Query entity operations.
     
@@ -810,6 +832,8 @@ Classes
         
                 Returns:
                     QueryListResult
+
+<a id="ReportsQuery"></a>
 
 `ReportsQuery(connector: SalesforceConnector)`
 :   Query class for Reports entity operations.
@@ -845,6 +869,8 @@ Classes
         
                 Returns:
                     ReportsListResult
+
+<a id="SalesforceConnector"></a>
 
 `SalesforceConnector(auth_config: SalesforceAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, instance_url: str | None = None)`
 :   Type-safe Salesforce API connector.
@@ -1088,6 +1114,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SobjectsQuery"></a>
+
 `SobjectsQuery(connector: SalesforceConnector)`
 :   Query class for Sobjects entity operations.
     
@@ -1102,6 +1130,8 @@ Classes
         
                 Returns:
                     SobjectsListResult
+
+<a id="TasksQuery"></a>
 
 `TasksQuery(connector: SalesforceConnector)`
 :   Query class for Tasks entity operations.

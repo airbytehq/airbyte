@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -99,6 +103,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DailyActiveUsersSearchResult"></a>
+
 `DailyActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -135,6 +141,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DevicesSearchResult"></a>
 
 `DevicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -173,6 +181,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FourWeeklyActiveUsersSearchResult"></a>
+
 `FourWeeklyActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -209,6 +219,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LocationsSearchResult"></a>
 
 `LocationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -247,6 +259,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PagesSearchResult"></a>
+
 `PagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -283,6 +297,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TrafficSourcesSearchResult"></a>
 
 `TrafficSourcesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -321,6 +337,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WebsiteOverviewSearchResult"></a>
+
 `WebsiteOverviewSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -358,6 +376,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WeeklyActiveUsersSearchResult"></a>
+
 `WeeklyActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -373,6 +393,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="DailyActiveUsersListResultMeta"></a>
 
 `DailyActiveUsersListResultMeta(**data: Any)`
 :   Metadata for daily_active_users.Action.LIST operation
@@ -395,6 +417,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="DailyActiveUsersRequest"></a>
 
 `DailyActiveUsersRequest(**data: Any)`
 :   Request body for daily active users report
@@ -433,6 +457,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="DailyActiveUsersRequestDaterangesItem"></a>
+
 `DailyActiveUsersRequestDaterangesItem(**data: Any)`
 :   Nested schema for DailyActiveUsersRequest.dateRanges_item
     
@@ -458,6 +484,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="DailyActiveUsersRequestDimensionsItem"></a>
+
 `DailyActiveUsersRequestDimensionsItem(**data: Any)`
 :   Nested schema for DailyActiveUsersRequest.dimensions_item
     
@@ -480,6 +508,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="DailyActiveUsersRequestMetricsItem"></a>
+
 `DailyActiveUsersRequestMetricsItem(**data: Any)`
 :   Nested schema for DailyActiveUsersRequest.metrics_item
     
@@ -501,6 +531,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="DailyActiveUsersSearchData"></a>
 
 `DailyActiveUsersSearchData(**data: Any)`
 :   Search result data for daily_active_users entity.
@@ -536,6 +568,8 @@ Classes
     `start_date: str | None`
     :   Start date of the reporting period
 
+<a id="DevicesListResultMeta"></a>
+
 `DevicesListResultMeta(**data: Any)`
 :   Metadata for devices.Action.LIST operation
     
@@ -557,6 +591,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="DevicesRequest"></a>
 
 `DevicesRequest(**data: Any)`
 :   Request body for devices report
@@ -595,6 +631,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="DevicesRequestDaterangesItem"></a>
+
 `DevicesRequestDaterangesItem(**data: Any)`
 :   Nested schema for DevicesRequest.dateRanges_item
     
@@ -620,6 +658,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="DevicesRequestDimensionsItem"></a>
+
 `DevicesRequestDimensionsItem(**data: Any)`
 :   Nested schema for DevicesRequest.dimensions_item
     
@@ -642,6 +682,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="DevicesRequestMetricsItem"></a>
+
 `DevicesRequestMetricsItem(**data: Any)`
 :   Nested schema for DevicesRequest.metrics_item
     
@@ -663,6 +705,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="DevicesSearchData"></a>
 
 `DevicesSearchData(**data: Any)`
 :   Search result data for devices entity.
@@ -728,6 +772,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="DimensionHeader"></a>
+
 `DimensionHeader(**data: Any)`
 :   DimensionHeader type definition
     
@@ -749,6 +795,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="DimensionValue"></a>
 
 `DimensionValue(**data: Any)`
 :   DimensionValue type definition
@@ -772,6 +820,8 @@ Classes
     `value: str | Any`
     :   The type of the None singleton.
 
+<a id="FourWeeklyActiveUsersListResultMeta"></a>
+
 `FourWeeklyActiveUsersListResultMeta(**data: Any)`
 :   Metadata for four_weekly_active_users.Action.LIST operation
     
@@ -793,6 +843,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="FourWeeklyActiveUsersRequest"></a>
 
 `FourWeeklyActiveUsersRequest(**data: Any)`
 :   Request body for four-weekly active users report
@@ -831,6 +883,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="FourWeeklyActiveUsersRequestDaterangesItem"></a>
+
 `FourWeeklyActiveUsersRequestDaterangesItem(**data: Any)`
 :   Nested schema for FourWeeklyActiveUsersRequest.dateRanges_item
     
@@ -856,6 +910,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="FourWeeklyActiveUsersRequestDimensionsItem"></a>
+
 `FourWeeklyActiveUsersRequestDimensionsItem(**data: Any)`
 :   Nested schema for FourWeeklyActiveUsersRequest.dimensions_item
     
@@ -878,6 +934,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="FourWeeklyActiveUsersRequestMetricsItem"></a>
+
 `FourWeeklyActiveUsersRequestMetricsItem(**data: Any)`
 :   Nested schema for FourWeeklyActiveUsersRequest.metrics_item
     
@@ -899,6 +957,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="FourWeeklyActiveUsersSearchData"></a>
 
 `FourWeeklyActiveUsersSearchData(**data: Any)`
 :   Search result data for four_weekly_active_users entity.
@@ -934,6 +994,8 @@ Classes
     `start_date: str | None`
     :   Start date of the reporting period
 
+<a id="GoogleAnalyticsDataApiAuthConfig"></a>
+
 `GoogleAnalyticsDataApiAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -961,6 +1023,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth 2.0 Refresh Token for obtaining new access tokens
+
+<a id="GoogleAnalyticsDataApiCheckResult"></a>
 
 `GoogleAnalyticsDataApiCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -995,6 +1059,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GoogleAnalyticsDataApiExecuteResult"></a>
+
 `GoogleAnalyticsDataApiExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1023,6 +1089,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GoogleAnalyticsDataApiExecuteResultWithMeta"></a>
 
 `GoogleAnalyticsDataApiExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1082,6 +1150,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DailyActiveUsersListResult"></a>
+
 `DailyActiveUsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1124,6 +1194,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DevicesListResult"></a>
 
 `DevicesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1168,6 +1240,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FourWeeklyActiveUsersListResult"></a>
+
 `FourWeeklyActiveUsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1210,6 +1284,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LocationsListResult"></a>
 
 `LocationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1254,6 +1330,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PagesListResult"></a>
+
 `PagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1296,6 +1374,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TrafficSourcesListResult"></a>
 
 `TrafficSourcesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1340,6 +1420,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WebsiteOverviewListResult"></a>
+
 `WebsiteOverviewListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1383,6 +1465,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WeeklyActiveUsersListResult"></a>
+
 `WeeklyActiveUsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1401,6 +1485,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GoogleAnalyticsDataApiReplicationConfig"></a>
 
 `GoogleAnalyticsDataApiReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Analytics.
@@ -1424,6 +1510,8 @@ Classes
     `property_ids: str`
     :   A list of GA4 Property IDs to replicate data from.
 
+<a id="LocationsListResultMeta"></a>
+
 `LocationsListResultMeta(**data: Any)`
 :   Metadata for locations.Action.LIST operation
     
@@ -1445,6 +1533,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="LocationsRequest"></a>
 
 `LocationsRequest(**data: Any)`
 :   Request body for locations report
@@ -1483,6 +1573,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="LocationsRequestDaterangesItem"></a>
+
 `LocationsRequestDaterangesItem(**data: Any)`
 :   Nested schema for LocationsRequest.dateRanges_item
     
@@ -1508,6 +1600,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="LocationsRequestDimensionsItem"></a>
+
 `LocationsRequestDimensionsItem(**data: Any)`
 :   Nested schema for LocationsRequest.dimensions_item
     
@@ -1530,6 +1624,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="LocationsRequestMetricsItem"></a>
+
 `LocationsRequestMetricsItem(**data: Any)`
 :   Nested schema for LocationsRequest.metrics_item
     
@@ -1551,6 +1647,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="LocationsSearchData"></a>
 
 `LocationsSearchData(**data: Any)`
 :   Search result data for locations entity.
@@ -1616,6 +1714,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="MetricHeader"></a>
+
 `MetricHeader(**data: Any)`
 :   MetricHeader type definition
     
@@ -1641,6 +1741,8 @@ Classes
     `type_: str | Any`
     :   The type of the None singleton.
 
+<a id="MetricValue"></a>
+
 `MetricValue(**data: Any)`
 :   MetricValue type definition
     
@@ -1663,6 +1765,8 @@ Classes
     `value: str | Any`
     :   The type of the None singleton.
 
+<a id="PagesListResultMeta"></a>
+
 `PagesListResultMeta(**data: Any)`
 :   Metadata for pages.Action.LIST operation
     
@@ -1684,6 +1788,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="PagesRequest"></a>
 
 `PagesRequest(**data: Any)`
 :   Request body for pages report
@@ -1722,6 +1828,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="PagesRequestDaterangesItem"></a>
+
 `PagesRequestDaterangesItem(**data: Any)`
 :   Nested schema for PagesRequest.dateRanges_item
     
@@ -1747,6 +1855,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="PagesRequestDimensionsItem"></a>
+
 `PagesRequestDimensionsItem(**data: Any)`
 :   Nested schema for PagesRequest.dimensions_item
     
@@ -1769,6 +1879,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="PagesRequestMetricsItem"></a>
+
 `PagesRequestMetricsItem(**data: Any)`
 :   Nested schema for PagesRequest.metrics_item
     
@@ -1790,6 +1902,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="PagesSearchData"></a>
 
 `PagesSearchData(**data: Any)`
 :   Search result data for pages entity.
@@ -1834,6 +1948,8 @@ Classes
     `start_date: str | None`
     :   Start date of the reporting period
 
+<a id="Row"></a>
+
 `Row(**data: Any)`
 :   Row type definition
     
@@ -1858,6 +1974,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RunReportResponse"></a>
 
 `RunReportResponse(**data: Any)`
 :   Response from the runReport endpoint
@@ -1899,6 +2017,8 @@ Classes
     `rows: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.Row] | Any`
     :   The type of the None singleton.
 
+<a id="RunReportResponseMetadata"></a>
+
 `RunReportResponseMetadata(**data: Any)`
 :   Nested schema for RunReportResponse.metadata
     
@@ -1923,6 +2043,8 @@ Classes
 
     `time_zone: str | Any`
     :   The property's current timezone
+
+<a id="RunReportResponsePropertyquota"></a>
 
 `RunReportResponsePropertyquota(**data: Any)`
 :   Quota status for this Analytics property
@@ -1961,6 +2083,8 @@ Classes
     `tokens_per_project_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperprojectperhour | Any`
     :   The type of the None singleton.
 
+<a id="RunReportResponsePropertyquotaConcurrentrequests"></a>
+
 `RunReportResponsePropertyquotaConcurrentrequests(**data: Any)`
 :   Nested schema for RunReportResponsePropertyquota.concurrentRequests
     
@@ -1985,6 +2109,8 @@ Classes
 
     `remaining: int | Any`
     :   The type of the None singleton.
+
+<a id="RunReportResponsePropertyquotaPotentiallythresholdedrequestsperhour"></a>
 
 `RunReportResponsePropertyquotaPotentiallythresholdedrequestsperhour(**data: Any)`
 :   Nested schema for RunReportResponsePropertyquota.potentiallyThresholdedRequestsPerHour
@@ -2011,6 +2137,8 @@ Classes
     `remaining: int | Any`
     :   The type of the None singleton.
 
+<a id="RunReportResponsePropertyquotaServererrorsperprojectperhour"></a>
+
 `RunReportResponsePropertyquotaServererrorsperprojectperhour(**data: Any)`
 :   Nested schema for RunReportResponsePropertyquota.serverErrorsPerProjectPerHour
     
@@ -2035,6 +2163,8 @@ Classes
 
     `remaining: int | Any`
     :   The type of the None singleton.
+
+<a id="RunReportResponsePropertyquotaTokensperday"></a>
 
 `RunReportResponsePropertyquotaTokensperday(**data: Any)`
 :   Nested schema for RunReportResponsePropertyquota.tokensPerDay
@@ -2061,6 +2191,8 @@ Classes
     `remaining: int | Any`
     :   The type of the None singleton.
 
+<a id="RunReportResponsePropertyquotaTokensperhour"></a>
+
 `RunReportResponsePropertyquotaTokensperhour(**data: Any)`
 :   Nested schema for RunReportResponsePropertyquota.tokensPerHour
     
@@ -2085,6 +2217,8 @@ Classes
 
     `remaining: int | Any`
     :   The type of the None singleton.
+
+<a id="RunReportResponsePropertyquotaTokensperprojectperhour"></a>
 
 `RunReportResponsePropertyquotaTokensperprojectperhour(**data: Any)`
 :   Nested schema for RunReportResponsePropertyquota.tokensPerProjectPerHour
@@ -2111,6 +2245,8 @@ Classes
     `remaining: int | Any`
     :   The type of the None singleton.
 
+<a id="TrafficSourcesListResultMeta"></a>
+
 `TrafficSourcesListResultMeta(**data: Any)`
 :   Metadata for traffic_sources.Action.LIST operation
     
@@ -2132,6 +2268,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="TrafficSourcesRequest"></a>
 
 `TrafficSourcesRequest(**data: Any)`
 :   Request body for traffic sources report
@@ -2170,6 +2308,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="TrafficSourcesRequestDaterangesItem"></a>
+
 `TrafficSourcesRequestDaterangesItem(**data: Any)`
 :   Nested schema for TrafficSourcesRequest.dateRanges_item
     
@@ -2195,6 +2335,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="TrafficSourcesRequestDimensionsItem"></a>
+
 `TrafficSourcesRequestDimensionsItem(**data: Any)`
 :   Nested schema for TrafficSourcesRequest.dimensions_item
     
@@ -2217,6 +2359,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="TrafficSourcesRequestMetricsItem"></a>
+
 `TrafficSourcesRequestMetricsItem(**data: Any)`
 :   Nested schema for TrafficSourcesRequest.metrics_item
     
@@ -2238,6 +2382,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="TrafficSourcesSearchData"></a>
 
 `TrafficSourcesSearchData(**data: Any)`
 :   Search result data for traffic_sources entity.
@@ -2300,6 +2446,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="WebsiteOverviewListResultMeta"></a>
+
 `WebsiteOverviewListResultMeta(**data: Any)`
 :   Metadata for website_overview.Action.LIST operation
     
@@ -2321,6 +2469,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="WebsiteOverviewRequest"></a>
 
 `WebsiteOverviewRequest(**data: Any)`
 :   Request body for website overview report
@@ -2359,6 +2509,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="WebsiteOverviewRequestDaterangesItem"></a>
+
 `WebsiteOverviewRequestDaterangesItem(**data: Any)`
 :   Nested schema for WebsiteOverviewRequest.dateRanges_item
     
@@ -2384,6 +2536,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="WebsiteOverviewRequestDimensionsItem"></a>
+
 `WebsiteOverviewRequestDimensionsItem(**data: Any)`
 :   Nested schema for WebsiteOverviewRequest.dimensions_item
     
@@ -2406,6 +2560,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="WebsiteOverviewRequestMetricsItem"></a>
+
 `WebsiteOverviewRequestMetricsItem(**data: Any)`
 :   Nested schema for WebsiteOverviewRequest.metrics_item
     
@@ -2427,6 +2583,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="WebsiteOverviewSearchData"></a>
 
 `WebsiteOverviewSearchData(**data: Any)`
 :   Search result data for website_overview entity.
@@ -2483,6 +2641,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="WeeklyActiveUsersListResultMeta"></a>
+
 `WeeklyActiveUsersListResultMeta(**data: Any)`
 :   Metadata for weekly_active_users.Action.LIST operation
     
@@ -2504,6 +2664,8 @@ Classes
 
     `row_count: int | Any`
     :   The type of the None singleton.
+
+<a id="WeeklyActiveUsersRequest"></a>
 
 `WeeklyActiveUsersRequest(**data: Any)`
 :   Request body for weekly active users report
@@ -2542,6 +2704,8 @@ Classes
     `return_property_quota: bool | Any`
     :   The type of the None singleton.
 
+<a id="WeeklyActiveUsersRequestDaterangesItem"></a>
+
 `WeeklyActiveUsersRequestDaterangesItem(**data: Any)`
 :   Nested schema for WeeklyActiveUsersRequest.dateRanges_item
     
@@ -2567,6 +2731,8 @@ Classes
     `start_date: str | Any`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
+<a id="WeeklyActiveUsersRequestDimensionsItem"></a>
+
 `WeeklyActiveUsersRequestDimensionsItem(**data: Any)`
 :   Nested schema for WeeklyActiveUsersRequest.dimensions_item
     
@@ -2589,6 +2755,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="WeeklyActiveUsersRequestMetricsItem"></a>
+
 `WeeklyActiveUsersRequestMetricsItem(**data: Any)`
 :   Nested schema for WeeklyActiveUsersRequest.metrics_item
     
@@ -2610,6 +2778,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="WeeklyActiveUsersSearchData"></a>
 
 `WeeklyActiveUsersSearchData(**data: Any)`
 :   Search result data for weekly_active_users entity.

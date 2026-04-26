@@ -10,6 +10,8 @@ Type definitions for zendesk-talk connector.
 Classes
 -------
 
+<a id="AccountOverviewAndCondition"></a>
+
 `AccountOverviewAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -30,6 +32,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AccountOverviewAnyCondition"></a>
+
 `AccountOverviewAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -49,6 +53,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewAnyValueFilter"></a>
 
 `AccountOverviewAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -128,6 +134,8 @@ Classes
     `total_wrap_up_time: Any`
     :   Total wrap-up time
 
+<a id="AccountOverviewContainsCondition"></a>
+
 `AccountOverviewContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -139,6 +147,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewEqCondition"></a>
 
 `AccountOverviewEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -152,6 +162,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountOverviewFuzzyCondition"></a>
+
 `AccountOverviewFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -163,6 +175,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewGtCondition"></a>
 
 `AccountOverviewGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -176,6 +190,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountOverviewGteCondition"></a>
+
 `AccountOverviewGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -187,6 +203,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewInCondition"></a>
 
 `AccountOverviewInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -207,6 +225,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewInFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewInFilter"></a>
 
 `AccountOverviewInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -286,6 +306,8 @@ Classes
     `total_wrap_up_time: list[int]`
     :   Total wrap-up time
 
+<a id="AccountOverviewKeywordCondition"></a>
+
 `AccountOverviewKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -297,6 +319,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewLikeCondition"></a>
 
 `AccountOverviewLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -310,12 +334,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewStringFilter`
     :   The type of the None singleton.
 
+<a id="AccountOverviewListParams"></a>
+
 `AccountOverviewListParams(*args, **kwargs)`
 :   Parameters for account_overview.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="AccountOverviewLtCondition"></a>
 
 `AccountOverviewLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -329,6 +357,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountOverviewLteCondition"></a>
+
 `AccountOverviewLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -341,6 +371,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountOverviewNeqCondition"></a>
+
 `AccountOverviewNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -352,6 +384,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountOverviewNotCondition"></a>
 
 `AccountOverviewNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -373,6 +407,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAnyCondition`
     :   The type of the None singleton.
 
+<a id="AccountOverviewOrCondition"></a>
+
 `AccountOverviewOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -392,6 +428,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AccountOverviewSearchFilter"></a>
 
 `AccountOverviewSearchFilter(*args, **kwargs)`
 :   Available fields for filtering account_overview search queries.
@@ -471,6 +509,8 @@ Classes
     `total_wrap_up_time: int | None`
     :   Total wrap-up time
 
+<a id="AccountOverviewSearchQuery"></a>
+
 `AccountOverviewSearchQuery(*args, **kwargs)`
 :   Search query for account_overview entity.
 
@@ -485,6 +525,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AccountOverviewSortFilter]`
     :   The type of the None singleton.
+
+<a id="AccountOverviewSortFilter"></a>
 
 `AccountOverviewSortFilter(*args, **kwargs)`
 :   Available fields for sorting account_overview search results.
@@ -564,6 +606,8 @@ Classes
     `total_wrap_up_time: Literal['asc', 'desc']`
     :   Total wrap-up time
 
+<a id="AccountOverviewStringFilter"></a>
+
 `AccountOverviewStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -642,6 +686,8 @@ Classes
     `total_wrap_up_time: str`
     :   Total wrap-up time
 
+<a id="AddressesAndCondition"></a>
+
 `AddressesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -662,6 +708,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AddressesAnyCondition"></a>
+
 `AddressesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -681,6 +729,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AddressesAnyValueFilter"></a>
 
 `AddressesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -718,6 +768,8 @@ Classes
     `zip: Any`
     :   Zip code of the address
 
+<a id="AddressesContainsCondition"></a>
+
 `AddressesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -729,6 +781,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AddressesEqCondition"></a>
 
 `AddressesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -742,6 +796,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSearchFilter`
     :   The type of the None singleton.
 
+<a id="AddressesFuzzyCondition"></a>
+
 `AddressesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -753,6 +809,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesStringFilter`
     :   The type of the None singleton.
+
+<a id="AddressesGetParams"></a>
 
 `AddressesGetParams(*args, **kwargs)`
 :   Parameters for addresses.get operation
@@ -766,6 +824,8 @@ Classes
     `address_id: str`
     :   The type of the None singleton.
 
+<a id="AddressesGtCondition"></a>
+
 `AddressesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -778,6 +838,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSearchFilter`
     :   The type of the None singleton.
 
+<a id="AddressesGteCondition"></a>
+
 `AddressesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -789,6 +851,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSearchFilter`
     :   The type of the None singleton.
+
+<a id="AddressesInCondition"></a>
 
 `AddressesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -809,6 +873,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesInFilter`
     :   The type of the None singleton.
+
+<a id="AddressesInFilter"></a>
 
 `AddressesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -846,6 +912,8 @@ Classes
     `zip: list[str]`
     :   Zip code of the address
 
+<a id="AddressesKeywordCondition"></a>
+
 `AddressesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -857,6 +925,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesStringFilter`
     :   The type of the None singleton.
+
+<a id="AddressesLikeCondition"></a>
 
 `AddressesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -870,12 +940,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesStringFilter`
     :   The type of the None singleton.
 
+<a id="AddressesListParams"></a>
+
 `AddressesListParams(*args, **kwargs)`
 :   Parameters for addresses.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="AddressesLtCondition"></a>
 
 `AddressesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -889,6 +963,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSearchFilter`
     :   The type of the None singleton.
 
+<a id="AddressesLteCondition"></a>
+
 `AddressesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -901,6 +977,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSearchFilter`
     :   The type of the None singleton.
 
+<a id="AddressesNeqCondition"></a>
+
 `AddressesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -912,6 +990,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSearchFilter`
     :   The type of the None singleton.
+
+<a id="AddressesNotCondition"></a>
 
 `AddressesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -933,6 +1013,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAnyCondition`
     :   The type of the None singleton.
 
+<a id="AddressesOrCondition"></a>
+
 `AddressesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -952,6 +1034,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AddressesSearchFilter"></a>
 
 `AddressesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering addresses search queries.
@@ -989,6 +1073,8 @@ Classes
     `zip: str | None`
     :   Zip code of the address
 
+<a id="AddressesSearchQuery"></a>
+
 `AddressesSearchQuery(*args, **kwargs)`
 :   Search query for addresses entity.
 
@@ -1003,6 +1089,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AddressesSortFilter]`
     :   The type of the None singleton.
+
+<a id="AddressesSortFilter"></a>
 
 `AddressesSortFilter(*args, **kwargs)`
 :   Available fields for sorting addresses search results.
@@ -1040,6 +1128,8 @@ Classes
     `zip: Literal['asc', 'desc']`
     :   Zip code of the address
 
+<a id="AddressesStringFilter"></a>
+
 `AddressesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1076,6 +1166,8 @@ Classes
     `zip: str`
     :   Zip code of the address
 
+<a id="AgentsActivityAndCondition"></a>
+
 `AgentsActivityAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1096,6 +1188,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AgentsActivityAnyCondition"></a>
+
 `AgentsActivityAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1115,6 +1209,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityAnyValueFilter"></a>
 
 `AgentsActivityAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1203,6 +1299,8 @@ Classes
     `via: Any`
     :   Channel the agent is registered on
 
+<a id="AgentsActivityContainsCondition"></a>
+
 `AgentsActivityContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1214,6 +1312,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityEqCondition"></a>
 
 `AgentsActivityEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1227,6 +1327,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsActivityFuzzyCondition"></a>
+
 `AgentsActivityFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1238,6 +1340,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityStringFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityGtCondition"></a>
 
 `AgentsActivityGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1251,6 +1355,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsActivityGteCondition"></a>
+
 `AgentsActivityGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1262,6 +1368,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityInCondition"></a>
 
 `AgentsActivityInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1282,6 +1390,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityInFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityInFilter"></a>
 
 `AgentsActivityInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1370,6 +1480,8 @@ Classes
     `via: list[str]`
     :   Channel the agent is registered on
 
+<a id="AgentsActivityKeywordCondition"></a>
+
 `AgentsActivityKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1381,6 +1493,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityStringFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityLikeCondition"></a>
 
 `AgentsActivityLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -1394,12 +1508,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityStringFilter`
     :   The type of the None singleton.
 
+<a id="AgentsActivityListParams"></a>
+
 `AgentsActivityListParams(*args, **kwargs)`
 :   Parameters for agents_activity.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="AgentsActivityLtCondition"></a>
 
 `AgentsActivityLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -1413,6 +1531,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsActivityLteCondition"></a>
+
 `AgentsActivityLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -1425,6 +1545,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsActivityNeqCondition"></a>
+
 `AgentsActivityNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1436,6 +1558,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsActivityNotCondition"></a>
 
 `AgentsActivityNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1457,6 +1581,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAnyCondition`
     :   The type of the None singleton.
 
+<a id="AgentsActivityOrCondition"></a>
+
 `AgentsActivityOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1476,6 +1602,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivityAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AgentsActivitySearchFilter"></a>
 
 `AgentsActivitySearchFilter(*args, **kwargs)`
 :   Available fields for filtering agents_activity search queries.
@@ -1564,6 +1692,8 @@ Classes
     `via: str | None`
     :   Channel the agent is registered on
 
+<a id="AgentsActivitySearchQuery"></a>
+
 `AgentsActivitySearchQuery(*args, **kwargs)`
 :   Search query for agents_activity entity.
 
@@ -1578,6 +1708,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsActivitySortFilter]`
     :   The type of the None singleton.
+
+<a id="AgentsActivitySortFilter"></a>
 
 `AgentsActivitySortFilter(*args, **kwargs)`
 :   Available fields for sorting agents_activity search results.
@@ -1666,6 +1798,8 @@ Classes
     `via: Literal['asc', 'desc']`
     :   Channel the agent is registered on
 
+<a id="AgentsActivityStringFilter"></a>
+
 `AgentsActivityStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1753,6 +1887,8 @@ Classes
     `via: str`
     :   Channel the agent is registered on
 
+<a id="AgentsOverviewAndCondition"></a>
+
 `AgentsOverviewAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1773,6 +1909,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewAnyCondition"></a>
+
 `AgentsOverviewAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1792,6 +1930,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewAnyValueFilter"></a>
 
 `AgentsOverviewAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1871,6 +2011,8 @@ Classes
     `total_wrap_up_time: Any`
     :   Total wrap-up time
 
+<a id="AgentsOverviewContainsCondition"></a>
+
 `AgentsOverviewContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1882,6 +2024,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewEqCondition"></a>
 
 `AgentsOverviewEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1895,6 +2039,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewFuzzyCondition"></a>
+
 `AgentsOverviewFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1906,6 +2052,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewStringFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewGtCondition"></a>
 
 `AgentsOverviewGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1919,6 +2067,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewGteCondition"></a>
+
 `AgentsOverviewGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1930,6 +2080,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewInCondition"></a>
 
 `AgentsOverviewInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1950,6 +2102,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewInFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewInFilter"></a>
 
 `AgentsOverviewInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2029,6 +2183,8 @@ Classes
     `total_wrap_up_time: list[int]`
     :   Total wrap-up time
 
+<a id="AgentsOverviewKeywordCondition"></a>
+
 `AgentsOverviewKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2040,6 +2196,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewStringFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewLikeCondition"></a>
 
 `AgentsOverviewLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2053,12 +2211,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewStringFilter`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewListParams"></a>
+
 `AgentsOverviewListParams(*args, **kwargs)`
 :   Parameters for agents_overview.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="AgentsOverviewLtCondition"></a>
 
 `AgentsOverviewLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2072,6 +2234,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewLteCondition"></a>
+
 `AgentsOverviewLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2084,6 +2248,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewNeqCondition"></a>
+
 `AgentsOverviewNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2095,6 +2261,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewNotCondition"></a>
 
 `AgentsOverviewNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2116,6 +2284,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAnyCondition`
     :   The type of the None singleton.
 
+<a id="AgentsOverviewOrCondition"></a>
+
 `AgentsOverviewOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2135,6 +2305,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewSearchFilter"></a>
 
 `AgentsOverviewSearchFilter(*args, **kwargs)`
 :   Available fields for filtering agents_overview search queries.
@@ -2214,6 +2386,8 @@ Classes
     `total_wrap_up_time: int | None`
     :   Total wrap-up time
 
+<a id="AgentsOverviewSearchQuery"></a>
+
 `AgentsOverviewSearchQuery(*args, **kwargs)`
 :   Search query for agents_overview entity.
 
@@ -2228,6 +2402,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.AgentsOverviewSortFilter]`
     :   The type of the None singleton.
+
+<a id="AgentsOverviewSortFilter"></a>
 
 `AgentsOverviewSortFilter(*args, **kwargs)`
 :   Available fields for sorting agents_overview search results.
@@ -2307,6 +2483,8 @@ Classes
     `total_wrap_up_time: Literal['asc', 'desc']`
     :   Total wrap-up time
 
+<a id="AgentsOverviewStringFilter"></a>
+
 `AgentsOverviewStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2385,6 +2563,8 @@ Classes
     `total_wrap_up_time: str`
     :   Total wrap-up time
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -2406,6 +2586,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CallLegsAndCondition"></a>
+
 `CallLegsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2426,6 +2608,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CallLegsAnyCondition"></a>
+
 `CallLegsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2445,6 +2629,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsAnyValueFilter"></a>
 
 `CallLegsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2530,6 +2716,8 @@ Classes
     `wrap_up_time: Any`
     :   Wrap-up time in seconds
 
+<a id="CallLegsContainsCondition"></a>
+
 `CallLegsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2541,6 +2729,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsEqCondition"></a>
 
 `CallLegsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2554,6 +2744,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallLegsFuzzyCondition"></a>
+
 `CallLegsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2565,6 +2757,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsStringFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsGtCondition"></a>
 
 `CallLegsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -2578,6 +2772,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallLegsGteCondition"></a>
+
 `CallLegsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2589,6 +2785,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsInCondition"></a>
 
 `CallLegsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2609,6 +2807,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsInFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsInFilter"></a>
 
 `CallLegsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2694,6 +2894,8 @@ Classes
     `wrap_up_time: list[int]`
     :   Wrap-up time in seconds
 
+<a id="CallLegsKeywordCondition"></a>
+
 `CallLegsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2705,6 +2907,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsStringFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsLikeCondition"></a>
 
 `CallLegsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -2718,6 +2922,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsStringFilter`
     :   The type of the None singleton.
 
+<a id="CallLegsListParams"></a>
+
 `CallLegsListParams(*args, **kwargs)`
 :   Parameters for call_legs.list operation
 
@@ -2729,6 +2935,8 @@ Classes
 
     `start_time: int`
     :   The type of the None singleton.
+
+<a id="CallLegsLtCondition"></a>
 
 `CallLegsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -2742,6 +2950,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallLegsLteCondition"></a>
+
 `CallLegsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -2754,6 +2964,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallLegsNeqCondition"></a>
+
 `CallLegsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2765,6 +2977,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallLegsNotCondition"></a>
 
 `CallLegsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2786,6 +3000,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CallLegsOrCondition"></a>
+
 `CallLegsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2805,6 +3021,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CallLegsSearchFilter"></a>
 
 `CallLegsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering call_legs search queries.
@@ -2890,6 +3108,8 @@ Classes
     `wrap_up_time: int | None`
     :   Wrap-up time in seconds
 
+<a id="CallLegsSearchQuery"></a>
+
 `CallLegsSearchQuery(*args, **kwargs)`
 :   Search query for call_legs entity.
 
@@ -2904,6 +3124,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CallLegsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CallLegsSortFilter"></a>
 
 `CallLegsSortFilter(*args, **kwargs)`
 :   Available fields for sorting call_legs search results.
@@ -2989,6 +3211,8 @@ Classes
     `wrap_up_time: Literal['asc', 'desc']`
     :   Wrap-up time in seconds
 
+<a id="CallLegsStringFilter"></a>
+
 `CallLegsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3073,6 +3297,8 @@ Classes
     `wrap_up_time: str`
     :   Wrap-up time in seconds
 
+<a id="CallsAndCondition"></a>
+
 `CallsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3093,6 +3319,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CallsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CallsAnyCondition"></a>
+
 `CallsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3112,6 +3340,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CallsAnyValueFilter"></a>
 
 `CallsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3245,6 +3475,8 @@ Classes
     `wrap_up_time: Any`
     :   Wrap-up time in seconds
 
+<a id="CallsContainsCondition"></a>
+
 `CallsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3256,6 +3488,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CallsEqCondition"></a>
 
 `CallsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3269,6 +3503,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsFuzzyCondition"></a>
+
 `CallsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3280,6 +3516,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsStringFilter`
     :   The type of the None singleton.
+
+<a id="CallsGtCondition"></a>
 
 `CallsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -3293,6 +3531,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsGteCondition"></a>
+
 `CallsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3304,6 +3544,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallsInCondition"></a>
 
 `CallsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3324,6 +3566,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsInFilter`
     :   The type of the None singleton.
+
+<a id="CallsInFilter"></a>
 
 `CallsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3457,6 +3701,8 @@ Classes
     `wrap_up_time: list[int]`
     :   Wrap-up time in seconds
 
+<a id="CallsKeywordCondition"></a>
+
 `CallsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3468,6 +3714,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsStringFilter`
     :   The type of the None singleton.
+
+<a id="CallsLikeCondition"></a>
 
 `CallsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -3481,6 +3729,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsStringFilter`
     :   The type of the None singleton.
 
+<a id="CallsListParams"></a>
+
 `CallsListParams(*args, **kwargs)`
 :   Parameters for calls.list operation
 
@@ -3492,6 +3742,8 @@ Classes
 
     `start_time: int`
     :   The type of the None singleton.
+
+<a id="CallsLtCondition"></a>
 
 `CallsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -3505,6 +3757,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsLteCondition"></a>
+
 `CallsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -3517,6 +3771,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CallsNeqCondition"></a>
+
 `CallsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3528,6 +3784,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CallsNotCondition"></a>
 
 `CallsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3549,6 +3807,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.CallsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CallsOrCondition"></a>
+
 `CallsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3568,6 +3828,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CallsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CallsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CallsSearchFilter"></a>
 
 `CallsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering calls search queries.
@@ -3701,6 +3963,8 @@ Classes
     `wrap_up_time: int | None`
     :   Wrap-up time in seconds
 
+<a id="CallsSearchQuery"></a>
+
 `CallsSearchQuery(*args, **kwargs)`
 :   Search query for calls entity.
 
@@ -3715,6 +3979,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CallsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CallsSortFilter"></a>
 
 `CallsSortFilter(*args, **kwargs)`
 :   Available fields for sorting calls search results.
@@ -3848,6 +4114,8 @@ Classes
     `wrap_up_time: Literal['asc', 'desc']`
     :   Wrap-up time in seconds
 
+<a id="CallsStringFilter"></a>
+
 `CallsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3980,6 +4248,8 @@ Classes
     `wrap_up_time: str`
     :   Wrap-up time in seconds
 
+<a id="CurrentQueueActivityAndCondition"></a>
+
 `CurrentQueueActivityAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4000,6 +4270,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityAnyCondition"></a>
+
 `CurrentQueueActivityAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4019,6 +4291,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityAnyValueFilter"></a>
 
 `CurrentQueueActivityAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4050,6 +4324,8 @@ Classes
     `longest_wait_time: Any`
     :   Longest wait time for any caller (seconds)
 
+<a id="CurrentQueueActivityContainsCondition"></a>
+
 `CurrentQueueActivityContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4061,6 +4337,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityEqCondition"></a>
 
 `CurrentQueueActivityEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4074,6 +4352,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityFuzzyCondition"></a>
+
 `CurrentQueueActivityFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4085,6 +4365,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityStringFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityGtCondition"></a>
 
 `CurrentQueueActivityGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -4098,6 +4380,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityGteCondition"></a>
+
 `CurrentQueueActivityGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4109,6 +4393,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityInCondition"></a>
 
 `CurrentQueueActivityInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4129,6 +4415,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityInFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityInFilter"></a>
 
 `CurrentQueueActivityInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4160,6 +4448,8 @@ Classes
     `longest_wait_time: list[int]`
     :   Longest wait time for any caller (seconds)
 
+<a id="CurrentQueueActivityKeywordCondition"></a>
+
 `CurrentQueueActivityKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4171,6 +4461,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityStringFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityLikeCondition"></a>
 
 `CurrentQueueActivityLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -4184,12 +4476,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityStringFilter`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityListParams"></a>
+
 `CurrentQueueActivityListParams(*args, **kwargs)`
 :   Parameters for current_queue_activity.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="CurrentQueueActivityLtCondition"></a>
 
 `CurrentQueueActivityLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -4203,6 +4499,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityLteCondition"></a>
+
 `CurrentQueueActivityLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -4215,6 +4513,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySearchFilter`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityNeqCondition"></a>
+
 `CurrentQueueActivityNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4226,6 +4526,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySearchFilter`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivityNotCondition"></a>
 
 `CurrentQueueActivityNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4247,6 +4549,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAnyCondition`
     :   The type of the None singleton.
 
+<a id="CurrentQueueActivityOrCondition"></a>
+
 `CurrentQueueActivityOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4266,6 +4570,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivityAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivitySearchFilter"></a>
 
 `CurrentQueueActivitySearchFilter(*args, **kwargs)`
 :   Available fields for filtering current_queue_activity search queries.
@@ -4297,6 +4603,8 @@ Classes
     `longest_wait_time: int | None`
     :   Longest wait time for any caller (seconds)
 
+<a id="CurrentQueueActivitySearchQuery"></a>
+
 `CurrentQueueActivitySearchQuery(*args, **kwargs)`
 :   Search query for current_queue_activity entity.
 
@@ -4311,6 +4619,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.CurrentQueueActivitySortFilter]`
     :   The type of the None singleton.
+
+<a id="CurrentQueueActivitySortFilter"></a>
 
 `CurrentQueueActivitySortFilter(*args, **kwargs)`
 :   Available fields for sorting current_queue_activity search results.
@@ -4342,6 +4652,8 @@ Classes
     `longest_wait_time: Literal['asc', 'desc']`
     :   Longest wait time for any caller (seconds)
 
+<a id="CurrentQueueActivityStringFilter"></a>
+
 `CurrentQueueActivityStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4372,6 +4684,8 @@ Classes
     `longest_wait_time: str`
     :   Longest wait time for any caller (seconds)
 
+<a id="GreetingCategoriesAndCondition"></a>
+
 `GreetingCategoriesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4391,6 +4705,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesAnyCondition"></a>
 
 `GreetingCategoriesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4412,6 +4728,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesAnyValueFilter"></a>
+
 `GreetingCategoriesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -4427,6 +4745,8 @@ Classes
     `name: Any`
     :   Name of the greeting category
 
+<a id="GreetingCategoriesContainsCondition"></a>
+
 `GreetingCategoriesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4438,6 +4758,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesEqCondition"></a>
 
 `GreetingCategoriesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4451,6 +4773,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesFuzzyCondition"></a>
+
 `GreetingCategoriesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4462,6 +4786,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesStringFilter`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesGetParams"></a>
 
 `GreetingCategoriesGetParams(*args, **kwargs)`
 :   Parameters for greeting_categories.get operation
@@ -4475,6 +4801,8 @@ Classes
     `greeting_category_id: str`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesGtCondition"></a>
+
 `GreetingCategoriesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4487,6 +4815,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesGteCondition"></a>
+
 `GreetingCategoriesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4498,6 +4828,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSearchFilter`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesInCondition"></a>
 
 `GreetingCategoriesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4519,6 +4851,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesInFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesInFilter"></a>
+
 `GreetingCategoriesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -4534,6 +4868,8 @@ Classes
     `name: list[str]`
     :   Name of the greeting category
 
+<a id="GreetingCategoriesKeywordCondition"></a>
+
 `GreetingCategoriesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4545,6 +4881,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesStringFilter`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesLikeCondition"></a>
 
 `GreetingCategoriesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -4558,12 +4896,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesStringFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesListParams"></a>
+
 `GreetingCategoriesListParams(*args, **kwargs)`
 :   Parameters for greeting_categories.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="GreetingCategoriesLtCondition"></a>
 
 `GreetingCategoriesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -4577,6 +4919,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesLteCondition"></a>
+
 `GreetingCategoriesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -4589,6 +4933,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesNeqCondition"></a>
+
 `GreetingCategoriesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4600,6 +4946,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSearchFilter`
     :   The type of the None singleton.
+
+<a id="GreetingCategoriesNotCondition"></a>
 
 `GreetingCategoriesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4621,6 +4969,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAnyCondition`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesOrCondition"></a>
+
 `GreetingCategoriesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4641,6 +4991,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesSearchFilter"></a>
+
 `GreetingCategoriesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering greeting_categories search queries.
 
@@ -4655,6 +5007,8 @@ Classes
 
     `name: str | None`
     :   Name of the greeting category
+
+<a id="GreetingCategoriesSearchQuery"></a>
 
 `GreetingCategoriesSearchQuery(*args, **kwargs)`
 :   Search query for greeting_categories entity.
@@ -4671,6 +5025,8 @@ Classes
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingCategoriesSortFilter]`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesSortFilter"></a>
+
 `GreetingCategoriesSortFilter(*args, **kwargs)`
 :   Available fields for sorting greeting_categories search results.
 
@@ -4686,6 +5042,8 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Name of the greeting category
 
+<a id="GreetingCategoriesStringFilter"></a>
+
 `GreetingCategoriesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4700,6 +5058,8 @@ Classes
 
     `name: str`
     :   Name of the greeting category
+
+<a id="GreetingsAndCondition"></a>
 
 `GreetingsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4721,6 +5081,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="GreetingsAnyCondition"></a>
+
 `GreetingsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4740,6 +5102,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsAnyValueFilter"></a>
 
 `GreetingsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4789,6 +5153,8 @@ Classes
     `upload_id: Any`
     :   Upload ID associated with the greeting
 
+<a id="GreetingsContainsCondition"></a>
+
 `GreetingsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4800,6 +5166,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsEqCondition"></a>
 
 `GreetingsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4813,6 +5181,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingsFuzzyCondition"></a>
+
 `GreetingsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4824,6 +5194,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsStringFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsGetParams"></a>
 
 `GreetingsGetParams(*args, **kwargs)`
 :   Parameters for greetings.get operation
@@ -4837,6 +5209,8 @@ Classes
     `greeting_id: str`
     :   The type of the None singleton.
 
+<a id="GreetingsGtCondition"></a>
+
 `GreetingsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4849,6 +5223,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingsGteCondition"></a>
+
 `GreetingsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4860,6 +5236,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsInCondition"></a>
 
 `GreetingsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4880,6 +5258,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsInFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsInFilter"></a>
 
 `GreetingsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4929,6 +5309,8 @@ Classes
     `upload_id: list[int]`
     :   Upload ID associated with the greeting
 
+<a id="GreetingsKeywordCondition"></a>
+
 `GreetingsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4940,6 +5322,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsStringFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsLikeCondition"></a>
 
 `GreetingsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -4953,12 +5337,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsStringFilter`
     :   The type of the None singleton.
 
+<a id="GreetingsListParams"></a>
+
 `GreetingsListParams(*args, **kwargs)`
 :   Parameters for greetings.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="GreetingsLtCondition"></a>
 
 `GreetingsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -4972,6 +5360,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingsLteCondition"></a>
+
 `GreetingsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -4984,6 +5374,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GreetingsNeqCondition"></a>
+
 `GreetingsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4995,6 +5387,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GreetingsNotCondition"></a>
 
 `GreetingsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5016,6 +5410,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAnyCondition`
     :   The type of the None singleton.
 
+<a id="GreetingsOrCondition"></a>
+
 `GreetingsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5035,6 +5431,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="GreetingsSearchFilter"></a>
 
 `GreetingsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering greetings search queries.
@@ -5084,6 +5482,8 @@ Classes
     `upload_id: int | None`
     :   Upload ID associated with the greeting
 
+<a id="GreetingsSearchQuery"></a>
+
 `GreetingsSearchQuery(*args, **kwargs)`
 :   Search query for greetings entity.
 
@@ -5098,6 +5498,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.GreetingsSortFilter]`
     :   The type of the None singleton.
+
+<a id="GreetingsSortFilter"></a>
 
 `GreetingsSortFilter(*args, **kwargs)`
 :   Available fields for sorting greetings search results.
@@ -5147,6 +5549,8 @@ Classes
     `upload_id: Literal['asc', 'desc']`
     :   Upload ID associated with the greeting
 
+<a id="GreetingsStringFilter"></a>
+
 `GreetingsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -5195,6 +5599,8 @@ Classes
     `upload_id: str`
     :   Upload ID associated with the greeting
 
+<a id="IvrsAndCondition"></a>
+
 `IvrsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5215,6 +5621,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="IvrsAnyCondition"></a>
+
 `IvrsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5234,6 +5642,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IvrsAnyValueFilter"></a>
 
 `IvrsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -5259,6 +5669,8 @@ Classes
     `phone_number_names: Any`
     :   Names of phone numbers configured with this IVR
 
+<a id="IvrsContainsCondition"></a>
+
 `IvrsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -5270,6 +5682,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="IvrsEqCondition"></a>
 
 `IvrsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -5283,6 +5697,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IvrsFuzzyCondition"></a>
+
 `IvrsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -5294,6 +5710,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsStringFilter`
     :   The type of the None singleton.
+
+<a id="IvrsGetParams"></a>
 
 `IvrsGetParams(*args, **kwargs)`
 :   Parameters for ivrs.get operation
@@ -5307,6 +5725,8 @@ Classes
     `ivr_id: str`
     :   The type of the None singleton.
 
+<a id="IvrsGtCondition"></a>
+
 `IvrsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5319,6 +5739,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IvrsGteCondition"></a>
+
 `IvrsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5330,6 +5752,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IvrsInCondition"></a>
 
 `IvrsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5350,6 +5774,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsInFilter`
     :   The type of the None singleton.
+
+<a id="IvrsInFilter"></a>
 
 `IvrsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5375,6 +5801,8 @@ Classes
     `phone_number_names: list[list[typing.Any]]`
     :   Names of phone numbers configured with this IVR
 
+<a id="IvrsKeywordCondition"></a>
+
 `IvrsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -5386,6 +5814,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsStringFilter`
     :   The type of the None singleton.
+
+<a id="IvrsLikeCondition"></a>
 
 `IvrsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -5399,12 +5829,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsStringFilter`
     :   The type of the None singleton.
 
+<a id="IvrsListParams"></a>
+
 `IvrsListParams(*args, **kwargs)`
 :   Parameters for ivrs.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="IvrsLtCondition"></a>
 
 `IvrsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -5418,6 +5852,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IvrsLteCondition"></a>
+
 `IvrsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -5430,6 +5866,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSearchFilter`
     :   The type of the None singleton.
 
+<a id="IvrsNeqCondition"></a>
+
 `IvrsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5441,6 +5879,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSearchFilter`
     :   The type of the None singleton.
+
+<a id="IvrsNotCondition"></a>
 
 `IvrsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5462,6 +5902,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAnyCondition`
     :   The type of the None singleton.
 
+<a id="IvrsOrCondition"></a>
+
 `IvrsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5481,6 +5923,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="IvrsSearchFilter"></a>
 
 `IvrsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering ivrs search queries.
@@ -5506,6 +5950,8 @@ Classes
     `phone_number_names: list[typing.Any] | None`
     :   Names of phone numbers configured with this IVR
 
+<a id="IvrsSearchQuery"></a>
+
 `IvrsSearchQuery(*args, **kwargs)`
 :   Search query for ivrs entity.
 
@@ -5520,6 +5966,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.IvrsSortFilter]`
     :   The type of the None singleton.
+
+<a id="IvrsSortFilter"></a>
 
 `IvrsSortFilter(*args, **kwargs)`
 :   Available fields for sorting ivrs search results.
@@ -5545,6 +5993,8 @@ Classes
     `phone_number_names: Literal['asc', 'desc']`
     :   Names of phone numbers configured with this IVR
 
+<a id="IvrsStringFilter"></a>
+
 `IvrsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -5569,6 +6019,8 @@ Classes
     `phone_number_names: str`
     :   Names of phone numbers configured with this IVR
 
+<a id="PhoneNumbersAndCondition"></a>
+
 `PhoneNumbersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5589,6 +6041,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersAnyCondition"></a>
+
 `PhoneNumbersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -5608,6 +6062,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersAnyValueFilter"></a>
 
 `PhoneNumbersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -5708,6 +6164,8 @@ Classes
     `voice_enabled: Any`
     :   Whether voice is enabled
 
+<a id="PhoneNumbersContainsCondition"></a>
+
 `PhoneNumbersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -5719,6 +6177,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersEqCondition"></a>
 
 `PhoneNumbersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -5732,6 +6192,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSearchFilter`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersFuzzyCondition"></a>
+
 `PhoneNumbersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -5743,6 +6205,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersStringFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersGetParams"></a>
 
 `PhoneNumbersGetParams(*args, **kwargs)`
 :   Parameters for phone_numbers.get operation
@@ -5756,6 +6220,8 @@ Classes
     `phone_number_id: str`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersGtCondition"></a>
+
 `PhoneNumbersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -5768,6 +6234,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSearchFilter`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersGteCondition"></a>
+
 `PhoneNumbersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -5779,6 +6247,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSearchFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersInCondition"></a>
 
 `PhoneNumbersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5799,6 +6269,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersInFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersInFilter"></a>
 
 `PhoneNumbersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -5899,6 +6371,8 @@ Classes
     `voice_enabled: list[bool]`
     :   Whether voice is enabled
 
+<a id="PhoneNumbersKeywordCondition"></a>
+
 `PhoneNumbersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -5910,6 +6384,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersStringFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersLikeCondition"></a>
 
 `PhoneNumbersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -5923,12 +6399,16 @@ Classes
     `like: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersStringFilter`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersListParams"></a>
+
 `PhoneNumbersListParams(*args, **kwargs)`
 :   Parameters for phone_numbers.list operation
 
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+<a id="PhoneNumbersLtCondition"></a>
 
 `PhoneNumbersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -5942,6 +6422,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSearchFilter`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersLteCondition"></a>
+
 `PhoneNumbersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -5954,6 +6436,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSearchFilter`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersNeqCondition"></a>
+
 `PhoneNumbersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -5965,6 +6449,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSearchFilter`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersNotCondition"></a>
 
 `PhoneNumbersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -5986,6 +6472,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAnyCondition`
     :   The type of the None singleton.
 
+<a id="PhoneNumbersOrCondition"></a>
+
 `PhoneNumbersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -6005,6 +6493,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersEqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersGtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersGteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLtCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLteCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersInCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersLikeCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersNotCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAndCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersOrCondition | airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersSearchFilter"></a>
 
 `PhoneNumbersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering phone_numbers search queries.
@@ -6105,6 +6595,8 @@ Classes
     `voice_enabled: bool | None`
     :   Whether voice is enabled
 
+<a id="PhoneNumbersSearchQuery"></a>
+
 `PhoneNumbersSearchQuery(*args, **kwargs)`
 :   Search query for phone_numbers entity.
 
@@ -6119,6 +6611,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.zendesk_talk.types.PhoneNumbersSortFilter]`
     :   The type of the None singleton.
+
+<a id="PhoneNumbersSortFilter"></a>
 
 `PhoneNumbersSortFilter(*args, **kwargs)`
 :   Available fields for sorting phone_numbers search results.
@@ -6218,6 +6712,8 @@ Classes
 
     `voice_enabled: Literal['asc', 'desc']`
     :   Whether voice is enabled
+
+<a id="PhoneNumbersStringFilter"></a>
 
 `PhoneNumbersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

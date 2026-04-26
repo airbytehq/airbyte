@@ -10,6 +10,8 @@ Shopify connector.
 Classes
 -------
 
+<a id="AbandonedCheckoutsQuery"></a>
+
 `AbandonedCheckoutsQuery(connector: ShopifyConnector)`
 :   Query class for AbandonedCheckouts entity operations.
     
@@ -54,6 +56,8 @@ Classes
         
         Returns:
             AbandonedCheckoutsListResult
+
+<a id="CollectsQuery"></a>
 
 `CollectsQuery(connector: ShopifyConnector)`
 :   Query class for Collects entity operations.
@@ -107,6 +111,8 @@ Classes
         Returns:
             CollectsListResult
 
+<a id="CountriesQuery"></a>
+
 `CountriesQuery(connector: ShopifyConnector)`
 :   Query class for Countries entity operations.
     
@@ -155,6 +161,8 @@ Classes
         
         Returns:
             CountriesListResult
+
+<a id="CustomCollectionsQuery"></a>
 
 `CustomCollectionsQuery(connector: ShopifyConnector)`
 :   Query class for CustomCollections entity operations.
@@ -210,6 +218,8 @@ Classes
         Returns:
             CustomCollectionsListResult
 
+<a id="CustomerAddressQuery"></a>
+
 `CustomerAddressQuery(connector: ShopifyConnector)`
 :   Query class for CustomerAddress entity operations.
     
@@ -238,6 +248,8 @@ Classes
         
         Returns:
             CustomerAddressListResult
+
+<a id="CustomersQuery"></a>
 
 `CustomersQuery(connector: ShopifyConnector)`
 :   Query class for Customers entity operations.
@@ -293,6 +305,8 @@ Classes
         Returns:
             CustomersListResult
 
+<a id="DiscountCodesQuery"></a>
+
 `DiscountCodesQuery(connector: ShopifyConnector)`
 :   Query class for DiscountCodes entity operations.
     
@@ -343,6 +357,8 @@ Classes
         
         Returns:
             DiscountCodesListResult
+
+<a id="DraftOrdersQuery"></a>
 
 `DraftOrdersQuery(connector: ShopifyConnector)`
 :   Query class for DraftOrders entity operations.
@@ -397,6 +413,8 @@ Classes
         Returns:
             DraftOrdersListResult
 
+<a id="FulfillmentOrdersQuery"></a>
+
 `FulfillmentOrdersQuery(connector: ShopifyConnector)`
 :   Query class for FulfillmentOrders entity operations.
     
@@ -445,6 +463,8 @@ Classes
         
         Returns:
             FulfillmentOrdersListResult
+
+<a id="FulfillmentsQuery"></a>
 
 `FulfillmentsQuery(connector: ShopifyConnector)`
 :   Query class for Fulfillments entity operations.
@@ -502,6 +522,8 @@ Classes
         Returns:
             FulfillmentsListResult
 
+<a id="InventoryItemsQuery"></a>
+
 `InventoryItemsQuery(connector: ShopifyConnector)`
 :   Query class for InventoryItems entity operations.
     
@@ -552,6 +574,8 @@ Classes
         Returns:
             InventoryItemsListResult
 
+<a id="InventoryLevelsQuery"></a>
+
 `InventoryLevelsQuery(connector: ShopifyConnector)`
 :   Query class for InventoryLevels entity operations.
     
@@ -591,6 +615,8 @@ Classes
         
         Returns:
             InventoryLevelsListResult
+
+<a id="LocationsQuery"></a>
 
 `LocationsQuery(connector: ShopifyConnector)`
 :   Query class for Locations entity operations.
@@ -637,6 +663,8 @@ Classes
         Returns:
             LocationsListResult
 
+<a id="MetafieldCustomersQuery"></a>
+
 `MetafieldCustomersQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldCustomers entity operations.
     
@@ -679,6 +707,8 @@ Classes
         
         Returns:
             MetafieldCustomersListResult
+
+<a id="MetafieldDraftOrdersQuery"></a>
 
 `MetafieldDraftOrdersQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldDraftOrders entity operations.
@@ -723,6 +753,8 @@ Classes
         Returns:
             MetafieldDraftOrdersListResult
 
+<a id="MetafieldLocationsQuery"></a>
+
 `MetafieldLocationsQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldLocations entity operations.
     
@@ -766,6 +798,8 @@ Classes
         Returns:
             MetafieldLocationsListResult
 
+<a id="MetafieldOrdersQuery"></a>
+
 `MetafieldOrdersQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldOrders entity operations.
     
@@ -808,6 +842,8 @@ Classes
         
         Returns:
             MetafieldOrdersListResult
+
+<a id="MetafieldProductImagesQuery"></a>
 
 `MetafieldProductImagesQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldProductImages entity operations.
@@ -853,6 +889,8 @@ Classes
         Returns:
             MetafieldProductImagesListResult
 
+<a id="MetafieldProductVariantsQuery"></a>
+
 `MetafieldProductVariantsQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldProductVariants entity operations.
     
@@ -896,6 +934,8 @@ Classes
         Returns:
             MetafieldProductVariantsListResult
 
+<a id="MetafieldProductsQuery"></a>
+
 `MetafieldProductsQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldProducts entity operations.
     
@@ -938,6 +978,8 @@ Classes
         
         Returns:
             MetafieldProductsListResult
+
+<a id="MetafieldShopsQuery"></a>
 
 `MetafieldShopsQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldShops entity operations.
@@ -992,6 +1034,8 @@ Classes
         Returns:
             MetafieldShopsListResult
 
+<a id="MetafieldSmartCollectionsQuery"></a>
+
 `MetafieldSmartCollectionsQuery(connector: ShopifyConnector)`
 :   Query class for MetafieldSmartCollections entity operations.
     
@@ -1034,6 +1078,8 @@ Classes
         
         Returns:
             MetafieldSmartCollectionsListResult
+
+<a id="OrderRefundsQuery"></a>
 
 `OrderRefundsQuery(connector: ShopifyConnector)`
 :   Query class for OrderRefunds entity operations.
@@ -1086,6 +1132,8 @@ Classes
         Returns:
             OrderRefundsListResult
 
+<a id="OrdersQuery"></a>
+
 `OrdersQuery(connector: ShopifyConnector)`
 :   Query class for Orders entity operations.
     
@@ -1120,6 +1168,8 @@ Classes
         
         Returns:
             OrdersListResult
+
+<a id="PriceRulesQuery"></a>
 
 `PriceRulesQuery(connector: ShopifyConnector)`
 :   Query class for PriceRules entity operations.
@@ -1175,6 +1225,8 @@ Classes
         Returns:
             PriceRulesListResult
 
+<a id="ProductImagesQuery"></a>
+
 `ProductImagesQuery(connector: ShopifyConnector)`
 :   Query class for ProductImages entity operations.
     
@@ -1225,6 +1277,8 @@ Classes
         
         Returns:
             ProductImagesListResult
+
+<a id="ProductVariantsQuery"></a>
 
 `ProductVariantsQuery(connector: ShopifyConnector)`
 :   Query class for ProductVariants entity operations.
@@ -1277,6 +1331,8 @@ Classes
         Returns:
             ProductVariantsListResult
 
+<a id="ProductsQuery"></a>
+
 `ProductsQuery(connector: ShopifyConnector)`
 :   Query class for Products entity operations.
     
@@ -1313,6 +1369,8 @@ Classes
         Returns:
             ProductsListResult
 
+<a id="ShopQuery"></a>
+
 `ShopQuery(connector: ShopifyConnector)`
 :   Query class for Shop entity operations.
     
@@ -1347,6 +1405,8 @@ Classes
         
         Returns:
             Shop
+
+<a id="ShopifyConnector"></a>
 
 `ShopifyConnector(auth_config: ShopifyAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, shop: str | None = None)`
 :   Type-safe Shopify API connector.
@@ -1536,6 +1596,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SmartCollectionsQuery"></a>
+
 `SmartCollectionsQuery(connector: ShopifyConnector)`
 :   Query class for SmartCollections entity operations.
     
@@ -1590,6 +1652,8 @@ Classes
         Returns:
             SmartCollectionsListResult
 
+<a id="TenderTransactionsQuery"></a>
+
 `TenderTransactionsQuery(connector: ShopifyConnector)`
 :   Query class for TenderTransactions entity operations.
     
@@ -1632,6 +1696,8 @@ Classes
         
         Returns:
             TenderTransactionsListResult
+
+<a id="TransactionsQuery"></a>
 
 `TransactionsQuery(connector: ShopifyConnector)`
 :   Query class for Transactions entity operations.

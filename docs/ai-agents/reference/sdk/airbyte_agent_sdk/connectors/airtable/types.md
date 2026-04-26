@@ -10,6 +10,8 @@ Type definitions for airtable connector.
 Classes
 -------
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -31,6 +33,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="BasesAndCondition"></a>
+
 `BasesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -50,6 +54,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.airtable.types.BasesEqCondition | airbyte_agent_sdk.connectors.airtable.types.BasesNeqCondition | airbyte_agent_sdk.connectors.airtable.types.BasesGtCondition | airbyte_agent_sdk.connectors.airtable.types.BasesGteCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLtCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLteCondition | airbyte_agent_sdk.connectors.airtable.types.BasesInCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLikeCondition | airbyte_agent_sdk.connectors.airtable.types.BasesFuzzyCondition | airbyte_agent_sdk.connectors.airtable.types.BasesKeywordCondition | airbyte_agent_sdk.connectors.airtable.types.BasesContainsCondition | airbyte_agent_sdk.connectors.airtable.types.BasesNotCondition | airbyte_agent_sdk.connectors.airtable.types.BasesAndCondition | airbyte_agent_sdk.connectors.airtable.types.BasesOrCondition | airbyte_agent_sdk.connectors.airtable.types.BasesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="BasesAnyCondition"></a>
 
 `BasesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -71,6 +77,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.airtable.types.BasesAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="BasesAnyValueFilter"></a>
+
 `BasesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -89,6 +97,8 @@ Classes
     `permission_level: Any`
     :   Permission level for the base
 
+<a id="BasesContainsCondition"></a>
+
 `BasesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -100,6 +110,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.airtable.types.BasesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="BasesEqCondition"></a>
 
 `BasesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -113,6 +125,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.airtable.types.BasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BasesFuzzyCondition"></a>
+
 `BasesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -124,6 +138,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.airtable.types.BasesStringFilter`
     :   The type of the None singleton.
+
+<a id="BasesGtCondition"></a>
 
 `BasesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -137,6 +153,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.airtable.types.BasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BasesGteCondition"></a>
+
 `BasesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -148,6 +166,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.airtable.types.BasesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BasesInCondition"></a>
 
 `BasesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -169,6 +189,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.airtable.types.BasesInFilter`
     :   The type of the None singleton.
 
+<a id="BasesInFilter"></a>
+
 `BasesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -187,6 +209,8 @@ Classes
     `permission_level: list[str]`
     :   Permission level for the base
 
+<a id="BasesKeywordCondition"></a>
+
 `BasesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -198,6 +222,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.airtable.types.BasesStringFilter`
     :   The type of the None singleton.
+
+<a id="BasesLikeCondition"></a>
 
 `BasesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -211,6 +237,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.airtable.types.BasesStringFilter`
     :   The type of the None singleton.
 
+<a id="BasesListParams"></a>
+
 `BasesListParams(*args, **kwargs)`
 :   Parameters for bases.list operation
 
@@ -222,6 +250,8 @@ Classes
 
     `offset: str`
     :   The type of the None singleton.
+
+<a id="BasesLtCondition"></a>
 
 `BasesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -235,6 +265,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.airtable.types.BasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BasesLteCondition"></a>
+
 `BasesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -247,6 +279,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.airtable.types.BasesSearchFilter`
     :   The type of the None singleton.
 
+<a id="BasesNeqCondition"></a>
+
 `BasesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -258,6 +292,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.airtable.types.BasesSearchFilter`
     :   The type of the None singleton.
+
+<a id="BasesNotCondition"></a>
 
 `BasesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -279,6 +315,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.airtable.types.BasesEqCondition | airbyte_agent_sdk.connectors.airtable.types.BasesNeqCondition | airbyte_agent_sdk.connectors.airtable.types.BasesGtCondition | airbyte_agent_sdk.connectors.airtable.types.BasesGteCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLtCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLteCondition | airbyte_agent_sdk.connectors.airtable.types.BasesInCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLikeCondition | airbyte_agent_sdk.connectors.airtable.types.BasesFuzzyCondition | airbyte_agent_sdk.connectors.airtable.types.BasesKeywordCondition | airbyte_agent_sdk.connectors.airtable.types.BasesContainsCondition | airbyte_agent_sdk.connectors.airtable.types.BasesNotCondition | airbyte_agent_sdk.connectors.airtable.types.BasesAndCondition | airbyte_agent_sdk.connectors.airtable.types.BasesOrCondition | airbyte_agent_sdk.connectors.airtable.types.BasesAnyCondition`
     :   The type of the None singleton.
 
+<a id="BasesOrCondition"></a>
+
 `BasesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -299,6 +337,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.airtable.types.BasesEqCondition | airbyte_agent_sdk.connectors.airtable.types.BasesNeqCondition | airbyte_agent_sdk.connectors.airtable.types.BasesGtCondition | airbyte_agent_sdk.connectors.airtable.types.BasesGteCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLtCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLteCondition | airbyte_agent_sdk.connectors.airtable.types.BasesInCondition | airbyte_agent_sdk.connectors.airtable.types.BasesLikeCondition | airbyte_agent_sdk.connectors.airtable.types.BasesFuzzyCondition | airbyte_agent_sdk.connectors.airtable.types.BasesKeywordCondition | airbyte_agent_sdk.connectors.airtable.types.BasesContainsCondition | airbyte_agent_sdk.connectors.airtable.types.BasesNotCondition | airbyte_agent_sdk.connectors.airtable.types.BasesAndCondition | airbyte_agent_sdk.connectors.airtable.types.BasesOrCondition | airbyte_agent_sdk.connectors.airtable.types.BasesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="BasesSearchFilter"></a>
+
 `BasesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering bases search queries.
 
@@ -317,6 +357,8 @@ Classes
     `permission_level: str | None`
     :   Permission level for the base
 
+<a id="BasesSearchQuery"></a>
+
 `BasesSearchQuery(*args, **kwargs)`
 :   Search query for bases entity.
 
@@ -331,6 +373,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.airtable.types.BasesSortFilter]`
     :   The type of the None singleton.
+
+<a id="BasesSortFilter"></a>
 
 `BasesSortFilter(*args, **kwargs)`
 :   Available fields for sorting bases search results.
@@ -350,6 +394,8 @@ Classes
     `permission_level: Literal['asc', 'desc']`
     :   Permission level for the base
 
+<a id="BasesStringFilter"></a>
+
 `BasesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -368,6 +414,8 @@ Classes
     `permission_level: str`
     :   Permission level for the base
 
+<a id="RecordsGetParams"></a>
+
 `RecordsGetParams(*args, **kwargs)`
 :   Parameters for records.get operation
 
@@ -385,6 +433,8 @@ Classes
 
     `table_id_or_name: str`
     :   The type of the None singleton.
+
+<a id="RecordsListParams"></a>
 
 `RecordsListParams(*args, **kwargs)`
 :   Parameters for records.list operation
@@ -416,6 +466,8 @@ Classes
     `view: str`
     :   The type of the None singleton.
 
+<a id="TablesAndCondition"></a>
+
 `TablesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -436,6 +488,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.airtable.types.TablesEqCondition | airbyte_agent_sdk.connectors.airtable.types.TablesNeqCondition | airbyte_agent_sdk.connectors.airtable.types.TablesGtCondition | airbyte_agent_sdk.connectors.airtable.types.TablesGteCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLtCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLteCondition | airbyte_agent_sdk.connectors.airtable.types.TablesInCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLikeCondition | airbyte_agent_sdk.connectors.airtable.types.TablesFuzzyCondition | airbyte_agent_sdk.connectors.airtable.types.TablesKeywordCondition | airbyte_agent_sdk.connectors.airtable.types.TablesContainsCondition | airbyte_agent_sdk.connectors.airtable.types.TablesNotCondition | airbyte_agent_sdk.connectors.airtable.types.TablesAndCondition | airbyte_agent_sdk.connectors.airtable.types.TablesOrCondition | airbyte_agent_sdk.connectors.airtable.types.TablesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TablesAnyCondition"></a>
+
 `TablesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -455,6 +509,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.airtable.types.TablesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TablesAnyValueFilter"></a>
 
 `TablesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -480,6 +536,8 @@ Classes
     `views: Any`
     :   List of views in the table
 
+<a id="TablesContainsCondition"></a>
+
 `TablesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -491,6 +549,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.airtable.types.TablesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TablesEqCondition"></a>
 
 `TablesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -504,6 +564,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.airtable.types.TablesSearchFilter`
     :   The type of the None singleton.
 
+<a id="TablesFuzzyCondition"></a>
+
 `TablesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -515,6 +577,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.airtable.types.TablesStringFilter`
     :   The type of the None singleton.
+
+<a id="TablesGtCondition"></a>
 
 `TablesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -528,6 +592,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.airtable.types.TablesSearchFilter`
     :   The type of the None singleton.
 
+<a id="TablesGteCondition"></a>
+
 `TablesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -539,6 +605,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.airtable.types.TablesSearchFilter`
     :   The type of the None singleton.
+
+<a id="TablesInCondition"></a>
 
 `TablesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -559,6 +627,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.airtable.types.TablesInFilter`
     :   The type of the None singleton.
+
+<a id="TablesInFilter"></a>
 
 `TablesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -584,6 +654,8 @@ Classes
     `views: list[list[typing.Any]]`
     :   List of views in the table
 
+<a id="TablesKeywordCondition"></a>
+
 `TablesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -595,6 +667,8 @@ Classes
 
     `keyword: airbyte_agent_sdk.connectors.airtable.types.TablesStringFilter`
     :   The type of the None singleton.
+
+<a id="TablesLikeCondition"></a>
 
 `TablesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
@@ -608,6 +682,8 @@ Classes
     `like: airbyte_agent_sdk.connectors.airtable.types.TablesStringFilter`
     :   The type of the None singleton.
 
+<a id="TablesListParams"></a>
+
 `TablesListParams(*args, **kwargs)`
 :   Parameters for tables.list operation
 
@@ -619,6 +695,8 @@ Classes
 
     `base_id: str`
     :   The type of the None singleton.
+
+<a id="TablesLtCondition"></a>
 
 `TablesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
@@ -632,6 +710,8 @@ Classes
     `lt: airbyte_agent_sdk.connectors.airtable.types.TablesSearchFilter`
     :   The type of the None singleton.
 
+<a id="TablesLteCondition"></a>
+
 `TablesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
 
@@ -644,6 +724,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.airtable.types.TablesSearchFilter`
     :   The type of the None singleton.
 
+<a id="TablesNeqCondition"></a>
+
 `TablesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -655,6 +737,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.airtable.types.TablesSearchFilter`
     :   The type of the None singleton.
+
+<a id="TablesNotCondition"></a>
 
 `TablesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -676,6 +760,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.airtable.types.TablesEqCondition | airbyte_agent_sdk.connectors.airtable.types.TablesNeqCondition | airbyte_agent_sdk.connectors.airtable.types.TablesGtCondition | airbyte_agent_sdk.connectors.airtable.types.TablesGteCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLtCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLteCondition | airbyte_agent_sdk.connectors.airtable.types.TablesInCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLikeCondition | airbyte_agent_sdk.connectors.airtable.types.TablesFuzzyCondition | airbyte_agent_sdk.connectors.airtable.types.TablesKeywordCondition | airbyte_agent_sdk.connectors.airtable.types.TablesContainsCondition | airbyte_agent_sdk.connectors.airtable.types.TablesNotCondition | airbyte_agent_sdk.connectors.airtable.types.TablesAndCondition | airbyte_agent_sdk.connectors.airtable.types.TablesOrCondition | airbyte_agent_sdk.connectors.airtable.types.TablesAnyCondition`
     :   The type of the None singleton.
 
+<a id="TablesOrCondition"></a>
+
 `TablesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -695,6 +781,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.airtable.types.TablesEqCondition | airbyte_agent_sdk.connectors.airtable.types.TablesNeqCondition | airbyte_agent_sdk.connectors.airtable.types.TablesGtCondition | airbyte_agent_sdk.connectors.airtable.types.TablesGteCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLtCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLteCondition | airbyte_agent_sdk.connectors.airtable.types.TablesInCondition | airbyte_agent_sdk.connectors.airtable.types.TablesLikeCondition | airbyte_agent_sdk.connectors.airtable.types.TablesFuzzyCondition | airbyte_agent_sdk.connectors.airtable.types.TablesKeywordCondition | airbyte_agent_sdk.connectors.airtable.types.TablesContainsCondition | airbyte_agent_sdk.connectors.airtable.types.TablesNotCondition | airbyte_agent_sdk.connectors.airtable.types.TablesAndCondition | airbyte_agent_sdk.connectors.airtable.types.TablesOrCondition | airbyte_agent_sdk.connectors.airtable.types.TablesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TablesSearchFilter"></a>
 
 `TablesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tables search queries.
@@ -720,6 +808,8 @@ Classes
     `views: list[typing.Any] | None`
     :   List of views in the table
 
+<a id="TablesSearchQuery"></a>
+
 `TablesSearchQuery(*args, **kwargs)`
 :   Search query for tables entity.
 
@@ -734,6 +824,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.airtable.types.TablesSortFilter]`
     :   The type of the None singleton.
+
+<a id="TablesSortFilter"></a>
 
 `TablesSortFilter(*args, **kwargs)`
 :   Available fields for sorting tables search results.
@@ -758,6 +850,8 @@ Classes
 
     `views: Literal['asc', 'desc']`
     :   List of views in the table
+
+<a id="TablesStringFilter"></a>
 
 `TablesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

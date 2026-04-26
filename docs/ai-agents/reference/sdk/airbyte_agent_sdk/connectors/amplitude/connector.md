@@ -10,6 +10,8 @@ Amplitude connector.
 Classes
 -------
 
+<a id="ActiveUsersQuery"></a>
+
 `ActiveUsersQuery(connector: AmplitudeConnector)`
 :   Query class for ActiveUsers entity operations.
     
@@ -55,6 +57,8 @@ Classes
         
         Returns:
             ActiveUsersListResult
+
+<a id="AmplitudeConnector"></a>
 
 `AmplitudeConnector(auth_config: AmplitudeAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Amplitude API connector.
@@ -256,6 +260,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="AnnotationsQuery"></a>
+
 `AnnotationsQuery(connector: AmplitudeConnector)`
 :   Query class for Annotations entity operations.
     
@@ -305,6 +311,8 @@ Classes
         Returns:
             AnnotationsListResult
 
+<a id="AverageSessionLengthQuery"></a>
+
 `AverageSessionLengthQuery(connector: AmplitudeConnector)`
 :   Query class for AverageSessionLength entity operations.
     
@@ -347,6 +355,8 @@ Classes
         
         Returns:
             AverageSessionLengthListResult
+
+<a id="CohortsQuery"></a>
 
 `CohortsQuery(connector: AmplitudeConnector)`
 :   Query class for Cohorts entity operations.
@@ -418,6 +428,8 @@ Classes
         
         Returns:
             CohortsListResult
+
+<a id="EventsListQuery"></a>
 
 `EventsListQuery(connector: AmplitudeConnector)`
 :   Query class for EventsList entity operations.

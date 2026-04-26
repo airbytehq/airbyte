@@ -10,6 +10,8 @@ Type definitions for linkedin-ads connector.
 Classes
 -------
 
+<a id="AccountUsersAndCondition"></a>
+
 `AccountUsersAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -29,6 +31,8 @@ Classes
 
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AccountUsersAnyCondition"></a>
 
 `AccountUsersAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -50,6 +54,8 @@ Classes
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="AccountUsersAnyValueFilter"></a>
+
 `AccountUsersAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
 
@@ -68,6 +74,8 @@ Classes
     `user: Any`
     :   User URN
 
+<a id="AccountUsersContainsCondition"></a>
+
 `AccountUsersContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -79,6 +87,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountUsersEqCondition"></a>
 
 `AccountUsersEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -92,6 +102,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountUsersFuzzyCondition"></a>
+
 `AccountUsersFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -103,6 +115,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountUsersGtCondition"></a>
 
 `AccountUsersGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -116,6 +130,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountUsersGteCondition"></a>
+
 `AccountUsersGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -127,6 +143,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountUsersInCondition"></a>
 
 `AccountUsersInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -148,6 +166,8 @@ Classes
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInFilter`
     :   The type of the None singleton.
 
+<a id="AccountUsersInFilter"></a>
+
 `AccountUsersInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
 
@@ -166,6 +186,8 @@ Classes
     `user: list[str]`
     :   User URN
 
+<a id="AccountUsersKeywordCondition"></a>
+
 `AccountUsersKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -178,6 +200,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
     :   The type of the None singleton.
 
+<a id="AccountUsersLikeCondition"></a>
+
 `AccountUsersLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -189,6 +213,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountUsersListParams"></a>
 
 `AccountUsersListParams(*args, **kwargs)`
 :   Parameters for account_users.list operation
@@ -211,6 +237,8 @@ Classes
     `start: int`
     :   The type of the None singleton.
 
+<a id="AccountUsersLtCondition"></a>
+
 `AccountUsersLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -222,6 +250,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountUsersLteCondition"></a>
 
 `AccountUsersLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -235,6 +265,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountUsersNeqCondition"></a>
+
 `AccountUsersNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -246,6 +278,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountUsersNotCondition"></a>
 
 `AccountUsersNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -267,6 +301,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition`
     :   The type of the None singleton.
 
+<a id="AccountUsersOrCondition"></a>
+
 `AccountUsersOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -287,6 +323,8 @@ Classes
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AccountUsersSearchFilter"></a>
+
 `AccountUsersSearchFilter(*args, **kwargs)`
 :   Available fields for filtering account_users search queries.
 
@@ -305,6 +343,8 @@ Classes
     `user: str | None`
     :   User URN
 
+<a id="AccountUsersSearchQuery"></a>
+
 `AccountUsersSearchQuery(*args, **kwargs)`
 :   Search query for account_users entity.
 
@@ -319,6 +359,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSortFilter]`
     :   The type of the None singleton.
+
+<a id="AccountUsersSortFilter"></a>
 
 `AccountUsersSortFilter(*args, **kwargs)`
 :   Available fields for sorting account_users search results.
@@ -338,6 +380,8 @@ Classes
     `user: Literal['asc', 'desc']`
     :   User URN
 
+<a id="AccountUsersStringFilter"></a>
+
 `AccountUsersStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -355,6 +399,8 @@ Classes
 
     `user: str`
     :   User URN
+
+<a id="AccountsAndCondition"></a>
 
 `AccountsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -376,6 +422,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AccountsAnyCondition"></a>
+
 `AccountsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -395,6 +443,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountsAnyValueFilter"></a>
 
 `AccountsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -447,6 +497,8 @@ Classes
     `version: Any`
     :   Version information
 
+<a id="AccountsContainsCondition"></a>
+
 `AccountsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -458,6 +510,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AccountsEqCondition"></a>
 
 `AccountsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -471,6 +525,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsFuzzyCondition"></a>
+
 `AccountsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -482,6 +538,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountsGetParams"></a>
 
 `AccountsGetParams(*args, **kwargs)`
 :   Parameters for accounts.get operation
@@ -495,6 +553,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AccountsGtCondition"></a>
+
 `AccountsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -507,6 +567,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsGteCondition"></a>
+
 `AccountsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -518,6 +580,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsInCondition"></a>
 
 `AccountsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -538,6 +602,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInFilter`
     :   The type of the None singleton.
+
+<a id="AccountsInFilter"></a>
 
 `AccountsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -590,6 +656,8 @@ Classes
     `version: list[dict[str, typing.Any]]`
     :   Version information
 
+<a id="AccountsKeywordCondition"></a>
+
 `AccountsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -602,6 +670,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
 
+<a id="AccountsLikeCondition"></a>
+
 `AccountsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -613,6 +683,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
+
+<a id="AccountsListParams"></a>
 
 `AccountsListParams(*args, **kwargs)`
 :   Parameters for accounts.list operation
@@ -632,6 +704,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="AccountsLtCondition"></a>
+
 `AccountsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -643,6 +717,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsLteCondition"></a>
 
 `AccountsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -656,6 +732,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AccountsNeqCondition"></a>
+
 `AccountsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -667,6 +745,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AccountsNotCondition"></a>
 
 `AccountsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -688,6 +768,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AccountsOrCondition"></a>
+
 `AccountsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -707,6 +789,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AccountsSearchFilter"></a>
 
 `AccountsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering accounts search queries.
@@ -759,6 +843,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="AccountsSearchQuery"></a>
+
 `AccountsSearchQuery(*args, **kwargs)`
 :   Search query for accounts entity.
 
@@ -773,6 +859,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AccountsSortFilter"></a>
 
 `AccountsSortFilter(*args, **kwargs)`
 :   Available fields for sorting accounts search results.
@@ -825,6 +913,8 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version information
 
+<a id="AccountsStringFilter"></a>
+
 `AccountsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -876,6 +966,8 @@ Classes
     `version: str`
     :   Version information
 
+<a id="AdCampaignAnalyticsAndCondition"></a>
+
 `AdCampaignAnalyticsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -896,6 +988,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsAnyCondition"></a>
+
 `AdCampaignAnalyticsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -915,6 +1009,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsAnyValueFilter"></a>
 
 `AdCampaignAnalyticsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1042,6 +1138,8 @@ Classes
     `video_views: Any`
     :   Number of video views
 
+<a id="AdCampaignAnalyticsContainsCondition"></a>
+
 `AdCampaignAnalyticsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1053,6 +1151,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsEqCondition"></a>
 
 `AdCampaignAnalyticsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1066,6 +1166,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsFuzzyCondition"></a>
+
 `AdCampaignAnalyticsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1077,6 +1179,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsGtCondition"></a>
 
 `AdCampaignAnalyticsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1090,6 +1194,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsGteCondition"></a>
+
 `AdCampaignAnalyticsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1101,6 +1207,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsInCondition"></a>
 
 `AdCampaignAnalyticsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1121,6 +1229,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsInFilter"></a>
 
 `AdCampaignAnalyticsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1248,6 +1358,8 @@ Classes
     `video_views: list[float]`
     :   Number of video views
 
+<a id="AdCampaignAnalyticsKeywordCondition"></a>
+
 `AdCampaignAnalyticsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1260,6 +1372,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsLikeCondition"></a>
+
 `AdCampaignAnalyticsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1271,6 +1385,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsListParams"></a>
 
 `AdCampaignAnalyticsListParams(*args, **kwargs)`
 :   Parameters for ad_campaign_analytics.list operation
@@ -1299,6 +1415,8 @@ Classes
     `time_granularity: str`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsLtCondition"></a>
+
 `AdCampaignAnalyticsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1310,6 +1428,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsLteCondition"></a>
 
 `AdCampaignAnalyticsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1323,6 +1443,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsNeqCondition"></a>
+
 `AdCampaignAnalyticsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1334,6 +1456,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsNotCondition"></a>
 
 `AdCampaignAnalyticsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1355,6 +1479,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsOrCondition"></a>
+
 `AdCampaignAnalyticsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1374,6 +1500,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsSearchFilter"></a>
 
 `AdCampaignAnalyticsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering ad_campaign_analytics search queries.
@@ -1501,6 +1629,8 @@ Classes
     `video_views: float | None`
     :   Number of video views
 
+<a id="AdCampaignAnalyticsSearchQuery"></a>
+
 `AdCampaignAnalyticsSearchQuery(*args, **kwargs)`
 :   Search query for ad_campaign_analytics entity.
 
@@ -1515,6 +1645,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsSortFilter"></a>
 
 `AdCampaignAnalyticsSortFilter(*args, **kwargs)`
 :   Available fields for sorting ad_campaign_analytics search results.
@@ -1642,6 +1774,8 @@ Classes
     `video_views: Literal['asc', 'desc']`
     :   Number of video views
 
+<a id="AdCampaignAnalyticsStringFilter"></a>
+
 `AdCampaignAnalyticsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1768,6 +1902,8 @@ Classes
     `video_views: str`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsAndCondition"></a>
+
 `AdCreativeAnalyticsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1788,6 +1924,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsAnyCondition"></a>
+
 `AdCreativeAnalyticsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1807,6 +1945,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsAnyValueFilter"></a>
 
 `AdCreativeAnalyticsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1934,6 +2074,8 @@ Classes
     `video_views: Any`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsContainsCondition"></a>
+
 `AdCreativeAnalyticsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1945,6 +2087,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsEqCondition"></a>
 
 `AdCreativeAnalyticsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1958,6 +2102,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsFuzzyCondition"></a>
+
 `AdCreativeAnalyticsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1969,6 +2115,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsGtCondition"></a>
 
 `AdCreativeAnalyticsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
@@ -1982,6 +2130,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsGteCondition"></a>
+
 `AdCreativeAnalyticsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1993,6 +2143,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsInCondition"></a>
 
 `AdCreativeAnalyticsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2013,6 +2165,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsInFilter"></a>
 
 `AdCreativeAnalyticsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2140,6 +2294,8 @@ Classes
     `video_views: list[float]`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsKeywordCondition"></a>
+
 `AdCreativeAnalyticsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2152,6 +2308,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsLikeCondition"></a>
+
 `AdCreativeAnalyticsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2163,6 +2321,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsListParams"></a>
 
 `AdCreativeAnalyticsListParams(*args, **kwargs)`
 :   Parameters for ad_creative_analytics.list operation
@@ -2191,6 +2351,8 @@ Classes
     `time_granularity: str`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsLtCondition"></a>
+
 `AdCreativeAnalyticsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2202,6 +2364,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsLteCondition"></a>
 
 `AdCreativeAnalyticsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2215,6 +2379,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsNeqCondition"></a>
+
 `AdCreativeAnalyticsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2226,6 +2392,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsNotCondition"></a>
 
 `AdCreativeAnalyticsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2247,6 +2415,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsOrCondition"></a>
+
 `AdCreativeAnalyticsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2266,6 +2436,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsSearchFilter"></a>
 
 `AdCreativeAnalyticsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering ad_creative_analytics search queries.
@@ -2393,6 +2565,8 @@ Classes
     `video_views: float | None`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsSearchQuery"></a>
+
 `AdCreativeAnalyticsSearchQuery(*args, **kwargs)`
 :   Search query for ad_creative_analytics entity.
 
@@ -2407,6 +2581,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsSortFilter"></a>
 
 `AdCreativeAnalyticsSortFilter(*args, **kwargs)`
 :   Available fields for sorting ad_creative_analytics search results.
@@ -2534,6 +2710,8 @@ Classes
     `video_views: Literal['asc', 'desc']`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsStringFilter"></a>
+
 `AdCreativeAnalyticsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -2660,6 +2838,8 @@ Classes
     `video_views: str`
     :   Number of video views
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -2681,6 +2861,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsAndCondition"></a>
+
 `CampaignGroupsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2701,6 +2883,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsAnyCondition"></a>
+
 `CampaignGroupsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -2720,6 +2904,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsAnyValueFilter"></a>
 
 `CampaignGroupsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -2760,6 +2946,8 @@ Classes
     `total_budget: Any`
     :   Total budget for the campaign group
 
+<a id="CampaignGroupsContainsCondition"></a>
+
 `CampaignGroupsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -2771,6 +2959,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsEqCondition"></a>
 
 `CampaignGroupsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -2784,6 +2974,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsFuzzyCondition"></a>
+
 `CampaignGroupsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -2795,6 +2987,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsGetParams"></a>
 
 `CampaignGroupsGetParams(*args, **kwargs)`
 :   Parameters for campaign_groups.get operation
@@ -2811,6 +3005,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsGtCondition"></a>
+
 `CampaignGroupsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -2823,6 +3019,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsGteCondition"></a>
+
 `CampaignGroupsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -2834,6 +3032,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsInCondition"></a>
 
 `CampaignGroupsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2854,6 +3054,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsInFilter"></a>
 
 `CampaignGroupsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -2894,6 +3096,8 @@ Classes
     `total_budget: list[dict[str, typing.Any]]`
     :   Total budget for the campaign group
 
+<a id="CampaignGroupsKeywordCondition"></a>
+
 `CampaignGroupsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -2906,6 +3110,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsLikeCondition"></a>
+
 `CampaignGroupsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -2917,6 +3123,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsListParams"></a>
 
 `CampaignGroupsListParams(*args, **kwargs)`
 :   Parameters for campaign_groups.list operation
@@ -2939,6 +3147,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsLtCondition"></a>
+
 `CampaignGroupsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -2950,6 +3160,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsLteCondition"></a>
 
 `CampaignGroupsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -2963,6 +3175,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsNeqCondition"></a>
+
 `CampaignGroupsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -2974,6 +3188,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsNotCondition"></a>
 
 `CampaignGroupsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -2995,6 +3211,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsOrCondition"></a>
+
 `CampaignGroupsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3014,6 +3232,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsSearchFilter"></a>
 
 `CampaignGroupsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering campaign_groups search queries.
@@ -3054,6 +3274,8 @@ Classes
     `total_budget: dict[str, typing.Any] | None`
     :   Total budget for the campaign group
 
+<a id="CampaignGroupsSearchQuery"></a>
+
 `CampaignGroupsSearchQuery(*args, **kwargs)`
 :   Search query for campaign_groups entity.
 
@@ -3068,6 +3290,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsSortFilter"></a>
 
 `CampaignGroupsSortFilter(*args, **kwargs)`
 :   Available fields for sorting campaign_groups search results.
@@ -3108,6 +3332,8 @@ Classes
     `total_budget: Literal['asc', 'desc']`
     :   Total budget for the campaign group
 
+<a id="CampaignGroupsStringFilter"></a>
+
 `CampaignGroupsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3147,6 +3373,8 @@ Classes
     `total_budget: str`
     :   Total budget for the campaign group
 
+<a id="CampaignsAndCondition"></a>
+
 `CampaignsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3167,6 +3395,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CampaignsAnyCondition"></a>
+
 `CampaignsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3186,6 +3416,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsAnyValueFilter"></a>
 
 `CampaignsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3268,6 +3500,8 @@ Classes
     `version: Any`
     :   Version information
 
+<a id="CampaignsContainsCondition"></a>
+
 `CampaignsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3279,6 +3513,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsEqCondition"></a>
 
 `CampaignsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3292,6 +3528,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsFuzzyCondition"></a>
+
 `CampaignsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3303,6 +3541,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsGetParams"></a>
 
 `CampaignsGetParams(*args, **kwargs)`
 :   Parameters for campaigns.get operation
@@ -3319,6 +3559,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CampaignsGtCondition"></a>
+
 `CampaignsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3331,6 +3573,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsGteCondition"></a>
+
 `CampaignsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3342,6 +3586,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInCondition"></a>
 
 `CampaignsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3362,6 +3608,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsInFilter"></a>
 
 `CampaignsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -3444,6 +3692,8 @@ Classes
     `version: list[dict[str, typing.Any]]`
     :   Version information
 
+<a id="CampaignsKeywordCondition"></a>
+
 `CampaignsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -3456,6 +3706,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsLikeCondition"></a>
+
 `CampaignsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -3467,6 +3719,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
 :   Parameters for campaigns.list operation
@@ -3489,6 +3743,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CampaignsLtCondition"></a>
+
 `CampaignsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -3500,6 +3756,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsLteCondition"></a>
 
 `CampaignsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -3513,6 +3771,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSearchFilter`
     :   The type of the None singleton.
 
+<a id="CampaignsNeqCondition"></a>
+
 `CampaignsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -3524,6 +3784,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSearchFilter`
     :   The type of the None singleton.
+
+<a id="CampaignsNotCondition"></a>
 
 `CampaignsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -3545,6 +3807,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
+<a id="CampaignsOrCondition"></a>
+
 `CampaignsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3564,6 +3828,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchFilter"></a>
 
 `CampaignsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering campaigns search queries.
@@ -3646,6 +3912,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="CampaignsSearchQuery"></a>
+
 `CampaignsSearchQuery(*args, **kwargs)`
 :   Search query for campaigns entity.
 
@@ -3660,6 +3928,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSortFilter]`
     :   The type of the None singleton.
+
+<a id="CampaignsSortFilter"></a>
 
 `CampaignsSortFilter(*args, **kwargs)`
 :   Available fields for sorting campaigns search results.
@@ -3742,6 +4012,8 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version information
 
+<a id="CampaignsStringFilter"></a>
+
 `CampaignsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -3823,6 +4095,8 @@ Classes
     `version: str`
     :   Version information
 
+<a id="ConversionsAndCondition"></a>
+
 `ConversionsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3843,6 +4117,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="ConversionsAnyCondition"></a>
+
 `ConversionsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -3862,6 +4138,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsAnyValueFilter"></a>
 
 `ConversionsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -3914,6 +4192,8 @@ Classes
     `view_through_attribution_window_size: Any`
     :   View-through attribution window size in days
 
+<a id="ConversionsContainsCondition"></a>
+
 `ConversionsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -3925,6 +4205,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsEqCondition"></a>
 
 `ConversionsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -3938,6 +4220,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ConversionsFuzzyCondition"></a>
+
 `ConversionsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -3949,6 +4233,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsGetParams"></a>
 
 `ConversionsGetParams(*args, **kwargs)`
 :   Parameters for conversions.get operation
@@ -3962,6 +4248,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="ConversionsGtCondition"></a>
+
 `ConversionsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -3974,6 +4262,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ConversionsGteCondition"></a>
+
 `ConversionsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -3985,6 +4275,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsInCondition"></a>
 
 `ConversionsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4005,6 +4297,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsInFilter"></a>
 
 `ConversionsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4057,6 +4351,8 @@ Classes
     `view_through_attribution_window_size: list[int]`
     :   View-through attribution window size in days
 
+<a id="ConversionsKeywordCondition"></a>
+
 `ConversionsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4069,6 +4365,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
     :   The type of the None singleton.
 
+<a id="ConversionsLikeCondition"></a>
+
 `ConversionsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4080,6 +4378,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsListParams"></a>
 
 `ConversionsListParams(*args, **kwargs)`
 :   Parameters for conversions.list operation
@@ -4102,6 +4402,8 @@ Classes
     `start: int`
     :   The type of the None singleton.
 
+<a id="ConversionsLtCondition"></a>
+
 `ConversionsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4113,6 +4415,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsLteCondition"></a>
 
 `ConversionsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4126,6 +4430,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSearchFilter`
     :   The type of the None singleton.
 
+<a id="ConversionsNeqCondition"></a>
+
 `ConversionsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4137,6 +4443,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSearchFilter`
     :   The type of the None singleton.
+
+<a id="ConversionsNotCondition"></a>
 
 `ConversionsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4158,6 +4466,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition`
     :   The type of the None singleton.
 
+<a id="ConversionsOrCondition"></a>
+
 `ConversionsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4177,6 +4487,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="ConversionsSearchFilter"></a>
 
 `ConversionsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering conversions search queries.
@@ -4229,6 +4541,8 @@ Classes
     `view_through_attribution_window_size: int | None`
     :   View-through attribution window size in days
 
+<a id="ConversionsSearchQuery"></a>
+
 `ConversionsSearchQuery(*args, **kwargs)`
 :   Search query for conversions entity.
 
@@ -4243,6 +4557,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSortFilter]`
     :   The type of the None singleton.
+
+<a id="ConversionsSortFilter"></a>
 
 `ConversionsSortFilter(*args, **kwargs)`
 :   Available fields for sorting conversions search results.
@@ -4295,6 +4611,8 @@ Classes
     `view_through_attribution_window_size: Literal['asc', 'desc']`
     :   View-through attribution window size in days
 
+<a id="ConversionsStringFilter"></a>
+
 `ConversionsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -4346,6 +4664,8 @@ Classes
     `view_through_attribution_window_size: str`
     :   View-through attribution window size in days
 
+<a id="CreativesAndCondition"></a>
+
 `CreativesAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4366,6 +4686,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition]`
     :   The type of the None singleton.
 
+<a id="CreativesAnyCondition"></a>
+
 `CreativesAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4385,6 +4707,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CreativesAnyValueFilter"></a>
 
 `CreativesAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -4434,6 +4758,8 @@ Classes
     `serving_hold_reasons: Any`
     :   Reasons for holding creative from serving
 
+<a id="CreativesContainsCondition"></a>
+
 `CreativesContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -4445,6 +4771,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="CreativesEqCondition"></a>
 
 `CreativesEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -4458,6 +4786,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesFuzzyCondition"></a>
+
 `CreativesFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -4469,6 +4799,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
     :   The type of the None singleton.
+
+<a id="CreativesGetParams"></a>
 
 `CreativesGetParams(*args, **kwargs)`
 :   Parameters for creatives.get operation
@@ -4485,6 +4817,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="CreativesGtCondition"></a>
+
 `CreativesGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -4497,6 +4831,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesGteCondition"></a>
+
 `CreativesGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -4508,6 +4844,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CreativesInCondition"></a>
 
 `CreativesInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4528,6 +4866,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInFilter`
     :   The type of the None singleton.
+
+<a id="CreativesInFilter"></a>
 
 `CreativesInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -4577,6 +4917,8 @@ Classes
     `serving_hold_reasons: list[list[typing.Any]]`
     :   Reasons for holding creative from serving
 
+<a id="CreativesKeywordCondition"></a>
+
 `CreativesKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -4589,6 +4931,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
     :   The type of the None singleton.
 
+<a id="CreativesLikeCondition"></a>
+
 `CreativesLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -4600,6 +4944,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
     :   The type of the None singleton.
+
+<a id="CreativesListParams"></a>
 
 `CreativesListParams(*args, **kwargs)`
 :   Parameters for creatives.list operation
@@ -4622,6 +4968,8 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="CreativesLtCondition"></a>
+
 `CreativesLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -4633,6 +4981,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CreativesLteCondition"></a>
 
 `CreativesLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -4646,6 +4996,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSearchFilter`
     :   The type of the None singleton.
 
+<a id="CreativesNeqCondition"></a>
+
 `CreativesNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -4657,6 +5009,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSearchFilter`
     :   The type of the None singleton.
+
+<a id="CreativesNotCondition"></a>
 
 `CreativesNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -4678,6 +5032,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition`
     :   The type of the None singleton.
 
+<a id="CreativesOrCondition"></a>
+
 `CreativesOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -4697,6 +5053,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition]`
     :   The type of the None singleton.
+
+<a id="CreativesSearchFilter"></a>
 
 `CreativesSearchFilter(*args, **kwargs)`
 :   Available fields for filtering creatives search queries.
@@ -4746,6 +5104,8 @@ Classes
     `serving_hold_reasons: list[typing.Any] | None`
     :   Reasons for holding creative from serving
 
+<a id="CreativesSearchQuery"></a>
+
 `CreativesSearchQuery(*args, **kwargs)`
 :   Search query for creatives entity.
 
@@ -4760,6 +5120,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSortFilter]`
     :   The type of the None singleton.
+
+<a id="CreativesSortFilter"></a>
 
 `CreativesSortFilter(*args, **kwargs)`
 :   Available fields for sorting creatives search results.
@@ -4808,6 +5170,8 @@ Classes
 
     `serving_hold_reasons: Literal['asc', 'desc']`
     :   Reasons for holding creative from serving
+
+<a id="CreativesStringFilter"></a>
 
 `CreativesStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).

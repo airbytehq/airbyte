@@ -10,6 +10,8 @@ Pinterest connector.
 Classes
 -------
 
+<a id="AdAccountsQuery"></a>
+
 `AdAccountsQuery(connector: PinterestConnector)`
 :   Query class for AdAccounts entity operations.
     
@@ -68,6 +70,8 @@ Classes
         
         Returns:
             AdAccountsListResult
+
+<a id="AdGroupsQuery"></a>
 
 `AdGroupsQuery(connector: PinterestConnector)`
 :   Query class for AdGroups entity operations.
@@ -136,6 +140,8 @@ Classes
         
         Returns:
             AdGroupsListResult
+
+<a id="AdsQuery"></a>
 
 `AdsQuery(connector: PinterestConnector)`
 :   Query class for Ads entity operations.
@@ -208,6 +214,8 @@ Classes
         Returns:
             AdsListResult
 
+<a id="AudiencesQuery"></a>
+
 `AudiencesQuery(connector: PinterestConnector)`
 :   Query class for Audiences entity operations.
     
@@ -259,6 +267,8 @@ Classes
         
         Returns:
             AudiencesListResult
+
+<a id="BoardPinsQuery"></a>
 
 `BoardPinsQuery(connector: PinterestConnector)`
 :   Query class for BoardPins entity operations.
@@ -318,6 +328,8 @@ Classes
         Returns:
             BoardPinsListResult
 
+<a id="BoardSectionsQuery"></a>
+
 `BoardSectionsQuery(connector: PinterestConnector)`
 :   Query class for BoardSections entity operations.
     
@@ -360,6 +372,8 @@ Classes
         
         Returns:
             BoardSectionsListResult
+
+<a id="BoardsQuery"></a>
 
 `BoardsQuery(connector: PinterestConnector)`
 :   Query class for Boards entity operations.
@@ -423,6 +437,8 @@ Classes
         Returns:
             BoardsListResult
 
+<a id="CampaignsQuery"></a>
+
 `CampaignsQuery(connector: PinterestConnector)`
 :   Query class for Campaigns entity operations.
     
@@ -483,6 +499,8 @@ Classes
         Returns:
             CampaignsListResult
 
+<a id="CatalogsFeedsQuery"></a>
+
 `CatalogsFeedsQuery(connector: PinterestConnector)`
 :   Query class for CatalogsFeeds entity operations.
     
@@ -536,6 +554,8 @@ Classes
         Returns:
             CatalogsFeedsListResult
 
+<a id="CatalogsProductGroupsQuery"></a>
+
 `CatalogsProductGroupsQuery(connector: PinterestConnector)`
 :   Query class for CatalogsProductGroups entity operations.
     
@@ -585,6 +605,8 @@ Classes
         Returns:
             CatalogsProductGroupsListResult
 
+<a id="CatalogsQuery"></a>
+
 `CatalogsQuery(connector: PinterestConnector)`
 :   Query class for Catalogs entity operations.
     
@@ -629,6 +651,8 @@ Classes
         
         Returns:
             CatalogsListResult
+
+<a id="ConversionTagsQuery"></a>
 
 `ConversionTagsQuery(connector: PinterestConnector)`
 :   Query class for ConversionTags entity operations.
@@ -679,6 +703,8 @@ Classes
         
         Returns:
             ConversionTagsListResult
+
+<a id="CustomerListsQuery"></a>
 
 `CustomerListsQuery(connector: PinterestConnector)`
 :   Query class for CustomerLists entity operations.
@@ -731,6 +757,8 @@ Classes
         Returns:
             CustomerListsListResult
 
+<a id="KeywordsQuery"></a>
+
 `KeywordsQuery(connector: PinterestConnector)`
 :   Query class for Keywords entity operations.
     
@@ -780,6 +808,8 @@ Classes
         
         Returns:
             KeywordsListResult
+
+<a id="PinterestConnector"></a>
 
 `PinterestConnector(auth_config: PinterestAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Pinterest API connector.

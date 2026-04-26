@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -150,6 +156,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FormsSearchResult"></a>
+
 `FormsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -165,6 +173,8 @@ Classes
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ImagesSearchResult"></a>
 
 `ImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -182,6 +192,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ResponsesSearchResult"></a>
+
 `ResponsesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -197,6 +209,8 @@ Classes
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ThemesSearchResult"></a>
 
 `ThemesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -214,6 +228,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WebhooksSearchResult"></a>
+
 `WebhooksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -230,6 +246,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WorkspacesSearchResult"></a>
+
 `WorkspacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -245,6 +263,8 @@ Classes
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="FormsSearchData"></a>
 
 `FormsSearchData(**data: Any)`
 :   Search result data for forms entity.
@@ -307,6 +327,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   Workspace details where the form belongs
 
+<a id="ImagesSearchData"></a>
+
 `ImagesSearchData(**data: Any)`
 :   Search result data for images entity.
     
@@ -349,6 +371,8 @@ Classes
 
     `width: int | None`
     :   Width of the image in pixels
+
+<a id="ResponsesSearchData"></a>
 
 `ResponsesSearchData(**data: Any)`
 :   Search result data for responses entity.
@@ -405,6 +429,8 @@ Classes
     `variables: list[typing.Any] | None`
     :   Variables associated with the response
 
+<a id="ThemesSearchData"></a>
+
 `ThemesSearchData(**data: Any)`
 :   Search result data for themes entity.
     
@@ -460,6 +486,8 @@ Classes
     `visibility: str | None`
     :   Visibility setting of the theme
 
+<a id="TypeformAuthConfig"></a>
+
 `TypeformAuthConfig(**data: Any)`
 :   Access Token Authentication
     
@@ -481,6 +509,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TypeformConnector"></a>
 
 `TypeformConnector(auth_config: TypeformAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Typeform API connector.
@@ -682,6 +712,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="TypeformReplicationConfig"></a>
+
 `TypeformReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Typeform
     
@@ -703,6 +735,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDT00:00:00Z from which to start replicating response data.
+
+<a id="WebhooksSearchData"></a>
 
 `WebhooksSearchData(**data: Any)`
 :   Search result data for webhooks entity.
@@ -746,6 +780,8 @@ Classes
 
     `verify_ssl: bool | None`
     :   Whether SSL verification is enforced
+
+<a id="WorkspacesSearchData"></a>
 
 `WorkspacesSearchData(**data: Any)`
 :   Search result data for workspaces entity.

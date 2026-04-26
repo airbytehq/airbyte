@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AbandonedCheckoutsSearchData"></a>
+
 `AbandonedCheckoutsSearchData(**data: Any)`
 :   Search result data for abandoned_checkouts entity.
     
@@ -37,6 +39,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -106,6 +110,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -133,6 +139,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -191,6 +199,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AbandonedCheckoutsSearchResult"></a>
+
 `AbandonedCheckoutsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CollectsSearchResult"></a>
 
 `CollectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -223,6 +235,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CountriesSearchResult"></a>
+
 `CountriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -238,6 +252,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CustomCollectionsSearchResult"></a>
 
 `CustomCollectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -255,6 +271,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CustomersSearchResult"></a>
+
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -270,6 +288,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="DiscountCodesSearchResult"></a>
 
 `DiscountCodesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -287,6 +307,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="DraftOrdersSearchResult"></a>
+
 `DraftOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -302,6 +324,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="FulfillmentOrdersSearchResult"></a>
 
 `FulfillmentOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -319,6 +343,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="FulfillmentsSearchResult"></a>
+
 `FulfillmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -334,6 +360,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="InventoryItemsSearchResult"></a>
 
 `InventoryItemsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -351,6 +379,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="InventoryLevelsSearchResult"></a>
+
 `InventoryLevelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -366,6 +396,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="LocationsSearchResult"></a>
 
 `LocationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -383,6 +415,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldCustomersSearchResult"></a>
+
 `MetafieldCustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -398,6 +432,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MetafieldDraftOrdersSearchResult"></a>
 
 `MetafieldDraftOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -415,6 +451,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldLocationsSearchResult"></a>
+
 `MetafieldLocationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -430,6 +468,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MetafieldOrdersSearchResult"></a>
 
 `MetafieldOrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -447,6 +487,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldProductImagesSearchResult"></a>
+
 `MetafieldProductImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -462,6 +504,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MetafieldProductVariantsSearchResult"></a>
 
 `MetafieldProductVariantsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -479,6 +523,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldProductsSearchResult"></a>
+
 `MetafieldProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -494,6 +540,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="MetafieldShopsSearchResult"></a>
 
 `MetafieldShopsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -511,6 +559,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldSmartCollectionsSearchResult"></a>
+
 `MetafieldSmartCollectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -526,6 +576,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OrderRefundsSearchResult"></a>
 
 `OrderRefundsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -543,6 +595,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PriceRulesSearchResult"></a>
+
 `PriceRulesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -558,6 +612,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProductImagesSearchResult"></a>
 
 `ProductImagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -575,6 +631,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProductVariantsSearchResult"></a>
+
 `ProductVariantsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -590,6 +648,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ShopSearchResult"></a>
 
 `ShopSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -607,6 +667,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SmartCollectionsSearchResult"></a>
+
 `SmartCollectionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -623,6 +685,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TenderTransactionsSearchResult"></a>
+
 `TenderTransactionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -638,6 +702,8 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CollectsSearchData"></a>
 
 `CollectsSearchData(**data: Any)`
 :   Search result data for collects entity.
@@ -658,6 +724,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CountriesSearchData"></a>
+
 `CountriesSearchData(**data: Any)`
 :   Search result data for countries entity.
     
@@ -676,6 +744,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomCollectionsSearchData"></a>
 
 `CustomCollectionsSearchData(**data: Any)`
 :   Search result data for custom_collections entity.
@@ -696,6 +766,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersSearchData"></a>
+
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
     
@@ -714,6 +786,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DiscountCodesSearchData"></a>
 
 `DiscountCodesSearchData(**data: Any)`
 :   Search result data for discount_codes entity.
@@ -734,6 +808,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DraftOrdersSearchData"></a>
+
 `DraftOrdersSearchData(**data: Any)`
 :   Search result data for draft_orders entity.
     
@@ -752,6 +828,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FulfillmentOrdersSearchData"></a>
 
 `FulfillmentOrdersSearchData(**data: Any)`
 :   Search result data for fulfillment_orders entity.
@@ -772,6 +850,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FulfillmentsSearchData"></a>
+
 `FulfillmentsSearchData(**data: Any)`
 :   Search result data for fulfillments entity.
     
@@ -790,6 +870,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InventoryItemsSearchData"></a>
 
 `InventoryItemsSearchData(**data: Any)`
 :   Search result data for inventory_items entity.
@@ -810,6 +892,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InventoryLevelsSearchData"></a>
+
 `InventoryLevelsSearchData(**data: Any)`
 :   Search result data for inventory_levels entity.
     
@@ -828,6 +912,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LocationsSearchData"></a>
 
 `LocationsSearchData(**data: Any)`
 :   Search result data for locations entity.
@@ -848,6 +934,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldCustomersSearchData"></a>
+
 `MetafieldCustomersSearchData(**data: Any)`
 :   Search result data for metafield_customers entity.
     
@@ -866,6 +954,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldDraftOrdersSearchData"></a>
 
 `MetafieldDraftOrdersSearchData(**data: Any)`
 :   Search result data for metafield_draft_orders entity.
@@ -886,6 +976,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldLocationsSearchData"></a>
+
 `MetafieldLocationsSearchData(**data: Any)`
 :   Search result data for metafield_locations entity.
     
@@ -904,6 +996,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldOrdersSearchData"></a>
 
 `MetafieldOrdersSearchData(**data: Any)`
 :   Search result data for metafield_orders entity.
@@ -924,6 +1018,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldProductImagesSearchData"></a>
+
 `MetafieldProductImagesSearchData(**data: Any)`
 :   Search result data for metafield_product_images entity.
     
@@ -942,6 +1038,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldProductVariantsSearchData"></a>
 
 `MetafieldProductVariantsSearchData(**data: Any)`
 :   Search result data for metafield_product_variants entity.
@@ -962,6 +1060,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldProductsSearchData"></a>
+
 `MetafieldProductsSearchData(**data: Any)`
 :   Search result data for metafield_products entity.
     
@@ -980,6 +1080,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetafieldShopsSearchData"></a>
 
 `MetafieldShopsSearchData(**data: Any)`
 :   Search result data for metafield_shops entity.
@@ -1000,6 +1102,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetafieldSmartCollectionsSearchData"></a>
+
 `MetafieldSmartCollectionsSearchData(**data: Any)`
 :   Search result data for metafield_smart_collections entity.
     
@@ -1018,6 +1122,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderRefundsSearchData"></a>
 
 `OrderRefundsSearchData(**data: Any)`
 :   Search result data for order_refunds entity.
@@ -1038,6 +1144,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PriceRulesSearchData"></a>
+
 `PriceRulesSearchData(**data: Any)`
 :   Search result data for price_rules entity.
     
@@ -1056,6 +1164,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProductImagesSearchData"></a>
 
 `ProductImagesSearchData(**data: Any)`
 :   Search result data for product_images entity.
@@ -1076,6 +1186,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProductVariantsSearchData"></a>
+
 `ProductVariantsSearchData(**data: Any)`
 :   Search result data for product_variants entity.
     
@@ -1095,6 +1207,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ShopSearchData"></a>
+
 `ShopSearchData(**data: Any)`
 :   Search result data for shop entity.
     
@@ -1113,6 +1227,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShopifyAuthConfig"></a>
 
 `ShopifyAuthConfig(**data: Any)`
 :   Access Token Authentication
@@ -1135,6 +1251,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ShopifyConnector"></a>
 
 `ShopifyConnector(auth_config: ShopifyAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, shop: str | None = None)`
 :   Type-safe Shopify API connector.
@@ -1324,6 +1442,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SmartCollectionsSearchData"></a>
+
 `SmartCollectionsSearchData(**data: Any)`
 :   Search result data for smart_collections entity.
     
@@ -1342,6 +1462,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TenderTransactionsSearchData"></a>
 
 `TenderTransactionsSearchData(**data: Any)`
 :   Search result data for tender_transactions entity.

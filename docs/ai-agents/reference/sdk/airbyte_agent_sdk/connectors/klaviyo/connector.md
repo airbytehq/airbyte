@@ -10,6 +10,8 @@ Klaviyo connector.
 Classes
 -------
 
+<a id="CampaignsQuery"></a>
+
 `CampaignsQuery(connector: KlaviyoConnector)`
 :   Query class for Campaigns entity operations.
     
@@ -67,6 +69,8 @@ Classes
         Returns:
             CampaignsListResult
 
+<a id="EmailTemplatesQuery"></a>
+
 `EmailTemplatesQuery(connector: KlaviyoConnector)`
 :   Query class for EmailTemplates entity operations.
     
@@ -122,6 +126,8 @@ Classes
         Returns:
             EmailTemplatesListResult
 
+<a id="EventsQuery"></a>
+
 `EventsQuery(connector: KlaviyoConnector)`
 :   Query class for Events entity operations.
     
@@ -168,6 +174,8 @@ Classes
         
         Returns:
             EventsListResult
+
+<a id="FlowsQuery"></a>
 
 `FlowsQuery(connector: KlaviyoConnector)`
 :   Query class for Flows entity operations.
@@ -224,6 +232,8 @@ Classes
         
         Returns:
             FlowsListResult
+
+<a id="KlaviyoConnector"></a>
 
 `KlaviyoConnector(auth_config: KlaviyoAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Klaviyo API connector.
@@ -413,6 +423,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ListsQuery"></a>
+
 `ListsQuery(connector: KlaviyoConnector)`
 :   Query class for Lists entity operations.
     
@@ -469,6 +481,8 @@ Classes
         Returns:
             ListsListResult
 
+<a id="MetricsQuery"></a>
+
 `MetricsQuery(connector: KlaviyoConnector)`
 :   Query class for Metrics entity operations.
     
@@ -524,6 +538,8 @@ Classes
         
         Returns:
             MetricsListResult
+
+<a id="ProfilesQuery"></a>
 
 `ProfilesQuery(connector: KlaviyoConnector)`
 :   Query class for Profiles entity operations.

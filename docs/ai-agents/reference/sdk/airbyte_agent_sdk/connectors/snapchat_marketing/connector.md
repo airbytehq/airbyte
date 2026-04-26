@@ -10,6 +10,8 @@ Snapchat-Marketing connector.
 Classes
 -------
 
+<a id="AdaccountsQuery"></a>
+
 `AdaccountsQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Adaccounts entity operations.
     
@@ -75,6 +77,8 @@ Classes
         Returns:
             AdaccountsListResult
 
+<a id="AdsQuery"></a>
+
 `AdsQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Ads entity operations.
     
@@ -135,6 +139,8 @@ Classes
         
         Returns:
             AdsListResult
+
+<a id="AdsquadsQuery"></a>
 
 `AdsquadsQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Adsquads entity operations.
@@ -213,6 +219,8 @@ Classes
         Returns:
             AdsquadsListResult
 
+<a id="CampaignsQuery"></a>
+
 `CampaignsQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Campaigns entity operations.
     
@@ -272,6 +280,8 @@ Classes
         
         Returns:
             CampaignsListResult
+
+<a id="CreativesQuery"></a>
 
 `CreativesQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Creatives entity operations.
@@ -342,6 +352,8 @@ Classes
         Returns:
             CreativesListResult
 
+<a id="MediaQuery"></a>
+
 `MediaQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Media entity operations.
     
@@ -407,6 +419,8 @@ Classes
         
         Returns:
             MediaListResult
+
+<a id="OrganizationsQuery"></a>
 
 `OrganizationsQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Organizations entity operations.
@@ -475,6 +489,8 @@ Classes
         Returns:
             OrganizationsListResult
 
+<a id="SegmentsQuery"></a>
+
 `SegmentsQuery(connector: SnapchatMarketingConnector)`
 :   Query class for Segments entity operations.
     
@@ -537,6 +553,8 @@ Classes
         
         Returns:
             SegmentsListResult
+
+<a id="SnapchatMarketingConnector"></a>
 
 `SnapchatMarketingConnector(auth_config: SnapchatMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Snapchat-Marketing API connector.

@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -147,6 +153,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CompaniesSearchResult"></a>
+
 `CompaniesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -162,6 +170,8 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -179,6 +189,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="DealsSearchResult"></a>
+
 `DealsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -194,6 +206,8 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CompaniesSearchData"></a>
 
 `CompaniesSearchData(**data: Any)`
 :   Search result data for companies entity.
@@ -232,6 +246,8 @@ Classes
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
+<a id="ContactsSearchData"></a>
+
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
     
@@ -268,6 +284,8 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp indicating when the contact record was last modified.
+
+<a id="DealsSearchData"></a>
 
 `DealsSearchData(**data: Any)`
 :   Search result data for deals entity.
@@ -311,6 +329,8 @@ Classes
 
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
+
+<a id="HubspotConnector"></a>
 
 `HubspotConnector(auth_config: HubspotAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Hubspot API connector.
@@ -587,6 +607,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="HubspotOAuthCredentials"></a>
 
 `HubspotOAuthCredentials(**data: Any)`
 :   HubSpot OAuth App Credentials - Provide your own HubSpot OAuth app credentials to override the default Airbyte-managed ones.

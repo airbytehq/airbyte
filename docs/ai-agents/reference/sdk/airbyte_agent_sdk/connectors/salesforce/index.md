@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountsSearchData"></a>
+
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
     
@@ -128,6 +130,8 @@ Classes
     `website: str | None`
     :   Website URL for the account
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -196,6 +200,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -223,6 +229,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -258,6 +266,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsSearchResult"></a>
+
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -273,6 +283,8 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -290,6 +302,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="LeadsSearchResult"></a>
+
 `LeadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -305,6 +319,8 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OpportunitiesSearchResult"></a>
 
 `OpportunitiesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -322,6 +338,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -337,6 +355,8 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -434,6 +454,8 @@ Classes
 
     `title: str | None`
     :   Job title of the contact
+
+<a id="LeadsSearchData"></a>
 
 `LeadsSearchData(**data: Any)`
 :   Search result data for leads entity.
@@ -556,6 +578,8 @@ Classes
     `website: str | None`
     :   Website URL for the lead's company
 
+<a id="OpportunitiesSearchData"></a>
+
 `OpportunitiesSearchData(**data: Any)`
 :   Search result data for opportunities entity.
     
@@ -653,6 +677,8 @@ Classes
     `type_: str | None`
     :   Type of opportunity (e.g., New Business, Existing Business)
 
+<a id="SalesforceAuthConfig"></a>
+
 `SalesforceAuthConfig(**data: Any)`
 :   Salesforce OAuth 2.0
     
@@ -680,6 +706,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth refresh token for automatic token renewal
+
+<a id="SalesforceConnector"></a>
 
 `SalesforceConnector(auth_config: SalesforceAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, instance_url: str | None = None)`
 :   Type-safe Salesforce API connector.
@@ -922,6 +950,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="TasksSearchData"></a>
 
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.

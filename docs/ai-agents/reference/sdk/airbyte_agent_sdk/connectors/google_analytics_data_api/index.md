@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -152,6 +158,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DailyActiveUsersSearchResult"></a>
+
 `DailyActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -167,6 +175,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="DevicesSearchResult"></a>
 
 `DevicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -184,6 +194,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="FourWeeklyActiveUsersSearchResult"></a>
+
 `FourWeeklyActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -199,6 +211,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="LocationsSearchResult"></a>
 
 `LocationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -216,6 +230,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PagesSearchResult"></a>
+
 `PagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -231,6 +247,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TrafficSourcesSearchResult"></a>
 
 `TrafficSourcesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -248,6 +266,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WebsiteOverviewSearchResult"></a>
+
 `WebsiteOverviewSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -264,6 +284,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WeeklyActiveUsersSearchResult"></a>
+
 `WeeklyActiveUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -279,6 +301,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="DailyActiveUsersSearchData"></a>
 
 `DailyActiveUsersSearchData(**data: Any)`
 :   Search result data for daily_active_users entity.
@@ -313,6 +337,8 @@ Classes
 
     `start_date: str | None`
     :   Start date of the reporting period
+
+<a id="DevicesSearchData"></a>
 
 `DevicesSearchData(**data: Any)`
 :   Search result data for devices entity.
@@ -378,6 +404,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="FourWeeklyActiveUsersSearchData"></a>
+
 `FourWeeklyActiveUsersSearchData(**data: Any)`
 :   Search result data for four_weekly_active_users entity.
     
@@ -412,6 +440,8 @@ Classes
     `start_date: str | None`
     :   Start date of the reporting period
 
+<a id="GoogleAnalyticsDataApiAuthConfig"></a>
+
 `GoogleAnalyticsDataApiAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -439,6 +469,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth 2.0 Refresh Token for obtaining new access tokens
+
+<a id="GoogleAnalyticsDataApiConnector"></a>
 
 `GoogleAnalyticsDataApiConnector(auth_config: GoogleAnalyticsDataApiAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Analytics-Data-Api API connector.
@@ -696,6 +728,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GoogleAnalyticsDataApiReplicationConfig"></a>
+
 `GoogleAnalyticsDataApiReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Analytics.
     
@@ -717,6 +751,8 @@ Classes
 
     `property_ids: str`
     :   A list of GA4 Property IDs to replicate data from.
+
+<a id="LocationsSearchData"></a>
 
 `LocationsSearchData(**data: Any)`
 :   Search result data for locations entity.
@@ -782,6 +818,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="PagesSearchData"></a>
+
 `PagesSearchData(**data: Any)`
 :   Search result data for pages entity.
     
@@ -824,6 +862,8 @@ Classes
 
     `start_date: str | None`
     :   Start date of the reporting period
+
+<a id="TrafficSourcesSearchData"></a>
 
 `TrafficSourcesSearchData(**data: Any)`
 :   Search result data for traffic_sources entity.
@@ -886,6 +926,8 @@ Classes
     `total_users: int | None`
     :   Total number of unique users
 
+<a id="WebsiteOverviewSearchData"></a>
+
 `WebsiteOverviewSearchData(**data: Any)`
 :   Search result data for website_overview entity.
     
@@ -940,6 +982,8 @@ Classes
 
     `total_users: int | None`
     :   Total number of unique users
+
+<a id="WeeklyActiveUsersSearchData"></a>
 
 `WeeklyActiveUsersSearchData(**data: Any)`
 :   Search result data for weekly_active_users entity.

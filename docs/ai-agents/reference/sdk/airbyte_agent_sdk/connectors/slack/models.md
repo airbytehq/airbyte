@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -95,6 +99,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesSearchResult"></a>
+
 `ChannelMessagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -131,6 +137,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChannelsSearchResult"></a>
 
 `ChannelsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -169,6 +177,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ThreadsSearchResult"></a>
+
 `ThreadsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -221,6 +233,8 @@ Classes
     * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Attachment"></a>
 
 `Attachment(**data: Any)`
 :   Message attachment
@@ -289,6 +303,8 @@ Classes
     `ts: Any`
     :   The type of the None singleton.
 
+<a id="BotProfile"></a>
+
 `BotProfile(**data: Any)`
 :   Bot profile information
     
@@ -325,6 +341,8 @@ Classes
 
     `updated: int | Any | None`
     :   The type of the None singleton.
+
+<a id="Channel"></a>
 
 `Channel(**data: Any)`
 :   Slack channel object
@@ -438,6 +456,8 @@ Classes
     `updated: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ChannelCreateParams"></a>
+
 `ChannelCreateParams(**data: Any)`
 :   Parameters for creating a channel
     
@@ -463,6 +483,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="ChannelCreateResponse"></a>
+
 `ChannelCreateResponse(**data: Any)`
 :   Response from creating a channel
     
@@ -487,6 +509,8 @@ Classes
 
     `ok: bool | Any`
     :   The type of the None singleton.
+
+<a id="ChannelInviteParams"></a>
 
 `ChannelInviteParams(**data: Any)`
 :   Parameters for inviting users to a channel
@@ -516,6 +540,8 @@ Classes
     `users: str | Any`
     :   The type of the None singleton.
 
+<a id="ChannelInviteResponse"></a>
+
 `ChannelInviteResponse(**data: Any)`
 :   Response from inviting users to a channel
     
@@ -541,6 +567,8 @@ Classes
     `ok: bool | Any`
     :   The type of the None singleton.
 
+<a id="ChannelMessagesListResultMeta"></a>
+
 `ChannelMessagesListResultMeta(**data: Any)`
 :   Metadata for channel_messages.Action.LIST operation
     
@@ -565,6 +593,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesSearchData"></a>
 
 `ChannelMessagesSearchData(**data: Any)`
 :   Search result data for channel_messages entity.
@@ -639,6 +669,8 @@ Classes
     `user: str | None`
     :   User ID who sent the message.
 
+<a id="ChannelPurpose"></a>
+
 `ChannelPurpose(**data: Any)`
 :   Channel purpose information
     
@@ -667,6 +699,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChannelPurposeParams"></a>
+
 `ChannelPurposeParams(**data: Any)`
 :   Parameters for setting channel purpose
     
@@ -691,6 +725,8 @@ Classes
 
     `purpose: str | Any`
     :   The type of the None singleton.
+
+<a id="ChannelPurposeResponse"></a>
 
 `ChannelPurposeResponse(**data: Any)`
 :   Response from setting channel purpose
@@ -717,6 +753,8 @@ Classes
     `ok: bool | Any`
     :   The type of the None singleton.
 
+<a id="ChannelRenameParams"></a>
+
 `ChannelRenameParams(**data: Any)`
 :   Parameters for renaming a channel
     
@@ -741,6 +779,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="ChannelRenameResponse"></a>
 
 `ChannelRenameResponse(**data: Any)`
 :   Response from renaming a channel
@@ -767,6 +807,8 @@ Classes
     `ok: bool | Any`
     :   The type of the None singleton.
 
+<a id="ChannelResponse"></a>
+
 `ChannelResponse(**data: Any)`
 :   Response containing single channel
     
@@ -791,6 +833,8 @@ Classes
 
     `ok: bool | Any`
     :   The type of the None singleton.
+
+<a id="ChannelTopic"></a>
 
 `ChannelTopic(**data: Any)`
 :   Channel topic information
@@ -820,6 +864,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChannelTopicParams"></a>
+
 `ChannelTopicParams(**data: Any)`
 :   Parameters for setting channel topic
     
@@ -845,6 +891,8 @@ Classes
     `topic: str | Any`
     :   The type of the None singleton.
 
+<a id="ChannelTopicResponse"></a>
+
 `ChannelTopicResponse(**data: Any)`
 :   Response from setting channel topic
     
@@ -869,6 +917,8 @@ Classes
 
     `ok: bool | Any`
     :   The type of the None singleton.
+
+<a id="ChannelsListResponse"></a>
 
 `ChannelsListResponse(**data: Any)`
 :   Response containing list of channels
@@ -898,6 +948,8 @@ Classes
     `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
     :   The type of the None singleton.
 
+<a id="ChannelsListResultMeta"></a>
+
 `ChannelsListResultMeta(**data: Any)`
 :   Metadata for channels.Action.LIST operation
     
@@ -919,6 +971,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ChannelsSearchData"></a>
 
 `ChannelsSearchData(**data: Any)`
 :   Search result data for channels entity.
@@ -1032,6 +1086,8 @@ Classes
     `updated: int | None`
     :   The timestamp when the channel was last updated.
 
+<a id="CreatedMessage"></a>
+
 `CreatedMessage(**data: Any)`
 :   A message object returned from create/update operations
     
@@ -1078,6 +1134,8 @@ Classes
     `user: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EditedInfo"></a>
+
 `EditedInfo(**data: Any)`
 :   Message edit information
     
@@ -1102,6 +1160,8 @@ Classes
 
     `user: str | Any | None`
     :   The type of the None singleton.
+
+<a id="File"></a>
 
 `File(**data: Any)`
 :   File object
@@ -1178,6 +1238,8 @@ Classes
 
     `user: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Message"></a>
 
 `Message(**data: Any)`
 :   Slack message object
@@ -1261,6 +1323,8 @@ Classes
     `user: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageCreateParams"></a>
+
 `MessageCreateParams(**data: Any)`
 :   Parameters for creating a message
     
@@ -1298,6 +1362,8 @@ Classes
     `unfurl_media: bool | Any`
     :   The type of the None singleton.
 
+<a id="MessageCreateResponse"></a>
+
 `MessageCreateResponse(**data: Any)`
 :   Response from creating a message
     
@@ -1329,6 +1395,8 @@ Classes
     `ts: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageUpdateParams"></a>
+
 `MessageUpdateParams(**data: Any)`
 :   Parameters for updating a message
     
@@ -1356,6 +1424,8 @@ Classes
 
     `ts: str | Any`
     :   The type of the None singleton.
+
+<a id="MessageUpdateResponse"></a>
 
 `MessageUpdateResponse(**data: Any)`
 :   Response from updating a message
@@ -1391,6 +1461,8 @@ Classes
     `ts: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessagesListResponse"></a>
+
 `MessagesListResponse(**data: Any)`
 :   Response containing list of messages
     
@@ -1425,6 +1497,8 @@ Classes
     `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
     :   The type of the None singleton.
 
+<a id="Reaction"></a>
+
 `Reaction(**data: Any)`
 :   Message reaction
     
@@ -1452,6 +1526,8 @@ Classes
 
     `users: list[str] | Any | None`
     :   The type of the None singleton.
+
+<a id="ReactionAddParams"></a>
 
 `ReactionAddParams(**data: Any)`
 :   Parameters for adding a reaction
@@ -1481,6 +1557,8 @@ Classes
     `timestamp: str | Any`
     :   The type of the None singleton.
 
+<a id="ReactionAddResponse"></a>
+
 `ReactionAddResponse(**data: Any)`
 :   Response from adding a reaction
     
@@ -1503,6 +1581,8 @@ Classes
     `ok: bool | Any`
     :   The type of the None singleton.
 
+<a id="ResponseMetadata"></a>
+
 `ResponseMetadata(**data: Any)`
 :   Response metadata including pagination
     
@@ -1524,6 +1604,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SlackCheckResult"></a>
 
 `SlackCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1558,6 +1640,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="SlackExecuteResult"></a>
+
 `SlackExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1586,6 +1670,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SlackExecuteResultWithMeta"></a>
 
 `SlackExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1641,6 +1727,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChannelsListResult"></a>
+
 `ChannelsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1683,6 +1771,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ChannelMessagesListResult"></a>
 
 `ChannelMessagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1727,6 +1817,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ThreadsListResult"></a>
+
 `ThreadsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1770,6 +1862,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1788,6 +1882,8 @@ Classes
     * airbyte_agent_sdk.connectors.slack.models.SlackExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SlackOauth20AuthenticationAuthConfig"></a>
 
 `SlackOauth20AuthenticationAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
@@ -1817,6 +1913,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SlackReplicationConfig"></a>
+
 `SlackReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Slack.
     
@@ -1845,6 +1943,8 @@ Classes
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
 
+<a id="SlackTokenAuthenticationAuthConfig"></a>
+
 `SlackTokenAuthenticationAuthConfig(**data: Any)`
 :   Token Authentication
     
@@ -1866,6 +1966,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Thread"></a>
 
 `Thread(**data: Any)`
 :   Slack thread reply message object
@@ -1952,6 +2054,8 @@ Classes
     `user: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ThreadRepliesResponse"></a>
+
 `ThreadRepliesResponse(**data: Any)`
 :   Response containing thread replies
     
@@ -1983,6 +2087,8 @@ Classes
     `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
     :   The type of the None singleton.
 
+<a id="ThreadsListResultMeta"></a>
+
 `ThreadsListResultMeta(**data: Any)`
 :   Metadata for threads.Action.LIST operation
     
@@ -2007,6 +2113,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ThreadsSearchData"></a>
 
 `ThreadsSearchData(**data: Any)`
 :   Search result data for threads entity.
@@ -2074,6 +2182,8 @@ Classes
 
     `user: str | None`
     :   User ID who sent the message.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   Slack user object
@@ -2153,6 +2263,8 @@ Classes
 
     `who_can_share_contact_card: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UserProfile"></a>
 
 `UserProfile(**data: Any)`
 :   User profile information
@@ -2236,6 +2348,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserResponse"></a>
+
 `UserResponse(**data: Any)`
 :   Response containing single user
     
@@ -2260,6 +2374,8 @@ Classes
 
     `user: airbyte_agent_sdk.connectors.slack.models.User | Any`
     :   The type of the None singleton.
+
+<a id="UsersListResponse"></a>
 
 `UsersListResponse(**data: Any)`
 :   Response containing list of users
@@ -2292,6 +2408,8 @@ Classes
     `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -2313,6 +2431,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -98,6 +102,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -134,6 +140,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EmailTemplatesSearchResult"></a>
 
 `EmailTemplatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -172,6 +180,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsSearchResult"></a>
+
 `EventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -208,6 +218,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FlowsSearchResult"></a>
 
 `FlowsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -246,6 +258,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListsSearchResult"></a>
+
 `ListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -282,6 +296,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetricsSearchResult"></a>
 
 `MetricsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -320,6 +336,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProfilesSearchResult"></a>
+
 `ProfilesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -335,6 +353,8 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   A Klaviyo campaign
@@ -366,6 +386,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CampaignAttributes"></a>
 
 `CampaignAttributes(**data: Any)`
 :   Campaign attributes
@@ -419,6 +441,8 @@ Classes
     `updated_at: str | Any | None`
     :   Last update timestamp
 
+<a id="CampaignLinks"></a>
+
 `CampaignLinks(**data: Any)`
 :   Related links
     
@@ -440,6 +464,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CampaignsList"></a>
 
 `CampaignsList(**data: Any)`
 :   Paginated list of campaigns
@@ -465,6 +491,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsListLinks"></a>
 
 `CampaignsListLinks(**data: Any)`
 :   Nested schema for CampaignsList.links
@@ -494,6 +522,8 @@ Classes
     `self: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -515,6 +545,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -553,6 +585,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="EmailTemplatesListResultMeta"></a>
+
 `EmailTemplatesListResultMeta(**data: Any)`
 :   Metadata for email_templates.Action.LIST operation
     
@@ -574,6 +608,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EmailTemplatesSearchData"></a>
 
 `EmailTemplatesSearchData(**data: Any)`
 :   Search result data for email_templates entity.
@@ -609,6 +645,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="Event"></a>
+
 `Event(**data: Any)`
 :   A Klaviyo event representing an action taken by a profile
     
@@ -643,6 +681,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EventAttributes"></a>
+
 `EventAttributes(**data: Any)`
 :   Event attributes
     
@@ -674,6 +714,8 @@ Classes
     `uuid: str | Any | None`
     :   Event UUID
 
+<a id="EventLinks"></a>
+
 `EventLinks(**data: Any)`
 :   Related links
     
@@ -695,6 +737,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EventRelationships"></a>
 
 `EventRelationships(**data: Any)`
 :   Related resources
@@ -721,6 +765,8 @@ Classes
     `profile: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsProfile | Any | None`
     :   The type of the None singleton.
 
+<a id="EventRelationshipsMetric"></a>
+
 `EventRelationshipsMetric(**data: Any)`
 :   Nested schema for EventRelationships.metric
     
@@ -742,6 +788,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventRelationshipsMetricData"></a>
 
 `EventRelationshipsMetricData(**data: Any)`
 :   Nested schema for EventRelationshipsMetric.data
@@ -768,6 +816,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EventRelationshipsProfile"></a>
+
 `EventRelationshipsProfile(**data: Any)`
 :   Nested schema for EventRelationships.profile
     
@@ -789,6 +839,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventRelationshipsProfileData"></a>
 
 `EventRelationshipsProfileData(**data: Any)`
 :   Nested schema for EventRelationshipsProfile.data
@@ -815,6 +867,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EventsList"></a>
+
 `EventsList(**data: Any)`
 :   Paginated list of events
     
@@ -839,6 +893,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventsListLinks"></a>
 
 `EventsListLinks(**data: Any)`
 :   Nested schema for EventsList.links
@@ -868,6 +924,8 @@ Classes
     `self: str | Any | None`
     :   The type of the None singleton.
 
+<a id="EventsListResultMeta"></a>
+
 `EventsListResultMeta(**data: Any)`
 :   Metadata for events.Action.LIST operation
     
@@ -889,6 +947,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="EventsSearchData"></a>
 
 `EventsSearchData(**data: Any)`
 :   Search result data for events entity.
@@ -927,6 +987,8 @@ Classes
     `type_: str | None`
     :   The type of the None singleton.
 
+<a id="Flow"></a>
+
 `Flow(**data: Any)`
 :   A Klaviyo flow (automated sequence)
     
@@ -957,6 +1019,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="FlowAttributes"></a>
 
 `FlowAttributes(**data: Any)`
 :   Flow attributes
@@ -995,6 +1059,8 @@ Classes
     `updated: str | Any | None`
     :   Last update timestamp
 
+<a id="FlowLinks"></a>
+
 `FlowLinks(**data: Any)`
 :   Related links
     
@@ -1016,6 +1082,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="FlowsList"></a>
 
 `FlowsList(**data: Any)`
 :   Paginated list of flows
@@ -1041,6 +1109,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FlowsListLinks"></a>
 
 `FlowsListLinks(**data: Any)`
 :   Nested schema for FlowsList.links
@@ -1070,6 +1140,8 @@ Classes
     `self: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FlowsListResultMeta"></a>
+
 `FlowsListResultMeta(**data: Any)`
 :   Metadata for flows.Action.LIST operation
     
@@ -1091,6 +1163,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="FlowsSearchData"></a>
 
 `FlowsSearchData(**data: Any)`
 :   Search result data for flows entity.
@@ -1129,6 +1203,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="KlaviyoAuthConfig"></a>
+
 `KlaviyoAuthConfig(**data: Any)`
 :   Authentication
     
@@ -1150,6 +1226,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="KlaviyoCheckResult"></a>
 
 `KlaviyoCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1184,6 +1262,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="KlaviyoExecuteResult"></a>
+
 `KlaviyoExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1212,6 +1292,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="KlaviyoExecuteResultWithMeta"></a>
 
 `KlaviyoExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1270,6 +1352,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListResult"></a>
+
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1312,6 +1396,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EventsListResult"></a>
 
 `EventsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1356,6 +1442,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FlowsListResult"></a>
+
 `FlowsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1398,6 +1486,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListsListResult"></a>
 
 `ListsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1442,6 +1532,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="MetricsListResult"></a>
+
 `MetricsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1484,6 +1576,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProfilesListResult"></a>
 
 `ProfilesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1528,6 +1622,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EmailTemplatesListResult"></a>
+
 `EmailTemplatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1546,6 +1642,8 @@ Classes
     * airbyte_agent_sdk.connectors.klaviyo.models.KlaviyoExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="List"></a>
 
 `List(**data: Any)`
 :   A Klaviyo list for organizing profiles
@@ -1578,6 +1676,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ListAttributes"></a>
+
 `ListAttributes(**data: Any)`
 :   List attributes
     
@@ -1609,6 +1709,8 @@ Classes
     `updated: str | Any | None`
     :   Last update timestamp
 
+<a id="ListLinks"></a>
+
 `ListLinks(**data: Any)`
 :   Related links
     
@@ -1630,6 +1732,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ListsList"></a>
 
 `ListsList(**data: Any)`
 :   Paginated list of lists
@@ -1655,6 +1759,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListsListLinks"></a>
 
 `ListsListLinks(**data: Any)`
 :   Nested schema for ListsList.links
@@ -1684,6 +1790,8 @@ Classes
     `self: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ListsListResultMeta"></a>
+
 `ListsListResultMeta(**data: Any)`
 :   Metadata for lists.Action.LIST operation
     
@@ -1705,6 +1813,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ListsSearchData"></a>
 
 `ListsSearchData(**data: Any)`
 :   Search result data for lists entity.
@@ -1743,6 +1853,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="Metric"></a>
+
 `Metric(**data: Any)`
 :   A Klaviyo metric (event type)
     
@@ -1773,6 +1885,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="MetricAttributes"></a>
 
 `MetricAttributes(**data: Any)`
 :   Metric attributes
@@ -1805,6 +1919,8 @@ Classes
     `updated: str | Any | None`
     :   Last update timestamp
 
+<a id="MetricAttributesIntegration"></a>
+
 `MetricAttributesIntegration(**data: Any)`
 :   Integration information
     
@@ -1833,6 +1949,8 @@ Classes
     `name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetricLinks"></a>
+
 `MetricLinks(**data: Any)`
 :   Related links
     
@@ -1854,6 +1972,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="MetricsList"></a>
 
 `MetricsList(**data: Any)`
 :   Paginated list of metrics
@@ -1879,6 +1999,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MetricsListLinks"></a>
 
 `MetricsListLinks(**data: Any)`
 :   Nested schema for MetricsList.links
@@ -1908,6 +2030,8 @@ Classes
     `self: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MetricsListResultMeta"></a>
+
 `MetricsListResultMeta(**data: Any)`
 :   Metadata for metrics.Action.LIST operation
     
@@ -1929,6 +2053,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="MetricsSearchData"></a>
 
 `MetricsSearchData(**data: Any)`
 :   Search result data for metrics entity.
@@ -1967,6 +2093,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="Profile"></a>
+
 `Profile(**data: Any)`
 :   A Klaviyo profile representing a contact
     
@@ -1997,6 +2125,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProfileAttributes"></a>
 
 `ProfileAttributes(**data: Any)`
 :   Profile attributes
@@ -2053,6 +2183,8 @@ Classes
     `updated: str | Any | None`
     :   Last update timestamp
 
+<a id="ProfileAttributesLocation"></a>
+
 `ProfileAttributesLocation(**data: Any)`
 :   Location information
     
@@ -2099,6 +2231,8 @@ Classes
     `zip: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProfileLinks"></a>
+
 `ProfileLinks(**data: Any)`
 :   Related links
     
@@ -2120,6 +2254,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProfilesList"></a>
 
 `ProfilesList(**data: Any)`
 :   Paginated list of profiles
@@ -2145,6 +2281,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProfilesListLinks"></a>
 
 `ProfilesListLinks(**data: Any)`
 :   Nested schema for ProfilesList.links
@@ -2174,6 +2312,8 @@ Classes
     `self: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProfilesListResultMeta"></a>
+
 `ProfilesListResultMeta(**data: Any)`
 :   Metadata for profiles.Action.LIST operation
     
@@ -2195,6 +2335,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ProfilesSearchData"></a>
 
 `ProfilesSearchData(**data: Any)`
 :   Search result data for profiles entity.
@@ -2236,6 +2378,8 @@ Classes
     `updated: str | None`
     :   The type of the None singleton.
 
+<a id="Template"></a>
+
 `Template(**data: Any)`
 :   A Klaviyo email template
     
@@ -2266,6 +2410,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TemplateAttributes"></a>
 
 `TemplateAttributes(**data: Any)`
 :   Template attributes
@@ -2304,6 +2450,8 @@ Classes
     `updated: str | Any | None`
     :   Last update timestamp
 
+<a id="TemplateLinks"></a>
+
 `TemplateLinks(**data: Any)`
 :   Related links
     
@@ -2325,6 +2473,8 @@ Classes
 
     `self: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TemplatesList"></a>
 
 `TemplatesList(**data: Any)`
 :   Paginated list of templates
@@ -2350,6 +2500,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TemplatesListLinks"></a>
 
 `TemplatesListLinks(**data: Any)`
 :   Nested schema for TemplatesList.links

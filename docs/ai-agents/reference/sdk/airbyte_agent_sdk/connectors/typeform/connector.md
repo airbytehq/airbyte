@@ -10,6 +10,8 @@ Typeform connector.
 Classes
 -------
 
+<a id="FormsQuery"></a>
+
 `FormsQuery(connector: TypeformConnector)`
 :   Query class for Forms entity operations.
     
@@ -74,6 +76,8 @@ Classes
         Returns:
             FormsListResult
 
+<a id="ImagesQuery"></a>
+
 `ImagesQuery(connector: TypeformConnector)`
 :   Query class for Images entity operations.
     
@@ -116,6 +120,8 @@ Classes
         
         Returns:
             ImagesListResult
+
+<a id="ResponsesQuery"></a>
 
 `ResponsesQuery(connector: TypeformConnector)`
 :   Query class for Responses entity operations.
@@ -176,6 +182,8 @@ Classes
         Returns:
             ResponsesListResult
 
+<a id="ThemesQuery"></a>
+
 `ThemesQuery(connector: TypeformConnector)`
 :   Query class for Themes entity operations.
     
@@ -227,6 +235,8 @@ Classes
         
         Returns:
             ThemesListResult
+
+<a id="TypeformConnector"></a>
 
 `TypeformConnector(auth_config: TypeformAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Typeform API connector.
@@ -428,6 +438,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="WebhooksQuery"></a>
+
 `WebhooksQuery(connector: TypeformConnector)`
 :   Query class for Webhooks entity operations.
     
@@ -474,6 +486,8 @@ Classes
         
         Returns:
             WebhooksListResult
+
+<a id="WorkspacesQuery"></a>
 
 `WorkspacesQuery(connector: TypeformConnector)`
 :   Query class for Workspaces entity operations.

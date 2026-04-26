@@ -10,6 +10,8 @@ Granola connector.
 Classes
 -------
 
+<a id="GranolaConnector"></a>
+
 `GranolaConnector(auth_config: GranolaAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Granola API connector.
     
@@ -197,6 +199,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="NotesQuery"></a>
 
 `NotesQuery(connector: GranolaConnector)`
 :   Query class for Notes entity operations.

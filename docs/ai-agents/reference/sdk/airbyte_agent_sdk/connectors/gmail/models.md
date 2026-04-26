@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Draft"></a>
+
 `Draft(**data: Any)`
 :   A Gmail draft message
     
@@ -38,6 +40,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DraftCreateParams"></a>
+
 `DraftCreateParams(**data: Any)`
 :   Parameters for creating or updating a draft
     
@@ -59,6 +63,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DraftCreateParamsMessage"></a>
 
 `DraftCreateParamsMessage(**data: Any)`
 :   The draft message content
@@ -85,6 +91,8 @@ Classes
     `thread_id: str | Any`
     :   The thread ID for the draft (for threading in a conversation)
 
+<a id="DraftRef"></a>
+
 `DraftRef(**data: Any)`
 :   A lightweight reference to a draft (used in list responses)
     
@@ -110,6 +118,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DraftSendParams"></a>
+
 `DraftSendParams(**data: Any)`
 :   Parameters for sending an existing draft
     
@@ -131,6 +141,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DraftsListResponse"></a>
 
 `DraftsListResponse(**data: Any)`
 :   Response from listing drafts
@@ -160,6 +172,8 @@ Classes
     `result_size_estimate: int | Any | None`
     :   The type of the None singleton.
 
+<a id="DraftsListResultMeta"></a>
+
 `DraftsListResultMeta(**data: Any)`
 :   Metadata for drafts.Action.LIST operation
     
@@ -184,6 +198,8 @@ Classes
 
     `result_size_estimate: int | Any | None`
     :   The type of the None singleton.
+
+<a id="GmailAuthConfig"></a>
 
 `GmailAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
@@ -215,6 +231,8 @@ Classes
 
     `refresh_token: str`
     :   Your Google OAuth2 Refresh Token
+
+<a id="GmailCheckResult"></a>
 
 `GmailCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -249,6 +267,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GmailExecuteResult"></a>
+
 `GmailExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -278,6 +298,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GmailExecuteResultWithMeta"></a>
 
 `GmailExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -332,6 +354,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DraftsListResult"></a>
+
 `DraftsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -374,6 +398,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MessagesListResult"></a>
 
 `MessagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -418,6 +444,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ThreadsListResult"></a>
+
 `ThreadsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -460,6 +488,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="LabelsListResult"></a>
+
 `LabelsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -477,6 +507,8 @@ Classes
     * airbyte_agent_sdk.connectors.gmail.models.GmailExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GmailReplicationConfig"></a>
 
 `GmailReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Gmail.
@@ -499,6 +531,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Label"></a>
 
 `Label(**data: Any)`
 :   A Gmail label used to organize messages and threads
@@ -549,6 +583,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="LabelColor"></a>
+
 `LabelColor(**data: Any)`
 :   The color to assign to a label
     
@@ -573,6 +609,8 @@ Classes
 
     `text_color: str | Any | None`
     :   The type of the None singleton.
+
+<a id="LabelCreateParams"></a>
 
 `LabelCreateParams(**data: Any)`
 :   Parameters for creating a label
@@ -605,6 +643,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="LabelCreateParamsColor"></a>
+
 `LabelCreateParamsColor(**data: Any)`
 :   The color to assign to the label
     
@@ -629,6 +669,8 @@ Classes
 
     `text_color: str | Any`
     :   The text color of the label as a hex string (#RRGGBB)
+
+<a id="LabelUpdateParams"></a>
 
 `LabelUpdateParams(**data: Any)`
 :   Parameters for updating a label
@@ -664,6 +706,8 @@ Classes
     `name: str | Any`
     :   The type of the None singleton.
 
+<a id="LabelUpdateParamsColor"></a>
+
 `LabelUpdateParamsColor(**data: Any)`
 :   The color to assign to the label
     
@@ -689,6 +733,8 @@ Classes
     `text_color: str | Any`
     :   The text color of the label as a hex string (#RRGGBB)
 
+<a id="LabelsListResponse"></a>
+
 `LabelsListResponse(**data: Any)`
 :   Response from listing labels
     
@@ -710,6 +756,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Message"></a>
 
 `Message(**data: Any)`
 :   A Gmail email message
@@ -757,6 +805,8 @@ Classes
     `thread_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageHeader"></a>
+
 `MessageHeader(**data: Any)`
 :   A single email header key-value pair
     
@@ -782,6 +832,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageModifyParams"></a>
+
 `MessageModifyParams(**data: Any)`
 :   Parameters for modifying message labels
     
@@ -806,6 +858,8 @@ Classes
 
     `remove_label_ids: list[str] | Any`
     :   The type of the None singleton.
+
+<a id="MessagePart"></a>
 
 `MessagePart(**data: Any)`
 :   A single MIME message part
@@ -844,6 +898,8 @@ Classes
     `parts: list[dict[str, typing.Any]] | Any | None`
     :   The type of the None singleton.
 
+<a id="MessagePartBody"></a>
+
 `MessagePartBody(**data: Any)`
 :   The body data of a MIME message part
     
@@ -872,6 +928,8 @@ Classes
     `size: int | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageRef"></a>
+
 `MessageRef(**data: Any)`
 :   A lightweight reference to a message (used in list responses)
     
@@ -897,6 +955,8 @@ Classes
     `thread_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="MessageSendParams"></a>
+
 `MessageSendParams(**data: Any)`
 :   Parameters for sending a message
     
@@ -921,6 +981,8 @@ Classes
 
     `thread_id: str | Any`
     :   The type of the None singleton.
+
+<a id="MessagesListResponse"></a>
 
 `MessagesListResponse(**data: Any)`
 :   Response from listing messages
@@ -950,6 +1012,8 @@ Classes
     `result_size_estimate: int | Any | None`
     :   The type of the None singleton.
 
+<a id="MessagesListResultMeta"></a>
+
 `MessagesListResultMeta(**data: Any)`
 :   Metadata for messages.Action.LIST operation
     
@@ -974,6 +1038,8 @@ Classes
 
     `result_size_estimate: int | Any | None`
     :   The type of the None singleton.
+
+<a id="Profile"></a>
 
 `Profile(**data: Any)`
 :   Gmail user profile information
@@ -1006,6 +1072,8 @@ Classes
     `threads_total: int | Any | None`
     :   The type of the None singleton.
 
+<a id="Thread"></a>
+
 `Thread(**data: Any)`
 :   A Gmail thread (email conversation)
     
@@ -1037,6 +1105,8 @@ Classes
     `snippet: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ThreadRef"></a>
+
 `ThreadRef(**data: Any)`
 :   A lightweight reference to a thread (used in list responses)
     
@@ -1065,6 +1135,8 @@ Classes
     `snippet: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ThreadsListResponse"></a>
+
 `ThreadsListResponse(**data: Any)`
 :   Response from listing threads
     
@@ -1092,6 +1164,8 @@ Classes
 
     `threads: list[airbyte_agent_sdk.connectors.gmail.models.ThreadRef] | Any`
     :   The type of the None singleton.
+
+<a id="ThreadsListResultMeta"></a>
 
 `ThreadsListResultMeta(**data: Any)`
 :   Metadata for threads.Action.LIST operation

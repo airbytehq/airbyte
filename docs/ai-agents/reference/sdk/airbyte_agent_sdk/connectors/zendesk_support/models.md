@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -104,6 +108,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BrandsSearchResult"></a>
+
 `BrandsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -140,6 +146,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DeletedTicketsSearchResult"></a>
 
 `DeletedTicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -178,6 +186,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupsSearchResult"></a>
+
 `GroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -214,6 +224,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrganizationsSearchResult"></a>
 
 `OrganizationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -252,6 +264,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SatisfactionRatingsSearchResult"></a>
+
 `SatisfactionRatingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -288,6 +302,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -326,6 +342,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketAuditsSearchResult"></a>
+
 `TicketAuditsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -362,6 +380,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketCommentsSearchResult"></a>
 
 `TicketCommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -400,6 +420,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketFieldsSearchResult"></a>
+
 `TicketFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -436,6 +458,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketFormsSearchResult"></a>
 
 `TicketFormsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -474,6 +498,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketMetricsSearchResult"></a>
+
 `TicketMetricsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -510,6 +536,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketsSearchResult"></a>
 
 `TicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -548,6 +576,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -563,6 +593,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Article"></a>
 
 `Article(**data: Any)`
 :   Help Center article object
@@ -631,6 +663,8 @@ Classes
     `vote_sum: int | Any`
     :   The type of the None singleton.
 
+<a id="ArticleAttachment"></a>
+
 `ArticleAttachment(**data: Any)`
 :   Article attachment object
     
@@ -680,6 +714,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="ArticleAttachmentsListResultMeta"></a>
+
 `ArticleAttachmentsListResultMeta(**data: Any)`
 :   Metadata for article_attachments.Action.LIST operation
     
@@ -708,6 +744,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ArticlesListResultMeta"></a>
+
 `ArticlesListResultMeta(**data: Any)`
 :   Metadata for articles.Action.LIST operation
     
@@ -735,6 +773,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Attachment"></a>
 
 `Attachment(**data: Any)`
 :   Zendesk Support attachment object
@@ -797,6 +837,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="Automation"></a>
+
 `Automation(**data: Any)`
 :   Zendesk Support automation object
     
@@ -846,6 +888,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="AutomationsListResultMeta"></a>
+
 `AutomationsListResultMeta(**data: Any)`
 :   Metadata for automations.Action.LIST operation
     
@@ -873,6 +917,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Brand"></a>
 
 `Brand(**data: Any)`
 :   Zendesk Support brand object
@@ -941,6 +987,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="BrandsListResultMeta"></a>
+
 `BrandsListResultMeta(**data: Any)`
 :   Metadata for brands.Action.LIST operation
     
@@ -968,6 +1016,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BrandsSearchData"></a>
 
 `BrandsSearchData(**data: Any)`
 :   Search result data for brands entity.
@@ -1036,6 +1086,8 @@ Classes
     `url: str | None`
     :   The API URL for accessing this brand resource
 
+<a id="DeletedTicket"></a>
+
 `DeletedTicket(**data: Any)`
 :   Zendesk Support deleted ticket object
     
@@ -1073,6 +1125,8 @@ Classes
     `subject: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DeletedTicketActor"></a>
+
 `DeletedTicketActor(**data: Any)`
 :   The user who performed the deletion action
     
@@ -1097,6 +1151,8 @@ Classes
 
     `name: str | Any | None`
     :   The name of the user
+
+<a id="DeletedTicketsListResultMeta"></a>
 
 `DeletedTicketsListResultMeta(**data: Any)`
 :   Metadata for deleted_tickets.Action.LIST operation
@@ -1125,6 +1181,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="DeletedTicketsSearchData"></a>
 
 `DeletedTicketsSearchData(**data: Any)`
 :   Search result data for deleted_tickets entity.
@@ -1162,6 +1220,8 @@ Classes
 
     `subject: str | None`
     :   The subject or title of the deleted ticket
+
+<a id="Group"></a>
 
 `Group(**data: Any)`
 :   Zendesk Support group object
@@ -1209,6 +1269,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="GroupMembership"></a>
+
 `GroupMembership(**data: Any)`
 :   Zendesk Support group membership object
     
@@ -1249,6 +1311,8 @@ Classes
     `user_id: int | Any`
     :   The type of the None singleton.
 
+<a id="GroupMembershipsListResultMeta"></a>
+
 `GroupMembershipsListResultMeta(**data: Any)`
 :   Metadata for group_memberships.Action.LIST operation
     
@@ -1277,6 +1341,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="GroupsListResultMeta"></a>
+
 `GroupsListResultMeta(**data: Any)`
 :   Metadata for groups.Action.LIST operation
     
@@ -1304,6 +1370,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GroupsSearchData"></a>
 
 `GroupsSearchData(**data: Any)`
 :   Search result data for groups entity.
@@ -1350,6 +1418,8 @@ Classes
 
     `url: str | None`
     :   The API URL of the group
+
+<a id="Macro"></a>
 
 `Macro(**data: Any)`
 :   Zendesk Support macro object
@@ -1403,6 +1473,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="MacrosListResultMeta"></a>
+
 `MacrosListResultMeta(**data: Any)`
 :   Metadata for macros.Action.LIST operation
     
@@ -1430,6 +1502,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Organization"></a>
 
 `Organization(**data: Any)`
 :   Zendesk Support organization object
@@ -1492,6 +1566,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="OrganizationMembership"></a>
+
 `OrganizationMembership(**data: Any)`
 :   Zendesk Support organization membership object
     
@@ -1538,6 +1614,8 @@ Classes
     `view_tickets: bool | Any`
     :   The type of the None singleton.
 
+<a id="OrganizationMembershipsListResultMeta"></a>
+
 `OrganizationMembershipsListResultMeta(**data: Any)`
 :   Metadata for organization_memberships.Action.LIST operation
     
@@ -1566,6 +1644,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="OrganizationsListResultMeta"></a>
+
 `OrganizationsListResultMeta(**data: Any)`
 :   Metadata for organizations.Action.LIST operation
     
@@ -1593,6 +1673,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="OrganizationsSearchData"></a>
 
 `OrganizationsSearchData(**data: Any)`
 :   Search result data for organizations entity.
@@ -1658,6 +1740,8 @@ Classes
     `url: str | None`
     :   The API URL of this organization
 
+<a id="SLAPolicy"></a>
+
 `SLAPolicy(**data: Any)`
 :   Zendesk Support SLA policy object
     
@@ -1703,6 +1787,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="SatisfactionRating"></a>
 
 `SatisfactionRating(**data: Any)`
 :   Zendesk Support satisfaction rating object
@@ -1762,6 +1848,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="SatisfactionRatingsListResultMeta"></a>
+
 `SatisfactionRatingsListResultMeta(**data: Any)`
 :   Metadata for satisfaction_ratings.Action.LIST operation
     
@@ -1789,6 +1877,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SatisfactionRatingsSearchData"></a>
 
 `SatisfactionRatingsSearchData(**data: Any)`
 :   Search result data for satisfaction_ratings entity.
@@ -1845,6 +1935,8 @@ Classes
     `url: str | None`
     :   The API URL of this satisfaction rating resource
 
+<a id="SlaPoliciesListResultMeta"></a>
+
 `SlaPoliciesListResultMeta(**data: Any)`
 :   Metadata for sla_policies.Action.LIST operation
     
@@ -1873,6 +1965,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="Tag"></a>
+
 `Tag(**data: Any)`
 :   Zendesk Support tag object
     
@@ -1897,6 +1991,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="TagsListResultMeta"></a>
 
 `TagsListResultMeta(**data: Any)`
 :   Metadata for tags.Action.LIST operation
@@ -1926,6 +2022,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="TagsSearchData"></a>
+
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
     
@@ -1950,6 +2048,8 @@ Classes
 
     `name: str | None`
     :   The tag name string used to label and categorize resources
+
+<a id="Ticket"></a>
 
 `Ticket(**data: Any)`
 :   Zendesk Support ticket object
@@ -2090,6 +2190,8 @@ Classes
     `via: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
 
+<a id="TicketAudit"></a>
+
 `TicketAudit(**data: Any)`
 :   Zendesk Support ticket audit object
     
@@ -2130,6 +2232,8 @@ Classes
     `via: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
 
+<a id="TicketAuditsListResultMeta"></a>
+
 `TicketAuditsListResultMeta(**data: Any)`
 :   Metadata for ticket_audits.Action.LIST operation
     
@@ -2157,6 +2261,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketAuditsSearchData"></a>
 
 `TicketAuditsSearchData(**data: Any)`
 :   Search result data for ticket_audits entity.
@@ -2200,6 +2306,8 @@ Classes
 
     `via: dict[str, typing.Any] | None`
     :   Describes how the audit was created, providing context about the creation source
+
+<a id="TicketComment"></a>
 
 `TicketComment(**data: Any)`
 :   Zendesk Support ticket comment object
@@ -2256,6 +2364,8 @@ Classes
     `via: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
 
+<a id="TicketCommentsListResultMeta"></a>
+
 `TicketCommentsListResultMeta(**data: Any)`
 :   Metadata for ticket_comments.Action.LIST operation
     
@@ -2283,6 +2393,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketCommentsSearchData"></a>
 
 `TicketCommentsSearchData(**data: Any)`
 :   Search result data for ticket_comments entity.
@@ -2353,6 +2465,8 @@ Classes
 
     `via_reference_id: int | None`
     :   Reference identifier for the channel through which the comment was created
+
+<a id="TicketField"></a>
 
 `TicketField(**data: Any)`
 :   Zendesk Support ticket field object
@@ -2448,6 +2562,8 @@ Classes
     `visible_in_portal: bool | Any`
     :   The type of the None singleton.
 
+<a id="TicketFieldsListResultMeta"></a>
+
 `TicketFieldsListResultMeta(**data: Any)`
 :   Metadata for ticket_fields.Action.LIST operation
     
@@ -2475,6 +2591,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketFieldsSearchData"></a>
 
 `TicketFieldsSearchData(**data: Any)`
 :   Search result data for ticket_fields entity.
@@ -2576,6 +2694,8 @@ Classes
     `visible_in_portal: bool | None`
     :   Whether this field is visible to end users in Help Center
 
+<a id="TicketForm"></a>
+
 `TicketForm(**data: Any)`
 :   Zendesk Support ticket form object
     
@@ -2646,6 +2766,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="TicketFormsListResultMeta"></a>
+
 `TicketFormsListResultMeta(**data: Any)`
 :   Metadata for ticket_forms.Action.LIST operation
     
@@ -2673,6 +2795,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketFormsSearchData"></a>
 
 `TicketFormsSearchData(**data: Any)`
 :   Search result data for ticket_forms entity.
@@ -2743,6 +2867,8 @@ Classes
 
     `url: str | None`
     :   URL of the ticket form
+
+<a id="TicketMetric"></a>
 
 `TicketMetric(**data: Any)`
 :   Zendesk Support ticket metric object
@@ -2829,6 +2955,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="TicketMetricsListResultMeta"></a>
+
 `TicketMetricsListResultMeta(**data: Any)`
 :   Metadata for ticket_metrics.Action.LIST operation
     
@@ -2856,6 +2984,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketMetricsSearchData"></a>
 
 `TicketMetricsSearchData(**data: Any)`
 :   Search result data for ticket_metrics entity.
@@ -2966,6 +3096,8 @@ Classes
     `url: str | None`
     :   The API url of the ticket metric
 
+<a id="TicketsListResultMeta"></a>
+
 `TicketsListResultMeta(**data: Any)`
 :   Metadata for tickets.Action.LIST operation
     
@@ -2993,6 +3125,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TicketsSearchData"></a>
 
 `TicketsSearchData(**data: Any)`
 :   Search result data for tickets entity.
@@ -3136,6 +3270,8 @@ Classes
     `via: dict[str, typing.Any] | None`
     :   Object describing the channel and method through which the ticket was created
 
+<a id="Trigger"></a>
+
 `Trigger(**data: Any)`
 :   Zendesk Support trigger object
     
@@ -3191,6 +3327,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="TriggersListResultMeta"></a>
+
 `TriggersListResultMeta(**data: Any)`
 :   Metadata for triggers.Action.LIST operation
     
@@ -3218,6 +3356,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   Zendesk Support user object
@@ -3352,6 +3492,8 @@ Classes
     `verified: bool | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -3379,6 +3521,8 @@ Classes
 
     `previous_page: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
@@ -3516,6 +3660,8 @@ Classes
     `verified: bool | None`
     :   Indicates if the user's identity has been verified
 
+<a id="View"></a>
+
 `View(**data: Any)`
 :   Zendesk Support view object
     
@@ -3571,6 +3717,8 @@ Classes
     `url: str | Any`
     :   The type of the None singleton.
 
+<a id="ViewsListResultMeta"></a>
+
 `ViewsListResultMeta(**data: Any)`
 :   Metadata for views.Action.LIST operation
     
@@ -3599,6 +3747,8 @@ Classes
     `previous_page: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ZendeskSupportApiTokenAuthConfig"></a>
+
 `ZendeskSupportApiTokenAuthConfig(**data: Any)`
 :   API Token - Authenticate using email and API token
     
@@ -3623,6 +3773,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskSupportCheckResult"></a>
 
 `ZendeskSupportCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -3657,6 +3809,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="ZendeskSupportExecuteResult"></a>
+
 `ZendeskSupportExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3685,6 +3839,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ZendeskSupportExecuteResultWithMeta"></a>
 
 `ZendeskSupportExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3758,6 +3914,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ArticleAttachmentsListResult"></a>
+
 `ArticleAttachmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3800,6 +3958,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ArticlesListResult"></a>
 
 `ArticlesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3844,6 +4004,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AutomationsListResult"></a>
+
 `AutomationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3886,6 +4048,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BrandsListResult"></a>
 
 `BrandsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3930,6 +4094,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DeletedTicketsListResult"></a>
+
 `DeletedTicketsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3972,6 +4138,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GroupMembershipsListResult"></a>
 
 `GroupMembershipsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4016,6 +4184,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GroupsListResult"></a>
+
 `GroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4058,6 +4228,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MacrosListResult"></a>
 
 `MacrosListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4102,6 +4274,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrganizationMembershipsListResult"></a>
+
 `OrganizationMembershipsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4144,6 +4318,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrganizationsListResult"></a>
 
 `OrganizationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4188,6 +4364,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SlaPoliciesListResult"></a>
+
 `SlaPoliciesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4230,6 +4408,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SatisfactionRatingsListResult"></a>
 
 `SatisfactionRatingsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4274,6 +4454,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TagsListResult"></a>
+
 `TagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4316,6 +4498,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketAuditsListResult"></a>
 
 `TicketAuditsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4360,6 +4544,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketCommentsListResult"></a>
+
 `TicketCommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4402,6 +4588,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketFieldsListResult"></a>
 
 `TicketFieldsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4446,6 +4634,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketFormsListResult"></a>
+
 `TicketFormsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4488,6 +4678,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketMetricsListResult"></a>
 
 `TicketMetricsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4532,6 +4724,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TicketsListResult"></a>
+
 `TicketsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4574,6 +4768,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TriggersListResult"></a>
 
 `TriggersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -4618,6 +4814,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4661,6 +4859,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ViewsListResult"></a>
+
 `ViewsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -4679,6 +4879,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ZendeskSupportOauth20AuthConfig"></a>
 
 `ZendeskSupportOauth20AuthConfig(**data: Any)`
 :   OAuth 2.0 - Zendesk OAuth 2.0 authentication

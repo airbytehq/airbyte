@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -160,6 +166,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CouponsSearchResult"></a>
+
 `CouponsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -175,6 +183,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CustomersSearchResult"></a>
 
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -192,6 +202,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OrderNotesSearchResult"></a>
+
 `OrderNotesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -207,6 +219,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OrdersSearchResult"></a>
 
 `OrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -224,6 +238,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PaymentGatewaysSearchResult"></a>
+
 `PaymentGatewaysSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -239,6 +255,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProductAttributesSearchResult"></a>
 
 `ProductAttributesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -256,6 +274,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProductCategoriesSearchResult"></a>
+
 `ProductCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -271,6 +291,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProductReviewsSearchResult"></a>
 
 `ProductReviewsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -288,6 +310,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProductTagsSearchResult"></a>
+
 `ProductTagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -303,6 +327,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProductVariationsSearchResult"></a>
 
 `ProductVariationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -320,6 +346,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProductsSearchResult"></a>
+
 `ProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -335,6 +363,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="RefundsSearchResult"></a>
 
 `RefundsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -352,6 +382,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ShippingMethodsSearchResult"></a>
+
 `ShippingMethodsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -367,6 +399,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ShippingZonesSearchResult"></a>
 
 `ShippingZonesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -384,6 +418,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TaxClassesSearchResult"></a>
+
 `TaxClassesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -400,6 +436,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TaxRatesSearchResult"></a>
+
 `TaxRatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -415,6 +453,8 @@ Classes
     * airbyte_agent_sdk.connectors.woocommerce.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CouponsSearchData"></a>
 
 `CouponsSearchData(**data: Any)`
 :   Search result data for coupons entity.
@@ -516,6 +556,8 @@ Classes
     `used_by: list[typing.Any] | None`
     :   Users who have used the coupon
 
+<a id="CustomersSearchData"></a>
+
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
     
@@ -580,6 +622,8 @@ Classes
     `username: str | None`
     :   Customer login name
 
+<a id="OrderNotesSearchData"></a>
+
 `OrderNotesSearchData(**data: Any)`
 :   Search result data for order_notes entity.
     
@@ -613,6 +657,8 @@ Classes
 
     `note: str | None`
     :   Order note content
+
+<a id="OrdersSearchData"></a>
 
 `OrdersSearchData(**data: Any)`
 :   Search result data for orders entity.
@@ -756,6 +802,8 @@ Classes
     `version: str | None`
     :   Version of WooCommerce which last updated the order
 
+<a id="PaymentGatewaysSearchData"></a>
+
 `PaymentGatewaysSearchData(**data: Any)`
 :   Search result data for payment_gateways entity.
     
@@ -802,6 +850,8 @@ Classes
     `title: str | None`
     :   Payment gateway title on checkout
 
+<a id="ProductAttributesSearchData"></a>
+
 `ProductAttributesSearchData(**data: Any)`
 :   Search result data for product_attributes entity.
     
@@ -838,6 +888,8 @@ Classes
 
     `type_: str | None`
     :   Type of attribute
+
+<a id="ProductCategoriesSearchData"></a>
 
 `ProductCategoriesSearchData(**data: Any)`
 :   Search result data for product_categories entity.
@@ -884,6 +936,8 @@ Classes
 
     `slug: str | None`
     :   An alphanumeric identifier
+
+<a id="ProductReviewsSearchData"></a>
 
 `ProductReviewsSearchData(**data: Any)`
 :   Search result data for product_reviews entity.
@@ -934,6 +988,8 @@ Classes
     `verified: bool | None`
     :   Shows if the reviewer bought the product
 
+<a id="ProductTagsSearchData"></a>
+
 `ProductTagsSearchData(**data: Any)`
 :   Search result data for product_tags entity.
     
@@ -967,6 +1023,8 @@ Classes
 
     `slug: str | None`
     :   Alphanumeric identifier
+
+<a id="ProductVariationsSearchData"></a>
 
 `ProductVariationsSearchData(**data: Any)`
 :   Search result data for product_variations entity.
@@ -1103,6 +1161,8 @@ Classes
 
     `weight: str | None`
     :   Variation weight
+
+<a id="ProductsSearchData"></a>
 
 `ProductsSearchData(**data: Any)`
 :   Search result data for products entity.
@@ -1315,6 +1375,8 @@ Classes
     `weight: str | None`
     :   Product weight
 
+<a id="RefundsSearchData"></a>
+
 `RefundsSearchData(**data: Any)`
 :   Search result data for refunds entity.
     
@@ -1361,6 +1423,8 @@ Classes
     `refunded_payment: bool | None`
     :   If the payment was refunded via the API
 
+<a id="ShippingMethodsSearchData"></a>
+
 `ShippingMethodsSearchData(**data: Any)`
 :   Search result data for shipping_methods entity.
     
@@ -1388,6 +1452,8 @@ Classes
 
     `title: str | None`
     :   Shipping method title
+
+<a id="ShippingZonesSearchData"></a>
 
 `ShippingZonesSearchData(**data: Any)`
 :   Search result data for shipping_zones entity.
@@ -1417,6 +1483,8 @@ Classes
     `order: int | None`
     :   Shipping zone order
 
+<a id="TaxClassesSearchData"></a>
+
 `TaxClassesSearchData(**data: Any)`
 :   Search result data for tax_classes entity.
     
@@ -1441,6 +1509,8 @@ Classes
 
     `slug: str | None`
     :   Unique identifier
+
+<a id="TaxRatesSearchData"></a>
 
 `TaxRatesSearchData(**data: Any)`
 :   Search result data for tax_rates entity.
@@ -1503,6 +1573,8 @@ Classes
     `state: str | None`
     :   State code
 
+<a id="WoocommerceAuthConfig"></a>
+
 `WoocommerceAuthConfig(**data: Any)`
 :   WooCommerce API Key Authentication
     
@@ -1527,6 +1599,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="WoocommerceConnector"></a>
 
 `WoocommerceConnector(auth_config: WoocommerceAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, shop: str | None = None)`
 :   Type-safe Woocommerce API connector.
@@ -1727,6 +1801,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="WoocommerceReplicationConfig"></a>
 
 `WoocommerceReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from WooCommerce.

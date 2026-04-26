@@ -10,6 +10,8 @@ Google-Drive connector.
 Classes
 -------
 
+<a id="AboutQuery"></a>
+
 `AboutQuery(connector: GoogleDriveConnector)`
 :   Query class for About entity operations.
     
@@ -26,6 +28,8 @@ Classes
         
         Returns:
             About
+
+<a id="ChangesQuery"></a>
 
 `ChangesQuery(connector: GoogleDriveConnector)`
 :   Query class for Changes entity operations.
@@ -51,6 +55,8 @@ Classes
         Returns:
             ChangesListResult
 
+<a id="ChangesStartPageTokenQuery"></a>
+
 `ChangesStartPageTokenQuery(connector: GoogleDriveConnector)`
 :   Query class for ChangesStartPageToken entity operations.
     
@@ -68,6 +74,8 @@ Classes
         
         Returns:
             StartPageToken
+
+<a id="CommentsQuery"></a>
 
 `CommentsQuery(connector: GoogleDriveConnector)`
 :   Query class for Comments entity operations.
@@ -104,6 +112,8 @@ Classes
         Returns:
             CommentsListResult
 
+<a id="DrivesQuery"></a>
+
 `DrivesQuery(connector: GoogleDriveConnector)`
 :   Query class for Drives entity operations.
     
@@ -134,6 +144,8 @@ Classes
         
         Returns:
             DrivesListResult
+
+<a id="FilesExportQuery"></a>
 
 `FilesExportQuery(connector: GoogleDriveConnector)`
 :   Query class for FilesExport entity operations.
@@ -198,6 +210,8 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+<a id="FilesQuery"></a>
 
 `FilesQuery(connector: GoogleDriveConnector)`
 :   Query class for Files entity operations.
@@ -321,6 +335,8 @@ Classes
                 Returns:
                     File
 
+<a id="FilesUploadQuery"></a>
+
 `FilesUploadQuery(connector: GoogleDriveConnector)`
 :   Query class for FilesUpload entity operations.
     
@@ -347,6 +363,8 @@ Classes
         
                 Returns:
                     File
+
+<a id="GoogleDriveConnector"></a>
 
 `GoogleDriveConnector(auth_config: GoogleDriveAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Drive API connector.
@@ -604,6 +622,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="PermissionsQuery"></a>
+
 `PermissionsQuery(connector: GoogleDriveConnector)`
 :   Query class for Permissions entity operations.
     
@@ -637,6 +657,8 @@ Classes
         
         Returns:
             PermissionsListResult
+
+<a id="RepliesQuery"></a>
 
 `RepliesQuery(connector: GoogleDriveConnector)`
 :   Query class for Replies entity operations.
@@ -673,6 +695,8 @@ Classes
         
         Returns:
             RepliesListResult
+
+<a id="RevisionsQuery"></a>
 
 `RevisionsQuery(connector: GoogleDriveConnector)`
 :   Query class for Revisions entity operations.

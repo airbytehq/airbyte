@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -162,6 +168,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ClientsSearchResult"></a>
+
 `ClientsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -177,6 +185,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CompanySearchResult"></a>
 
 `CompanySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -194,6 +204,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ContactsSearchResult"></a>
+
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -209,6 +221,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EstimateItemCategoriesSearchResult"></a>
 
 `EstimateItemCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -226,6 +240,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="EstimatesSearchResult"></a>
+
 `EstimatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -241,6 +257,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ExpenseCategoriesSearchResult"></a>
 
 `ExpenseCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -258,6 +276,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ExpensesSearchResult"></a>
+
 `ExpensesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -273,6 +293,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="InvoiceItemCategoriesSearchResult"></a>
 
 `InvoiceItemCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -290,6 +312,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="InvoicesSearchResult"></a>
+
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -305,6 +329,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ProjectsSearchResult"></a>
 
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -322,6 +348,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="RolesSearchResult"></a>
+
 `RolesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -337,6 +365,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TaskAssignmentsSearchResult"></a>
 
 `TaskAssignmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -354,6 +384,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TasksSearchResult"></a>
+
 `TasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -369,6 +401,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TimeEntriesSearchResult"></a>
 
 `TimeEntriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -386,6 +420,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TimeProjectsSearchResult"></a>
+
 `TimeProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -401,6 +437,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TimeTasksSearchResult"></a>
 
 `TimeTasksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -418,6 +456,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UserAssignmentsSearchResult"></a>
+
 `UserAssignmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -434,6 +474,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -449,6 +491,8 @@ Classes
     * airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ClientsSearchData"></a>
 
 `ClientsSearchData(**data: Any)`
 :   Search result data for clients entity.
@@ -490,6 +534,8 @@ Classes
     `updated_at: str | None`
     :   When the client record was last updated
 
+<a id="CompanySearchData"></a>
+
 `CompanySearchData(**data: Any)`
 :   Search result data for company entity.
     
@@ -529,6 +575,8 @@ Classes
 
     `weekly_capacity: int | None`
     :   Weekly capacity in seconds
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -573,6 +621,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="EstimateItemCategoriesSearchData"></a>
+
 `EstimateItemCategoriesSearchData(**data: Any)`
 :   Search result data for estimate_item_categories entity.
     
@@ -603,6 +653,8 @@ Classes
 
     `updated_at: str | None`
     :   When last updated
+
+<a id="EstimatesSearchData"></a>
 
 `EstimatesSearchData(**data: Any)`
 :   Search result data for estimates entity.
@@ -653,6 +705,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="ExpenseCategoriesSearchData"></a>
+
 `ExpenseCategoriesSearchData(**data: Any)`
 :   Search result data for expense_categories entity.
     
@@ -692,6 +746,8 @@ Classes
 
     `updated_at: str | None`
     :   When last updated
+
+<a id="ExpensesSearchData"></a>
 
 `ExpensesSearchData(**data: Any)`
 :   Search result data for expenses entity.
@@ -747,6 +803,8 @@ Classes
 
     `user: dict[str, typing.Any] | None`
     :   Associated user
+
+<a id="HarvestConnector"></a>
 
 `HarvestConnector(auth_config: HarvestAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Harvest API connector.
@@ -1004,6 +1062,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="HarvestReplicationConfig"></a>
+
 `HarvestReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Harvest.
     
@@ -1025,6 +1085,8 @@ Classes
 
     `replication_start_date: str`
     :   UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.
+
+<a id="InvoiceItemCategoriesSearchData"></a>
 
 `InvoiceItemCategoriesSearchData(**data: Any)`
 :   Search result data for invoice_item_categories entity.
@@ -1062,6 +1124,8 @@ Classes
 
     `use_as_service: bool | None`
     :   Whether used as service type
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -1118,6 +1182,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="ProjectsSearchData"></a>
+
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
     
@@ -1170,6 +1236,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="RolesSearchData"></a>
+
 `RolesSearchData(**data: Any)`
 :   Search result data for roles entity.
     
@@ -1203,6 +1271,8 @@ Classes
 
     `user_ids: list[typing.Any] | None`
     :   User IDs with this role
+
+<a id="TaskAssignmentsSearchData"></a>
 
 `TaskAssignmentsSearchData(**data: Any)`
 :   Search result data for task_assignments entity.
@@ -1247,6 +1317,8 @@ Classes
     `updated_at: str | None`
     :   When last updated
 
+<a id="TasksSearchData"></a>
+
 `TasksSearchData(**data: Any)`
 :   Search result data for tasks entity.
     
@@ -1286,6 +1358,8 @@ Classes
 
     `updated_at: str | None`
     :   When last updated
+
+<a id="TimeEntriesSearchData"></a>
 
 `TimeEntriesSearchData(**data: Any)`
 :   Search result data for time_entries entity.
@@ -1342,6 +1416,8 @@ Classes
     `user: dict[str, typing.Any] | None`
     :   Associated user
 
+<a id="TimeProjectsSearchData"></a>
+
 `TimeProjectsSearchData(**data: Any)`
 :   Search result data for time_projects entity.
     
@@ -1385,6 +1461,8 @@ Classes
     `total_hours: float | None`
     :   Total hours spent
 
+<a id="TimeTasksSearchData"></a>
+
 `TimeTasksSearchData(**data: Any)`
 :   Search result data for time_tasks entity.
     
@@ -1421,6 +1499,8 @@ Classes
 
     `total_hours: float | None`
     :   Total hours spent
+
+<a id="UserAssignmentsSearchData"></a>
 
 `UserAssignmentsSearchData(**data: Any)`
 :   Search result data for user_assignments entity.
@@ -1467,6 +1547,8 @@ Classes
 
     `user: dict[str, typing.Any] | None`
     :   Associated user
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

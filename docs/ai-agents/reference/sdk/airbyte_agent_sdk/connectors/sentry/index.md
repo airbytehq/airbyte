@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EventsSearchResult"></a>
+
 `EventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ReleasesSearchResult"></a>
+
 `ReleasesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="EventsSearchData"></a>
 
 `EventsSearchData(**data: Any)`
 :   Search result data for events entity.
@@ -317,6 +333,8 @@ Classes
 
     `user: dict[str, typing.Any] | None`
     :   User associated with the event.
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -430,6 +448,8 @@ Classes
     `user_count: int | None`
     :   Number of users affected.
 
+<a id="ProjectsSearchData"></a>
+
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
     
@@ -527,6 +547,8 @@ Classes
     `status: str | None`
     :   Project status.
 
+<a id="ReleasesSearchData"></a>
+
 `ReleasesSearchData(**data: Any)`
 :   Search result data for releases entity.
     
@@ -612,6 +634,8 @@ Classes
     `version_info: dict[str, typing.Any] | None`
     :   Parsed version information.
 
+<a id="SentryAuthConfig"></a>
+
 `SentryAuthConfig(**data: Any)`
 :   Authentication Token
     
@@ -633,6 +657,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SentryConnector"></a>
 
 `SentryConnector(auth_config: SentryAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, hostname: str | None = None)`
 :   Type-safe Sentry API connector.
@@ -833,6 +859,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="SentryReplicationConfig"></a>
 
 `SentryReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Sentry.

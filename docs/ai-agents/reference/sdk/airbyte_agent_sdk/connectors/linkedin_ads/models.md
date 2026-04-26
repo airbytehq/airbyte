@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Account"></a>
+
 `Account(**data: Any)`
 :   LinkedIn ad account object
     
@@ -77,6 +79,8 @@ Classes
     `version: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountVersion | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountChangeauditstamps"></a>
+
 `AccountChangeauditstamps(**data: Any)`
 :   Creation and last modification audit stamps
     
@@ -101,6 +105,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountChangeauditstampsCreated"></a>
 
 `AccountChangeauditstampsCreated(**data: Any)`
 :   Nested schema for AccountChangeauditstamps.created
@@ -127,6 +133,8 @@ Classes
     `time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountChangeauditstampsLastmodified"></a>
+
 `AccountChangeauditstampsLastmodified(**data: Any)`
 :   Nested schema for AccountChangeauditstamps.lastModified
     
@@ -151,6 +159,8 @@ Classes
 
     `time: int | Any | None`
     :   The type of the None singleton.
+
+<a id="AccountUser"></a>
 
 `AccountUser(**data: Any)`
 :   LinkedIn ad account user object
@@ -183,6 +193,8 @@ Classes
     `user: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountUserChangeauditstamps"></a>
+
 `AccountUserChangeauditstamps(**data: Any)`
 :   Creation and last modification audit stamps
     
@@ -207,6 +219,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountUserChangeauditstampsCreated"></a>
 
 `AccountUserChangeauditstampsCreated(**data: Any)`
 :   Nested schema for AccountUserChangeauditstamps.created
@@ -233,6 +247,8 @@ Classes
     `time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AccountUserChangeauditstampsLastmodified"></a>
+
 `AccountUserChangeauditstampsLastmodified(**data: Any)`
 :   Nested schema for AccountUserChangeauditstamps.lastModified
     
@@ -257,6 +273,8 @@ Classes
 
     `time: int | Any | None`
     :   The type of the None singleton.
+
+<a id="AccountUsersList"></a>
 
 `AccountUsersList(**data: Any)`
 :   Paginated list of account users
@@ -283,6 +301,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountUsersListMetadata"></a>
+
 `AccountUsersListMetadata(**data: Any)`
 :   Nested schema for AccountUsersList.metadata
     
@@ -305,6 +325,8 @@ Classes
     `next_page_token: str | Any`
     :   The type of the None singleton.
 
+<a id="AccountUsersListResultMeta"></a>
+
 `AccountUsersListResultMeta(**data: Any)`
 :   Metadata for account_users.Action.LIST operation
     
@@ -326,6 +348,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AccountUsersSearchData"></a>
 
 `AccountUsersSearchData(**data: Any)`
 :   Search result data for account_users entity.
@@ -355,6 +379,8 @@ Classes
     `user: str | None`
     :   User URN
 
+<a id="AccountVersion"></a>
+
 `AccountVersion(**data: Any)`
 :   Version information
     
@@ -376,6 +402,8 @@ Classes
 
     `version_tag: str | Any | None`
     :   The type of the None singleton.
+
+<a id="AccountsList"></a>
 
 `AccountsList(**data: Any)`
 :   Paginated list of ad accounts
@@ -402,6 +430,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountsListMetadata"></a>
+
 `AccountsListMetadata(**data: Any)`
 :   Nested schema for AccountsList.metadata
     
@@ -424,6 +454,8 @@ Classes
     `next_page_token: str | Any`
     :   The type of the None singleton.
 
+<a id="AccountsListResultMeta"></a>
+
 `AccountsListResultMeta(**data: Any)`
 :   Metadata for accounts.Action.LIST operation
     
@@ -445,6 +477,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="AccountsSearchData"></a>
 
 `AccountsSearchData(**data: Any)`
 :   Search result data for accounts entity.
@@ -506,6 +540,8 @@ Classes
 
     `version: dict[str, typing.Any] | None`
     :   Version information
+
+<a id="AdAnalyticsRecord"></a>
 
 `AdAnalyticsRecord(**data: Any)`
 :   Ad analytics data record with performance metrics
@@ -691,6 +727,8 @@ Classes
     `video_views: int | Any | None`
     :   The type of the None singleton.
 
+<a id="AdAnalyticsRecordDaterange"></a>
+
 `AdAnalyticsRecordDaterange(**data: Any)`
 :   Date range for this analytics record
     
@@ -715,6 +753,8 @@ Classes
 
     `start: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterangeStart | Any`
     :   The type of the None singleton.
+
+<a id="AdAnalyticsRecordDaterangeEnd"></a>
 
 `AdAnalyticsRecordDaterangeEnd(**data: Any)`
 :   Nested schema for AdAnalyticsRecordDaterange.end
@@ -744,6 +784,8 @@ Classes
     `year: int | Any`
     :   The type of the None singleton.
 
+<a id="AdAnalyticsRecordDaterangeStart"></a>
+
 `AdAnalyticsRecordDaterangeStart(**data: Any)`
 :   Nested schema for AdAnalyticsRecordDaterange.start
     
@@ -772,6 +814,8 @@ Classes
     `year: int | Any`
     :   The type of the None singleton.
 
+<a id="AdAnalyticsResponse"></a>
+
 `AdAnalyticsResponse(**data: Any)`
 :   Ad analytics API response
     
@@ -797,6 +841,8 @@ Classes
     `paging: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsResponsePaging | Any`
     :   The type of the None singleton.
 
+<a id="AdAnalyticsResponsePaging"></a>
+
 `AdAnalyticsResponsePaging(**data: Any)`
 :   Nested schema for AdAnalyticsResponse.paging
     
@@ -821,6 +867,8 @@ Classes
 
     `start: int | Any`
     :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsSearchData"></a>
 
 `AdCampaignAnalyticsSearchData(**data: Any)`
 :   Search result data for ad_campaign_analytics entity.
@@ -958,6 +1006,8 @@ Classes
     `video_views: float | None`
     :   Number of video views
 
+<a id="AdCreativeAnalyticsSearchData"></a>
+
 `AdCreativeAnalyticsSearchData(**data: Any)`
 :   Search result data for ad_creative_analytics entity.
     
@@ -1094,6 +1144,8 @@ Classes
     `video_views: float | None`
     :   Number of video views
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -1121,6 +1173,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1180,6 +1234,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountUsersSearchResult"></a>
+
 `AccountUsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1216,6 +1272,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountsSearchResult"></a>
 
 `AccountsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1254,6 +1312,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsSearchResult"></a>
+
 `AdCampaignAnalyticsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1290,6 +1350,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsSearchResult"></a>
 
 `AdCreativeAnalyticsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1328,6 +1390,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsSearchResult"></a>
+
 `CampaignGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1364,6 +1428,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchResult"></a>
 
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -1402,6 +1468,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversionsSearchResult"></a>
+
 `ConversionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1439,6 +1507,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativesSearchResult"></a>
+
 `CreativesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -1454,6 +1524,8 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   LinkedIn ad campaign object
@@ -1561,6 +1633,8 @@ Classes
     `version: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignVersion | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignChangeauditstamps"></a>
+
 `CampaignChangeauditstamps(**data: Any)`
 :   Creation and last modification audit stamps
     
@@ -1585,6 +1659,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignChangeauditstampsCreated"></a>
 
 `CampaignChangeauditstampsCreated(**data: Any)`
 :   Nested schema for CampaignChangeauditstamps.created
@@ -1611,6 +1687,8 @@ Classes
     `time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignChangeauditstampsLastmodified"></a>
+
 `CampaignChangeauditstampsLastmodified(**data: Any)`
 :   Nested schema for CampaignChangeauditstamps.lastModified
     
@@ -1636,6 +1714,8 @@ Classes
     `time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignDailybudget"></a>
+
 `CampaignDailybudget(**data: Any)`
 :   Daily budget configuration
     
@@ -1660,6 +1740,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignGroup"></a>
 
 `CampaignGroup(**data: Any)`
 :   LinkedIn ad campaign group object
@@ -1713,6 +1795,8 @@ Classes
     `total_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupTotalbudget | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignGroupChangeauditstamps"></a>
+
 `CampaignGroupChangeauditstamps(**data: Any)`
 :   Creation and last modification audit stamps
     
@@ -1737,6 +1821,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignGroupChangeauditstampsCreated"></a>
 
 `CampaignGroupChangeauditstampsCreated(**data: Any)`
 :   Nested schema for CampaignGroupChangeauditstamps.created
@@ -1763,6 +1849,8 @@ Classes
     `time: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignGroupChangeauditstampsLastmodified"></a>
+
 `CampaignGroupChangeauditstampsLastmodified(**data: Any)`
 :   Nested schema for CampaignGroupChangeauditstamps.lastModified
     
@@ -1787,6 +1875,8 @@ Classes
 
     `time: int | Any | None`
     :   The type of the None singleton.
+
+<a id="CampaignGroupRunschedule"></a>
 
 `CampaignGroupRunschedule(**data: Any)`
 :   Campaign group run schedule
@@ -1813,6 +1903,8 @@ Classes
     `start: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignGroupTotalbudget"></a>
+
 `CampaignGroupTotalbudget(**data: Any)`
 :   Total budget for the campaign group
     
@@ -1837,6 +1929,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsList"></a>
 
 `CampaignGroupsList(**data: Any)`
 :   Paginated list of campaign groups
@@ -1863,6 +1957,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsListMetadata"></a>
+
 `CampaignGroupsListMetadata(**data: Any)`
 :   Nested schema for CampaignGroupsList.metadata
     
@@ -1885,6 +1981,8 @@ Classes
     `next_page_token: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsListResultMeta"></a>
+
 `CampaignGroupsListResultMeta(**data: Any)`
 :   Metadata for campaign_groups.Action.LIST operation
     
@@ -1906,6 +2004,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="CampaignGroupsSearchData"></a>
 
 `CampaignGroupsSearchData(**data: Any)`
 :   Search result data for campaign_groups entity.
@@ -1956,6 +2056,8 @@ Classes
     `total_budget: dict[str, typing.Any] | None`
     :   Total budget for the campaign group
 
+<a id="CampaignLocale"></a>
+
 `CampaignLocale(**data: Any)`
 :   Campaign locale settings
     
@@ -1980,6 +2082,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignRunschedule"></a>
 
 `CampaignRunschedule(**data: Any)`
 :   Campaign run schedule
@@ -2006,6 +2110,8 @@ Classes
     `start: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignTotalbudget"></a>
+
 `CampaignTotalbudget(**data: Any)`
 :   Total budget configuration
     
@@ -2030,6 +2136,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignUnitcost"></a>
 
 `CampaignUnitcost(**data: Any)`
 :   Cost per unit (bid amount)
@@ -2056,6 +2164,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignVersion"></a>
+
 `CampaignVersion(**data: Any)`
 :   Version information
     
@@ -2077,6 +2187,8 @@ Classes
 
     `version_tag: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CampaignsList"></a>
 
 `CampaignsList(**data: Any)`
 :   Paginated list of campaigns
@@ -2103,6 +2215,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsListMetadata"></a>
+
 `CampaignsListMetadata(**data: Any)`
 :   Nested schema for CampaignsList.metadata
     
@@ -2125,6 +2239,8 @@ Classes
     `next_page_token: str | Any`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -2146,6 +2262,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -2238,6 +2356,8 @@ Classes
     `version: dict[str, typing.Any] | None`
     :   Version information
 
+<a id="Conversion"></a>
+
 `Conversion(**data: Any)`
 :   LinkedIn ad conversion tracking rule
     
@@ -2317,6 +2437,8 @@ Classes
     `view_through_attribution_window_size: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ConversionValue"></a>
+
 `ConversionValue(**data: Any)`
 :   Conversion value
     
@@ -2342,6 +2464,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversionsList"></a>
+
 `ConversionsList(**data: Any)`
 :   Paginated list of conversions
     
@@ -2366,6 +2490,8 @@ Classes
 
     `paging: airbyte_agent_sdk.connectors.linkedin_ads.models.ConversionsListPaging | Any`
     :   The type of the None singleton.
+
+<a id="ConversionsListPaging"></a>
 
 `ConversionsListPaging(**data: Any)`
 :   Nested schema for ConversionsList.paging
@@ -2395,6 +2521,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="ConversionsListResultMeta"></a>
+
 `ConversionsListResultMeta(**data: Any)`
 :   Metadata for conversions.Action.LIST operation
     
@@ -2416,6 +2544,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="ConversionsSearchData"></a>
 
 `ConversionsSearchData(**data: Any)`
 :   Search result data for conversions entity.
@@ -2477,6 +2607,8 @@ Classes
 
     `view_through_attribution_window_size: int | None`
     :   View-through attribution window size in days
+
+<a id="Creative"></a>
 
 `Creative(**data: Any)`
 :   LinkedIn ad creative object
@@ -2542,6 +2674,8 @@ Classes
     `serving_hold_reasons: list[str] | Any | None`
     :   The type of the None singleton.
 
+<a id="CreativeLeadgencalltoaction"></a>
+
 `CreativeLeadgencalltoaction(**data: Any)`
 :   Lead generation call to action
     
@@ -2566,6 +2700,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CreativeReview"></a>
 
 `CreativeReview(**data: Any)`
 :   Review status and rejection reasons
@@ -2592,6 +2728,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CreativesList"></a>
+
 `CreativesList(**data: Any)`
 :   Paginated list of creatives
     
@@ -2617,6 +2755,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativesListMetadata"></a>
+
 `CreativesListMetadata(**data: Any)`
 :   Nested schema for CreativesList.metadata
     
@@ -2639,6 +2779,8 @@ Classes
     `next_page_token: str | Any`
     :   The type of the None singleton.
 
+<a id="CreativesListResultMeta"></a>
+
 `CreativesListResultMeta(**data: Any)`
 :   Metadata for creatives.Action.LIST operation
     
@@ -2660,6 +2802,8 @@ Classes
 
     `next_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="CreativesSearchData"></a>
 
 `CreativesSearchData(**data: Any)`
 :   Search result data for creatives entity.
@@ -2719,6 +2863,8 @@ Classes
     `serving_hold_reasons: list[typing.Any] | None`
     :   Reasons for holding creative from serving
 
+<a id="LinkedinAdsAuthConfig"></a>
+
 `LinkedinAdsAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -2746,6 +2892,8 @@ Classes
 
     `refresh_token: str`
     :   OAuth 2.0 refresh token for automatic renewal
+
+<a id="LinkedinAdsCheckResult"></a>
 
 `LinkedinAdsCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2780,6 +2928,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="LinkedinAdsExecuteResult"></a>
+
 `LinkedinAdsExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2809,6 +2959,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LinkedinAdsExecuteResultWithMeta"></a>
 
 `LinkedinAdsExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2866,6 +3018,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountUsersListResult"></a>
+
 `AccountUsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2908,6 +3062,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AccountsListResult"></a>
 
 `AccountsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2952,6 +3108,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignGroupsListResult"></a>
+
 `CampaignGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2994,6 +3152,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsListResult"></a>
 
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -3038,6 +3198,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ConversionsListResult"></a>
+
 `ConversionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3081,6 +3243,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CreativesListResult"></a>
+
 `CreativesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -3123,6 +3287,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdCampaignAnalyticsListResult"></a>
+
 `AdCampaignAnalyticsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3146,6 +3312,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AdCreativeAnalyticsListResult"></a>
+
 `AdCreativeAnalyticsListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -3163,6 +3331,8 @@ Classes
     * airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="LinkedinAdsReplicationConfig"></a>
 
 `LinkedinAdsReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from LinkedIn Ads.

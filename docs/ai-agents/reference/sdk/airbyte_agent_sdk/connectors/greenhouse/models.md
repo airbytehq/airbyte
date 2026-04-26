@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -100,6 +104,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsSearchResult"></a>
+
 `ApplicationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -136,6 +142,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CandidatesSearchResult"></a>
 
 `CandidatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -174,6 +182,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DepartmentsSearchResult"></a>
+
 `DepartmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -210,6 +220,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JobPostsSearchResult"></a>
 
 `JobPostsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -248,6 +260,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobsSearchResult"></a>
+
 `JobsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -284,6 +298,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OffersSearchResult"></a>
 
 `OffersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -322,6 +338,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OfficesSearchResult"></a>
+
 `OfficesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -358,6 +376,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SourcesSearchResult"></a>
 
 `SourcesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -396,6 +416,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -411,6 +433,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Application"></a>
 
 `Application(**data: Any)`
 :   Greenhouse application object
@@ -494,6 +518,8 @@ Classes
     `status: str | Any`
     :   The type of the None singleton.
 
+<a id="ApplicationsListResultMeta"></a>
+
 `ApplicationsListResultMeta(**data: Any)`
 :   Metadata for applications.Action.LIST operation
     
@@ -515,6 +541,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="ApplicationsSearchData"></a>
 
 `ApplicationsSearchData(**data: Any)`
 :   Search result data for applications entity.
@@ -595,6 +623,8 @@ Classes
     `status: str | None`
     :   Status of the application.
 
+<a id="Attachment"></a>
+
 `Attachment(**data: Any)`
 :   File attachment (resume, cover letter, etc.)
     
@@ -625,6 +655,8 @@ Classes
 
     `url: str | Any`
     :   The type of the None singleton.
+
+<a id="Candidate"></a>
 
 `Candidate(**data: Any)`
 :   Greenhouse candidate object
@@ -711,6 +743,8 @@ Classes
     `website_addresses: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
 
+<a id="CandidatesListResultMeta"></a>
+
 `CandidatesListResultMeta(**data: Any)`
 :   Metadata for candidates.Action.LIST operation
     
@@ -732,6 +766,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CandidatesSearchData"></a>
 
 `CandidatesSearchData(**data: Any)`
 :   Search result data for candidates entity.
@@ -830,6 +866,8 @@ Classes
     `website_addresses: list[typing.Any] | None`
     :   List of candidate's website addresses
 
+<a id="Department"></a>
+
 `Department(**data: Any)`
 :   Greenhouse department object
     
@@ -870,6 +908,8 @@ Classes
     `parent_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="DepartmentsListResultMeta"></a>
+
 `DepartmentsListResultMeta(**data: Any)`
 :   Metadata for departments.Action.LIST operation
     
@@ -891,6 +931,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="DepartmentsSearchData"></a>
 
 `DepartmentsSearchData(**data: Any)`
 :   Search result data for departments entity.
@@ -932,6 +974,8 @@ Classes
     `parent_id: int | None`
     :   Unique ID of the parent department of this department.
 
+<a id="GreenhouseAuthConfig"></a>
+
 `GreenhouseAuthConfig(**data: Any)`
 :   Harvest API Key Authentication
     
@@ -953,6 +997,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GreenhouseCheckResult"></a>
 
 `GreenhouseCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -987,6 +1033,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GreenhouseExecuteResult"></a>
+
 `GreenhouseExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1015,6 +1063,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GreenhouseExecuteResultWithMeta"></a>
 
 `GreenhouseExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1076,6 +1126,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsListResult"></a>
+
 `ApplicationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1118,6 +1170,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CandidatesListResult"></a>
 
 `CandidatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1162,6 +1216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DepartmentsListResult"></a>
+
 `DepartmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1204,6 +1260,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JobPostsListResult"></a>
 
 `JobPostsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1248,6 +1306,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobsListResult"></a>
+
 `JobsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1290,6 +1350,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OffersListResult"></a>
 
 `OffersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1334,6 +1396,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OfficesListResult"></a>
+
 `OfficesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1376,6 +1440,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ScheduledInterviewsListResult"></a>
 
 `ScheduledInterviewsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1420,6 +1486,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SourcesListResult"></a>
+
 `SourcesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1463,6 +1531,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1481,6 +1551,8 @@ Classes
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Job"></a>
 
 `Job(**data: Any)`
 :   Greenhouse job object
@@ -1546,6 +1618,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="JobPost"></a>
+
 `JobPost(**data: Any)`
 :   Greenhouse job post object
     
@@ -1610,6 +1684,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="JobPostsListResultMeta"></a>
+
 `JobPostsListResultMeta(**data: Any)`
 :   Metadata for job_posts.Action.LIST operation
     
@@ -1631,6 +1707,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="JobPostsSearchData"></a>
 
 `JobPostsSearchData(**data: Any)`
 :   Search result data for job_posts entity.
@@ -1696,6 +1774,8 @@ Classes
     `updated_at: str | None`
     :   Date and time when the job post was last updated.
 
+<a id="JobsListResultMeta"></a>
+
 `JobsListResultMeta(**data: Any)`
 :   Metadata for jobs.Action.LIST operation
     
@@ -1717,6 +1797,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="JobsSearchData"></a>
 
 `JobsSearchData(**data: Any)`
 :   Search result data for jobs entity.
@@ -1791,6 +1873,8 @@ Classes
     `updated_at: str | None`
     :   The date and time the job was last updated
 
+<a id="Offer"></a>
+
 `Offer(**data: Any)`
 :   Greenhouse offer object
     
@@ -1849,6 +1933,8 @@ Classes
     `version: int | Any`
     :   The type of the None singleton.
 
+<a id="OffersListResultMeta"></a>
+
 `OffersListResultMeta(**data: Any)`
 :   Metadata for offers.Action.LIST operation
     
@@ -1870,6 +1956,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="OffersSearchData"></a>
 
 `OffersSearchData(**data: Any)`
 :   Search result data for offers entity.
@@ -1932,6 +2020,8 @@ Classes
     `version: int | None`
     :   Version of the offer data
 
+<a id="Office"></a>
+
 `Office(**data: Any)`
 :   Greenhouse office object
     
@@ -1978,6 +2068,8 @@ Classes
     `primary_contact_user_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="OfficesListResultMeta"></a>
+
 `OfficesListResultMeta(**data: Any)`
 :   Metadata for offices.Action.LIST operation
     
@@ -1999,6 +2091,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="OfficesSearchData"></a>
 
 `OfficesSearchData(**data: Any)`
 :   Search result data for offices entity.
@@ -2045,6 +2139,8 @@ Classes
 
     `primary_contact_user_id: int | None`
     :   User ID of the primary contact person for this office
+
+<a id="ScheduledInterview"></a>
 
 `ScheduledInterview(**data: Any)`
 :   Greenhouse scheduled interview object
@@ -2104,6 +2200,8 @@ Classes
     `video_conferencing_url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ScheduledInterviewsListResultMeta"></a>
+
 `ScheduledInterviewsListResultMeta(**data: Any)`
 :   Metadata for scheduled_interviews.Action.LIST operation
     
@@ -2125,6 +2223,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Source"></a>
 
 `Source(**data: Any)`
 :   Greenhouse source object
@@ -2154,6 +2254,8 @@ Classes
     `type_: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="SourcesListResultMeta"></a>
+
 `SourcesListResultMeta(**data: Any)`
 :   Metadata for sources.Action.LIST operation
     
@@ -2175,6 +2277,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SourcesSearchData"></a>
 
 `SourcesSearchData(**data: Any)`
 :   Search result data for sources entity.
@@ -2203,6 +2307,8 @@ Classes
 
     `type_: dict[str, typing.Any] | None`
     :   Type of the data source
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   Greenhouse user object
@@ -2265,6 +2371,8 @@ Classes
     `updated_at: str | Any`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -2286,6 +2394,8 @@ Classes
 
     `next: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

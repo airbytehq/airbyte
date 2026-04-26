@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlocksSearchResult"></a>
+
 `BlocksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="DataSourcesSearchResult"></a>
 
 `DataSourcesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PagesSearchResult"></a>
+
 `PagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BlocksSearchData"></a>
 
 `BlocksSearchData(**data: Any)`
 :   Search result data for blocks entity.
@@ -357,6 +373,8 @@ Classes
     `video: dict[str, typing.Any] | None`
     :   Represents a video block.
 
+<a id="DataSourcesSearchData"></a>
+
 `DataSourcesSearchData(**data: Any)`
 :   Search result data for data_sources entity.
     
@@ -426,6 +444,8 @@ Classes
 
     `url: str | None`
     :   URL or reference to access the data source.
+
+<a id="NotionConnector"></a>
 
 `NotionConnector(auth_config: NotionAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Notion API connector.
@@ -703,6 +723,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="NotionOAuthCredentials"></a>
+
 `NotionOAuthCredentials(**data: Any)`
 :   Notion OAuth App Credentials - Provide your own Notion OAuth app credentials to override the default Airbyte-managed ones.
     
@@ -727,6 +749,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PagesSearchData"></a>
 
 `PagesSearchData(**data: Any)`
 :   Search result data for pages entity.
@@ -788,6 +812,8 @@ Classes
 
     `url: str | None`
     :   URL of the page within the service.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

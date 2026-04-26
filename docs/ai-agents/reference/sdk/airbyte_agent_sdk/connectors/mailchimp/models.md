@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -95,6 +99,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -131,6 +137,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EmailActivitySearchResult"></a>
 
 `EmailActivitySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -169,6 +177,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListsSearchResult"></a>
+
 `ListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ReportsSearchResult"></a>
+
 `ReportsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -221,6 +233,8 @@ Classes
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Automation"></a>
 
 `Automation(**data: Any)`
 :   A summary of an individual Automation workflow's settings and content
@@ -268,6 +282,8 @@ Classes
     `tracking: airbyte_agent_sdk.connectors.mailchimp.models.AutomationTracking | Any | None`
     :   The type of the None singleton.
 
+<a id="AutomationRecipients"></a>
+
 `AutomationRecipients(**data: Any)`
 :   List settings for the Automation
     
@@ -302,6 +318,8 @@ Classes
     `store_id: str | Any | None`
     :   The id of the store
 
+<a id="AutomationRecipientsSegmentOpts"></a>
+
 `AutomationRecipientsSegmentOpts(**data: Any)`
 :   An object representing all segmentation options
     
@@ -329,6 +347,8 @@ Classes
 
     `saved_segment_id: int | Any | None`
     :   The id for an existing saved segment
+
+<a id="AutomationReportSummary"></a>
 
 `AutomationReportSummary(**data: Any)`
 :   A summary of opens and clicks for sent campaigns
@@ -366,6 +386,8 @@ Classes
 
     `unique_opens: int | Any | None`
     :   The number of unique opens
+
+<a id="AutomationSettings"></a>
 
 `AutomationSettings(**data: Any)`
 :   The settings for the Automation workflow
@@ -410,6 +432,8 @@ Classes
     `use_conversation: bool | Any | None`
     :   Whether to use Mailchimp Conversation feature
 
+<a id="AutomationTracking"></a>
+
 `AutomationTracking(**data: Any)`
 :   The tracking options for the Automation
     
@@ -450,6 +474,8 @@ Classes
     `text_clicks: bool | Any | None`
     :   Whether to track clicks in the plain-text version
 
+<a id="AutomationsList"></a>
+
 `AutomationsList(**data: Any)`
 :   A summary of the Automations for an account
     
@@ -478,6 +504,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="AutomationsListResultMeta"></a>
+
 `AutomationsListResultMeta(**data: Any)`
 :   Metadata for automations.Action.LIST operation
     
@@ -499,6 +527,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Campaign"></a>
 
 `Campaign(**data: Any)`
 :   A summary of an individual campaign's settings and content
@@ -573,6 +603,8 @@ Classes
     `web_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="CampaignDeliveryStatus"></a>
+
 `CampaignDeliveryStatus(**data: Any)`
 :   Updates on campaigns in the process of sending
     
@@ -607,6 +639,8 @@ Classes
     `status: str | Any | None`
     :   The current state of a campaign delivery
 
+<a id="CampaignRecipients"></a>
+
 `CampaignRecipients(**data: Any)`
 :   List settings for the campaign
     
@@ -640,6 +674,8 @@ Classes
 
     `segment_text: str | Any | None`
     :   A description of the segment used for the campaign
+
+<a id="CampaignReportSummary"></a>
 
 `CampaignReportSummary(**data: Any)`
 :   For sent campaigns, a summary of opens, clicks, and e-commerce data
@@ -681,6 +717,8 @@ Classes
     `unique_opens: int | Any | None`
     :   The number of unique opens
 
+<a id="CampaignReportSummaryEcommerce"></a>
+
 `CampaignReportSummaryEcommerce(**data: Any)`
 :   E-Commerce stats for a campaign
     
@@ -708,6 +746,8 @@ Classes
 
     `total_spent: float | Any | None`
     :   The total spent for a campaign
+
+<a id="CampaignSettings"></a>
 
 `CampaignSettings(**data: Any)`
 :   The settings for your campaign
@@ -776,6 +816,8 @@ Classes
     `use_conversation: bool | Any | None`
     :   Use Mailchimp Conversation feature to manage out-of-office replies
 
+<a id="CampaignTracking"></a>
+
 `CampaignTracking(**data: Any)`
 :   The tracking options for a campaign
     
@@ -816,6 +858,8 @@ Classes
     `text_clicks: bool | Any | None`
     :   Whether to track clicks in the plain-text version of the campaign
 
+<a id="CampaignsList"></a>
+
 `CampaignsList(**data: Any)`
 :   A collection of campaigns
     
@@ -844,6 +888,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="CampaignsListResultMeta"></a>
+
 `CampaignsListResultMeta(**data: Any)`
 :   Metadata for campaigns.Action.LIST operation
     
@@ -865,6 +911,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -951,6 +999,8 @@ Classes
     `web_id: int | None`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="EmailActivity"></a>
+
 `EmailActivity(**data: Any)`
 :   A summary of the email activity for a campaign
     
@@ -988,6 +1038,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EmailActivityActivityItem"></a>
+
 `EmailActivityActivityItem(**data: Any)`
 :   Nested schema for EmailActivity.activity_item
     
@@ -1022,6 +1074,8 @@ Classes
     `url: str | Any | None`
     :   If the action is a click, the URL on which the member clicked
 
+<a id="EmailActivityList"></a>
+
 `EmailActivityList(**data: Any)`
 :   A list of member's subscriber activity in a specific campaign
     
@@ -1053,6 +1107,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="EmailActivityListResultMeta"></a>
+
 `EmailActivityListResultMeta(**data: Any)`
 :   Metadata for email_activity.Action.LIST operation
     
@@ -1074,6 +1130,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="EmailActivitySearchData"></a>
 
 `EmailActivitySearchData(**data: Any)`
 :   Search result data for email_activity entity.
@@ -1124,6 +1182,8 @@ Classes
     `url: str | None`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="Interest"></a>
+
 `Interest(**data: Any)`
 :   Assign subscribers to interests to group them together
     
@@ -1161,6 +1221,8 @@ Classes
     `subscriber_count: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InterestCategoriesList"></a>
+
 `InterestCategoriesList(**data: Any)`
 :   Information about this list's interest categories
     
@@ -1192,6 +1254,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="InterestCategoriesListResultMeta"></a>
+
 `InterestCategoriesListResultMeta(**data: Any)`
 :   Metadata for interest_categories.Action.LIST operation
     
@@ -1213,6 +1277,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InterestCategory"></a>
 
 `InterestCategory(**data: Any)`
 :   Interest categories organize interests, which are used to group subscribers based on their preferences
@@ -1248,6 +1314,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="InterestsList"></a>
+
 `InterestsList(**data: Any)`
 :   A list of interests for a specific list
     
@@ -1282,6 +1350,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="InterestsListResultMeta"></a>
+
 `InterestsListResultMeta(**data: Any)`
 :   Metadata for interests.Action.LIST operation
     
@@ -1303,6 +1373,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Link"></a>
 
 `Link(**data: Any)`
 :   A HAL-style link relating the current resource to another.
@@ -1337,6 +1409,8 @@ Classes
 
     `target_schema: str | Any | None`
     :   The type of the None singleton.
+
+<a id="List"></a>
 
 `List(**data: Any)`
 :   Information about a specific list
@@ -1417,6 +1491,8 @@ Classes
     `web_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ListCampaignDefaults"></a>
+
 `ListCampaignDefaults(**data: Any)`
 :   Default values for campaigns created for this list
     
@@ -1447,6 +1523,8 @@ Classes
 
     `subject: str | Any | None`
     :   The default subject line for campaigns sent to this list
+
+<a id="ListContact"></a>
 
 `ListContact(**data: Any)`
 :   Contact information displayed in campaign footers to comply with international spam laws
@@ -1490,6 +1568,8 @@ Classes
 
     `zip: str | Any | None`
     :   The postal or zip code for the list contact
+
+<a id="ListMember"></a>
 
 `ListMember(**data: Any)`
 :   Individuals who are currently or have been previously subscribed to this list
@@ -1591,6 +1671,8 @@ Classes
     `web_id: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ListMemberLocation"></a>
+
 `ListMemberLocation(**data: Any)`
 :   Subscriber location information
     
@@ -1631,6 +1713,8 @@ Classes
     `timezone: str | Any | None`
     :   The timezone for the location
 
+<a id="ListMemberStats"></a>
+
 `ListMemberStats(**data: Any)`
 :   Open and click rates for this subscriber
     
@@ -1658,6 +1742,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListMemberStatsEcommerceData"></a>
 
 `ListMemberStatsEcommerceData(**data: Any)`
 :   Ecommerce stats for the list member if the list is attached to a store
@@ -1687,6 +1773,8 @@ Classes
     `total_revenue: float | Any | None`
     :   The total revenue the list member has brought in
 
+<a id="ListMemberTagsItem"></a>
+
 `ListMemberTagsItem(**data: Any)`
 :   Nested schema for ListMember.tags_item
     
@@ -1711,6 +1799,8 @@ Classes
 
     `name: str | Any | None`
     :   The name of the tag
+
+<a id="ListMembersList"></a>
 
 `ListMembersList(**data: Any)`
 :   Manage members of a specific Mailchimp list
@@ -1743,6 +1833,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="ListMembersListResultMeta"></a>
+
 `ListMembersListResultMeta(**data: Any)`
 :   Metadata for list_members.Action.LIST operation
     
@@ -1764,6 +1856,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListStats"></a>
 
 `ListStats(**data: Any)`
 :   Stats for the list
@@ -1835,6 +1929,8 @@ Classes
     `unsubscribe_count_since_send: int | Any | None`
     :   The number of members who have unsubscribed since the last campaign was sent
 
+<a id="ListsList"></a>
+
 `ListsList(**data: Any)`
 :   A collection of subscriber lists for this account
     
@@ -1863,6 +1959,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="ListsListResultMeta"></a>
+
 `ListsListResultMeta(**data: Any)`
 :   Metadata for lists.Action.LIST operation
     
@@ -1884,6 +1982,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListsSearchData"></a>
 
 `ListsSearchData(**data: Any)`
 :   Search result data for lists entity.
@@ -1967,6 +2067,8 @@ Classes
     `web_id: int | None`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="MailchimpAuthConfig"></a>
+
 `MailchimpAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -1988,6 +2090,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MailchimpCheckResult"></a>
 
 `MailchimpCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2022,6 +2126,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="MailchimpExecuteResult"></a>
+
 `MailchimpExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2050,6 +2156,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="MailchimpExecuteResultWithMeta"></a>
 
 `MailchimpExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2113,6 +2221,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AutomationsListResult"></a>
+
 `AutomationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2155,6 +2265,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CampaignsListResult"></a>
 
 `CampaignsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2199,6 +2311,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="EmailActivityListResult"></a>
+
 `EmailActivityListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2241,6 +2355,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InterestCategoriesListResult"></a>
 
 `InterestCategoriesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2285,6 +2401,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InterestsListResult"></a>
+
 `InterestsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2327,6 +2445,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListMembersListResult"></a>
 
 `ListMembersListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2371,6 +2491,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListsListResult"></a>
+
 `ListsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2413,6 +2535,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReportsListResult"></a>
 
 `ReportsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2457,6 +2581,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SegmentMembersListResult"></a>
+
 `SegmentMembersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2499,6 +2625,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SegmentsListResult"></a>
 
 `SegmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2543,6 +2671,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="TagsListResult"></a>
+
 `TagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2586,6 +2716,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UnsubscribesListResult"></a>
+
 `UnsubscribesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2604,6 +2736,8 @@ Classes
     * airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Report"></a>
 
 `Report(**data: Any)`
 :   Report details about a sent campaign
@@ -2690,6 +2824,8 @@ Classes
     `unsubscribed: int | Any | None`
     :   The type of the None singleton.
 
+<a id="ReportBounces"></a>
+
 `ReportBounces(**data: Any)`
 :   An object describing the bounce summary for the campaign
     
@@ -2717,6 +2853,8 @@ Classes
 
     `syntax_errors: int | Any | None`
     :   The total number of addresses that were syntax-related bounces
+
+<a id="ReportClicks"></a>
 
 `ReportClicks(**data: Any)`
 :   An object describing the click activity for the campaign
@@ -2752,6 +2890,8 @@ Classes
     `unique_subscriber_clicks: int | Any | None`
     :   The total number of subscribers who clicked on a campaign
 
+<a id="ReportDeliveryStatus"></a>
+
 `ReportDeliveryStatus(**data: Any)`
 :   Updates on campaigns in the process of sending
     
@@ -2773,6 +2913,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReportEcommerce"></a>
 
 `ReportEcommerce(**data: Any)`
 :   E-Commerce stats for a campaign
@@ -2802,6 +2944,8 @@ Classes
     `total_spent: float | Any | None`
     :   The total spent for a campaign
 
+<a id="ReportFacebookLikes"></a>
+
 `ReportFacebookLikes(**data: Any)`
 :   An object describing campaign engagement on Facebook
     
@@ -2830,6 +2974,8 @@ Classes
     `unique_likes: int | Any | None`
     :   The number of unique likes
 
+<a id="ReportForwards"></a>
+
 `ReportForwards(**data: Any)`
 :   An object describing the forwards and forward activity for the campaign
     
@@ -2854,6 +3000,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReportIndustryStats"></a>
 
 `ReportIndustryStats(**data: Any)`
 :   The average campaign statistics for your industry
@@ -2895,6 +3043,8 @@ Classes
     `unsub_rate: float | Any | None`
     :   The industry unsubscribe rate
 
+<a id="ReportListStats"></a>
+
 `ReportListStats(**data: Any)`
 :   The average campaign statistics for your list
     
@@ -2925,6 +3075,8 @@ Classes
 
     `unsub_rate: float | Any | None`
     :   The average number of unsubscriptions per month for the list
+
+<a id="ReportOpens"></a>
 
 `ReportOpens(**data: Any)`
 :   An object describing the open activity for the campaign
@@ -2957,6 +3109,8 @@ Classes
     `unique_opens: int | Any | None`
     :   The total number of unique opens
 
+<a id="ReportsList"></a>
+
 `ReportsList(**data: Any)`
 :   A list of reports containing campaigns marked as Sent
     
@@ -2985,6 +3139,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="ReportsListResultMeta"></a>
+
 `ReportsListResultMeta(**data: Any)`
 :   Metadata for reports.Action.LIST operation
     
@@ -3006,6 +3162,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ReportsSearchData"></a>
 
 `ReportsSearchData(**data: Any)`
 :   Search result data for reports entity.
@@ -3104,6 +3262,8 @@ Classes
     `unsubscribed: int | None`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="Segment"></a>
+
 `Segment(**data: Any)`
 :   Information about a specific segment
     
@@ -3146,6 +3306,8 @@ Classes
 
     `updated_at: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SegmentMember"></a>
 
 `SegmentMember(**data: Any)`
 :   Individuals who are currently or have been previously subscribed to this list
@@ -3223,6 +3385,8 @@ Classes
     `vip: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="SegmentMemberLocation"></a>
+
 `SegmentMemberLocation(**data: Any)`
 :   Subscriber location information
     
@@ -3263,6 +3427,8 @@ Classes
     `timezone: str | Any | None`
     :   The timezone for the location
 
+<a id="SegmentMemberStats"></a>
+
 `SegmentMemberStats(**data: Any)`
 :   Open and click rates for this subscriber
     
@@ -3287,6 +3453,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SegmentMembersList"></a>
 
 `SegmentMembersList(**data: Any)`
 :   View members in a specific list segment
@@ -3316,6 +3484,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="SegmentMembersListResultMeta"></a>
+
 `SegmentMembersListResultMeta(**data: Any)`
 :   Metadata for segment_members.Action.LIST operation
     
@@ -3337,6 +3507,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SegmentOptions"></a>
 
 `SegmentOptions(**data: Any)`
 :   The conditions of the segment
@@ -3362,6 +3534,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SegmentsList"></a>
 
 `SegmentsList(**data: Any)`
 :   A list of available segments
@@ -3394,6 +3568,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="SegmentsListResultMeta"></a>
+
 `SegmentsListResultMeta(**data: Any)`
 :   Metadata for segments.Action.LIST operation
     
@@ -3415,6 +3591,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Tag"></a>
 
 `Tag(**data: Any)`
 :   A tag that can be assigned to a list member
@@ -3440,6 +3618,8 @@ Classes
 
     `name: str | Any | None`
     :   The type of the None singleton.
+
+<a id="TagsList"></a>
 
 `TagsList(**data: Any)`
 :   A list of tags assigned to a list
@@ -3469,6 +3649,8 @@ Classes
     `total_items: int | Any`
     :   The type of the None singleton.
 
+<a id="TagsListResultMeta"></a>
+
 `TagsListResultMeta(**data: Any)`
 :   Metadata for tags.Action.LIST operation
     
@@ -3490,6 +3672,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Unsubscribe"></a>
 
 `Unsubscribe(**data: Any)`
 :   A member who unsubscribed from a specific campaign
@@ -3537,6 +3721,8 @@ Classes
     `vip: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="UnsubscribesList"></a>
+
 `UnsubscribesList(**data: Any)`
 :   A list of members who have unsubscribed from a specific campaign
     
@@ -3567,6 +3753,8 @@ Classes
 
     `unsubscribes: list[airbyte_agent_sdk.connectors.mailchimp.models.Unsubscribe] | Any`
     :   The type of the None singleton.
+
+<a id="UnsubscribesListResultMeta"></a>
 
 `UnsubscribesListResultMeta(**data: Any)`
 :   Metadata for unsubscribes.Action.LIST operation

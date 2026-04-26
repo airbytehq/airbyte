@@ -10,6 +10,8 @@ Gitlab connector.
 Classes
 -------
 
+<a id="BranchesQuery"></a>
+
 `BranchesQuery(connector: GitlabConnector)`
 :   Query class for Branches entity operations.
     
@@ -73,6 +75,8 @@ Classes
         
         Returns:
             BranchesListResult
+
+<a id="CommitsQuery"></a>
 
 `CommitsQuery(connector: GitlabConnector)`
 :   Query class for Commits entity operations.
@@ -146,6 +150,8 @@ Classes
         
         Returns:
             CommitsListResult
+
+<a id="GitlabConnector"></a>
 
 `GitlabConnector(auth_config: GitlabAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, api_url: str | None = None)`
 :   Type-safe Gitlab API connector.
@@ -403,6 +409,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="GroupMembersQuery"></a>
+
 `GroupMembersQuery(connector: GitlabConnector)`
 :   Query class for GroupMembers entity operations.
     
@@ -469,6 +477,8 @@ Classes
         Returns:
             GroupMembersListResult
 
+<a id="GroupMilestonesQuery"></a>
+
 `GroupMilestonesQuery(connector: GitlabConnector)`
 :   Query class for GroupMilestones entity operations.
     
@@ -534,6 +544,8 @@ Classes
         
         Returns:
             GroupMilestonesListResult
+
+<a id="GroupsQuery"></a>
 
 `GroupsQuery(connector: GitlabConnector)`
 :   Query class for Groups entity operations.
@@ -613,6 +625,8 @@ Classes
         
         Returns:
             GroupsListResult
+
+<a id="IssuesQuery"></a>
 
 `IssuesQuery(connector: GitlabConnector)`
 :   Query class for Issues entity operations.
@@ -710,6 +724,8 @@ Classes
         
         Returns:
             IssuesListResult
+
+<a id="MergeRequestsQuery"></a>
 
 `MergeRequestsQuery(connector: GitlabConnector)`
 :   Query class for MergeRequests entity operations.
@@ -821,6 +837,8 @@ Classes
         Returns:
             MergeRequestsListResult
 
+<a id="PipelinesQuery"></a>
+
 `PipelinesQuery(connector: GitlabConnector)`
 :   Query class for Pipelines entity operations.
     
@@ -888,6 +906,8 @@ Classes
         Returns:
             PipelinesListResult
 
+<a id="ProjectMembersQuery"></a>
+
 `ProjectMembersQuery(connector: GitlabConnector)`
 :   Query class for ProjectMembers entity operations.
     
@@ -954,6 +974,8 @@ Classes
         Returns:
             ProjectMembersListResult
 
+<a id="ProjectMilestonesQuery"></a>
+
 `ProjectMilestonesQuery(connector: GitlabConnector)`
 :   Query class for ProjectMilestones entity operations.
     
@@ -1019,6 +1041,8 @@ Classes
         
         Returns:
             ProjectMilestonesListResult
+
+<a id="ProjectsQuery"></a>
 
 `ProjectsQuery(connector: GitlabConnector)`
 :   Query class for Projects entity operations.
@@ -1155,6 +1179,8 @@ Classes
         Returns:
             ProjectsListResult
 
+<a id="ReleasesQuery"></a>
+
 `ReleasesQuery(connector: GitlabConnector)`
 :   Query class for Releases entity operations.
     
@@ -1226,6 +1252,8 @@ Classes
         Returns:
             ReleasesListResult
 
+<a id="TagsQuery"></a>
+
 `TagsQuery(connector: GitlabConnector)`
 :   Query class for Tags entity operations.
     
@@ -1288,6 +1316,8 @@ Classes
         
         Returns:
             TagsListResult
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: GitlabConnector)`
 :   Query class for Users entity operations.

@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="Address"></a>
+
 `Address(**data: Any)`
 :   Address object
     
@@ -50,6 +52,8 @@ Classes
     `state: str | Any | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -77,6 +81,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -132,6 +138,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersSearchResult"></a>
+
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -168,6 +176,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchResult"></a>
 
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -206,6 +216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PlansSearchResult"></a>
+
 `PlansSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -243,6 +255,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionsSearchResult"></a>
+
 `SubscriptionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -258,6 +272,8 @@ Classes
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Customer"></a>
 
 `Customer(**data: Any)`
 :   Customer object
@@ -323,6 +339,8 @@ Classes
     `timezone: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomerTaxId"></a>
+
 `CustomerTaxId(**data: Any)`
 :   Tax identification information
     
@@ -351,6 +369,8 @@ Classes
     `value: str | Any | None`
     :   The value of the tax ID
 
+<a id="CustomersList"></a>
+
 `CustomersList(**data: Any)`
 :   Paginated list of customers
     
@@ -376,6 +396,8 @@ Classes
     `pagination_metadata: airbyte_agent_sdk.connectors.orb.models.PaginationMetadata | Any`
     :   The type of the None singleton.
 
+<a id="CustomersListResultMeta"></a>
+
 `CustomersListResultMeta(**data: Any)`
 :   Metadata for customers.Action.LIST operation
     
@@ -397,6 +419,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CustomersSearchData"></a>
 
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
@@ -446,6 +470,8 @@ Classes
 
     `timezone: str | None`
     :   The timezone setting of the customer
+
+<a id="Invoice"></a>
 
 `Invoice(**data: Any)`
 :   Invoice object
@@ -568,6 +594,8 @@ Classes
     `will_auto_issue: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="InvoiceCustomer"></a>
+
 `InvoiceCustomer(**data: Any)`
 :   The customer associated with the invoice
     
@@ -592,6 +620,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoiceLineItemsItem"></a>
 
 `InvoiceLineItemsItem(**data: Any)`
 :   Nested schema for Invoice.line_items_item
@@ -630,6 +660,8 @@ Classes
     `start_date: str | Any | None`
     :   The start date of the line item
 
+<a id="InvoiceSubscription"></a>
+
 `InvoiceSubscription(**data: Any)`
 :   The subscription associated with the invoice
     
@@ -651,6 +683,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesList"></a>
 
 `InvoicesList(**data: Any)`
 :   Paginated list of invoices
@@ -677,6 +711,8 @@ Classes
     `pagination_metadata: airbyte_agent_sdk.connectors.orb.models.PaginationMetadata | Any`
     :   The type of the None singleton.
 
+<a id="InvoicesListResultMeta"></a>
+
 `InvoicesListResultMeta(**data: Any)`
 :   Metadata for invoices.Action.LIST operation
     
@@ -698,6 +734,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -763,6 +801,8 @@ Classes
     `total: str | None`
     :   The total amount of the invoice
 
+<a id="OrbAuthConfig"></a>
+
 `OrbAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -784,6 +824,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrbCheckResult"></a>
 
 `OrbCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -818,6 +860,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="OrbExecuteResult"></a>
+
 `OrbExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -846,6 +890,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrbExecuteResultWithMeta"></a>
 
 `OrbExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -901,6 +947,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersListResult"></a>
+
 `CustomersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -943,6 +991,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvoicesListResult"></a>
 
 `InvoicesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -987,6 +1037,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PlansListResult"></a>
+
 `PlansListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1030,6 +1082,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SubscriptionsListResult"></a>
+
 `SubscriptionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1048,6 +1102,8 @@ Classes
     * airbyte_agent_sdk.connectors.orb.models.OrbExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="OrbReplicationConfig"></a>
 
 `OrbReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Orb.
@@ -1070,6 +1126,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+<a id="PaginationMetadata"></a>
 
 `PaginationMetadata(**data: Any)`
 :   Pagination metadata
@@ -1095,6 +1153,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Plan"></a>
 
 `Plan(**data: Any)`
 :   Plan object
@@ -1169,6 +1229,8 @@ Classes
     `trial_config: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="PlanPricesItem"></a>
+
 `PlanPricesItem(**data: Any)`
 :   Nested schema for Plan.prices_item
     
@@ -1203,6 +1265,8 @@ Classes
     `price_type: str | Any | None`
     :   The type of price
 
+<a id="PlanProduct"></a>
+
 `PlanProduct(**data: Any)`
 :   The product associated with the plan
     
@@ -1227,6 +1291,8 @@ Classes
 
     `name: str | Any | None`
     :   The product name
+
+<a id="PlansList"></a>
 
 `PlansList(**data: Any)`
 :   Paginated list of plans
@@ -1253,6 +1319,8 @@ Classes
     `pagination_metadata: airbyte_agent_sdk.connectors.orb.models.PaginationMetadata | Any`
     :   The type of the None singleton.
 
+<a id="PlansListResultMeta"></a>
+
 `PlansListResultMeta(**data: Any)`
 :   Metadata for plans.Action.LIST operation
     
@@ -1274,6 +1342,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PlansSearchData"></a>
 
 `PlansSearchData(**data: Any)`
 :   Search result data for plans entity.
@@ -1311,6 +1381,8 @@ Classes
 
     `product: dict[str, typing.Any] | None`
     :   The product associated with the plan
+
+<a id="Subscription"></a>
 
 `Subscription(**data: Any)`
 :   Subscription object
@@ -1385,6 +1457,8 @@ Classes
     `status: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SubscriptionCustomer"></a>
+
 `SubscriptionCustomer(**data: Any)`
 :   The customer associated with the subscription
     
@@ -1409,6 +1483,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionPlan"></a>
 
 `SubscriptionPlan(**data: Any)`
 :   The plan associated with the subscription
@@ -1435,6 +1511,8 @@ Classes
     `name: str | Any | None`
     :   The plan name
 
+<a id="SubscriptionsList"></a>
+
 `SubscriptionsList(**data: Any)`
 :   Paginated list of subscriptions
     
@@ -1460,6 +1538,8 @@ Classes
     `pagination_metadata: airbyte_agent_sdk.connectors.orb.models.PaginationMetadata | Any`
     :   The type of the None singleton.
 
+<a id="SubscriptionsListResultMeta"></a>
+
 `SubscriptionsListResultMeta(**data: Any)`
 :   Metadata for subscriptions.Action.LIST operation
     
@@ -1481,6 +1561,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="SubscriptionsSearchData"></a>
 
 `SubscriptionsSearchData(**data: Any)`
 :   Search result data for subscriptions entity.

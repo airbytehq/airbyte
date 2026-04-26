@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -96,6 +100,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsSearchResult"></a>
+
 `ApplicationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -132,6 +138,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CandidatesSearchResult"></a>
 
 `CandidatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -170,6 +178,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobPostingsSearchResult"></a>
+
 `JobPostingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JobsSearchResult"></a>
 
 `JobsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -244,6 +256,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -259,6 +273,8 @@ Classes
     * airbyte_agent_sdk.connectors.ashby.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Application"></a>
 
 `Application(**data: Any)`
 :   Application object
@@ -327,6 +343,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ApplicationHiringteamItem"></a>
+
 `ApplicationHiringteamItem(**data: Any)`
 :   Nested schema for Application.hiringTeam_item
     
@@ -361,6 +379,8 @@ Classes
     `user_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ApplicationsListResultMeta"></a>
+
 `ApplicationsListResultMeta(**data: Any)`
 :   Metadata for applications.Action.LIST operation
     
@@ -386,6 +406,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsSearchData"></a>
+
 `ApplicationsSearchData(**data: Any)`
 :   Search result data for applications entity.
     
@@ -404,6 +426,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ArchiveReason"></a>
 
 `ArchiveReason(**data: Any)`
 :   Archive reason object
@@ -436,6 +460,8 @@ Classes
     `text: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ArchiveReasonsListResultMeta"></a>
+
 `ArchiveReasonsListResultMeta(**data: Any)`
 :   Metadata for archive_reasons.Action.LIST operation
     
@@ -461,6 +487,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AshbyAuthConfig"></a>
+
 `AshbyAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -482,6 +510,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AshbyCheckResult"></a>
 
 `AshbyCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -516,6 +546,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="AshbyExecuteResult"></a>
+
 `AshbyExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -544,6 +576,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AshbyExecuteResultWithMeta"></a>
 
 `AshbyExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -607,6 +641,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ApplicationsListResult"></a>
+
 `ApplicationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -649,6 +685,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ArchiveReasonsListResult"></a>
 
 `ArchiveReasonsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -693,6 +731,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CandidateTagsListResult"></a>
+
 `CandidateTagsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -735,6 +775,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CandidatesListResult"></a>
 
 `CandidatesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -779,6 +821,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomFieldsListResult"></a>
+
 `CustomFieldsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -821,6 +865,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DepartmentsListResult"></a>
 
 `DepartmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -865,6 +911,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FeedbackFormDefinitionsListResult"></a>
+
 `FeedbackFormDefinitionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -907,6 +955,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JobPostingsListResult"></a>
 
 `JobPostingsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -951,6 +1001,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobsListResult"></a>
+
 `JobsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -993,6 +1045,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="LocationsListResult"></a>
 
 `LocationsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1037,6 +1091,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SourcesListResult"></a>
+
 `SourcesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1080,6 +1136,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1098,6 +1156,8 @@ Classes
     * airbyte_agent_sdk.connectors.ashby.models.AshbyExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AshbyReplicationConfig"></a>
 
 `AshbyReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Ashby.
@@ -1120,6 +1180,8 @@ Classes
 
     `start_date: str`
     :   The date from which to start replicating data, in the format YYYY-MM-DDT00:00:00Z.
+
+<a id="Candidate"></a>
 
 `Candidate(**data: Any)`
 :   Candidate object
@@ -1185,6 +1247,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CandidateEmailaddressesItem"></a>
+
 `CandidateEmailaddressesItem(**data: Any)`
 :   Nested schema for Candidate.emailAddresses_item
     
@@ -1212,6 +1276,8 @@ Classes
 
     `value: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CandidatePhonenumbersItem"></a>
 
 `CandidatePhonenumbersItem(**data: Any)`
 :   Nested schema for Candidate.phoneNumbers_item
@@ -1241,6 +1307,8 @@ Classes
     `value: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CandidateSociallinksItem"></a>
+
 `CandidateSociallinksItem(**data: Any)`
 :   Nested schema for Candidate.socialLinks_item
     
@@ -1265,6 +1333,8 @@ Classes
 
     `url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CandidateTag"></a>
 
 `CandidateTag(**data: Any)`
 :   Candidate tag object
@@ -1294,6 +1364,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CandidateTagsItem"></a>
+
 `CandidateTagsItem(**data: Any)`
 :   Nested schema for Candidate.tags_item
     
@@ -1322,6 +1394,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CandidateTagsListResultMeta"></a>
+
 `CandidateTagsListResultMeta(**data: Any)`
 :   Metadata for candidate_tags.Action.LIST operation
     
@@ -1346,6 +1420,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CandidatesListResultMeta"></a>
 
 `CandidatesListResultMeta(**data: Any)`
 :   Metadata for candidates.Action.LIST operation
@@ -1372,6 +1448,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CandidatesSearchData"></a>
+
 `CandidatesSearchData(**data: Any)`
 :   Search result data for candidates entity.
     
@@ -1390,6 +1468,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CustomField"></a>
 
 `CustomField(**data: Any)`
 :   Custom field definition
@@ -1428,6 +1508,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CustomFieldsListResultMeta"></a>
+
 `CustomFieldsListResultMeta(**data: Any)`
 :   Metadata for custom_fields.Action.LIST operation
     
@@ -1452,6 +1534,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Department"></a>
 
 `Department(**data: Any)`
 :   Department object
@@ -1496,6 +1580,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DepartmentsListResultMeta"></a>
+
 `DepartmentsListResultMeta(**data: Any)`
 :   Metadata for departments.Action.LIST operation
     
@@ -1520,6 +1606,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FeedbackFormDefinition"></a>
 
 `FeedbackFormDefinition(**data: Any)`
 :   Feedback form definition
@@ -1561,6 +1649,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FeedbackFormDefinitionsListResultMeta"></a>
+
 `FeedbackFormDefinitionsListResultMeta(**data: Any)`
 :   Metadata for feedback_form_definitions.Action.LIST operation
     
@@ -1585,6 +1675,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Job"></a>
 
 `Job(**data: Any)`
 :   Job object
@@ -1662,6 +1754,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="JobCustomfieldsItem"></a>
+
 `JobCustomfieldsItem(**data: Any)`
 :   Nested schema for Job.customFields_item
     
@@ -1696,6 +1790,8 @@ Classes
     `value_label: str | Any | None`
     :   The type of the None singleton.
 
+<a id="JobHiringteamItem"></a>
+
 `JobHiringteamItem(**data: Any)`
 :   Nested schema for Job.hiringTeam_item
     
@@ -1729,6 +1825,8 @@ Classes
 
     `user_id: str | Any | None`
     :   The type of the None singleton.
+
+<a id="JobPosting"></a>
 
 `JobPosting(**data: Any)`
 :   Job posting object
@@ -1803,6 +1901,8 @@ Classes
     `workplace_type: str | Any | None`
     :   The type of the None singleton.
 
+<a id="JobPostingsListResultMeta"></a>
+
 `JobPostingsListResultMeta(**data: Any)`
 :   Metadata for job_postings.Action.LIST operation
     
@@ -1828,6 +1928,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobPostingsSearchData"></a>
+
 `JobPostingsSearchData(**data: Any)`
 :   Search result data for job_postings entity.
     
@@ -1846,6 +1948,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JobsListResultMeta"></a>
 
 `JobsListResultMeta(**data: Any)`
 :   Metadata for jobs.Action.LIST operation
@@ -1872,6 +1976,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="JobsSearchData"></a>
+
 `JobsSearchData(**data: Any)`
 :   Search result data for jobs entity.
     
@@ -1890,6 +1996,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Location"></a>
 
 `Location(**data: Any)`
 :   Location object
@@ -1940,6 +2048,8 @@ Classes
     `workplace_type: str | Any | None`
     :   The type of the None singleton.
 
+<a id="LocationsListResultMeta"></a>
+
 `LocationsListResultMeta(**data: Any)`
 :   Metadata for locations.Action.LIST operation
     
@@ -1964,6 +2074,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Source"></a>
 
 `Source(**data: Any)`
 :   Candidate source object
@@ -1996,6 +2108,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="SourcesListResultMeta"></a>
+
 `SourcesListResultMeta(**data: Any)`
 :   Metadata for sources.Action.LIST operation
     
@@ -2020,6 +2134,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   User object
@@ -2061,6 +2177,8 @@ Classes
     `updated_at: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -2085,6 +2203,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

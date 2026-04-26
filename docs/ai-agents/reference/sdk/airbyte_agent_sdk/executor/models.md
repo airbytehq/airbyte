@@ -10,6 +10,8 @@ Data models and protocols for executor implementations.
 Functions
 ---------
 
+<a id="find_check_operation"></a>
+
 `find_check_operation(model: Any) ‑> tuple[str, typing.Any, dict[str, typing.Any]] | None`
 :   Find the best operation for a health check from a ConnectorModel.
     
@@ -24,6 +26,8 @@ Functions
         Tuple of (entity_name, action, params) or None if no suitable operation found.
         For list operations, params includes \{"limit": 1\} to minimize data transfer.
 
+<a id="has_required_params"></a>
+
 `has_required_params(endpoint: Any) ‑> bool`
 :   Check if an endpoint has required parameters without defaults.
     
@@ -34,6 +38,8 @@ Functions
 Classes
 -------
 
+<a id="ActionNotSupportedError"></a>
+
 `ActionNotSupportedError(*args, **kwargs)`
 :   Raised when an action is not supported for an entity.
 
@@ -43,6 +49,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="AskResult"></a>
 
 `AskResult(outcome: str, outcome_reason: str | None = None, answer: str | None = None, results: list[AskToolCallResult] = <factory>, query_id: str | None = None, execution_metadata: dict[str, Any] = <factory>)`
 :   Result of a workspace-level natural language query.
@@ -76,6 +84,8 @@ Classes
     `results: list[airbyte_agent_sdk.executor.models.AskToolCallResult]`
     :   The type of the None singleton.
 
+<a id="AskToolCallResult"></a>
+
 `AskToolCallResult(source_id: str | None = None, entity: str | None = None, action: str | None = None, params: dict[str, Any] = <factory>, status: str | None = None, data: Any = None, connector_metadata: Any = None, execution_time_ms: int | None = None)`
 :   A single tool call result from a structured query.
     
@@ -106,6 +116,8 @@ Classes
 
     `status: str | None`
     :   The type of the None singleton.
+
+<a id="AutomationInfo"></a>
 
 `AutomationInfo(id: str, workflow_id: str, workspace_id: str, enabled: bool, trigger_type: str, cron_expression: str | None = None, timezone: str = 'UTC', completion_webhook_url: str | None = None, trigger_webhook_url: str | None = None, created_at: str | None = None, updated_at: str | None = None)`
 :   An automation attached to a workflow.
@@ -145,6 +157,8 @@ Classes
     `workspace_id: str`
     :   The type of the None singleton.
 
+<a id="ConnectorInfo"></a>
+
 `ConnectorInfo(id: str, name: str, connector_type: str | None = None, created_at: str | None = None, updated_at: str | None = None)`
 :   A connector instance in a workspace.
 
@@ -165,6 +179,8 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="EntityNotFoundError"></a>
+
 `EntityNotFoundError(*args, **kwargs)`
 :   Raised when an entity is not found in the connector.
 
@@ -174,6 +190,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="ExecutionConfig"></a>
 
 `ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None)`
 :   Configuration for connector execution.
@@ -207,6 +225,8 @@ Classes
 
     `params: dict[str, typing.Any] | None`
     :   The type of the None singleton.
+
+<a id="ExecutionResult"></a>
 
 `ExecutionResult(success: bool, data: dict[str, Any] | AsyncIterator[bytes], error: str | None = None, meta: dict[str, Any] | None = None)`
 :   Result of a connector execution.
@@ -259,6 +279,8 @@ Classes
     `success: bool`
     :   The type of the None singleton.
 
+<a id="ExecutorError"></a>
+
 `ExecutorError(*args, **kwargs)`
 :   Base exception for executor errors.
 
@@ -274,6 +296,8 @@ Classes
     * airbyte_agent_sdk.executor.models.EntityNotFoundError
     * airbyte_agent_sdk.executor.models.InvalidParameterError
     * airbyte_agent_sdk.executor.models.MissingParameterError
+
+<a id="ExecutorProtocol"></a>
 
 `ExecutorProtocol(*args, **kwargs)`
 :   Protocol for connector execution.
@@ -336,6 +360,8 @@ Classes
             Execution errors (entity not found, invalid operation) are returned
             in ExecutionResult.error instead of being raised.
 
+<a id="InvalidParameterError"></a>
+
 `InvalidParameterError(*args, **kwargs)`
 :   Raised when a parameter has an invalid type or value.
 
@@ -346,6 +372,8 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="MissingParameterError"></a>
+
 `MissingParameterError(*args, **kwargs)`
 :   Raised when a required parameter is missing.
 
@@ -355,6 +383,8 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="StandardExecuteResult"></a>
 
 `StandardExecuteResult(data: dict[str, Any], metadata: dict[str, Any] | None = None)`
 :   Result from standard operation handlers (GET, LIST, CREATE, UPDATE, DELETE, etc.).
@@ -380,6 +410,8 @@ Classes
 
     `metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
+
+<a id="WorkflowInfo"></a>
 
 `WorkflowInfo(id: str, name: str, workspace_id: str, created_at: str | None = None, updated_at: str | None = None)`
 :   A workflow in a workspace.

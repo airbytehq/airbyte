@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="ActivityLogsSearchData"></a>
+
 `ActivityLogsSearchData(**data: Any)`
 :   Search result data for activity_logs entity.
     
@@ -64,6 +66,8 @@ Classes
 
     `user_id: str | None`
     :   ID of the user who performed the action
+
+<a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
@@ -133,6 +137,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -160,6 +166,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -198,6 +206,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ActivityLogsSearchResult"></a>
+
 `ActivityLogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -213,6 +223,8 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BoardsSearchResult"></a>
 
 `BoardsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -230,6 +242,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ItemsSearchResult"></a>
+
 `ItemsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -245,6 +259,8 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TagsSearchResult"></a>
 
 `TagsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -262,6 +278,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TeamsSearchResult"></a>
+
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -277,6 +295,8 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="UpdatesSearchResult"></a>
 
 `UpdatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -294,6 +314,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -310,6 +332,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="WorkspacesSearchResult"></a>
+
 `WorkspacesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -325,6 +349,8 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BoardsSearchData"></a>
 
 `BoardsSearchData(**data: Any)`
 :   Search result data for boards entity.
@@ -405,6 +431,8 @@ Classes
     `workspace: dict[str, typing.Any] | None`
     :   Workspace the board belongs to
 
+<a id="ItemsSearchData"></a>
+
 `ItemsSearchData(**data: Any)`
 :   Search result data for items entity.
     
@@ -465,6 +493,8 @@ Classes
 
     `updates: list[typing.Any] | None`
     :   Item updates
+
+<a id="MondayConnector"></a>
 
 `MondayConnector(auth_config: MondayAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Monday API connector.
@@ -708,6 +738,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="TagsSearchData"></a>
+
 `TagsSearchData(**data: Any)`
 :   Search result data for tags entity.
     
@@ -735,6 +767,8 @@ Classes
 
     `name: str | None`
     :   Tag name
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.
@@ -766,6 +800,8 @@ Classes
 
     `users: list[typing.Any] | None`
     :   Team members
+
+<a id="UpdatesSearchData"></a>
 
 `UpdatesSearchData(**data: Any)`
 :   Search result data for updates entity.
@@ -812,6 +848,8 @@ Classes
 
     `updated_at: str | None`
     :   When the update was last modified
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
@@ -906,6 +944,8 @@ Classes
 
     `utc_hours_diff: int | None`
     :   UTC hours difference for the user's timezone
+
+<a id="WorkspacesSearchData"></a>
 
 `WorkspacesSearchData(**data: Any)`
 :   Search result data for workspaces entity.

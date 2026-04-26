@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CompaniesSearchResult"></a>
+
 `CompaniesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ConversationsSearchResult"></a>
+
 `ConversationsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TeamsSearchResult"></a>
+
 `TeamsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CompaniesSearchData"></a>
 
 `CompaniesSearchData(**data: Any)`
 :   Search result data for companies entity.
@@ -284,6 +300,8 @@ Classes
 
     `website: str | None`
     :   The website of the company
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -466,6 +484,8 @@ Classes
     `workspace_id: str | None`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ConversationsSearchData"></a>
+
 `ConversationsSearchData(**data: Any)`
 :   Search result data for conversations entity.
     
@@ -584,6 +604,8 @@ Classes
     `waiting_since: int | None`
     :   Timestamp since waiting for a response
 
+<a id="IntercomAuthConfig"></a>
+
 `IntercomAuthConfig(**data: Any)`
 :   Access Token Authentication
     
@@ -605,6 +627,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IntercomConnector"></a>
 
 `IntercomConnector(auth_config: IntercomAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Intercom API connector.
@@ -806,6 +830,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="IntercomReplicationConfig"></a>
+
 `IntercomReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Intercom.
     
@@ -827,6 +853,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+<a id="TeamsSearchData"></a>
 
 `TeamsSearchData(**data: Any)`
 :   Search result data for teams entity.

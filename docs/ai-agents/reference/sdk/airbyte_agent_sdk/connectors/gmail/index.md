@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="GmailAuthConfig"></a>
+
 `GmailAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
     
@@ -117,6 +121,8 @@ Classes
 
     `refresh_token: str`
     :   Your Google OAuth2 Refresh Token
+
+<a id="GmailConnector"></a>
 
 `GmailConnector(auth_config: GmailAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Gmail API connector.
@@ -373,6 +379,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="GmailReplicationConfig"></a>
 
 `GmailReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Gmail.

@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -157,6 +163,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlocksSearchResult"></a>
+
 `BlocksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -172,6 +180,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BouncesSearchResult"></a>
 
 `BouncesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -189,6 +199,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CampaignsSearchResult"></a>
+
 `CampaignsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -204,6 +216,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ContactsSearchResult"></a>
 
 `ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -221,6 +235,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GlobalSuppressionsSearchResult"></a>
+
 `GlobalSuppressionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -236,6 +252,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="InvalidEmailsSearchResult"></a>
 
 `InvalidEmailsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -253,6 +271,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ListsSearchResult"></a>
+
 `ListsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -268,6 +288,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SegmentsSearchResult"></a>
 
 `SegmentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -285,6 +307,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SinglesendStatsSearchResult"></a>
+
 `SinglesendStatsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -300,6 +324,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SinglesendsSearchResult"></a>
 
 `SinglesendsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -317,6 +343,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SuppressionGroupMembersSearchResult"></a>
+
 `SuppressionGroupMembersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -332,6 +360,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="SuppressionGroupsSearchResult"></a>
 
 `SuppressionGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -349,6 +379,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="TemplatesSearchResult"></a>
+
 `TemplatesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -364,6 +396,8 @@ Classes
     * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="BlocksSearchData"></a>
 
 `BlocksSearchData(**data: Any)`
 :   Search result data for blocks entity.
@@ -396,6 +430,8 @@ Classes
     `status: str | None`
     :   The status code for the block
 
+<a id="BouncesSearchData"></a>
+
 `BouncesSearchData(**data: Any)`
 :   Search result data for bounces entity.
     
@@ -426,6 +462,8 @@ Classes
 
     `status: str | None`
     :   The enhanced status code for the bounce
+
+<a id="CampaignsSearchData"></a>
 
 `CampaignsSearchData(**data: Any)`
 :   Search result data for campaigns entity.
@@ -466,6 +504,8 @@ Classes
 
     `updated_at: str | None`
     :   When the campaign was last updated
+
+<a id="ContactsSearchData"></a>
 
 `ContactsSearchData(**data: Any)`
 :   Search result data for contacts entity.
@@ -546,6 +586,8 @@ Classes
     `whatsapp: str | None`
     :   WhatsApp number
 
+<a id="GlobalSuppressionsSearchData"></a>
+
 `GlobalSuppressionsSearchData(**data: Any)`
 :   Search result data for global_suppressions entity.
     
@@ -570,6 +612,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InvalidEmailsSearchData"></a>
 
 `InvalidEmailsSearchData(**data: Any)`
 :   Search result data for invalid_emails entity.
@@ -598,6 +642,8 @@ Classes
 
     `reason: str | None`
     :   The reason the email is invalid
+
+<a id="ListsSearchData"></a>
 
 `ListsSearchData(**data: Any)`
 :   Search result data for lists entity.
@@ -629,6 +675,8 @@ Classes
 
     `name: str | None`
     :   Name of the list
+
+<a id="SegmentsSearchData"></a>
 
 `SegmentsSearchData(**data: Any)`
 :   Search result data for segments entity.
@@ -679,6 +727,8 @@ Classes
     `updated_at: str | None`
     :   When the segment was last updated
 
+<a id="SendgridAuthConfig"></a>
+
 `SendgridAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -700,6 +750,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SendgridConnector"></a>
 
 `SendgridConnector(auth_config: SendgridAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Sendgrid API connector.
@@ -901,6 +953,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="SendgridReplicationConfig"></a>
+
 `SendgridReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from SendGrid.
     
@@ -922,6 +976,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.
+
+<a id="SinglesendStatsSearchData"></a>
 
 `SinglesendStatsSearchData(**data: Any)`
 :   Search result data for singlesend_stats entity.
@@ -956,6 +1012,8 @@ Classes
 
     `stats: dict[str, typing.Any] | None`
     :   Email statistics for the single send
+
+<a id="SinglesendsSearchData"></a>
 
 `SinglesendsSearchData(**data: Any)`
 :   Search result data for singlesends entity.
@@ -1000,6 +1058,8 @@ Classes
     `updated_at: str | None`
     :   When the single send was last updated
 
+<a id="SuppressionGroupMembersSearchData"></a>
+
 `SuppressionGroupMembersSearchData(**data: Any)`
 :   Search result data for suppression_group_members entity.
     
@@ -1030,6 +1090,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SuppressionGroupsSearchData"></a>
 
 `SuppressionGroupsSearchData(**data: Any)`
 :   Search result data for suppression_groups entity.
@@ -1064,6 +1126,8 @@ Classes
 
     `unsubscribes: int | None`
     :   Number of unsubscribes in this group
+
+<a id="TemplatesSearchData"></a>
 
 `TemplatesSearchData(**data: Any)`
 :   Search result data for templates entity.

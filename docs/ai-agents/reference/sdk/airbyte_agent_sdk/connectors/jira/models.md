@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -97,6 +101,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueCommentsSearchResult"></a>
+
 `IssueCommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -133,6 +139,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueFieldsSearchResult"></a>
 
 `IssueFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -171,6 +179,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsSearchResult"></a>
+
 `IssueWorklogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -207,6 +217,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -245,6 +257,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -282,6 +296,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -297,6 +313,8 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CommentCreateParams"></a>
 
 `CommentCreateParams(**data: Any)`
 :   Parameters for creating a comment on an issue
@@ -326,6 +344,8 @@ Classes
     `visibility: airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsVisibility | Any`
     :   The type of the None singleton.
 
+<a id="CommentCreateParamsBody"></a>
+
 `CommentCreateParamsBody(**data: Any)`
 :   Comment content in Atlassian Document Format (ADF)
     
@@ -354,6 +374,8 @@ Classes
     `version: int | Any`
     :   ADF version
 
+<a id="CommentCreateParamsBodyContentItem"></a>
+
 `CommentCreateParamsBodyContentItem(**data: Any)`
 :   Nested schema for CommentCreateParamsBody.content_item
     
@@ -379,6 +401,8 @@ Classes
     `type_: str | Any`
     :   Block type (e.g., 'paragraph')
 
+<a id="CommentCreateParamsBodyContentItemContentItem"></a>
+
 `CommentCreateParamsBodyContentItemContentItem(**data: Any)`
 :   Nested schema for CommentCreateParamsBodyContentItem.content_item
     
@@ -403,6 +427,8 @@ Classes
 
     `type_: str | Any`
     :   Content type (e.g., 'text')
+
+<a id="CommentCreateParamsVisibility"></a>
 
 `CommentCreateParamsVisibility(**data: Any)`
 :   Restrict comment visibility to a group or role
@@ -432,6 +458,8 @@ Classes
     `value: str | Any`
     :   The name of the group or role
 
+<a id="CommentUpdateParams"></a>
+
 `CommentUpdateParams(**data: Any)`
 :   Parameters for updating a comment. Only fields included are updated.
     
@@ -456,6 +484,8 @@ Classes
 
     `visibility: airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsVisibility | Any`
     :   The type of the None singleton.
+
+<a id="CommentUpdateParamsBody"></a>
 
 `CommentUpdateParamsBody(**data: Any)`
 :   Updated comment content in Atlassian Document Format (ADF)
@@ -485,6 +515,8 @@ Classes
     `version: int | Any`
     :   ADF version
 
+<a id="CommentUpdateParamsBodyContentItem"></a>
+
 `CommentUpdateParamsBodyContentItem(**data: Any)`
 :   Nested schema for CommentUpdateParamsBody.content_item
     
@@ -510,6 +542,8 @@ Classes
     `type_: str | Any`
     :   Block type (e.g., 'paragraph')
 
+<a id="CommentUpdateParamsBodyContentItemContentItem"></a>
+
 `CommentUpdateParamsBodyContentItemContentItem(**data: Any)`
 :   Nested schema for CommentUpdateParamsBodyContentItem.content_item
     
@@ -534,6 +568,8 @@ Classes
 
     `type_: str | Any`
     :   Content type (e.g., 'text')
+
+<a id="CommentUpdateParamsVisibility"></a>
 
 `CommentUpdateParamsVisibility(**data: Any)`
 :   Restrict comment visibility to a group or role
@@ -563,6 +599,8 @@ Classes
     `value: str | Any`
     :   The name of the group or role
 
+<a id="EmptyResponse"></a>
+
 `EmptyResponse(**data: Any)`
 :   Empty response object (returned for 204 No Content responses)
     
@@ -581,6 +619,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Issue"></a>
 
 `Issue(**data: Any)`
 :   Jira issue object
@@ -616,6 +656,8 @@ Classes
     `self: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueAssigneeParams"></a>
+
 `IssueAssigneeParams(**data: Any)`
 :   Parameters for assigning an issue to a user
     
@@ -637,6 +679,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueComment"></a>
 
 `IssueComment(**data: Any)`
 :   Jira issue comment object
@@ -690,6 +734,8 @@ Classes
     `visibility: airbyte_agent_sdk.connectors.jira.models.IssueCommentVisibility | Any | None`
     :   The type of the None singleton.
 
+<a id="IssueCommentAuthor"></a>
+
 `IssueCommentAuthor(**data: Any)`
 :   Comment author user information
     
@@ -733,6 +779,8 @@ Classes
     `time_zone: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueCommentAuthorAvatarurls"></a>
+
 `IssueCommentAuthorAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -764,6 +812,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueCommentBody"></a>
+
 `IssueCommentBody(**data: Any)`
 :   Comment content in ADF (Atlassian Document Format)
     
@@ -792,6 +842,8 @@ Classes
     `version: int | Any`
     :   ADF version
 
+<a id="IssueCommentBodyContentItem"></a>
+
 `IssueCommentBodyContentItem(**data: Any)`
 :   Nested schema for IssueCommentBody.content_item
     
@@ -817,6 +869,8 @@ Classes
     `type_: str | Any`
     :   Block type (e.g., 'paragraph')
 
+<a id="IssueCommentBodyContentItemContentItem"></a>
+
 `IssueCommentBodyContentItemContentItem(**data: Any)`
 :   Nested schema for IssueCommentBodyContentItem.content_item
     
@@ -841,6 +895,8 @@ Classes
 
     `type_: str | Any`
     :   Content type (e.g., 'text')
+
+<a id="IssueCommentUpdateauthor"></a>
 
 `IssueCommentUpdateauthor(**data: Any)`
 :   User who last updated the comment
@@ -885,6 +941,8 @@ Classes
     `time_zone: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueCommentUpdateauthorAvatarurls"></a>
+
 `IssueCommentUpdateauthorAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -916,6 +974,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueCommentVisibility"></a>
+
 `IssueCommentVisibility(**data: Any)`
 :   Visibility restrictions for the comment
     
@@ -943,6 +1003,8 @@ Classes
 
     `value: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueCommentsList"></a>
 
 `IssueCommentsList(**data: Any)`
 :   Paginated list of issue comments
@@ -975,6 +1037,8 @@ Classes
     `total: int | Any`
     :   The type of the None singleton.
 
+<a id="IssueCommentsListResultMeta"></a>
+
 `IssueCommentsListResultMeta(**data: Any)`
 :   Metadata for issue_comments.Action.LIST operation
     
@@ -1002,6 +1066,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="IssueCommentsSearchData"></a>
 
 `IssueCommentsSearchData(**data: Any)`
 :   Search result data for issue_comments entity.
@@ -1058,6 +1124,8 @@ Classes
     `visibility: dict[str, typing.Any] | None`
     :   The group or role to which this item is visible
 
+<a id="IssueCreateParams"></a>
+
 `IssueCreateParams(**data: Any)`
 :   Parameters for creating a new issue
     
@@ -1082,6 +1150,8 @@ Classes
 
     `update: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="IssueCreateParamsFields"></a>
 
 `IssueCreateParamsFields(**data: Any)`
 :   The issue fields to set
@@ -1126,6 +1196,8 @@ Classes
     `summary: str | Any`
     :   A brief summary of the issue (title)
 
+<a id="IssueCreateParamsFieldsAssignee"></a>
+
 `IssueCreateParamsFieldsAssignee(**data: Any)`
 :   The user to assign the issue to
     
@@ -1147,6 +1219,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueCreateParamsFieldsDescription"></a>
 
 `IssueCreateParamsFieldsDescription(**data: Any)`
 :   Issue description in Atlassian Document Format (ADF)
@@ -1176,6 +1250,8 @@ Classes
     `version: int | Any`
     :   ADF version
 
+<a id="IssueCreateParamsFieldsDescriptionContentItem"></a>
+
 `IssueCreateParamsFieldsDescriptionContentItem(**data: Any)`
 :   Nested schema for IssueCreateParamsFieldsDescription.content_item
     
@@ -1200,6 +1276,8 @@ Classes
 
     `type_: str | Any`
     :   Block type (e.g., 'paragraph')
+
+<a id="IssueCreateParamsFieldsDescriptionContentItemContentItem"></a>
 
 `IssueCreateParamsFieldsDescriptionContentItemContentItem(**data: Any)`
 :   Nested schema for IssueCreateParamsFieldsDescriptionContentItem.content_item
@@ -1226,6 +1304,8 @@ Classes
     `type_: str | Any`
     :   Content type (e.g., 'text')
 
+<a id="IssueCreateParamsFieldsIssuetype"></a>
+
 `IssueCreateParamsFieldsIssuetype(**data: Any)`
 :   The type of issue (e.g., Bug, Task, Story)
     
@@ -1251,6 +1331,8 @@ Classes
     `name: str | Any`
     :   Issue type name (e.g., 'Bug', 'Task', 'Story')
 
+<a id="IssueCreateParamsFieldsParent"></a>
+
 `IssueCreateParamsFieldsParent(**data: Any)`
 :   Parent issue for subtasks
     
@@ -1272,6 +1354,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueCreateParamsFieldsPriority"></a>
 
 `IssueCreateParamsFieldsPriority(**data: Any)`
 :   Issue priority
@@ -1298,6 +1382,8 @@ Classes
     `name: str | Any`
     :   Priority name (e.g., 'Highest', 'High', 'Medium', 'Low', 'Lowest')
 
+<a id="IssueCreateParamsFieldsProject"></a>
+
 `IssueCreateParamsFieldsProject(**data: Any)`
 :   The project to create the issue in
     
@@ -1322,6 +1408,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueCreateResponse"></a>
 
 `IssueCreateResponse(**data: Any)`
 :   Response from creating an issue
@@ -1350,6 +1438,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueField"></a>
 
 `IssueField(**data: Any)`
 :   Jira issue field object (custom or system field)
@@ -1421,6 +1511,8 @@ Classes
     `untranslated_name: str | Any | None`
     :   The type of the None singleton.
 
+<a id="IssueFieldSchema"></a>
+
 `IssueFieldSchema(**data: Any)`
 :   Schema information for the field
     
@@ -1458,6 +1550,8 @@ Classes
     `type_: str | Any`
     :   Field type (e.g., string, number, array)
 
+<a id="IssueFieldSearchResults"></a>
+
 `IssueFieldSearchResults(**data: Any)`
 :   Paginated search results for issue fields
     
@@ -1491,6 +1585,8 @@ Classes
 
     `values: list[airbyte_agent_sdk.connectors.jira.models.IssueField] | Any`
     :   The type of the None singleton.
+
+<a id="IssueFields"></a>
 
 `IssueFields(**data: Any)`
 :   Issue fields (actual fields depend on 'fields' parameter in request)
@@ -1538,6 +1634,8 @@ Classes
     `updated: str | Any`
     :   Issue last update timestamp
 
+<a id="IssueFieldsAssignee"></a>
+
 `IssueFieldsAssignee(**data: Any)`
 :   Issue assignee user information (null if unassigned)
     
@@ -1581,6 +1679,8 @@ Classes
     `time_zone: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueFieldsAssigneeAvatarurls"></a>
+
 `IssueFieldsAssigneeAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -1611,6 +1711,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueFieldsIssuetype"></a>
 
 `IssueFieldsIssuetype(**data: Any)`
 :   Issue type information
@@ -1655,6 +1757,8 @@ Classes
     `subtask: bool | Any`
     :   The type of the None singleton.
 
+<a id="IssueFieldsPriority"></a>
+
 `IssueFieldsPriority(**data: Any)`
 :   Issue priority information
     
@@ -1685,6 +1789,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueFieldsProject"></a>
 
 `IssueFieldsProject(**data: Any)`
 :   Project information
@@ -1729,6 +1835,8 @@ Classes
     `simplified: bool | Any`
     :   The type of the None singleton.
 
+<a id="IssueFieldsProjectAvatarurls"></a>
+
 `IssueFieldsProjectAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -1760,6 +1868,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueFieldsProjectProjectcategory"></a>
+
 `IssueFieldsProjectProjectcategory(**data: Any)`
 :   Nested schema for IssueFieldsProject.projectCategory
     
@@ -1790,6 +1900,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="IssueFieldsReporter"></a>
 
 `IssueFieldsReporter(**data: Any)`
 :   Issue reporter user information
@@ -1834,6 +1946,8 @@ Classes
     `time_zone: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueFieldsReporterAvatarurls"></a>
+
 `IssueFieldsReporterAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -1864,6 +1978,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueFieldsSearchData"></a>
 
 `IssueFieldsSearchData(**data: Any)`
 :   Search result data for issue_fields entity.
@@ -1917,6 +2033,8 @@ Classes
     `untranslated_name: str | None`
     :   The untranslated name of the field
 
+<a id="IssueFieldsStatus"></a>
+
 `IssueFieldsStatus(**data: Any)`
 :   Issue status information
     
@@ -1954,6 +2072,8 @@ Classes
     `status_category: airbyte_agent_sdk.connectors.jira.models.IssueFieldsStatusStatuscategory | Any`
     :   The type of the None singleton.
 
+<a id="IssueFieldsStatusStatuscategory"></a>
+
 `IssueFieldsStatusStatuscategory(**data: Any)`
 :   Nested schema for IssueFieldsStatus.statusCategory
     
@@ -1988,6 +2108,8 @@ Classes
     `self: str | Any`
     :   The type of the None singleton.
 
+<a id="IssueUpdateParams"></a>
+
 `IssueUpdateParams(**data: Any)`
 :   Parameters for updating an issue. Only fields included are updated.
     
@@ -2015,6 +2137,8 @@ Classes
 
     `update: dict[str, typing.Any] | Any`
     :   The type of the None singleton.
+
+<a id="IssueUpdateParamsFields"></a>
 
 `IssueUpdateParamsFields(**data: Any)`
 :   The issue fields to update
@@ -2050,6 +2174,8 @@ Classes
     `summary: str | Any`
     :   A brief summary of the issue (title)
 
+<a id="IssueUpdateParamsFieldsAssignee"></a>
+
 `IssueUpdateParamsFieldsAssignee(**data: Any)`
 :   The user to assign the issue to
     
@@ -2071,6 +2197,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueUpdateParamsFieldsDescription"></a>
 
 `IssueUpdateParamsFieldsDescription(**data: Any)`
 :   Issue description in Atlassian Document Format (ADF)
@@ -2100,6 +2228,8 @@ Classes
     `version: int | Any`
     :   ADF version
 
+<a id="IssueUpdateParamsFieldsDescriptionContentItem"></a>
+
 `IssueUpdateParamsFieldsDescriptionContentItem(**data: Any)`
 :   Nested schema for IssueUpdateParamsFieldsDescription.content_item
     
@@ -2124,6 +2254,8 @@ Classes
 
     `type_: str | Any`
     :   Block type (e.g., 'paragraph')
+
+<a id="IssueUpdateParamsFieldsDescriptionContentItemContentItem"></a>
 
 `IssueUpdateParamsFieldsDescriptionContentItemContentItem(**data: Any)`
 :   Nested schema for IssueUpdateParamsFieldsDescriptionContentItem.content_item
@@ -2150,6 +2282,8 @@ Classes
     `type_: str | Any`
     :   Content type (e.g., 'text')
 
+<a id="IssueUpdateParamsFieldsPriority"></a>
+
 `IssueUpdateParamsFieldsPriority(**data: Any)`
 :   Issue priority
     
@@ -2175,6 +2309,8 @@ Classes
     `name: str | Any`
     :   Priority name (e.g., 'Highest', 'High', 'Medium', 'Low', 'Lowest')
 
+<a id="IssueUpdateParamsTransition"></a>
+
 `IssueUpdateParamsTransition(**data: Any)`
 :   Transition the issue to a new status
     
@@ -2196,6 +2332,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsListResultMeta"></a>
 
 `IssueWorklogsListResultMeta(**data: Any)`
 :   Metadata for issue_worklogs.Action.LIST operation
@@ -2224,6 +2362,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="IssueWorklogsSearchData"></a>
 
 `IssueWorklogsSearchData(**data: Any)`
 :   Search result data for issue_worklogs entity.
@@ -2283,6 +2423,8 @@ Classes
     `visibility: dict[str, typing.Any] | None`
     :   Details about any restrictions in the visibility of the worklog
 
+<a id="IssuesApiSearchResultMeta"></a>
+
 `IssuesApiSearchResultMeta(**data: Any)`
 :   Metadata for issues.Action.API_SEARCH operation
     
@@ -2310,6 +2452,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="IssuesList"></a>
 
 `IssuesList(**data: Any)`
 :   Paginated list of issues from JQL search
@@ -2347,6 +2491,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -2424,6 +2570,8 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
+<a id="JiraAuthConfig"></a>
+
 `JiraAuthConfig(**data: Any)`
 :   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
     
@@ -2448,6 +2596,8 @@ Classes
 
     `username: str`
     :   Your Atlassian account email address
+
+<a id="JiraCheckResult"></a>
 
 `JiraCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -2482,6 +2632,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="JiraExecuteResult"></a>
+
 `JiraExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2513,6 +2665,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="JiraExecuteResultWithMeta"></a>
 
 `JiraExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2568,6 +2722,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueCommentsListResult"></a>
+
 `IssueCommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2610,6 +2766,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssuesApiSearchResult"></a>
 
 `IssuesApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -2654,6 +2812,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectsApiSearchResult"></a>
+
 `ProjectsApiSearchResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2697,6 +2857,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueWorklogsListResult"></a>
+
 `IssueWorklogsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2739,6 +2901,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueFieldsApiSearchResult"></a>
+
 `IssueFieldsApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2779,6 +2943,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="IssueFieldsListResult"></a>
 
 `IssueFieldsListResult(**data: Any)`
 :   Response envelope with data only.
@@ -2821,6 +2987,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2844,6 +3012,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersApiSearchResult"></a>
+
 `UsersApiSearchResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -2861,6 +3031,8 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Project"></a>
 
 `Project(**data: Any)`
 :   Jira project object
@@ -2947,6 +3119,8 @@ Classes
     `versions: list[airbyte_agent_sdk.connectors.jira.models.ProjectVersionsItem] | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectAvatarurls"></a>
+
 `ProjectAvatarurls(**data: Any)`
 :   URLs for project avatars in different sizes
     
@@ -2977,6 +3151,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ProjectComponentsItem"></a>
 
 `ProjectComponentsItem(**data: Any)`
 :   Nested schema for Project.components_item
@@ -3011,6 +3187,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="ProjectIssuetypesItem"></a>
 
 `ProjectIssuetypesItem(**data: Any)`
 :   Nested schema for Project.issueTypes_item
@@ -3055,6 +3233,8 @@ Classes
     `subtask: bool | Any`
     :   The type of the None singleton.
 
+<a id="ProjectLead"></a>
+
 `ProjectLead(**data: Any)`
 :   Project lead user (available with expand=lead)
     
@@ -3092,6 +3272,8 @@ Classes
     `self: str | Any`
     :   The type of the None singleton.
 
+<a id="ProjectLeadAvatarurls"></a>
+
 `ProjectLeadAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -3123,6 +3305,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ProjectProjectcategory"></a>
+
 `ProjectProjectcategory(**data: Any)`
 :   Project category information
     
@@ -3153,6 +3337,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="ProjectVersionsItem"></a>
 
 `ProjectVersionsItem(**data: Any)`
 :   Nested schema for Project.versions_item
@@ -3209,6 +3395,8 @@ Classes
     `user_start_date: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ProjectsApiSearchResultMeta"></a>
+
 `ProjectsApiSearchResultMeta(**data: Any)`
 :   Metadata for projects.Action.API_SEARCH operation
     
@@ -3233,6 +3421,8 @@ Classes
 
     `total: int | Any`
     :   The type of the None singleton.
+
+<a id="ProjectsList"></a>
 
 `ProjectsList(**data: Any)`
 :   Paginated list of projects from search results
@@ -3273,6 +3463,8 @@ Classes
 
     `values: list[airbyte_agent_sdk.connectors.jira.models.Project] | Any`
     :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
 
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
@@ -3395,6 +3587,8 @@ Classes
     `versions: list[typing.Any]`
     :   The versions defined in the project
 
+<a id="User"></a>
+
 `User(**data: Any)`
 :   Jira user object
     
@@ -3450,6 +3644,8 @@ Classes
     `time_zone: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserApplicationroles"></a>
+
 `UserApplicationroles(**data: Any)`
 :   User application roles (available with expand=applicationRoles)
     
@@ -3474,6 +3670,8 @@ Classes
 
     `size: int | Any`
     :   Number of application roles
+
+<a id="UserApplicationrolesItemsItem"></a>
 
 `UserApplicationrolesItemsItem(**data: Any)`
 :   Nested schema for UserApplicationroles.items_item
@@ -3536,6 +3734,8 @@ Classes
     `user_count_description: str | Any`
     :   The type of the None singleton.
 
+<a id="UserApplicationrolesItemsItemDefaultgroupsdetailsItem"></a>
+
 `UserApplicationrolesItemsItemDefaultgroupsdetailsItem(**data: Any)`
 :   Nested schema for UserApplicationrolesItemsItem.defaultGroupsDetails_item
     
@@ -3564,6 +3764,8 @@ Classes
     `self: str | Any`
     :   The type of the None singleton.
 
+<a id="UserApplicationrolesItemsItemGroupdetailsItem"></a>
+
 `UserApplicationrolesItemsItemGroupdetailsItem(**data: Any)`
 :   Nested schema for UserApplicationrolesItemsItem.groupDetails_item
     
@@ -3591,6 +3793,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="UserAvatarurls"></a>
 
 `UserAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
@@ -3623,6 +3827,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UserGroups"></a>
+
 `UserGroups(**data: Any)`
 :   User groups (available with expand=groups)
     
@@ -3647,6 +3853,8 @@ Classes
 
     `size: int | Any`
     :   Number of groups
+
+<a id="UserGroupsItemsItem"></a>
 
 `UserGroupsItemsItem(**data: Any)`
 :   Nested schema for UserGroups.items_item
@@ -3675,6 +3883,8 @@ Classes
 
     `self: str | Any`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.
@@ -3737,6 +3947,8 @@ Classes
     `time_zone: str | None`
     :   The time zone specified in the user's profile
 
+<a id="Worklog"></a>
+
 `Worklog(**data: Any)`
 :   Jira worklog object
     
@@ -3795,6 +4007,8 @@ Classes
     `visibility: airbyte_agent_sdk.connectors.jira.models.WorklogVisibility | Any | None`
     :   The type of the None singleton.
 
+<a id="WorklogAuthor"></a>
+
 `WorklogAuthor(**data: Any)`
 :   Worklog author user information
     
@@ -3838,6 +4052,8 @@ Classes
     `time_zone: str | Any`
     :   The type of the None singleton.
 
+<a id="WorklogAuthorAvatarurls"></a>
+
 `WorklogAuthorAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -3869,6 +4085,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorklogComment"></a>
+
 `WorklogComment(**data: Any)`
 :   Comment associated with the worklog (ADF format)
     
@@ -3897,6 +4115,8 @@ Classes
     `version: int | Any`
     :   ADF version
 
+<a id="WorklogCommentContentItem"></a>
+
 `WorklogCommentContentItem(**data: Any)`
 :   Nested schema for WorklogComment.content_item
     
@@ -3922,6 +4142,8 @@ Classes
     `type_: str | Any`
     :   Block type (e.g., 'paragraph')
 
+<a id="WorklogCommentContentItemContentItem"></a>
+
 `WorklogCommentContentItemContentItem(**data: Any)`
 :   Nested schema for WorklogCommentContentItem.content_item
     
@@ -3946,6 +4168,8 @@ Classes
 
     `type_: str | Any`
     :   Content type (e.g., 'text')
+
+<a id="WorklogUpdateauthor"></a>
 
 `WorklogUpdateauthor(**data: Any)`
 :   User who last updated the worklog
@@ -3990,6 +4214,8 @@ Classes
     `time_zone: str | Any`
     :   The type of the None singleton.
 
+<a id="WorklogUpdateauthorAvatarurls"></a>
+
 `WorklogUpdateauthorAvatarurls(**data: Any)`
 :   URLs for user avatars in different sizes
     
@@ -4021,6 +4247,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="WorklogVisibility"></a>
+
 `WorklogVisibility(**data: Any)`
 :   Visibility restrictions for the worklog
     
@@ -4048,6 +4276,8 @@ Classes
 
     `value: str | Any`
     :   The type of the None singleton.
+
+<a id="WorklogsList"></a>
 
 `WorklogsList(**data: Any)`
 :   Paginated list of issue worklogs

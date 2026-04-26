@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -150,6 +156,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="IssueCommentsSearchResult"></a>
+
 `IssueCommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -165,6 +173,8 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IssueFieldsSearchResult"></a>
 
 `IssueFieldsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -182,6 +192,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="IssueWorklogsSearchResult"></a>
+
 `IssueWorklogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -197,6 +209,8 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -214,6 +228,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="ProjectsSearchResult"></a>
+
 `ProjectsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -230,6 +246,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -245,6 +263,8 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IssueCommentsSearchData"></a>
 
 `IssueCommentsSearchData(**data: Any)`
 :   Search result data for issue_comments entity.
@@ -301,6 +321,8 @@ Classes
     `visibility: dict[str, typing.Any] | None`
     :   The group or role to which this item is visible
 
+<a id="IssueFieldsSearchData"></a>
+
 `IssueFieldsSearchData(**data: Any)`
 :   Search result data for issue_fields entity.
     
@@ -352,6 +374,8 @@ Classes
 
     `untranslated_name: str | None`
     :   The untranslated name of the field
+
+<a id="IssueWorklogsSearchData"></a>
 
 `IssueWorklogsSearchData(**data: Any)`
 :   Search result data for issue_worklogs entity.
@@ -410,6 +434,8 @@ Classes
 
     `visibility: dict[str, typing.Any] | None`
     :   Details about any restrictions in the visibility of the worklog
+
+<a id="IssuesSearchData"></a>
 
 `IssuesSearchData(**data: Any)`
 :   Search result data for issues entity.
@@ -487,6 +513,8 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
+<a id="JiraAuthConfig"></a>
+
 `JiraAuthConfig(**data: Any)`
 :   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
     
@@ -511,6 +539,8 @@ Classes
 
     `username: str`
     :   Your Atlassian account email address
+
+<a id="JiraConnector"></a>
 
 `JiraConnector(auth_config: JiraAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Jira API connector.
@@ -700,6 +730,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ProjectsSearchData"></a>
+
 `ProjectsSearchData(**data: Any)`
 :   Search result data for projects entity.
     
@@ -820,6 +852,8 @@ Classes
 
     `versions: list[typing.Any]`
     :   The versions defined in the project
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

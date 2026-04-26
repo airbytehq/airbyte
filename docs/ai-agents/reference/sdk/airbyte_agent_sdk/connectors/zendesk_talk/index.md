@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountOverviewSearchData"></a>
+
 `AccountOverviewSearchData(**data: Any)`
 :   Search result data for account_overview entity.
     
@@ -107,6 +109,8 @@ Classes
     `total_wrap_up_time: int | None`
     :   Total wrap-up time
 
+<a id="AddressesSearchData"></a>
+
 `AddressesSearchData(**data: Any)`
 :   Search result data for addresses entity.
     
@@ -152,6 +156,8 @@ Classes
 
     `zip: str | None`
     :   Zip code of the address
+
+<a id="AgentsActivitySearchData"></a>
 
 `AgentsActivitySearchData(**data: Any)`
 :   Search result data for agents_activity entity.
@@ -250,6 +256,8 @@ Classes
     `via: str | None`
     :   Channel the agent is registered on
 
+<a id="AgentsOverviewSearchData"></a>
+
 `AgentsOverviewSearchData(**data: Any)`
 :   Search result data for agents_overview entity.
     
@@ -338,6 +346,8 @@ Classes
     `total_wrap_up_time: int | None`
     :   Total wrap-up time
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -406,6 +416,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -433,6 +445,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -474,6 +488,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AccountOverviewSearchResult"></a>
+
 `AccountOverviewSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -489,6 +505,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AddressesSearchResult"></a>
 
 `AddressesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -506,6 +524,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AgentsActivitySearchResult"></a>
+
 `AgentsActivitySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -521,6 +541,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AgentsOverviewSearchResult"></a>
 
 `AgentsOverviewSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -538,6 +560,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CallLegsSearchResult"></a>
+
 `CallLegsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -553,6 +577,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallsSearchResult"></a>
 
 `CallsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -570,6 +596,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="CurrentQueueActivitySearchResult"></a>
+
 `CurrentQueueActivitySearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -585,6 +613,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GreetingCategoriesSearchResult"></a>
 
 `GreetingCategoriesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -602,6 +632,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="GreetingsSearchResult"></a>
+
 `GreetingsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -617,6 +649,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="IvrsSearchResult"></a>
 
 `IvrsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -634,6 +668,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PhoneNumbersSearchResult"></a>
+
 `PhoneNumbersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -649,6 +685,8 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_talk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CallLegsSearchData"></a>
 
 `CallLegsSearchData(**data: Any)`
 :   Search result data for call_legs entity.
@@ -743,6 +781,8 @@ Classes
 
     `wrap_up_time: int | None`
     :   Wrap-up time in seconds
+
+<a id="CallsSearchData"></a>
 
 `CallsSearchData(**data: Any)`
 :   Search result data for calls entity.
@@ -886,6 +926,8 @@ Classes
     `wrap_up_time: int | None`
     :   Wrap-up time in seconds
 
+<a id="CurrentQueueActivitySearchData"></a>
+
 `CurrentQueueActivitySearchData(**data: Any)`
 :   Search result data for current_queue_activity entity.
     
@@ -926,6 +968,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="GreetingCategoriesSearchData"></a>
+
 `GreetingCategoriesSearchData(**data: Any)`
 :   Search result data for greeting_categories entity.
     
@@ -950,6 +994,8 @@ Classes
 
     `name: str | None`
     :   Name of the greeting category
+
+<a id="GreetingsSearchData"></a>
 
 `GreetingsSearchData(**data: Any)`
 :   Search result data for greetings entity.
@@ -1009,6 +1055,8 @@ Classes
     `upload_id: int | None`
     :   Upload ID associated with the greeting
 
+<a id="IvrsSearchData"></a>
+
 `IvrsSearchData(**data: Any)`
 :   Search result data for ivrs entity.
     
@@ -1042,6 +1090,8 @@ Classes
 
     `phone_number_names: list[typing.Any] | None`
     :   Names of phone numbers configured with this IVR
+
+<a id="PhoneNumbersSearchData"></a>
 
 `PhoneNumbersSearchData(**data: Any)`
 :   Search result data for phone_numbers entity.
@@ -1151,6 +1201,8 @@ Classes
 
     `voice_enabled: bool | None`
     :   Whether voice is enabled
+
+<a id="ZendeskTalkConnector"></a>
 
 `ZendeskTalkConnector(auth_config: ZendeskTalkAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Zendesk-Talk API connector.
@@ -1407,6 +1459,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="ZendeskTalkReplicationConfig"></a>
 
 `ZendeskTalkReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Zendesk Talk.

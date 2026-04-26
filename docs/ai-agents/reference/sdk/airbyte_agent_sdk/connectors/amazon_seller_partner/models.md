@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -95,6 +99,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListFinancialEventGroupsSearchResult"></a>
+
 `ListFinancialEventGroupsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -131,6 +137,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="ListFinancialEventsSearchResult"></a>
 
 `ListFinancialEventsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -169,6 +177,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemsSearchResult"></a>
+
 `OrderItemsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrdersSearchResult"></a>
+
 `OrdersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -221,6 +233,8 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmazonSellerPartnerAuthConfig"></a>
 
 `AmazonSellerPartnerAuthConfig(**data: Any)`
 :   Login with Amazon OAuth 2.0
@@ -252,6 +266,8 @@ Classes
 
     `refresh_token: str`
     :   The Refresh Token obtained via the OAuth authorization flow.
+
+<a id="AmazonSellerPartnerCheckResult"></a>
 
 `AmazonSellerPartnerCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -286,6 +302,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="AmazonSellerPartnerExecuteResult"></a>
+
 `AmazonSellerPartnerExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -314,6 +332,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AmazonSellerPartnerExecuteResultWithMeta"></a>
 
 `AmazonSellerPartnerExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -371,6 +391,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListFinancialEventsListResult"></a>
+
 `ListFinancialEventsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -413,6 +435,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogItemsListResult"></a>
 
 `CatalogItemsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -457,6 +481,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListFinancialEventGroupsListResult"></a>
+
 `ListFinancialEventGroupsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -499,6 +525,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemsListResult"></a>
 
 `OrderItemsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -543,6 +571,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrdersListResult"></a>
+
 `OrdersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -586,6 +616,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ReportsListResult"></a>
+
 `ReportsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -604,6 +636,8 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AmazonSellerPartnerExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="AmazonSellerPartnerReplicationConfig"></a>
 
 `AmazonSellerPartnerReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Amazon Seller Partner.
@@ -626,6 +660,8 @@ Classes
 
     `replication_start_date: str`
     :   UTC date and time in ISO 8601 format (e.g. 2024-01-01T00:00:00Z). Any data before this date will not be replicated. This sets the earliest date for order creation and financial event queries. For most sellers, a start date of 1-2 years ago is a good default. Must include the time component and Z timezone suffix.
+
+<a id="CatalogItem"></a>
 
 `CatalogItem(**data: Any)`
 :   Amazon catalog item
@@ -678,6 +714,8 @@ Classes
 
     `vendor_details: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
+
+<a id="CatalogItemSummariesItem"></a>
 
 `CatalogItemSummariesItem(**data: Any)`
 :   Nested schema for CatalogItem.summaries_item
@@ -752,6 +790,8 @@ Classes
     `website_display_group_name: str | Any`
     :   The type of the None singleton.
 
+<a id="CatalogItemSummariesItemBrowseclassification"></a>
+
 `CatalogItemSummariesItemBrowseclassification(**data: Any)`
 :   Nested schema for CatalogItemSummariesItem.browseClassification
     
@@ -776,6 +816,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CatalogItemsList"></a>
 
 `CatalogItemsList(**data: Any)`
 :   Catalog items search results
@@ -808,6 +850,8 @@ Classes
     `refinements: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinements | Any`
     :   The type of the None singleton.
 
+<a id="CatalogItemsListPagination"></a>
+
 `CatalogItemsListPagination(**data: Any)`
 :   Nested schema for CatalogItemsList.pagination
     
@@ -832,6 +876,8 @@ Classes
 
     `previous_token: str | Any`
     :   The type of the None singleton.
+
+<a id="CatalogItemsListRefinements"></a>
 
 `CatalogItemsListRefinements(**data: Any)`
 :   Nested schema for CatalogItemsList.refinements
@@ -858,6 +904,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CatalogItemsListRefinementsBrandsItem"></a>
+
 `CatalogItemsListRefinementsBrandsItem(**data: Any)`
 :   Nested schema for CatalogItemsListRefinements.brands_item
     
@@ -882,6 +930,8 @@ Classes
 
     `number_of_results: int | Any`
     :   The type of the None singleton.
+
+<a id="CatalogItemsListRefinementsClassificationsItem"></a>
 
 `CatalogItemsListRefinementsClassificationsItem(**data: Any)`
 :   Nested schema for CatalogItemsListRefinements.classifications_item
@@ -911,6 +961,8 @@ Classes
     `number_of_results: int | Any`
     :   The type of the None singleton.
 
+<a id="CatalogItemsListResultMeta"></a>
+
 `CatalogItemsListResultMeta(**data: Any)`
 :   Metadata for catalog_items.Action.LIST operation
     
@@ -935,6 +987,8 @@ Classes
 
     `number_of_results: int | Any`
     :   The type of the None singleton.
+
+<a id="FinancialEventGroup"></a>
 
 `FinancialEventGroup(**data: Any)`
 :   A financial event group
@@ -988,6 +1042,8 @@ Classes
     `trace_id: str | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventGroupBeginningbalance"></a>
+
 `FinancialEventGroupBeginningbalance(**data: Any)`
 :   Beginning balance
     
@@ -1012,6 +1068,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FinancialEventGroupConvertedtotal"></a>
 
 `FinancialEventGroupConvertedtotal(**data: Any)`
 :   Converted total
@@ -1038,6 +1096,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FinancialEventGroupList"></a>
+
 `FinancialEventGroupList(**data: Any)`
 :   Paginated list of financial event groups
     
@@ -1059,6 +1119,8 @@ Classes
 
     `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupListPayload | Any`
     :   The type of the None singleton.
+
+<a id="FinancialEventGroupListPayload"></a>
 
 `FinancialEventGroupListPayload(**data: Any)`
 :   Nested schema for FinancialEventGroupList.payload
@@ -1085,6 +1147,8 @@ Classes
     `next_token: str | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventGroupOriginaltotal"></a>
+
 `FinancialEventGroupOriginaltotal(**data: Any)`
 :   Original total in seller's currency
     
@@ -1109,6 +1173,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FinancialEvents"></a>
 
 `FinancialEvents(**data: Any)`
 :   A collection of financial events grouped by type
@@ -1234,6 +1300,8 @@ Classes
     `value_added_service_charge_event_list: list[dict[str, typing.Any]] | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventsDebtrecoveryeventlistItem"></a>
+
 `FinancialEventsDebtrecoveryeventlistItem(**data: Any)`
 :   Nested schema for FinancialEvents.DebtRecoveryEventList_item
     
@@ -1265,6 +1333,8 @@ Classes
     `recovery_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemRecoveryamount | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItem"></a>
+
 `FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItem(**data: Any)`
 :   Nested schema for FinancialEventsDebtrecoveryeventlistItem.ChargeInstrumentList_item
     
@@ -1293,6 +1363,8 @@ Classes
     `tail: str | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItemAmount"></a>
+
 `FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItemAmount(**data: Any)`
 :   Nested schema for FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItem.Amount
     
@@ -1317,6 +1389,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItem"></a>
 
 `FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItem(**data: Any)`
 :   Nested schema for FinancialEventsDebtrecoveryeventlistItem.DebtRecoveryItemList_item
@@ -1349,6 +1423,8 @@ Classes
     `recovery_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemRecoveryamount | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemOriginalamount"></a>
+
 `FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemOriginalamount(**data: Any)`
 :   Nested schema for FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItem.OriginalAmount
     
@@ -1373,6 +1449,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemRecoveryamount"></a>
 
 `FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemRecoveryamount(**data: Any)`
 :   Nested schema for FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItem.RecoveryAmount
@@ -1399,6 +1477,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FinancialEventsDebtrecoveryeventlistItemRecoveryamount"></a>
+
 `FinancialEventsDebtrecoveryeventlistItemRecoveryamount(**data: Any)`
 :   Nested schema for FinancialEventsDebtrecoveryeventlistItem.RecoveryAmount
     
@@ -1424,6 +1504,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FinancialEventsResponse"></a>
+
 `FinancialEventsResponse(**data: Any)`
 :   Response wrapper for financial events
     
@@ -1445,6 +1527,8 @@ Classes
 
     `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsResponsePayload | Any`
     :   The type of the None singleton.
+
+<a id="FinancialEventsResponsePayload"></a>
 
 `FinancialEventsResponsePayload(**data: Any)`
 :   Nested schema for FinancialEventsResponse.payload
@@ -1471,6 +1555,8 @@ Classes
     `next_token: str | Any`
     :   The type of the None singleton.
 
+<a id="FinancialEventsServicefeeeventlistItem"></a>
+
 `FinancialEventsServicefeeeventlistItem(**data: Any)`
 :   Nested schema for FinancialEvents.ServiceFeeEventList_item
     
@@ -1492,6 +1578,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FinancialEventsServicefeeeventlistItemFeelistItem"></a>
 
 `FinancialEventsServicefeeeventlistItemFeelistItem(**data: Any)`
 :   Nested schema for FinancialEventsServicefeeeventlistItem.FeeList_item
@@ -1518,6 +1606,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FinancialEventsServicefeeeventlistItemFeelistItemFeeamount"></a>
+
 `FinancialEventsServicefeeeventlistItemFeelistItemFeeamount(**data: Any)`
 :   Nested schema for FinancialEventsServicefeeeventlistItemFeelistItem.FeeAmount
     
@@ -1543,6 +1633,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListFinancialEventGroupsListResultMeta"></a>
+
 `ListFinancialEventGroupsListResultMeta(**data: Any)`
 :   Metadata for list_financial_event_groups.Action.LIST operation
     
@@ -1564,6 +1656,8 @@ Classes
 
     `next_token: str | Any`
     :   The type of the None singleton.
+
+<a id="ListFinancialEventGroupsSearchData"></a>
 
 `ListFinancialEventGroupsSearchData(**data: Any)`
 :   Search result data for list_financial_event_groups entity.
@@ -1617,6 +1711,8 @@ Classes
     `trace_id: str | None`
     :   Unique identifier for tracing
 
+<a id="ListFinancialEventsListResultMeta"></a>
+
 `ListFinancialEventsListResultMeta(**data: Any)`
 :   Metadata for list_financial_events.Action.LIST operation
     
@@ -1638,6 +1734,8 @@ Classes
 
     `next_token: str | Any`
     :   The type of the None singleton.
+
+<a id="ListFinancialEventsSearchData"></a>
 
 `ListFinancialEventsSearchData(**data: Any)`
 :   Search result data for list_financial_events entity.
@@ -1763,6 +1861,8 @@ Classes
     `value_added_service_charge_event_list: list[typing.Any] | None`
     :   List of value-added service charge events
 
+<a id="Order"></a>
+
 `Order(**data: Any)`
 :   Amazon order object
     
@@ -1881,6 +1981,8 @@ Classes
     `shipping_address: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderShippingaddress | Any`
     :   The type of the None singleton.
 
+<a id="OrderAutomatedshippingsettings"></a>
+
 `OrderAutomatedshippingsettings(**data: Any)`
 :   Automated shipping settings
     
@@ -1902,6 +2004,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderDefaultshipfromlocationaddress"></a>
 
 `OrderDefaultshipfromlocationaddress(**data: Any)`
 :   Default ship-from address
@@ -1939,6 +2043,8 @@ Classes
 
     `state_or_region: str | Any`
     :   The type of the None singleton.
+
+<a id="OrderItem"></a>
 
 `OrderItem(**data: Any)`
 :   Amazon order item object
@@ -2058,6 +2164,8 @@ Classes
     `title: str | Any`
     :   The type of the None singleton.
 
+<a id="OrderItemBuyerinfo"></a>
+
 `OrderItemBuyerinfo(**data: Any)`
 :   Buyer information for the item
     
@@ -2089,6 +2197,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemBuyerinfoBuyercustomizedinfo"></a>
+
 `OrderItemBuyerinfoBuyercustomizedinfo(**data: Any)`
 :   Nested schema for OrderItemBuyerinfo.BuyerCustomizedInfo
     
@@ -2110,6 +2220,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemBuyerinfoGiftwrapprice"></a>
 
 `OrderItemBuyerinfoGiftwrapprice(**data: Any)`
 :   Nested schema for OrderItemBuyerinfo.GiftWrapPrice
@@ -2136,6 +2248,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemBuyerrequestedcancel"></a>
+
 `OrderItemBuyerrequestedcancel(**data: Any)`
 :   Buyer cancellation request information
     
@@ -2160,6 +2274,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemCodfee"></a>
 
 `OrderItemCodfee(**data: Any)`
 :   Cash on delivery fee
@@ -2186,6 +2302,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemCodfeediscount"></a>
+
 `OrderItemCodfeediscount(**data: Any)`
 :   Cash on delivery fee discount
     
@@ -2210,6 +2328,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemItemprice"></a>
 
 `OrderItemItemprice(**data: Any)`
 :   Item price
@@ -2236,6 +2356,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemItemtax"></a>
+
 `OrderItemItemtax(**data: Any)`
 :   Item tax
     
@@ -2260,6 +2382,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemPointsgranted"></a>
 
 `OrderItemPointsgranted(**data: Any)`
 :   Points granted for the purchase
@@ -2286,6 +2410,8 @@ Classes
     `points_number: int | Any`
     :   The type of the None singleton.
 
+<a id="OrderItemPointsgrantedPointsmonetaryvalue"></a>
+
 `OrderItemPointsgrantedPointsmonetaryvalue(**data: Any)`
 :   Nested schema for OrderItemPointsgranted.PointsMonetaryValue
     
@@ -2311,6 +2437,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemProductinfo"></a>
+
 `OrderItemProductinfo(**data: Any)`
 :   Product information
     
@@ -2332,6 +2460,8 @@ Classes
 
     `number_of_items: str | Any`
     :   The type of the None singleton.
+
+<a id="OrderItemPromotiondiscount"></a>
 
 `OrderItemPromotiondiscount(**data: Any)`
 :   Promotion discount
@@ -2358,6 +2488,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemPromotiondiscounttax"></a>
+
 `OrderItemPromotiondiscounttax(**data: Any)`
 :   Promotion discount tax
     
@@ -2382,6 +2514,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemShippingdiscount"></a>
 
 `OrderItemShippingdiscount(**data: Any)`
 :   Shipping discount
@@ -2408,6 +2542,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemShippingdiscounttax"></a>
+
 `OrderItemShippingdiscounttax(**data: Any)`
 :   Shipping discount tax
     
@@ -2432,6 +2568,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemShippingprice"></a>
 
 `OrderItemShippingprice(**data: Any)`
 :   Shipping price
@@ -2458,6 +2596,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="OrderItemShippingtax"></a>
+
 `OrderItemShippingtax(**data: Any)`
 :   Shipping tax
     
@@ -2482,6 +2622,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderItemTaxcollection"></a>
 
 `OrderItemTaxcollection(**data: Any)`
 :   Tax collection information
@@ -2508,6 +2650,8 @@ Classes
     `responsible_party: str | Any`
     :   The type of the None singleton.
 
+<a id="OrderItemsList"></a>
+
 `OrderItemsList(**data: Any)`
 :   Paginated list of order items
     
@@ -2529,6 +2673,8 @@ Classes
 
     `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemsListPayload | Any`
     :   The type of the None singleton.
+
+<a id="OrderItemsListPayload"></a>
 
 `OrderItemsListPayload(**data: Any)`
 :   Nested schema for OrderItemsList.payload
@@ -2558,6 +2704,8 @@ Classes
     `order_items: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItem] | Any`
     :   The type of the None singleton.
 
+<a id="OrderItemsListResultMeta"></a>
+
 `OrderItemsListResultMeta(**data: Any)`
 :   Metadata for order_items.Action.LIST operation
     
@@ -2579,6 +2727,8 @@ Classes
 
     `next_token: str | Any`
     :   The type of the None singleton.
+
+<a id="OrderItemsSearchData"></a>
 
 `OrderItemsSearchData(**data: Any)`
 :   Search result data for order_items entity.
@@ -2710,6 +2860,8 @@ Classes
     `title: str | None`
     :   Title of the product
 
+<a id="OrderOrdertotal"></a>
+
 `OrderOrdertotal(**data: Any)`
 :   Total amount of the order
     
@@ -2734,6 +2886,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrderShippingaddress"></a>
 
 `OrderShippingaddress(**data: Any)`
 :   Shipping address for the order
@@ -2766,6 +2920,8 @@ Classes
     `state_or_region: str | Any`
     :   The type of the None singleton.
 
+<a id="OrdersList"></a>
+
 `OrdersList(**data: Any)`
 :   Paginated list of orders
     
@@ -2787,6 +2943,8 @@ Classes
 
     `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrdersListPayload | Any`
     :   The type of the None singleton.
+
+<a id="OrdersListPayload"></a>
 
 `OrdersListPayload(**data: Any)`
 :   Nested schema for OrdersList.payload
@@ -2813,6 +2971,8 @@ Classes
     `orders: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.Order] | Any`
     :   The type of the None singleton.
 
+<a id="OrdersListResultMeta"></a>
+
 `OrdersListResultMeta(**data: Any)`
 :   Metadata for orders.Action.LIST operation
     
@@ -2834,6 +2994,8 @@ Classes
 
     `next_token: str | Any`
     :   The type of the None singleton.
+
+<a id="OrdersSearchData"></a>
 
 `OrdersSearchData(**data: Any)`
 :   Search result data for orders entity.
@@ -2956,6 +3118,8 @@ Classes
     `shipping_address: dict[str, typing.Any] | None`
     :   The address to which the order will be shipped
 
+<a id="Report"></a>
+
 `Report(**data: Any)`
 :   Amazon SP-API report
     
@@ -3008,6 +3172,8 @@ Classes
     `report_type: str | Any`
     :   The type of the None singleton.
 
+<a id="ReportsList"></a>
+
 `ReportsList(**data: Any)`
 :   Paginated list of reports
     
@@ -3032,6 +3198,8 @@ Classes
 
     `reports: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.Report] | Any`
     :   The type of the None singleton.
+
+<a id="ReportsListResultMeta"></a>
 
 `ReportsListResultMeta(**data: Any)`
 :   Metadata for reports.Action.LIST operation

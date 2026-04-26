@@ -10,6 +10,8 @@ Sentry connector.
 Classes
 -------
 
+<a id="EventsQuery"></a>
+
 `EventsQuery(connector: SentryConnector)`
 :   Query class for Events entity operations.
     
@@ -92,6 +94,8 @@ Classes
         
         Returns:
             EventsListResult
+
+<a id="IssuesQuery"></a>
 
 `IssuesQuery(connector: SentryConnector)`
 :   Query class for Issues entity operations.
@@ -178,6 +182,8 @@ Classes
         Returns:
             IssuesListResult
 
+<a id="ProjectDetailQuery"></a>
+
 `ProjectDetailQuery(connector: SentryConnector)`
 :   Query class for ProjectDetail entity operations.
     
@@ -195,6 +201,8 @@ Classes
         
         Returns:
             ProjectDetail
+
+<a id="ProjectsQuery"></a>
 
 `ProjectsQuery(connector: SentryConnector)`
 :   Query class for Projects entity operations.
@@ -272,6 +280,8 @@ Classes
         Returns:
             ProjectsListResult
 
+<a id="ReleasesQuery"></a>
+
 `ReleasesQuery(connector: SentryConnector)`
 :   Query class for Releases entity operations.
     
@@ -345,6 +355,8 @@ Classes
         
         Returns:
             ReleasesListResult
+
+<a id="SentryConnector"></a>
 
 `SentryConnector(auth_config: SentryAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, hostname: str | None = None)`
 :   Type-safe Sentry API connector.

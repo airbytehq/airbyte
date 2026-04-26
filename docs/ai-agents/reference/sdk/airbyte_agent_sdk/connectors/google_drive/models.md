@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="About"></a>
+
 `About(**data: Any)`
 :   Information about the user, the user's Drive, and system capabilities
     
@@ -71,6 +73,8 @@ Classes
     `user: Any`
     :   The type of the None singleton.
 
+<a id="AboutDrivethemesItem"></a>
+
 `AboutDrivethemesItem(**data: Any)`
 :   Nested schema for About.driveThemes_item
     
@@ -98,6 +102,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AboutStoragequota"></a>
 
 `AboutStoragequota(**data: Any)`
 :   The user's storage quota limits and usage
@@ -130,6 +136,8 @@ Classes
     `usage_in_drive_trash: str | Any | None`
     :   The usage by trashed files in Google Drive
 
+<a id="AboutTeamdrivethemesItem"></a>
+
 `AboutTeamdrivethemesItem(**data: Any)`
 :   Nested schema for About.teamDriveThemes_item
     
@@ -157,6 +165,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Change"></a>
 
 `Change(**data: Any)`
 :   A change to a file or shared drive
@@ -204,6 +214,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChangesListResponse"></a>
+
 `ChangesListResponse(**data: Any)`
 :   A list of changes for a user
     
@@ -235,6 +247,8 @@ Classes
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
 
+<a id="ChangesListResultMeta"></a>
+
 `ChangesListResultMeta(**data: Any)`
 :   Metadata for changes.Action.LIST operation
     
@@ -259,6 +273,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Comment"></a>
 
 `Comment(**data: Any)`
 :   A comment on a file
@@ -321,6 +337,8 @@ Classes
     `resolved: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="CommentQuotedfilecontent"></a>
+
 `CommentQuotedfilecontent(**data: Any)`
 :   The file content to which the comment refers
     
@@ -345,6 +363,8 @@ Classes
 
     `value: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CommentsListResponse"></a>
 
 `CommentsListResponse(**data: Any)`
 :   A list of comments on a file
@@ -374,6 +394,8 @@ Classes
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CommentsListResultMeta"></a>
+
 `CommentsListResultMeta(**data: Any)`
 :   Metadata for comments.Action.LIST operation
     
@@ -395,6 +417,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Drive"></a>
 
 `Drive(**data: Any)`
 :   Representation of a shared drive
@@ -451,6 +475,8 @@ Classes
     `theme_id: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DriveBackgroundimagefile"></a>
+
 `DriveBackgroundimagefile(**data: Any)`
 :   An image file and cropping parameters for the background image
     
@@ -481,6 +507,8 @@ Classes
 
     `y_coordinate: float | Any | None`
     :   The type of the None singleton.
+
+<a id="DriveCapabilities"></a>
 
 `DriveCapabilities(**data: Any)`
 :   Capabilities the current user has on this shared drive
@@ -561,6 +589,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DriveRestrictions"></a>
+
 `DriveRestrictions(**data: Any)`
 :   A set of restrictions that apply to this shared drive
     
@@ -595,6 +625,8 @@ Classes
     `sharing_folders_requires_organizer_permission: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="DrivesListResponse"></a>
+
 `DrivesListResponse(**data: Any)`
 :   A list of shared drives
     
@@ -623,6 +655,8 @@ Classes
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DrivesListResultMeta"></a>
+
 `DrivesListResultMeta(**data: Any)`
 :   Metadata for drives.Action.LIST operation
     
@@ -644,6 +678,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="File"></a>
 
 `File(**data: Any)`
 :   The metadata for a file
@@ -838,6 +874,8 @@ Classes
     `writers_can_share: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="FileCapabilities"></a>
+
 `FileCapabilities(**data: Any)`
 :   Capabilities the current user has on this file
     
@@ -893,6 +931,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FileContentrestrictionsItem"></a>
+
 `FileContentrestrictionsItem(**data: Any)`
 :   Nested schema for File.contentRestrictions_item
     
@@ -927,6 +967,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FileCreateParams"></a>
+
 `FileCreateParams(**data: Any)`
 :   Parameters for creating a new file or folder
     
@@ -957,6 +999,8 @@ Classes
 
     `parents: list[str] | Any`
     :   The type of the None singleton.
+
+<a id="FileImagemediametadata"></a>
 
 `FileImagemediametadata(**data: Any)`
 :   Additional metadata about image media
@@ -1040,6 +1084,8 @@ Classes
     `width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="FileImagemediametadataLocation"></a>
+
 `FileImagemediametadataLocation(**data: Any)`
 :   Nested schema for FileImagemediametadata.location
     
@@ -1068,6 +1114,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="FileLabelinfo"></a>
+
 `FileLabelinfo(**data: Any)`
 :   An overview of the labels on the file
     
@@ -1089,6 +1137,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FileLinksharemetadata"></a>
 
 `FileLinksharemetadata(**data: Any)`
 :   Contains details about the link URLs
@@ -1114,6 +1164,8 @@ Classes
 
     `security_update_enabled: bool | Any | None`
     :   The type of the None singleton.
+
+<a id="FileShortcutdetails"></a>
 
 `FileShortcutdetails(**data: Any)`
 :   Shortcut file details
@@ -1143,6 +1195,8 @@ Classes
     `target_resource_key: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FileUpdateParams"></a>
+
 `FileUpdateParams(**data: Any)`
 :   Parameters for updating file metadata
     
@@ -1170,6 +1224,8 @@ Classes
 
     `name: str | Any`
     :   The type of the None singleton.
+
+<a id="FileUploadParams"></a>
 
 `FileUploadParams(**data: Any)`
 :   Parameters for uploading a file with content
@@ -1208,6 +1264,8 @@ Classes
     `parents: list[str] | Any`
     :   The type of the None singleton.
 
+<a id="FileVideomediametadata"></a>
+
 `FileVideomediametadata(**data: Any)`
 :   Additional metadata about video media
     
@@ -1235,6 +1293,8 @@ Classes
 
     `width: int | Any | None`
     :   The type of the None singleton.
+
+<a id="FilesListResponse"></a>
 
 `FilesListResponse(**data: Any)`
 :   A list of files
@@ -1267,6 +1327,8 @@ Classes
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
 
+<a id="FilesListResultMeta"></a>
+
 `FilesListResultMeta(**data: Any)`
 :   Metadata for files.Action.LIST operation
     
@@ -1291,6 +1353,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="GoogleDriveAuthConfig"></a>
 
 `GoogleDriveAuthConfig(**data: Any)`
 :   OAuth 2.0 Authentication
@@ -1322,6 +1386,8 @@ Classes
 
     `refresh_token: str`
     :   Your Google OAuth2 Refresh Token
+
+<a id="GoogleDriveCheckResult"></a>
 
 `GoogleDriveCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1356,6 +1422,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="GoogleDriveExecuteResult"></a>
+
 `GoogleDriveExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1384,6 +1452,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="GoogleDriveExecuteResultWithMeta"></a>
 
 `GoogleDriveExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1442,6 +1512,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ChangesListResult"></a>
+
 `ChangesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1484,6 +1556,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsListResult"></a>
 
 `CommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1528,6 +1602,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DrivesListResult"></a>
+
 `DrivesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1570,6 +1646,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="FilesListResult"></a>
 
 `FilesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1614,6 +1692,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PermissionsListResult"></a>
+
 `PermissionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1656,6 +1736,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="RepliesListResult"></a>
 
 `RepliesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1700,6 +1782,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="RevisionsListResult"></a>
+
 `RevisionsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1718,6 +1802,8 @@ Classes
     * airbyte_agent_sdk.connectors.google_drive.models.GoogleDriveExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="GoogleDriveReplicationConfig"></a>
 
 `GoogleDriveReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Google Drive.
@@ -1743,6 +1829,8 @@ Classes
 
     `streams: str`
     :   Configuration for file streams to sync from Google Drive
+
+<a id="Permission"></a>
 
 `Permission(**data: Any)`
 :   A permission for a file
@@ -1808,6 +1896,8 @@ Classes
     `view: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PermissionPermissiondetailsItem"></a>
+
 `PermissionPermissiondetailsItem(**data: Any)`
 :   Nested schema for Permission.permissionDetails_item
     
@@ -1838,6 +1928,8 @@ Classes
 
     `role: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PermissionTeamdrivepermissiondetailsItem"></a>
 
 `PermissionTeamdrivepermissiondetailsItem(**data: Any)`
 :   Nested schema for Permission.teamDrivePermissionDetails_item
@@ -1870,6 +1962,8 @@ Classes
     `team_drive_permission_type: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PermissionsListResponse"></a>
+
 `PermissionsListResponse(**data: Any)`
 :   A list of permissions for a file
     
@@ -1898,6 +1992,8 @@ Classes
     `permissions: list[airbyte_agent_sdk.connectors.google_drive.models.Permission] | Any`
     :   The type of the None singleton.
 
+<a id="PermissionsListResultMeta"></a>
+
 `PermissionsListResultMeta(**data: Any)`
 :   Metadata for permissions.Action.LIST operation
     
@@ -1919,6 +2015,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="RepliesListResponse"></a>
 
 `RepliesListResponse(**data: Any)`
 :   A list of replies to a comment
@@ -1948,6 +2046,8 @@ Classes
     `replies: list[airbyte_agent_sdk.connectors.google_drive.models.Reply] | Any`
     :   The type of the None singleton.
 
+<a id="RepliesListResultMeta"></a>
+
 `RepliesListResultMeta(**data: Any)`
 :   Metadata for replies.Action.LIST operation
     
@@ -1969,6 +2069,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Reply"></a>
 
 `Reply(**data: Any)`
 :   A reply to a comment on a file
@@ -2015,6 +2117,8 @@ Classes
 
     `modified_time: str | Any | None`
     :   The type of the None singleton.
+
+<a id="Revision"></a>
 
 `Revision(**data: Any)`
 :   The metadata for a revision to a file
@@ -2077,6 +2181,8 @@ Classes
     `size: str | Any | None`
     :   The type of the None singleton.
 
+<a id="RevisionsListResponse"></a>
+
 `RevisionsListResponse(**data: Any)`
 :   A list of revisions of a file
     
@@ -2105,6 +2211,8 @@ Classes
     `revisions: list[airbyte_agent_sdk.connectors.google_drive.models.Revision] | Any`
     :   The type of the None singleton.
 
+<a id="RevisionsListResultMeta"></a>
+
 `RevisionsListResultMeta(**data: Any)`
 :   Metadata for revisions.Action.LIST operation
     
@@ -2126,6 +2234,8 @@ Classes
 
     `next_page_token: str | Any | None`
     :   The type of the None singleton.
+
+<a id="StartPageToken"></a>
 
 `StartPageToken(**data: Any)`
 :   The starting page token for listing changes
@@ -2151,6 +2261,8 @@ Classes
 
     `start_page_token: str | Any`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   Information about a Drive user

@@ -10,6 +10,8 @@ Type definitions for freshdesk connector.
 Classes
 -------
 
+<a id="AgentsAndCondition"></a>
+
 `AgentsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -30,6 +32,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="AgentsAnyCondition"></a>
+
 `AgentsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -49,6 +53,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AgentsAnyValueFilter"></a>
 
 `AgentsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -92,6 +98,8 @@ Classes
     `updated_at: Any`
     :   Agent last update timestamp
 
+<a id="AgentsContainsCondition"></a>
+
 `AgentsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -103,6 +111,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="AgentsEqCondition"></a>
 
 `AgentsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -116,6 +126,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.freshdesk.types.AgentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsFuzzyCondition"></a>
+
 `AgentsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -127,6 +139,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
     :   The type of the None singleton.
+
+<a id="AgentsGetParams"></a>
 
 `AgentsGetParams(*args, **kwargs)`
 :   Parameters for agents.get operation
@@ -140,6 +154,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="AgentsGtCondition"></a>
+
 `AgentsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -152,6 +168,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.freshdesk.types.AgentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsGteCondition"></a>
+
 `AgentsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -163,6 +181,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.freshdesk.types.AgentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsInCondition"></a>
 
 `AgentsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -183,6 +203,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.freshdesk.types.AgentsInFilter`
     :   The type of the None singleton.
+
+<a id="AgentsInFilter"></a>
 
 `AgentsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -226,6 +248,8 @@ Classes
     `updated_at: list[str]`
     :   Agent last update timestamp
 
+<a id="AgentsKeywordCondition"></a>
+
 `AgentsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -238,6 +262,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
     :   The type of the None singleton.
 
+<a id="AgentsLikeCondition"></a>
+
 `AgentsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -249,6 +275,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
     :   The type of the None singleton.
+
+<a id="AgentsListParams"></a>
 
 `AgentsListParams(*args, **kwargs)`
 :   Parameters for agents.list operation
@@ -265,6 +293,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="AgentsLtCondition"></a>
+
 `AgentsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -276,6 +306,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.freshdesk.types.AgentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsLteCondition"></a>
 
 `AgentsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -289,6 +321,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.freshdesk.types.AgentsSearchFilter`
     :   The type of the None singleton.
 
+<a id="AgentsNeqCondition"></a>
+
 `AgentsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -300,6 +334,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.freshdesk.types.AgentsSearchFilter`
     :   The type of the None singleton.
+
+<a id="AgentsNotCondition"></a>
 
 `AgentsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -321,6 +357,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition`
     :   The type of the None singleton.
 
+<a id="AgentsOrCondition"></a>
+
 `AgentsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -340,6 +378,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="AgentsSearchFilter"></a>
 
 `AgentsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering agents search queries.
@@ -383,6 +423,8 @@ Classes
     `updated_at: str | None`
     :   Agent last update timestamp
 
+<a id="AgentsSearchQuery"></a>
+
 `AgentsSearchQuery(*args, **kwargs)`
 :   Search query for agents entity.
 
@@ -397,6 +439,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsSortFilter]`
     :   The type of the None singleton.
+
+<a id="AgentsSortFilter"></a>
 
 `AgentsSortFilter(*args, **kwargs)`
 :   Available fields for sorting agents search results.
@@ -440,6 +484,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Agent last update timestamp
 
+<a id="AgentsStringFilter"></a>
+
 `AgentsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -482,6 +528,8 @@ Classes
     `updated_at: str`
     :   Agent last update timestamp
 
+<a id="AirbyteSearchParams"></a>
+
 `AirbyteSearchParams(*args, **kwargs)`
 :   Parameters for Airbyte cache search operations (generic, use entity-specific query types for better type hints).
 
@@ -503,6 +551,8 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="CompaniesGetParams"></a>
+
 `CompaniesGetParams(*args, **kwargs)`
 :   Parameters for companies.get operation
 
@@ -514,6 +564,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="CompaniesListParams"></a>
 
 `CompaniesListParams(*args, **kwargs)`
 :   Parameters for companies.list operation
@@ -530,6 +582,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="ContactsGetParams"></a>
+
 `ContactsGetParams(*args, **kwargs)`
 :   Parameters for contacts.get operation
 
@@ -541,6 +595,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
 :   Parameters for contacts.list operation
@@ -559,6 +615,8 @@ Classes
 
     `updated_since: str`
     :   The type of the None singleton.
+
+<a id="GroupsAndCondition"></a>
 
 `GroupsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -580,6 +638,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="GroupsAnyCondition"></a>
+
 `GroupsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -599,6 +659,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupsAnyValueFilter"></a>
 
 `GroupsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -639,6 +701,8 @@ Classes
     `updated_at: Any`
     :   Group last update timestamp
 
+<a id="GroupsContainsCondition"></a>
+
 `GroupsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -650,6 +714,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="GroupsEqCondition"></a>
 
 `GroupsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -663,6 +729,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.freshdesk.types.GroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupsFuzzyCondition"></a>
+
 `GroupsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -674,6 +742,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupsGetParams"></a>
 
 `GroupsGetParams(*args, **kwargs)`
 :   Parameters for groups.get operation
@@ -687,6 +757,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="GroupsGtCondition"></a>
+
 `GroupsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -699,6 +771,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.freshdesk.types.GroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupsGteCondition"></a>
+
 `GroupsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -710,6 +784,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.freshdesk.types.GroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupsInCondition"></a>
 
 `GroupsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -730,6 +806,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.freshdesk.types.GroupsInFilter`
     :   The type of the None singleton.
+
+<a id="GroupsInFilter"></a>
 
 `GroupsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -770,6 +848,8 @@ Classes
     `updated_at: list[str]`
     :   Group last update timestamp
 
+<a id="GroupsKeywordCondition"></a>
+
 `GroupsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -782,6 +862,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
     :   The type of the None singleton.
 
+<a id="GroupsLikeCondition"></a>
+
 `GroupsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -793,6 +875,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
     :   The type of the None singleton.
+
+<a id="GroupsListParams"></a>
 
 `GroupsListParams(*args, **kwargs)`
 :   Parameters for groups.list operation
@@ -809,6 +893,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="GroupsLtCondition"></a>
+
 `GroupsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -820,6 +906,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.freshdesk.types.GroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupsLteCondition"></a>
 
 `GroupsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -833,6 +921,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.freshdesk.types.GroupsSearchFilter`
     :   The type of the None singleton.
 
+<a id="GroupsNeqCondition"></a>
+
 `GroupsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -844,6 +934,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.freshdesk.types.GroupsSearchFilter`
     :   The type of the None singleton.
+
+<a id="GroupsNotCondition"></a>
 
 `GroupsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -865,6 +957,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
+<a id="GroupsOrCondition"></a>
+
 `GroupsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -884,6 +978,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="GroupsSearchFilter"></a>
 
 `GroupsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering groups search queries.
@@ -924,6 +1020,8 @@ Classes
     `updated_at: str | None`
     :   Group last update timestamp
 
+<a id="GroupsSearchQuery"></a>
+
 `GroupsSearchQuery(*args, **kwargs)`
 :   Search query for groups entity.
 
@@ -938,6 +1036,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsSortFilter]`
     :   The type of the None singleton.
+
+<a id="GroupsSortFilter"></a>
 
 `GroupsSortFilter(*args, **kwargs)`
 :   Available fields for sorting groups search results.
@@ -978,6 +1078,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Group last update timestamp
 
+<a id="GroupsStringFilter"></a>
+
 `GroupsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1017,6 +1119,8 @@ Classes
     `updated_at: str`
     :   Group last update timestamp
 
+<a id="RolesGetParams"></a>
+
 `RolesGetParams(*args, **kwargs)`
 :   Parameters for roles.get operation
 
@@ -1028,6 +1132,8 @@ Classes
 
     `id: str`
     :   The type of the None singleton.
+
+<a id="RolesListParams"></a>
 
 `RolesListParams(*args, **kwargs)`
 :   Parameters for roles.list operation
@@ -1043,6 +1149,8 @@ Classes
 
     `per_page: int`
     :   The type of the None singleton.
+
+<a id="SatisfactionRatingsListParams"></a>
 
 `SatisfactionRatingsListParams(*args, **kwargs)`
 :   Parameters for satisfaction_ratings.list operation
@@ -1062,6 +1170,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="SurveysListParams"></a>
+
 `SurveysListParams(*args, **kwargs)`
 :   Parameters for surveys.list operation
 
@@ -1077,6 +1187,8 @@ Classes
     `per_page: int`
     :   The type of the None singleton.
 
+<a id="TicketFieldsListParams"></a>
+
 `TicketFieldsListParams(*args, **kwargs)`
 :   Parameters for ticket_fields.list operation
 
@@ -1091,6 +1203,8 @@ Classes
 
     `per_page: int`
     :   The type of the None singleton.
+
+<a id="TicketsAndCondition"></a>
 
 `TicketsAndCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1112,6 +1226,8 @@ Classes
     `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
+<a id="TicketsAnyCondition"></a>
+
 `TicketsAnyCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1131,6 +1247,8 @@ Classes
 
     `any: airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TicketsAnyValueFilter"></a>
 
 `TicketsAnyValueFilter(*args, **kwargs)`
 :   Available fields with Any value type. Used for 'contains' and 'any' conditions.
@@ -1243,6 +1361,8 @@ Classes
     `updated_at: Any`
     :   Ticket last update timestamp
 
+<a id="TicketsContainsCondition"></a>
+
 `TicketsContainsCondition(*args, **kwargs)`
 :   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
 
@@ -1254,6 +1374,8 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="TicketsEqCondition"></a>
 
 `TicketsEqCondition(*args, **kwargs)`
 :   Equal to: field equals value.
@@ -1267,6 +1389,8 @@ Classes
     `eq: airbyte_agent_sdk.connectors.freshdesk.types.TicketsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TicketsFuzzyCondition"></a>
+
 `TicketsFuzzyCondition(*args, **kwargs)`
 :   Ordered word text match (case-insensitive).
 
@@ -1278,6 +1402,8 @@ Classes
 
     `fuzzy: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
     :   The type of the None singleton.
+
+<a id="TicketsGetParams"></a>
 
 `TicketsGetParams(*args, **kwargs)`
 :   Parameters for tickets.get operation
@@ -1291,6 +1417,8 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
+<a id="TicketsGtCondition"></a>
+
 `TicketsGtCondition(*args, **kwargs)`
 :   Greater than: field > value.
 
@@ -1303,6 +1431,8 @@ Classes
     `gt: airbyte_agent_sdk.connectors.freshdesk.types.TicketsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TicketsGteCondition"></a>
+
 `TicketsGteCondition(*args, **kwargs)`
 :   Greater than or equal: field >= value.
 
@@ -1314,6 +1444,8 @@ Classes
 
     `gte: airbyte_agent_sdk.connectors.freshdesk.types.TicketsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TicketsInCondition"></a>
 
 `TicketsInCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1334,6 +1466,8 @@ Classes
 
     `in: airbyte_agent_sdk.connectors.freshdesk.types.TicketsInFilter`
     :   The type of the None singleton.
+
+<a id="TicketsInFilter"></a>
 
 `TicketsInFilter(*args, **kwargs)`
 :   Available fields for 'in' condition (values are lists).
@@ -1446,6 +1580,8 @@ Classes
     `updated_at: list[str]`
     :   Ticket last update timestamp
 
+<a id="TicketsKeywordCondition"></a>
+
 `TicketsKeywordCondition(*args, **kwargs)`
 :   Keyword text match (any word present).
 
@@ -1458,6 +1594,8 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
     :   The type of the None singleton.
 
+<a id="TicketsLikeCondition"></a>
+
 `TicketsLikeCondition(*args, **kwargs)`
 :   Partial string match with % wildcards.
 
@@ -1469,6 +1607,8 @@ Classes
 
     `like: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
     :   The type of the None singleton.
+
+<a id="TicketsListParams"></a>
 
 `TicketsListParams(*args, **kwargs)`
 :   Parameters for tickets.list operation
@@ -1494,6 +1634,8 @@ Classes
     `updated_since: str`
     :   The type of the None singleton.
 
+<a id="TicketsLtCondition"></a>
+
 `TicketsLtCondition(*args, **kwargs)`
 :   Less than: field &lt; value.
 
@@ -1505,6 +1647,8 @@ Classes
 
     `lt: airbyte_agent_sdk.connectors.freshdesk.types.TicketsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TicketsLteCondition"></a>
 
 `TicketsLteCondition(*args, **kwargs)`
 :   Less than or equal: field &lt;= value.
@@ -1518,6 +1662,8 @@ Classes
     `lte: airbyte_agent_sdk.connectors.freshdesk.types.TicketsSearchFilter`
     :   The type of the None singleton.
 
+<a id="TicketsNeqCondition"></a>
+
 `TicketsNeqCondition(*args, **kwargs)`
 :   Not equal to: field does not equal value.
 
@@ -1529,6 +1675,8 @@ Classes
 
     `neq: airbyte_agent_sdk.connectors.freshdesk.types.TicketsSearchFilter`
     :   The type of the None singleton.
+
+<a id="TicketsNotCondition"></a>
 
 `TicketsNotCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
@@ -1550,6 +1698,8 @@ Classes
     `not: airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
+<a id="TicketsOrCondition"></a>
+
 `TicketsOrCondition(*args, **kwargs)`
 :   dict() -> new empty dictionary
     dict(mapping) -> new dictionary initialized from a mapping object's
@@ -1569,6 +1719,8 @@ Classes
 
     `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition]`
     :   The type of the None singleton.
+
+<a id="TicketsSearchFilter"></a>
 
 `TicketsSearchFilter(*args, **kwargs)`
 :   Available fields for filtering tickets search queries.
@@ -1681,6 +1833,8 @@ Classes
     `updated_at: str | None`
     :   Ticket last update timestamp
 
+<a id="TicketsSearchQuery"></a>
+
 `TicketsSearchQuery(*args, **kwargs)`
 :   Search query for tickets entity.
 
@@ -1695,6 +1849,8 @@ Classes
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsSortFilter]`
     :   The type of the None singleton.
+
+<a id="TicketsSortFilter"></a>
 
 `TicketsSortFilter(*args, **kwargs)`
 :   Available fields for sorting tickets search results.
@@ -1807,6 +1963,8 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Ticket last update timestamp
 
+<a id="TicketsStringFilter"></a>
+
 `TicketsStringFilter(*args, **kwargs)`
 :   String fields for text search conditions (like, fuzzy, keyword).
 
@@ -1917,6 +2075,8 @@ Classes
 
     `updated_at: str`
     :   Ticket last update timestamp
+
+<a id="TimeEntriesListParams"></a>
 
 `TimeEntriesListParams(*args, **kwargs)`
 :   Parameters for time_entries.list operation

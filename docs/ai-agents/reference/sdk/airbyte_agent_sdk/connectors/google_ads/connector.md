@@ -10,6 +10,8 @@ Google-Ads connector.
 Classes
 -------
 
+<a id="AccessibleCustomersQuery"></a>
+
 `AccessibleCustomersQuery(connector: GoogleAdsConnector)`
 :   Query class for AccessibleCustomers entity operations.
     
@@ -22,6 +24,8 @@ Classes
         
         Returns:
             AccessibleCustomersListResult
+
+<a id="AccountsQuery"></a>
 
 `AccountsQuery(connector: GoogleAdsConnector)`
 :   Query class for Accounts entity operations.
@@ -86,6 +90,8 @@ Classes
         Returns:
             AccountsListResult
 
+<a id="AdGroupAdLabelsQuery"></a>
+
 `AdGroupAdLabelsQuery(connector: GoogleAdsConnector)`
 :   Query class for AdGroupAdLabels entity operations.
     
@@ -132,6 +138,8 @@ Classes
         
         Returns:
             AdGroupAdLabelsListResult
+
+<a id="AdGroupAdsQuery"></a>
 
 `AdGroupAdsQuery(connector: GoogleAdsConnector)`
 :   Query class for AdGroupAds entity operations.
@@ -193,6 +201,8 @@ Classes
         Returns:
             AdGroupAdsListResult
 
+<a id="AdGroupLabelsQuery"></a>
+
 `AdGroupLabelsQuery(connector: GoogleAdsConnector)`
 :   Query class for AdGroupLabels entity operations.
     
@@ -250,6 +260,8 @@ Classes
         
         Returns:
             AdGroupLabelsListResult
+
+<a id="AdGroupsQuery"></a>
 
 `AdGroupsQuery(connector: GoogleAdsConnector)`
 :   Query class for AdGroups entity operations.
@@ -326,6 +338,8 @@ Classes
         Returns:
             AdGroupMutateResponse
 
+<a id="CampaignLabelsQuery"></a>
+
 `CampaignLabelsQuery(connector: GoogleAdsConnector)`
 :   Query class for CampaignLabels entity operations.
     
@@ -383,6 +397,8 @@ Classes
         
         Returns:
             CampaignLabelsListResult
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: GoogleAdsConnector)`
 :   Query class for Campaigns entity operations.
@@ -466,6 +482,8 @@ Classes
         
         Returns:
             CampaignMutateResponse
+
+<a id="GoogleAdsConnector"></a>
 
 `GoogleAdsConnector(auth_config: GoogleAdsAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Google-Ads API connector.
@@ -722,6 +740,8 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="LabelsQuery"></a>
 
 `LabelsQuery(connector: GoogleAdsConnector)`
 :   Query class for Labels entity operations.

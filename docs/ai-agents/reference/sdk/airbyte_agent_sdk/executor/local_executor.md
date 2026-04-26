@@ -10,6 +10,8 @@ Local executor for direct HTTP execution of connector operations.
 Classes
 -------
 
+<a id="LocalExecutor"></a>
+
 `LocalExecutor(config_path: str | None = None, model: ConnectorModel | None = None, secrets: dict[str, SecretStr] | None = None, auth_config: dict[str, SecretStr] | None = None, auth_scheme: str | None = None, enable_logging: bool = False, log_file: str | None = None, execution_context: str | None = None, max_connections: int = 100, max_keepalive_connections: int = 20, max_logs: int | None = 10000, config_values: dict[str, str] | None = None, on_token_refresh: TokenRefreshCallback = None, retry_config: RetryConfig | None = None)`
 :   Async executor for Entity×Action operations with direct HTTP execution.
     
@@ -126,6 +128,8 @@ Classes
                 ("attachments", "download", \{"id": "att_456"\}),
             ])
 
+<a id="ParamResolutionError"></a>
+
 `ParamResolutionError(*args, **kwargs)`
 :   Raised when a path parameter cannot be resolved for entity probing.
     
@@ -143,6 +147,8 @@ Classes
 
     * builtins.Exception
     * builtins.BaseException
+
+<a id="ParentProbeError"></a>
 
 `ParentProbeError(message: str, status_code: int | None = None)`
 :   Raised when a parent entity's LIST probe fails during param resolution.

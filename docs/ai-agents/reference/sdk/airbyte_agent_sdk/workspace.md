@@ -10,13 +10,15 @@ Workspace — top-level entry point for hosted-mode workspace operations.
 Classes
 -------
 
+<a id="Workspace"></a>
+
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
     Provides workspace-level methods: `ask`, list/create/delete connectors,
     get a connector executor, and workflow/automation CRUD. Use `Workspace`
     when you want to operate against a whole workspace (many connectors,
-    workflows, automations); use [`connect()`](#connect) when you already
+    workflows, automations); use [`connect()`](index.md#connect) when you already
     know which connector you want to execute.
     
     Example:

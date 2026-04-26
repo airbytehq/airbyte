@@ -19,6 +19,8 @@ Sub-modules
 Classes
 -------
 
+<a id="AirbyteAuthConfig"></a>
+
 `AirbyteAuthConfig(**data: Any)`
 :   Authentication configuration for Airbyte hosted mode execution.
     
@@ -87,6 +89,8 @@ Classes
     `workspace_name: str | None`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -114,6 +118,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -148,6 +154,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="CustomersSearchResult"></a>
+
 `CustomersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -163,6 +171,8 @@ Classes
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="InvoicesSearchResult"></a>
 
 `InvoicesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -180,6 +190,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="PlansSearchResult"></a>
+
 `PlansSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -196,6 +208,8 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="SubscriptionsSearchResult"></a>
+
 `SubscriptionsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -211,6 +225,8 @@ Classes
     * airbyte_agent_sdk.connectors.orb.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="CustomersSearchData"></a>
 
 `CustomersSearchData(**data: Any)`
 :   Search result data for customers entity.
@@ -260,6 +276,8 @@ Classes
 
     `timezone: str | None`
     :   The timezone setting of the customer
+
+<a id="InvoicesSearchData"></a>
 
 `InvoicesSearchData(**data: Any)`
 :   Search result data for invoices entity.
@@ -325,6 +343,8 @@ Classes
     `total: str | None`
     :   The total amount of the invoice
 
+<a id="OrbAuthConfig"></a>
+
 `OrbAuthConfig(**data: Any)`
 :   API Key Authentication
     
@@ -346,6 +366,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="OrbConnector"></a>
 
 `OrbConnector(auth_config: OrbAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Orb API connector.
@@ -547,6 +569,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="OrbReplicationConfig"></a>
+
 `OrbReplicationConfig(**data: Any)`
 :   Replication Configuration - Settings for data replication from Orb.
     
@@ -568,6 +592,8 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+<a id="PlansSearchData"></a>
 
 `PlansSearchData(**data: Any)`
 :   Search result data for plans entity.
@@ -605,6 +631,8 @@ Classes
 
     `product: dict[str, typing.Any] | None`
     :   The product associated with the plan
+
+<a id="SubscriptionsSearchData"></a>
 
 `SubscriptionsSearchData(**data: Any)`
 :   Search result data for subscriptions entity.

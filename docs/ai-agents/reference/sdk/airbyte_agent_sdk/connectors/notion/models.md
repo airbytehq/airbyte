@@ -13,6 +13,8 @@ and response envelope types.
 Classes
 -------
 
+<a id="AirbyteSearchMeta"></a>
+
 `AirbyteSearchMeta(**data: Any)`
 :   Pagination metadata for search responses.
     
@@ -40,6 +42,8 @@ Classes
 
     `took_ms: int | None`
     :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
 
 `AirbyteSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -95,6 +99,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlocksSearchResult"></a>
+
 `BlocksSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -131,6 +137,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="DataSourcesSearchResult"></a>
 
 `DataSourcesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -169,6 +177,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="PagesSearchResult"></a>
+
 `PagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -206,6 +216,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersSearchResult"></a>
+
 `UsersSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -221,6 +233,8 @@ Classes
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="Block"></a>
 
 `Block(**data: Any)`
 :   A Notion block object
@@ -373,6 +387,8 @@ Classes
     `video: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockBookmark"></a>
+
 `BlockBookmark(**data: Any)`
 :   Bookmark block
     
@@ -398,6 +414,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockBulletedListItem"></a>
+
 `BlockBulletedListItem(**data: Any)`
 :   Bulleted list item content
     
@@ -422,6 +440,8 @@ Classes
 
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
+
+<a id="BlockCallout"></a>
 
 `BlockCallout(**data: Any)`
 :   Callout block content
@@ -451,6 +471,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockChildDatabase"></a>
+
 `BlockChildDatabase(**data: Any)`
 :   Child database block
     
@@ -473,6 +495,8 @@ Classes
     `title: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockChildPage"></a>
+
 `BlockChildPage(**data: Any)`
 :   Child page block
     
@@ -494,6 +518,8 @@ Classes
 
     `title: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BlockCode"></a>
 
 `BlockCode(**data: Any)`
 :   Code block content
@@ -523,6 +549,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockColumn"></a>
+
 `BlockColumn(**data: Any)`
 :   Column block
     
@@ -544,6 +572,8 @@ Classes
 
     `width_ratio: float | Any | None`
     :   The type of the None singleton.
+
+<a id="BlockCreatedBy"></a>
 
 `BlockCreatedBy(**data: Any)`
 :   User who created the block
@@ -570,6 +600,8 @@ Classes
     `object_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockEmbed"></a>
+
 `BlockEmbed(**data: Any)`
 :   Embed block
     
@@ -592,6 +624,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockEquation"></a>
+
 `BlockEquation(**data: Any)`
 :   Equation block
     
@@ -613,6 +647,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BlockHeading1"></a>
 
 `BlockHeading1(**data: Any)`
 :   Heading 1 block content
@@ -642,6 +678,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockHeading2"></a>
+
 `BlockHeading2(**data: Any)`
 :   Heading 2 block content
     
@@ -669,6 +707,8 @@ Classes
 
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
+
+<a id="BlockHeading3"></a>
 
 `BlockHeading3(**data: Any)`
 :   Heading 3 block content
@@ -698,6 +738,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockLastEditedBy"></a>
+
 `BlockLastEditedBy(**data: Any)`
 :   User who last edited the block
     
@@ -723,6 +765,8 @@ Classes
     `object_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockLinkPreview"></a>
+
 `BlockLinkPreview(**data: Any)`
 :   Link preview block
     
@@ -744,6 +788,8 @@ Classes
 
     `url: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BlockNumberedListItem"></a>
 
 `BlockNumberedListItem(**data: Any)`
 :   Numbered list item content
@@ -770,6 +816,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockParagraph"></a>
+
 `BlockParagraph(**data: Any)`
 :   Paragraph block content
     
@@ -795,6 +843,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockQuote"></a>
+
 `BlockQuote(**data: Any)`
 :   Quote block content
     
@@ -819,6 +869,8 @@ Classes
 
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
+
+<a id="BlockTable"></a>
 
 `BlockTable(**data: Any)`
 :   Table block
@@ -848,6 +900,8 @@ Classes
     `table_width: int | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockTableOfContents"></a>
+
 `BlockTableOfContents(**data: Any)`
 :   Table of contents block
     
@@ -870,6 +924,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlockTableRow"></a>
+
 `BlockTableRow(**data: Any)`
 :   Table row block
     
@@ -891,6 +947,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="BlockToDo"></a>
 
 `BlockToDo(**data: Any)`
 :   To-do block content
@@ -920,6 +978,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="BlockToggle"></a>
+
 `BlockToggle(**data: Any)`
 :   Toggle block content
     
@@ -944,6 +1004,8 @@ Classes
 
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
+
+<a id="BlocksListResponse"></a>
 
 `BlocksListResponse(**data: Any)`
 :   Paginated list of blocks
@@ -985,6 +1047,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="BlocksListResultMeta"></a>
+
 `BlocksListResultMeta(**data: Any)`
 :   Metadata for blocks.Action.LIST operation
     
@@ -1009,6 +1073,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="BlocksSearchData"></a>
 
 `BlocksSearchData(**data: Any)`
 :   Search result data for blocks entity.
@@ -1155,6 +1221,8 @@ Classes
     `video: dict[str, typing.Any] | None`
     :   Represents a video block.
 
+<a id="Comment"></a>
+
 `Comment(**data: Any)`
 :   A Notion comment object
     
@@ -1198,6 +1266,8 @@ Classes
     `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
     :   The type of the None singleton.
 
+<a id="CommentCreatedBy"></a>
+
 `CommentCreatedBy(**data: Any)`
 :   User who created the comment
     
@@ -1222,6 +1292,8 @@ Classes
 
     `object_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="CommentsListResponse"></a>
 
 `CommentsListResponse(**data: Any)`
 :   Paginated list of comments
@@ -1263,6 +1335,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="CommentsListResultMeta"></a>
+
 `CommentsListResultMeta(**data: Any)`
 :   Metadata for comments.Action.LIST operation
     
@@ -1287,6 +1361,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="DataSource"></a>
 
 `DataSource(**data: Any)`
 :   A Notion data source object
@@ -1370,6 +1446,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DataSourceCreatedBy"></a>
+
 `DataSourceCreatedBy(**data: Any)`
 :   User who created the data source
     
@@ -1395,6 +1473,8 @@ Classes
     `object_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DataSourceLastEditedBy"></a>
+
 `DataSourceLastEditedBy(**data: Any)`
 :   User who last edited the data source
     
@@ -1419,6 +1499,8 @@ Classes
 
     `object_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="DataSourcesListResponse"></a>
 
 `DataSourcesListResponse(**data: Any)`
 :   Paginated list of data sources
@@ -1460,6 +1542,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="DataSourcesListResultMeta"></a>
+
 `DataSourcesListResultMeta(**data: Any)`
 :   Metadata for data_sources.Action.LIST operation
     
@@ -1484,6 +1568,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="DataSourcesSearchData"></a>
 
 `DataSourcesSearchData(**data: Any)`
 :   Search result data for data_sources entity.
@@ -1555,6 +1641,8 @@ Classes
     `url: str | None`
     :   URL or reference to access the data source.
 
+<a id="NotionAccessTokenAuthConfig"></a>
+
 `NotionAccessTokenAuthConfig(**data: Any)`
 :   Access Token
     
@@ -1576,6 +1664,8 @@ Classes
 
     `token: str`
     :   Notion internal integration token (starts with ntn_ or secret_)
+
+<a id="NotionCheckResult"></a>
 
 `NotionCheckResult(**data: Any)`
 :   Result of a health check operation.
@@ -1610,6 +1700,8 @@ Classes
     `status: str`
     :   Health check status: 'healthy' or 'unhealthy'.
 
+<a id="NotionExecuteResult"></a>
+
 `NotionExecuteResult(**data: Any)`
 :   Response envelope with data only.
     
@@ -1638,6 +1730,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="NotionExecuteResultWithMeta"></a>
 
 `NotionExecuteResultWithMeta(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1694,6 +1788,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="BlocksListResult"></a>
+
 `BlocksListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1736,6 +1832,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="CommentsListResult"></a>
 
 `CommentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1780,6 +1878,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="DataSourcesListResult"></a>
+
 `DataSourcesListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1822,6 +1922,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="PagesListResult"></a>
 
 `PagesListResult(**data: Any)`
 :   Response envelope with data and metadata.
@@ -1866,6 +1968,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="UsersListResult"></a>
+
 `UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1884,6 +1988,8 @@ Classes
     * airbyte_agent_sdk.connectors.notion.models.NotionExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="NotionOAuthCredentials"></a>
 
 `NotionOAuthCredentials(**data: Any)`
 :   Notion OAuth App Credentials - Provide your own Notion OAuth app credentials to override the default Airbyte-managed ones.
@@ -1909,6 +2015,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="NotionOauth20AuthConfig"></a>
 
 `NotionOauth20AuthConfig(**data: Any)`
 :   OAuth2.0
@@ -1937,6 +2045,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Page"></a>
 
 `Page(**data: Any)`
 :   A Notion page object
@@ -2008,6 +2118,8 @@ Classes
     `url: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PageCreatedBy"></a>
+
 `PageCreatedBy(**data: Any)`
 :   User who created the page
     
@@ -2033,6 +2145,8 @@ Classes
     `object_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PageLastEditedBy"></a>
+
 `PageLastEditedBy(**data: Any)`
 :   User who last edited the page
     
@@ -2057,6 +2171,8 @@ Classes
 
     `object_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PagesListResponse"></a>
 
 `PagesListResponse(**data: Any)`
 :   Paginated list of pages
@@ -2098,6 +2214,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="PagesListResultMeta"></a>
+
 `PagesListResultMeta(**data: Any)`
 :   Metadata for pages.Action.LIST operation
     
@@ -2122,6 +2240,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="PagesSearchData"></a>
 
 `PagesSearchData(**data: Any)`
 :   Search result data for pages entity.
@@ -2184,6 +2304,8 @@ Classes
     `url: str | None`
     :   URL of the page within the service.
 
+<a id="Parent"></a>
+
 `Parent(**data: Any)`
 :   Parent object reference
     
@@ -2221,6 +2343,8 @@ Classes
     `workspace: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="RichText"></a>
+
 `RichText(**data: Any)`
 :   A rich text object
     
@@ -2254,6 +2378,8 @@ Classes
 
     `type_: str | Any | None`
     :   The type of the None singleton.
+
+<a id="RichTextAnnotations"></a>
 
 `RichTextAnnotations(**data: Any)`
 :   Text annotations (bold, italic, etc.)
@@ -2292,6 +2418,8 @@ Classes
     `underline: bool | Any | None`
     :   The type of the None singleton.
 
+<a id="RichTextText"></a>
+
 `RichTextText(**data: Any)`
 :   Text content
     
@@ -2316,6 +2444,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="User"></a>
 
 `User(**data: Any)`
 :   A Notion user object
@@ -2360,6 +2490,8 @@ Classes
     `type_: str | Any | None`
     :   The type of the None singleton.
 
+<a id="UserBot"></a>
+
 `UserBot(**data: Any)`
 :   Bot-specific data
     
@@ -2385,6 +2517,8 @@ Classes
     `workspace_name: str | Any | None`
     :   Name of the workspace the bot belongs to
 
+<a id="UserPerson"></a>
+
 `UserPerson(**data: Any)`
 :   Person-specific data
     
@@ -2406,6 +2540,8 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UsersListResponse"></a>
 
 `UsersListResponse(**data: Any)`
 :   Paginated list of users
@@ -2447,6 +2583,8 @@ Classes
     `user: dict[str, typing.Any] | Any | None`
     :   The type of the None singleton.
 
+<a id="UsersListResultMeta"></a>
+
 `UsersListResultMeta(**data: Any)`
 :   Metadata for users.Action.LIST operation
     
@@ -2471,6 +2609,8 @@ Classes
 
     `next_cursor: str | Any | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
 
 `UsersSearchData(**data: Any)`
 :   Search result data for users entity.

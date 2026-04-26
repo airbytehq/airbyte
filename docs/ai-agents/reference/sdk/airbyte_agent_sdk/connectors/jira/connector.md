@@ -10,6 +10,8 @@ Jira connector.
 Classes
 -------
 
+<a id="IssueCommentsQuery"></a>
+
 `IssueCommentsQuery(connector: JiraConnector)`
 :   Query class for IssueComments entity operations.
     
@@ -117,6 +119,8 @@ Classes
         Returns:
             IssueComment
 
+<a id="IssueFieldsQuery"></a>
+
 `IssueFieldsQuery(connector: JiraConnector)`
 :   Query class for IssueFields entity operations.
     
@@ -178,6 +182,8 @@ Classes
         
         Returns:
             IssueFieldsListResult
+
+<a id="IssueWorklogsQuery"></a>
 
 `IssueWorklogsQuery(connector: JiraConnector)`
 :   Query class for IssueWorklogs entity operations.
@@ -246,6 +252,8 @@ Classes
         Returns:
             IssueWorklogsListResult
 
+<a id="IssuesAssigneeQuery"></a>
+
 `IssuesAssigneeQuery(connector: JiraConnector)`
 :   Query class for IssuesAssignee entity operations.
     
@@ -263,6 +271,8 @@ Classes
         
         Returns:
             dict[str, Any]
+
+<a id="IssuesQuery"></a>
 
 `IssuesQuery(connector: JiraConnector)`
 :   Query class for Issues entity operations.
@@ -388,6 +398,8 @@ Classes
         
         Returns:
             Issue
+
+<a id="JiraConnector"></a>
 
 `JiraConnector(auth_config: JiraAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
 :   Type-safe Jira API connector.
@@ -577,6 +589,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ProjectsQuery"></a>
+
 `ProjectsQuery(connector: JiraConnector)`
 :   Query class for Projects entity operations.
     
@@ -671,6 +685,8 @@ Classes
         
         Returns:
             Project
+
+<a id="UsersQuery"></a>
 
 `UsersQuery(connector: JiraConnector)`
 :   Query class for Users entity operations.

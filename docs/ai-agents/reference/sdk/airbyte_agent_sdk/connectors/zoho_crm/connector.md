@@ -10,6 +10,8 @@ Zoho-Crm connector.
 Classes
 -------
 
+<a id="AccountsQuery"></a>
+
 `AccountsQuery(connector: ZohoCrmConnector)`
 :   Query class for Accounts entity operations.
     
@@ -80,6 +82,8 @@ Classes
         Returns:
             AccountsListResult
 
+<a id="CallsQuery"></a>
+
 `CallsQuery(connector: ZohoCrmConnector)`
 :   Query class for Calls entity operations.
     
@@ -145,6 +149,8 @@ Classes
         
         Returns:
             CallsListResult
+
+<a id="CampaignsQuery"></a>
 
 `CampaignsQuery(connector: ZohoCrmConnector)`
 :   Query class for Campaigns entity operations.
@@ -212,6 +218,8 @@ Classes
         
         Returns:
             CampaignsListResult
+
+<a id="ContactsQuery"></a>
 
 `ContactsQuery(connector: ZohoCrmConnector)`
 :   Query class for Contacts entity operations.
@@ -283,6 +291,8 @@ Classes
         Returns:
             ContactsListResult
 
+<a id="DealsQuery"></a>
+
 `DealsQuery(connector: ZohoCrmConnector)`
 :   Query class for Deals entity operations.
     
@@ -348,6 +358,8 @@ Classes
         Returns:
             DealsListResult
 
+<a id="EventsQuery"></a>
+
 `EventsQuery(connector: ZohoCrmConnector)`
 :   Query class for Events entity operations.
     
@@ -409,6 +421,8 @@ Classes
         
         Returns:
             EventsListResult
+
+<a id="InvoicesQuery"></a>
 
 `InvoicesQuery(connector: ZohoCrmConnector)`
 :   Query class for Invoices entity operations.
@@ -479,6 +493,8 @@ Classes
         
         Returns:
             InvoicesListResult
+
+<a id="LeadsQuery"></a>
 
 `LeadsQuery(connector: ZohoCrmConnector)`
 :   Query class for Leads entity operations.
@@ -555,6 +571,8 @@ Classes
         Returns:
             LeadsListResult
 
+<a id="ProductsQuery"></a>
+
 `ProductsQuery(connector: ZohoCrmConnector)`
 :   Query class for Products entity operations.
     
@@ -624,6 +642,8 @@ Classes
         Returns:
             ProductsListResult
 
+<a id="QuotesQuery"></a>
+
 `QuotesQuery(connector: ZohoCrmConnector)`
 :   Query class for Quotes entity operations.
     
@@ -691,6 +711,8 @@ Classes
         Returns:
             QuotesListResult
 
+<a id="TasksQuery"></a>
+
 `TasksQuery(connector: ZohoCrmConnector)`
 :   Query class for Tasks entity operations.
     
@@ -753,6 +775,8 @@ Classes
         
         Returns:
             TasksListResult
+
+<a id="ZohoCrmConnector"></a>
 
 `ZohoCrmConnector(auth_config: ZohoCrmAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, dc_region: str | None = None)`
 :   Type-safe Zoho-Crm API connector.

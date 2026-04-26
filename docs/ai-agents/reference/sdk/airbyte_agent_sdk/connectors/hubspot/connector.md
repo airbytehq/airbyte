@@ -10,6 +10,8 @@ Hubspot connector.
 Classes
 -------
 
+<a id="CompaniesQuery"></a>
+
 `CompaniesQuery(connector: HubspotConnector)`
 :   Query class for Companies entity operations.
     
@@ -90,6 +92,8 @@ Classes
         Returns:
             CompaniesListResult
 
+<a id="ContactsQuery"></a>
+
 `ContactsQuery(connector: HubspotConnector)`
 :   Query class for Contacts entity operations.
     
@@ -169,6 +173,8 @@ Classes
         
         Returns:
             ContactsListResult
+
+<a id="DealsQuery"></a>
 
 `DealsQuery(connector: HubspotConnector)`
 :   Query class for Deals entity operations.
@@ -251,6 +257,8 @@ Classes
         
         Returns:
             DealsListResult
+
+<a id="HubspotConnector"></a>
 
 `HubspotConnector(auth_config: HubspotAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
 :   Type-safe Hubspot API connector.
@@ -528,6 +536,8 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+<a id="ObjectsQuery"></a>
+
 `ObjectsQuery(connector: HubspotConnector)`
 :   Query class for Objects entity operations.
     
@@ -567,6 +577,8 @@ Classes
         Returns:
             ObjectsListResult
 
+<a id="SchemasQuery"></a>
+
 `SchemasQuery(connector: HubspotConnector)`
 :   Query class for Schemas entity operations.
     
@@ -593,6 +605,8 @@ Classes
         
         Returns:
             SchemasListResult
+
+<a id="TicketsQuery"></a>
 
 `TicketsQuery(connector: HubspotConnector)`
 :   Query class for Tickets entity operations.

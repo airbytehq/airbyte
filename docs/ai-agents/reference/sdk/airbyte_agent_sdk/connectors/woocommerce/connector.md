@@ -10,6 +10,8 @@ Woocommerce connector.
 Classes
 -------
 
+<a id="CouponsQuery"></a>
+
 `CouponsQuery(connector: WoocommerceConnector)`
 :   Query class for Coupons entity operations.
     
@@ -95,6 +97,8 @@ Classes
         Returns:
             CouponsListResult
 
+<a id="CustomersQuery"></a>
+
 `CustomersQuery(connector: WoocommerceConnector)`
 :   Query class for Customers entity operations.
     
@@ -165,6 +169,8 @@ Classes
         Returns:
             CustomersListResult
 
+<a id="OrderNotesQuery"></a>
+
 `OrderNotesQuery(connector: WoocommerceConnector)`
 :   Query class for OrderNotes entity operations.
     
@@ -220,6 +226,8 @@ Classes
         
         Returns:
             OrderNotesListResult
+
+<a id="OrdersQuery"></a>
 
 `OrdersQuery(connector: WoocommerceConnector)`
 :   Query class for Orders entity operations.
@@ -322,6 +330,8 @@ Classes
         Returns:
             OrdersListResult
 
+<a id="PaymentGatewaysQuery"></a>
+
 `PaymentGatewaysQuery(connector: WoocommerceConnector)`
 :   Query class for PaymentGateways entity operations.
     
@@ -375,6 +385,8 @@ Classes
         
         Returns:
             PaymentGatewaysListResult
+
+<a id="ProductAttributesQuery"></a>
 
 `ProductAttributesQuery(connector: WoocommerceConnector)`
 :   Query class for ProductAttributes entity operations.
@@ -431,6 +443,8 @@ Classes
         
         Returns:
             ProductAttributesListResult
+
+<a id="ProductCategoriesQuery"></a>
 
 `ProductCategoriesQuery(connector: WoocommerceConnector)`
 :   Query class for ProductCategories entity operations.
@@ -498,6 +512,8 @@ Classes
         Returns:
             ProductCategoriesListResult
 
+<a id="ProductReviewsQuery"></a>
+
 `ProductReviewsQuery(connector: WoocommerceConnector)`
 :   Query class for ProductReviews entity operations.
     
@@ -563,6 +579,8 @@ Classes
         Returns:
             ProductReviewsListResult
 
+<a id="ProductTagsQuery"></a>
+
 `ProductTagsQuery(connector: WoocommerceConnector)`
 :   Query class for ProductTags entity operations.
     
@@ -623,6 +641,8 @@ Classes
         
         Returns:
             ProductTagsListResult
+
+<a id="ProductVariationsQuery"></a>
 
 `ProductVariationsQuery(connector: WoocommerceConnector)`
 :   Query class for ProductVariations entity operations.
@@ -723,6 +743,8 @@ Classes
         
         Returns:
             ProductVariationsListResult
+
+<a id="ProductsQuery"></a>
 
 `ProductsQuery(connector: WoocommerceConnector)`
 :   Query class for Products entity operations.
@@ -855,6 +877,8 @@ Classes
         Returns:
             ProductsListResult
 
+<a id="RefundsQuery"></a>
+
 `RefundsQuery(connector: WoocommerceConnector)`
 :   Query class for Refunds entity operations.
     
@@ -916,6 +940,8 @@ Classes
         Returns:
             RefundsListResult
 
+<a id="ShippingMethodsQuery"></a>
+
 `ShippingMethodsQuery(connector: WoocommerceConnector)`
 :   Query class for ShippingMethods entity operations.
     
@@ -963,6 +989,8 @@ Classes
         
         Returns:
             ShippingMethodsListResult
+
+<a id="ShippingZonesQuery"></a>
 
 `ShippingZonesQuery(connector: WoocommerceConnector)`
 :   Query class for ShippingZones entity operations.
@@ -1012,6 +1040,8 @@ Classes
         Returns:
             ShippingZonesListResult
 
+<a id="TaxClassesQuery"></a>
+
 `TaxClassesQuery(connector: WoocommerceConnector)`
 :   Query class for TaxClasses entity operations.
     
@@ -1048,6 +1078,8 @@ Classes
         
         Returns:
             TaxClassesListResult
+
+<a id="TaxRatesQuery"></a>
 
 `TaxRatesQuery(connector: WoocommerceConnector)`
 :   Query class for TaxRates entity operations.
@@ -1115,6 +1147,8 @@ Classes
         
         Returns:
             TaxRatesListResult
+
+<a id="WoocommerceConnector"></a>
 
 `WoocommerceConnector(auth_config: WoocommerceAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, shop: str | None = None)`
 :   Type-safe Woocommerce API connector.
