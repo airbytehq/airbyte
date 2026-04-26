@@ -21,6 +21,8 @@ The Salesforce connector supports the following entities and actions.
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
 | Reports | [List](#reports-list), [Get](#reports-get) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search) |
 | Query | [List](#query-list) |
 
 ## Sobjects
@@ -111,7 +113,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for accounts. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
+  SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
+  SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
+
+Use dot-path traversal (Owner.Name, Parent.Name) to resolve relationship
+fields inline instead of returning raw IDs.
  |
 
 
@@ -399,7 +408,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for contacts. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50
+  SELECT Id, FirstName, LastName, Account.Name, Owner.Name FROM Contact LIMIT 50
+  SELECT Id, Name, Email, Account.Name, ReportsTo.Name FROM Contact WHERE AccountId != null LIMIT 50
+
+Use dot-path traversal (Account.Name, Owner.Name, ReportsTo.Name) to resolve
+relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -677,7 +693,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for leads. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100
+  SELECT Id, Name, Company, Owner.Name FROM Lead LIMIT 50
+  SELECT Id, Name, Owner.Name, ConvertedAccount.Name, ConvertedContact.Name, ConvertedOpportunity.Name FROM Lead WHERE IsConverted = true LIMIT 50
+
+Use dot-path traversal (Owner.Name, ConvertedAccount.Name, ConvertedContact.Name,
+ConvertedOpportunity.Name) to resolve relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -971,7 +994,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for opportunities. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
+  SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
+  SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
+
+Use dot-path traversal (Account.Name, Owner.Name, Campaign.Name) to resolve
+relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -1249,7 +1279,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for tasks. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100
+  SELECT Id, Subject, Status, Owner.Name, Account.Name FROM Task LIMIT 50
+  SELECT Id, Subject, Status, Owner.Name, Who.Name, What.Name FROM Task WHERE ActivityDate = THIS_WEEK LIMIT 50
+
+Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
+fields inline instead of returning raw IDs. Who.Name and What.Name resolve
+polymorphic WhoId/WhatId references to the related record's name.
  |
 
 
@@ -1523,7 +1561,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for events. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime \> TODAY LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime \> TODAY LIMIT 50
+  SELECT Id, Subject, StartDateTime, Owner.Name, Account.Name FROM Event LIMIT 50
+  SELECT Id, Subject, StartDateTime, Owner.Name, Who.Name, What.Name FROM Event WHERE StartDateTime = THIS_WEEK LIMIT 50
+
+Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
+fields inline instead of returning raw IDs. Who.Name and What.Name resolve
+polymorphic WhoId/WhatId references to the related record's name.
  |
 
 
@@ -1693,7 +1739,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for campaigns. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50
+  SELECT Id, Name, Type, Status, Owner.Name FROM Campaign LIMIT 50
+  SELECT Id, Name, Owner.Name, Owner.Email, StartDate FROM Campaign WHERE IsActive = true LIMIT 50
+
+Use dot-path traversal (Owner.Name) to resolve relationship fields inline
+instead of returning raw IDs.
  |
 
 
@@ -1863,7 +1916,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for cases. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100
+  SELECT Id, CaseNumber, Subject, Account.Name, Owner.Name, Contact.Name FROM Case LIMIT 50
+  SELECT Id, CaseNumber, Subject, Status, Account.Name, Owner.Name FROM Case WHERE Status = 'Escalated' LIMIT 50
+
+Use dot-path traversal (Account.Name, Owner.Name, Contact.Name) to resolve
+relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -2035,7 +2095,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for notes. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
+  SELECT Id, Title, Body, Owner.Name FROM Note LIMIT 50
+  SELECT Id, Title, Owner.Name, CreatedDate FROM Note ORDER BY CreatedDate DESC LIMIT 50
+
+Use dot-path traversal (Owner.Name) to resolve relationship fields inline
+instead of returning raw IDs.
  |
 
 
@@ -2614,6 +2681,461 @@ Set to false to get only summary/aggregate data.
 
 </details>
 
+## Users
+
+### Users List
+
+Returns a list of users via SOQL query. Default returns up to 200 records.
+For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+
+
+#### Python SDK
+
+```python
+await salesforce.users.list(
+    q="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "list",
+    "params": {
+        "q": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `q` | `string` | Yes | SOQL query for users. Default returns up to 200 records.
+To change the limit, provide your own query with a LIMIT clause.
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM User WHERE IsActive = true ORDER BY LastModifiedDate DESC LIMIT 50
+  SELECT Id, Name, Email, Manager.Name, Profile.Name FROM User WHERE IsActive = true LIMIT 50
+  SELECT Id, Name, Email, Department, UserRole.Name FROM User LIMIT 50
+
+Use dot-path traversal (Manager.Name, Profile.Name, UserRole.Name) to resolve
+relationship fields inline instead of returning raw IDs.
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `done` | `boolean` |  |
+| `nextRecordsUrl` | `string` |  |
+
+</details>
+
+### Users Get
+
+Get a single user by ID. Returns all accessible fields by default.
+Use the `fields` parameter to retrieve only specific fields for better performance.
+
+
+#### Python SDK
+
+```python
+await salesforce.users.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Salesforce User ID (18-character ID starting with '005') |
+| `fields` | `string` | No | Comma-separated list of fields to retrieve. If omitted, returns all accessible fields.
+Example: "Id,Name,Email,Username,IsActive,ProfileId,UserRoleId"
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+</details>
+
+### Users Context Store Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await salesforce.users.context_store_search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the user record |
+| `AccountId` | `string` | ID of the account associated with this user (for portal users) |
+| `Alias` | `string` | Short name used to identify the user in list views and reports |
+| `City` | `string` | City portion of the user's address |
+| `CompanyName` | `string` | Name of the user's company |
+| `ContactId` | `string` | ID of the contact associated with this user (for portal users) |
+| `Country` | `string` | Country portion of the user's address |
+| `CreatedById` | `string` | ID of the user who created this user record |
+| `CreatedDate` | `string` | Date and time when the user was created |
+| `Department` | `string` | Department within the organization |
+| `Division` | `string` | Division within the organization |
+| `Email` | `string` | Email address of the user |
+| `EmployeeNumber` | `string` | Employee number or ID assigned by the organization |
+| `FirstName` | `string` | First name of the user |
+| `IsActive` | `boolean` | Whether the user is active and can log in |
+| `LastLoginDate` | `string` | Date and time of the user's most recent login |
+| `LastModifiedById` | `string` | ID of the user who last modified this user record |
+| `LastModifiedDate` | `string` | Date and time when the user was last modified |
+| `LastName` | `string` | Last name of the user |
+| `ManagerId` | `string` | ID of the user's manager |
+| `MobilePhone` | `string` | Mobile phone number of the user |
+| `Name` | `string` | Full name of the user |
+| `Phone` | `string` | Business phone number of the user |
+| `PostalCode` | `string` | Postal code portion of the user's address |
+| `ProfileId` | `string` | ID of the user's profile |
+| `State` | `string` | State or province portion of the user's address |
+| `Street` | `string` | Street address of the user |
+| `Title` | `string` | Job title of the user |
+| `UserRoleId` | `string` | ID of the user's role in the organization |
+| `UserType` | `string` | Type of user license (e.g., Standard, PowerPartner) |
+| `Username` | `string` | Username for logging into Salesforce (unique across all orgs) |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the user record |
+| `data[].AccountId` | `string` | ID of the account associated with this user (for portal users) |
+| `data[].Alias` | `string` | Short name used to identify the user in list views and reports |
+| `data[].City` | `string` | City portion of the user's address |
+| `data[].CompanyName` | `string` | Name of the user's company |
+| `data[].ContactId` | `string` | ID of the contact associated with this user (for portal users) |
+| `data[].Country` | `string` | Country portion of the user's address |
+| `data[].CreatedById` | `string` | ID of the user who created this user record |
+| `data[].CreatedDate` | `string` | Date and time when the user was created |
+| `data[].Department` | `string` | Department within the organization |
+| `data[].Division` | `string` | Division within the organization |
+| `data[].Email` | `string` | Email address of the user |
+| `data[].EmployeeNumber` | `string` | Employee number or ID assigned by the organization |
+| `data[].FirstName` | `string` | First name of the user |
+| `data[].IsActive` | `boolean` | Whether the user is active and can log in |
+| `data[].LastLoginDate` | `string` | Date and time of the user's most recent login |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this user record |
+| `data[].LastModifiedDate` | `string` | Date and time when the user was last modified |
+| `data[].LastName` | `string` | Last name of the user |
+| `data[].ManagerId` | `string` | ID of the user's manager |
+| `data[].MobilePhone` | `string` | Mobile phone number of the user |
+| `data[].Name` | `string` | Full name of the user |
+| `data[].Phone` | `string` | Business phone number of the user |
+| `data[].PostalCode` | `string` | Postal code portion of the user's address |
+| `data[].ProfileId` | `string` | ID of the user's profile |
+| `data[].State` | `string` | State or province portion of the user's address |
+| `data[].Street` | `string` | Street address of the user |
+| `data[].Title` | `string` | Job title of the user |
+| `data[].UserRoleId` | `string` | ID of the user's role in the organization |
+| `data[].UserType` | `string` | Type of user license (e.g., Standard, PowerPartner) |
+| `data[].Username` | `string` | Username for logging into Salesforce (unique across all orgs) |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+## Opportunity Stages
+
+### Opportunity Stages List
+
+Returns a list of opportunity stages via SOQL query. Default returns all stages.
+OpportunityStage defines the sales process stages that opportunities move through.
+
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.list(
+    q="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "list",
+    "params": {
+        "q": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `q` | `string` | Yes | SOQL query for opportunity stages. Default returns all stages.
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM OpportunityStage ORDER BY SortOrder ASC
+  SELECT Id, MasterLabel, ApiName, DefaultProbability, IsClosed, IsWon, IsActive, ForecastCategoryName FROM OpportunityStage WHERE IsActive = true ORDER BY SortOrder ASC
+  SELECT Id, MasterLabel, DefaultProbability, CreatedBy.Name FROM OpportunityStage ORDER BY SortOrder ASC
+
+Use dot-path traversal (CreatedBy.Name, LastModifiedBy.Name) to resolve
+relationship fields inline instead of returning raw IDs.
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `MasterLabel` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `done` | `boolean` |  |
+| `nextRecordsUrl` | `string` |  |
+
+</details>
+
+### Opportunity Stages Get
+
+Get a single opportunity stage by ID. Returns all accessible fields by default.
+Use the `fields` parameter to retrieve only specific fields for better performance.
+
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Salesforce OpportunityStage ID |
+| `fields` | `string` | No | Comma-separated list of fields to retrieve. If omitted, returns all accessible fields.
+Example: "Id,MasterLabel,ApiName,DefaultProbability,IsClosed,IsWon,IsActive"
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `MasterLabel` | `string` |  |
+| `attributes` | `object` |  |
+
+
+</details>
+
+### Opportunity Stages Context Store Search
+
+Search and filter opportunity stages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.context_store_search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the opportunity stage record |
+| `ApiName` | `string` | API name of the stage used in code and integrations |
+| `CreatedById` | `string` | ID of the user who created this stage |
+| `CreatedDate` | `string` | Date and time when the stage was created |
+| `DefaultProbability` | `number` | Default probability percentage for opportunities at this stage |
+| `Description` | `string` | Description of the stage |
+| `ForecastCategory` | `string` | Forecast category for opportunities at this stage |
+| `ForecastCategoryName` | `string` | Display name of the forecast category |
+| `IsActive` | `boolean` | Whether the stage is currently active and can be used |
+| `IsClosed` | `boolean` | Whether opportunities at this stage are considered closed |
+| `IsWon` | `boolean` | Whether opportunities at this stage are considered won |
+| `LastModifiedById` | `string` | ID of the user who last modified this stage |
+| `LastModifiedDate` | `string` | Date and time when the stage was last modified |
+| `MasterLabel` | `string` | Display label for the stage |
+| `SortOrder` | `integer` | Order in which the stage appears in the sales process |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the opportunity stage record |
+| `data[].ApiName` | `string` | API name of the stage used in code and integrations |
+| `data[].CreatedById` | `string` | ID of the user who created this stage |
+| `data[].CreatedDate` | `string` | Date and time when the stage was created |
+| `data[].DefaultProbability` | `number` | Default probability percentage for opportunities at this stage |
+| `data[].Description` | `string` | Description of the stage |
+| `data[].ForecastCategory` | `string` | Forecast category for opportunities at this stage |
+| `data[].ForecastCategoryName` | `string` | Display name of the forecast category |
+| `data[].IsActive` | `boolean` | Whether the stage is currently active and can be used |
+| `data[].IsClosed` | `boolean` | Whether opportunities at this stage are considered closed |
+| `data[].IsWon` | `boolean` | Whether opportunities at this stage are considered won |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this stage |
+| `data[].LastModifiedDate` | `string` | Date and time when the stage was last modified |
+| `data[].MasterLabel` | `string` | Display label for the stage |
+| `data[].SortOrder` | `integer` | Order in which the stage appears in the sales process |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
 ## Query
 
 ### Query List
@@ -2655,6 +3177,10 @@ Examples:
 - "SELECT Id, Name FROM Account LIMIT 100"
 - "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50"
 - "SELECT Id, Subject, Status FROM Case WHERE CreatedDate = TODAY"
+- "SELECT Id, Name, Account.Name, Owner.Name FROM Opportunity LIMIT 50"
+
+Use dot-path traversal (e.g. Owner.Name, Account.Name) to resolve relationship
+fields inline instead of returning raw IDs.
  |
 
 
