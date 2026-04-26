@@ -105,6 +105,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.30 | 2026-04-25 | [77009](https://github.com/airbytehq/airbyte/pull/77009) | Promoted release candidate to GA |
 | 1.3.30-rc.1 | 2026-04-16 | [76407](https://github.com/airbytehq/airbyte/pull/76407) | Increase HTTPAPIBudget rate limit from 50 to 70 req/s |
 | 1.3.29 | 2026-04-21 | [75796](https://github.com/airbytehq/airbyte/pull/75796) | Update dependencies |
 | 1.3.28 | 2026-04-14 | [76335](https://github.com/airbytehq/airbyte/pull/76335) | Promoted release candidate to GA |

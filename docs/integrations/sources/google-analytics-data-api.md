@@ -86,7 +86,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
+4. Select **Service Account Key Authentication** from the dropdown list and enter the **Service Account JSON Key** from Step 1.
 5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
@@ -105,7 +105,7 @@ Many analyses and data investigations may require 24-48 hours to process informa
 7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past we should refresh the data in every run. Since attribution changes after the event date, and Google Analytics has a data processing latency this is key to keep up with consistent information. If you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days..
+10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run. Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
 
 :::caution
 
@@ -280,6 +280,8 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Surface the GA4 API error message on 400 and 403 responses, and stop retrying permission errors |
+| 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
 | 2.9.31 | 2026-04-09 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
 | 2.9.30 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
