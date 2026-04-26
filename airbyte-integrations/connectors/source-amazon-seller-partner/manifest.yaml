@@ -3050,11 +3050,14 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
+                  - 429
+                error_message: Rate limit exceeded during report creation. The request will be retried automatically.
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                 type: CustomBackoffStrategy
@@ -3073,11 +3076,14 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
+                  - 429
+                error_message: Rate limit exceeded during report status polling. The request will be retried automatically.
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                 type: CustomBackoffStrategy
@@ -3096,11 +3102,14 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
+                  - 429
+                error_message: Rate limit exceeded during report document download. The request will be retried automatically.
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                 type: CustomBackoffStrategy
