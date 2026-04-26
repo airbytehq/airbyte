@@ -25,6 +25,13 @@ The Jira connector is optimized to handle prompts like these.
 - Update my most recent comment
 - Delete a test issue
 - Remove my most recent comment
+- Transition \{issue_key\} to In Progress
+- Move \{issue_key\} to Done
+- What transitions are available for \{issue_key\}?
+- Log 2 hours of work on \{issue_key\}
+- Log 30 minutes on \{issue_key\} with a comment about what I did
+- Link \{issue_key_1\} as blocking \{issue_key_2\}
+- Create a 'relates to' link between \{issue_key_1\} and \{issue_key_2\}
 - What issues are assigned to \{team_member\} this week?
 - Find all high priority bugs in our current sprint
 - Show me overdue issues across all projects
@@ -35,13 +42,13 @@ The Jira connector is optimized to handle prompts like these.
 
 The Jira connector isn't currently able to handle prompts like these.
 
-- Log time on \{issue_key\}
-- Transition \{issue_key\} to Done
+- Attach a file to \{issue_key\}
+- Add a watcher to \{issue_key\}
 
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-jira
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -53,8 +60,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_jira import JiraConnector
-from airbyte_agent_jira.models import JiraAuthConfig
+from airbyte_agent_sdk.connectors.jira import JiraConnector
+from airbyte_agent_sdk.connectors.jira.models import JiraAuthConfig
 
 connector = JiraConnector(
     auth_config=JiraAuthConfig(
@@ -77,11 +84,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_jira import JiraConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.jira import JiraConnector, AirbyteAuthConfig
 
 connector = JiraConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -102,13 +109,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Search](./REFERENCE.md#issues-search) |
-| Projects | [API Search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Search](./REFERENCE.md#users-search) |
-| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [API Search](./REFERENCE.md#issue-fields-api_search), [Search](./REFERENCE.md#issue-fields-search) |
-| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete), [Search](./REFERENCE.md#issue-comments-search) |
-| Issue Worklogs | [List](./REFERENCE.md#issue-worklogs-list), [Get](./REFERENCE.md#issue-worklogs-get), [Search](./REFERENCE.md#issue-worklogs-search) |
+| Issues | [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
+| Projects | [API Search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [API Search](./REFERENCE.md#issue-fields-api_search), [Context Store Search](./REFERENCE.md#issue-fields-context-store-search) |
+| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete), [Context Store Search](./REFERENCE.md#issue-comments-context-store-search) |
+| Issue Worklogs | [Get](./REFERENCE.md#issue-worklogs-get), [List](./REFERENCE.md#issue-worklogs-list), [Create](./REFERENCE.md#issue-worklogs-create), [Context Store Search](./REFERENCE.md#issue-worklogs-context-store-search) |
 | Issues Assignee | [Update](./REFERENCE.md#issues-assignee-update) |
+| Issue Transitions | [List](./REFERENCE.md#issue-transitions-list), [Create](./REFERENCE.md#issue-transitions-create) |
+| Issue Links | [Create](./REFERENCE.md#issue-links-create) |
 
 
 ### Authentication
@@ -121,7 +130,6 @@ See the official [Jira API reference](https://developer.atlassian.com/cloud/jira
 
 ## Version information
 
-- **Package version:** 0.1.113
-- **Connector version:** 1.1.7
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/jira/CHANGELOG.md)
+- **Package version:** 1.1.9
+- **Connector version:** 1.1.9
+- **Generated with Connector SDK commit SHA:** unknown
