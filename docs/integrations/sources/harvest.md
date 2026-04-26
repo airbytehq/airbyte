@@ -86,7 +86,14 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting). Harvest limits API requests to 100 calls per 15 seconds. If the rate limit is exceeded, the connector automatically waits and retries using the `Retry-After` header provided by the API.
+The connector is restricted by [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting). Harvest enforces two separate rate limits:
+
+- **General API requests**: 100 requests per 15 seconds
+- **Reports API requests**: 100 requests per 15 minutes
+
+The connector automatically enforces these limits using a built-in HTTP API budget and retries throttled requests using the `Retry-After` header provided by the API.
+
+You can configure the number of concurrent workers using the **Number of Concurrent Workers** field. Higher values can speed up syncs but increase API rate limit usage. The default is 4 workers, and the maximum is 10. Adjust this based on whether other applications share your Harvest API quota.
 
 Report streams (Expense Reports, Time Reports, Uninvoiced Report, and Project Budget Report) retrieve data in 365-day date windows. For accounts with a long history, initial syncs of these streams may take longer.
 
@@ -101,6 +108,7 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.32-rc.4 | 2026-04-08 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added configurable concurrency level with `num_workers` parameter and HTTP API budget rate limiting |
 | 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
 | 1.2.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.2.32 | 2026-04-10 | [76247](https://github.com/airbytehq/airbyte/pull/76247) | Promoted release candidate to GA |

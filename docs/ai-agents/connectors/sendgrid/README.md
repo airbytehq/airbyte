@@ -35,7 +35,7 @@ The Sendgrid connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-sendgrid
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -47,8 +47,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_sendgrid import SendgridConnector
-from airbyte_agent_sendgrid.models import SendgridAuthConfig
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector
+from airbyte_agent_sdk.connectors.sendgrid.models import SendgridAuthConfig
 
 connector = SendgridConnector(
     auth_config=SendgridAuthConfig(
@@ -70,11 +70,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_sendgrid import SendgridConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.sendgrid import SendgridConnector, AirbyteAuthConfig
 
 connector = SendgridConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -95,20 +95,20 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Search](./REFERENCE.md#contacts-search) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Search](./REFERENCE.md#lists-search) |
-| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Search](./REFERENCE.md#segments-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Search](./REFERENCE.md#campaigns-search) |
-| Singlesends | [List](./REFERENCE.md#singlesends-list), [Get](./REFERENCE.md#singlesends-get), [Search](./REFERENCE.md#singlesends-search) |
-| Templates | [List](./REFERENCE.md#templates-list), [Get](./REFERENCE.md#templates-get), [Search](./REFERENCE.md#templates-search) |
-| Singlesend Stats | [List](./REFERENCE.md#singlesend-stats-list), [Search](./REFERENCE.md#singlesend-stats-search) |
-| Bounces | [List](./REFERENCE.md#bounces-list), [Search](./REFERENCE.md#bounces-search) |
-| Blocks | [List](./REFERENCE.md#blocks-list), [Search](./REFERENCE.md#blocks-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search) |
+| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
+| Singlesends | [List](./REFERENCE.md#singlesends-list), [Get](./REFERENCE.md#singlesends-get), [Context Store Search](./REFERENCE.md#singlesends-context-store-search) |
+| Templates | [List](./REFERENCE.md#templates-list), [Get](./REFERENCE.md#templates-get), [Context Store Search](./REFERENCE.md#templates-context-store-search) |
+| Singlesend Stats | [List](./REFERENCE.md#singlesend-stats-list), [Context Store Search](./REFERENCE.md#singlesend-stats-context-store-search) |
+| Bounces | [List](./REFERENCE.md#bounces-list), [Context Store Search](./REFERENCE.md#bounces-context-store-search) |
+| Blocks | [List](./REFERENCE.md#blocks-list), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
 | Spam Reports | [List](./REFERENCE.md#spam-reports-list) |
-| Invalid Emails | [List](./REFERENCE.md#invalid-emails-list), [Search](./REFERENCE.md#invalid-emails-search) |
-| Global Suppressions | [List](./REFERENCE.md#global-suppressions-list), [Search](./REFERENCE.md#global-suppressions-search) |
-| Suppression Groups | [List](./REFERENCE.md#suppression-groups-list), [Get](./REFERENCE.md#suppression-groups-get), [Search](./REFERENCE.md#suppression-groups-search) |
-| Suppression Group Members | [List](./REFERENCE.md#suppression-group-members-list), [Search](./REFERENCE.md#suppression-group-members-search) |
+| Invalid Emails | [List](./REFERENCE.md#invalid-emails-list), [Context Store Search](./REFERENCE.md#invalid-emails-context-store-search) |
+| Global Suppressions | [List](./REFERENCE.md#global-suppressions-list), [Context Store Search](./REFERENCE.md#global-suppressions-context-store-search) |
+| Suppression Groups | [List](./REFERENCE.md#suppression-groups-list), [Get](./REFERENCE.md#suppression-groups-get), [Context Store Search](./REFERENCE.md#suppression-groups-context-store-search) |
+| Suppression Group Members | [List](./REFERENCE.md#suppression-group-members-list), [Context Store Search](./REFERENCE.md#suppression-group-members-context-store-search) |
 
 
 ### Authentication
@@ -121,7 +121,6 @@ See the official [Sendgrid API reference](https://docs.sendgrid.com/api-referenc
 
 ## Version information
 
-- **Package version:** 0.1.15
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/sendgrid/CHANGELOG.md)
+- **Package version:** 1.0.3
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** unknown

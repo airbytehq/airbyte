@@ -1,42 +1,89 @@
-# Wordpress
+# WordPress
 
-The WordPress connector enables seamless data synchronization between your WordPress site and various destinations. With this connector, you can effortlessly extract and integrate blog posts, pages, comments, and other WordPress data into your preferred analytics or storage platform, enabling streamlined data analysis and reporting.
+<HideInUI>
 
-## Configuration
+This page contains the setup guide and reference information for the [WordPress](https://wordpress.org/) source connector.
 
-| Input        | Type     | Description                                                                                    | Default Value |
-| ------------ | -------- | ---------------------------------------------------------------------------------------------- | ------------- |
-| `domain`     | `string` | Domain. The domain of the WordPress site. Example: my-wordpress-website.host.com               |               |
-| `password`   | `string` | Placeholder Password. Placeholder for basic HTTP auth password - should be set to empty string | x             |
-| `username`   | `string` | Placeholder Username. Placeholder for basic HTTP auth username - should be set to empty string | x             |
-| `start_date` | `string` | Start Date. Minimal Date to Retrieve Records when stream allow incremental.                    |               |
-| `lookback_window` | `integer` | Lookback Window (hours). Hours of previously synced data to re-fetch on each sync for incremental streams (editor_blocks, comments, pages, media) to prevent data loss. | 0 |
+</HideInUI>
 
-## Streams
+## Prerequisites
 
-| Stream Name    | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
-| -------------- | ----------- | ---------------- | ------------------ | -------------------- |
-| users          | id          | DefaultPaginator | ✅                 | ❌                   |
-| posts          | id          | DefaultPaginator | ✅                 | ❌                   |
-| categories     | id          | DefaultPaginator | ✅                 | ❌                   |
-| plugins        | plugin      | No pagination    | ✅                 | ❌                   |
-| editor_blocks  | id          | DefaultPaginator | ✅                 | ✅                   |
-| comments       | id          | DefaultPaginator | ✅                 | ✅                   |
-| pages          | id          | DefaultPaginator | ✅                 | ✅                   |
-| tags           | id          | DefaultPaginator | ✅                 | ❌                   |
-| page_revisions | id          | DefaultPaginator | ✅                 | ❌                   |
-| media          | id          | DefaultPaginator | ✅                 | ✅                   |
-| taxonomies     | category    | No pagination    | ✅                 | ❌                   |
-| types          |             | No pagination    | ✅                 | ❌                   |
-| themes         | stylesheet  | No pagination    | ✅                 | ❌                   |
-| statuses       |             | No pagination    | ✅                 | ❌                   |
-| settings       |             | No pagination    | ✅                 | ❌                   |
+- A self-hosted WordPress site (WordPress.org) with the [REST API](https://developer.wordpress.org/rest-api/) enabled (default on WordPress 4.7 and later).
+- The site's domain name—for example, `my-site.example.com`.
+
+:::note
+This connector reads data from the public WordPress REST API. Most read endpoints for posts, pages, comments, categories, tags, and media are accessible without authentication. Endpoints that expose private data—such as plugins, themes, settings, and users with full details—require authentication.
+:::
+
+### Authentication
+
+The connector sends HTTP Basic Authentication headers with each request. For public endpoints, you can leave the **Username** and **Password** fields at their default values.
+
+To access authenticated endpoints such as plugins, themes, and settings, provide valid WordPress credentials. WordPress supports [Application Passwords](https://developer.wordpress.org/advanced-administration/security/application-passwords/) (available since WordPress 5.6), which are the recommended method for REST API authentication:
+
+1. In your WordPress admin dashboard, go to **Users > Profile**.
+2. Scroll to the **Application Passwords** section.
+3. Enter a name for the application (for example, `Airbyte`) and click **Add New Application Password**.
+4. Copy the generated password. Use your WordPress username and this application password as the connector credentials.
+
+## Setup guide
+
+1. Enter the **Domain** of your WordPress site without the protocol—for example, `my-site.example.com`.
+2. Enter your **Username** and **Password**. Leave the default values if you only need to sync public data.
+3. Optionally, set a **Start Date** to limit incremental streams to records modified after that date. Use the format `YYYY-MM-DDTHH:MM:SSZ`—for example, `2024-01-01T00:00:00Z`.
+4. Optionally, set a **Lookback Window** (in hours) for incremental streams. This re-fetches the specified number of hours of previously synced data on each sync to guard against data loss. Set to `0` to disable. Duplicates are handled by destination deduplication.
+
+<HideInUI>
+
+## Supported sync modes
+
+The WordPress source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental
+
+## Supported streams
+
+The connector syncs data from the following [WordPress REST API](https://developer.wordpress.org/rest-api/reference/) endpoints:
+
+| Stream | API Endpoint | Sync Mode | Pagination | Primary Key | Description |
+| --- | --- | --- | --- | --- | --- |
+| [users](https://developer.wordpress.org/rest-api/reference/users/) | `/wp/v2/users` | Full Refresh | Yes | `id` | Site authors and contributors. |
+| [posts](https://developer.wordpress.org/rest-api/reference/posts/) | `/wp/v2/posts` | Full Refresh | Yes | `id` | Blog posts. |
+| [categories](https://developer.wordpress.org/rest-api/reference/categories/) | `/wp/v2/categories` | Full Refresh | Yes | `id` | Post categories. |
+| [tags](https://developer.wordpress.org/rest-api/reference/tags/) | `/wp/v2/tags` | Full Refresh | Yes | `id` | Post tags. |
+| [pages](https://developer.wordpress.org/rest-api/reference/pages/) | `/wp/v2/pages` | Incremental | Yes | `id` | Static pages. Cursor field: `modified`. |
+| [page_revisions](https://developer.wordpress.org/rest-api/reference/page-revisions/) | `/wp/v2/pages/{id}/revisions` | Full Refresh | Yes | `id` | Revision history for each page. |
+| [comments](https://developer.wordpress.org/rest-api/reference/comments/) | `/wp/v2/comments` | Incremental | Yes | `id` | Comments on posts and pages. Cursor field: `date`. |
+| [media](https://developer.wordpress.org/rest-api/reference/media/) | `/wp/v2/media` | Incremental | Yes | `id` | Uploaded images, videos, and other media files. Cursor field: `modified`. |
+| [editor_blocks](https://developer.wordpress.org/rest-api/reference/blocks/) | `/wp/v2/blocks` | Incremental | Yes | `id` | Reusable block patterns (synced patterns). Cursor field: `modified`. |
+| [plugins](https://developer.wordpress.org/rest-api/reference/plugins/) | `/wp/v2/plugins` | Full Refresh | No | `plugin` | Installed plugins. Requires authentication. |
+| [taxonomies](https://developer.wordpress.org/rest-api/reference/taxonomies/) | `/wp/v2/taxonomies` | Full Refresh | No | `category` | Registered taxonomies (for example, categories and tags). |
+| [types](https://developer.wordpress.org/rest-api/reference/post-types/) | `/wp/v2/types` | Full Refresh | No | — | Registered post types (for example, post, page, attachment). |
+| [themes](https://developer.wordpress.org/rest-api/reference/themes/) | `/wp/v2/themes` | Full Refresh | No | `stylesheet` | Installed themes. Requires authentication. |
+| [statuses](https://developer.wordpress.org/rest-api/reference/post-statuses/) | `/wp/v2/statuses` | Full Refresh | No | — | Available post statuses (for example, publish, draft, private). |
+| [settings](https://developer.wordpress.org/rest-api/reference/settings/) | `/wp/v2/settings` | Full Refresh | No | — | Site-wide settings such as title, description, and timezone. Requires authentication. |
+
+### Incremental sync details
+
+The `pages`, `media`, and `editor_blocks` streams use the `modified` field as the cursor, tracking records by their last modification time in the site's local timezone. The `comments` stream uses the `date` field.
+
+Because these timestamps use the site's local timezone, clock changes during daylight saving time (DST) transitions can cause non-monotonic timestamps. If this is a concern, configure a **Lookback Window** to re-fetch recent data and prevent gaps.
+
+## Limitations
+
+- **Pagination**: The WordPress REST API limits paginated responses to a maximum of 100 items per page. The connector handles this automatically.
+- **Authenticated endpoints**: The `plugins`, `themes`, and `settings` streams require valid credentials. If the connector is configured without authentication, these streams return errors or empty results.
+- **WordPress.com hosted sites**: This connector is designed for the self-hosted WordPress REST API (`/wp-json/wp/v2/`). It may not work with WordPress.com sites that use a different API structure.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.0.49 | 2026-04-09 | [76063](https://github.com/airbytehq/airbyte/pull/76063) | Add configurable lookback window to incremental streams to prevent data loss; fix tab character in pages stream request parameter |
 | Version | Date       | Pull Request | Subject                                                                               |
 | ------- | ---------- | ------------ | ------------------------------------------------------------------------------------- |
 | 0.0.50 | 2026-04-21 | [76792](https://github.com/airbytehq/airbyte/pull/76792) | Update dependencies |
@@ -88,6 +135,8 @@ The WordPress connector enables seamless data synchronization between your WordP
 | 0.0.4 | 2024-12-21 | [50361](https://github.com/airbytehq/airbyte/pull/50361) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49743](https://github.com/airbytehq/airbyte/pull/49743) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49433](https://github.com/airbytehq/airbyte/pull/49433) | Update dependencies |
-| 0.0.1   | 2024-10-21 | 46378        | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-10-21 | 46378 | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
+
+</HideInUI>

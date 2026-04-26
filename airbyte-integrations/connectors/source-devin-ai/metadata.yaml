@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3bc4954a-9ebe-48f5-b11d-8f52d61b10d5
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-devin-ai
   documentationUrl: https://docs.airbyte.com/integrations/sources/devin-ai
   githubIssueLabel: source-devin-ai

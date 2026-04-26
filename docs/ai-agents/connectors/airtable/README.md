@@ -34,7 +34,7 @@ The Airtable connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-airtable
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -46,8 +46,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_airtable import AirtableConnector
-from airbyte_agent_airtable.models import AirtableAuthConfig
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
 
 connector = AirtableConnector(
     auth_config=AirtableAuthConfig(
@@ -69,11 +69,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_airtable import AirtableConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector, AirbyteAuthConfig
 
 connector = AirtableConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -94,8 +94,8 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Bases | [List](./REFERENCE.md#bases-list), [Search](./REFERENCE.md#bases-search) |
-| Tables | [List](./REFERENCE.md#tables-list), [Search](./REFERENCE.md#tables-search) |
+| Bases | [List](./REFERENCE.md#bases-list), [Context Store Search](./REFERENCE.md#bases-context-store-search) |
+| Tables | [List](./REFERENCE.md#tables-list), [Context Store Search](./REFERENCE.md#tables-context-store-search) |
 | Records | [List](./REFERENCE.md#records-list), [Get](./REFERENCE.md#records-get) |
 
 
@@ -109,7 +109,6 @@ See the official [Airtable API reference](https://airtable.com/developers/web/ap
 
 ## Version information
 
-- **Package version:** 0.1.51
-- **Connector version:** 1.0.6
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/airtable/CHANGELOG.md)
+- **Package version:** 1.0.8
+- **Connector version:** 1.0.8
+- **Generated with Connector SDK commit SHA:** unknown
