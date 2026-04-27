@@ -266,6 +266,48 @@ internal class RedshiftAirbyteClientTest {
     }
 
     // ================================================================
+    // isTableNotEmpty
+    // ================================================================
+
+    @Test
+    fun `isTableNotEmpty returns true when table has rows`() = runTest {
+        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
+        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } returns mockResultSet
+        every { mockResultSet.next() } returns true
+        every { mockResultSet.getBoolean("not_empty") } returns true
+
+        assertEquals(true, client.isTableNotEmpty(testTable))
+    }
+
+    @Test
+    fun `isTableNotEmpty returns false when table is empty`() = runTest {
+        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
+        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } returns mockResultSet
+        every { mockResultSet.next() } returns true
+        every { mockResultSet.getBoolean("not_empty") } returns false
+
+        assertEquals(false, client.isTableNotEmpty(testTable))
+    }
+
+    @Test
+    fun `isTableNotEmpty returns null on missing table`() = runTest {
+        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
+        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
+            SQLException("relation does not exist")
+
+        assertNull(client.isTableNotEmpty(testTable))
+    }
+
+    @Test
+    fun `isTableNotEmpty returns false on empty result set`() = runTest {
+        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
+        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } returns mockResultSet
+        every { mockResultSet.next() } returns false
+
+        assertEquals(false, client.isTableNotEmpty(testTable))
+    }
+
+    // ================================================================
     // getGenerationId
     // ================================================================
 

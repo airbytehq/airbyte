@@ -130,7 +130,7 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `createTable without replace skips drop`() {
+    fun `createTable without replace skips drop and transaction wrapper`() {
         val finalSchema = mapOf("id" to ColumnType("bigint", false))
         val stream = mockStream(finalSchema)
         val tableName = TableName(namespace = "public", name = "users")
@@ -138,9 +138,9 @@ internal class RedshiftSqlGeneratorTest {
         val sql = sqlGenerator.createTable(stream, tableName, replace = false)
 
         assertFalse(sql.contains("DROP TABLE"))
-        assertTrue(sql.contains("BEGIN TRANSACTION;"))
+        assertFalse(sql.contains("BEGIN TRANSACTION;"))
+        assertFalse(sql.contains("COMMIT;"))
         assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"))
-        assertTrue(sql.contains("COMMIT;"))
     }
 
     @Test
@@ -171,6 +171,15 @@ internal class RedshiftSqlGeneratorTest {
     fun `countTable generates SELECT COUNT`() {
         val sql = sqlGenerator.countTable(TableName(namespace = "ns", name = "tbl"))
         assertEquals("""SELECT COUNT(*) AS "total" FROM "ns"."tbl";""", sql)
+    }
+
+    @Test
+    fun `isTableNotEmpty generates SELECT EXISTS with LIMIT 1`() {
+        val sql = sqlGenerator.isTableNotEmpty(TableName(namespace = "ns", name = "tbl"))
+        assertEquals(
+            """SELECT EXISTS(SELECT 1 FROM "ns"."tbl" LIMIT 1) AS "not_empty";""",
+            sql,
+        )
     }
 
     @Test
@@ -215,7 +224,7 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `overwriteTable same schema generates DROP and RENAME`() {
+    fun `overwriteTable generates DROP and RENAME`() {
         val source = TableName(namespace = "ns", name = "tmp")
         val target = TableName(namespace = "ns", name = "final")
 
@@ -224,20 +233,7 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
         assertTrue(sql.contains("""DROP TABLE IF EXISTS "ns"."final""""))
         assertTrue(sql.contains("""ALTER TABLE "ns"."tmp" RENAME TO "final""""))
-        assertFalse(sql.contains("SET SCHEMA"))
         assertTrue(sql.contains("COMMIT;"))
-    }
-
-    @Test
-    fun `overwriteTable cross schema includes SET SCHEMA`() {
-        val source = TableName(namespace = "staging", name = "tmp")
-        val target = TableName(namespace = "public", name = "final")
-
-        val sql = sqlGenerator.overwriteTable(source, target)
-
-        assertTrue(sql.contains("""DROP TABLE IF EXISTS "public"."final""""))
-        assertTrue(sql.contains("""ALTER TABLE "staging"."tmp" RENAME TO "final""""))
-        assertTrue(sql.contains("""SET SCHEMA "public""""))
     }
 
     // ================================================================

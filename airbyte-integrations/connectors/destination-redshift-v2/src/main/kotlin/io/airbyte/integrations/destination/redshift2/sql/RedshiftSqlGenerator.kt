@@ -83,15 +83,20 @@ class RedshiftSqlGenerator {
                 }
                 .joinToString(",\n    ")
 
-        val dropStatement =
-            if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};\n" else ""
+        val createStatement =
+            "CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} ($columnDeclarations);"
 
-        return """
-            |BEGIN TRANSACTION;
-            |${dropStatement}
-            |CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} ($columnDeclarations);
-            |COMMIT;
-        """.trimMargin()
+        // Only wrap in a transaction when replacing (DROP + CREATE must be atomic).
+        return if (replace) {
+            """
+                |BEGIN TRANSACTION;
+                |DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};
+                |$createStatement
+                |COMMIT;
+            """.trimMargin()
+        } else {
+            createStatement
+        }
     }
 
     fun dropTable(tableName: TableName): String =
@@ -102,6 +107,10 @@ class RedshiftSqlGenerator {
 
     fun countTable(tableName: TableName): String =
         "SELECT COUNT(*) AS \"total\" FROM ${getFullyQualifiedName(tableName)};"
+
+    /** Generates an efficient emptiness check using `SELECT EXISTS(... LIMIT 1)` */
+    fun isTableNotEmpty(tableName: TableName): String =
+        "SELECT EXISTS(SELECT 1 FROM ${getFullyQualifiedName(tableName)} LIMIT 1) AS \"not_empty\";"
 
     fun getGenerationId(tableName: TableName): String =
         """
@@ -140,29 +149,12 @@ class RedshiftSqlGenerator {
      * Generates a rename-based table swap within a transaction:
      * 1. DROP the target table
      * 2. RENAME the source table to the target name
-     * 3. If cross-schema, SET SCHEMA to move the renamed table
      */
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
-        val moveSchemaSql =
-            if (sourceTableName.namespace != targetTableName.namespace) {
-                """
-                    |
-                    |ALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)}
-                    |SET SCHEMA ${getNamespace(targetTableName)};
-                """.trimMargin()
-            } else {
-                ""
-            }
-
         return """
             |BEGIN TRANSACTION;
             |DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)};
-            |ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${
-            getName(
-                targetTableName,
-            )
-        };
-            |$moveSchemaSql
+            |ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
             |COMMIT;
         """.trimMargin()
     }
