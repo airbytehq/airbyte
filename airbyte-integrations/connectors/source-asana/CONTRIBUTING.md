@@ -1,13 +1,14 @@
 # source-asana: Unique Behaviors
 
-## 1. `incremental_dependency: true` on `tasks` Child Substreams
+## 1. `tasks` is incremental; its child substreams remain full-refresh
 
-The `stories`, `stories_compact`, `attachments`, and `attachments_compact` streams partition off the `tasks` parent stream and use `incremental_dependency: true` on the `ParentStreamConfig`. This is a partition-router optimization, not a sync-mode declaration:
-- The children themselves declare `supported_sync_modes: [full_refresh]` in the discover catalog (they have no own cursor).
-- On a warm sync, the parent partition router restricts iteration to `tasks` whose `modified_at` cursor has advanced since the last sync.
-- This is only safe if every mutation on the child resource bumps `task.modified_at`. If it does not, the child mutation is silently skipped on warm syncs, and by the time the parent's cursor advances for unrelated reasons the missed mutation is unrecoverable. This is a source-side correctness bug, not just a destination-mode amplification.
+This connector recently gained incremental sync on the `tasks` stream (using the Asana API's `modified_since` filter against `task.modified_at`). The four substreams that partition off `tasks` — `stories`, `stories_compact`, `attachments`, `attachments_compact` — remain full-refresh and have no cursor of their own. On every sync, those children re-iterate every parent partition the partition router yields.
+
+`incremental_dependency: true` is intentionally NOT set on the partition routers for these children. The flag is a partition-router optimization that only takes effect when the child has its own cursor (an `incremental_sync` block, or `is_client_side_incremental: true`); on full-refresh children it is inert because there is no child-state mechanism to persist `parent_state` into. See the platform docs at [Incremental Dependency](https://docs.airbyte.com/platform/connector-development/config-based/understanding-the-yaml-file/incremental-syncs#incremental-dependency) for the mechanism, and in particular [When `incremental_dependency` has no effect](https://docs.airbyte.com/platform/connector-development/config-based/understanding-the-yaml-file/incremental-syncs#when-incremental_dependency-has-no-effect).
 
 ### Empirical verification matrix (live, 2026-04-27 against the Asana API, `Airbyte, Inc` workspace, `Illustrations` project, test task `1214303992681244`)
+
+This matrix is retained as forward-compatible record. It documents whether each child mutation advances `task.modified_at` — the parent-cursor-bump assumption — so that if a future change gives any of these children their own cursor and activates `incremental_dependency: true` on its router, the safety question is already answered for the Asana API as observed on this date.
 
 The verification pattern is: capture `task.modified_at`, perform the child mutation against the live API, re-fetch the task, check whether `modified_at` advanced.
 
@@ -17,8 +18,8 @@ The verification pattern is: capture `task.modified_at`, perform the child mutat
 | `attachments`, `attachments_compact` | Add URL-attachment via `POST /attachments?parent={task_gid}` | YES |
 | (sanity baseline) | Rename task via `PUT /tasks/{task_gid}` | YES |
 
-All 4 children using `incremental_dependency: true` are empirically safe on the Asana API.
+All four children would be empirically safe under `incremental_dependency: true` on the Asana API as observed on the verification date — but the flag is not currently enabled because the children lack a cursor of their own.
 
-**Why this matters:** if the Asana API changes its behavior — e.g., stops bumping `task.modified_at` on a particular child mutation — the safety of `incremental_dependency: true` for that child changes accordingly. Re-run the verification pattern before adding new substreams to the `incremental_dependency: true` set, and re-verify the existing matrix periodically. The verification methodology and decision tree are documented in the [`add-incremental-stream-support` skill](https://github.com/airbytehq/ai-skills/blob/main/.agents/skills/add-incremental-stream-support/SKILL.md).
+**Why this matters:** if the Asana API changes its behavior — e.g., stops bumping `task.modified_at` on a particular child mutation — the verification result changes accordingly. Re-run the verification pattern before activating `incremental_dependency: true` on any of these children in the future, and re-verify the existing matrix periodically. The verification methodology and decision tree are documented in the [`add-incremental-stream-support` skill](https://github.com/airbytehq/ai-skills/blob/main/.agents/skills/add-incremental-stream-support/SKILL.md).
 
-**Cross-reference:** the source-jira matrix (in `airbyte-integrations/connectors/source-jira/CONTRIBUTING.md`) shows that Atlassian's API behaves differently per child resource type — issue properties do NOT bump `issue.updated`. The result is API-specific: every connector's children must be verified independently, even when using the same `incremental_dependency` mechanism.
+**Cross-reference:** the source-jira matrix (in `airbyte-integrations/connectors/source-jira/CONTRIBUTING.md`) shows that Atlassian's API behaves differently per child resource type — issue properties do NOT bump `issue.updated`. The result is API-specific: every connector's children must be verified independently before activating `incremental_dependency: true`, even when using the same partition-router mechanism.
