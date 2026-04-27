@@ -4,12 +4,28 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Mailchimp API supports `since_last_changed` and `since_created_at` filtering on several endpoints. The connector uses Python custom components referenced from the manifest.
+**Connector type:** Hybrid (manifest.yaml + Python custom components for record extraction and config transformation)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 12 streams analyzed. 9 use incremental sync with `since_last_changed` or similar params. 3 are full-refresh.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+### Incremental Streams
 
-### Deferred streams
+| Stream | Cursor Field | API Filter | Notes |
+|--------|-------------|------------|-------|
+| automations | parameterized | `since_last_changed` | Mailchimp Automations API |
+| campaigns | parameterized | `since_last_changed` | Mailchimp Campaigns API |
+| email_activity | parameterized | `since` | Per-campaign email activity |
+| lists | parameterized | `since_last_changed` | Mailchimp Lists/Audiences API |
+| list_members | parameterized | `since_last_changed` | Per-list member data |
+| reports | parameterized | `since_last_changed` | Campaign reports |
+| segments | parameterized | `since_last_changed` | List segments |
+| segment_members | parameterized | `since_last_changed` | Per-segment members |
+| unsubscribes | parameterized | `since_last_changed` | Unsubscribe events |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| tags | No date filtering | Mailchimp Tags API has no `since_last_changed` param; small dataset per list |
+| interest_categories | No date filtering | Mailchimp Interest Categories API has no date filter; small dataset |
+| interests | No date filtering | Mailchimp Interests API has no date filter; child of interest_categories |
