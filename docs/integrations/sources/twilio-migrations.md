@@ -30,6 +30,12 @@ deprecated [Programmable Chat REST API](https://www.twilio.com/en-us/changelog/p
   `chat_service_sid` to match the Conversations API response.
 - The `chat.twilio.com` host has been removed from the connector's
   `allowedHosts` list and replaced with `conversations.twilio.com`.
+- The `account_sid` field on `services` records is now returned as `null`
+  by the Conversations API, whereas the deprecated Chat API returned the
+  actual account SID. This is a known Twilio Conversations API behavior
+  — the field is documented in Twilio's API reference but consistently
+  returns `null` in practice. The `roles` stream is not affected and
+  continues to return `account_sid` with the correct value.
 
 ### Why we made this change
 
