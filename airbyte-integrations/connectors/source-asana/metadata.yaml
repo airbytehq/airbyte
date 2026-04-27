@@ -2,6 +2,11 @@ data:
   allowedHosts:
     hosts:
       - app.asana.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   releases:
     breakingChanges:
       1.0.0:
