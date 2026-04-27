@@ -276,7 +276,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: _updated_since
+          field_name: updated_since
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
