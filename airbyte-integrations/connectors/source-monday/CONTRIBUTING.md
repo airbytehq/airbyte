@@ -4,12 +4,24 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Monday.com GraphQL API supports filtering by `updated_at` on boards and items. The connector uses Python custom components referenced from the manifest.
+**Connector type:** Hybrid (manifest.yaml + Python custom components for GraphQL request handling, record extraction, and pagination)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 8 streams analyzed. 1 uses incremental sync. 7 are full-refresh. Monday.com uses a GraphQL API which does not support traditional date-based filtering on most resource queries.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+### Incremental Streams
 
-### Deferred streams
+| Stream | Cursor Field | API Filter | Notes |
+|--------|-------------|------------|-------|
+| activity_logs | created_at_int | `from`/`to` params in GraphQL query | Monday.com activity logs with timestamp filtering |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| items | GraphQL API; no `updated_since` filter | Monday.com `boards.items_page` query has no date filter; uses cursor-based pagination only |
+| boards | GraphQL API; no date filter | Monday.com `boards` query returns all boards; no `updated_since` |
+| tags | Small dataset; no date filter | Monday.com `tags` query returns all tags |
+| teams | Small dataset; no date filter | Monday.com `teams` query returns all teams |
+| updates | GraphQL API; no `updated_since` filter | Monday.com `updates` query has no date-based filtering |
+| users | Small dataset; no date filter | Monday.com `users` query returns all users |
+| workspaces | Small dataset; no date filter | Monday.com `workspaces` query returns all workspaces |
