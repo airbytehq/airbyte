@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.7-rc.1
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -15,8 +15,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 0.3.6
     oss:
       enabled: true
+      dockerImageTag: 0.3.6
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/ashby
   tags:
@@ -45,4 +47,7 @@ data:
     - title: Authentication
       url: https://developers.ashbyhq.com/#authentication
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
