@@ -89,11 +89,12 @@ incremental_sync:
 
 ## Incremental Support for Child Streams
 
-Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)
+Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](./partition-router.md#substreampartitionrouter).
 
 The default state format is **per partition with fallback to global**, but there are options to enhance efficiency depending on your use case: **incremental_dependency** and **global_substream_cursor**. Here's when and how to use each option, with examples:
 
 ### Per Partition with Fallback to Global (Default)
+
 - **Description**: This is the default state format, where each partition has its own cursor. However, when the number of records in the parent sync exceeds two times the set limit, the cursor automatically falls back to a global state to manage efficiency and scalability.
 - **Limitation**: The per partition state has a limit of 10,000 partitions. Once this limit is exceeded, the global cursor takes over, aggregating the state across partitions to avoid inefficiencies.
 - **When to Use**: Use this as the default option for most cases. It provides the flexibility of managing partitions while preventing performance degradation when large numbers of records are involved.
@@ -159,7 +160,7 @@ If any child mutation does not bump the parent cursor, exclude that child from `
   ```
 
 ### Summary
-Summary
+
 - **Per Partition with Fallback to Global (Default)**: Best for managing scalability and optimizing state size. Starts with per partition cursors, and automatically falls back to a global cursor if the number of records in the parent sync exceeds two times the partition limit.
 - **Incremental Dependency**: Use for incremental parent streams with a dependent child cursor. Ensure the API updates the parent cursor when child records are added or updated.
 - **Global Substream Cursor**: Use cautiously for custom connectors with very large parent streams. Avoids per partition state management but sacrifices some granularity.
