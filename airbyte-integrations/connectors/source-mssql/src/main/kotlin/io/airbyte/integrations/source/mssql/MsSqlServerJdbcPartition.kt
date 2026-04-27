@@ -231,8 +231,8 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
 }
 
 /**
- * For views (no TABLESAMPLE support) or streams without an ordered column,
- * use non-resumable cursor incremental.
+ * For views (no TABLESAMPLE support) or streams without an ordered column, use non-resumable cursor
+ * incremental.
  */
 class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
@@ -249,7 +249,11 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
         get() =
             MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                getEffectiveCursorCheckpoint(cursorCutoffTime, streamState.cursorUpperBound, cursorLowerBound),
+                getEffectiveCursorCheckpoint(
+                    cursorCutoffTime,
+                    streamState.cursorUpperBound,
+                    cursorLowerBound
+                ),
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -275,10 +279,7 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
             return SelectQuerySpec(
                 SelectColumns(stream.fields),
                 from,
-                Where(And(
-                    Greater(cursor, cursorLowerBound),
-                    LesserOrEqual(cursor, upperBound)
-                ))
+                Where(And(Greater(cursor, cursorLowerBound), LesserOrEqual(cursor, upperBound)))
             )
         }
 }

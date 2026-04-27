@@ -822,7 +822,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             "Views in full refresh mode should use non-resumable partitions"
         )
     }
-    
+
     @Test
     fun testViewInCursorIncrementalPhase() {
         // Views or table with no ordered column in cursor-incremental phase must route to
@@ -855,7 +855,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
 
         val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
         every { mockMetadataQuerier.findTableName(viewStream.id) } returns
-                TableName(name = "view_test_table", schema = "dbo", type = "VIEW")
+            TableName(name = "view_test_table", schema = "dbo", type = "VIEW")
         every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
 
         val mockMetadataQuerierFactory =
@@ -871,13 +871,12 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 mockMetadataQuerierFactory
             )
 
-        val partition =
-            factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
 
         assertTrue(
             partition is MsSqlServerJdbcNonResumableCursorIncrementalPartition,
             "Views in cursor-incremental phase must use the non-resumable cursor partition " +
-                    "to avoid TABLESAMPLE on views."
+                "to avoid TABLESAMPLE on views."
         )
     }
 }
