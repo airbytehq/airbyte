@@ -28,7 +28,6 @@ publicly. Revisit when autocreate is consistent across endpoints and/or
 rename rejects reuse of the old name.
 -->
 
-
 ## Create a new workspace
 
 You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) against a new `workspace_name`. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
@@ -40,7 +39,6 @@ is the canonical way to create a workspace, and the paragraph above
 already routes readers through that path, so we don't need to call out
 the asymmetry publicly. Revisit when autocreate is consistent.
 -->
-
 
 ## Manage workspaces
 

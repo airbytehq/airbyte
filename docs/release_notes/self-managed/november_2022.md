@@ -16,7 +16,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 - Improved the Airbyte Protocol by introducing Airbyte Protocol v1 [#19846](https://github.com/airbytehq/airbyte/pull/19846), which defines a set of [well-known data types](https://github.com/airbytehq/airbyte/blob/5813700927cfc690d2bffcec28f5286e59ac0122/docs/understanding-airbyte/supported-data-types.md). [#17486](https://github.com/airbytehq/airbyte/pull/17486)
   - These replace existing JSON Schema primitive types.
   - They provide out-of-the-box validation and enforce specific formatting on some data types, like timestamps.
-  - Non-primitive types, like `object`, `array`, and ` oneOf`, still use raw JSON Schema types.
+  - Non-primitive types, like `object`, `array`, and `oneOf`, still use raw JSON Schema types.
   - These well-known types mostly correspond with the existing Airbyte data types, aside from a few differences:
     - `BinaryData` is the only new type, which is used in places that previously produced a `Base64` string.
     - `TimestampWithTimezone`, `TimestampWithoutTimezone`, `TimeWithTimezone`, and `TimeWithoutTimezone` have been in use for some time, so we made them official.

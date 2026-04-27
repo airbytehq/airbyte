@@ -92,7 +92,7 @@ Requires a bearer token.
 ### Request body
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| ----- | ---- | -------- | ----------- |
 | `connector_type` | string | Yes | Connector display name, case-insensitive on letters but otherwise spelled exactly as it appears in the [connector catalog](../../../connectors) (spaces included). For example, `hubspot`, `Salesforce`, `Facebook Marketing`. Snake-case forms like `facebook_marketing` return `404`. |
 | `configuration` | object | Yes | Your OAuth app credentials (client_id, client_secret, etc.). |
 
@@ -233,7 +233,7 @@ Requires a bearer token or scoped token.
 ### Request body
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| ----- | ---- | -------- | ----------- |
 | `workspace_name` | string | Yes | Your workspace identifier. Maps to a workspace in Airbyte. |
 | `connector_type` | string | Yes* | Connector display name, case-insensitive on letters but otherwise spelled exactly as it appears in the [connector catalog](../../../connectors) (spaces included). For example, `hubspot`, `Salesforce`, `Facebook Marketing`. Snake-case forms like `facebook_marketing` return `404`. |
 | `redirect_url` | string | Yes | Your callback URL. After OAuth consent, Airbyte auto-creates the connector and redirects the user here with `?connector_id=<value>`. |

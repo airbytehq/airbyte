@@ -43,7 +43,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 The request body contains three fields:
 
 | Field | Type | Description |
-|-------|------|-------------|
+| ----- | ---- | ----------- |
 | `entity` | `string` | The entity to operate on, such as `users`, `calls`, or `issues`. |
 | `action` | `string` | The action to perform, such as `list`, `get`, or `search`. |
 | `params` | `object` | Parameters for the action. The required parameters depend on the entity and action. |

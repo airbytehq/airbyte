@@ -50,7 +50,6 @@ The new connector appears immediately in the Credentials table and in the **Avai
 
 ## OAuth versus access tokens {#oauth-vs-tokens}
 
-
 ### OAuth
 
 In an OAuth flow, the third-party service asks you to authorize Airbyte to act on your behalf. For connectors that publish OAuth scope metadata, the entity picker shows **Read** and **Write** columns, and you can select access per entity. Your selections map to the narrowest set of OAuth scopes that covers what you chose, and the third-party service enforces those scopes on every request the connector makes.

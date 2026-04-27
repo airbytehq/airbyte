@@ -86,7 +86,7 @@ Add the MCP server to your Cursor app.
 
 Add the MCP server to Visual Studio Code. Airbyte Agents provides a one-click install button for both the stable and Insiders builds. If you prefer to configure VS Code manually, use the Command Palette or edit `mcp.json` directly.
 
-#### Option 1: One-click install from Airbyte Agents (recommended)
+### Option 1: One-click install from Airbyte Agents (recommended)
 
 1. Sign into [app.airbyte.ai](https://app.airbyte.ai).
 
@@ -104,7 +104,7 @@ Add the MCP server to Visual Studio Code. Airbyte Agents provides a one-click in
 If VS Code isn't installed, the click lands on the `vscode.dev` help page instead of opening a blank tab. Install VS Code and try the button again.
 :::
 
-#### Option 2: Add the server from the Command Palette
+### Option 2: Add the server from the Command Palette
 
 1. In VS Code, open the Command Palette with ⇧⌘P (macOS) or Ctrl+Shift+P (Windows, Linux).
 
@@ -120,7 +120,7 @@ If VS Code isn't installed, the click lands on the `vscode.dev` help page instea
 
 7. The MCP server's tools are now available in Copilot Chat.
 
-#### Option 3: Edit `mcp.json` directly
+### Option 3: Edit `mcp.json` directly
 
 Run **MCP: Open User Configuration** from the Command Palette to open your user `mcp.json` file, or create `.vscode/mcp.json` in your workspace, and add:
 
