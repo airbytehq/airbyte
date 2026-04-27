@@ -16,9 +16,9 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_appsflyer"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.10,<3.14"
 airbyte-cdk = "^7.17.4"
-pendulum = "^2.1.2"
+pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
 source-appsflyer = "source_appsflyer.run:run"

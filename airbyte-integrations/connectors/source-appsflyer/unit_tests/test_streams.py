@@ -104,7 +104,9 @@ def test_backoff_time(patch_base_class, http_status, response_text, expected_bac
 
 def test_cdk_7x_error_handler_adapter(patch_base_class):
     """Verify the CDK 7.x adapter correctly detects custom should_retry and backoff_time."""
-    stream = AppsflyerStream()
+    stream = AppsflyerStream()  # __init__ is mocked by patch_base_class
+    assert hasattr(stream, "get_error_handler"), "CDK 7.x should provide get_error_handler via adapter"
+    assert hasattr(stream, "get_backoff_strategy"), "CDK 7.x should provide get_backoff_strategy via adapter"
     error_handler = stream.get_error_handler()
     backoff_strategy = stream.get_backoff_strategy()
     assert error_handler is not None, "CDK 7.x adapter should detect custom should_retry"

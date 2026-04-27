@@ -366,7 +366,7 @@ class SourceAppsflyer(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             timezone = config.get("timezone", "UTC")
-            if timezone not in pendulum.timezones:
+            if timezone not in pendulum.timezones():
                 return False, "The supplied timezone is invalid."
             app_id = config["app_id"]
             api_token = config["api_token"]
