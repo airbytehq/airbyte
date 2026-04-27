@@ -4,11 +4,12 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
+from airbyte_cdk.sources.streams.call_rate import HttpRequestMatcher, MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_stream_by_name, oauth_config, token_config
@@ -217,7 +218,7 @@ def test_read_records_yields_all_channels_when_join_enabled(token_config, reques
     ),
     ids=["rate_limited_oauth_policy", "no_rate_limits_token_policy", "no_rate_limits_policy"],
 )
-def tesadfst_threads_and_messages_api_budget(
+def test_threads_and_messages_api_budget(
     response_status_code, api_response, config, expected_policy, oauth_config, token_config, requests_mock
 ):
     stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
@@ -249,3 +250,110 @@ def tesadfst_threads_and_messages_api_budget(
     assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
         assert isinstance(retriever.requester._http_client._api_budget._policies[0], expected_policy)
+
+
+@pytest.fixture
+def api_budget(components_module):
+    budget = components_module.MessagesAndThreadsApiBudget(
+        policies=[
+            UnlimitedCallRatePolicy(
+                matchers=[HttpRequestMatcher(url="https://slack.com/api/conversations")],
+            )
+        ]
+    )
+    return budget
+
+
+def _make_prepared_request(url="https://slack.com/api/conversations.replies"):
+    req = requests.Request("GET", url)
+    return req.prepare()
+
+
+def _mock_response(status_code, json_body=None):
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.json.return_value = json_body if json_body is not None else {"ok": True}
+    return resp
+
+
+@pytest.mark.parametrize(
+    "status_codes, expected_policy_type, expected_counter",
+    [
+        pytest.param([200], UnlimitedCallRatePolicy, 0, id="no_downgrade_on_200"),
+        pytest.param([429], MovingWindowCallRatePolicy, 0, id="downgrade_on_429"),
+        pytest.param(
+            [429] + [200] * 4,
+            MovingWindowCallRatePolicy,
+            4,
+            id="still_throttled_below_threshold",
+        ),
+        pytest.param(
+            [429] + [200] * 5,
+            UnlimitedCallRatePolicy,
+            0,
+            id="recovery_after_5_consecutive_successes",
+        ),
+        pytest.param(
+            [429] + [200] * 5 + [429],
+            MovingWindowCallRatePolicy,
+            0,
+            id="re_downgrade_after_recovery",
+        ),
+        pytest.param(
+            [429] + [200] * 3 + [429],
+            MovingWindowCallRatePolicy,
+            0,
+            id="429_during_throttle_resets_counter",
+        ),
+    ],
+)
+def test_api_budget_update_from_response(api_budget, status_codes, expected_policy_type, expected_counter):
+    req = _make_prepared_request()
+    for code in status_codes:
+        api_budget.update_from_response(req, _mock_response(code))
+    assert isinstance(api_budget._policies[0], expected_policy_type)
+    assert api_budget._success_counter == expected_counter
+
+
+def test_5xx_resets_recovery_counter(api_budget):
+    """A 5xx while throttled resets the recovery counter to zero."""
+    req = _make_prepared_request()
+    api_budget.update_from_response(req, _mock_response(429))
+    for _ in range(3):
+        api_budget.update_from_response(req, _mock_response(200))
+    assert api_budget._success_counter == 3
+    api_budget.update_from_response(req, _mock_response(500))
+    assert api_budget._success_counter == 0
+    assert isinstance(api_budget._policies[0], MovingWindowCallRatePolicy)
+
+
+def test_ok_false_resets_recovery_counter(api_budget):
+    """A Slack 200 with ok:false while throttled resets the recovery counter."""
+    req = _make_prepared_request()
+    api_budget.update_from_response(req, _mock_response(429))
+    for _ in range(3):
+        api_budget.update_from_response(req, _mock_response(200))
+    assert api_budget._success_counter == 3
+    api_budget.update_from_response(req, _mock_response(200, json_body={"ok": False}))
+    assert api_budget._success_counter == 0
+    assert isinstance(api_budget._policies[0], MovingWindowCallRatePolicy)
+
+
+@pytest.mark.parametrize(
+    "config_fixture, expect_budget",
+    [
+        pytest.param("token", False, id="token_auth_no_budget"),
+        pytest.param("oauth", True, id="oauth_auth_has_budget"),
+    ],
+)
+def test_api_budget_auth_path(token_config, oauth_config, config_fixture, expect_budget):
+    cfg = oauth_config if config_fixture == "oauth" else token_config
+    stream = get_stream_by_name("threads", cfg)
+    retriever = stream._stream_partition_generator._partition_factory._retriever
+    api_budget = retriever.requester._http_client._api_budget
+    if expect_budget:
+        assert api_budget is not None
+        assert len(api_budget._policies) == 1
+        assert isinstance(api_budget._policies[0], UnlimitedCallRatePolicy)
+    else:
+        assert api_budget is None or len(api_budget._policies) == 0

@@ -24,6 +24,12 @@ The Pylon connector is optimized to handle prompts like these.
 - Show me details for a specific issue
 - Get details for a specific account
 - Show me details for a specific contact
+- Reply to the customer on an issue saying we are looking into it
+- Send a message to the customer on the billing issue
+- Assign an issue to a specific team member
+- Change the status of an issue to waiting_on_customer
+- Close an issue as resolved
+- Delete a test issue
 - What are the most common issue sources this month?
 - Show me issues assigned to a specific team
 - Which accounts have the most open issues?
@@ -34,15 +40,13 @@ The Pylon connector is optimized to handle prompts like these.
 
 The Pylon connector isn't currently able to handle prompts like these.
 
-- Delete an issue
 - Delete an account
-- Send a message to a customer
 - Schedule a meeting with a contact
 
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-pylon
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -54,8 +58,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_pylon import PylonConnector
-from airbyte_agent_pylon.models import PylonAuthConfig
+from airbyte_agent_sdk.connectors.pylon import PylonConnector
+from airbyte_agent_sdk.connectors.pylon.models import PylonAuthConfig
 
 connector = PylonConnector(
     auth_config=PylonAuthConfig(
@@ -77,11 +81,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_pylon import PylonConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.pylon import PylonConnector, AirbyteAuthConfig
 
 connector = PylonConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -102,18 +106,21 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](./REFERENCE.md#issues-list), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update) |
-| Messages | [List](./REFERENCE.md#messages-list) |
+| Issues | [List](./REFERENCE.md#issues-list), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
+| Issue Replies | [Create](./REFERENCE.md#issue-replies-create) |
+| Issue Assignments | [Update](./REFERENCE.md#issue-assignments-update) |
+| Issue Statuses | [Update](./REFERENCE.md#issue-statuses-update) |
+| Messages | [List](./REFERENCE.md#messages-list), [Context Store Search](./REFERENCE.md#messages-context-store-search) |
 | Issue Notes | [Create](./REFERENCE.md#issue-notes-create) |
 | Issue Threads | [Create](./REFERENCE.md#issue-threads-create) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update) |
-| Teams | [List](./REFERENCE.md#teams-list), [Create](./REFERENCE.md#teams-create), [Get](./REFERENCE.md#teams-get), [Update](./REFERENCE.md#teams-update) |
-| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get) |
-| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list) |
-| User Roles | [List](./REFERENCE.md#user-roles-list) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Create](./REFERENCE.md#teams-create), [Get](./REFERENCE.md#teams-get), [Update](./REFERENCE.md#teams-update), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
+| Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search) |
+| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search) |
+| User Roles | [List](./REFERENCE.md#user-roles-list), [Context Store Search](./REFERENCE.md#user-roles-context-store-search) |
 | Tasks | [Create](./REFERENCE.md#tasks-create), [Update](./REFERENCE.md#tasks-update) |
 | Projects | [Create](./REFERENCE.md#projects-create), [Update](./REFERENCE.md#projects-update) |
 | Milestones | [Create](./REFERENCE.md#milestones-create), [Update](./REFERENCE.md#milestones-update) |
@@ -132,7 +139,6 @@ See the official [Pylon API reference](https://docs.usepylon.com/pylon-docs/deve
 
 ## Version information
 
-- **Package version:** 0.1.20
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/pylon/CHANGELOG.md)
+- **Package version:** 0.1.9
+- **Connector version:** 0.1.9
+- **Generated with Connector SDK commit SHA:** unknown
