@@ -706,6 +706,31 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
+    fun testExecuteWithInsufficientPrivilegesError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "CREATE SCHEMA airbyte_internal"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.close() } just Runs
+
+        // Simulate "Insufficient privileges to operate on schema" error
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException(
+                "SQL access control error: Insufficient privileges to operate on schema 'airbyte_internal'"
+            )
+        every { connection.close() } just Runs
+
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        // Verify the error message was wrapped as ConfigErrorException with original message
+        assertTrue(exception.message!!.contains("Insufficient privileges"))
+        // Verify the cause is the original SnowflakeSQLException
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
     fun testExecuteWithNonPermissionError() {
         val connection = mockk<Connection>()
         val statement = mockk<Statement>()

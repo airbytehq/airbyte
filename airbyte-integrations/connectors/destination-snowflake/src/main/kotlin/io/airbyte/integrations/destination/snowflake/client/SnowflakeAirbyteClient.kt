@@ -366,6 +366,9 @@ class SnowflakeAirbyteClient(
             errorMessage.contains("current role has no privileges on it") -> {
                 throw ConfigErrorException(e.message ?: "Permission error", e)
             }
+            errorMessage.contains("insufficient privileges") -> {
+                throw ConfigErrorException(e.message ?: "Permission error", e)
+            }
             else -> {
                 // Not a known permission error, rethrow as-is
                 throw e
