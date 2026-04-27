@@ -137,7 +137,7 @@ The default state format is **per partition with fallback to global**, but there
 
 #### The parent-cursor-bump assumption
 
-For `incremental_dependency: true` to be safe, the API needs to update the parent record's cursor field whenever a child resource is created, updated, or deleted. If a child mutation does not advance the parent's cursor, that child record is added to a parent the partition router will skip on subsequent warm syncs — so the new child is never observed, even though the sync itself completes successfully.
+For `incremental_dependency: true` to be safe, the API needs to update the parent record's cursor field whenever a child resource is created, updated, or deleted. If a child mutation does not advance the parent's cursor, that child record is added to a parent the partition router will skip on subsequent warm syncs — so the new child is never observed, even though the sync itself completes successfully. When a particular child mutation does not bump the parent cursor, two options preserve correctness: route that child through a non-incremental parent copy, or give the child its own incremental cursor.
 
 API behavior here is per-resource and frequently varies within a single API, so this assumption typically benefits from empirical verification before shipping. A typical confirmation pass looks like:
 
@@ -146,8 +146,6 @@ API behavior here is per-resource and frequently varies within a single API, so 
 3. Re-fetch the parent and compare the cursor field. If it did not advance, that child operation is unsafe under `incremental_dependency: true`: children added to an unchanged parent are not re-iterated on warm syncs.
 
 A few common false negatives are worth being aware of: no-op mutations (such as adding the same watcher twice), parent re-fetches that hit a cache, idempotent endpoints that return success without actually writing, and APIs that expose more than one timestamp where only one of them is the cursor. A positive write that produces a real state change tends to be the most reliable signal.
-
-When a particular child mutation does not bump the parent cursor, two options preserve correctness: route that child through a non-incremental parent copy, or give the child its own incremental cursor.
 
 ### Global Substream Cursor
 
