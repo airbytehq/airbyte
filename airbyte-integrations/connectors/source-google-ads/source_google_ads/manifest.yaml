@@ -50,6 +50,12 @@ definitions:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: "Google Ads API request contains an invalid argument. {{ response[0]['error']['message'] | default('') }}"
+        failure_type: config_error
+      - type: HttpResponseFilter
         action: RETRY
         http_codes:
           - 500
