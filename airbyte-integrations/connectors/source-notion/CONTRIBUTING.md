@@ -4,12 +4,20 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Notion API supports `filter` with `last_edited_time` for databases and pages. The connector uses Python custom components referenced from the manifest.
+**Connector type:** Hybrid (manifest.yaml + Python custom components for record transformation, property flattening, and custom retriever)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 5 streams analyzed. All 5 use incremental sync via Notion's `filter.timestamp`/`last_edited_time` params. The connector is fully incremental.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+### Incremental Streams
 
-### Deferred streams
+| Stream | Cursor Field | API Filter | Notes |
+|--------|-------------|------------|-------|
+| pages | last_edited_time | `filter.timestamp` = `last_edited_time` | Notion Search API with `last_edited_time` filter |
+| databases | last_edited_time | `filter.timestamp` = `last_edited_time` | Notion Search API with `last_edited_time` filter |
+| blocks | last_edited_time | Semi-incremental (client-side filtering) | Blocks retrieved per page; filtered client-side |
+| comments | last_edited_time | Semi-incremental (client-side filtering) | Comments retrieved per block/page |
+| users | (semi-incremental) | No server-side filter | Small dataset; fetches all and filters client-side |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+No full-refresh-only streams. All streams support at least semi-incremental sync.
