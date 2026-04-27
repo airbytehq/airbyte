@@ -84,6 +84,17 @@ airbyte:
             output: The sync encountered a database read failure due to a connection timeout, will retry.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
 
+          - pattern: (?i).*communications link failure.*
+            input-example: >-
+              com.mysql.cj.exceptions.CommunicationsException: Communications link failure
+
+              The last packet sent successfully to the server was 0 milliseconds ago.
+              The driver has not received any packets from the server.
+            error: transient
+            group: MySQL Communications Link Failure
+            output: The MySQL server closed the connection before responding, will retry.
+            reference-links: https://dev.mysql.com/doc/connector-j/en/connector-j-reference-error-sqlstates.html
+
           - pattern: (?i).*is unrecognized or represents more than one time zone.*
             input-example: >-
               java.sql.SQLException: The server time zone value 'PDT' is unrecognized or represents more than one time zone. 
