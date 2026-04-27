@@ -351,6 +351,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.6 | 2026-04-27 | [77044](https://github.com/airbytehq/airbyte/pull/77044) | Classify HTTP 400 errors as config_error and surface specific Google Ads API error message instead of generic 'Bad request' |
 | 4.2.5 | 2026-04-27 | [77037](https://github.com/airbytehq/airbyte/pull/77037) | Promoted release candidate to GA |
 | 4.2.5-rc.1 | 2026-04-27 | [76074](https://github.com/airbytehq/airbyte/pull/76074) | Update CDK to pre-release with deadlock fix, add 5-minute HTTP socket timeout, and retry HTTP 500 (transient internal error) responses from the Google Ads API |
 | 4.2.4 | 2026-04-16 | [76331](https://github.com/airbytehq/airbyte/pull/76331) | Improve UNRECOGNIZED_FIELD error message for custom GAQL queries |
