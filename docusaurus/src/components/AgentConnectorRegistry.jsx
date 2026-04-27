@@ -4,7 +4,7 @@ import slugs from "../data/agent_connectors.json";
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
 const CHANGELOG_BASE_URL =
-  "https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors";
+  "https://github.com/airbytehq/airbyte-agent-sdk/blob/main/connectors";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 

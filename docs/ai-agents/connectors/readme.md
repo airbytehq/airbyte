@@ -26,7 +26,7 @@ Agent connectors don't replace your existing source and destination connectors. 
 
 ### Connector structure
 
-Each connector is a standalone Python package in the [Airbyte Agent Connectors repository](https://github.com/airbytehq/airbyte-agent-connectors).
+Each connector is a standalone Python package in the [Airbyte Agent Connectors repository](https://github.com/airbytehq/airbyte-agent-sdk).
 
 ```text
 connectors/
