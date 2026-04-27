@@ -4,12 +4,21 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.
+**Connector type:** Hybrid (manifest.yaml + Python custom components for channel joining, member extraction, custom retriever, and state migration)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 5 streams analyzed. 2 use incremental sync with timestamp cursors. 3 are full-refresh.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+### Incremental Streams
 
-### Deferred streams
+| Stream | Cursor Field | API Filter | Notes |
+|--------|-------------|------------|-------|
+| channel_messages | float_ts | `oldest`/`latest` params | Slack `conversations.history` with timestamp range |
+| threads | float_ts | `oldest`/`latest` params | Slack `conversations.replies` with timestamp range |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| users | No date filtering | Slack `users.list` API has no `updated_since` or date filter |
+| channels | No date filtering | Slack `conversations.list` API has no `updated_since` or date filter |
+| channel_members | Substream of channels; no date filter | Slack `conversations.members` per-channel; no date param |
