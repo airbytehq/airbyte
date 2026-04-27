@@ -11,6 +11,7 @@ Many individual streams add additional IGNORE rules for 403 and 404, meaning per
 ## 2. `incremental_dependency: true` on `issues` Child Substreams (and the One Excluded Child)
 
 Several `issues_stream` child substreams use `incremental_dependency: true` on the `ParentStreamConfig`. This is a partition-router optimization, not a sync-mode declaration:
+
 - The children themselves declare `supported_sync_modes: [full_refresh]` in the discover catalog (they have no own cursor).
 - On a warm sync, the parent partition router restricts iteration to `issues` whose `updated` cursor has advanced since the last sync.
 - This is only safe if every mutation on the child resource bumps `issue.updated`. If it does not, the child mutation is silently skipped on warm syncs, and by the time the parent's cursor advances for unrelated reasons the missed mutation is unrecoverable. This is a source-side correctness bug, not just a destination-mode amplification.
