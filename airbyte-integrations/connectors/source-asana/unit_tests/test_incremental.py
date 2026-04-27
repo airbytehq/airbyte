@@ -134,8 +134,11 @@ def test_tasks_injects_modified_since_from_state(requests_mock):
     ], f"Expected modified_since={STATE_CURSOR}, got {task_req.qs['modified_since']}"
 
 
-def test_tasks_uses_default_start_date_when_no_state(requests_mock):
-    """Without state or configured start_date, the dynamic Jinja fallback (2 years before now) must still inject `modified_since`."""
+def test_tasks_uses_epoch_sentinel_when_no_state_or_start_date(requests_mock):
+    """Without state or configured `start_date`, the manifest defaults to the epoch sentinel `1970-01-01T00:00:00Z`.
+
+    Honors the user's full available history rather than silently capping the lookback window.
+    """
     _register_common_mocks(requests_mock)
     catalog = _catalog("tasks")
     source = SourceAsana(catalog=catalog, config=_config(), state=[])
@@ -144,9 +147,7 @@ def test_tasks_uses_default_start_date_when_no_state(requests_mock):
     task_req = _find_task_request(requests_mock)
     assert "modified_since" in task_req.qs
     value = task_req.qs["modified_since"][0]
-    assert value.endswith("z") or value.endswith("Z"), value
-    # Dynamic fallback is "~2 years ago"; confirm it's not an accidental hardcoded sentinel like 1970-01-01.
-    assert not value.startswith("1970"), value
+    assert value.startswith("1970-01-01"), value
 
 
 def test_configured_start_date_injected_as_modified_since(requests_mock):
