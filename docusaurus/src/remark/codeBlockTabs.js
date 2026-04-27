@@ -107,11 +107,15 @@ function buildTabItem(title, codeNode, isDefault) {
   };
 }
 
-function buildTabs(tabItems) {
+function buildTabs(tabItems, groupId) {
+  const attrs = [];
+  if (groupId) {
+    attrs.push({ type: "mdxJsxAttribute", name: "groupId", value: groupId });
+  }
   return {
     type: "mdxJsxFlowElement",
     name: "Tabs",
-    attributes: [],
+    attributes: attrs,
     children: tabItems,
   };
 }
@@ -180,11 +184,15 @@ const plugin = () => {
         continue;
       }
 
-      // Build tab items
+      // Build tab items — derive a shared groupId from the code language so all
+      // <Tabs> on the page with the same language stay in sync (see
+      // https://docusaurus.io/docs/markdown-features/tabs#syncing-tab-choices).
+      const lang = children[group[0].codeIdx].lang || "code";
+      const groupId = `${lang}-framework`;
       const tabItems = group.map((entry, idx) =>
         buildTabItem(entry.title, children[entry.codeIdx], idx === 0),
       );
-      const tabsNode = buildTabs(tabItems);
+      const tabsNode = buildTabs(tabItems, groupId);
 
       // Calculate the range of nodes to replace (from first label/code to last code)
       const allIndices = [];
