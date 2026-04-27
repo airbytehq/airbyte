@@ -1,4 +1,4 @@
-# Incremental sync
+# Incremental Sync
 
 An incremental sync is a sync which pulls only the data that has changed since the previous sync (as opposed to all the data available in the data source).
 

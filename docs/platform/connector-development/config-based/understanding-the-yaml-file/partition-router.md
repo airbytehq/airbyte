@@ -1,4 +1,4 @@
-# Retrieving Records Spread Across Partitions
+# Stream Partitions
 
 In some cases, the data you are replicating is spread across multiple partitions. You can specify a set of parameters to be iterated over and used while requesting all of your data. On each iteration, using the current element being iterated upon, the connector will perform a cycle of requesting data from your source.
 
@@ -148,6 +148,10 @@ retriever:
         partition_field: "repository"
         incremental_dependency: true
 ```
+
+:::warning Verification required for `incremental_dependency`
+`incremental_dependency: true` is a runtime optimization on the partition router and is not equivalent to declaring the child stream incremental. It only takes effect when the child stream has its own `incremental_sync` block, and it relies on the assumption that every child mutation bumps the parent's cursor field. See [Incremental Dependency](./incremental-syncs.md#incremental-dependency) for the full requirement, the inert-flag rule, and the empirical-verification procedure that must be performed for each child resource before shipping.
+:::
 
 ## Nested streams
 
