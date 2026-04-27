@@ -133,19 +133,21 @@ The default state format is **per partition with fallback to global**, but there
 
 #### When `incremental_dependency` has no effect
 
-`incremental_dependency: true` is a runtime optimization on the partition router. It is not the same thing as declaring the child stream incremental. Specifically, it has no effect unless the child stream itself defines an `incremental_sync` block. If the child has no own cursor, the CDK assigns it a `FinalStateCursor`, which never persists `parent_state`. As a result, every sync re-reads the parent from `start_datetime` and the flag is silently inert. To activate the optimization for a child without its own cursor, give the child stream an `incremental_sync` block (typically derived from a parent timestamp), or use a base stream class that supplies a per-partition cursor.
+`incremental_dependency: true` is a runtime optimization on the partition router rather than a declaration that the child stream is incremental. It only takes effect when the child stream itself defines an `incremental_sync` block. When the child has no cursor of its own, the CDK assigns it a `FinalStateCursor`, which never persists `parent_state`; in that case every sync re-reads the parent from `start_datetime` and the flag has no observable effect. The optimization becomes active once the child stream gains its own incremental cursor — typically one derived from a parent timestamp — or once the child uses a base stream class that supplies a per-partition cursor.
 
-#### Verifying the parent-cursor-bump assumption
+#### The parent-cursor-bump assumption
 
-The "Requirement" above is load-bearing. Before shipping `incremental_dependency: true`, verify empirically that every mutation of a child resource bumps the parent's cursor field. API behavior is per-resource and varies even within a single API. To check:
+For `incremental_dependency: true` to be safe, the API needs to update the parent record's cursor field whenever a child resource is created, updated, or deleted. If a child mutation does not advance the parent's cursor, that child record is added to a parent the partition router will skip on subsequent warm syncs — so the new child is never observed, even though the sync itself completes successfully.
 
-1. Capture the parent record's cursor field (e.g., `updated_at`).
-2. Perform each kind of child mutation the connector exposes (create, update, delete, plus any side-effecting endpoints like state transitions, votes, or watchers).
-3. Re-fetch the parent and compare the cursor field. If it did not advance, that child operation is unsafe under `incremental_dependency: true` — children added to an unchanged parent will not be re-iterated on warm syncs and will be permanently missed.
+API behavior here is per-resource and frequently varies within a single API, so this assumption typically benefits from empirical verification before shipping. A typical confirmation pass looks like:
 
-Common false negatives to watch for: no-op mutations (e.g., adding the same watcher twice), parent re-fetches that hit a cache, idempotent endpoints that return success without writing, and APIs that expose more than one timestamp where only one of them is the cursor. Always perform a positive write that produces a real state change.
+1. Capture the parent record's cursor field (for example, `updated_at`).
+2. Perform each kind of child mutation the connector exposes — including create, update, delete, and any side-effecting endpoints such as state transitions, votes, or watchers.
+3. Re-fetch the parent and compare the cursor field. If it did not advance, that child operation is unsafe under `incremental_dependency: true`: children added to an unchanged parent are not re-iterated on warm syncs.
 
-If any child mutation does not bump the parent cursor, exclude that child from `incremental_dependency: true` (route it through a non-incremental parent copy) or give the child its own incremental cursor.
+A few common false negatives are worth being aware of: no-op mutations (such as adding the same watcher twice), parent re-fetches that hit a cache, idempotent endpoints that return success without actually writing, and APIs that expose more than one timestamp where only one of them is the cursor. A positive write that produces a real state change tends to be the most reliable signal.
+
+When a particular child mutation does not bump the parent cursor, two options preserve correctness: route that child through a non-incremental parent copy, or give the child its own incremental cursor.
 
 ### Global Substream Cursor
 

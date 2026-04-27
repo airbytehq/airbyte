@@ -113,12 +113,12 @@ For complex injection requirements that the standard options don't support:
 
 **Lazy Read Pointer**: Enable lazy reading to extract child records during initial parent record processing.
 
-**Incremental Dependency**: When enabled, the parent stream is read with state during warm syncs so that on each subsequent sync only parents whose cursor field has advanced since the last sync are iterated, and the child stream then re-fetches records for that narrowed set of parents. This is a router-level optimization, not a sync-mode declaration, and it has two prerequisites:
+**Incremental Dependency**: When enabled, the parent stream is read with state during warm syncs, so that each subsequent sync iterates only parents whose cursor field has advanced since the last sync and the child stream re-fetches records for that narrowed set. This is a router-level optimization rather than a sync-mode declaration, and it depends on two conditions:
 
-- The child stream must have its own incremental cursor. Without one, the optimization may be silently inert.
-- Every child-resource mutation the API exposes must bump the parent's cursor field. If any child mutation does not bump the parent, those changes will be permanently missed on warm syncs.
+- The child stream needs its own incremental cursor. Without one, the optimization has no observable effect.
+- Every child-resource mutation the API exposes needs to bump the parent's cursor field. If a particular child mutation does not, those changes are not picked up on warm syncs.
 
-API behavior is per-resource and must be verified empirically for each child resource before enabling this option. See the [Incremental Dependency reference](/platform/connector-development/config-based/understanding-the-yaml-file/incremental-syncs#incremental-dependency) for the full requirement, the inert-flag rule, and the verification procedure.
+API behavior here is per-resource and frequently varies within a single API, so this option typically benefits from empirical verification for each child resource before being enabled. See the [Incremental Dependency reference](/platform/connector-development/config-based/understanding-the-yaml-file/incremental-syncs#incremental-dependency) for the case where the flag has no observable effect and a verification procedure.
 
 ## When not to Use Partitioning
 
