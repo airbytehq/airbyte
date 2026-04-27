@@ -151,7 +151,7 @@ retriever:
 
 ## Nested streams
 
-Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)
+Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#substreampartitionrouter)
 
 ## Related
 
