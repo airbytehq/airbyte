@@ -12,16 +12,14 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 | Stream | Cursor Field | API Filter | Notes |
 |--------|-------------|------------|-------|
-| active_users | date | `start`/`end` date params | Amplitude Active Users API with date range |
-| annotations | date | `start`/`end` date params | Amplitude Annotations/Labels API |
-| average_session_length | date | `start`/`end` date params | Amplitude Average Session Length API |
+| active_users | `date` | `start`/`end` date params | Amplitude Active Users API with date range |
+| average_session_length | `date` | `start`/`end` date params | Amplitude Average Session Length API |
+| events | `server_upload_time` | `start`/`end` date params | Amplitude Export API with date-based windowing |
 
 ### Full-Refresh Streams (Not Actionable)
 
 | Stream | Reason | Evidence |
 |--------|--------|----------|
+| annotations | No date filtering support | Amplitude Annotations API; no `incremental_sync` in manifest |
 | cohorts | No date filtering support | Amplitude Cohorts API returns all cohorts; no `modified_since` or date param |
-| events | Handled via Amplitude Export API (separate bulk export) | Export API uses date-based file downloads, not cursor-based incremental |
-| average_session_length | Already incremental (listed above) | Uses date-based cursor |
-
-Note: The `events` stream uses Amplitude's Export API which downloads zipped event data files. This is a fundamentally different access pattern from cursor-based incremental sync.
+| events_list | No date filtering support | Amplitude Events List API returns all event types; no date param |
