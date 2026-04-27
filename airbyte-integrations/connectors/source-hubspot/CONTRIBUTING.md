@@ -4,12 +4,31 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The HubSpot API supports incremental data access via the CRM Search API with `lastmodifieddate` filtering and dedicated incremental endpoints. The connector uses Python custom components referenced from the manifest. The connector already supports incremental sync for most high-volume CRM streams (contacts, companies, deals, tickets, etc.).
+**Connector type:** Hybrid (manifest.yaml + Python custom components for error handling, property history extraction, state migration, and field transformation)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. 36 streams analyzed. 31 use incremental sync via various cursor strategies (CRM search API, property history cursors, standard `updatedAt`). 5 are full-refresh.
 
-**Analysis status:** Streams are Python-defined via custom components. The connector is mature with extensive incremental support already in place.
+### Incremental Streams (31)
 
-### Deferred streams
+The connector implements incremental sync using multiple patterns:
+- **CRM Search API streams** (companies, contacts, deals, leads, tickets, etc.): Use HubSpot's search endpoint with `lastmodifieddate` filter
+- **Property history streams** (companies/contacts/deals_property_history): Use `timestamp` cursor
+- **Standard cursor streams** (campaigns, contact_lists, deal_pipelines, email_events, engagements, forms, goals, line_items, marketing_emails, owners, products, subscription_changes, ticket_pipelines, workflows): Use `updatedAt`, `lastUpdated`, `created`, or similar cursors
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+| Key Streams | Cursor Field | Pattern |
+|-------------|-------------|---------|
+| companies, contacts, deals, leads, tickets | `lastmodifieddate` | CRM Search API |
+| engagements_calls/emails/meetings/notes/tasks | `lastUpdated` | CRM Search API |
+| campaigns | `lastUpdatedTime` | Standard cursor |
+| email_events | `created` | Standard cursor |
+| subscription_changes | `timestamp` | Standard cursor |
+
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| list_memberships | Substream of contact_lists; no independent date filter | Per-list endpoint |
+| email_subscriptions | No `updatedAt` field | HubSpot Email Subscriptions API returns current state only |
+| users | No date filtering support | HubSpot Users API has no `updatedAt` or `modified_after` |
+| properties | Configuration metadata; no date filter | HubSpot Properties API returns all property definitions |
+| account_details | Single record | Returns one account object; no date relevance |
