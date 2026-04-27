@@ -112,6 +112,7 @@ The default state format is **per partition with fallback to global**, but there
   ```
 
 #### Incremental Dependency
+
 - **Description**: This option allows the parent stream to be read incrementally, ensuring that only new data is synced.
 - **Requirement**: The API must ensure that the parent record's cursor is updated whenever child records are added or updated. If this requirement is not met, child records added to older parent records will be lost.
 - **When to Use**: Use this option if the parent stream is incremental, the child stream has its own incremental cursor, and you want to read the parent with state. The parent state is updated after processing all the child records for the parent record.
