@@ -139,7 +139,7 @@ The intent is to avoid re-iterating every parent on every sync when the parent s
 
 #### The parent-cursor-bump assumption
 
-For `incremental_dependency: true` to be safe, the API needs to update the parent record's cursor field whenever a child resource is created, updated, or deleted. If a child mutation does not advance the parent's cursor, that child record is added to a parent the partition router will skip on subsequent warm syncs — so the new child is never observed, even though the sync itself completes successfully. When a particular child mutation does not bump the parent cursor, two options preserve correctness: route that child through a non-incremental parent copy, or give the child its own incremental cursor.
+For `incremental_dependency: true` to be safe, the API needs to update the parent record's cursor field whenever a child resource is created, updated, or deleted. If a child mutation does not advance the parent's cursor, that child record is added to a parent the partition router will skip on subsequent warm syncs — so the new child is never observed, even though the sync itself completes successfully. When a particular child mutation does not bump the parent cursor, disable `incremental_dependency` on that child's `SubstreamPartitionRouter`. Without the flag, the partition router re-iterates the parent stream from `start_date` on every sync, so children added to parents whose cursor was never advanced are still observed.
 
 API behavior here is per-resource and frequently varies within a single API, so this assumption typically benefits from empirical verification before shipping. A typical confirmation pass looks like:
 
