@@ -87,13 +87,13 @@ incremental_sync:
     inject_into: "request_parameter"
 ```
 
-### Nested Streams
+## Incremental Support for Child Streams
 
 Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)
 
 The default state format is **per partition with fallback to global**, but there are options to enhance efficiency depending on your use case: **incremental_dependency** and **global_substream_cursor**. Here's when and how to use each option, with examples:
 
-#### Per Partition with Fallback to Global (Default)
+### Per Partition with Fallback to Global (Default)
 - **Description**: This is the default state format, where each partition has its own cursor. However, when the number of records in the parent sync exceeds two times the set limit, the cursor automatically falls back to a global state to manage efficiency and scalability.
 - **Limitation**: The per partition state has a limit of 10,000 partitions. Once this limit is exceeded, the global cursor takes over, aggregating the state across partitions to avoid inefficiencies.
 - **When to Use**: Use this as the default option for most cases. It provides the flexibility of managing partitions while preventing performance degradation when large numbers of records are involved.
@@ -111,7 +111,7 @@ The default state format is **per partition with fallback to global**, but there
   }
   ```
 
-#### Incremental Dependency
+### Incremental Dependency
 
 - **Description**: This option allows the parent stream to be read incrementally, ensuring that only new data is synced.
 - **Requirement**: The API must ensure that the parent record's cursor is updated whenever child records are added or updated. If this requirement is not met, child records added to older parent records will be lost.
@@ -130,11 +130,11 @@ The default state format is **per partition with fallback to global**, but there
   }
   ```
 
-##### When `incremental_dependency` has no effect
+#### When `incremental_dependency` has no effect
 
 `incremental_dependency: true` is a runtime optimization on the partition router. It is not the same thing as declaring the child stream incremental. Specifically, it has no effect unless the child stream itself defines an `incremental_sync` block. If the child has no own cursor, the CDK assigns it a `FinalStateCursor`, which never persists `parent_state`. As a result, every sync re-reads the parent from `start_datetime` and the flag is silently inert. To activate the optimization for a child without its own cursor, give the child stream an `incremental_sync` block (typically derived from a parent timestamp), or use a base stream class that supplies a per-partition cursor.
 
-##### Verifying the parent-cursor-bump assumption
+#### Verifying the parent-cursor-bump assumption
 
 The "Requirement" above is load-bearing. Before shipping `incremental_dependency: true`, verify empirically that every mutation of a child resource bumps the parent's cursor field. API behavior is per-resource and varies even within a single API. To check:
 
@@ -146,7 +146,7 @@ Common false negatives to watch for: no-op mutations (e.g., adding the same watc
 
 If any child mutation does not bump the parent cursor, exclude that child from `incremental_dependency: true` (route it through a non-incremental parent copy) or give the child its own incremental cursor.
 
-#### Global Substream Cursor
+### Global Substream Cursor
 
 - **Description**: This option uses a single global cursor for all partitions, significantly reducing the state size. It enforces a minimal lookback window based on the previous sync's duration to avoid losing records added or updated during the sync. Since the global cursor is already part of the per partition with fallback to global approach, it should only be used cautiously for custom connectors with exceptionally large parent streams to avoid managing state per partition.
 - **When to Use**: Use this option cautiously for custom connectors where the number of partitions in the parent stream is extremely high (e.g., millions of records per sync). The global cursor avoids the inefficiency of managing state per partition but sacrifices some granularity, which may not be suitable for every use case.
