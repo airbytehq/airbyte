@@ -197,7 +197,8 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.1 | 2026-04-24 | [76985](https://github.com/airbytehq/airbyte/pull/76985) | Allow OAuth API budget to recover after transient 429 rate limits instead of permanently throttling the sync |
+| 3.2.2 | 2026-04-24 | [76985](https://github.com/airbytehq/airbyte/pull/76985) | Allow OAuth API budget to recover after transient 429 rate limits instead of permanently throttling the sync |
+| 3.2.1 | 2026-04-27 | [76981](https://github.com/airbytehq/airbyte/pull/76981) | Remove unused OAuth scopes (`im:history`, `mpim:history`, `im:read`, `mpim:read`) not exercised by any stream. New OAuth installs see a narrower consent screen; existing tokens are unaffected. |
 | 3.2.0 | 2026-04-24 | [76982](https://github.com/airbytehq/airbyte/pull/76982) | Exclude archived channels by default; add `include_archived_channels` config option to opt in |
 | 3.1.24 | 2026-04-24 | [76980](https://github.com/airbytehq/airbyte/pull/76980) | Reduce `channels` stream page size from 1000 to 999 to comply with Slack API spec |
 | 3.1.23 | 2026-04-24 | [76984](https://github.com/airbytehq/airbyte/pull/76984) | Detect Slack API ok=false responses as errors to prevent silent data loss |

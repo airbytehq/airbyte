@@ -620,10 +620,6 @@ spec:
           - scope: "groups:read"
           - scope: "groups:history"
           - scope: "users:read"
-          - scope: "im:history"
-          - scope: "mpim:history"
-          - scope: "im:read"
-          - scope: "mpim:read"
         scopes_join_strategy: comma
         extract_output:
           - access_token

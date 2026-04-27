@@ -5,10 +5,11 @@
 import logging
 
 import pytest
+import yaml
 
 from airbyte_cdk.models import Status
 
-from .conftest import get_source, parametrized_configs
+from .conftest import YAML_FILE_PATH, get_source, parametrized_configs
 
 
 def get_stream_by_name(stream_name, config):
@@ -65,3 +66,22 @@ def test_check_connection(token_config, requests_mock, status_code, response, is
     assert success is is_connection_successful
     if not success:
         assert error_msg in connection_status.message
+
+
+def test_oauth_scopes_contain_only_used_scopes():
+    manifest = yaml.safe_load(YAML_FILE_PATH.read_text())
+    oauth_spec = manifest["spec"]["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
+    scopes = [entry["scope"] for entry in oauth_spec["scopes"]]
+
+    expected_scopes = [
+        "channels:history",
+        "channels:join",
+        "channels:read",
+        "groups:read",
+        "groups:history",
+        "users:read",
+    ]
+    assert scopes == expected_scopes
+
+    unused_scopes = {"im:history", "mpim:history", "im:read", "mpim:read"}
+    assert unused_scopes.isdisjoint(set(scopes)), f"Found unused IM/MPIM scopes: {unused_scopes & set(scopes)}"

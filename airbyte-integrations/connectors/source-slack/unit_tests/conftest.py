@@ -28,14 +28,14 @@ def _get_manifest_path() -> Path:
 
 
 _SOURCE_FOLDER_PATH = _get_manifest_path()
-_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
 def get_source(config, stream_name=None, state=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build() if stream_name else None
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+    return YamlDeclarativeSource(path_to_yaml=str(YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 def get_stream_by_name(stream_name, config, state=None):
