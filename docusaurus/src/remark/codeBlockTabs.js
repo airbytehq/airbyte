@@ -135,14 +135,20 @@ const plugin = () => {
         continue;
       }
 
-      // Collect a run of titled code blocks (with optional bold label paragraphs)
+      // Collect a run of titled code blocks that share the same language
+      // (with optional bold label paragraphs between them).
+      const groupLang = node.lang;
       const group = [];
       let j = i;
 
       while (j < children.length) {
         const current = children[j];
 
-        if (current.type === "code" && extractTitle(current.meta)) {
+        if (
+          current.type === "code" &&
+          extractTitle(current.meta) &&
+          current.lang === groupLang
+        ) {
           const title = extractTitle(current.meta);
           // Check if previous node is a bold label for this code block
           const prevIdx = group.length > 0 ? j - 1 : i - 1;
@@ -164,6 +170,7 @@ const plugin = () => {
           current.type === "paragraph" &&
           j + 1 < children.length &&
           children[j + 1].type === "code" &&
+          children[j + 1].lang === groupLang &&
           extractTitle(children[j + 1].meta)
         ) {
           const nextTitle = extractTitle(children[j + 1].meta);
@@ -212,7 +219,23 @@ const plugin = () => {
     }
 
     if (needsImport) {
-      ast.children.unshift(...buildTabsImport());
+      const hasTabsImport = ast.children.some(
+        (n) =>
+          n.type === "mdxjsEsm" &&
+          n.value &&
+          (n.value.includes('"@theme/Tabs"') ||
+            n.value.includes("'@theme/Tabs'")),
+      );
+      const hasTabItemImport = ast.children.some(
+        (n) =>
+          n.type === "mdxjsEsm" &&
+          n.value &&
+          (n.value.includes('"@theme/TabItem"') ||
+            n.value.includes("'@theme/TabItem'")),
+      );
+      const imports = buildTabsImport();
+      if (!hasTabItemImport) ast.children.unshift(imports[1]);
+      if (!hasTabsImport) ast.children.unshift(imports[0]);
     }
   };
 
