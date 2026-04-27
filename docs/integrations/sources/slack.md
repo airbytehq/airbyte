@@ -79,17 +79,17 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 <FieldAnchor field="lookback_window">
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 </FieldAnchor>
-<FieldAnchor field="include_private_channels">
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
+<FieldAnchor field="channel_filter">
+8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
 </FieldAnchor>
 <FieldAnchor field="include_private_channels">
-9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
+9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
 </FieldAnchor>
 <FieldAnchor field="include_archived_channels">
-10. (Optional) **Include archived channels** Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
+10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
 </FieldAnchor>
 <FieldAnchor field="threads_ignore_no_replies">
-11. (Optional) **Ignore messages with no replies in threads stream** Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default to make the Threads stream contain unthreaded messages in its records.
+11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
 </FieldAnchor>
 12. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:cloud -->
@@ -105,10 +105,10 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
 6. **Start Date**: Any data before this date will not be extracted.
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
-9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
-10. (Optional) **Include archived channels** Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
-11. (Optional) **Ignore messages with no replies in threads stream** Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default to make the Threads stream contain unthreaded messages in its records.
+8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
+9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
+10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
+11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
 12. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:oss -->
 
@@ -130,7 +130,7 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 - [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 - [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public and private channels that the Slack App is a member of.
+- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history): Replicates messages from non-archived, public and private channels that the Slack App is a member of.
 - [Users](https://api.slack.com/methods/users.list)
 - [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
@@ -140,7 +140,7 @@ The connector is restricted by Slack [rate limits](https://api.slack.com/docs/ra
 
 We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration settings.
 
-If you expect to sync a large amount of data, such as historical data, you can try increasing the number of concurrent threads. The default is 1. Increasing this value could cause the connector to be rate-limited by Slack, so monitor the logs for rate limit errors.
+If you expect to sync a large amount of data, such as historical data, you can try increasing the number of concurrent threads. The default is 2. Increasing this value could cause the connector to be rate-limited by Slack, so monitor the logs for rate limit errors.
 
 ## Data type map
 
