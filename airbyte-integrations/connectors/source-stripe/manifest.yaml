@@ -68,8 +68,17 @@ definitions:
                 child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
                 you may safely ignore this warning.
   bearer_authenticator:
-    type: BearerAuthenticator
-    api_token: "{{ config['client_secret'] }}"
+    type: SelectiveAuthenticator
+    authenticator_selection_path:
+      - credentials
+      - auth_type
+    authenticators:
+      API Key:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['client_secret'] }}"
+      OAuth2.0:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['access_token'] }}"
 
   base_paginator:
     type: DefaultPaginator
@@ -1894,7 +1903,7 @@ spec:
     title: Stripe Source Spec
     type: object
     required:
-      - client_secret
+      - credentials
       - account_id
     properties:
       account_id:
@@ -1904,14 +1913,66 @@ spec:
           Your Stripe account ID (starts with 'acct_', find yours <a
           href="https://dashboard.stripe.com/settings/account">here</a>).
         order: 0
-      client_secret:
-        type: string
-        title: Secret Key
-        description: >-
-          Stripe API key (usually starts with 'sk_live_'; find yours <a
-          href="https://dashboard.stripe.com/apikeys">here</a>).
-        airbyte_secret: true
+      credentials:
+        title: Authentication
+        description: Choose how to authenticate to Stripe.
+        type: object
         order: 1
+        oneOf:
+          - title: API Key
+            type: object
+            required:
+              - auth_type
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                const: API Key
+                order: 0
+              client_secret:
+                type: string
+                title: Secret Key
+                description: >-
+                  Stripe API key (usually starts with 'sk_live_'; find yours <a
+                  href="https://dashboard.stripe.com/apikeys">here</a>).
+                airbyte_secret: true
+                order: 1
+          - title: OAuth2.0
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: OAuth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Stripe platform application client ID.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Stripe platform application client secret.
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: string
+                title: Access Token
+                description: The access token received after completing the OAuth flow.
+                airbyte_secret: true
+                order: 3
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The refresh token received after completing the OAuth flow.
+                airbyte_secret: true
+                order: 4
       start_date:
         type: string
         title: Replication start date
@@ -2026,11 +2087,83 @@ spec:
                 path: ["num_workers"]
                 value: "2"
             condition: "{{ config.get('num_workers', 25) == 1 }}"
+      - type: ConfigMigration
+        description: Migrate flat client_secret config to nested credentials structure for OAuth 2.0 support
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "API Key"
+            condition: "{{ not config.get('credentials') and config.get('client_secret') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "client_secret"]
+                value: "{{ config['client_secret'] }}"
+            condition: "{{ not config.get('credentials', {}).get('client_secret') and config.get('client_secret') }}"
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: "OAuth2.0"
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "read_write"
+        consent_url: "https://connect.stripe.com/oauth/authorize?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
+        access_token_url: "https://connect.stripe.com/oauth/token"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 # Concurrency level controls how many partition slices are processed in parallel.
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config.get('credentials', {}).get('client_secret', config.get('credentials', {}).get('access_token', '')) else 10) }}"
   max_concurrency: 100
 
 api_budget:
@@ -2051,7 +2184,7 @@ api_budget:
         # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
         # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
         # Sandbox secret keys begin with 'sk_test_', this is how we check which limit to use if live or sandbox account.
-        - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config['client_secret'] else 100) }}"
+        - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config.get('credentials', {}).get('client_secret', config.get('credentials', {}).get('access_token', '')) else 100) }}"
           interval: PT1S
       matchers: []
   # Tell the CDK to recognize 429 as rate limit hit and back off accordingly
