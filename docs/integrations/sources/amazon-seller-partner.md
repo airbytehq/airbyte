@@ -137,14 +137,14 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [FBA Returns Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
 - [FBA Storage Fees Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [FBA Stranded Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
-- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\)
-- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\)
+- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\) — uses the [Finances v0 API](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations), which Amazon deprecated on July 21, 2025 and plans to remove on August 28, 2026
+- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\) — uses the [Finances v0 API](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations), which Amazon deprecated on July 21, 2025 and plans to remove on August 28, 2026
 - [Flat File Archived Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Feedback Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-performance) \(incremental\)
 - [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
-- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\)
+- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) this report type on March 17, 2025 and plans to remove it on November 11, 2026. Consider using the V2 settlement report from Amazon directly.
 - [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
@@ -155,8 +155,6 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Sales and Traffic Report By Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Restock Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Scheduled XML Order Report (Shipping)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
-- [Subscribe and Save Forecast Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
-- [Subscribe and Save Performance Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
 - [Suppressed Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
@@ -173,11 +171,6 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-<!-- env:oss -->
-- [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-<!-- /env:oss -->
 
 <HideInUI>
 
@@ -199,7 +192,7 @@ but with different options for the `sellingProgram` parameter - `FRESH` and `RET
 
 ## Performance considerations
 
-Information about rate limits you may find [here](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
+For information about rate limits, see [Usage Plans and Rate Limits in the SP-API](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
 
 - Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
   - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.
@@ -308,7 +301,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.7.3 | 2026-04-21 | [76494](https://github.com/airbytehq/airbyte/pull/76494) | Update dependencies |
 | 5.7.2 | 2026-04-13 | [75143](https://github.com/airbytehq/airbyte/pull/75143) | Fix incorrect URL path for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE stream — add missing `/reports/` segment |
-| 5.7.1 | 2026-04-02 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
+| 5.7.1 | 2026-04-08 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
 | 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
 | 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
 | 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |

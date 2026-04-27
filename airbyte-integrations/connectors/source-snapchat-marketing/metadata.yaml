@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 1.5.33-rc.5
+  dockerImageTag: 1.5.33
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
@@ -58,7 +58,7 @@ data:
               - "campaigns_stats_daily"
               - "campaigns_stats_lifetime"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   externalDocumentationUrls:
     - title: Ads API announcements

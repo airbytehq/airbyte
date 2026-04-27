@@ -22,8 +22,8 @@ This authentication method isn't available for this connector.
 Example request:
 
 ```python
-from airbyte_agent_clickup_api import ClickupApiConnector
-from airbyte_agent_clickup_api.models import ClickupApiAuthConfig
+from airbyte_agent_sdk.connectors.clickup_api import ClickupApiConnector
+from airbyte_agent_sdk.connectors.clickup_api.models import ClickupApiAuthConfig
 
 connector = ClickupApiConnector(
     auth_config=ClickupApiAuthConfig(
@@ -60,7 +60,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Clickup-Api",
     "name": "My Clickup-Api Connector",
     "credentials": {
@@ -77,11 +77,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_clickup_api import ClickupApiConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.clickup_api import ClickupApiConnector, AirbyteAuthConfig
 
 connector = ClickupApiConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"

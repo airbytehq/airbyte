@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Agent Engine API",
-    "summary": "Airbyte's Agent Engine API retrieves data on behalf of your customers and feeds it to your agentic workflows.",
-    "description": "\nThis is the public API documentation for Airbyte's Agent Engine. Use the API to manage authentication, connectors, and customers, and power their agentic workflows.\n\nIf you are a member of multiple Agent Engine organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Customers: manage customer workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
+    "summary": "Airbyte's Agent Engine API retrieves data on behalf of your workspaces and feeds it to your agentic workflows.",
+    "description": "\nThis is the public API documentation for Airbyte's Agent Engine. Use the API to manage authentication, connectors, and workspaces, and power their agentic workflows.\n\nIf you are a member of multiple Agent Engine organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Workspaces: manage workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
     "version": "0.9.0",
     "x-logo": {
       "url": "https://cdn.prod.website-files.com/605e01bc25f7e19a82e74788/6335a39da8c96ba75520b156_Logo.svg"
@@ -483,6 +483,24 @@
             "description": "The workspace ID to list sources for."
           },
           {
+            "name": "workspace_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Workspace name to list sources for.",
+              "title": "Workspace Name"
+            },
+            "description": "Workspace name to list sources for."
+          },
+          {
             "name": "customer_name",
             "in": "query",
             "required": false,
@@ -495,10 +513,12 @@
                   "type": "null"
                 }
               ],
-              "description": "Customer name to list sources for. Previously named external_user_id.",
+              "description": "Deprecated. Use workspace_name instead.",
+              "deprecated": true,
               "title": "Customer Name"
             },
-            "description": "Customer name to list sources for. Previously named external_user_id."
+            "description": "Deprecated. Use workspace_name instead.",
+            "deprecated": true
           },
           {
             "name": "external_user_id",
@@ -513,11 +533,11 @@
                   "type": "null"
                 }
               ],
-              "description": "Deprecated. Use customer_name instead.",
+              "description": "Deprecated. Use workspace_name instead.",
               "deprecated": true,
               "title": "External User Id"
             },
-            "description": "Deprecated. Use customer_name instead.",
+            "description": "Deprecated. Use workspace_name instead.",
             "deprecated": true
           },
           {
@@ -915,12 +935,12 @@
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectorSourceDeleteResponse"
+                  "$ref": "#/components/schemas/ConnectorSourceDeleteAcceptedResponse"
                 }
               }
             }
@@ -2799,7 +2819,7 @@
     },
     "/api/v1/workspaces": {
       "get": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "List Workspaces",
         "description": "List external users for the authenticated organization with cursor-based pagination.\n\n- **name_contains**: Optional filter by external user name (case-insensitive partial match)\n- **status**: Optional filter by external user status (active or inactive). If not specified, returns all external users.\n- **limit**: Maximum number of external users to return (default: 20, max: 100)\n- **cursor**: Pagination cursor from previous response's `next` URL\n- **next**: URL for next page (null if no more results)",
         "operationId": "list_workspaces",
@@ -2946,7 +2966,7 @@
     },
     "/api/v1/workspaces/stats": {
       "get": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Get Workspace Stats",
         "description": "Get external user statistics for the authenticated organization.\n\nReturns the count of active and inactive external users.",
         "operationId": "get_workspaces_stats",
@@ -3025,7 +3045,7 @@
     },
     "/api/v1/workspaces/{workspace_id}": {
       "get": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Get Workspace",
         "description": "Get a single external user by ID.",
         "operationId": "get_workspaces_workspace_id",
@@ -3112,7 +3132,7 @@
         }
       },
       "put": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Update Workspace",
         "description": "Update an external user's name, status, and/or cache setting.\n- Set `name` to update the external user name\n- Set `status` to 'active' or 'inactive' to change the external user status\n- When setting status to 'inactive', all active connections for the external user will be automatically disabled\n- Set `cache_enabled` to true/false to enable or disable Context Store caching for this external user",
         "operationId": "update_workspaces_workspace_id",
@@ -3209,7 +3229,7 @@
         }
       },
       "delete": {
-        "tags": ["Customers"],
+        "tags": ["Workspaces"],
         "summary": "Delete Workspace",
         "description": "Delete an external user. Removes the external user from the Data Replication Platform and soft-deletes locally.",
         "operationId": "delete_workspaces_workspace_id",
@@ -3517,7 +3537,8 @@
           "cancelled",
           "failed",
           "succeeded",
-          "inconclusive"
+          "inconclusive",
+          "skipped"
         ],
         "title": "CheckStatus"
       },
@@ -3845,6 +3866,42 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Params"
+          },
+          "select_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Select Fields",
+            "description": "Allowlist of dot-notation field paths to include in the response. Takes priority over exclude_fields if both are provided."
+          },
+          "exclude_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Fields",
+            "description": "Blocklist of dot-notation field paths to remove from the response. Ignored when select_fields is provided."
+          },
+          "skip_truncation": {
+            "type": "boolean",
+            "title": "Skip Truncation",
+            "description": "Disable automatic truncation of long text fields in list/search responses.",
+            "default": false
           }
         },
         "type": "object",
@@ -3892,10 +3949,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (maps to workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4016,7 +4073,7 @@
           }
         },
         "type": "object",
-        "required": ["customer_name"],
+        "required": ["workspace_name"],
         "title": "ConnectorSourceCheckConfigRequest",
         "description": "Request model for checking connector source configuration before creation."
       },
@@ -4102,6 +4159,21 @@
             ],
             "title": "Replication Config",
             "description": "The configuration for the replication connector."
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Entity selection to apply to the source. Omitting preserves existing selection; explicit [] clears it."
           }
         },
         "type": "object",
@@ -4122,10 +4194,10 @@
             "title": "Name",
             "description": "The name of the source."
           },
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (maps to workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "connector_type": {
             "anyOf": [
@@ -4246,7 +4318,7 @@
           }
         },
         "type": "object",
-        "required": ["customer_name"],
+        "required": ["workspace_name"],
         "title": "ConnectorSourceCreateRequest",
         "description": "Request model for creating a connector source.\n\nUses `replication_config` instead of `source_config` for clearer semantics.\nFor REPLICATION mode: pass the full config in `replication_config`\nFor MULTI/DIRECT mode: pass `credentials` + `environment` + optional `replication_config` overrides\nFor OAuth: pass `secret_id` from OAuth callback instead of credentials"
       },
@@ -4268,6 +4340,21 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Replication Config"
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "User-selected entity/mode pairs that constrain stream selection."
           },
           "created_at": {
             "anyOf": [
@@ -4298,22 +4385,17 @@
         "required": ["id", "name", "source_template", "replication_config"],
         "title": "ConnectorSourceCreateResponse"
       },
-      "ConnectorSourceDeleteResponse": {
+      "ConnectorSourceDeleteAcceptedResponse": {
         "properties": {
-          "id": {
+          "job_id": {
             "type": "string",
             "format": "uuid",
-            "title": "Id"
-          },
-          "deleted_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Deleted At"
+            "title": "Job Id"
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
-        "title": "ConnectorSourceDeleteResponse"
+        "required": ["job_id"],
+        "title": "ConnectorSourceDeleteAcceptedResponse"
       },
       "ConnectorSourceGetResponse": {
         "properties": {
@@ -4333,6 +4415,21 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Replication Config"
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "User-selected entity/mode pairs that constrain stream selection."
           },
           "created_at": {
             "anyOf": [
@@ -4445,6 +4542,21 @@
             ],
             "title": "Replication Config",
             "description": "The configuration for the replication connector."
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Entity selection to apply to the source. Omitting preserves existing selection; explicit [] clears it."
           }
         },
         "type": "object",
@@ -4468,6 +4580,21 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Replication Config"
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "User-selected entity/mode pairs that constrain stream selection."
           },
           "created_at": {
             "anyOf": [
@@ -5398,20 +5525,15 @@
             "format": "uuid",
             "title": "Workspace Id"
           },
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           }
         },
         "type": "object",
-        "required": ["organization_id", "workspace_id", "customer_name"],
+        "required": ["organization_id", "workspace_id", "workspace_name"],
         "title": "ScopedTokenInfoGetResponse"
-      },
-      "SonarCatalogSchemaType": {
-        "type": "string",
-        "enum": ["structured", "unstructured", "dynamic", "customizable"],
-        "title": "SonarCatalogSchemaType"
       },
       "SourceConfigTemplateMode": {
         "type": "string",
@@ -5893,6 +6015,24 @@
               }
             ],
             "title": "Updated At"
+          },
+          "auth_tooltip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auth Tooltip",
+            "description": "Short, non-technical guidance on how to authenticate the connector, sourced from x-airbyte-auth-tooltip in the connector YAML. A single string renders the same message for every auth method; a mapping keyed by the credentials discriminator value (e.g. the const on `credentials.auth_type` or `credentials.option_title`) renders a different message per auth method."
           }
         },
         "type": "object",
@@ -5961,21 +6101,6 @@
               }
             ],
             "description": "\nCustomizations for the source template. If stream_whitelist is provided, only the specified streams will be synced.\nIf stream_customizations are provided, and stream fields specified will override the default settings for only that\nfield. Where any streams fields are not specified, the default settings will be used.\n"
-          },
-          "has_source_definition_catalog": {
-            "type": "boolean",
-            "title": "Has Source Definition Catalog",
-            "default": false
-          },
-          "catalog_type": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SonarCatalogSchemaType"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "mode": {
             "$ref": "#/components/schemas/SourceConfigTemplateMode",
@@ -6301,21 +6426,6 @@
               }
             ],
             "description": "\nCustomizations for the source template. If stream_whitelist is provided, only the specified streams will be synced.\nIf stream_customizations are provided, and stream fields specified will override the default settings for only that\nfield. Where any streams fields are not specified, the default settings will be used.\n"
-          },
-          "has_source_definition_catalog": {
-            "type": "boolean",
-            "title": "Has Source Definition Catalog",
-            "default": false
-          },
-          "catalog_type": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SonarCatalogSchemaType"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "mode": {
             "$ref": "#/components/schemas/SourceConfigTemplateMode",
@@ -6895,10 +7005,10 @@
       },
       "app__api__account__applications__schemas__ScopedTokenCreateRequest": {
         "properties": {
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6919,15 +7029,15 @@
           }
         },
         "type": "object",
-        "required": ["customer_name"],
+        "required": ["workspace_name"],
         "title": "ScopedTokenCreateRequest"
       },
       "app__api__account__applications__schemas__WidgetTokenCreateRequest": {
         "properties": {
-          "customer_name": {
+          "workspace_name": {
             "type": "string",
-            "title": "Customer Name",
-            "description": "Customer name (workspace name). Previously named external_user_id."
+            "title": "Workspace Name",
+            "description": "Workspace name. Previously named customer_name / external_user_id."
           },
           "region_id": {
             "anyOf": [
@@ -6979,7 +7089,7 @@
           }
         },
         "type": "object",
-        "required": ["customer_name", "allowed_origin"],
+        "required": ["workspace_name", "allowed_origin"],
         "title": "WidgetTokenCreateRequest"
       }
     },
@@ -7008,8 +7118,8 @@
       "description": "Retrieve scoped token details and manage organization OAuth credentials."
     },
     {
-      "name": "Customers",
-      "description": "List, retrieve, update, and delete external users; get external user statistics."
+      "name": "Workspaces",
+      "description": "List, retrieve, update, and delete workspaces with filtering and cursor-based pagination; get workspace statistics."
     },
     {
       "name": "Data replication",

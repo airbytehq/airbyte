@@ -57,12 +57,12 @@ def conversations_list(requests_mock):
     }
     requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=1000&types=public_channel&exclude_archived=true",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=true",
         json=response_json,
     )
     return requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=1000&types=public_channel&exclude_archived=false",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
         json=response_json,
     )
 

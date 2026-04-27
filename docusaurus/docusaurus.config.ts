@@ -19,6 +19,7 @@ const getRemarkPlugins = () => ({
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
+  connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
 });
 
 const plugins = getRemarkPlugins();
@@ -222,6 +223,7 @@ const config: Config = {
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
+          plugins.connectorTypeBanner,
           plugins.docMetaTags,
         ],
       },

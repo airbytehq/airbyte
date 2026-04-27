@@ -39,7 +39,7 @@ The Mailchimp connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-mailchimp
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -51,8 +51,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector
-from airbyte_agent_mailchimp.models import MailchimpAuthConfig
+from airbyte_agent_sdk.connectors.mailchimp import MailchimpConnector
+from airbyte_agent_sdk.connectors.mailchimp.models import MailchimpAuthConfig
 
 connector = MailchimpConnector(
     auth_config=MailchimpAuthConfig(
@@ -74,11 +74,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.mailchimp import MailchimpConnector, AirbyteAuthConfig
 
 connector = MailchimpConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -99,11 +99,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Search](./REFERENCE.md#lists-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search) |
 | List Members | [List](./REFERENCE.md#list-members-list), [Get](./REFERENCE.md#list-members-get) |
-| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Search](./REFERENCE.md#reports-search) |
-| Email Activity | [List](./REFERENCE.md#email-activity-list), [Search](./REFERENCE.md#email-activity-search) |
+| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get), [Context Store Search](./REFERENCE.md#reports-context-store-search) |
+| Email Activity | [List](./REFERENCE.md#email-activity-list), [Context Store Search](./REFERENCE.md#email-activity-context-store-search) |
 | Automations | [List](./REFERENCE.md#automations-list) |
 | Tags | [List](./REFERENCE.md#tags-list) |
 | Interest Categories | [List](./REFERENCE.md#interest-categories-list), [Get](./REFERENCE.md#interest-categories-get) |
@@ -123,7 +123,6 @@ See the official [Mailchimp API reference](https://mailchimp.com/developer/marke
 
 ## Version information
 
-- **Package version:** 0.1.78
-- **Connector version:** 1.0.9
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/mailchimp/CHANGELOG.md)
+- **Package version:** 1.0.11
+- **Connector version:** 1.0.11
+- **Generated with Connector SDK commit SHA:** unknown
