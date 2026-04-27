@@ -456,7 +456,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.10 | 2026-04-24 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
+| 5.2.10 | 2026-04-27 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
 | 5.2.9 | 2026-04-24 | [76995](https://github.com/airbytehq/airbyte/pull/76995) | Fix TypeError crash when Facebook API returns error response with no message body |
 | 5.2.8 | 2026-04-24 | [76996](https://github.com/airbytehq/airbyte/pull/76996) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
 | 5.2.7 | 2026-04-23 | [76951](https://github.com/airbytehq/airbyte/pull/76951) | Promoted release candidate to GA |
