@@ -4,7 +4,7 @@ type: DeclarativeSource
 description: >-
   Discord source connector for extracting data from the Discord REST API (v10).
   Supports syncing guilds, channels, messages, members, roles, threads,
-  pinned messages, scheduled events, and audit logs.
+  pinned messages, scheduled events, audit logs, and current user.
 
 check:
   type: CheckStream
@@ -59,10 +59,14 @@ definitions:
           error_message: Discord API server error.
         - http_codes: [403]
           action: IGNORE
-          error_message: Insufficient permissions to access this resource.
+          error_message: >-
+            Bot lacks permission to access this channel or resource.
+            The record is skipped. Other accessible channels continue syncing.
         - http_codes: [404]
           action: IGNORE
-          error_message: Resource not found.
+          error_message: >-
+            Requested resource no longer exists.
+            The record is skipped. Remaining resources continue syncing.
 
   base_record_selector:
     type: RecordSelector
@@ -152,21 +156,32 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: after
+            field_name: before
           pagination_strategy:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ last_page_size < 100 }}"
-            initial_token: "0"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: channel_id
-              stream:
-                $ref: "#/definitions/streams/channels"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: channel_id
+                stream:
+                  $ref: "#/definitions/streams/channels"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: channel_id
+                stream:
+                  $ref: "#/definitions/streams/threads"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["channel_id"]
+              value: "{{ stream_partition['channel_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -176,12 +191,12 @@ definitions:
       type: DeclarativeStream
       name: members
       primary_key:
-        - user
-        - id
+        - user_id
+        - guild_id
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/permissive_requester"
+          $ref: "#/definitions/base_requester"
           path: "/guilds/{{ stream_partition['guild_id'] }}/members"
         record_selector:
           $ref: "#/definitions/base_record_selector"
@@ -209,6 +224,13 @@ definitions:
               partition_field: guild_id
               stream:
                 $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
+            - path: ["user_id"]
+              value: "{{ record.get('user', {}).get('id', '') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -236,6 +258,11 @@ definitions:
               partition_field: guild_id
               stream:
                 $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -267,6 +294,11 @@ definitions:
               partition_field: guild_id
               stream:
                 $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -294,6 +326,11 @@ definitions:
               partition_field: channel_id
               stream:
                 $ref: "#/definitions/streams/channels"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["channel_id"]
+              value: "{{ stream_partition['channel_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -307,7 +344,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/permissive_requester"
+          $ref: "#/definitions/base_requester"
           path: "/guilds/{{ stream_partition['guild_id'] }}/scheduled-events"
         record_selector:
           $ref: "#/definitions/base_record_selector"
@@ -321,6 +358,11 @@ definitions:
               partition_field: guild_id
               stream:
                 $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -334,7 +376,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/permissive_requester"
+          $ref: "#/definitions/base_requester"
           path: "/guilds/{{ stream_partition['guild_id'] }}/audit-logs"
         record_selector:
           type: RecordSelector
@@ -365,10 +407,37 @@ definitions:
               partition_field: guild_id
               stream:
                 $ref: "#/definitions/streams/guilds"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["guild_id"]
+              value: "{{ stream_partition['guild_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/audit_log"
+
+    current_user:
+      type: DeclarativeStream
+      name: current_user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/@me
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/current_user"
 
 streams:
   - $ref: "#/definitions/streams/guilds"
@@ -380,6 +449,7 @@ streams:
   - $ref: "#/definitions/streams/pinned_messages"
   - $ref: "#/definitions/streams/scheduled_events"
   - $ref: "#/definitions/streams/audit_log"
+  - $ref: "#/definitions/streams/current_user"
 
 spec:
   type: Spec
@@ -556,11 +626,13 @@ schemas:
       timestamp:
         type: string
         description: When this message was sent (ISO8601 timestamp).
+        format: date-time
       edited_timestamp:
         type:
           - string
           - "null"
         description: When this message was edited (ISO8601 timestamp), null if never.
+        format: date-time
       tts:
         type: boolean
         description: Whether this was a TTS message.
@@ -666,11 +738,13 @@ schemas:
       joined_at:
         type: string
         description: When the user joined the guild (ISO8601 timestamp).
+        format: date-time
       premium_since:
         type:
           - string
           - "null"
         description: When the user started boosting the guild (ISO8601 timestamp).
+        format: date-time
       deaf:
         type: boolean
         description: Whether the user is deafened in voice channels.
@@ -687,6 +761,15 @@ schemas:
           - string
           - "null"
         description: When the user's timeout will expire (ISO8601 timestamp).
+        format: date-time
+      guild_id:
+        type: string
+        description: ID of the guild this member belongs to.
+      user_id:
+        type: string
+        description: >-
+          Extracted user ID from the nested user object, used as part of
+          the composite primary key (user_id, guild_id).
 
   roles:
     type: object
@@ -733,6 +816,9 @@ schemas:
           - "null"
         description: The tags this role has.
         additionalProperties: true
+      guild_id:
+        type: string
+        description: ID of the guild this role belongs to.
 
   threads:
     type: object
@@ -801,6 +887,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           locked:
             type:
               - boolean
@@ -843,11 +930,13 @@ schemas:
       scheduled_start_time:
         type: string
         description: When the event will start (ISO8601 timestamp).
+        format: date-time
       scheduled_end_time:
         type:
           - string
           - "null"
         description: When the event will end (ISO8601 timestamp).
+        format: date-time
       privacy_level:
         type: integer
         description: Privacy level of the event.
@@ -914,3 +1003,86 @@ schemas:
           - string
           - "null"
         description: Reason for the change (1-512 characters).
+      guild_id:
+        type: string
+        description: ID of the guild this audit log entry belongs to.
+
+  current_user:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: User ID (snowflake).
+      username:
+        type: string
+        description: The user's username.
+      discriminator:
+        type: string
+        description: The user's Discord tag.
+      global_name:
+        type:
+          - string
+          - "null"
+        description: The user's display name.
+      avatar:
+        type:
+          - string
+          - "null"
+        description: The user's avatar hash.
+      bot:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user belongs to an OAuth2 application.
+      system:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user is an Official Discord System user.
+      mfa_enabled:
+        type:
+          - boolean
+          - "null"
+        description: Whether the user has two-factor authentication enabled.
+      banner:
+        type:
+          - string
+          - "null"
+        description: The user's banner hash.
+      accent_color:
+        type:
+          - integer
+          - "null"
+        description: The user's banner color as an integer.
+      locale:
+        type:
+          - string
+          - "null"
+        description: The user's chosen language option.
+      verified:
+        type:
+          - boolean
+          - "null"
+        description: Whether the email on the account has been verified.
+      email:
+        type:
+          - string
+          - "null"
+        description: The user's email.
+      flags:
+        type:
+          - integer
+          - "null"
+        description: The flags on the user's account.
+      premium_type:
+        type:
+          - integer
+          - "null"
+        description: The type of Nitro subscription on the user's account.
+      public_flags:
+        type:
+          - integer
+          - "null"
+        description: The public flags on the user's account.

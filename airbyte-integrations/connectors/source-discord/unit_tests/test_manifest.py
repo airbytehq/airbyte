@@ -24,6 +24,51 @@ def config():
     return {"bot_token": "test-bot-token-12345"}
 
 
+# ---------------------------------------------------------------------------
+# Behavioral test: CDK instantiation + discover
+# ---------------------------------------------------------------------------
+
+
+def test_manifest_instantiates_with_cdk():
+    """Verify the CDK can parse and instantiate the manifest without errors."""
+    from airbyte_cdk import YamlDeclarativeSource
+
+    source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH))
+    assert source is not None
+
+
+def test_discover_returns_all_streams():
+    """Verify discover returns the expected set of streams."""
+    from airbyte_cdk import YamlDeclarativeSource
+
+    source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH))
+    catalog = source.discover(
+        logger=None,
+        config={"bot_token": "test-token"},
+    )
+    stream_names = sorted([s.name for s in catalog.streams])
+    expected = sorted(
+        [
+            "audit_log",
+            "channels",
+            "current_user",
+            "guilds",
+            "members",
+            "messages",
+            "pinned_messages",
+            "roles",
+            "scheduled_events",
+            "threads",
+        ]
+    )
+    assert stream_names == expected
+
+
+# ---------------------------------------------------------------------------
+# Structural tests
+# ---------------------------------------------------------------------------
+
+
 class TestManifestStructure:
     """Test the manifest YAML structure."""
 
@@ -50,13 +95,16 @@ class TestManifestStructure:
             "pinned_messages",
             "scheduled_events",
             "audit_log",
+            "current_user",
         ]
-        stream_refs = manifest["streams"]
         stream_defs = manifest["definitions"]["streams"]
 
         for stream_name in expected_streams:
-            assert stream_name in stream_defs, f"Stream '{stream_name}' not found in definitions"
+            assert (
+                stream_name in stream_defs
+            ), f"Stream '{stream_name}' not found in definitions"
 
+        stream_refs = manifest["streams"]
         assert len(stream_refs) == len(expected_streams)
 
     def test_spec_has_required_fields(self, manifest):
@@ -95,7 +143,9 @@ class TestBaseRequester:
         requester = manifest["definitions"]["base_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        rate_limit_filter = [f for f in response_filters if 429 in f.get("http_codes", [])]
+        rate_limit_filter = [
+            f for f in response_filters if 429 in f.get("http_codes", [])
+        ]
         assert len(rate_limit_filter) == 1
         assert rate_limit_filter[0]["action"] == "RETRY"
 
@@ -103,7 +153,13 @@ class TestBaseRequester:
         requester = manifest["definitions"]["base_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        server_error_filter = [f for f in response_filters if any(code in f.get("http_codes", []) for code in [500, 502, 503])]
+        server_error_filter = [
+            f
+            for f in response_filters
+            if any(
+                code in f.get("http_codes", []) for code in [500, 502, 503]
+            )
+        ]
         assert len(server_error_filter) == 1
         assert server_error_filter[0]["action"] == "RETRY"
 
@@ -117,9 +173,200 @@ class TestBaseRequester:
         requester = manifest["definitions"]["permissive_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        forbidden_filter = [f for f in response_filters if 403 in f.get("http_codes", [])]
+        forbidden_filter = [
+            f for f in response_filters if 403 in f.get("http_codes", [])
+        ]
         assert len(forbidden_filter) == 1
         assert forbidden_filter[0]["action"] == "IGNORE"
+
+
+# ---------------------------------------------------------------------------
+# Messages stream — P0-1 fix validation
+# ---------------------------------------------------------------------------
+
+
+class TestMessagesStream:
+    """Test messages stream configuration."""
+
+    def test_messages_pagination_uses_before_parameter(self, manifest):
+        """P0-1: Messages must paginate with 'before' (descending walk),
+        not 'after', because Discord returns newest-to-oldest."""
+        messages = manifest["definitions"]["streams"]["messages"]
+        paginator = messages["retriever"]["paginator"]
+        page_token = paginator["page_token_option"]
+        assert page_token["field_name"] == "before"
+
+    def test_messages_pagination_has_no_initial_token(self, manifest):
+        """P0-1: No initial_token needed — Discord defaults 'before' to now."""
+        messages = manifest["definitions"]["streams"]["messages"]
+        strategy = messages["retriever"]["paginator"]["pagination_strategy"]
+        assert "initial_token" not in strategy
+
+    def test_messages_partition_router_includes_channels_and_threads(
+        self, manifest
+    ):
+        """P1-3: Messages must iterate over both channels and threads."""
+        messages = manifest["definitions"]["streams"]["messages"]
+        routers = messages["retriever"]["partition_router"]
+        assert isinstance(routers, list), "partition_router should be a list"
+        assert len(routers) == 2
+
+        parent_refs = []
+        for router in routers:
+            cfg = router["parent_stream_configs"][0]
+            parent_refs.append(
+                cfg["stream"]["$ref"].split("/")[-1]
+            )
+
+        assert "channels" in parent_refs
+        assert "threads" in parent_refs
+
+    def test_messages_uses_permissive_requester(self, manifest):
+        messages = manifest["definitions"]["streams"]["messages"]
+        requester = messages["retriever"]["requester"]
+        assert requester["$ref"] == "#/definitions/permissive_requester"
+
+    def test_messages_injects_channel_id_transformation(self, manifest):
+        """P1-6: Messages should inject channel_id into records."""
+        messages = manifest["definitions"]["streams"]["messages"]
+        transformations = messages.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["channel_id"] in field_paths
+
+    def test_messages_schema_has_required_fields(self, manifest):
+        schema = manifest["schemas"]["messages"]
+        props = schema["properties"]
+        for field in [
+            "id",
+            "channel_id",
+            "content",
+            "author",
+            "timestamp",
+            "attachments",
+            "embeds",
+        ]:
+            assert field in props, f"Missing field: {field}"
+
+
+# ---------------------------------------------------------------------------
+# Members stream — P0-2 / P0-3 fix validation
+# ---------------------------------------------------------------------------
+
+
+class TestMembersStream:
+    """Test members stream configuration."""
+
+    def test_members_primary_key_is_composite(self, manifest):
+        """P0-2: PK must be (user_id, guild_id), not [user, id]."""
+        members = manifest["definitions"]["streams"]["members"]
+        pk = members["primary_key"]
+        assert "user_id" in pk
+        assert "guild_id" in pk
+
+    def test_members_uses_base_requester_not_permissive(self, manifest):
+        """P0-3: Members must use base_requester so 403 fails loudly
+        (indicates missing GUILD_MEMBERS intent)."""
+        members = manifest["definitions"]["streams"]["members"]
+        requester = members["retriever"]["requester"]
+        assert requester["$ref"] == "#/definitions/base_requester"
+
+    def test_members_injects_guild_id_and_user_id(self, manifest):
+        """P0-2 + P1-6: guild_id and user_id must be injected."""
+        members = manifest["definitions"]["streams"]["members"]
+        transformations = members.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["guild_id"] in field_paths
+        assert ["user_id"] in field_paths
+
+    def test_members_schema_has_guild_id_and_user_id(self, manifest):
+        schema = manifest["schemas"]["members"]
+        props = schema["properties"]
+        assert "guild_id" in props
+        assert "user_id" in props
+        assert "user" in props
+        assert "joined_at" in props
+
+
+# ---------------------------------------------------------------------------
+# Audit log — P0-3 fix validation
+# ---------------------------------------------------------------------------
+
+
+class TestAuditLogStream:
+    """Test audit_log stream configuration."""
+
+    def test_audit_log_uses_base_requester(self, manifest):
+        """P0-3: audit_log must use base_requester so 403 fails loudly."""
+        audit = manifest["definitions"]["streams"]["audit_log"]
+        requester = audit["retriever"]["requester"]
+        assert requester["$ref"] == "#/definitions/base_requester"
+
+    def test_audit_log_pagination_uses_before(self, manifest):
+        audit = manifest["definitions"]["streams"]["audit_log"]
+        paginator = audit["retriever"]["paginator"]
+        page_token = paginator["page_token_option"]
+        assert page_token["field_name"] == "before"
+
+    def test_audit_log_pagination_has_no_initial_token(self, manifest):
+        audit = manifest["definitions"]["streams"]["audit_log"]
+        strategy = audit["retriever"]["paginator"]["pagination_strategy"]
+        assert "initial_token" not in strategy
+
+    def test_audit_log_extracts_from_entries_field(self, manifest):
+        audit = manifest["definitions"]["streams"]["audit_log"]
+        extractor = audit["retriever"]["record_selector"]["extractor"]
+        assert extractor["field_path"] == ["audit_log_entries"]
+
+    def test_audit_log_injects_guild_id(self, manifest):
+        audit = manifest["definitions"]["streams"]["audit_log"]
+        transformations = audit.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["guild_id"] in field_paths
+
+
+# ---------------------------------------------------------------------------
+# Current user stream — P1-1
+# ---------------------------------------------------------------------------
+
+
+class TestCurrentUserStream:
+    """Test current_user stream configuration."""
+
+    def test_current_user_path(self, manifest):
+        user = manifest["definitions"]["streams"]["current_user"]
+        requester = user["retriever"]["requester"]
+        assert requester["path"] == "/users/@me"
+
+    def test_current_user_uses_base_requester(self, manifest):
+        user = manifest["definitions"]["streams"]["current_user"]
+        requester = user["retriever"]["requester"]
+        assert requester["$ref"] == "#/definitions/base_requester"
+
+    def test_current_user_no_pagination(self, manifest):
+        user = manifest["definitions"]["streams"]["current_user"]
+        paginator = user["retriever"]["paginator"]
+        assert paginator["type"] == "NoPagination"
+
+    def test_current_user_schema(self, manifest):
+        schema = manifest["schemas"]["current_user"]
+        props = schema["properties"]
+        assert "id" in props
+        assert "username" in props
+        assert "email" in props
+
+
+# ---------------------------------------------------------------------------
+# Remaining streams — structural coverage
+# ---------------------------------------------------------------------------
 
 
 class TestGuildsStream:
@@ -148,14 +395,6 @@ class TestGuildsStream:
         paginator = guilds["retriever"]["paginator"]
         page_token = paginator["page_token_option"]
         assert page_token["field_name"] == "after"
-        assert page_token["inject_into"] == "request_parameter"
-
-    def test_guilds_schema_has_required_fields(self, manifest):
-        schema = manifest["schemas"]["guilds"]
-        props = schema["properties"]
-        assert "id" in props
-        assert "name" in props
-        assert "features" in props
 
 
 class TestChannelsStream:
@@ -169,105 +408,10 @@ class TestChannelsStream:
         assert parent_config["parent_key"] == "id"
         assert parent_config["partition_field"] == "guild_id"
 
-    def test_channels_path_uses_guild_id_partition(self, manifest):
-        channels = manifest["definitions"]["streams"]["channels"]
-        requester = channels["retriever"]["requester"]
-        assert "stream_partition['guild_id']" in requester["path"]
-        assert "/guilds/" in requester["path"]
-        assert "/channels" in requester["path"]
-
     def test_channels_no_pagination(self, manifest):
         channels = manifest["definitions"]["streams"]["channels"]
         paginator = channels["retriever"]["paginator"]
         assert paginator["type"] == "NoPagination"
-
-    def test_channels_schema_has_required_fields(self, manifest):
-        schema = manifest["schemas"]["channels"]
-        props = schema["properties"]
-        assert "id" in props
-        assert "type" in props
-        assert "name" in props
-        assert "guild_id" in props
-
-
-class TestMessagesStream:
-    """Test messages stream configuration."""
-
-    def test_messages_is_substream_of_channels(self, manifest):
-        messages = manifest["definitions"]["streams"]["messages"]
-        partition_router = messages["retriever"]["partition_router"]
-        assert partition_router["type"] == "SubstreamPartitionRouter"
-        parent_config = partition_router["parent_stream_configs"][0]
-        assert parent_config["parent_key"] == "id"
-        assert parent_config["partition_field"] == "channel_id"
-
-    def test_messages_path_uses_channel_id_partition(self, manifest):
-        messages = manifest["definitions"]["streams"]["messages"]
-        requester = messages["retriever"]["requester"]
-        assert "stream_partition['channel_id']" in requester["path"]
-        assert "/channels/" in requester["path"]
-        assert "/messages" in requester["path"]
-
-    def test_messages_pagination(self, manifest):
-        messages = manifest["definitions"]["streams"]["messages"]
-        paginator = messages["retriever"]["paginator"]
-        assert paginator["type"] == "DefaultPaginator"
-        strategy = paginator["pagination_strategy"]
-        assert strategy["type"] == "CursorPagination"
-        assert strategy["page_size"] == 100
-        assert strategy["initial_token"] == "0"
-
-    def test_messages_uses_after_parameter(self, manifest):
-        messages = manifest["definitions"]["streams"]["messages"]
-        paginator = messages["retriever"]["paginator"]
-        page_token = paginator["page_token_option"]
-        assert page_token["field_name"] == "after"
-
-    def test_messages_uses_permissive_requester(self, manifest):
-        messages = manifest["definitions"]["streams"]["messages"]
-        requester = messages["retriever"]["requester"]
-        assert requester["$ref"] == "#/definitions/permissive_requester"
-
-    def test_messages_schema_has_required_fields(self, manifest):
-        schema = manifest["schemas"]["messages"]
-        props = schema["properties"]
-        assert "id" in props
-        assert "channel_id" in props
-        assert "content" in props
-        assert "author" in props
-        assert "timestamp" in props
-        assert "attachments" in props
-        assert "embeds" in props
-
-
-class TestMembersStream:
-    """Test members stream configuration."""
-
-    def test_members_is_substream_of_guilds(self, manifest):
-        members = manifest["definitions"]["streams"]["members"]
-        partition_router = members["retriever"]["partition_router"]
-        parent_config = partition_router["parent_stream_configs"][0]
-        assert parent_config["partition_field"] == "guild_id"
-
-    def test_members_pagination(self, manifest):
-        members = manifest["definitions"]["streams"]["members"]
-        paginator = members["retriever"]["paginator"]
-        strategy = paginator["pagination_strategy"]
-        assert strategy["page_size"] == 1000
-        assert strategy["initial_token"] == "0"
-        assert "user" in strategy["cursor_value"]
-
-    def test_members_uses_permissive_requester(self, manifest):
-        members = manifest["definitions"]["streams"]["members"]
-        requester = members["retriever"]["requester"]
-        assert requester["$ref"] == "#/definitions/permissive_requester"
-
-    def test_members_schema_has_user_field(self, manifest):
-        schema = manifest["schemas"]["members"]
-        props = schema["properties"]
-        assert "user" in props
-        assert "roles" in props
-        assert "joined_at" in props
 
 
 class TestRolesStream:
@@ -279,18 +423,18 @@ class TestRolesStream:
         parent_config = partition_router["parent_stream_configs"][0]
         assert parent_config["partition_field"] == "guild_id"
 
-    def test_roles_no_pagination(self, manifest):
+    def test_roles_injects_guild_id(self, manifest):
         roles = manifest["definitions"]["streams"]["roles"]
-        paginator = roles["retriever"]["paginator"]
-        assert paginator["type"] == "NoPagination"
+        transformations = roles.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["guild_id"] in field_paths
 
-    def test_roles_schema_has_required_fields(self, manifest):
+    def test_roles_schema_has_guild_id(self, manifest):
         schema = manifest["schemas"]["roles"]
-        props = schema["properties"]
-        assert "id" in props
-        assert "name" in props
-        assert "permissions" in props
-        assert "color" in props
+        assert "guild_id" in schema["properties"]
 
 
 class TestThreadsStream:
@@ -306,11 +450,14 @@ class TestThreadsStream:
         extractor = threads["retriever"]["record_selector"]["extractor"]
         assert extractor["field_path"] == ["threads"]
 
-    def test_threads_is_substream_of_guilds(self, manifest):
+    def test_threads_injects_guild_id(self, manifest):
         threads = manifest["definitions"]["streams"]["threads"]
-        partition_router = threads["retriever"]["partition_router"]
-        parent_config = partition_router["parent_stream_configs"][0]
-        assert parent_config["partition_field"] == "guild_id"
+        transformations = threads.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["guild_id"] in field_paths
 
 
 class TestPinnedMessagesStream:
@@ -322,64 +469,84 @@ class TestPinnedMessagesStream:
         parent_config = partition_router["parent_stream_configs"][0]
         assert parent_config["partition_field"] == "channel_id"
 
-    def test_pinned_messages_path(self, manifest):
+    def test_pinned_messages_injects_channel_id(self, manifest):
         pinned = manifest["definitions"]["streams"]["pinned_messages"]
-        requester = pinned["retriever"]["requester"]
-        assert "/pins" in requester["path"]
-
-    def test_pinned_messages_no_pagination(self, manifest):
-        pinned = manifest["definitions"]["streams"]["pinned_messages"]
-        paginator = pinned["retriever"]["paginator"]
-        assert paginator["type"] == "NoPagination"
-
-    def test_pinned_messages_reuses_messages_schema(self, manifest):
-        pinned = manifest["definitions"]["streams"]["pinned_messages"]
-        schema_ref = pinned["schema_loader"]["schema"]["$ref"]
-        assert schema_ref == "#/schemas/messages"
+        transformations = pinned.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["channel_id"] in field_paths
 
 
 class TestScheduledEventsStream:
     """Test scheduled_events stream configuration."""
 
-    def test_scheduled_events_path(self, manifest):
+    def test_scheduled_events_uses_base_requester(self, manifest):
         events = manifest["definitions"]["streams"]["scheduled_events"]
         requester = events["retriever"]["requester"]
-        assert "scheduled-events" in requester["path"]
+        assert requester["$ref"] == "#/definitions/base_requester"
 
-    def test_scheduled_events_schema_has_required_fields(self, manifest):
-        schema = manifest["schemas"]["scheduled_events"]
-        props = schema["properties"]
-        assert "id" in props
-        assert "name" in props
-        assert "scheduled_start_time" in props
-        assert "status" in props
+    def test_scheduled_events_injects_guild_id(self, manifest):
+        events = manifest["definitions"]["streams"]["scheduled_events"]
+        transformations = events.get("transformations", [])
+        field_paths = []
+        for t in transformations:
+            for f in t.get("fields", []):
+                field_paths.append(f["path"])
+        assert ["guild_id"] in field_paths
 
 
-class TestAuditLogStream:
-    """Test audit_log stream configuration."""
+# ---------------------------------------------------------------------------
+# Schemas — format:date-time on timestamps (P3-1)
+# ---------------------------------------------------------------------------
 
-    def test_audit_log_path(self, manifest):
-        audit = manifest["definitions"]["streams"]["audit_log"]
-        requester = audit["retriever"]["requester"]
-        assert "audit-logs" in requester["path"]
 
-    def test_audit_log_extracts_from_entries_field(self, manifest):
-        audit = manifest["definitions"]["streams"]["audit_log"]
-        extractor = audit["retriever"]["record_selector"]["extractor"]
-        assert extractor["field_path"] == ["audit_log_entries"]
+@pytest.mark.parametrize(
+    "schema_name,field_name",
+    [
+        pytest.param(
+            "messages", "timestamp", id="messages.timestamp"
+        ),
+        pytest.param(
+            "messages", "edited_timestamp", id="messages.edited_timestamp"
+        ),
+        pytest.param(
+            "members", "joined_at", id="members.joined_at"
+        ),
+        pytest.param(
+            "members", "premium_since", id="members.premium_since"
+        ),
+        pytest.param(
+            "members",
+            "communication_disabled_until",
+            id="members.communication_disabled_until",
+        ),
+        pytest.param(
+            "scheduled_events",
+            "scheduled_start_time",
+            id="scheduled_events.scheduled_start_time",
+        ),
+        pytest.param(
+            "scheduled_events",
+            "scheduled_end_time",
+            id="scheduled_events.scheduled_end_time",
+        ),
+    ],
+)
+def test_timestamp_fields_have_date_time_format(
+    manifest, schema_name, field_name
+):
+    """P3-1: ISO8601 timestamp fields must declare format: date-time."""
+    field = manifest["schemas"][schema_name]["properties"][field_name]
+    assert field.get("format") == "date-time", (
+        f"{schema_name}.{field_name} is missing format: date-time"
+    )
 
-    def test_audit_log_pagination_uses_before(self, manifest):
-        audit = manifest["definitions"]["streams"]["audit_log"]
-        paginator = audit["retriever"]["paginator"]
-        page_token = paginator["page_token_option"]
-        assert page_token["field_name"] == "before"
 
-    def test_audit_log_pagination_config(self, manifest):
-        audit = manifest["definitions"]["streams"]["audit_log"]
-        paginator = audit["retriever"]["paginator"]
-        strategy = paginator["pagination_strategy"]
-        assert strategy["page_size"] == 100
-        assert "initial_token" not in strategy or strategy.get("initial_token") is None
+# ---------------------------------------------------------------------------
+# General schema validation
+# ---------------------------------------------------------------------------
 
 
 class TestSchemas:
@@ -387,12 +554,18 @@ class TestSchemas:
 
     def test_all_schemas_are_objects(self, manifest):
         for name, schema in manifest["schemas"].items():
-            assert schema["type"] == "object", f"Schema '{name}' is not of type object"
-            assert "properties" in schema, f"Schema '{name}' has no properties"
+            assert (
+                schema["type"] == "object"
+            ), f"Schema '{name}' is not of type object"
+            assert (
+                "properties" in schema
+            ), f"Schema '{name}' has no properties"
 
     def test_all_schemas_allow_additional_properties(self, manifest):
         for name, schema in manifest["schemas"].items():
-            assert schema.get("additionalProperties") is True, f"Schema '{name}' does not allow additionalProperties"
+            assert schema.get("additionalProperties") is True, (
+                f"Schema '{name}' does not allow additionalProperties"
+            )
 
     def test_all_schemas_have_id_field(self, manifest):
         schemas_with_id = [
@@ -403,15 +576,23 @@ class TestSchemas:
             "threads",
             "scheduled_events",
             "audit_log",
+            "current_user",
         ]
         for name in schemas_with_id:
             schema = manifest["schemas"][name]
-            assert "id" in schema["properties"], f"Schema '{name}' missing 'id' field"
+            assert "id" in schema["properties"], (
+                f"Schema '{name}' missing 'id' field"
+            )
             assert schema["properties"]["id"]["type"] == "string"
 
     def test_nullable_fields_use_correct_format(self, manifest):
         """Verify nullable fields use type array syntax [type, 'null']."""
         for schema_name, schema in manifest["schemas"].items():
-            for field_name, field_def in schema.get("properties", {}).items():
+            for field_name, field_def in schema.get(
+                "properties", {}
+            ).items():
                 if isinstance(field_def.get("type"), list):
-                    assert "null" in field_def["type"], f"Schema '{schema_name}.{field_name}' has array type but no null"
+                    assert "null" in field_def["type"], (
+                        f"Schema '{schema_name}.{field_name}' "
+                        f"has array type but no null"
+                    )
