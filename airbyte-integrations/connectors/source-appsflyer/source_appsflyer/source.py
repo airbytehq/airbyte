@@ -97,7 +97,7 @@ class AppsflyerStream(HttpStream, ABC):
         is_raw_data_reports_reached_limit = self.is_raw_data_reports_reached_limit(response)
         is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit
 
-        return is_rejected or super().should_retry(response)
+        return is_rejected or response.status_code == 429 or 500 <= response.status_code < 600
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if self.is_raw_data_reports_reached_limit(response):
@@ -107,7 +107,7 @@ class AppsflyerStream(HttpStream, ABC):
         elif self.is_aggregate_reports_reached_limit(response):
             wait_time = 60
         else:
-            return super().backoff_time(response)
+            return None
 
         logging.getLogger("airbyte").log(logging.INFO, f"Rate limit exceeded. Retry in {wait_time} seconds.")
         return wait_time
@@ -139,7 +139,7 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
             ) from e
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)

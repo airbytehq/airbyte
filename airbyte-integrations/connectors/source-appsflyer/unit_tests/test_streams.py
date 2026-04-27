@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from source_appsflyer.source import AppsflyerStream
+from source_appsflyer.source import AppsflyerStream, SourceAppsflyer
 
 
 @pytest.fixture
@@ -100,3 +100,27 @@ def test_backoff_time(patch_base_class, http_status, response_text, expected_bac
     if expected_backoff_time == "Midnight":
         expected_backoff_time = (pendulum.tomorrow("UTC") - pendulum.now("UTC")).seconds
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_cdk_7x_error_handler_adapter(patch_base_class):
+    """Verify the CDK 7.x adapter correctly detects custom should_retry and backoff_time."""
+    stream = AppsflyerStream()
+    error_handler = stream.get_error_handler()
+    backoff_strategy = stream.get_backoff_strategy()
+    assert error_handler is not None, "CDK 7.x adapter should detect custom should_retry"
+    assert backoff_strategy is not None, "CDK 7.x adapter should detect custom backoff_time"
+
+
+def test_cdk_7x_streams_instantiation():
+    """Verify all 18 streams can be instantiated with CDK 7.x."""
+    source = SourceAppsflyer()
+    config = {
+        "app_id": "testing",
+        "api_token": "secrets",
+        "start_date": "2021-09-13 01:00:00",
+        "timezone": "UTC",
+    }
+    streams = source.streams(config)
+    assert len(streams) == 18
+    for stream in streams:
+        assert stream.url_base == "https://hq1.appsflyer.com/api/"
