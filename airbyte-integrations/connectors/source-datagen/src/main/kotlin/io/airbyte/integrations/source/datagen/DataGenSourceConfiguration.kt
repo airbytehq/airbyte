@@ -86,14 +86,7 @@ constructor(
             when (flavorSpec) {
                 Incremental -> IncrementFlavor
                 Types -> TypesFlavor
-                is Wide -> {
-                    if (flavorSpec.columnCount < 1 || flavorSpec.columnCount > 1000) {
-                        throw ConfigErrorException(
-                            "Column count must be between 1 and 1000, got ${flavorSpec.columnCount}"
-                        )
-                    }
-                    WideFlavor(flavorSpec.columnCount)
-                }
+                is Wide -> WideFlavor(flavorSpec.columnCount)
             }
 
         return DataGenSourceConfiguration(

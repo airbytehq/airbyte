@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.datagen.flavor.wide
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.integrations.source.datagen.BigDecimalFieldType
@@ -21,6 +22,13 @@ import io.airbyte.integrations.source.datagen.TimestampWithoutTimeZoneFieldType
 import io.airbyte.integrations.source.datagen.flavor.Flavor
 
 class WideFlavor(columnCount: Int) : Flavor {
+    init {
+        if (columnCount < 1 || columnCount > 1000) {
+            throw ConfigErrorException(
+                "Column count must be between 1 and 1000, got $columnCount"
+            )
+        }
+    }
     companion object {
         private const val TABLE_NAME = "wide"
 
