@@ -20,6 +20,7 @@ const getRemarkPlugins = () => ({
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
+  codeBlockTabs: require("./src/remark/codeBlockTabs"),
 });
 
 const plugins = getRemarkPlugins();
@@ -174,6 +175,7 @@ const config: Config = {
           plugins.agentConnectorHeaderDecoration,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
+          plugins.codeBlockTabs,
         ],
       },
     ],
