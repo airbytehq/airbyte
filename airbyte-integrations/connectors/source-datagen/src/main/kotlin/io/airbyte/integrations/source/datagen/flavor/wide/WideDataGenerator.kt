@@ -16,7 +16,7 @@ import io.airbyte.cdk.data.LocalTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.TextCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
@@ -40,7 +40,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 
-class WideDataGenerator(private val fields: List<Field>) : DataGenerator {
+class WideDataGenerator(private val fields: List<EmittedField>) : DataGenerator {
 
     private val stringData = "string".repeat(200)
     private val bigInt = BigDecimal("3000000000")

@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.datagen.flavor.wide
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.integrations.source.datagen.BigDecimalFieldType
 import io.airbyte.integrations.source.datagen.BigIntegerFieldType
@@ -47,12 +47,12 @@ class WideFlavor(columnCount: Int) : Flavor {
             )
     }
 
-    private val generatedFields: List<Field> = buildList {
-        add(Field("id", IntegerFieldType))
+    private val generatedFields: List<EmittedField> = buildList {
+        add(EmittedField("id", IntegerFieldType))
         for (i in 1 until columnCount) {
             val typeIndex = (i - 1) % COLUMN_TYPES.size
             val (typeSuffix, fieldType) = COLUMN_TYPES[typeIndex]
-            add(Field("col_${i}_$typeSuffix", fieldType))
+            add(EmittedField("col_${i}_$typeSuffix", fieldType))
         }
     }
 
