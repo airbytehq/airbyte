@@ -100,9 +100,7 @@ class TestManifestStructure:
         stream_defs = manifest["definitions"]["streams"]
 
         for stream_name in expected_streams:
-            assert (
-                stream_name in stream_defs
-            ), f"Stream '{stream_name}' not found in definitions"
+            assert stream_name in stream_defs, f"Stream '{stream_name}' not found in definitions"
 
         stream_refs = manifest["streams"]
         assert len(stream_refs) == len(expected_streams)
@@ -143,9 +141,7 @@ class TestBaseRequester:
         requester = manifest["definitions"]["base_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        rate_limit_filter = [
-            f for f in response_filters if 429 in f.get("http_codes", [])
-        ]
+        rate_limit_filter = [f for f in response_filters if 429 in f.get("http_codes", [])]
         assert len(rate_limit_filter) == 1
         assert rate_limit_filter[0]["action"] == "RETRY"
 
@@ -153,13 +149,7 @@ class TestBaseRequester:
         requester = manifest["definitions"]["base_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        server_error_filter = [
-            f
-            for f in response_filters
-            if any(
-                code in f.get("http_codes", []) for code in [500, 502, 503]
-            )
-        ]
+        server_error_filter = [f for f in response_filters if any(code in f.get("http_codes", []) for code in [500, 502, 503])]
         assert len(server_error_filter) == 1
         assert server_error_filter[0]["action"] == "RETRY"
 
@@ -173,9 +163,7 @@ class TestBaseRequester:
         requester = manifest["definitions"]["permissive_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        forbidden_filter = [
-            f for f in response_filters if 403 in f.get("http_codes", [])
-        ]
+        forbidden_filter = [f for f in response_filters if 403 in f.get("http_codes", [])]
         assert len(forbidden_filter) == 1
         assert forbidden_filter[0]["action"] == "IGNORE"
 
@@ -202,9 +190,7 @@ class TestMessagesStream:
         strategy = messages["retriever"]["paginator"]["pagination_strategy"]
         assert "initial_token" not in strategy
 
-    def test_messages_partition_router_includes_channels_and_threads(
-        self, manifest
-    ):
+    def test_messages_partition_router_includes_channels_and_threads(self, manifest):
         """P1-3: Messages must iterate over both channels and threads."""
         messages = manifest["definitions"]["streams"]["messages"]
         routers = messages["retriever"]["partition_router"]
@@ -214,9 +200,7 @@ class TestMessagesStream:
         parent_refs = []
         for router in routers:
             cfg = router["parent_stream_configs"][0]
-            parent_refs.append(
-                cfg["stream"]["$ref"].split("/")[-1]
-            )
+            parent_refs.append(cfg["stream"]["$ref"].split("/")[-1])
 
         assert "channels" in parent_refs
         assert "threads" in parent_refs
@@ -505,18 +489,10 @@ class TestScheduledEventsStream:
 @pytest.mark.parametrize(
     "schema_name,field_name",
     [
-        pytest.param(
-            "messages", "timestamp", id="messages.timestamp"
-        ),
-        pytest.param(
-            "messages", "edited_timestamp", id="messages.edited_timestamp"
-        ),
-        pytest.param(
-            "members", "joined_at", id="members.joined_at"
-        ),
-        pytest.param(
-            "members", "premium_since", id="members.premium_since"
-        ),
+        pytest.param("messages", "timestamp", id="messages.timestamp"),
+        pytest.param("messages", "edited_timestamp", id="messages.edited_timestamp"),
+        pytest.param("members", "joined_at", id="members.joined_at"),
+        pytest.param("members", "premium_since", id="members.premium_since"),
         pytest.param(
             "members",
             "communication_disabled_until",
@@ -534,14 +510,10 @@ class TestScheduledEventsStream:
         ),
     ],
 )
-def test_timestamp_fields_have_date_time_format(
-    manifest, schema_name, field_name
-):
+def test_timestamp_fields_have_date_time_format(manifest, schema_name, field_name):
     """P3-1: ISO8601 timestamp fields must declare format: date-time."""
     field = manifest["schemas"][schema_name]["properties"][field_name]
-    assert field.get("format") == "date-time", (
-        f"{schema_name}.{field_name} is missing format: date-time"
-    )
+    assert field.get("format") == "date-time", f"{schema_name}.{field_name} is missing format: date-time"
 
 
 # ---------------------------------------------------------------------------
@@ -554,18 +526,12 @@ class TestSchemas:
 
     def test_all_schemas_are_objects(self, manifest):
         for name, schema in manifest["schemas"].items():
-            assert (
-                schema["type"] == "object"
-            ), f"Schema '{name}' is not of type object"
-            assert (
-                "properties" in schema
-            ), f"Schema '{name}' has no properties"
+            assert schema["type"] == "object", f"Schema '{name}' is not of type object"
+            assert "properties" in schema, f"Schema '{name}' has no properties"
 
     def test_all_schemas_allow_additional_properties(self, manifest):
         for name, schema in manifest["schemas"].items():
-            assert schema.get("additionalProperties") is True, (
-                f"Schema '{name}' does not allow additionalProperties"
-            )
+            assert schema.get("additionalProperties") is True, f"Schema '{name}' does not allow additionalProperties"
 
     def test_all_schemas_have_id_field(self, manifest):
         schemas_with_id = [
@@ -580,19 +546,12 @@ class TestSchemas:
         ]
         for name in schemas_with_id:
             schema = manifest["schemas"][name]
-            assert "id" in schema["properties"], (
-                f"Schema '{name}' missing 'id' field"
-            )
+            assert "id" in schema["properties"], f"Schema '{name}' missing 'id' field"
             assert schema["properties"]["id"]["type"] == "string"
 
     def test_nullable_fields_use_correct_format(self, manifest):
         """Verify nullable fields use type array syntax [type, 'null']."""
         for schema_name, schema in manifest["schemas"].items():
-            for field_name, field_def in schema.get(
-                "properties", {}
-            ).items():
+            for field_name, field_def in schema.get("properties", {}).items():
                 if isinstance(field_def.get("type"), list):
-                    assert "null" in field_def["type"], (
-                        f"Schema '{schema_name}.{field_name}' "
-                        f"has array type but no null"
-                    )
+                    assert "null" in field_def["type"], f"Schema '{schema_name}.{field_name}' has array type but no null"
