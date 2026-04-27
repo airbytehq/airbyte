@@ -147,6 +147,7 @@ Common false negatives to watch for: no-op mutations (e.g., adding the same watc
 If any child mutation does not bump the parent cursor, exclude that child from `incremental_dependency: true` (route it through a non-incremental parent copy) or give the child its own incremental cursor.
 
 #### Global Substream Cursor
+
 - **Description**: This option uses a single global cursor for all partitions, significantly reducing the state size. It enforces a minimal lookback window based on the previous sync's duration to avoid losing records added or updated during the sync. Since the global cursor is already part of the per partition with fallback to global approach, it should only be used cautiously for custom connectors with exceptionally large parent streams to avoid managing state per partition.
 - **When to Use**: Use this option cautiously for custom connectors where the number of partitions in the parent stream is extremely high (e.g., millions of records per sync). The global cursor avoids the inefficiency of managing state per partition but sacrifices some granularity, which may not be suitable for every use case.
 - **Operational Detail**: The global cursor is updated only at the end of the sync. If the sync fails, only the parent state is updated, provided that the incremental dependency is enabled. The global cursor ensures that records are captured through a lookback window, even if they were added during the sync.
