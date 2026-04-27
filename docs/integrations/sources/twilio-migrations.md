@@ -30,12 +30,22 @@ deprecated [Programmable Chat REST API](https://www.twilio.com/en-us/changelog/p
   `chat_service_sid` to match the Conversations API response.
 - The `chat.twilio.com` host has been removed from the connector's
   `allowedHosts` list and replaced with `conversations.twilio.com`.
-- The `account_sid` field on `services` records is now returned as `null`
-  by the Conversations API, whereas the deprecated Chat API returned the
-  actual account SID. This is a known Twilio Conversations API behavior
-  — the field is documented in Twilio's API reference but consistently
-  returns `null` in practice. The `roles` stream is not affected and
-  continues to return `account_sid` with the correct value.
+
+### Known limitations
+
+:::warning `account_sid` is `null` on `services` records
+The Twilio Conversations API returns `account_sid` as `null` for all
+Service resources. The deprecated Chat API returned the actual account
+SID for this field, so if your downstream pipelines or dashboards rely on
+`account_sid` from the `services` stream you will need to update them.
+The `roles` stream is **not** affected and continues to return
+`account_sid` with the correct value.
+
+This is a Twilio API behavior, not an Airbyte connector bug. The field
+is [documented in Twilio's API reference](https://www.twilio.com/docs/conversations/api/service-resource)
+but consistently returns `null` in practice — including for newly
+created services.
+:::
 
 ### Why we made this change
 
