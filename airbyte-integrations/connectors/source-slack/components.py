@@ -222,10 +222,13 @@ class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
             self._success_counter = 0
         elif response.status_code == 429 and isinstance(current_policy, MovingWindowCallRatePolicy):
             self._success_counter = 0
-        elif response.status_code != 429 and isinstance(current_policy, MovingWindowCallRatePolicy):
-            self._success_counter += 1
-            if self._success_counter >= RECOVERY_THRESHOLD:
-                self._policies = deepcopy(self._original_policies)
+        elif isinstance(current_policy, MovingWindowCallRatePolicy):
+            if 200 <= response.status_code < 300 and response.json().get("ok", True) is not False:
+                self._success_counter += 1
+                if self._success_counter >= RECOVERY_THRESHOLD:
+                    self._policies = deepcopy(self._original_policies)
+                    self._success_counter = 0
+            else:
                 self._success_counter = 0
 
 

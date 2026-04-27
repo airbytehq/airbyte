@@ -269,9 +269,10 @@ def _make_prepared_request(url="https://slack.com/api/conversations.replies"):
     return req.prepare()
 
 
-def _mock_response(status_code):
+def _mock_response(status_code, json_body=None):
     resp = MagicMock()
     resp.status_code = status_code
+    resp.json.return_value = json_body if json_body is not None else {"ok": True}
     return resp
 
 
@@ -312,6 +313,30 @@ def test_api_budget_update_from_response(api_budget, status_codes, expected_poli
         api_budget.update_from_response(req, _mock_response(code))
     assert isinstance(api_budget._policies[0], expected_policy_type)
     assert api_budget._success_counter == expected_counter
+
+
+def test_5xx_resets_recovery_counter(api_budget):
+    """A 5xx while throttled resets the recovery counter to zero."""
+    req = _make_prepared_request()
+    api_budget.update_from_response(req, _mock_response(429))
+    for _ in range(3):
+        api_budget.update_from_response(req, _mock_response(200))
+    assert api_budget._success_counter == 3
+    api_budget.update_from_response(req, _mock_response(500))
+    assert api_budget._success_counter == 0
+    assert isinstance(api_budget._policies[0], MovingWindowCallRatePolicy)
+
+
+def test_ok_false_resets_recovery_counter(api_budget):
+    """A Slack 200 with ok:false while throttled resets the recovery counter."""
+    req = _make_prepared_request()
+    api_budget.update_from_response(req, _mock_response(429))
+    for _ in range(3):
+        api_budget.update_from_response(req, _mock_response(200))
+    assert api_budget._success_counter == 3
+    api_budget.update_from_response(req, _mock_response(200, json_body={"ok": False}))
+    assert api_budget._success_counter == 0
+    assert isinstance(api_budget._policies[0], MovingWindowCallRatePolicy)
 
 
 @pytest.mark.parametrize(
