@@ -299,6 +299,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.4 | 2026-04-26 | [77025](https://github.com/airbytehq/airbyte/pull/77025) | Add HTTP 429 to async report error handlers and increase max retries to 20 for report creation, polling, and download |
 | 5.7.3 | 2026-04-21 | [76494](https://github.com/airbytehq/airbyte/pull/76494) | Update dependencies |
 | 5.7.2 | 2026-04-13 | [75143](https://github.com/airbytehq/airbyte/pull/75143) | Fix incorrect URL path for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE stream — add missing `/reports/` segment |
 | 5.7.1 | 2026-04-08 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
