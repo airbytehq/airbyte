@@ -127,10 +127,9 @@ jobs:
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
-      # 1Password-backed credentials for connectors that declare a `smokeTests`
-      # suite in `metadata.yaml`. Required only when `${secret-ref:...}` sigils
-      # are present; legacy GSM-fetched connectors are unaffected.
-      AIRBYTE_TEST_CREDS_PROVIDER: 1pass
+      # Forks can opt into 1Password-backed smoke-test credentials by setting
+      # `AIRBYTE_TEST_CREDS_PROVIDER=1pass` and `OP_SERVICE_ACCOUNT_TOKEN` in their
+      # repository vars/secrets, and optionally overriding the default vault name:
       AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME: ${{ vars.AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME || 'connector-integration-test-creds' }}
       OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
       DD_TAGS: "connector.name:${{ matrix.connector }}"
@@ -226,10 +225,9 @@ jobs:
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
-      # 1Password-backed credentials for connectors that declare a `smokeTests`
-      # suite in `metadata.yaml`. Required only when `${secret-ref:...}` sigils
-      # are present; legacy GSM-fetched connectors are unaffected.
-      AIRBYTE_TEST_CREDS_PROVIDER: 1pass
+      # Forks can opt into 1Password-backed smoke-test credentials by setting
+      # `AIRBYTE_TEST_CREDS_PROVIDER=1pass` and `OP_SERVICE_ACCOUNT_TOKEN` in their
+      # repository vars/secrets, and optionally overriding the default vault name:
       AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME: ${{ vars.AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME || 'connector-integration-test-creds' }}
       OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
