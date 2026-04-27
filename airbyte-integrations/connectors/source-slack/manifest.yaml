@@ -206,6 +206,13 @@ definitions:
           condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
       paginator:
         $ref: "#/definitions/default_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 999
+          cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+          stop_condition: >-
+            {{ not response.get("response_metadata", {}).get("next_cursor", {})
+            }}
         $parameters:
           url_base: https://slack.com/api/
 

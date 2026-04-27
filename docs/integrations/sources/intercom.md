@@ -130,12 +130,12 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.21 | 2026-04-21 | [76847](https://github.com/airbytehq/airbyte/pull/76847) | Update CDK to 7.17.3 |
+| 0.13.21 | 2026-04-22 | [76847](https://github.com/airbytehq/airbyte/pull/76847) | Update CDK to 7.17.3 |
 | 0.13.20 | 2026-04-14 | [76316](https://github.com/airbytehq/airbyte/pull/76316) | Promote 0.13.20-rc.1 to stable and disable progressive rollout |
-| 0.13.20-rc.1 | 2026-04-09 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
+| 0.13.20-rc.1 | 2026-04-10 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
 | 0.13.19 | 2026-04-09 | [76182](https://github.com/airbytehq/airbyte/pull/76182) | Promote 0.13.19-rc.1 to stable and disable progressive rollout |
-| 0.13.19-rc.1 | 2026-04-07 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |
-| 0.13.18 | 2026-03-31 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
+| 0.13.19-rc.1 | 2026-04-08 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |
+| 0.13.18 | 2026-04-06 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
 | 0.13.17 | 2026-03-30 | [75575](https://github.com/airbytehq/airbyte/pull/75575) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 0.13.16 | 2026-03-24 | [75419](https://github.com/airbytehq/airbyte/pull/75419) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
 | 0.13.16-rc.6 | 2026-03-19 | [75216](https://github.com/airbytehq/airbyte/pull/75216) | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |

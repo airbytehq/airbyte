@@ -193,7 +193,7 @@ constructor(
 
         val namespaces: Set<String> =
             pojo.schemas?.filter { it.isNotBlank() }?.toSet()?.takeUnless { it.isEmpty() }
-                ?: setOf("public")
+                ?: setOf()
 
         return PostgresSourceConfiguration(
             realHost = realHost,
