@@ -140,7 +140,7 @@ username/password or key pair authentication:
 
 | Field | Description |
 | :---- | :---------- |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with `snowflakecomputing.com`). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the Snowflake instance, ending with `snowflakecomputing.com`. Use the format `accountname.snowflakecomputing.com` or, for accounts that use a region-based locator, `accountname.region.cloud.snowflakecomputing.com`. Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
@@ -287,7 +287,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.40-rc.1     | 2026-04-16 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
+| 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
 | 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |
 | 4.0.38          | 2026-02-25 | [74041](https://github.com/airbytehq/airbyte/pull/74041)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches                                                                                                                           |
 | 4.0.37          | 2026-02-04 | [72854](https://github.com/airbytehq/airbyte/pull/72854)   | Internal interface changes                                                                                                                                                             |
