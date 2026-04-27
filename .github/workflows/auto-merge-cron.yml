@@ -1,4 +1,8 @@
 name: Auto merge connector PRs Cron
+# Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
+# Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
+# In dry-run mode, PRs are still approved and promoted from draft, but merges are skipped.
+# Manage at: https://github.com/organizations/airbytehq/settings/variables/actions
 
 on:
   schedule:
@@ -219,7 +223,7 @@ jobs:
           --body "Auto-approved by auto-merge workflow."
 
       - name: Squash merge PR
-        if: steps.eligible.outputs.result == 'true'
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
@@ -233,3 +237,7 @@ jobs:
           done
           echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
           exit 1
+
+      - name: Dry-run notice
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN -- would merge PR ${PR_NUMBER}"
