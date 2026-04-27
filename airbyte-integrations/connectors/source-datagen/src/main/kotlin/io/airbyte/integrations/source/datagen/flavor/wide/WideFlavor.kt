@@ -24,9 +24,7 @@ import io.airbyte.integrations.source.datagen.flavor.Flavor
 class WideFlavor(columnCount: Int) : Flavor {
     init {
         if (columnCount < 1 || columnCount > 1000) {
-            throw ConfigErrorException(
-                "Column count must be between 1 and 1000, got $columnCount"
-            )
+            throw ConfigErrorException("Column count must be between 1 and 1000, got $columnCount")
         }
     }
     companion object {
