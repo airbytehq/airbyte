@@ -40,7 +40,7 @@ The Google-Analytics-Data-Api connector isn't currently able to handle prompts l
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-google-analytics-data-api
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -52,8 +52,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
     auth_config=GoogleAnalyticsDataApiAuthConfig(
@@ -77,11 +77,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_google_analytics_data_api import GoogleAnalyticsDataApiConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector, AirbyteAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -102,14 +102,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Website Overview | [List](./REFERENCE.md#website-overview-list), [Search](./REFERENCE.md#website-overview-search) |
-| Daily Active Users | [List](./REFERENCE.md#daily-active-users-list), [Search](./REFERENCE.md#daily-active-users-search) |
-| Weekly Active Users | [List](./REFERENCE.md#weekly-active-users-list), [Search](./REFERENCE.md#weekly-active-users-search) |
-| Four Weekly Active Users | [List](./REFERENCE.md#four-weekly-active-users-list), [Search](./REFERENCE.md#four-weekly-active-users-search) |
-| Traffic Sources | [List](./REFERENCE.md#traffic-sources-list), [Search](./REFERENCE.md#traffic-sources-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Search](./REFERENCE.md#pages-search) |
-| Devices | [List](./REFERENCE.md#devices-list), [Search](./REFERENCE.md#devices-search) |
-| Locations | [List](./REFERENCE.md#locations-list), [Search](./REFERENCE.md#locations-search) |
+| Website Overview | [List](./REFERENCE.md#website-overview-list), [Context Store Search](./REFERENCE.md#website-overview-context-store-search) |
+| Daily Active Users | [List](./REFERENCE.md#daily-active-users-list), [Context Store Search](./REFERENCE.md#daily-active-users-context-store-search) |
+| Weekly Active Users | [List](./REFERENCE.md#weekly-active-users-list), [Context Store Search](./REFERENCE.md#weekly-active-users-context-store-search) |
+| Four Weekly Active Users | [List](./REFERENCE.md#four-weekly-active-users-list), [Context Store Search](./REFERENCE.md#four-weekly-active-users-context-store-search) |
+| Traffic Sources | [List](./REFERENCE.md#traffic-sources-list), [Context Store Search](./REFERENCE.md#traffic-sources-context-store-search) |
+| Pages | [List](./REFERENCE.md#pages-list), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
+| Devices | [List](./REFERENCE.md#devices-list), [Context Store Search](./REFERENCE.md#devices-context-store-search) |
+| Locations | [List](./REFERENCE.md#locations-list), [Context Store Search](./REFERENCE.md#locations-context-store-search) |
 
 
 ### Authentication
@@ -122,7 +122,6 @@ See the official [Google-Analytics-Data-Api API reference](https://developers.go
 
 ## Version information
 
-- **Package version:** 0.1.15
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 07e3903513e36163d0cec8f1bc552df4bd6c022d
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-analytics-data-api/CHANGELOG.md)
+- **Package version:** 1.0.5
+- **Connector version:** 1.0.5
+- **Generated with Connector SDK commit SHA:** unknown

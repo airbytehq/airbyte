@@ -98,11 +98,11 @@ The `Lists Detailed` stream contains field `profile_count` in addition to info f
 
 The `Events Detailed` stream contains field `name` for `metric` relationship - addition to [info](https://developers.klaviyo.com/en/reference/get_event).
 
-The `Profiles` stream can experience transient API errors under heavy load. In order to mitigate this, you can use the "Disable Fetching Predictive Analytics" setting to improve the success rate of syncs.
+The `Profiles` stream can experience transient API errors under heavy load. To mitigate this, you can use the **Disable Fetching Predictive Analytics** setting to improve the success rate of syncs. This setting only affects the `predictive_analytics` field. Subscription and consent data on profile records is unaffected and is always fetched.
 
 :::warning
-Using the "Disable Fetching Predictive Analytics" setting means records on the Profiles stream will no longer
-contain the `predictive_analytics` field and workflows depending on this field will stop working.
+Using the **Disable Fetching Predictive Analytics** setting means records on the `Profiles` stream will no longer
+contain the `predictive_analytics` field, and workflows depending on this field will stop working.
 :::
 
 ## Data type map
@@ -121,6 +121,10 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.17.5 | 2026-04-16 | [75180](https://github.com/airbytehq/airbyte/pull/75180) | Restore `subscriptions` data to the `profiles` stream, fixing a regression introduced in v2.16.0 where subscription and consent data was no longer fetched from the Klaviyo API |
+| 2.17.7 | 2026-04-24 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
+| 2.17.6 | 2026-04-21 | [75707](https://github.com/airbytehq/airbyte/pull/75707) | Update dependencies |
+| 2.17.5 | 2026-04-15 | [75180](https://github.com/airbytehq/airbyte/pull/75180) | Restore `subscriptions` field to profiles stream `additional-fields[profile]` parameter, fixing a regression introduced in v2.16.x where the subscriptions data was no longer fetched from the Klaviyo API |
 | 2.17.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 2.17.3 | 2026-03-17 | [74995](https://github.com/airbytehq/airbyte/pull/74995) | Update dependencies |
 | 2.17.2 | 2026-03-10 | [74435](https://github.com/airbytehq/airbyte/pull/74435) | Update dependencies |
@@ -141,7 +145,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 | 2.16.3 | 2025-10-07 | [67517](https://github.com/airbytehq/airbyte/pull/67517) | Update dependencies |
 | 2.16.2 | 2025-09-30 | [66643](https://github.com/airbytehq/airbyte/pull/66643) | Update dependencies |
 | 2.16.1 | 2025-09-09 | [66070](https://github.com/airbytehq/airbyte/pull/66070) | Update dependencies |
-| 2.15.0 | 2025-09-07 | [65935](https://github.com/airbytehq/airbyte/pull/65935)    | Fix profile subscriptions
+| 2.16.0 | 2025-09-08 | [65990](https://github.com/airbytehq/airbyte/pull/65990)   | Revert the v2.15.0 change, which caused `subscriptions` data to stop being fetched on the `profiles` stream (fixed in v2.17.5)                                           |
+| 2.15.0 | 2025-09-07 | [65935](https://github.com/airbytehq/airbyte/pull/65935)   | Fetch `subscriptions` data on the `profiles` stream                                                                                                                    |
 | 2.14.22 | 2025-08-25 | [65509](https://github.com/airbytehq/airbyte/pull/65509)       | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component                                                                       |\
 | 2.14.21 | 2025-08-23 | [65317](https://github.com/airbytehq/airbyte/pull/65317)   | Update dependencies                                                                                                                                                    |
 | 2.14.20 | 2025-08-09 | [64618](https://github.com/airbytehq/airbyte/pull/64618)   | Update dependencies                                                                                                                                                    |

@@ -6,28 +6,29 @@ This page contains the setup guide and reference information for the Iterable so
 
 To set up the Iterable source connector, you need:
 
-- An Iterable [`Server-side` API Key with `Standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-). Mobile and Browser API keys are not supported.
+- An Iterable [Server-side API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys) with **Standard** permissions. The key must be created in the Iterable project you want to sync. Mobile, Browser, and other client-side API keys are not supported.
 
 ## Set up the Iterable connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Iterable** from the Source type dropdown.
-4. Enter the name for the Iterable connector.
-5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. Click **Set up source**.
+3. On the Set up the source page, select **Iterable** from the **Source type** dropdown.
+4. Enter a name for the Iterable connector.
+5. For **API Key**, enter your Iterable [Server-side API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys).
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The connector replicates data created on and after this date.
+7. (Optional) For **Lookback Window (Minutes)**, enter the number of minutes to re-read before the current time at the end of each sync window. The default is 5 minutes. This accounts for eventual consistency delays in Iterable's Export API. Increase this value if you observe missing events near the end of sync windows.
+8. Click **Set up source**.
 
 ## Supported sync modes
 
 The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- Full Refresh - Overwrite
+- Full Refresh - Append
+- Incremental - Append
+- Incremental - Append + Deduped
 
-## Supported Streams
+## Supported streams
 
 - [Campaigns](https://api.iterable.com/api/docs#campaigns_campaigns)
 - [Campaign Metrics](https://api.iterable.com/api/docs#campaigns_metrics)
@@ -74,21 +75,29 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 - [CustomEvent](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 - [HostedUnsubscribeClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 
-## Performance and data retrieval
+## Limitations and considerations
+
+### Rate limits
+
+Iterable's Export API limits requests to 4 per minute per project. The connector respects this limit and automatically adjusts the size of date range slices to stay within it. For most other endpoints, Iterable applies a rate limit of 100 requests per second per project. The connector retries rate-limited requests (HTTP 429) with exponential backoff.
 
 ### Incremental sync behavior
 
 Streams that support incremental sync use the following approaches:
 
-- **Users stream**: Splits data retrieval into 90-day intervals to manage large data volumes efficiently. The stream uses the `profileUpdatedAt` field as the cursor for incremental syncs.
-- **Event streams** (Email, Push, SMS, In-App, Web Push, Inbox events): Use adaptive date range slicing to handle varying data volumes. The connector automatically adjusts slice sizes based on API response times and handles connection timeouts gracefully.
-- **Templates stream**: Supports incremental sync using the `updatedAt` field as the cursor.
+- **Users**: Splits data retrieval into 90-day intervals. Uses `profileUpdatedAt` as the cursor.
+- **Export-based event streams** (Email, Push, SMS, In-App, Web Push, Inbox, Purchase, CustomEvent, HostedUnsubscribeClick): Use adaptive date range slicing. The connector starts with a 30-day slice, then adjusts subsequent slice sizes based on how long each request takes to process. If a request fails with a connection timeout (`ChunkedEncodingError`), the connector halves the slice size and retries up to 6 times.
+- **Templates**: Uses 90-day fixed intervals. Uses `updatedAt` as the cursor.
+
+### Lookback window
+
+Iterable's Export API has eventual consistency: recently created events may not appear in export results immediately. To prevent silent data loss, the connector subtracts a configurable lookback window (default: 5 minutes) from the current time when determining the end of each sync window. The connector also filters out duplicate records that fall within the lookback overlap.
 
 ### Error handling
 
-The List Users stream handles `500 - Generic Error` responses gracefully by skipping the affected list and continuing to process remaining lists. This behavior prevents individual list errors from blocking the entire sync and is related to intermittent API failures when retrieving users for specific list IDs.
+The List Users stream skips lists that return `500 - Generic Error` responses and continues processing remaining lists. This prevents intermittent API failures for individual lists from blocking the entire sync.
 
-The connector implements retry logic with exponential backoff for rate limiting (HTTP 429) and server errors (HTTP 500-599), with up to 10 retries and delays ranging from 20 to 400 seconds.
+For all streams, the connector retries failed requests with exponential backoff for rate limiting (HTTP 429) and server errors (HTTP 500–599), with up to 10 retries and delays ranging from 20 to 400 seconds.
 
 ## Changelog
 
@@ -97,9 +106,9 @@ The connector implements retry logic with exponential backoff for rate limiting 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.7.1 | 2026-04-02 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
+| 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
-| 0.6.54 | 2026-03-03 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
+| 0.6.54 | 2026-03-04 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
 | 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
 | 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |

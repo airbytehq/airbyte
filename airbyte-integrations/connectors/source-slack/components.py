@@ -194,12 +194,20 @@ class ThreadsStateMigration(StateMigration):
 
 
 MESSAGES_AND_THREADS_RATE = Rate(limit=1, interval=timedelta(seconds=60))
+RECOVERY_THRESHOLD = 5
 
 
 class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
     """
-    Switches to MovingWindowCallRatePolicy 1 request per minute if rate limits were exceeded.
+    Temporarily switches to MovingWindowCallRatePolicy (1 req/60s) after an
+    HTTP 429, then recovers to UnlimitedCallRatePolicy after a streak of
+    successful responses.
     """
+
+    def __init__(self, policies: list, maximum_attempts_to_acquire: int = 100000) -> None:
+        super().__init__(policies=policies, maximum_attempts_to_acquire=maximum_attempts_to_acquire)
+        self._original_policies = deepcopy(policies)
+        self._success_counter: int = 0
 
     def update_from_response(self, request: Any, response: Any) -> None:
         current_policy = self.get_matching_policy(request)
@@ -211,6 +219,17 @@ class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
                     rates=[MESSAGES_AND_THREADS_RATE],
                 )
             ]
+            self._success_counter = 0
+        elif response.status_code == 429 and isinstance(current_policy, MovingWindowCallRatePolicy):
+            self._success_counter = 0
+        elif isinstance(current_policy, MovingWindowCallRatePolicy):
+            if 200 <= response.status_code < 300 and response.json().get("ok", True) is not False:
+                self._success_counter += 1
+                if self._success_counter >= RECOVERY_THRESHOLD:
+                    self._policies = deepcopy(self._original_policies)
+                    self._success_counter = 0
+            else:
+                self._success_counter = 0
 
 
 @dataclass
