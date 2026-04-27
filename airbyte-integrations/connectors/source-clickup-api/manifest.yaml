@@ -9668,6 +9668,12 @@ spec:
         title: Include Closed Tasks
         default: false
     additionalProperties: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 10
+
 metadata:
   autoImportSchema:
     user: false
