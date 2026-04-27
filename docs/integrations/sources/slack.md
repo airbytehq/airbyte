@@ -24,9 +24,9 @@ If you are using a Slack Bot Token, you can skip this section.
 :::
 
 :::warning
-**OAuth-only rate limit note:** When authenticating via **OAuth**, the Slack source applies a stricter API budget for the **Channel Messages** and **Threads** streams (effectively one request per minute). To avoid slowing down other Slack streams, we recommend creating a separate connection for these two streams. See the [Rate limiting](#rate-limiting) section for details.
+**OAuth-only rate limit note:** When authenticating via **OAuth**, the Slack source temporarily throttles the **Channel Messages** and **Threads** streams to one request per minute after receiving an HTTP 429 rate limit response. The connector automatically recovers to full speed after five consecutive successful responses. To avoid slowing down other streams during throttled periods, consider creating a separate connection for these two streams. See the [Rate limiting](#rate-limiting) section for details.
 
-If you authenticate using a **Bot Token**, this OAuth-specific limit does **not** apply.
+If you authenticate using a **Bot Token**, this OAuth-specific throttle does **not** apply.
 :::
 
 To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions.
@@ -170,9 +170,11 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 - [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
 - [`conversations.history`](https://api.slack.com/methods/conversations.history)
 
-These two streams are effectively limited to **one request per minute**. Consider creating a **separate connection** for them so other streams (Users, Channels, Channel Members, etc.) are not slowed down.
+When the connector receives an HTTP 429 response on these streams, it temporarily drops to **one request per minute**. After **five consecutive successful responses**, the connector automatically recovers to its normal request rate. If another 429 occurs during recovery, the counter resets.
 
-**Bot Token authentication:** When using a Slack Bot Token, this OAuth-specific one-per-minute policy does **not** apply; only Slack's general rate limits apply.
+Because this throttle can slow down a sync that includes other streams, consider creating a **separate connection** for Channel Messages and Threads so that Users, Channels, and Channel Members are not affected.
+
+**Bot Token authentication:** When using a Slack Bot Token, this OAuth-specific throttle does **not** apply; only Slack's [general rate limits](https://api.slack.com/docs/rate-limits) apply. Both `conversations.history` and `conversations.replies` are [Tier 3](https://api.slack.com/docs/rate-limits) methods, allowing 50 or more requests per minute.
 
 ### Troubleshooting
 
@@ -197,10 +199,10 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.2 | 2026-04-24 | [76985](https://github.com/airbytehq/airbyte/pull/76985) | Allow OAuth API budget to recover after transient 429 rate limits instead of permanently throttling the sync |
+| 3.2.2 | 2026-04-27 | [76985](https://github.com/airbytehq/airbyte/pull/76985) | Allow OAuth API budget to recover after transient 429 rate limits instead of permanently throttling the sync |
 | 3.2.1 | 2026-04-27 | [76981](https://github.com/airbytehq/airbyte/pull/76981) | Remove unused OAuth scopes (`im:history`, `mpim:history`, `im:read`, `mpim:read`) not exercised by any stream. New OAuth installs see a narrower consent screen; existing tokens are unaffected. |
-| 3.2.0 | 2026-04-24 | [76982](https://github.com/airbytehq/airbyte/pull/76982) | Exclude archived channels by default; add `include_archived_channels` config option to opt in |
-| 3.1.24 | 2026-04-24 | [76980](https://github.com/airbytehq/airbyte/pull/76980) | Reduce `channels` stream page size from 1000 to 999 to comply with Slack API spec |
+| 3.2.0 | 2026-04-27 | [76982](https://github.com/airbytehq/airbyte/pull/76982) | Exclude archived channels by default; add `include_archived_channels` config option to opt in |
+| 3.1.24 | 2026-04-27 | [76980](https://github.com/airbytehq/airbyte/pull/76980) | Reduce `channels` stream page size from 1000 to 999 to comply with Slack API spec |
 | 3.1.23 | 2026-04-24 | [76984](https://github.com/airbytehq/airbyte/pull/76984) | Detect Slack API ok=false responses as errors to prevent silent data loss |
 | 3.1.22 | 2026-04-24 | [76983](https://github.com/airbytehq/airbyte/pull/76983) | Honor Slack's `Retry-After` header on HTTP 429 responses for all streams |
 | 3.1.21 | 2026-04-21 | [76477](https://github.com/airbytehq/airbyte/pull/76477) | Scope the non-member channel filter to only `channel_messages` and `threads` so `channel_members` and `channels` keep syncing every public channel |
