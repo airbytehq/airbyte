@@ -9668,6 +9668,25 @@ spec:
         title: Include Closed Tasks
         default: false
     additionalProperties: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 41
+  max_concurrency: 60
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10000
+          interval: PT1M
+      matchers: []
+  ratelimit_reset_header: X-RateLimit-Reset
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit:
+    - 429
+
 metadata:
   autoImportSchema:
     user: false
