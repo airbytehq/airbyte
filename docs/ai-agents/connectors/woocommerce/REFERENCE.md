@@ -8,22 +8,22 @@ The Woocommerce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Get](#customers-get), [Search](#customers-search) |
-| Orders | [List](#orders-list), [Get](#orders-get), [Search](#orders-search) |
-| Products | [List](#products-list), [Get](#products-get), [Search](#products-search) |
-| Coupons | [List](#coupons-list), [Get](#coupons-get), [Search](#coupons-search) |
-| Product Categories | [List](#product-categories-list), [Get](#product-categories-get), [Search](#product-categories-search) |
-| Product Tags | [List](#product-tags-list), [Get](#product-tags-get), [Search](#product-tags-search) |
-| Product Reviews | [List](#product-reviews-list), [Get](#product-reviews-get), [Search](#product-reviews-search) |
-| Product Attributes | [List](#product-attributes-list), [Get](#product-attributes-get), [Search](#product-attributes-search) |
-| Product Variations | [List](#product-variations-list), [Get](#product-variations-get), [Search](#product-variations-search) |
-| Order Notes | [List](#order-notes-list), [Get](#order-notes-get), [Search](#order-notes-search) |
-| Refunds | [List](#refunds-list), [Get](#refunds-get), [Search](#refunds-search) |
-| Payment Gateways | [List](#payment-gateways-list), [Get](#payment-gateways-get), [Search](#payment-gateways-search) |
-| Shipping Methods | [List](#shipping-methods-list), [Get](#shipping-methods-get), [Search](#shipping-methods-search) |
-| Shipping Zones | [List](#shipping-zones-list), [Get](#shipping-zones-get), [Search](#shipping-zones-search) |
-| Tax Rates | [List](#tax-rates-list), [Get](#tax-rates-get), [Search](#tax-rates-search) |
-| Tax Classes | [List](#tax-classes-list), [Search](#tax-classes-search) |
+| Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search) |
+| Orders | [List](#orders-list), [Get](#orders-get), [Context Store Search](#orders-context-store-search) |
+| Products | [List](#products-list), [Get](#products-get), [Context Store Search](#products-context-store-search) |
+| Coupons | [List](#coupons-list), [Get](#coupons-get), [Context Store Search](#coupons-context-store-search) |
+| Product Categories | [List](#product-categories-list), [Get](#product-categories-get), [Context Store Search](#product-categories-context-store-search) |
+| Product Tags | [List](#product-tags-list), [Get](#product-tags-get), [Context Store Search](#product-tags-context-store-search) |
+| Product Reviews | [List](#product-reviews-list), [Get](#product-reviews-get), [Context Store Search](#product-reviews-context-store-search) |
+| Product Attributes | [List](#product-attributes-list), [Get](#product-attributes-get), [Context Store Search](#product-attributes-context-store-search) |
+| Product Variations | [List](#product-variations-list), [Get](#product-variations-get), [Context Store Search](#product-variations-context-store-search) |
+| Order Notes | [List](#order-notes-list), [Get](#order-notes-get), [Context Store Search](#order-notes-context-store-search) |
+| Refunds | [List](#refunds-list), [Get](#refunds-get), [Context Store Search](#refunds-context-store-search) |
+| Payment Gateways | [List](#payment-gateways-list), [Get](#payment-gateways-get), [Context Store Search](#payment-gateways-context-store-search) |
+| Shipping Methods | [List](#shipping-methods-list), [Get](#shipping-methods-get), [Context Store Search](#shipping-methods-context-store-search) |
+| Shipping Zones | [List](#shipping-zones-list), [Get](#shipping-zones-get), [Context Store Search](#shipping-zones-context-store-search) |
+| Tax Rates | [List](#tax-rates-list), [Get](#tax-rates-get), [Context Store Search](#tax-rates-context-store-search) |
+| Tax Classes | [List](#tax-classes-list), [Context Store Search](#tax-classes-context-store-search) |
 
 ## Customers
 
@@ -86,6 +86,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `avatar_url` | `null \| string` |  |
 | `meta_data` | `null \| array` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
 
 </details>
 
@@ -150,14 +156,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Customers Search
+### Customers Context Store Search
 
 Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.customers.search(
+await woocommerce.customers.context_store_search(
     query={"filter": {"eq": {"avatar_url": "<str>"}}}
 )
 ```
@@ -170,7 +176,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"avatar_url": "<str>"}}}
     }
@@ -334,6 +340,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `needs_processing` | `null \| boolean` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Orders Get
@@ -428,14 +440,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Orders Search
+### Orders Context Store Search
 
 Search and filter orders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.orders.search(
+await woocommerce.orders.context_store_search(
     query={"filter": {"eq": {"billing": {}}}}
 )
 ```
@@ -448,7 +460,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "orders",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"billing": {}}}}
     }
@@ -695,6 +707,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `global_unique_id` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Products Get
@@ -813,14 +831,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Products Search
+### Products Context Store Search
 
 Search and filter products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.products.search(
+await woocommerce.products.context_store_search(
     query={"filter": {"eq": {"attributes": []}}}
 )
 ```
@@ -833,7 +851,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "products",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": []}}}
     }
@@ -1075,6 +1093,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Coupons Get
@@ -1151,14 +1175,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Coupons Search
+### Coupons Context Store Search
 
 Search and filter coupons records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.coupons.search(
+await woocommerce.coupons.context_store_search(
     query={"filter": {"eq": {"amount": "<str>"}}}
 )
 ```
@@ -1171,7 +1195,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "coupons",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": "<str>"}}}
     }
@@ -1319,6 +1343,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `count` | `null \| integer` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Product Categories Get
@@ -1376,14 +1406,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Product Categories Search
+### Product Categories Context Store Search
 
 Search and filter product categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.product_categories.search(
+await woocommerce.product_categories.context_store_search(
     query={"filter": {"eq": {"count": 0}}}
 )
 ```
@@ -1396,7 +1426,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "product_categories",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"count": 0}}}
     }
@@ -1503,6 +1533,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `count` | `null \| integer` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Product Tags Get
@@ -1556,14 +1592,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Product Tags Search
+### Product Tags Context Store Search
 
 Search and filter product tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.product_tags.search(
+await woocommerce.product_tags.context_store_search(
     query={"filter": {"eq": {"count": 0}}}
 )
 ```
@@ -1576,7 +1612,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "product_tags",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"count": 0}}}
     }
@@ -1682,6 +1718,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `reviewer_avatar_urls` | `null \| object` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Product Reviews Get
@@ -1743,14 +1785,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Product Reviews Search
+### Product Reviews Context Store Search
 
 Search and filter product reviews records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.product_reviews.search(
+await woocommerce.product_reviews.context_store_search(
     query={"filter": {"eq": {"date_created": "<str>"}}}
 )
 ```
@@ -1763,7 +1805,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "product_reviews",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"date_created": "<str>"}}}
     }
@@ -1867,6 +1909,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `has_archives` | `null \| boolean` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Product Attributes Get
@@ -1921,14 +1969,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Product Attributes Search
+### Product Attributes Context Store Search
 
 Search and filter product attributes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.product_attributes.search(
+await woocommerce.product_attributes.context_store_search(
     query={"filter": {"eq": {"has_archives": True}}}
 )
 ```
@@ -1941,7 +1989,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "product_attributes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"has_archives": True}}}
     }
@@ -2090,6 +2138,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `parent_id` | `null \| integer` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Product Variations Get
@@ -2185,14 +2239,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Product Variations Search
+### Product Variations Context Store Search
 
 Search and filter product variations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.product_variations.search(
+await woocommerce.product_variations.context_store_search(
     query={"filter": {"eq": {"attributes": []}}}
 )
 ```
@@ -2205,7 +2259,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "product_variations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": []}}}
     }
@@ -2372,6 +2426,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `customer_note` | `null \| boolean` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Order Notes Get
@@ -2429,14 +2489,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Order Notes Search
+### Order Notes Context Store Search
 
 Search and filter order notes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.order_notes.search(
+await woocommerce.order_notes.context_store_search(
     query={"filter": {"eq": {"author": "<str>"}}}
 )
 ```
@@ -2449,7 +2509,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "order_notes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"author": "<str>"}}}
     }
@@ -2555,6 +2615,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `fee_lines` | `null \| array` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Refunds Get
@@ -2618,14 +2684,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Refunds Search
+### Refunds Context Store Search
 
 Search and filter refunds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.refunds.search(
+await woocommerce.refunds.context_store_search(
     query={"filter": {"eq": {"amount": "<str>"}}}
 )
 ```
@@ -2638,7 +2704,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "refunds",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": "<str>"}}}
     }
@@ -2742,6 +2808,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `required_settings_keys` | `null \| array` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Payment Gateways Get
@@ -2805,14 +2877,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Payment Gateways Search
+### Payment Gateways Context Store Search
 
 Search and filter payment gateways records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.payment_gateways.search(
+await woocommerce.payment_gateways.context_store_search(
     query={"filter": {"eq": {"description": "<str>"}}}
 )
 ```
@@ -2825,7 +2897,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "payment_gateways",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"description": "<str>"}}}
     }
@@ -2917,6 +2989,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `description` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Shipping Methods Get
@@ -2968,14 +3046,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Shipping Methods Search
+### Shipping Methods Context Store Search
 
 Search and filter shipping methods records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.shipping_methods.search(
+await woocommerce.shipping_methods.context_store_search(
     query={"filter": {"eq": {"description": "<str>"}}}
 )
 ```
@@ -2988,7 +3066,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "shipping_methods",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"description": "<str>"}}}
     }
@@ -3068,6 +3146,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `order` | `null \| integer` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Shipping Zones Get
@@ -3119,14 +3203,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Shipping Zones Search
+### Shipping Zones Context Store Search
 
 Search and filter shipping zones records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.shipping_zones.search(
+await woocommerce.shipping_zones.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -3139,7 +3223,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "shipping_zones",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -3240,6 +3324,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `class` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Tax Rates Get
@@ -3302,14 +3392,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Tax Rates Search
+### Tax Rates Context Store Search
 
 Search and filter tax rates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.tax_rates.search(
+await woocommerce.tax_rates.context_store_search(
     query={"filter": {"eq": {"cities": []}}}
 )
 ```
@@ -3322,7 +3412,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tax_rates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"cities": []}}}
     }
@@ -3423,16 +3513,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `name` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Tax Classes Search
+### Tax Classes Context Store Search
 
 Search and filter tax classes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await woocommerce.tax_classes.search(
+await woocommerce.tax_classes.context_store_search(
     query={"filter": {"eq": {"name": "<str>"}}}
 )
 ```
@@ -3445,7 +3541,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tax_classes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"name": "<str>"}}}
     }

@@ -34,7 +34,7 @@ The Gitlab connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-gitlab
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -46,8 +46,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_gitlab import GitlabConnector
-from airbyte_agent_gitlab.models import GitlabPersonalAccessTokenAuthConfig
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
 
 connector = GitlabConnector(
     auth_config=GitlabPersonalAccessTokenAuthConfig(
@@ -69,11 +69,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_gitlab import GitlabConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector, AirbyteAuthConfig
 
 connector = GitlabConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -94,20 +94,20 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Search](./REFERENCE.md#projects-search) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Search](./REFERENCE.md#issues-search) |
-| Merge Requests | [List](./REFERENCE.md#merge-requests-list), [Get](./REFERENCE.md#merge-requests-get), [Search](./REFERENCE.md#merge-requests-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Search](./REFERENCE.md#commits-search) |
-| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Search](./REFERENCE.md#groups-search) |
-| Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get), [Search](./REFERENCE.md#branches-search) |
-| Pipelines | [List](./REFERENCE.md#pipelines-list), [Get](./REFERENCE.md#pipelines-get), [Search](./REFERENCE.md#pipelines-search) |
-| Group Members | [List](./REFERENCE.md#group-members-list), [Get](./REFERENCE.md#group-members-get), [Search](./REFERENCE.md#group-members-search) |
-| Project Members | [List](./REFERENCE.md#project-members-list), [Get](./REFERENCE.md#project-members-get), [Search](./REFERENCE.md#project-members-search) |
-| Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get), [Search](./REFERENCE.md#releases-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get), [Search](./REFERENCE.md#tags-search) |
-| Group Milestones | [List](./REFERENCE.md#group-milestones-list), [Get](./REFERENCE.md#group-milestones-get), [Search](./REFERENCE.md#group-milestones-search) |
-| Project Milestones | [List](./REFERENCE.md#project-milestones-list), [Get](./REFERENCE.md#project-milestones-get), [Search](./REFERENCE.md#project-milestones-search) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
+| Merge Requests | [List](./REFERENCE.md#merge-requests-list), [Get](./REFERENCE.md#merge-requests-get), [Context Store Search](./REFERENCE.md#merge-requests-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Context Store Search](./REFERENCE.md#commits-context-store-search) |
+| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search) |
+| Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get), [Context Store Search](./REFERENCE.md#branches-context-store-search) |
+| Pipelines | [List](./REFERENCE.md#pipelines-list), [Get](./REFERENCE.md#pipelines-get), [Context Store Search](./REFERENCE.md#pipelines-context-store-search) |
+| Group Members | [List](./REFERENCE.md#group-members-list), [Get](./REFERENCE.md#group-members-get), [Context Store Search](./REFERENCE.md#group-members-context-store-search) |
+| Project Members | [List](./REFERENCE.md#project-members-list), [Get](./REFERENCE.md#project-members-get), [Context Store Search](./REFERENCE.md#project-members-context-store-search) |
+| Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get), [Context Store Search](./REFERENCE.md#releases-context-store-search) |
+| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
+| Group Milestones | [List](./REFERENCE.md#group-milestones-list), [Get](./REFERENCE.md#group-milestones-get), [Context Store Search](./REFERENCE.md#group-milestones-context-store-search) |
+| Project Milestones | [List](./REFERENCE.md#project-milestones-list), [Get](./REFERENCE.md#project-milestones-get), [Context Store Search](./REFERENCE.md#project-milestones-context-store-search) |
 
 
 ### Authentication
@@ -120,7 +120,6 @@ See the official [Gitlab API reference](https://docs.gitlab.com/ee/api/rest/).
 
 ## Version information
 
-- **Package version:** 0.1.9
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gitlab/CHANGELOG.md)
+- **Package version:** 1.0.4
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** unknown
