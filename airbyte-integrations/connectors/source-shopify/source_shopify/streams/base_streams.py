@@ -817,7 +817,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def emit_checkpoint_message(self) -> None:
         if self.job_manager._job_adjust_slice_from_checkpoint:
-            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")
+            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._effective_checkpoint_cursor()}`.")
 
     def _effective_checkpoint_cursor(self) -> Optional[Union[str, int]]:
         """Return the cursor value to use when advancing the next slice after
