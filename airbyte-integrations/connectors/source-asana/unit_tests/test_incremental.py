@@ -11,14 +11,19 @@ tests assert at the *call site* (the outgoing HTTP request) that:
 
 1. `tasks` requests carry the `modified_since` query parameter derived from
    the cursor value.
-2. Child streams that declare `incremental_dependency: true` on `tasks`
-   (stories_compact, stories, attachments_compact, attachments) are only
-   read for task partitions newer than the inherited cursor state.
+2. Child streams (stories_compact, stories, attachments_compact, attachments)
+   that route through the incremental `tasks` parent inherit the parent's
+   `modified_since` filter on the parent fetch, even though the children
+   themselves remain full-refresh (no `incremental_sync` block, no
+   `incremental_dependency: true`).
 """
 
+import logging
+from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
+import yaml
 from source_asana.source import SourceAsana
 
 from airbyte_cdk.models import (
@@ -109,8 +114,6 @@ def _find_task_request(requests_mock) -> Any:
 
 
 def _read_records(source: SourceAsana, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: list) -> list:
-    import logging
-
     return list(source.read(logging.getLogger("airbyte"), dict(config), catalog, state))
 
 
@@ -169,10 +172,12 @@ def test_configured_start_date_injected_as_modified_since(requests_mock):
     ],
 )
 def test_child_stream_parent_is_incremental(child_stream_name, requests_mock):
-    """Child streams with `incremental_dependency: true` on `tasks` must inject `modified_since` on the parent `/tasks` request.
+    """Child streams that route through the incremental `tasks` parent must see `modified_since` on the parent `/tasks` request.
 
-    Without state, the parent uses its start_datetime default; with state keyed by the child stream, the parent cursor
-    is restored from the nested `parent_state` block and injected as `modified_since` on the call site.
+    The children themselves are full-refresh and the partition router does not
+    set `incremental_dependency: true`. The parent's own `incremental_sync`
+    block still applies on every parent fetch, so `modified_since` is injected
+    from `start_datetime` on the call site.
     """
     _register_common_mocks(requests_mock)
     requests_mock.get(f"{ASANA_API}/tasks/{TASK_OLD_GID}/stories", json={"data": [], "next_page": None})
@@ -190,11 +195,15 @@ def test_child_stream_parent_is_incremental(child_stream_name, requests_mock):
 
 
 def test_manifest_tasks_stream_declares_incremental_sync():
-    """Static guard: the manifest must declare `incremental_sync` on the `tasks` stream and `incremental_dependency: true` on its downstream partition router."""
-    from pathlib import Path
+    """Static guard on the manifest:
 
-    import yaml
-
+    - `tasks_stream` must declare `incremental_sync`.
+    - `tasks_partition_router` must NOT set `incremental_dependency: true`.
+      The four child streams that route through this parent are full-refresh
+      and have no cursor of their own, so the flag would be inert. See the
+      connector's `CONTRIBUTING.md` for the full rationale.
+    - `incremental_sync_modified_at` must be wired up correctly.
+    """
     manifest_path = Path(__file__).parent.parent / "source_asana" / "manifest.yaml"
     manifest = yaml.safe_load(manifest_path.read_text())
 
@@ -203,11 +212,12 @@ def test_manifest_tasks_stream_declares_incremental_sync():
 
     tasks_router = manifest["definitions"]["tasks_partition_router"]
     parent = tasks_router["parent_stream_configs"][0]
-    assert (
-        parent.get("incremental_dependency") is True
-    ), "tasks_partition_router parent_stream_configs[0] must set `incremental_dependency: true`"
+    assert parent.get("incremental_dependency") is not True, (
+        "tasks_partition_router parent_stream_configs[0] must NOT set "
+        "`incremental_dependency: true`; the children are full-refresh and the "
+        "flag would be inert. See CONTRIBUTING.md."
+    )
 
-    # incremental_sync_modified_at definition present and well-formed
     inc = manifest["definitions"]["incremental_sync_modified_at"]
     assert inc["cursor_field"] == "modified_at"
     assert inc["start_time_option"]["field_name"] == "modified_since"
