@@ -8,10 +8,10 @@ The Notion connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Pages | [List](#pages-list), [Get](#pages-get), [Search](#pages-search) |
-| Data Sources | [List](#data-sources-list), [Get](#data-sources-get), [Search](#data-sources-search) |
-| Blocks | [List](#blocks-list), [Get](#blocks-get), [Search](#blocks-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Pages | [List](#pages-list), [Get](#pages-get), [Context Store Search](#pages-context-store-search) |
+| Data Sources | [List](#data-sources-list), [Get](#data-sources-get), [Context Store Search](#data-sources-context-store-search) |
+| Blocks | [List](#blocks-list), [Get](#blocks-get), [Context Store Search](#blocks-context-store-search) |
 | Comments | [List](#comments-list) |
 
 ## Users
@@ -127,14 +127,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await notion.users.search(
+await notion.users.context_store_search(
     query={"filter": {"eq": {"avatar_url": "<str>"}}}
 )
 ```
@@ -147,7 +147,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"avatar_url": "<str>"}}}
     }
@@ -334,14 +334,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Pages Search
+### Pages Context Store Search
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await notion.pages.search(
+await notion.pages.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -354,7 +354,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "pages",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -583,14 +583,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Data Sources Search
+### Data Sources Context Store Search
 
 Search and filter data sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await notion.data_sources.search(
+await notion.data_sources.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -603,7 +603,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "data_sources",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -864,14 +864,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Blocks Search
+### Blocks Context Store Search
 
 Search and filter blocks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await notion.blocks.search(
+await notion.blocks.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -884,7 +884,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "blocks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
