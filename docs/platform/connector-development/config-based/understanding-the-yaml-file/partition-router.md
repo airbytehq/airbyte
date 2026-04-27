@@ -149,10 +149,6 @@ retriever:
         incremental_dependency: true
 ```
 
-:::warning Verification required for `incremental_dependency`
-`incremental_dependency: true` is a runtime optimization on the partition router and is not equivalent to declaring the child stream incremental. It only takes effect when the child stream has its own `incremental_sync` block, and it relies on the assumption that every child mutation bumps the parent's cursor field. See [Incremental Dependency](./incremental-syncs.md#incremental-dependency) for the full requirement, the inert-flag rule, and the empirical-verification procedure that must be performed for each child resource before shipping.
-:::
-
 ## Nested streams
 
 Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)

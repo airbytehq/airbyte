@@ -113,12 +113,7 @@ For complex injection requirements that the standard options don't support:
 
 **Lazy Read Pointer**: Enable lazy reading to extract child records during initial parent record processing.
 
-**Incremental Dependency**: When enabled, the parent stream is read with state during warm syncs so that on each subsequent sync only parents whose cursor field has advanced since the last sync are iterated, and the child stream then re-fetches records for that narrowed set of parents. This is a router-level optimization, not a sync-mode declaration, and it has two prerequisites:
-
-- The child stream must have its own incremental cursor. Without one, the optimization is silently inert.
-- Every child-resource mutation the API exposes must bump the parent's cursor field. If any child mutation does not bump the parent, those changes will be permanently missed on warm syncs.
-
-API behavior is per-resource and must be verified empirically for each child resource before enabling this option. See the [Incremental Dependency reference](/platform/connector-development/config-based/understanding-the-yaml-file/incremental-syncs#incremental-dependency) for the full requirement, the inert-flag rule, and the verification procedure.
+**Incremental Dependency**: When enabled, the parent stream is read incrementally based on child stream updates.
 
 ## When not to Use Partitioning
 
