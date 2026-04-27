@@ -6,16 +6,17 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 **Connector type:** Hybrid (manifest.yaml + Python custom components for record extraction, state migration, and event handling)
 
-**Analysis status:** Complete. 42 streams analyzed. 32 use incremental sync via Zendesk's incremental export API, cursor pagination, or semi-incremental client-side filtering. 10 are full-refresh.
+**Analysis status:** Complete. 42 streams analyzed. 33 use incremental sync via Zendesk's incremental export API, cursor pagination, semi-incremental client-side filtering, or state-delegating patterns. 9 are full-refresh.
 
-### Incremental Streams (32)
+### Incremental Streams (33)
 
 The connector implements incremental sync using multiple patterns:
 - **Incremental Export API** (tickets, users, organizations, ticket_audits, ticket_metric_events): Uses Zendesk's dedicated incremental export endpoints
-- **Cursor-based incremental** (custom_roles, schedules, sla_policies, ticket_fields, ticket_forms, topics, groups, group_memberships, macros, organization_fields, organization_memberships, triggers, audit_logs, ticket_activities, ticket_skips, satisfaction_ratings): Uses `updated_at` cursor with start_time filter
+- **Cursor-based incremental** (custom_roles, schedules, sla_policies, ticket_fields, ticket_forms, topics, groups, group_memberships, macros, organization_fields, organization_memberships, triggers, audit_logs, ticket_activities, ticket_skips, satisfaction_ratings, user_identities): Uses `updated_at` cursor with start_time filter
+- **StateDelegatingStream** (ticket_metrics): Uses bulk endpoint on initial sync, per-ticket incremental fetch via `_ab_updated_at` cursor on subsequent syncs
 - **Semi-incremental** (articles, article_attachments, article_comments, article_votes, article_comment_votes, posts, post_comments, post_votes, post_comment_votes, ticket_comments): Client-side cursor filtering
 
-### Full-Refresh Streams (Not Actionable)
+### Full-Refresh Streams (Not Actionable) (9)
 
 | Stream | Reason | Evidence |
 |--------|--------|----------|
@@ -28,4 +29,4 @@ The connector implements incremental sync using multiple patterns:
 | automations | No date filter on list endpoint | Zendesk Automations API returns all automations |
 | categories | No date filter | Zendesk Help Center Categories API |
 | sections | No date filter | Zendesk Help Center Sections API |
-| ticket_metrics | No date filter | Zendesk Ticket Metrics API; per-ticket computed metrics |
+
