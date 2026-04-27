@@ -40,7 +40,7 @@ The Incident-Io connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-incident-io
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -52,8 +52,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_incident_io import IncidentIoConnector
-from airbyte_agent_incident_io.models import IncidentIoAuthConfig
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.connectors.incident_io.models import IncidentIoAuthConfig
 
 connector = IncidentIoConnector(
     auth_config=IncidentIoAuthConfig(
@@ -75,11 +75,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_incident_io import IncidentIoConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector, AirbyteAuthConfig
 
 connector = IncidentIoConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -100,18 +100,18 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Incidents | [List](./REFERENCE.md#incidents-list), [Get](./REFERENCE.md#incidents-get), [Search](./REFERENCE.md#incidents-search) |
-| Alerts | [List](./REFERENCE.md#alerts-list), [Get](./REFERENCE.md#alerts-get), [Search](./REFERENCE.md#alerts-search) |
-| Escalations | [List](./REFERENCE.md#escalations-list), [Get](./REFERENCE.md#escalations-get), [Search](./REFERENCE.md#escalations-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Incident Updates | [List](./REFERENCE.md#incident-updates-list), [Search](./REFERENCE.md#incident-updates-search) |
-| Incident Roles | [List](./REFERENCE.md#incident-roles-list), [Get](./REFERENCE.md#incident-roles-get), [Search](./REFERENCE.md#incident-roles-search) |
-| Incident Statuses | [List](./REFERENCE.md#incident-statuses-list), [Get](./REFERENCE.md#incident-statuses-get), [Search](./REFERENCE.md#incident-statuses-search) |
-| Incident Timestamps | [List](./REFERENCE.md#incident-timestamps-list), [Get](./REFERENCE.md#incident-timestamps-get), [Search](./REFERENCE.md#incident-timestamps-search) |
-| Severities | [List](./REFERENCE.md#severities-list), [Get](./REFERENCE.md#severities-get), [Search](./REFERENCE.md#severities-search) |
-| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Search](./REFERENCE.md#custom-fields-search) |
-| Catalog Types | [List](./REFERENCE.md#catalog-types-list), [Get](./REFERENCE.md#catalog-types-get), [Search](./REFERENCE.md#catalog-types-search) |
-| Schedules | [List](./REFERENCE.md#schedules-list), [Get](./REFERENCE.md#schedules-get), [Search](./REFERENCE.md#schedules-search) |
+| Incidents | [List](./REFERENCE.md#incidents-list), [Get](./REFERENCE.md#incidents-get), [Context Store Search](./REFERENCE.md#incidents-context-store-search) |
+| Alerts | [List](./REFERENCE.md#alerts-list), [Get](./REFERENCE.md#alerts-get), [Context Store Search](./REFERENCE.md#alerts-context-store-search) |
+| Escalations | [List](./REFERENCE.md#escalations-list), [Get](./REFERENCE.md#escalations-get), [Context Store Search](./REFERENCE.md#escalations-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Incident Updates | [List](./REFERENCE.md#incident-updates-list), [Context Store Search](./REFERENCE.md#incident-updates-context-store-search) |
+| Incident Roles | [List](./REFERENCE.md#incident-roles-list), [Get](./REFERENCE.md#incident-roles-get), [Context Store Search](./REFERENCE.md#incident-roles-context-store-search) |
+| Incident Statuses | [List](./REFERENCE.md#incident-statuses-list), [Get](./REFERENCE.md#incident-statuses-get), [Context Store Search](./REFERENCE.md#incident-statuses-context-store-search) |
+| Incident Timestamps | [List](./REFERENCE.md#incident-timestamps-list), [Get](./REFERENCE.md#incident-timestamps-get), [Context Store Search](./REFERENCE.md#incident-timestamps-context-store-search) |
+| Severities | [List](./REFERENCE.md#severities-list), [Get](./REFERENCE.md#severities-get), [Context Store Search](./REFERENCE.md#severities-context-store-search) |
+| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search) |
+| Catalog Types | [List](./REFERENCE.md#catalog-types-list), [Get](./REFERENCE.md#catalog-types-get), [Context Store Search](./REFERENCE.md#catalog-types-context-store-search) |
+| Schedules | [List](./REFERENCE.md#schedules-list), [Get](./REFERENCE.md#schedules-get), [Context Store Search](./REFERENCE.md#schedules-context-store-search) |
 
 
 ### Authentication
@@ -124,7 +124,6 @@ See the official [Incident-Io API reference](https://api-docs.incident.io/).
 
 ## Version information
 
-- **Package version:** 0.1.12
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/incident-io/CHANGELOG.md)
+- **Package version:** 1.0.4
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** unknown
