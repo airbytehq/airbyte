@@ -169,7 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.0 | 2026-04-21 | [76840](https://github.com/airbytehq/airbyte/pull/76840) | Propagate incremental state from `issues` parent to `issue_remote_links`, `issue_transitions`, `issue_votes`, `issue_watchers`, and `issue_property_keys` via `incremental_dependency` |
+| 4.4.0 | 2026-04-21 | [76840](https://github.com/airbytehq/airbyte/pull/76840) | Propagate incremental state from `issues` parent to `issue_remote_links`, `issue_transitions`, `issue_votes`, and `issue_watchers` via `incremental_dependency` (verified parent `updated` advances on each child mutation) |
 | 4.3.20 | 2026-04-21 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix |
 | 4.3.19 | 2026-04-21 | [76631](https://github.com/airbytehq/airbyte/pull/76631) | Update dependencies |
 | 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

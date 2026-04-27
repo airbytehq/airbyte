@@ -10065,7 +10065,13 @@ definitions:
           stream: "#/definitions/issues_stream"
           parent_key: "key"
           partition_field: "issue_property_key"
-          incremental_dependency: true
+          # incremental_dependency intentionally NOT set on issue properties.
+          # Empirically verified 2026-04-27 against airbyteio.atlassian.net
+          # (test issue TESTKEY13-3): adding/updating/deleting an issue property
+          # does NOT bump issue.updated, so warm-sync iteration would skip
+          # property changes and lose data. The other 4 issue child routers
+          # (remote_links, transitions, votes, watchers) DO bump issue.updated
+          # and use incremental_dependency: true safely.
       requester:
         $ref: "#/definitions/retriever_use_cache/requester"
         error_handler:
