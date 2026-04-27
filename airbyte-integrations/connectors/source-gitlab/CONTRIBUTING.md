@@ -12,7 +12,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 | Stream | Cursor Field | API Filter | Notes |
 |--------|-------------|------------|-------|
-| commits | `updated_at` (parameterized) | `updated_after`/`updated_before` | Per-project commits |
+| commits | `created_at` (parameterized) | `since`/`until` | Per-project commits |
 | issues | `updated_at` (parameterized) | `updated_after`/`updated_before` | Per-project issues |
 | merge_requests | `updated_at` (parameterized) | `updated_after`/`updated_before` | Per-project MRs |
 | pipelines | `updated_at` (parameterized) | `updated_after`/`updated_before` | Per-project pipelines |
