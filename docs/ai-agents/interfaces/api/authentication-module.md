@@ -192,7 +192,7 @@ Pass an `onEvent` callback to receive notifications when users complete actions 
 The `data` field contains the full source object with the following top-level properties:
 
 | Field | Description |
-|-------|-------------|
+| ----- | ----------- |
 | `id` | Unique identifier for the created or updated source. |
 | `name` | Display name assigned to the source (e.g., `"GitHub - <uuid>"`). |
 | `source_template` | The template used to create this source, including the connector's `source_definition_id`, `user_config_spec`, and `mode` (`DIRECT` or `REPLICATION`). |

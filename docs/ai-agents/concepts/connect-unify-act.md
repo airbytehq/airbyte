@@ -37,7 +37,7 @@ The result is that agents reason over unified, searchable context rather than ra
 
 With context in hand, agents execute operations against connected systems in real time. Every connector exposes a uniform interface:
 
-```
+```text
 execute(entity, action, params)
 ```
 

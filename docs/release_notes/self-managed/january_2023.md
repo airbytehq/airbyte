@@ -21,7 +21,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
   - Added ability to convert from YAML manifest to UI form values. [#21142](https://github.com/airbytehq/airbyte/pull/21142)
   - Improved the Connector Builder’s conversion of YAML manifest to UI form values by resolving references and options in the manifest. The Connector Builder Server API has been updated with a new endpoint for resolving the manifest, which is now utilized by the conversion function. [#21898](https://github.com/airbytehq/airbyte/pull/21898)
 
-# Bugs
+## Bugs
 
 - Fixed an issue where the checkboxes in the stream table would collapse and updated icons to match the new design. [#21108](https://github.com/airbytehq/airbyte/pull/21108)
 - Fixed issues with non-breaking schema changes by adding an i18n string, ensuring supported options are rendered, and fixing a custom styling issue when resizing. [#20625](https://github.com/airbytehq/airbyte/pull/20625)

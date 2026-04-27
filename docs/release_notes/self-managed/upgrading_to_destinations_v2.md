@@ -64,7 +64,7 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 If any of the above concerns are applicable to your existing setup, we recommend [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing) for a more controlled upgrade process
 :::
 
-After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
+After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-compatible-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
 
 1. Existing raw tables replicated to this destination will be copied to a new `airbyte_internal` schema.
 2. The new raw tables will be updated to the new Destinations V2 format.
@@ -93,13 +93,13 @@ Dual writing is a method employed during upgrades where new incoming data is wri
 
 #### Steps to Follow for All Sync Modes
 
-1. **[Open Source]** Update the default destination version for your workspace to a [Destinations V2 compatible version](#destinations-v2-effective-versions). This sets the default version for any newly created destination. All existing syncs will remain on their current version.
+1. **[Open Source]** Update the default destination version for your workspace to a [Destinations V2 compatible version](#destinations-v2-compatible-versions). This sets the default version for any newly created destination. All existing syncs will remain on their current version.
 
-![Upgrade your default destination version](assets/airbyte_version_upgrade.png)
+   ![Upgrade your default destination version](assets/airbyte_version_upgrade.png)
 
 2. Create and configure a new destination connecting to the same database as your existing destination except for `Default Schema`, which you should update to a new value to avoid collisions.
 
-![Create a new destination](assets/airbyte_dual_destinations.png)
+   ![Create a new destination](assets/airbyte_dual_destinations.png)
 
 3. Create a new connection leveraging your existing source and the newly created destination. Match the settings of your pre-existing connection.
 4. If the streams you are looking to replicate are in **full refresh** mode, enabling the connection will now provide a parallel copy of the data in the updated format for testing. If any of the streams in the connection are in an **incremental** sync mode, follow the steps below before enabling the connection.
@@ -110,24 +110,24 @@ These steps allow you to dual-write for connections incrementally syncing data w
 
 1. Copy the raw data you've already replicated to the new schema being used by your newly created connection. You need to do this for every stream in the connection with an incremental sync mode. Sample SQL you can run in your data warehouse:
 
-<Tabs>
-  <TabItem value="bigquery" label="BigQuery" default>
-    <BigQueryMigrationGenerator />
-  </TabItem>
-  <TabItem value="snowflake" label="Snowflake">
-    <SnowflakeMigrationGenerator />
-  </TabItem>
-  <TabItem value="redshift" label="Redshift">
-    <RedshiftMigrationGenerator />
-  </TabItem>
-  <TabItem value="postgres" label="Postgres">
-    <PostgresMigrationGenerator />
-  </TabItem>
-</Tabs>
+   <Tabs>
+     <TabItem value="bigquery" label="BigQuery" default>
+       <BigQueryMigrationGenerator />
+     </TabItem>
+     <TabItem value="snowflake" label="Snowflake">
+       <SnowflakeMigrationGenerator />
+     </TabItem>
+     <TabItem value="redshift" label="Redshift">
+       <RedshiftMigrationGenerator />
+     </TabItem>
+     <TabItem value="postgres" label="Postgres">
+       <PostgresMigrationGenerator />
+     </TabItem>
+   </Tabs>
 
 2. Navigate to the existing connection you are duplicating, and navigate to the `Settings` tab. Open the `Advanced` settings to see the connection state (which manages incremental syncs). Copy the state to your clipboard.
 
-![img.png](assets/airbyte_connection_update_state.png)
+   ![img.png](assets/airbyte_connection_update_state.png)
 
 3. Go to your newly created connection, replace the state with the copied contents in the previous step, then click `Update State`. This will ensure historical data is not replicated again.
 4. Enabling the connection will now provide a parallel copy of all streams in the updated format.
@@ -148,7 +148,7 @@ If you have written downstream transformations directly from the output of raw t
 
 - Multiple column names are being updated (from `airbyte_ab_id` to `airbyte_raw_id`, and `airbyte_emitted_at` to `airbyte_extracted_at`).
 - The location of raw tables will from now on default to an `airbyte_internal` schema in your destination.
-- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.
+- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-compatible-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.
 - You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
 We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema, nor will features like error handling be implemented in the raw tables.
@@ -203,7 +203,7 @@ In addition to the changes which apply for all destinations described above, the
 #### [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns
 
 Previously, we had used TEXT, which made querying sub-properties more difficult.
-In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
+In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more in the [BigQuery float precision issue](https://github.com/airbytehq/airbyte/issues/29594).
 
 ### Snowflake
 
@@ -247,18 +247,18 @@ _This section is targeted towards analysts updating downstream models after you'
 
 See here for a [breakdown of changes](#breakdown-of-breaking-changes). Your models will often require updates for the following changes:
 
-#### Column Name Changes
+### Column Name Changes
 
 1. `_airbyte_emitted_at_` and `_airbyte_extracted_at` are exactly the same, only the column name changed. You can replace all instances of `_airbyte_emitted_at` with `_airbyte_extracted_at`.
 2. `_airbyte_ab_id` and `_airbyte_raw_id` are exactly the same, only the column name changed. You can replace all instances of `_airbyte_ab_id` with `_airbyte_raw_id`.
 3. Since `_airbyte_normalized_at` is no longer in the final table. We now recommend using `_airbyte_extracted_at` instead.
 
-#### Data Type Changes
+### Data Type Changes
 
 You'll get data type errors in downstream models where previously `string` columns are now JSON. In BigQuery, nested JSON values originating from API sources were previously delivered in type `string`. These are now delivered in type `JSON`.
 
 Example: In dbt, you may now get errors with functions such as `regexp_replace`. You can attempt prepending these with `json_extract_array(...)` or `to_json_string(...)` where appropriate.
 
-#### Stale Tables
+### Stale Tables
 
 Unnested tables (e.g. `public.users_address`) do not get deleted during the migration, and are no longer updated. Your downstream models will not throw errors until you drop these tables. Until then, dashboards reliant on these tables will be stale.

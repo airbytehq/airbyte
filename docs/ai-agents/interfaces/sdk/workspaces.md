@@ -78,8 +78,6 @@ this, which is why we don't surface the quirk in the public narrative.
 Revisit when autocreate is consistent across endpoints.
 -->
 
-
-
 ## Operations that require the API
 
 The SDK doesn't expose every workspace operation. If you need to do any of the following, use the [API](../api/workspaces) instead:
