@@ -114,10 +114,12 @@ The default state format is **per partition with fallback to global**, but there
 
 ### Incremental Dependency
 
-- **Description**: This option allows the parent stream to be read incrementally, ensuring that only new data is synced.
-- **Requirement**: The API must ensure that the parent record's cursor is updated whenever child records are added or updated. If this requirement is not met, child records added to older parent records will be lost.
-- **When to Use**: Use this option if the parent stream is incremental, the child stream has its own incremental cursor, and you want to read the parent with state. The parent state is updated after processing all the child records for the parent record.
-- **Example State**:
+`incremental_dependency: true` on a `SubstreamPartitionRouter` tells the parent stream to be read with state during warm syncs. On the first sync it iterates all parents, the same as it would without the flag. On subsequent syncs it persists the parent's cursor as `parent_state` inside the child stream's state, and the partition router uses that to iterate only parent partitions whose cursor has advanced since the last sync. For each parent the router visits, the child stream re-fetches its records.
+
+The intent is to avoid re-iterating every parent on every sync when the parent set is large.
+
+- **When to use**: the parent stream has its own `incremental_sync` block, the child stream has its own incremental cursor (see [When `incremental_dependency` has no effect](#when-incremental_dependency-has-no-effect) below), and the API satisfies [the parent-cursor-bump assumption](#the-parent-cursor-bump-assumption) below.
+- **Example state**:
 
   ```json
   {
