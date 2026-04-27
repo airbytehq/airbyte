@@ -55,12 +55,14 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 ## Supported Streams
 
 - [Attachments](https://developers.asana.com/reference/attachments)
+- [Attachments Compact](https://developers.asana.com/reference/attachments)
 - [Custom fields](https://developers.asana.com/reference/custom-fields)
 - [Events](https://developers.asana.com/reference/events)
 - [Organization Exports](https://developers.asana.com/reference/organization-exports)
 - [Portfolio Items](https://developers.asana.com/reference/getitemsforportfolio)
 - [Portfolio Memberships](https://developers.asana.com/reference/portfolio-memberships)
 - [Portfolios](https://developers.asana.com/reference/portfolios)
+- [Portfolios Compact](https://developers.asana.com/reference/portfolios)
 - [Projects](https://developers.asana.com/reference/projects)
 - [Sections](https://developers.asana.com/reference/sections)
 - [Sections Compact](https://developers.asana.com/reference/sections)

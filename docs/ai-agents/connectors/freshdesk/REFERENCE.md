@@ -8,10 +8,10 @@ The Freshdesk connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [Search](#tickets-search) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [Context Store Search](#tickets-context-store-search) |
 | Contacts | [List](#contacts-list), [Get](#contacts-get) |
-| Agents | [List](#agents-list), [Get](#agents-get), [Search](#agents-search) |
-| Groups | [List](#groups-list), [Get](#groups-get), [Search](#groups-search) |
+| Agents | [List](#agents-list), [Get](#agents-get), [Context Store Search](#agents-context-store-search) |
+| Groups | [List](#groups-list), [Get](#groups-get), [Context Store Search](#groups-context-store-search) |
 | Companies | [List](#companies-list), [Get](#companies-get) |
 | Roles | [List](#roles-list), [Get](#roles-get) |
 | Satisfaction Ratings | [List](#satisfaction-ratings-list) |
@@ -103,6 +103,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `nr_escalated` | `null \| boolean` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Tickets Get
@@ -190,14 +196,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Tickets Search
+### Tickets Context Store Search
 
 Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await freshdesk.tickets.search(
+await freshdesk.tickets.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -210,7 +216,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tickets",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -389,6 +395,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Contacts Get
@@ -534,6 +546,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Agents Get
@@ -605,14 +623,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Agents Search
+### Agents Context Store Search
 
 Search and filter agents records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await freshdesk.agents.search(
+await freshdesk.agents.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -625,7 +643,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "agents",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -738,6 +756,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Groups Get
@@ -799,14 +823,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Groups Search
+### Groups Context Store Search
 
 Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await freshdesk.groups.search(
+await freshdesk.groups.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -819,7 +843,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -930,6 +954,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
 
 </details>
 
@@ -1042,6 +1072,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Roles Get
@@ -1150,6 +1186,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ## Surveys
@@ -1199,6 +1241,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
 
 </details>
 
@@ -1256,6 +1304,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
 
 </details>
 
@@ -1319,6 +1373,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
 
 </details>
 

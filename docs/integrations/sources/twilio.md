@@ -18,11 +18,14 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the Source/Destination type dropdown.
-4. Enter your `account_sid`.
-5. Enter your `auth_token`.
-6. Enter your `start_date`.
-7. Enter your `lookback_window`.
+3. On the Set up the source page, enter a name for the Twilio connector and select **Twilio** from the source type dropdown.
+4. Enter your **Account ID** (Twilio Account SID).
+5. Enter your **Auth Token**.
+6. Enter a **Replication Start Date**. Records created before this UTC date and time aren't synced. Use the format `YYYY-MM-DDTHH:MM:SSZ` (for example, `2020-10-01T00:00:00Z`).
+7. Optionally, configure the following fields:
+   - **Lookback window**: The number of minutes before the last cursor value to re-fetch on each incremental sync. Use this to catch late-arriving records. Defaults to `0`.
+   - **Number of concurrent threads**: The number of worker threads used during a sync. Defaults to `3`. Maximum is `40`.
+   - **Slice Step Duration**: The time window size used for each slice of an incremental stream. See [Tuning the slice step duration](#tuning-the-slice-step-duration). Defaults to **1 Month** (`P1M`).
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -31,11 +34,11 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `account_sid`.
-4. Enter your `auth_token`.
-5. Enter your `start_date`.
-6. Enter your `lookback_window`.
+2. Set a name for your source.
+3. Enter your **Account ID** (Twilio Account SID).
+4. Enter your **Auth Token**.
+5. Enter a **Replication Start Date** in the format `YYYY-MM-DDTHH:MM:SSZ`.
+6. Optionally, set the **Lookback window**, **Number of concurrent threads**, and **Slice Step Duration**. See the Cloud instructions above for details.
 7. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -68,7 +71,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 - [Conversation Messages](https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages)
 - [Conversation Participants](https://www.twilio.com/docs/conversations/api/conversation-participant-resource)
 - [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
-- [Executions](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
+- [Executions](https://www.twilio.com/docs/studio/rest-api/v2/execution#read-a-list-of-executions) \(Incremental\)
 - [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
 - [Flows](https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows)
 - [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource)
@@ -90,8 +93,20 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Performance considerations
 
-The Twilio connector will gracefully handle rate limits.
-For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+The Twilio connector gracefully handles rate limits. For more information, see the [Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+
+### Tuning the slice step duration
+
+Incremental streams page the Twilio API in fixed-size time windows between the replication start date and now. The **Slice Step Duration** option controls the size of those windows and lets you trade request count against the amount of data each request returns.
+
+| Option     | ISO 8601 value | When to use                                                                                                                                                                |
+| :--------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 Day**  | `P1D`          | Very high volume accounts where monthly or weekly windows trigger Twilio timeouts or exceed the result size Twilio returns.                                                |
+| **1 Week** | `P1W`          | High volume accounts that still time out with monthly windows.                                                                                                             |
+| **1 Month**| `P1M`          | Default. Works well for most accounts and minimizes request count compared to shorter windows.                                                                             |
+| **1 Year** | `P1Y`          | Low volume accounts or short backfills where you want to minimize the number of slices per stream.                                                                         |
+
+Smaller windows increase the number of API requests and are more likely to be rate limited, but they reduce the amount of data Twilio must return per request. Larger windows reduce request count but can time out on busy accounts. If syncs of the `calls`, `messages`, `recordings`, `message_media`, `conference_participants`, `usage_records`, or `alerts` streams fail with timeouts, lower the slice step duration.
 
 ## Changelog
 
@@ -100,7 +115,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.17.7 | 2026-04-21 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
+| 0.17.7 | 2026-04-22 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
 | 0.17.6 | 2026-04-21 | [76801](https://github.com/airbytehq/airbyte/pull/76801) | Update dependencies |
 | 0.17.5 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 0.17.4 | 2026-01-22 | [72260](https://github.com/airbytehq/airbyte/pull/72260) | Update CDK version from 7.0.1 to 7.6.5 |

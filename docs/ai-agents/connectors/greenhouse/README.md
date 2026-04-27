@@ -38,7 +38,7 @@ The Greenhouse connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-greenhouse
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -50,8 +50,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector
-from airbyte_agent_greenhouse.models import GreenhouseAuthConfig
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
@@ -73,11 +73,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector, AirbyteAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -98,15 +98,15 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Search](./REFERENCE.md#candidates-search) |
-| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Search](./REFERENCE.md#applications-search) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Search](./REFERENCE.md#jobs-search) |
-| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get), [Search](./REFERENCE.md#offers-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Search](./REFERENCE.md#departments-search) |
-| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get), [Search](./REFERENCE.md#offices-search) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Search](./REFERENCE.md#job-posts-search) |
-| Sources | [List](./REFERENCE.md#sources-list), [Search](./REFERENCE.md#sources-search) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Context Store Search](./REFERENCE.md#jobs-context-store-search) |
+| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get), [Context Store Search](./REFERENCE.md#offers-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
+| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get), [Context Store Search](./REFERENCE.md#offices-context-store-search) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Context Store Search](./REFERENCE.md#job-posts-context-store-search) |
+| Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search) |
 | Scheduled Interviews | [List](./REFERENCE.md#scheduled-interviews-list), [Get](./REFERENCE.md#scheduled-interviews-get) |
 | Application Attachment | [Download](./REFERENCE.md#application-attachment-download) |
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
@@ -122,7 +122,6 @@ See the official [Greenhouse API reference](https://developers.greenhouse.io/har
 
 ## Version information
 
-- **Package version:** 0.17.117
-- **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)
+- **Package version:** 0.1.8
+- **Connector version:** 0.1.8
+- **Generated with Connector SDK commit SHA:** unknown

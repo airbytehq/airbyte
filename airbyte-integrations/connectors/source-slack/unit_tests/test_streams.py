@@ -448,7 +448,12 @@ def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
     ]
     requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=true",
+        json={"channels": expected},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
         json={"channels": expected},
     )
     state = StateBuilder().with_stream_state("channels", {}).build()
@@ -541,7 +546,7 @@ def test_channels_stream_ok_false_error_handling(requests_mock, token_config, sl
     """
     requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel",
         json={"ok": False, "error": slack_error},
     )
     state = StateBuilder().with_stream_state("channels", {}).build()
@@ -718,6 +723,17 @@ def test_channel_messages_stream_ok_false_not_in_channel(requests_mock, token_co
     assert len(output.errors) == 0, f"Expected no errors for IGNORE action, but got: {[t.trace.error.message for t in output.errors]}"
 
 
+def test_channels_stream_paginator_page_size_is_999(token_config) -> None:
+    stream = get_stream_by_name("channels", token_config)
+    assert get_retriever(stream).paginator.pagination_strategy.page_size == 999
+
+
+def test_other_streams_paginator_page_size_is_1000(token_config) -> None:
+    for stream_name in ("users", "channel_members", "channel_messages", "threads"):
+        stream = get_stream_by_name(stream_name, token_config)
+        assert get_retriever(stream).paginator.pagination_strategy.page_size == 1000, f"Expected page_size 1000 for {stream_name}"
+
+
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
 
@@ -735,3 +751,25 @@ def test_channels_stream_with_include_private_channels(token_config) -> None:
     params = get_retriever(stream).requester.get_request_params()
 
     assert params.get("types") == "public_channel,private_channel"
+
+
+def test_channels_stream_excludes_archived_when_explicitly_disabled(token_config) -> None:
+    config = deepcopy(token_config)
+    config["include_archived_channels"] = False
+
+    stream = get_stream_by_name("channels", config)
+
+    params = get_retriever(stream).requester.get_request_params()
+
+    assert params.get("exclude_archived") == "true"
+
+
+def test_channels_stream_includes_archived_when_configured(token_config) -> None:
+    config = deepcopy(token_config)
+    config["include_archived_channels"] = True
+
+    stream = get_stream_by_name("channels", config)
+
+    params = get_retriever(stream).requester.get_request_params()
+
+    assert params.get("exclude_archived") == "false"
