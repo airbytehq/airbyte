@@ -199,6 +199,7 @@ definitions:
               header: "Retry-After"
         request_parameters:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
+          exclude_archived: "{{ 'false' if config.get('include_archived_channels', false) else 'true' }}"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
@@ -505,6 +506,11 @@ spec:
         default: false
         title: Include private channels
         description: Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels.
+      include_archived_channels:
+        type: boolean
+        default: false
+        title: Include archived channels
+        description: Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. Enable this option if you need to sync data from archived channels.
       channel_filter:
         type: array
         default: []
@@ -673,6 +679,18 @@ spec:
                   path: ["credentials", "option_title"]
                   value: "API Token Credentials"
               condition: "{{ config.get('api_token', False) }}"
+        - type: ConfigMigration
+          description: |
+            Stamps include_archived_channels=true on configs that pre-date v3.2.0
+            so existing connections continue to sync archived channels.
+            New connections will get false from the spec default.
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["include_archived_channels"]
+                  value: "{{ true }}"
+              condition: "{{ config.get('include_archived_channels') is none }}"
 
 concurrency_level:
   type: ConcurrencyLevel
