@@ -1,8 +1,9 @@
 /**
- * Swizzled from @docusaurus/theme-classic (v3.9.2) to show category
- * descriptions from _category_.json instead of the default "N items" text.
+ * Swizzled from @docusaurus/theme-classic (v3.9.2).
  *
- * Only change: CardCategory uses item.description when available.
+ * Changes from upstream:
+ * - CardCategory uses item.description when available (instead of "N items").
+ * - Emoji icons replaced with Font Awesome SVGs for a cleaner look.
  */
 
 import React, {type ReactNode} from 'react';
@@ -15,6 +16,12 @@ import {
 import {usePluralForm} from '@docusaurus/theme-common';
 import isInternalUrl from '@docusaurus/isInternalUrl';
 import {translate} from '@docusaurus/Translate';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {
+  faFileLines,
+  faFolderOpen,
+  faArrowUpRightFromSquare,
+} from '@fortawesome/free-solid-svg-icons';
 
 import type {Props} from '@theme/DocCard';
 import Heading from '@theme/Heading';
@@ -79,7 +86,7 @@ function CardLayout({
         as="h2"
         className={clsx('text--truncate', styles.cardTitle)}
         title={title}>
-        {icon} {title}
+        <span className={styles.cardIcon}>{icon}</span> {title}
       </Heading>
       {description && (
         <p
@@ -103,7 +110,7 @@ function CardCategory({item}: {item: PropSidebarItemCategory}): ReactNode {
   return (
     <CardLayout
       href={href}
-      icon="🗃️"
+      icon={<FontAwesomeIcon icon={faFolderOpen} />}
       title={item.label}
       description={item.description ?? categoryItemsPlural(item.items.length)}
     />
@@ -111,7 +118,9 @@ function CardCategory({item}: {item: PropSidebarItemCategory}): ReactNode {
 }
 
 function CardLink({item}: {item: PropSidebarItemLink}): ReactNode {
-  const icon = isInternalUrl(item.href) ? '📄️' : '🔗';
+  const icon = isInternalUrl(item.href)
+    ? <FontAwesomeIcon icon={faFileLines} />
+    : <FontAwesomeIcon icon={faArrowUpRightFromSquare} />;
   const doc = useDocById(item.docId ?? undefined);
   return (
     <CardLayout

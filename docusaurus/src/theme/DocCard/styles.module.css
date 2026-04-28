@@ -18,6 +18,11 @@
   margin-bottom: 0;
 }
 
+.cardIcon {
+  color: var(--ifm-color-primary);
+  margin-right: 0.4rem;
+}
+
 .cardTitle {
   font-size: 1.2rem;
 }
