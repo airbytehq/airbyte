@@ -22,6 +22,7 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2026-04-28 | [77473](https://github.com/airbytehq/airbyte/pull/77473) | Update dependencies |
 | 0.0.22 | 2026-04-21 | [76753](https://github.com/airbytehq/airbyte/pull/76753) | Update dependencies |
 | 0.0.21 | 2026-03-24 | [75370](https://github.com/airbytehq/airbyte/pull/75370) | Update dependencies |
 | 0.0.20 | 2026-03-10 | [74550](https://github.com/airbytehq/airbyte/pull/74550) | Update dependencies |

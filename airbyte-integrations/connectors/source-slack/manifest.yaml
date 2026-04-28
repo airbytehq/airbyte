@@ -1,4 +1,4 @@
-version: 6.60.4
+version: 6.60.5
 type: DeclarativeSource
 
 definitions:
@@ -43,17 +43,16 @@ definitions:
         failure_type: config_error
         error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
       - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-        action: RETRY
+        action: RATE_LIMITED
+        failure_type: transient_error
         error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
       - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
         action: IGNORE
         error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
       - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
         action: RETRY
+        failure_type: transient_error
         error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
-      - predicate: "{{ response.get('ok') is false }}"
-        action: FAIL
-        error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
 
   requester:
     type: HttpRequester
@@ -82,22 +81,23 @@ definitions:
           failure_type: config_error
           error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
         - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-          action: RETRY
+          action: RATE_LIMITED
+          failure_type: transient_error
           error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
         - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
           action: IGNORE
           error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
         - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
           action: RETRY
+          failure_type: transient_error
           error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
-        - predicate: "{{ response.get('ok') is false }}"
-          action: FAIL
-          error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
         - http_codes: [429]
-          action: RETRY
-          error_message: Failed to perform a request due to rate limits.
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: Rate limit exceeded for Slack API.
         - http_codes: [500, 503]
           action: RETRY
+          failure_type: transient_error
           error_message: Failed to perform a request due to internal server error.
 
   selector:
@@ -141,25 +141,27 @@ definitions:
               failure_type: config_error
               error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
             - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-              action: RETRY
+              action: RATE_LIMITED
+              failure_type: transient_error
               error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
             - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
               action: IGNORE
               error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
             - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
               action: RETRY
+              failure_type: transient_error
               error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
-            - predicate: "{{ response.get('ok') is false }}"
-              action: FAIL
-              error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
             - http_codes: [429]
-              action: RETRY
-              error_message: Failed to perform a request due to rate limits.
+              action: RATE_LIMITED
+              failure_type: transient_error
+              error_message: Rate limit exceeded for Slack API.
             - http_codes: [403, 400]
               action: FAIL
-              error_message: Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.
+              failure_type: config_error
+              error_message: Slack API users request denied or malformed (HTTP 403/400).
             - http_codes: [500, 503]
               action: RETRY
+              failure_type: transient_error
               error_message: Failed to perform a request due to internal server error.
       record_selector:
         $ref: "#/definitions/selector"
