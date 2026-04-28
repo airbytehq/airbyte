@@ -47,6 +47,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.1.1 | 2026-04-28 | [68719](https://github.com/airbytehq/airbyte/pull/68719) | Update dependencies |
 | 7.1.0 | 2026-03-31 | [75941](https://github.com/airbytehq/airbyte/pull/75941) | Promoted release candidate to GA |
 | 7.1.0-rc.2 | 2026-03-31 | [75926](https://github.com/airbytehq/airbyte/pull/75926) | Bump source-faker to RC2 for progressive rollout e2e test |
 | 7.1.0-rc.1 | 2026-03-31 | [75908](https://github.com/airbytehq/airbyte/pull/75908) | test: progressive rollout e2e test on source-faker |
