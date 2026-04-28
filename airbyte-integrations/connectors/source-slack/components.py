@@ -18,7 +18,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import (
     InterpolatedString,
 )
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
@@ -107,6 +106,8 @@ class ChannelsRetriever(SimpleRetriever):
         The `is_member` property indicates whether the API Bot is already assigned / joined to the channel.
         https://api.slack.com/types/conversation#booleans
         """
+        if record.get("is_archived"):
+            return False  # Slack API rejects conversations.join for archived channels
         return config["join_channels"] and not record.get("is_member")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -193,12 +194,20 @@ class ThreadsStateMigration(StateMigration):
 
 
 MESSAGES_AND_THREADS_RATE = Rate(limit=1, interval=timedelta(seconds=60))
+RECOVERY_THRESHOLD = 5
 
 
 class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
     """
-    Switches to MovingWindowCallRatePolicy 1 request per minute if rate limits were exceeded.
+    Temporarily switches to MovingWindowCallRatePolicy (1 req/60s) after an
+    HTTP 429, then recovers to UnlimitedCallRatePolicy after a streak of
+    successful responses.
     """
+
+    def __init__(self, policies: list, maximum_attempts_to_acquire: int = 100000) -> None:
+        super().__init__(policies=policies, maximum_attempts_to_acquire=maximum_attempts_to_acquire)
+        self._original_policies = deepcopy(policies)
+        self._success_counter: int = 0
 
     def update_from_response(self, request: Any, response: Any) -> None:
         current_policy = self.get_matching_policy(request)
@@ -210,6 +219,17 @@ class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
                     rates=[MESSAGES_AND_THREADS_RATE],
                 )
             ]
+            self._success_counter = 0
+        elif response.status_code == 429 and isinstance(current_policy, MovingWindowCallRatePolicy):
+            self._success_counter = 0
+        elif isinstance(current_policy, MovingWindowCallRatePolicy):
+            if 200 <= response.status_code < 300 and response.json().get("ok", True) is not False:
+                self._success_counter += 1
+                if self._success_counter >= RECOVERY_THRESHOLD:
+                    self._policies = deepcopy(self._original_policies)
+                    self._success_counter = 0
+            else:
+                self._success_counter = 0
 
 
 @dataclass

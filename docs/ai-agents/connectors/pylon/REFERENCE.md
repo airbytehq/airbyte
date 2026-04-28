@@ -8,18 +8,21 @@ The Pylon connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [List](#issues-list), [Create](#issues-create), [Get](#issues-get), [Update](#issues-update) |
-| Messages | [List](#messages-list) |
+| Issues | [List](#issues-list), [Create](#issues-create), [Get](#issues-get), [Update](#issues-update), [Delete](#issues-delete), [Context Store Search](#issues-context-store-search) |
+| Issue Replies | [Create](#issue-replies-create) |
+| Issue Assignments | [Update](#issue-assignments-update) |
+| Issue Statuses | [Update](#issue-statuses-update) |
+| Messages | [List](#messages-list), [Context Store Search](#messages-context-store-search) |
 | Issue Notes | [Create](#issue-notes-create) |
 | Issue Threads | [Create](#issue-threads-create) |
-| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update) |
-| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update) |
-| Teams | [List](#teams-list), [Create](#teams-create), [Get](#teams-get), [Update](#teams-update) |
-| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get), [Update](#tags-update) |
-| Users | [List](#users-list), [Get](#users-get) |
-| Custom Fields | [List](#custom-fields-list), [Get](#custom-fields-get) |
-| Ticket Forms | [List](#ticket-forms-list) |
-| User Roles | [List](#user-roles-list) |
+| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Context Store Search](#accounts-context-store-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Context Store Search](#contacts-context-store-search) |
+| Teams | [List](#teams-list), [Create](#teams-create), [Get](#teams-get), [Update](#teams-update), [Context Store Search](#teams-context-store-search) |
+| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get), [Update](#tags-update), [Context Store Search](#tags-context-store-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Custom Fields | [List](#custom-fields-list), [Get](#custom-fields-get), [Context Store Search](#custom-fields-context-store-search) |
+| Ticket Forms | [List](#ticket-forms-list), [Context Store Search](#ticket-forms-context-store-search) |
+| User Roles | [List](#user-roles-list), [Context Store Search](#user-roles-context-store-search) |
 | Tasks | [Create](#tasks-create), [Update](#tasks-update) |
 | Projects | [Create](#projects-create), [Update](#projects-update) |
 | Milestones | [Create](#milestones-create), [Update](#milestones-update) |
@@ -83,6 +86,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `body_html` | `string \| null` |  |
 | `business_hours_first_response_seconds` | `integer \| null` |  |
 | `business_hours_resolution_seconds` | `integer \| null` |  |
+| `business_hours_time_in_status_seconds` | `object \| null` |  |
 | `chat_widget_info` | `object \| any` |  |
 | `created_at` | `string \| null` |  |
 | `csat_responses` | `array \| null` |  |
@@ -110,7 +114,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `tags` | `array \| null` |  |
 | `team` | `object \| any` |  |
 | `title` | `string \| null` |  |
-| `type` | `"Conversation" \| "Ticket" \| any` |  |
+| `time_in_status_seconds` | `object \| null` |  |
+| `type` | `"conversation" \| "ticket" \| any` |  |
+| `updated_at` | `string \| null` |  |
 
 
 #### Meta
@@ -197,6 +203,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data.body_html` | `string \| null` |  |
 | `data.business_hours_first_response_seconds` | `integer \| null` |  |
 | `data.business_hours_resolution_seconds` | `integer \| null` |  |
+| `data.business_hours_time_in_status_seconds` | `object \| null` |  |
 | `data.chat_widget_info` | `object \| any` |  |
 | `data.created_at` | `string \| null` |  |
 | `data.csat_responses` | `array \| null` |  |
@@ -224,7 +231,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data.tags` | `array \| null` |  |
 | `data.team` | `object \| any` |  |
 | `data.title` | `string \| null` |  |
-| `data.type` | `"Conversation" \| "Ticket" \| any` |  |
+| `data.time_in_status_seconds` | `object \| null` |  |
+| `data.type` | `"conversation" \| "ticket" \| any` |  |
+| `data.updated_at` | `string \| null` |  |
 | `request_id` | `string` |  |
 
 
@@ -280,6 +289,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `body_html` | `string \| null` |  |
 | `business_hours_first_response_seconds` | `integer \| null` |  |
 | `business_hours_resolution_seconds` | `integer \| null` |  |
+| `business_hours_time_in_status_seconds` | `object \| null` |  |
 | `chat_widget_info` | `object \| any` |  |
 | `created_at` | `string \| null` |  |
 | `csat_responses` | `array \| null` |  |
@@ -307,7 +317,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `tags` | `array \| null` |  |
 | `team` | `object \| any` |  |
 | `title` | `string \| null` |  |
-| `type` | `"Conversation" \| "Ticket" \| any` |  |
+| `time_in_status_seconds` | `object \| null` |  |
+| `type` | `"conversation" \| "ticket" \| any` |  |
+| `updated_at` | `string \| null` |  |
 
 
 </details>
@@ -378,6 +390,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data.body_html` | `string \| null` |  |
 | `data.business_hours_first_response_seconds` | `integer \| null` |  |
 | `data.business_hours_resolution_seconds` | `integer \| null` |  |
+| `data.business_hours_time_in_status_seconds` | `object \| null` |  |
 | `data.chat_widget_info` | `object \| any` |  |
 | `data.created_at` | `string \| null` |  |
 | `data.csat_responses` | `array \| null` |  |
@@ -405,7 +418,388 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data.tags` | `array \| null` |  |
 | `data.team` | `object \| any` |  |
 | `data.title` | `string \| null` |  |
-| `data.type` | `"Conversation" \| "Ticket" \| any` |  |
+| `data.time_in_status_seconds` | `object \| null` |  |
+| `data.type` | `"conversation" \| "ticket" \| any` |  |
+| `data.updated_at` | `string \| null` |  |
+| `request_id` | `string` |  |
+
+
+</details>
+
+### Issues Delete
+
+Permanently deletes an issue by ID. This action cannot be undone.
+
+#### Python SDK
+
+```python
+await pylon.issues.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the issue to delete |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `request_id` | `string` |  |
+
+
+</details>
+
+### Issues Context Store Search
+
+Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.issues.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the issue |
+| `title` | `string` | Title of the issue |
+| `state` | `string` | Current state of the issue (e.g. new, in_progress, closed) |
+| `source` | `string` | Channel the issue originated from (e.g. email, slack) |
+| `type` | `string` | Type classification of the issue |
+| `number` | `integer` | Human-readable issue number within the workspace |
+| `created_at` | `string` | Timestamp when the issue was created, in ISO 8601 format |
+| `latest_message_time` | `string` | Timestamp of the most recent message on the issue, in ISO 8601 format |
+| `resolution_time` | `string` | Timestamp when the issue was resolved, in ISO 8601 format |
+| `snoozed_until_time` | `string` | Timestamp the issue is snoozed until, in ISO 8601 format |
+| `customer_portal_visible` | `boolean` | Whether the issue is visible in the customer portal |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the issue |
+| `data[].title` | `string` | Title of the issue |
+| `data[].state` | `string` | Current state of the issue (e.g. new, in_progress, closed) |
+| `data[].source` | `string` | Channel the issue originated from (e.g. email, slack) |
+| `data[].type` | `string` | Type classification of the issue |
+| `data[].number` | `integer` | Human-readable issue number within the workspace |
+| `data[].created_at` | `string` | Timestamp when the issue was created, in ISO 8601 format |
+| `data[].latest_message_time` | `string` | Timestamp of the most recent message on the issue, in ISO 8601 format |
+| `data[].resolution_time` | `string` | Timestamp when the issue was resolved, in ISO 8601 format |
+| `data[].snoozed_until_time` | `string` | Timestamp the issue is snoozed until, in ISO 8601 format |
+| `data[].customer_portal_visible` | `boolean` | Whether the issue is visible in the customer portal |
+
+</details>
+
+## Issue Replies
+
+### Issue Replies Create
+
+Sends a customer-facing reply on an issue, visible to the requester.
+
+#### Python SDK
+
+```python
+await pylon.issue_replies.create(
+    body_html="<str>",
+    message_id="<str>",
+    user_id="<str>",
+    contact_id="<str>",
+    attachment_urls=[],
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issue_replies",
+    "action": "create",
+    "params": {
+        "body_html": "<str>",
+        "message_id": "<str>",
+        "user_id": "<str>",
+        "contact_id": "<str>",
+        "attachment_urls": [],
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `body_html` | `string` | Yes | The body of the reply message in HTML |
+| `message_id` | `string` | Yes | The ID of the message to reply to |
+| `user_id` | `string` | No | Optional user ID to post the message as. Only one of user_id or contact_id can be provided. |
+| `contact_id` | `string` | No | Optional contact ID to post the message as. Only one of user_id or contact_id can be provided. |
+| `attachment_urls` | `array<string>` | No | An array of attachment URLs to attach to this reply |
+| `id` | `string` | Yes | The ID of the issue to reply to |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `object` |  |
+| `data.id` | `string` |  |
+| `data.issue_id` | `string` |  |
+| `request_id` | `string` |  |
+
+
+</details>
+
+## Issue Assignments
+
+### Issue Assignments Update
+
+Assign an issue to a user or team, or remove the current assignment.
+
+#### Python SDK
+
+```python
+await pylon.issue_assignments.update(
+    assignee_id="<str>",
+    team_id="<str>",
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issue_assignments",
+    "action": "update",
+    "params": {
+        "assignee_id": "<str>",
+        "team_id": "<str>",
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `assignee_id` | `string` | No | The ID of the user to assign the issue to. Pass an empty string to unassign. |
+| `team_id` | `string` | No | The ID of the team to assign the issue to. Pass an empty string to remove team assignment. |
+| `id` | `string` | Yes | The ID of the issue to assign |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `object` |  |
+| `data.id` | `string` |  |
+| `data.account` | `object \| any` |  |
+| `data.assignee` | `object \| any` |  |
+| `data.attachment_urls` | `array \| null` |  |
+| `data.author_unverified` | `boolean \| null` |  |
+| `data.body_html` | `string \| null` |  |
+| `data.business_hours_first_response_seconds` | `integer \| null` |  |
+| `data.business_hours_resolution_seconds` | `integer \| null` |  |
+| `data.business_hours_time_in_status_seconds` | `object \| null` |  |
+| `data.chat_widget_info` | `object \| any` |  |
+| `data.created_at` | `string \| null` |  |
+| `data.csat_responses` | `array \| null` |  |
+| `data.csat_responses[].comment` | `string \| null` |  |
+| `data.csat_responses[].score` | `integer \| null` |  |
+| `data.custom_fields` | `object \| null` |  |
+| `data.customer_portal_visible` | `boolean \| null` |  |
+| `data.external_issues` | `array \| null` |  |
+| `data.external_issues[].external_id` | `string \| null` |  |
+| `data.external_issues[].link` | `string \| null` |  |
+| `data.external_issues[].source` | `string \| null` |  |
+| `data.first_response_seconds` | `integer \| null` |  |
+| `data.first_response_time` | `string \| null` |  |
+| `data.latest_message_time` | `string \| null` |  |
+| `data.link` | `string \| null` |  |
+| `data.number` | `integer \| null` |  |
+| `data.number_of_touches` | `integer \| null` |  |
+| `data.requester` | `object \| any` |  |
+| `data.resolution_seconds` | `integer \| null` |  |
+| `data.resolution_time` | `string \| null` |  |
+| `data.slack` | `object \| any` |  |
+| `data.snoozed_until_time` | `string \| null` |  |
+| `data.source` | `"slack" \| "microsoft_teams" \| "microsoft_teams_chat" \| "chat_widget" \| "email" \| "manual" \| "form" \| "discord" \| "whatsapp" \| "sms" \| "telegram" \| any` |  |
+| `data.state` | `string \| null` |  |
+| `data.tags` | `array \| null` |  |
+| `data.team` | `object \| any` |  |
+| `data.title` | `string \| null` |  |
+| `data.time_in_status_seconds` | `object \| null` |  |
+| `data.type` | `"conversation" \| "ticket" \| any` |  |
+| `data.updated_at` | `string \| null` |  |
+| `request_id` | `string` |  |
+
+
+</details>
+
+## Issue Statuses
+
+### Issue Statuses Update
+
+Transition an issue to a new status (new, waiting_on_you, waiting_on_customer, on_hold, closed, or a custom status slug).
+
+#### Python SDK
+
+```python
+await pylon.issue_statuses.update(
+    state="<str>",
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issue_statuses",
+    "action": "update",
+    "params": {
+        "state": "<str>",
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `state` | `string` | Yes | The target state for the issue (new, waiting_on_you, waiting_on_customer, on_hold, closed, or a custom status slug) |
+| `id` | `string` | Yes | The ID of the issue to update status for |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `object` |  |
+| `data.id` | `string` |  |
+| `data.account` | `object \| any` |  |
+| `data.assignee` | `object \| any` |  |
+| `data.attachment_urls` | `array \| null` |  |
+| `data.author_unverified` | `boolean \| null` |  |
+| `data.body_html` | `string \| null` |  |
+| `data.business_hours_first_response_seconds` | `integer \| null` |  |
+| `data.business_hours_resolution_seconds` | `integer \| null` |  |
+| `data.business_hours_time_in_status_seconds` | `object \| null` |  |
+| `data.chat_widget_info` | `object \| any` |  |
+| `data.created_at` | `string \| null` |  |
+| `data.csat_responses` | `array \| null` |  |
+| `data.csat_responses[].comment` | `string \| null` |  |
+| `data.csat_responses[].score` | `integer \| null` |  |
+| `data.custom_fields` | `object \| null` |  |
+| `data.customer_portal_visible` | `boolean \| null` |  |
+| `data.external_issues` | `array \| null` |  |
+| `data.external_issues[].external_id` | `string \| null` |  |
+| `data.external_issues[].link` | `string \| null` |  |
+| `data.external_issues[].source` | `string \| null` |  |
+| `data.first_response_seconds` | `integer \| null` |  |
+| `data.first_response_time` | `string \| null` |  |
+| `data.latest_message_time` | `string \| null` |  |
+| `data.link` | `string \| null` |  |
+| `data.number` | `integer \| null` |  |
+| `data.number_of_touches` | `integer \| null` |  |
+| `data.requester` | `object \| any` |  |
+| `data.resolution_seconds` | `integer \| null` |  |
+| `data.resolution_time` | `string \| null` |  |
+| `data.slack` | `object \| any` |  |
+| `data.snoozed_until_time` | `string \| null` |  |
+| `data.source` | `"slack" \| "microsoft_teams" \| "microsoft_teams_chat" \| "chat_widget" \| "email" \| "manual" \| "form" \| "discord" \| "whatsapp" \| "sms" \| "telegram" \| any` |  |
+| `data.state` | `string \| null` |  |
+| `data.tags` | `array \| null` |  |
+| `data.team` | `object \| any` |  |
+| `data.title` | `string \| null` |  |
+| `data.time_in_status_seconds` | `object \| null` |  |
+| `data.type` | `"conversation" \| "ticket" \| any` |  |
+| `data.updated_at` | `string \| null` |  |
 | `request_id` | `string` |  |
 
 
@@ -473,6 +867,72 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `next_cursor` | `string \| null` |  |
 | `has_next_page` | `boolean` |  |
+
+</details>
+
+### Messages Context Store Search
+
+Search and filter messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.messages.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "messages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the message |
+| `timestamp` | `string` | Timestamp the message was posted, in ISO 8601 format |
+| `is_private` | `boolean` | Whether the message is an internal note (not visible to the customer) |
+| `source` | `string` | Channel the message was sent through (e.g. email, slack) |
+| `thread_id` | `string` | Identifier of the thread this message belongs to |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the message |
+| `data[].timestamp` | `string` | Timestamp the message was posted, in ISO 8601 format |
+| `data[].is_private` | `boolean` | Whether the message is an internal note (not visible to the customer) |
+| `data[].source` | `string` | Channel the message was sent through (e.g. email, slack) |
+| `data[].thread_id` | `string` | Identifier of the thread this message belongs to |
 
 </details>
 
@@ -889,6 +1349,78 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Accounts Context Store Search
+
+Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.accounts.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the account |
+| `name` | `string` | Name of the account (customer organization) |
+| `domain` | `string` | Primary domain associated with the account |
+| `primary_domain` | `string` | Canonical primary domain for the account |
+| `type` | `string` | Classification of the account (e.g. customer, prospect) |
+| `is_disabled` | `boolean` | Whether the account has been disabled |
+| `created_at` | `string` | Timestamp when the account was created, in ISO 8601 format |
+| `latest_customer_activity_time` | `string` | Timestamp of the most recent activity from this account, in ISO 8601 format |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the account |
+| `data[].name` | `string` | Name of the account (customer organization) |
+| `data[].domain` | `string` | Primary domain associated with the account |
+| `data[].primary_domain` | `string` | Canonical primary domain for the account |
+| `data[].type` | `string` | Classification of the account (e.g. customer, prospect) |
+| `data[].is_disabled` | `boolean` | Whether the account has been disabled |
+| `data[].created_at` | `string` | Timestamp when the account was created, in ISO 8601 format |
+| `data[].latest_customer_activity_time` | `string` | Timestamp of the most recent activity from this account, in ISO 8601 format |
+
+</details>
+
 ## Contacts
 
 ### Contacts List
@@ -1151,6 +1683,72 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Context Store Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.contacts.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the contact |
+| `name` | `string` | Full name of the contact |
+| `email` | `string` | Primary email address of the contact |
+| `primary_phone_number` | `string` | Primary phone number of the contact |
+| `portal_role` | `string` | Role the contact has in the customer portal |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the contact |
+| `data[].name` | `string` | Full name of the contact |
+| `data[].email` | `string` | Primary email address of the contact |
+| `data[].primary_phone_number` | `string` | Primary phone number of the contact |
+| `data[].portal_role` | `string` | Role the contact has in the customer portal |
+
+</details>
+
 ## Teams
 
 ### Teams List
@@ -1363,6 +1961,66 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data.users[].id` | `string \| null` |  |
 | `request_id` | `string` |  |
 
+
+</details>
+
+### Teams Context Store Search
+
+Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.teams.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the team |
+| `name` | `string` | Name of the team |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the team |
+| `data[].name` | `string` | Name of the team |
 
 </details>
 
@@ -1586,6 +2244,68 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tags Context Store Search
+
+Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.tags.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the tag |
+| `value` | `string` | Display value of the tag |
+| `object_type` | `string` | Type of object this tag applies to (e.g. issue, account) |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the tag |
+| `data[].value` | `string` | Display value of the tag |
+| `data[].object_type` | `string` | Type of object this tag applies to (e.g. issue, account) |
+
+</details>
+
 ## Users
 
 ### Users List
@@ -1693,6 +2413,72 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `role_id` | `string \| null` |  |
 | `status` | `string \| null` |  |
 
+
+</details>
+
+### Users Context Store Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.users.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the user |
+| `name` | `string` | Full name of the user |
+| `email` | `string` | Primary email address of the user |
+| `role_id` | `string` | Identifier of the user's role |
+| `status` | `string` | Current status of the user (e.g. active, disabled) |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the user |
+| `data[].name` | `string` | Full name of the user |
+| `data[].email` | `string` | Primary email address of the user |
+| `data[].role_id` | `string` | Identifier of the user's role |
+| `data[].status` | `string` | Current status of the user (e.g. active, disabled) |
 
 </details>
 
@@ -1826,6 +2612,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Custom Fields Context Store Search
+
+Search and filter custom fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.custom_fields.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "custom_fields",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the custom field |
+| `label` | `string` | Display label of the custom field |
+| `slug` | `string` | URL-safe identifier for the custom field |
+| `type` | `string` | Data type of the custom field (e.g. text, select) |
+| `object_type` | `string` | Type of object this custom field applies to (e.g. issue, account) |
+| `is_read_only` | `boolean` | Whether the custom field is read-only |
+| `created_at` | `string` | Timestamp when the custom field was created, in ISO 8601 format |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the custom field |
+| `data[].label` | `string` | Display label of the custom field |
+| `data[].slug` | `string` | URL-safe identifier for the custom field |
+| `data[].type` | `string` | Data type of the custom field (e.g. text, select) |
+| `data[].object_type` | `string` | Type of object this custom field applies to (e.g. issue, account) |
+| `data[].is_read_only` | `boolean` | Whether the custom field is read-only |
+| `data[].created_at` | `string` | Timestamp when the custom field was created, in ISO 8601 format |
+
+</details>
+
 ## Ticket Forms
 
 ### Ticket Forms List
@@ -1887,6 +2743,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Ticket Forms Context Store Search
+
+Search and filter ticket forms records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.ticket_forms.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_forms",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the ticket form |
+| `name` | `string` | Display name of the ticket form |
+| `slug` | `string` | URL-safe identifier for the ticket form |
+| `is_public` | `boolean` | Whether the ticket form is publicly accessible |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the ticket form |
+| `data[].name` | `string` | Display name of the ticket form |
+| `data[].slug` | `string` | URL-safe identifier for the ticket form |
+| `data[].is_public` | `boolean` | Whether the ticket form is publicly accessible |
+
+</details>
+
 ## User Roles
 
 ### User Roles List
@@ -1937,6 +2857,68 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `next_cursor` | `string \| null` |  |
 | `has_next_page` | `boolean` |  |
+
+</details>
+
+### User Roles Context Store Search
+
+Search and filter user roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await pylon.user_roles.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "user_roles",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the user role |
+| `name` | `string` | Display name of the user role |
+| `slug` | `string` | URL-safe identifier for the user role |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the user role |
+| `data[].name` | `string` | Display name of the user role |
+| `data[].slug` | `string` | URL-safe identifier for the user role |
 
 </details>
 
