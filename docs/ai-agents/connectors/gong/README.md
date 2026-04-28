@@ -144,6 +144,6 @@ See the official [Gong API reference](https://gong.app.gong.io/settings/api/docu
 
 ## Version information
 
-- **Package version:** 0.1.22
-- **Connector version:** 0.1.22
+- **Package version:** 0.1.23
+- **Connector version:** 0.1.23
 - **Generated with Connector SDK commit SHA:** unknown

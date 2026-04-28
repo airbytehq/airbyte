@@ -9,9 +9,9 @@ This section is for developers who want to build agents that use Airbyte connect
 
 ```mermaid
 flowchart TD
-    START(["I want to build with\nAirbyte Agents"])
+    START(["I want to build with<br/>Airbyte Agents"])
     START -->|"I write the code myself"| TUT["Tutorials"]
-    START -->|"I use a coding agent\n(Claude Code, Codex, Lovable)"| SKILL["Skills"]
+    START -->|"I use a coding agent<br/>(Claude Code, Codex, Lovable)"| SKILL["Skills"]
 
     TUT --> T1["Pydantic AI"]
     TUT --> T2["LangChain"]
