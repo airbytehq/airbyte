@@ -702,7 +702,7 @@ class ReportCreationRequester(HttpRequester):
             if not self._date_ranges_match(requested_start, requested_end, report):
                 continue
 
-            if not self._is_report_fresh(report, report_type, self.config):
+            if not self._is_report_fresh(report, report_type):
                 continue
 
             # Parse createdTime to compare candidates
@@ -734,11 +734,10 @@ class ReportCreationRequester(HttpRequester):
 
         return None
 
-    @staticmethod
     def _is_report_fresh(
+        self,
         report: Dict[str, Any],
         report_type: str,
-        config: Mapping[str, Any],
     ) -> bool:
         """
         Check whether a DONE report is fresh enough to reuse.
@@ -753,7 +752,7 @@ class ReportCreationRequester(HttpRequester):
         if report_status != "DONE":
             return True
 
-        max_done_report_age_hours = config.get("max_done_report_age_hours", 0)
+        max_done_report_age_hours = self.config.get("max_done_report_age_hours", 0)
         report_id = report.get("reportId", "")
         if max_done_report_age_hours == 0:
             logger.info(
