@@ -8,14 +8,14 @@ The Google-Analytics-Data-Api connector supports the following entities and acti
 
 | Entity | Actions |
 |--------|---------|
-| Website Overview | [List](#website-overview-list), [Search](#website-overview-search) |
-| Daily Active Users | [List](#daily-active-users-list), [Search](#daily-active-users-search) |
-| Weekly Active Users | [List](#weekly-active-users-list), [Search](#weekly-active-users-search) |
-| Four Weekly Active Users | [List](#four-weekly-active-users-list), [Search](#four-weekly-active-users-search) |
-| Traffic Sources | [List](#traffic-sources-list), [Search](#traffic-sources-search) |
-| Pages | [List](#pages-list), [Search](#pages-search) |
-| Devices | [List](#devices-list), [Search](#devices-search) |
-| Locations | [List](#locations-list), [Search](#locations-search) |
+| Website Overview | [List](#website-overview-list), [Context Store Search](#website-overview-context-store-search) |
+| Daily Active Users | [List](#daily-active-users-list), [Context Store Search](#daily-active-users-context-store-search) |
+| Weekly Active Users | [List](#weekly-active-users-list), [Context Store Search](#weekly-active-users-context-store-search) |
+| Four Weekly Active Users | [List](#four-weekly-active-users-list), [Context Store Search](#four-weekly-active-users-context-store-search) |
+| Traffic Sources | [List](#traffic-sources-list), [Context Store Search](#traffic-sources-context-store-search) |
+| Pages | [List](#pages-list), [Context Store Search](#pages-context-store-search) |
+| Devices | [List](#devices-list), [Context Store Search](#devices-context-store-search) |
+| Locations | [List](#locations-list), [Context Store Search](#locations-context-store-search) |
 
 ## Website Overview
 
@@ -77,16 +77,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Website Overview Search
+### Website Overview Context Store Search
 
 Search and filter website overview records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.website_overview.search(
+await google_analytics_data_api.website_overview.context_store_search(
     query={"filter": {"eq": {"averageSessionDuration": 0.0}}}
 )
 ```
@@ -99,7 +105,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "website_overview",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"averageSessionDuration": 0.0}}}
     }
@@ -219,16 +225,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Daily Active Users Search
+### Daily Active Users Context Store Search
 
 Search and filter daily active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.daily_active_users.search(
+await google_analytics_data_api.daily_active_users.context_store_search(
     query={"filter": {"eq": {"active1DayUsers": 0}}}
 )
 ```
@@ -241,7 +253,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "daily_active_users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"active1DayUsers": 0}}}
     }
@@ -347,16 +359,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Weekly Active Users Search
+### Weekly Active Users Context Store Search
 
 Search and filter weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.weekly_active_users.search(
+await google_analytics_data_api.weekly_active_users.context_store_search(
     query={"filter": {"eq": {"active7DayUsers": 0}}}
 )
 ```
@@ -369,7 +387,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "weekly_active_users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"active7DayUsers": 0}}}
     }
@@ -475,16 +493,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Four Weekly Active Users Search
+### Four Weekly Active Users Context Store Search
 
 Search and filter four weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.four_weekly_active_users.search(
+await google_analytics_data_api.four_weekly_active_users.context_store_search(
     query={"filter": {"eq": {"active28DayUsers": 0}}}
 )
 ```
@@ -497,7 +521,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "four_weekly_active_users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"active28DayUsers": 0}}}
     }
@@ -603,16 +627,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Traffic Sources Search
+### Traffic Sources Context Store Search
 
 Search and filter traffic sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.traffic_sources.search(
+await google_analytics_data_api.traffic_sources.context_store_search(
     query={"filter": {"eq": {"averageSessionDuration": 0.0}}}
 )
 ```
@@ -625,7 +655,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "traffic_sources",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"averageSessionDuration": 0.0}}}
     }
@@ -749,16 +779,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Pages Search
+### Pages Context Store Search
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.pages.search(
+await google_analytics_data_api.pages.context_store_search(
     query={"filter": {"eq": {"bounceRate": 0.0}}}
 )
 ```
@@ -771,7 +807,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "pages",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"bounceRate": 0.0}}}
     }
@@ -883,16 +919,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Devices Search
+### Devices Context Store Search
 
 Search and filter devices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.devices.search(
+await google_analytics_data_api.devices.context_store_search(
     query={"filter": {"eq": {"averageSessionDuration": 0.0}}}
 )
 ```
@@ -905,7 +947,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "devices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"averageSessionDuration": 0.0}}}
     }
@@ -1031,16 +1073,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `metricValues[].value` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `row_count` | `integer` |  |
+
 </details>
 
-### Locations Search
+### Locations Context Store Search
 
 Search and filter locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await google_analytics_data_api.locations.search(
+await google_analytics_data_api.locations.context_store_search(
     query={"filter": {"eq": {"averageSessionDuration": 0.0}}}
 )
 ```
@@ -1053,7 +1101,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "locations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"averageSessionDuration": 0.0}}}
     }

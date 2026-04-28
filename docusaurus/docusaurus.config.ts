@@ -19,6 +19,7 @@ const getRemarkPlugins = () => ({
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
+  connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
 });
 
 const plugins = getRemarkPlugins();
@@ -135,7 +136,7 @@ const config: Config = {
         },
       };
     },
-    // This plugin controls "platform" docs, which are versioned
+    // This plugin controls "platform" docs (no longer versioned)
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -143,22 +144,8 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        lastVersion: "current", // Default to Cloud/Next version instead of latest numbered version
-        editUrl: ({
-          version,
-          docPath,
-        }: {
-          version: string;
-          docPath: string;
-        }) => {
-          if (version === "current") {
-            // For the "next" (unreleased) version
-            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
-          } else {
-            // For released versions
-            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
-          }
-        },
+        editUrl:
+          "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
@@ -222,6 +209,7 @@ const config: Config = {
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
+          plugins.connectorTypeBanner,
           plugins.docMetaTags,
         ],
       },
@@ -419,14 +407,6 @@ const config: Config = {
           className: "cloudStatusLink",
         },
         // --- Right side ---
-        // Platform docs version selector
-        {
-          type: "docsVersionDropdown",
-          position: "right",
-          docsPluginId: "platform",
-          label: "Version",
-          dropdownActiveClassDisabled: true,
-        },
         {
           href: "https://github.com/airbytehq",
           position: "right",

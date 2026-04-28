@@ -700,6 +700,56 @@
       "source": "/ai-agents/platform/customers",
       "destination": "/ai-agents/platform/workspaces",
       "statusCode": 301
+    },
+    {
+      "source": "/platform/1.6",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/1.6/:path*",
+      "destination": "/platform/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/1.7",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/1.7/:path*",
+      "destination": "/platform/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/1.8",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/1.8/:path*",
+      "destination": "/platform/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/2.0",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/2.0/:path*",
+      "destination": "/platform/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/2.1",
+      "destination": "/platform",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/2.1/:path*",
+      "destination": "/platform/:path*",
+      "statusCode": 301
     }
   ]
 }
