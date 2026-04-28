@@ -550,7 +550,7 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
 ):
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     streams = discover(get_source(config), config)
-    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
+    json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == custom_object_schema["fullyQualifiedName"]][0]
 
     assert json_schema == expected_custom_object_json_schema
     # called only once when creating dynamic streams
@@ -563,8 +563,10 @@ def test_get_custom_objects_metadata_success(
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
     source_hubspot = get_source(config)
     streams = discover(source_hubspot, config)
-    custom_stream = [s for s in source_hubspot.streams(config) if s.name == "animals"][0]
-    custom_stream_json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
+    custom_stream = [s for s in source_hubspot.streams(config) if s.name == custom_object_schema["fullyQualifiedName"]][0]
+    custom_stream_json_schema = [
+        s.json_schema for s in streams.catalog.catalog.streams if s.name == custom_object_schema["fullyQualifiedName"]
+    ][0]
 
     assert custom_stream_json_schema == expected_custom_object_json_schema
     assert custom_stream._stream_partition_generator._partition_factory._retriever._parameters["entity"] == "p19936848_Animal"
