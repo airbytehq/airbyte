@@ -250,6 +250,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.19 | 2026-04-28 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Wrap 403 Access Denied and 401 Unauthorized errors as config errors instead of system errors |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
