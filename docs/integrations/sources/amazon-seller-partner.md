@@ -82,7 +82,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-14. Click `Set up source`.
+14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `24` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+15. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -106,7 +107,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-12. Click `Set up source`.
+12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `24` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+13. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -193,6 +195,17 @@ but with different options for the `sellingProgram` parameter - `FRESH` and `RET
 ## Performance considerations
 
 For information about rate limits, see [Usage Plans and Rate Limits in the SP-API](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
+
+### Report reuse
+
+Before creating a new report, the connector checks the Amazon SP-API for an existing report that matches the same report type, date range, and marketplace IDs. If a matching report is found, it is reused instead of calling `createReport`, which reduces API calls and helps avoid 429 rate limit errors.
+
+- **In-progress reports** (IN_QUEUE, IN_PROGRESS) are always reused regardless of age.
+- **Completed reports** (DONE) are reused only if `max_done_report_age_hours` is greater than 0 and the report was created within that time window. With the default value of `0`, a fresh report is always created.
+- **Cancelled reports** (CANCELLED) are reused and silently skipped. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/reference/getreport), a CANCELLED status means there is no data to return for the requested parameters. The connector does not retry cancelled reports — the sync continues with the next date slice and the cursor state is not advanced, so the same period will be retried on the next sync.
+- **Failed reports** (FATAL) are reused and handled by the connector's retry logic.
+
+If the pre-check fails for any reason (network error, API error), the connector falls back to creating a new report normally.
 
 - Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
   - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.
