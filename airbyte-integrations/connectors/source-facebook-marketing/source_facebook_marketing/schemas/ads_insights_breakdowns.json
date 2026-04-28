@@ -72,7 +72,27 @@
       "description": "The country where the ad is being displayed.",
       "type": ["null", "string"]
     },
+    "creative_automation_asset_id": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "creative_relaxation_asset_type": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "crm_advertiser_l12_territory_ids": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "crm_advertiser_subvertical_id": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "crm_advertiser_vertical_id": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "crm_ult_advertiser_id": {
       "description": "",
       "type": ["null", "string"]
     },
@@ -229,8 +249,44 @@
       "type": ["null", "integer"],
       "description": "Index of the postback sequence."
     },
+    "product_brand_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_category_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_0_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_1_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_2_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_3_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_custom_label_4_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "product_group_content_id_breakdown": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "product_id": {
       "description": "The identifier of the product featured in the ad.",
+      "type": ["null", "string"]
+    },
+    "product_set_id_breakdown": {
+      "description": "",
       "type": ["null", "string"]
     },
     "publisher_platform": {
@@ -280,6 +336,18 @@
     "sot_source": {
       "type": ["null", "string"],
       "description": "Source for SOT."
+    },
+    "rta_ugc_topic": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "rule_set_id": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "rule_set_name": {
+      "description": "",
+      "type": ["null", "string"]
     },
     "standard_event_content_type": {
       "type": ["null", "string"],
