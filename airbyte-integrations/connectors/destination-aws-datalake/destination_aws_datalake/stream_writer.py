@@ -21,6 +21,23 @@ from .constants import EMPTY_VALUES, GLUE_TYPE_MAPPING_DECIMAL, GLUE_TYPE_MAPPIN
 
 
 _PYARROW_COLUMN_RE = re.compile(r"Conversion failed for column ([^\s]+) with type")
+_PYARROW_TYPE_HINT_RES: Tuple[re.Pattern, ...] = (
+    re.compile(r"object of type <class '([^']+)'> cannot be converted to (\w+)"),
+    re.compile(r"with type (\w+): tried to convert to (\w+)"),
+)
+_TARGET_TO_JSON_SCHEMA: Dict[str, Tuple[str, ...]] = {
+    "int": ("integer", "number"),
+    "int64": ("integer", "number"),
+    "int32": ("integer", "number"),
+    "double": ("number",),
+    "float": ("number",),
+    "float64": ("number",),
+    "float32": ("number",),
+    "string": ("string",),
+    "str": ("string",),
+    "bool": ("boolean",),
+    "boolean": ("boolean",),
+}
 
 
 # By default we set glue decimal type to decimal(28,25)
@@ -460,22 +477,40 @@ class StreamWriter:
         `Conversion failed for column properties with type object`). For nested
         struct/array columns that makes it hard to tell which specific subfield
         actually violated the declared schema. This helper parses the column name
+        and (when present) the observed-Python-type / target-pyarrow-type pair
         out of the error, walks the offending column's values against the stream's
         JSON schema, and returns the first dotted field path whose value type does
         not match the declared type along with the observed Python type and the
         declared JSON Schema type.
+
+        The walk is filtered to only return mismatches that match the
+        `(observed, target)` types in the pyarrow message when those can be
+        parsed, so that for example a `str -> int` failure does not get
+        misattributed to an unrelated `Timestamp -> string` mismatch in the
+        same struct. Falls back to the first mismatch if no filtered match is
+        found.
         """
         err_msg = str(ex)
         column_match = _PYARROW_COLUMN_RE.search(err_msg)
         column = column_match.group(1) if column_match else None
+        observed_filter, declared_filter = self._parse_pyarrow_type_hint(err_msg)
 
         bad_path: Optional[str] = None
         observed_type: Optional[str] = None
         declared_type: Optional[str] = None
         if column and column in df.columns and column in self._schema:
-            bad_path, observed_type, declared_type = self._find_first_type_mismatch(
-                df[column].tolist(), self._schema[column], prefix=column
-            )
+            values = df[column].tolist()
+            schema_entry = self._schema[column]
+            if observed_filter is not None or declared_filter is not None:
+                bad_path, observed_type, declared_type = self._find_first_type_mismatch(
+                    values,
+                    schema_entry,
+                    prefix=column,
+                    observed_filter=observed_filter,
+                    declared_filter=declared_filter,
+                )
+            if bad_path is None:
+                bad_path, observed_type, declared_type = self._find_first_type_mismatch(values, schema_entry, prefix=column)
 
         if bad_path is not None:
             message = (
@@ -498,22 +533,62 @@ class StreamWriter:
             failure_type=FailureType.config_error,
         )
 
+    @staticmethod
+    def _parse_pyarrow_type_hint(err_msg: str) -> Tuple[Optional[str], Optional[Tuple[str, ...]]]:
+        """
+        Parse the observed Python type and the target conversion type out of a
+        pyarrow error message. Returns `(observed_python_type_name, allowed_json_schema_types)`,
+        where `allowed_json_schema_types` is a tuple of JSON Schema type names
+        that the target pyarrow type could correspond to (for example `int`
+        maps to `("integer", "number")`). Returns `(None, None)` if neither
+        side can be parsed.
+        """
+        for pattern in _PYARROW_TYPE_HINT_RES:
+            match = pattern.search(err_msg)
+            if not match:
+                continue
+            observed = match.group(1)
+            target = match.group(2)
+            allowed = _TARGET_TO_JSON_SCHEMA.get(target)
+            return observed, allowed
+        return None, None
+
     def _find_first_type_mismatch(
-        self, values: List[Any], schema_entry: Dict[str, Any], prefix: str
+        self,
+        values: List[Any],
+        schema_entry: Dict[str, Any],
+        prefix: str,
+        observed_filter: Optional[str] = None,
+        declared_filter: Optional[Tuple[str, ...]] = None,
     ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
         Walk each value in `values` against `schema_entry` and return the first
         `(dotted_path, observed_python_type, declared_json_schema_type)` where
         the observed Python type does not match the declared JSON Schema type.
-        Returns `(None, None, None)` if no mismatch is found.
+        When `observed_filter` and/or `declared_filter` are provided, only
+        mismatches matching those types are returned. Returns `(None, None, None)`
+        if no matching mismatch is found.
         """
         for value in values:
-            path, observed, declared = self._walk_value(value, schema_entry, prefix)
+            path, observed, declared = self._walk_value(
+                value,
+                schema_entry,
+                prefix,
+                observed_filter=observed_filter,
+                declared_filter=declared_filter,
+            )
             if path is not None:
                 return path, observed, declared
         return None, None, None
 
-    def _walk_value(self, value: Any, schema_entry: Dict[str, Any], prefix: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def _walk_value(
+        self,
+        value: Any,
+        schema_entry: Dict[str, Any],
+        prefix: str,
+        observed_filter: Optional[str] = None,
+        declared_filter: Optional[Tuple[str, ...]] = None,
+    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         if value is None or value in EMPTY_VALUES:
             return None, None, None
 
@@ -525,7 +600,13 @@ class StreamWriter:
                 sub_schema = props.get(key)
                 if sub_schema is None:
                     continue
-                path, observed, sub_declared = self._walk_value(sub_value, sub_schema, f"{prefix}.{key}")
+                path, observed, sub_declared = self._walk_value(
+                    sub_value,
+                    sub_schema,
+                    f"{prefix}.{key}",
+                    observed_filter=observed_filter,
+                    declared_filter=declared_filter,
+                )
                 if path is not None:
                     return path, observed, sub_declared
             return None, None, None
@@ -533,23 +614,33 @@ class StreamWriter:
         if declared == "array" and isinstance(value, list):
             items_schema = schema_entry.get("items") or {}
             for idx, item in enumerate(value):
-                path, observed, sub_declared = self._walk_value(item, items_schema, f"{prefix}[{idx}]")
+                path, observed, sub_declared = self._walk_value(
+                    item,
+                    items_schema,
+                    f"{prefix}[{idx}]",
+                    observed_filter=observed_filter,
+                    declared_filter=declared_filter,
+                )
                 if path is not None:
                     return path, observed, sub_declared
             return None, None, None
 
         observed_type = type(value).__name__
+        mismatch: Optional[Tuple[str, str, str]] = None
         if declared in ("integer", "number"):
             # `bool` is a subclass of `int` in Python, but does not round-trip as a number here.
             if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
-                return prefix, observed_type, declared
+                mismatch = (prefix, observed_type, declared)
+        elif declared == "boolean" and not isinstance(value, bool):
+            mismatch = (prefix, observed_type, declared)
+        elif declared == "string" and not isinstance(value, str):
+            mismatch = (prefix, observed_type, declared)
+
+        if mismatch is None:
             return None, None, None
-
-        if declared == "boolean" and not isinstance(value, bool):
-            return prefix, observed_type, declared
-
-        if declared == "string" and not isinstance(value, str):
-            return prefix, observed_type, declared
-
-        return None, None, None
+        if observed_filter is not None and mismatch[1] != observed_filter:
+            return None, None, None
+        if declared_filter is not None and mismatch[2] not in declared_filter:
+            return None, None, None
+        return mismatch
         self._messages.clear()

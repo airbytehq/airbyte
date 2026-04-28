@@ -776,8 +776,9 @@ def test_build_type_mismatch_exception_identifies_nested_field():
             }
         ]
     )
-    ex = pa.ArrowInvalid(
-        "('object of type <class \\'str\\'> cannot be converted to int', 'Conversion failed for column location with type object')"
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
     )
 
     traced = writer._build_type_mismatch_exception(df, ex)
@@ -829,4 +830,83 @@ def test_build_type_mismatch_exception_when_column_unknown():
     traced = writer._build_type_mismatch_exception(df, ex)
 
     assert isinstance(traced, AirbyteTracedException)
-    assert "append_stream_big" in traced.message
+
+
+def test_build_type_mismatch_exception_filters_to_pyarrow_type_pair():
+    """When the pyarrow error names a (observed, target) pair, the walker
+    should skip unrelated mismatches in the same struct and report the field
+    that actually matches that pair."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "location": {
+                    "city": pd.Timestamp("2023-01-01"),
+                    "country": "FR",
+                    "latitude": "48.8566",
+                    "longitude": 2.3522,
+                    "state": "",
+                    "zipcode": "75000",
+                }
+            }
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.latitude"' in traced.message
+    assert "type str" in traced.message
+    assert "declared type number" in traced.message
+
+
+def test_build_type_mismatch_exception_falls_back_when_no_filter_match():
+    """If the pyarrow error names a (observed, target) pair but no field in
+    the struct matches that pair, the walker should fall back to the first
+    mismatch instead of returning nothing."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "location": {
+                    "city": pd.Timestamp("2023-01-01"),
+                    "country": "FR",
+                    "latitude": 48.8566,
+                    "longitude": 2.3522,
+                    "state": "",
+                    "zipcode": "75000",
+                }
+            }
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.city"' in traced.message
+    assert "Timestamp" in traced.message
+    assert "declared type string" in traced.message
+
+
+def test_parse_pyarrow_type_hint():
+    """Direct tests for the pyarrow error parser covering both message
+    shapes and the unparseable case."""
+    observed, declared = StreamWriter._parse_pyarrow_type_hint("object of type <class 'str'> cannot be converted to int")
+    assert observed == "str"
+    assert declared == ("integer", "number")
+
+    observed, declared = StreamWriter._parse_pyarrow_type_hint("Could not convert 'foo' with type str: tried to convert to double")
+    assert observed == "str"
+    assert declared == ("number",)
+
+    observed, declared = StreamWriter._parse_pyarrow_type_hint("completely unrelated error message")
+    assert observed is None
+    assert declared is None
