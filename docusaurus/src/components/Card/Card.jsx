@@ -1,10 +1,15 @@
 import {
   faArrowRight,
+  faBook,
   faCloud,
   faDownload,
+  faGear,
+  faLightbulb,
   faLock,
   faPlug,
+  faPuzzlePiece,
   faRobot,
+  faRocket,
 } from "@fortawesome/free-solid-svg-icons";
 import { faPython } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,12 +17,17 @@ import styles from "./Card.module.css";
 import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
 
 const FA_ICONS = {
+  "fa-book": faBook,
   "fa-cloud": faCloud,
   "fa-download": faDownload,
+  "fa-gear": faGear,
+  "fa-lightbulb": faLightbulb,
   "fa-lock": faLock,
   "fa-plug": faPlug,
+  "fa-puzzle-piece": faPuzzlePiece,
   "fa-python": faPython,
   "fa-robot": faRobot,
+  "fa-rocket": faRocket,
 };
 
 const CUSTOM_ICONS = {
