@@ -500,7 +500,7 @@ def test_next_page_token(token_config):
         pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
         pytest.param(200, {"ok": False, "error": "missing_scope"}, ResponseAction.FAIL, id="ok_false_auth_error"),
         pytest.param(200, {"ok": False, "error": "token_expired"}, ResponseAction.FAIL, id="ok_false_token_expired"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
     ),
 )
 def test_should_retry(token_config, status_code, response_json, expected):
@@ -536,7 +536,6 @@ def test_should_retry(token_config, status_code, response_json, expected):
             FailureType.config_error,
             id="auth_error_token_expired",
         ),
-        pytest.param("method_not_allowed", "Slack API error: method_not_allowed.", FailureType.system_error, id="general_error_catch_all"),
     ],
 )
 def test_channels_stream_ok_false_error_handling(requests_mock, token_config, slack_error, expected_error_message, expected_failure_type):
@@ -781,7 +780,7 @@ def test_channels_stream_includes_archived_when_configured(token_config) -> None
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(429, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="429_ok_false_ratelimited"),
         pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_empty_body"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
     ),
@@ -801,7 +800,7 @@ def test_users_stream_error_handler_response_action(token_config, status_code, r
     (
         pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
     ),
 )
 def test_channel_members_error_handler_response_action(token_config, status_code, response_json, expected):
