@@ -76,8 +76,25 @@ If your Airbyte client can access multiple organizations, include `organization_
 
 **Python SDK**
 
+The `connect()` factory returns a fully typed `KlaviyoConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_sdk.connectors.klaviyo import KlaviyoConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.klaviyo import KlaviyoConnector
+
+connector = connect("klaviyo", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@KlaviyoConnector.tool_utils
+async def klaviyo_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.klaviyo import KlaviyoConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = KlaviyoConnector(
     auth_config=AirbyteAuthConfig(

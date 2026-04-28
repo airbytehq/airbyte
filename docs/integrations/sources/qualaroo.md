@@ -46,6 +46,7 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 0.4.45 | 2026-04-28 | [77397](https://github.com/airbytehq/airbyte/pull/77397) | Update dependencies |
 | 0.4.44 | 2026-04-21 | [76725](https://github.com/airbytehq/airbyte/pull/76725) | Update dependencies |
 | 0.4.43 | 2026-03-31 | [75845](https://github.com/airbytehq/airbyte/pull/75845) | Update dependencies |
 | 0.4.42 | 2026-03-17 | [74954](https://github.com/airbytehq/airbyte/pull/74954) | Update dependencies |
