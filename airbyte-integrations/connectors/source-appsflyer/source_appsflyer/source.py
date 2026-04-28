@@ -107,6 +107,12 @@ class AppsflyerStream(HttpStream, ABC):
         elif self.is_aggregate_reports_reached_limit(response):
             wait_time = 60
         else:
+            retry_after = response.headers.get("Retry-After")
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except ValueError:
+                    pass
             return None
 
         logging.getLogger("airbyte").log(logging.INFO, f"Rate limit exceeded. Retry in {wait_time} seconds.")

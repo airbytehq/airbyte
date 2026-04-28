@@ -96,10 +96,21 @@ def test_backoff_time(patch_base_class, http_status, response_text, expected_bac
     response_mock = MagicMock()
     response_mock.status_code = http_status
     response_mock.text = response_text
+    response_mock.headers = {}
     stream = AppsflyerStream()
     if expected_backoff_time == "Midnight":
         expected_backoff_time = (pendulum.tomorrow("UTC") - pendulum.now("UTC")).seconds
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_backoff_time_retry_after_header(patch_base_class):
+    """Verify Retry-After header is honored for transient errors."""
+    response_mock = MagicMock()
+    response_mock.status_code = HTTPStatus.TOO_MANY_REQUESTS
+    response_mock.text = ""
+    response_mock.headers = {"Retry-After": "120"}
+    stream = AppsflyerStream()
+    assert stream.backoff_time(response_mock) == 120.0
 
 
 def test_cdk_7x_error_handler_adapter(patch_base_class):
