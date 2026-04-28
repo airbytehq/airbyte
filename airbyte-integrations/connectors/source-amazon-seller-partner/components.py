@@ -569,10 +569,11 @@ class ReportCreationRequester(HttpRequester):
     1. Before creating a new report via POST, call GET /reports to check for existing reports
        of the same reportType, matching date range, and marketplaceIds.
     2. If matching reports are found, select the most recently created one (by createdTime).
-       DONE reports older than 1 day are skipped since their data snapshot may be stale and
-       the report document may have expired. Status filtering (e.g. CANCELLED, FATAL) is NOT
-       done here — the manifest's status_mapping is the single source of truth for which
-       statuses are retryable, skippable, or terminal.
+       DONE reports older than `max_done_report_age_hours` (from config, default 0) are skipped
+       since their data snapshot may be stale and the report document may have expired. When the
+       config value is 0 (default), DONE reports are never reused. Status filtering (e.g.
+       CANCELLED, FATAL) is NOT done here — the manifest's status_mapping is the single source
+       of truth for which statuses are retryable, skippable, or terminal.
     3. If no suitable report is found, fall through to super().send_request() to create a new one.
     """
 
@@ -682,7 +683,8 @@ class ReportCreationRequester(HttpRequester):
         # DONE reports older than this threshold are considered stale (data snapshot may be outdated,
         # report document may have expired). IN_QUEUE and IN_PROGRESS reports are not subject to
         # this check because they are still being processed.
-        max_done_report_age_hours = 24
+        # When max_done_report_age_hours is 0 (default), DONE reports are never reused.
+        max_done_report_age_hours = self.config.get("max_done_report_age_hours", 0)
         now = ab_datetime_now()
 
         # Collect all matching candidates, then pick the most recently created one
@@ -699,22 +701,31 @@ class ReportCreationRequester(HttpRequester):
             if not self._date_ranges_match(requested_start, requested_end, report_start, report_end):
                 continue
 
-            # Check createdTime freshness for DONE reports
+            # Check createdTime freshness for DONE reports.
+            # When max_done_report_age_hours is 0 (default), DONE reports are never reused.
             report_status = report.get("processingStatus", "")
             created_time_str = report.get("createdTime", "")
-            if report_status == "DONE" and created_time_str:
-                try:
-                    created_time = ab_datetime_parse(created_time_str)
-                    age_hours = (now - created_time).total_seconds() / 3600
-                    if age_hours > max_done_report_age_hours:
-                        report_id = report.get("reportId", "")
-                        logger.info(
-                            f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
-                            f"for {report_type}. Will look for a newer one."
-                        )
-                        continue
-                except (ValueError, TypeError):
-                    pass  # If we can't parse createdTime, don't skip — still usable
+            if report_status == "DONE":
+                if max_done_report_age_hours == 0:
+                    report_id = report.get("reportId", "")
+                    logger.info(
+                        f"Skipping DONE report {report_id} for {report_type} "
+                        f"because max_done_report_age_hours is 0 (always create new reports)."
+                    )
+                    continue
+                if created_time_str:
+                    try:
+                        created_time = ab_datetime_parse(created_time_str)
+                        age_hours = (now - created_time).total_seconds() / 3600
+                        if age_hours > max_done_report_age_hours:
+                            report_id = report.get("reportId", "")
+                            logger.info(
+                                f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
+                                f"for {report_type}. Will look for a newer one."
+                            )
+                            continue
+                    except (ValueError, TypeError):
+                        pass  # If we can't parse createdTime, don't skip — still usable
 
             # Parse createdTime to compare candidates
             report_created_time = None

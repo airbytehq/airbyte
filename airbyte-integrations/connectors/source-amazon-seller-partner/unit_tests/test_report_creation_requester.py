@@ -46,9 +46,12 @@ def _make_report(
     return report
 
 
-def _make_requester() -> ReportCreationRequester:
+def _make_requester(config: dict = None) -> ReportCreationRequester:
     """Create a ReportCreationRequester instance with mocked internals for unit testing."""
     requester = object.__new__(ReportCreationRequester)
+
+    # Set config — defaults to empty dict (max_done_report_age_hours defaults to 0 in component)
+    requester.config = config or {}
 
     # Mock _request_body_json to return a controlled body
     requester._request_body_json = MagicMock()
@@ -270,7 +273,7 @@ class TestFindExistingReport:
 
     def test_returns_matching_report(self):
         requester = _make_requester()
-        matching_report = _make_report(report_id="rpt-match", marketplace_ids=["ATVPDKIKX0DER"])
+        matching_report = _make_report(report_id="rpt-match", status="IN_PROGRESS", marketplace_ids=["ATVPDKIKX0DER"])
         get_response = _make_get_reports_response([matching_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
@@ -476,9 +479,28 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-in-queue"
 
+    def test_skips_done_report_when_max_age_is_zero(self):
+        """When max_done_report_age_hours is 0 (default), DONE reports should never be reused."""
+        requester = _make_requester()  # default config, max_done_report_age_hours=0
+        now = datetime.now(tz=timezone.utc)
+        report = _make_report(report_id="rpt-done", status="DONE", created_time=now.isoformat())
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is None
+
     def test_skips_stale_done_report(self):
-        """DONE reports older than 24h should be skipped."""
-        requester = _make_requester()
+        """DONE reports older than max_done_report_age_hours should be skipped."""
+        requester = _make_requester(config={"max_done_report_age_hours": 24})
         # Report created 48 hours ago
         old_time = datetime(2023, 1, 1, 0, 0, 0, tzinfo=timezone.utc).isoformat()
         report = _make_report(report_id="rpt-stale", status="DONE", created_time=old_time)
@@ -496,9 +518,9 @@ class TestFindExistingReport:
 
         assert result is None
 
-    def test_reuses_fresh_done_report(self):
-        """DONE reports created within 24h should be reusable."""
-        requester = _make_requester()
+    def test_reuses_fresh_done_report_when_max_age_set(self):
+        """DONE reports created within max_done_report_age_hours should be reusable."""
+        requester = _make_requester(config={"max_done_report_age_hours": 24})
         # Use a very recent timestamp
         now = datetime.now(tz=timezone.utc)
         fresh_time = now.isoformat()
@@ -519,8 +541,8 @@ class TestFindExistingReport:
         assert result.json()["reportId"] == "rpt-fresh"
 
     def test_in_progress_report_not_subject_to_staleness(self):
-        """IN_PROGRESS reports should not be subject to the 24h staleness check."""
-        requester = _make_requester()
+        """IN_PROGRESS reports should not be subject to the staleness check even when max_age is 0."""
+        requester = _make_requester()  # default config, max_done_report_age_hours=0
         old_time = datetime(2023, 1, 1, 0, 0, 0, tzinfo=timezone.utc).isoformat()
         report = _make_report(report_id="rpt-old-ip", status="IN_PROGRESS", created_time=old_time)
         get_response = _make_get_reports_response([report])
@@ -540,7 +562,7 @@ class TestFindExistingReport:
 
     def test_returns_latest_report_by_created_time(self):
         """When multiple matching reports exist, return the most recently created one."""
-        requester = _make_requester()
+        requester = _make_requester(config={"max_done_report_age_hours": 24})
         now = datetime.now(tz=timezone.utc)
         older_time = (now - timedelta(hours=2)).isoformat()
         newer_time = (now - timedelta(hours=1)).isoformat()
@@ -565,7 +587,7 @@ class TestFindExistingReport:
 
     def test_returns_latest_in_progress_over_older_done(self):
         """A newer IN_PROGRESS report should be preferred over an older DONE report."""
-        requester = _make_requester()
+        requester = _make_requester(config={"max_done_report_age_hours": 24})
         now = datetime.now(tz=timezone.utc)
         done_time = (now - timedelta(hours=10)).isoformat()
         ip_time = (now - timedelta(hours=1)).isoformat()
@@ -587,9 +609,9 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-ip"
 
-    def test_done_report_without_created_time_is_still_usable(self):
-        """DONE reports without createdTime should still be reusable (no staleness check)."""
-        requester = _make_requester()
+    def test_done_report_without_created_time_is_still_usable_when_max_age_set(self):
+        """DONE reports without createdTime should still be reusable when max_age > 0."""
+        requester = _make_requester(config={"max_done_report_age_hours": 24})
         report = _make_report(report_id="rpt-no-time", status="DONE")
         get_response = _make_get_reports_response([report])
         requester._http_client.send_request.return_value = (None, get_response)
@@ -606,6 +628,96 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-no-time"
 
+    def test_done_report_without_created_time_skipped_when_max_age_is_zero(self):
+        """DONE reports without createdTime should be skipped when max_age is 0."""
+        requester = _make_requester()  # default config, max_done_report_age_hours=0
+        report = _make_report(report_id="rpt-no-time", status="DONE")
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is None
+
+    def test_reuses_done_report_with_custom_max_age(self):
+        """DONE report created 3h ago should be reused when max_done_report_age_hours=6."""
+        requester = _make_requester(config={"max_done_report_age_hours": 6})
+        now = datetime.now(tz=timezone.utc)
+        report = _make_report(
+            report_id="rpt-3h",
+            status="DONE",
+            created_time=(now - timedelta(hours=3)).isoformat(),
+        )
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-3h"
+
+    def test_skips_done_report_exceeding_custom_max_age(self):
+        """DONE report created 10h ago should be skipped when max_done_report_age_hours=6."""
+        requester = _make_requester(config={"max_done_report_age_hours": 6})
+        now = datetime.now(tz=timezone.utc)
+        report = _make_report(
+            report_id="rpt-10h",
+            status="DONE",
+            created_time=(now - timedelta(hours=10)).isoformat(),
+        )
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is None
+
+    def test_default_config_skips_done_but_reuses_in_progress(self):
+        """With default config (max_age=0), DONE reports are skipped but IN_PROGRESS is reused."""
+        requester = _make_requester()  # default config, max_done_report_age_hours=0
+        now = datetime.now(tz=timezone.utc)
+        done_report = _make_report(report_id="rpt-done", status="DONE", created_time=now.isoformat())
+        ip_report = _make_report(
+            report_id="rpt-ip",
+            status="IN_PROGRESS",
+            created_time=(now - timedelta(hours=1)).isoformat(),
+        )
+        get_response = _make_get_reports_response([done_report, ip_report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-ip"
+
 
 class TestSendRequest:
     """Tests for ReportCreationRequester.send_request integration."""
@@ -618,7 +730,7 @@ class TestSendRequest:
             "dataEndTime": "2023-01-30T00:00:00Z",
             "marketplaceIds": ["ATVPDKIKX0DER"],
         }
-        matching_report = _make_report(report_id="rpt-existing")
+        matching_report = _make_report(report_id="rpt-existing", status="IN_PROGRESS")
         get_response = _make_get_reports_response([matching_report])
         requester._http_client.send_request.return_value = (None, get_response)
 

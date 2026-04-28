@@ -242,6 +242,18 @@ spec:
         default: false
         order: 13
         airbyte_hidden: true
+      max_done_report_age_hours:
+        title: "Max Age of Completed Reports to Reuse (Hours)"
+        type: integer
+        description: "When the connector finds an existing completed (DONE) report
+          matching the same date range and marketplace, it can reuse that report
+          instead of creating a new one. This setting controls how old (in hours)
+          a completed report can be and still be reused. Set to 0 to always create
+          new reports. Maximum is 24 hours."
+        default: 0
+        minimum: 0
+        maximum: 24
+        order: 14
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
