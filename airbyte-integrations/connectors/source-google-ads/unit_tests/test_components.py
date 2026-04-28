@@ -767,6 +767,7 @@ _GOOGLE_ADS_RETRIEVER_CLASS = "source_google_ads.components.GoogleAdsRetriever"
 
 _DEFAULT_CONFIG = {
     "credentials": {
+        "auth_type": "oauth2",
         "developer_token": "test_token",
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",

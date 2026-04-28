@@ -59,6 +59,7 @@ def read_full_refresh(stream_instance: DefaultStream):
 def test_config():
     config = {
         "credentials": {
+            "auth_type": "oauth2",
             "developer_token": "test_token",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
@@ -95,6 +96,7 @@ def test_config():
 def config_for_custom_query_tests():
     config = {
         "credentials": {
+            "auth_type": "oauth2",
             "developer_token": "test_token",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
