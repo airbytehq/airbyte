@@ -172,6 +172,19 @@ class RedshiftAirbyteClient(
         return TableSchema(userColumns)
     }
 
+    /**
+     * Returns the column names of the given table in ordinal order (matching the physical column
+     * layout)
+     */
+    fun describeTable(tableName: TableName): List<String> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            val columns = mutableListOf<String>()
+            while (rs.next()) {
+                columns.add(rs.getString(COLUMN_NAME_COLUMN))
+            }
+            columns
+        }
+
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
