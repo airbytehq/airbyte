@@ -225,7 +225,7 @@ internal class SnowflakeInsertBufferTest {
         val trailingWhitespaceValue = "hello   "
         val record =
             mapOf(
-                column to StringValue(trailingWhitespaceValue),
+                column.uppercase() to StringValue(trailingWhitespaceValue),
                 Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id-1"),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234567890),
