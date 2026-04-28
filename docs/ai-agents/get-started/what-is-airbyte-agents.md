@@ -19,7 +19,7 @@ AI models can reason, plan, and use tools. What they lack is data.
 - **Building integrations is expensive.** Connecting an agent to even one SaaS API means managing authentication, pagination, rate limits, and schema changes. Connecting to ten is a full-time job.
 - **Scattered data produces scattered answers.** Without a unified view, agents make separate API calls to separate systems and try to piece the picture together at runtime. The result is slow, expensive, and unreliable.
 
-Organizations end up with agents that demo well but fail in production, or they never ship agents at all because the data infrastructure is too costly to build.
+Organizations either end up with agents that demo well but fail in production, or they never ship agents at all because the data infrastructure is too costly to build.
 
 ## How Airbyte Agents works
 
@@ -93,10 +93,10 @@ For help choosing, see [Choose how to use Airbyte Agents](choose-how-to-use).
 
 ## Pricing
 
-Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
+Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations (AO)](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
 
 ## Next steps
 
 - [Choose how to use Airbyte Agents](choose-how-to-use) — Find the right interface for your use case.
-- [Developer Quickstart](developer-quickstart) — Tutorials and coding-agent skills to start building in minutes.
-- [Core concepts](../concepts) — Deeper explanation of the platform architecture, the Context Store, and agent operations.
+- [Developer Quickstart](developer-quickstart) — Explore tutorials and coding-agent skills to start building in minutes.
+- [Core concepts](../concepts) — Dive deeper into platform architecture, the Context Store, and agent operations.
