@@ -47,14 +47,15 @@ class BigQueryDatabaseHandlerTest {
         val accessDeniedError =
             BigQueryError("accessDenied", "loc", "Access Denied: Table delete permission denied")
         val job: Job = mockk {
-            every { status } returns
-                mockk { every { state } returns JobStatus.State.RUNNING }
+            every { status } returns mockk { every { state } returns JobStatus.State.RUNNING }
             every { reload() } throws
-                BigQueryException(403, "Access Denied: Table delete permission denied", accessDeniedError)
+                BigQueryException(
+                    403,
+                    "Access Denied: Table delete permission denied",
+                    accessDeniedError
+                )
         }
-        val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class), *anyVararg()) } returns job
-        }
+        val bq: BigQuery = mockk { every { create(any(JobInfo::class), *anyVararg()) } returns job }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
         assertThrows<ConfigErrorException> { handler.execute(Sql.of("DELETE FROM table")) }
@@ -66,7 +67,11 @@ class BigQueryDatabaseHandlerTest {
             BigQueryError("accessDenied", "loc", "Access Denied: bigquery.tables.delete denied")
         val bq: BigQuery = mockk {
             every { create(any(JobInfo::class), *anyVararg()) } throws
-                BigQueryException(403, "Access Denied: bigquery.tables.delete denied", accessDeniedError)
+                BigQueryException(
+                    403,
+                    "Access Denied: bigquery.tables.delete denied",
+                    accessDeniedError
+                )
         }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
@@ -77,17 +82,12 @@ class BigQueryDatabaseHandlerTest {
 
     @Test
     fun `401 unauthorized errors are wrapped as ConfigErrorException`() {
-        val authError =
-            BigQueryError("unauthorized", "loc", "Invalid credentials")
+        val authError = BigQueryError("unauthorized", "loc", "Invalid credentials")
         val job: Job = mockk {
-            every { status } returns
-                mockk { every { state } returns JobStatus.State.RUNNING }
-            every { reload() } throws
-                BigQueryException(401, "Invalid credentials", authError)
+            every { status } returns mockk { every { state } returns JobStatus.State.RUNNING }
+            every { reload() } throws BigQueryException(401, "Invalid credentials", authError)
         }
-        val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class), *anyVararg()) } returns job
-        }
+        val bq: BigQuery = mockk { every { create(any(JobInfo::class), *anyVararg()) } returns job }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
         assertThrows<ConfigErrorException> { handler.execute(Sql.of("SELECT 1")) }
@@ -95,8 +95,7 @@ class BigQueryDatabaseHandlerTest {
 
     @Test
     fun `403 rate limit errors are retried and not wrapped as ConfigErrorException`() {
-        val rateLimitError =
-            BigQueryError("rateLimitExceeded", "loc", "Rate limit exceeded")
+        val rateLimitError = BigQueryError("rateLimitExceeded", "loc", "Rate limit exceeded")
         val bq: BigQuery = mockk {
             every { create(any(JobInfo::class), *anyVararg()) } throws
                 BigQueryException(403, "Rate limit exceeded", rateLimitError)
@@ -105,24 +104,24 @@ class BigQueryDatabaseHandlerTest {
 
         assertDoesNotThrow {
             runBlocking {
-                handler.executeWithRetries("SELECT 1", initialDelay = 1, numAttempts = 1, maxDelay = 1)
+                handler.executeWithRetries(
+                    "SELECT 1",
+                    initialDelay = 1,
+                    numAttempts = 1,
+                    maxDelay = 1
+                )
             }
         }
     }
 
     @Test
     fun `500 internal errors are not wrapped as ConfigErrorException`() {
-        val internalError =
-            BigQueryError("internalError", "loc", "Internal error")
+        val internalError = BigQueryError("internalError", "loc", "Internal error")
         val job: Job = mockk {
-            every { status } returns
-                mockk { every { state } returns JobStatus.State.RUNNING }
-            every { reload() } throws
-                BigQueryException(500, "Internal error", internalError)
+            every { status } returns mockk { every { state } returns JobStatus.State.RUNNING }
+            every { reload() } throws BigQueryException(500, "Internal error", internalError)
         }
-        val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class), *anyVararg()) } returns job
-        }
+        val bq: BigQuery = mockk { every { create(any(JobInfo::class), *anyVararg()) } returns job }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
         assertThrows<BigQueryException> { handler.execute(Sql.of("SELECT 1")) }
