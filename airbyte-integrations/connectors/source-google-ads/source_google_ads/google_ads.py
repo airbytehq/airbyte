@@ -3,6 +3,10 @@
 #
 
 
+import atexit
+import json
+import os
+import tempfile
 from enum import Enum
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
@@ -41,14 +45,33 @@ class GoogleAds:
         # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
         # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
         credentials["use_proto_plus"] = True
+        self._temp_key_file = None
         self.clients = {}
         self.ga_services = {}
+
+        # Handle service account credentials: write JSON key to a temp file
+        # and replace the raw JSON content with a file path for the SDK.
+        if "service_account_json" in credentials:
+            self._temp_key_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w")
+            json.dump(json.loads(credentials["service_account_json"]), self._temp_key_file)
+            self._temp_key_file.close()
+            credentials["json_key_file_path"] = self._temp_key_file.name
+            del credentials["service_account_json"]
+            # Remove OAuth-specific keys if present
+            for key in ("client_id", "client_secret", "refresh_token", "access_token", "auth_type"):
+                credentials.pop(key, None)
+            atexit.register(self._cleanup_temp_file)
+
         self.credentials = credentials
 
         self.clients["default"] = self.get_google_ads_client(credentials)
         self.ga_services["default"] = self.clients["default"].get_service("GoogleAdsService")
 
         self.customer_service = self.clients["default"].get_service("CustomerService")
+
+    def _cleanup_temp_file(self):
+        if self._temp_key_file and os.path.exists(self._temp_key_file.name):
+            os.unlink(self._temp_key_file.name)
 
     def get_client(self, login_customer_id="default"):
         if login_customer_id in self.clients:

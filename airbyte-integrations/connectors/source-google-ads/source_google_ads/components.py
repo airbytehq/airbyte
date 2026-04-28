@@ -1027,6 +1027,8 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         # use_proto_plus is set to True, because setting to False returned wrong value types, which breaks the backward compatibility.
         # For more info read the related PR's description: https://github.com/airbytehq/airbyte/pull/9996
         credentials.update(use_proto_plus=True)
+        # For service account credentials, the GoogleAds class handles the temp file conversion
+        # in its __init__, so we just pass credentials through as-is.
         return credentials
 
     def get_json_schema(self) -> Dict[str, Any]:

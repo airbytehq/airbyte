@@ -291,3 +291,74 @@ def test_get_fields_metadata(mocker):
     assert set(response.keys()) == set(fields)
     for field in fields:
         assert response[field].name == field
+
+
+SAMPLE_SERVICE_ACCOUNT_CONFIG = {
+    "credentials": {
+        "auth_type": "service_account",
+        "developer_token": "developer_token",
+        "service_account_json": json.dumps(
+            {
+                "type": "service_account",
+                "project_id": "test",
+                "private_key_id": "key123",
+                "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIBogIBAAJBALRi\n-----END RSA PRIVATE KEY-----\n",
+                "client_email": "test@test.iam.gserviceaccount.com",
+                "client_id": "123456789",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        ),
+        "impersonated_email": "user@example.com",
+    }
+}
+
+
+def test_google_ads_service_account_init(mocker):
+    """Test that service account credentials are properly transformed for the SDK."""
+    import os
+
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+    google_ads = GoogleAds(**SAMPLE_SERVICE_ACCOUNT_CONFIG)
+
+    call_args = google_client_mocker.load_from_dict.call_args[0][0]
+    # Should have json_key_file_path instead of service_account_json
+    assert "json_key_file_path" in call_args
+    assert "service_account_json" not in call_args
+    # Should keep impersonated_email and developer_token
+    assert call_args["impersonated_email"] == "user@example.com"
+    assert call_args["developer_token"] == "developer_token"
+    assert call_args["use_proto_plus"] is True
+    # Should not have OAuth-specific keys
+    assert "client_id" not in call_args
+    assert "client_secret" not in call_args
+    assert "refresh_token" not in call_args
+    assert "auth_type" not in call_args
+    # The temp file should exist and contain valid JSON
+    temp_path = call_args["json_key_file_path"]
+    assert os.path.exists(temp_path)
+    with open(temp_path) as f:
+        key_data = json.load(f)
+    assert key_data["type"] == "service_account"
+    assert key_data["client_email"] == "test@test.iam.gserviceaccount.com"
+    # Cleanup
+    google_ads._cleanup_temp_file()
+    assert not os.path.exists(temp_path)
+
+
+def test_google_ads_service_account_without_impersonated_email(mocker):
+    """Test that service account works without impersonated_email."""
+    config = {
+        "credentials": {
+            "auth_type": "service_account",
+            "developer_token": "developer_token",
+            "service_account_json": json.dumps({"type": "service_account", "project_id": "test"}),
+        }
+    }
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+    google_ads = GoogleAds(**config)
+
+    call_args = google_client_mocker.load_from_dict.call_args[0][0]
+    assert "json_key_file_path" in call_args
+    assert "impersonated_email" not in call_args
+    google_ads._cleanup_temp_file()

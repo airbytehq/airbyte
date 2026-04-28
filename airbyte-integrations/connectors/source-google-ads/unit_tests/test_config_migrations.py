@@ -6,7 +6,7 @@
 import json
 from typing import Any, Mapping
 
-from source_google_ads.config_migrations import MigrateCustomQuery
+from source_google_ads.config_migrations import MigrateCredentialsToOAuth, MigrateCustomQuery
 from source_google_ads.source import SourceGoogleAds
 
 from airbyte_cdk.models import OrchestratorType, Type
@@ -80,3 +80,51 @@ def test_should_not_migrate_new_config():
     new_config = load_config(NEW_TEST_CONFIG_PATH)
     migration_instance = MigrateCustomQuery()
     assert not migration_instance.should_migrate(new_config)
+
+
+# Tests for MigrateCredentialsToOAuth
+
+
+def test_migrate_credentials_to_oauth_should_migrate():
+    """Old configs without auth_type should be migrated."""
+    config = {
+        "credentials": {
+            "developer_token": "token",
+            "client_id": "id",
+            "client_secret": "secret",
+            "refresh_token": "refresh",
+        }
+    }
+    assert MigrateCredentialsToOAuth.should_migrate(config) is True
+
+
+def test_migrate_credentials_to_oauth_should_not_migrate_with_auth_type():
+    """Configs that already have auth_type should not be migrated."""
+    config = {
+        "credentials": {
+            "auth_type": "oauth2",
+            "developer_token": "token",
+            "client_id": "id",
+            "client_secret": "secret",
+            "refresh_token": "refresh",
+        }
+    }
+    assert MigrateCredentialsToOAuth.should_migrate(config) is False
+
+
+def test_migrate_credentials_to_oauth_should_not_migrate_service_account():
+    """Service account configs with auth_type should not be migrated."""
+    config = {
+        "credentials": {
+            "auth_type": "service_account",
+            "developer_token": "token",
+            "service_account_json": "{}",
+        }
+    }
+    assert MigrateCredentialsToOAuth.should_migrate(config) is False
+
+
+def test_migrate_credentials_to_oauth_should_not_migrate_empty():
+    """Configs without credentials should not be migrated."""
+    assert MigrateCredentialsToOAuth.should_migrate({}) is False
+    assert MigrateCredentialsToOAuth.should_migrate({"credentials": {}}) is False

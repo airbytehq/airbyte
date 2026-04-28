@@ -115,3 +115,32 @@ class MigrateCustomQuery:
             config = source.read_config(config_path)
             if cls.should_migrate(config):
                 emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))
+
+
+class MigrateCredentialsToOAuth:
+    """
+    Adds `auth_type: oauth2` to existing credentials configs that don't have an `auth_type` field.
+    This ensures backward compatibility after the introduction of the oneOf selector for
+    OAuth vs Service Account authentication.
+    """
+
+    message_repository: MessageRepository = InMemoryMessageRepository()
+
+    @classmethod
+    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        credentials = config.get("credentials", {})
+        return bool(credentials) and "auth_type" not in credentials
+
+    @classmethod
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        config["credentials"]["auth_type"] = "oauth2"
+        source.write_config(config, config_path)
+        return config
+
+    @classmethod
+    def migrate(cls, args: List[str], source: Source) -> None:
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        if config_path:
+            config = source.read_config(config_path)
+            if cls.should_migrate(config):
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))
