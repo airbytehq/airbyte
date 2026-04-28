@@ -11,11 +11,11 @@ Use the flowchart below to find the best starting point, then read the section t
 
 ```mermaid
 flowchart TD
-    START(["How do you want to use\nAirbyte Agents?"])
+    START(["How do you want to use<br/>Airbyte Agents?"])
     START -->|"No code needed"| WEB["Web app"]
-    START -->|"I already use Claude,\nCursor, or ChatGPT"| MCP["MCP server"]
-    START -->|"I'm building a\nPython agent"| SDK["Python SDK"]
-    START -->|"Non-Python backend\nor custom admin"| API["HTTP API"]
+    START -->|"I already use Claude,<br/>Cursor, or ChatGPT"| MCP["MCP server"]
+    START -->|"I'm building a<br/>Python agent"| SDK["Python SDK"]
+    START -->|"Non-Python backend<br/>or custom admin"| API["HTTP API"]
 
     click WEB "#web-app"
     click MCP "#mcp-server"

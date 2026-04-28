@@ -32,7 +32,7 @@ flowchart LR
         C2["Managed auth & credentials"]
     end
     subgraph unify["Unify"]
-        CS["Context Store\n(indexed, searchable)"]
+        CS["Context Store<br/>(indexed, searchable)"]
     end
     subgraph act["Act"]
         A1["Read & search"]
