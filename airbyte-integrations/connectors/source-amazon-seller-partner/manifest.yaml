@@ -285,7 +285,7 @@ spec:
         title: Number of Workers
         description: The number of workers to use for the connector when syncing concurrently.
         type: integer
-        default: 2
+        default: 4
         minimum: 2
         maximum: 10
         order: 14
@@ -3186,68 +3186,68 @@ definitions:
           - path: ["dataEndTime"]
             value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
 
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 1 # burst: 0.0167 calls per second
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "orders/v0/orders(\\?.*)?$" # matches '/orders' (exact or with trailing slash/extra)
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 1 # burst: 0.5 call per second
-          interval: PT2S
-      matchers:
-        - method: GET
-          url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
-
-    # SP-API Reports v2021-06-30
-
-    # 1) Create report  (POST /reports/2021-06-30/reports)
-    #   Default: ~0.0167 rps (≈1/min), burst 15
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 1
-          interval: PT1M
-      matchers:
-        - method: POST
-          url_path_pattern: "reports/2021-06-30/reports$"
-
-    # 2) Poll report status  (GET /reports/2021-06-30/reports/{reportId})
-    #   Default: 2 rps, burst 15
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 2
-          interval: PT1S
-      matchers:
-        - method: GET
-          url_path_pattern: "reports/2021-06-30/reports/[^/]+$"
-
-    # 3) Get report document metadata  (GET /reports/2021-06-30/documents/{documentId})
-    #   Default: ~0.0167 rps (≈1/min), burst 15
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 1
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "reports/2021-06-30/documents/[^/]+$"
-
-    # SP-API Finances v0
-    # ListFinancialEvents: Rate 0.5 rps, Burst 30
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 1
-          interval: PT2S
-      matchers:
-        - method: GET
-          url_path_pattern: "finances/v0/financialEvents(\\?.*)?$"
-
-  # Other API budget settings:
-  status_codes_for_ratelimit_hit: [429]
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 1 # burst: 0.0167 calls per second
+#           interval: PT1M
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "orders/v0/orders(\\?.*)?$" # matches '/orders' (exact or with trailing slash/extra)
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 1 # burst: 0.5 call per second
+#           interval: PT2S
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
+#
+#     # SP-API Reports v2021-06-30
+#
+#     # 1) Create report  (POST /reports/2021-06-30/reports)
+#     #   Default: ~0.0167 rps (≈1/min), burst 15
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 1
+#           interval: PT1M
+#       matchers:
+#         - method: POST
+#           url_path_pattern: "reports/2021-06-30/reports$"
+#
+#     # 2) Poll report status  (GET /reports/2021-06-30/reports/{reportId})
+#     #   Default: 2 rps, burst 15
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 2
+#           interval: PT1S
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "reports/2021-06-30/reports/[^/]+$"
+#
+#     # 3) Get report document metadata  (GET /reports/2021-06-30/documents/{documentId})
+#     #   Default: ~0.0167 rps (≈1/min), burst 15
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 1
+#           interval: PT1M
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "reports/2021-06-30/documents/[^/]+$"
+#
+#     # SP-API Finances v0
+#     # ListFinancialEvents: Rate 0.5 rps, Burst 30
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 1
+#           interval: PT2S
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "finances/v0/financialEvents(\\?.*)?$"
+#
+#   # Other API budget settings:
+#   status_codes_for_ratelimit_hit: [429]
 
 streams:
   # REST Streams
@@ -3311,7 +3311,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 10
 max_concurrent_async_job_count: "{{ config.get('max_async_job_count', 2) }}"
 
