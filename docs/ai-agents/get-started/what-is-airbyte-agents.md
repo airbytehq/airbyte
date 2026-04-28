@@ -93,7 +93,7 @@ For help choosing, see [Choose how to use Airbyte Agents](choose-how-to-use).
 
 ## Pricing
 
-Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations (AO)](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
+Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations (AOs)](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
 
 ## Next steps
 
