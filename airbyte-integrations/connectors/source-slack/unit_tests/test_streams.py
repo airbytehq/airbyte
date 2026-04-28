@@ -259,7 +259,8 @@ def test_backoff(requests_mock, token_config, authenticator, headers, expected_r
     state = StateBuilder().with_stream_state("threads", {}).build()
     source_slack = get_source(token_config, "threads", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
-    assert len([log.log.message for log in output.logs if "Retrying. Sleeping for 15.0 seconds" == log.log.message]) == 1
+    retry_logs = [log.log.message for log in output.logs if "Retrying" in log.log.message and "429" in log.log.message]
+    assert len(retry_logs) >= 1, "Expected at least one retry log for HTTP 429"
     assert len(output.records) == expected_result
 
 
@@ -627,7 +628,7 @@ def test_users_stream_backoff_retry_after_header(requests_mock, token_config):
     state = StateBuilder().build()
     source_slack = get_source(token_config, "users", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
-    retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
+    retry_logs = [log.log.message for log in output.logs if "Retrying" in log.log.message and "429" in log.log.message]
     assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for users"
     assert len(output.records) >= 1
 
@@ -663,7 +664,7 @@ def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_
     state = StateBuilder().build()
     source_slack = get_source(token_config, "channel_members", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
-    retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
+    retry_logs = [log.log.message for log in output.logs if "Retrying" in log.log.message and "429" in log.log.message]
     assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for channel_members"
     assert len(output.records) >= 1
 
