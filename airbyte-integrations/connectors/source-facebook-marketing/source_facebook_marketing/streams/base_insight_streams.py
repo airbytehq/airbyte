@@ -661,7 +661,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
         """
         if self._custom_fields:
-            return self._custom_fields
+            required = [self.cursor_field, "date_stop", "account_id"]
+            if entity := self.LEVEL_TO_ID_FIELD.get(self.level):
+                required.append(entity)
+            required.extend(self.breakdowns or [])
+            return list(dict.fromkeys(self._custom_fields + required))
 
         if self._fields:
             return self._fields
