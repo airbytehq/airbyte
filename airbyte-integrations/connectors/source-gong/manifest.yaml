@@ -453,6 +453,10 @@ streams:
   - $ref: "#/definitions/streams/answeredScorecards"
   - $ref: "#/definitions/streams/callTranscripts"
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+
 spec:
   type: Spec
   connection_specification:

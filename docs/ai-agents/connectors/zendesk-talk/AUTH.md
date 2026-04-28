@@ -23,8 +23,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_zendesk_talk import ZendeskTalkConnector
-from airbyte_agent_zendesk_talk.models import ZendeskTalkOauth20AuthConfig
+from airbyte_agent_sdk.connectors.zendesk_talk import ZendeskTalkConnector
+from airbyte_agent_sdk.connectors.zendesk_talk.models import ZendeskTalkOauth20AuthConfig
 
 connector = ZendeskTalkConnector(
     auth_config=ZendeskTalkOauth20AuthConfig(
@@ -48,8 +48,8 @@ connector = ZendeskTalkConnector(
 Example request:
 
 ```python
-from airbyte_agent_zendesk_talk import ZendeskTalkConnector
-from airbyte_agent_zendesk_talk.models import ZendeskTalkApiTokenAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_talk import ZendeskTalkConnector
+from airbyte_agent_sdk.connectors.zendesk_talk.models import ZendeskTalkApiTokenAuthConfig
 
 connector = ZendeskTalkConnector(
     auth_config=ZendeskTalkApiTokenAuthConfig(
@@ -89,7 +89,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Zendesk-Talk",
     "name": "My Zendesk-Talk Connector",
     "credentials": {
@@ -115,7 +115,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Zendesk-Talk") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -126,7 +126,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Zendesk-Talk",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -169,7 +169,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Zendesk-Talk",
     "name": "My Zendesk-Talk Connector",
     "credentials": {
@@ -190,11 +190,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_zendesk_talk import ZendeskTalkConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_talk import ZendeskTalkConnector, AirbyteAuthConfig
 
 connector = ZendeskTalkConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
