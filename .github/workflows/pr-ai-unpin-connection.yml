@@ -1,4 +1,4 @@
-name: PR unpin connections on merge
+name: PR unpin connection on merge
 on: workflow_dispatch
 #  workflow_dispatch:
 #    inputs:
