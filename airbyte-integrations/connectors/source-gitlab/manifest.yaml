@@ -1,4 +1,4 @@
-version: 6.56.7
+version: 6.56.8
 type: DeclarativeSource
 
 
@@ -125,8 +125,8 @@ spec:
         description: Number of concurrent threads for syncing. Higher values can speed
           up syncs but may hit rate limits. Adjust based on your GitLab instance
           rate limits.
-        default: 8
-        minimum: 2
+        default: 4
+        minimum: 1
         maximum: 25
         order: 5
   advanced_auth:
@@ -896,48 +896,48 @@ definitions:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    # Members endpoints: 200 requests/min (most restrictive)
+    # Members endpoints: 200 requests/min — budget set to 140 (70 % safety margin)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 200
+        - limit: 140
           interval: PT1M
       matchers:
         - method: GET
           url_path_pattern: "/members"
-    # GET /groups (list) and /descendant_groups: 200 requests/min
+    # GET /groups (list) and /descendant_groups: 200 requests/min — budget 140
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 200
+        - limit: 140
           interval: PT1M
       matchers:
         - method: GET
           url_path_pattern: "^groups$"
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 200
+        - limit: 140
           interval: PT1M
       matchers:
         - method: GET
           url_path_pattern: "/descendant_groups$"
-    # GET /groups/:id and GET /projects/:id: 400 requests/min
+    # GET /groups/:id and GET /projects/:id: 400 requests/min — budget 280
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 400
+        - limit: 280
           interval: PT1M
       matchers:
         - method: GET
           url_path_pattern: "^groups/[^/]+$"
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 400
+        - limit: 280
           interval: PT1M
       matchers:
         - method: GET
           url_path_pattern: "^projects/[^/]+$"
-    # Catch-all: 2,000 requests/min for all other authenticated API traffic
+    # Catch-all: 2,000 requests/min — budget 1,400 (70 % safety margin)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 2000
+        - limit: 1400
           interval: PT1M
       matchers: []
   ratelimit_reset_header: "RateLimit-Reset"
@@ -946,7 +946,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 8) }}"
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 25
 
 streams:
