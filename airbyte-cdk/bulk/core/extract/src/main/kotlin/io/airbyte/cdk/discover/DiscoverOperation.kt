@@ -28,7 +28,7 @@ class DiscoverOperation(
                 listOf<String?>(null) + metadataQuerier.streamNamespaces()
             for (namespace in namespaces) {
                 for (streamID in metadataQuerier.streamNames(namespace)) {
-                    val fields: List<Field> = metadataQuerier.fields(streamID)
+                    val fields: List<EmittedField> = metadataQuerier.fields(streamID)
                     if (fields.isEmpty()) {
                         log.info {
                             "Ignoring stream '${streamID.name}' in '${namespace ?: ""}' because no fields were discovered."

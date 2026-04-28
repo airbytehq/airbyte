@@ -15,18 +15,22 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Harvest OAuth2 access token |
+| `client_id` | `str` | Yes | N/A |
+| `client_secret` | `str` | Yes | N/A |
+| `refresh_token` | `str` | Yes | Your Harvest OAuth2 refresh token |
 | `account_id` | `str` | Yes | Your Harvest account ID |
 
 Example request:
 
 ```python
-from airbyte_agent_harvest import HarvestConnector
-from airbyte_agent_harvest.models import HarvestOauth20AuthConfig
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestOauth20AuthConfig
 
 connector = HarvestConnector(
     auth_config=HarvestOauth20AuthConfig(
-        access_token="<Your Harvest OAuth2 access token>",
+        client_id="<client_id>",
+        client_secret="<client_secret>",
+        refresh_token="<Your Harvest OAuth2 refresh token>",
         account_id="<Your Harvest account ID>"
     )
 )
@@ -44,8 +48,8 @@ connector = HarvestConnector(
 Example request:
 
 ```python
-from airbyte_agent_harvest import HarvestConnector
-from airbyte_agent_harvest.models import HarvestPersonalAccessTokenAuthConfig
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
 
 connector = HarvestConnector(
     auth_config=HarvestPersonalAccessTokenAuthConfig(
@@ -67,7 +71,9 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Harvest OAuth2 access token |
+| `client_id` | `str` | Yes | N/A |
+| `client_secret` | `str` | Yes | N/A |
+| `refresh_token` | `str` | Yes | Your Harvest OAuth2 refresh token |
 | `account_id` | `str` | Yes | Your Harvest account ID |
 
 `replication_config` fields you need:
@@ -83,11 +89,13 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Harvest",
     "name": "My Harvest Connector",
     "credentials": {
-      "access_token": "<Your Harvest OAuth2 access token>",
+      "client_id": "<client_id>",
+      "client_secret": "<client_secret>",
+      "refresh_token": "<Your Harvest OAuth2 refresh token>",
       "account_id": "<Your Harvest account ID>"
     },
     "replication_config": {
@@ -107,7 +115,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Harvest") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -118,7 +126,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Harvest",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -161,7 +169,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Harvest",
     "name": "My Harvest Connector",
     "credentials": {
@@ -181,12 +189,29 @@ If your Airbyte client can access multiple organizations, include `organization_
 
 **Python SDK**
 
+The `connect()` factory returns a fully typed `HarvestConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_harvest import HarvestConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = HarvestConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"

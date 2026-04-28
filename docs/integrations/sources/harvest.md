@@ -4,7 +4,11 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+- A Harvest account
+- Your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/)
+- One of the following authentication methods:
+  - **OAuth** (Airbyte Cloud): A Harvest developer application with a Client ID, Client Secret, and Refresh Token
+  - **Personal Access Token** (Airbyte Open Source): A [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens) created in the Developers section of Harvest ID
 
 ## Setup guide
 
@@ -38,14 +42,14 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 
 ## Supported sync modes
 
-The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
 - [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
@@ -82,7 +86,20 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
+The connector is restricted by [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting). Harvest enforces two separate rate limits:
+
+- **General API requests**: 100 requests per 15 seconds
+- **Reports API requests**: 100 requests per 15 minutes
+
+The connector automatically enforces these limits using a built-in HTTP API budget and retries throttled requests using the `Retry-After` header provided by the API.
+
+You can configure the number of concurrent workers using the **Number of Concurrent Workers** field. Higher values can speed up syncs but increase API rate limit usage. The default is 4 workers, and the maximum is 10. Adjust this based on whether other applications share your Harvest API quota.
+
+Report streams (Expense Reports, Time Reports, Uninvoiced Report, and Project Budget Report) retrieve data in 365-day date windows. For accounts with a long history, initial syncs of these streams may take longer.
+
+## Limitations and troubleshooting
+
+This connector uses Harvest's granular permission model. If your credentials lack access to a specific resource, the corresponding stream produces zero records instead of failing the sync. If a stream returns no data, verify that your Harvest user has the required permissions for that resource.
 
 ## Changelog
 
@@ -91,6 +108,14 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.35 | 2026-04-28 | [75371](https://github.com/airbytehq/airbyte/pull/75371) | Update dependencies |
+| 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
+| 1.2.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 1.2.32 | 2026-04-10 | [76247](https://github.com/airbytehq/airbyte/pull/76247) | Promoted release candidate to GA |
+| 1.2.32-rc.4 | 2026-04-08 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added configurable concurrency level with `num_workers` parameter and HTTP API budget rate limiting |
+| 1.2.32-rc.4 | 2026-03-27 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added configurable concurrency level with `num_workers` parameter and HTTP API budget rate limiting |
+| 1.2.32-rc.1 | 2026-03-24 | [75409](https://github.com/airbytehq/airbyte/pull/75409) | Test dev image of source-declarative-manifest (7.13.0.post6.dev23497311155) |
+| 1.2.31 | 2026-03-10 | [74687](https://github.com/airbytehq/airbyte/pull/74687) | Update dependencies |
 | 1.2.30 | 2026-02-24 | [73930](https://github.com/airbytehq/airbyte/pull/73930) | Update dependencies |
 | 1.2.29 | 2026-02-10 | [73113](https://github.com/airbytehq/airbyte/pull/73113) | Update dependencies |
 | 1.2.28 | 2026-02-03 | [72645](https://github.com/airbytehq/airbyte/pull/72645) | Update dependencies |

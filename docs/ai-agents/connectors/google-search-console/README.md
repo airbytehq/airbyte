@@ -35,7 +35,7 @@ The Google-Search-Console connector isn't currently able to handle prompts like 
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-google-search-console
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -47,8 +47,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_google_search_console import GoogleSearchConsoleConnector
-from airbyte_agent_google_search_console.models import GoogleSearchConsoleAuthConfig
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+from airbyte_agent_sdk.connectors.google_search_console.models import GoogleSearchConsoleAuthConfig
 
 connector = GoogleSearchConsoleConnector(
     auth_config=GoogleSearchConsoleAuthConfig(
@@ -71,12 +71,29 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
+The `connect()` factory returns a fully typed `GoogleSearchConsoleConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_google_search_console import GoogleSearchConsoleConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+
+connector = connect("google-search-console", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GoogleSearchConsoleConnector.tool_utils
+async def google_search_console_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = GoogleSearchConsoleConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -97,14 +114,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Sites | [List](./REFERENCE.md#sites-list), [Get](./REFERENCE.md#sites-get), [Search](./REFERENCE.md#sites-search) |
-| Sitemaps | [List](./REFERENCE.md#sitemaps-list), [Get](./REFERENCE.md#sitemaps-get), [Search](./REFERENCE.md#sitemaps-search) |
-| Search Analytics By Date | [List](./REFERENCE.md#search-analytics-by-date-list), [Search](./REFERENCE.md#search-analytics-by-date-search) |
-| Search Analytics By Country | [List](./REFERENCE.md#search-analytics-by-country-list), [Search](./REFERENCE.md#search-analytics-by-country-search) |
-| Search Analytics By Device | [List](./REFERENCE.md#search-analytics-by-device-list), [Search](./REFERENCE.md#search-analytics-by-device-search) |
-| Search Analytics By Page | [List](./REFERENCE.md#search-analytics-by-page-list), [Search](./REFERENCE.md#search-analytics-by-page-search) |
-| Search Analytics By Query | [List](./REFERENCE.md#search-analytics-by-query-list), [Search](./REFERENCE.md#search-analytics-by-query-search) |
-| Search Analytics All Fields | [List](./REFERENCE.md#search-analytics-all-fields-list), [Search](./REFERENCE.md#search-analytics-all-fields-search) |
+| Sites | [List](./REFERENCE.md#sites-list), [Get](./REFERENCE.md#sites-get), [Context Store Search](./REFERENCE.md#sites-context-store-search) |
+| Sitemaps | [List](./REFERENCE.md#sitemaps-list), [Get](./REFERENCE.md#sitemaps-get), [Context Store Search](./REFERENCE.md#sitemaps-context-store-search) |
+| Search Analytics By Date | [List](./REFERENCE.md#search-analytics-by-date-list), [Context Store Search](./REFERENCE.md#search-analytics-by-date-context-store-search) |
+| Search Analytics By Country | [List](./REFERENCE.md#search-analytics-by-country-list), [Context Store Search](./REFERENCE.md#search-analytics-by-country-context-store-search) |
+| Search Analytics By Device | [List](./REFERENCE.md#search-analytics-by-device-list), [Context Store Search](./REFERENCE.md#search-analytics-by-device-context-store-search) |
+| Search Analytics By Page | [List](./REFERENCE.md#search-analytics-by-page-list), [Context Store Search](./REFERENCE.md#search-analytics-by-page-context-store-search) |
+| Search Analytics By Query | [List](./REFERENCE.md#search-analytics-by-query-list), [Context Store Search](./REFERENCE.md#search-analytics-by-query-context-store-search) |
+| Search Analytics All Fields | [List](./REFERENCE.md#search-analytics-all-fields-list), [Context Store Search](./REFERENCE.md#search-analytics-all-fields-context-store-search) |
 
 
 ### Authentication
@@ -117,7 +134,6 @@ See the official [Google-Search-Console API reference](https://developers.google
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.0
-- **Generated with Connector SDK commit SHA:** e50d6dd2afcab025208f4c255431a51c213a1c5c
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-search-console/CHANGELOG.md)
+- **Package version:** 1.0.3
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** unknown

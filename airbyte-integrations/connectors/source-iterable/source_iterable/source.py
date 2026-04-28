@@ -67,13 +67,16 @@ class SourceIterable(YamlDeclarativeSource):
         authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
         # end date is provided for integration tests only
         start_date, end_date = config["start_date"], config.get("end_date")
-        date_range = {"start_date": start_date, "end_date": end_date}
+        lookback_window = config.get("lookback_window", 5)
+        date_range = {"start_date": start_date, "end_date": end_date, "lookback_window": lookback_window}
+        # CampaignsMetrics extends IterableStream (not IterableExportStream) and does not accept lookback_window
+        campaigns_date_range = {"start_date": start_date, "end_date": end_date}
         region = config.get("region", "US")
 
         # TODO: migrate streams below to low code as slicer logic will be migrated to generator based
         streams.extend(
             [
-                CampaignsMetrics(authenticator=authenticator, region=region, **date_range),
+                CampaignsMetrics(authenticator=authenticator, region=region, **campaigns_date_range),
                 Templates(authenticator=authenticator, region=region, **date_range),
                 EmailBounce(authenticator=authenticator, region=region, **date_range),
                 EmailClick(authenticator=authenticator, region=region, **date_range),

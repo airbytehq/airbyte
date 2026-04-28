@@ -197,7 +197,11 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
     monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False, None)))
     with pytest.raises(AirbyteTracedException) as e:
         SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
-    assert str(e.value) == "No streams available. Please check permissions"
+    assert str(e.value) == (
+        "No streams available. Looks like your config for repositories or organizations is not valid."
+        " Please, check your permissions, names of repositories and organizations."
+        " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, workflow."
+    )
 
 
 def test_streams_page_size(rate_limit_mock_response, requests_mock):
