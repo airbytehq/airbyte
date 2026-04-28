@@ -160,6 +160,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |
 | 8.0.0 | 2026-04-22 | [75490](https://github.com/airbytehq/airbyte/pull/75490) | Use `date` field from API response as cursor and primary key for daily report streams instead of synthetic `reportDate`. Fixes ~96% data loss from incorrect deduplication. |
 | 7.3.19 | 2026-04-21 | [76501](https://github.com/airbytehq/airbyte/pull/76501) | Update dependencies |
 | 7.3.18 | 2026-04-15 | [76333](https://github.com/airbytehq/airbyte/pull/76333) | Fix cursorId pagination for all attribution report streams: ensure cursorId remains a string and stop pagination on null cursor |
