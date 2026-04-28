@@ -84,6 +84,7 @@ direction TB
 state NonTerminal {
     [*] --> pending
     pending
+    queued
     running
     incomplete
     note left of incomplete
@@ -97,7 +98,9 @@ note left of NonSuccess
     All Non Terminal Statuses can be transitioned to cancelled or failed
 end note
 
-pending --> running
+pending --> queued : capacity enforcement active,\nno capacity available
+pending --> running : capacity available
+queued --> running : capacity becomes available
 running --> incomplete
 incomplete --> running
 running --> succeeded
@@ -117,6 +120,18 @@ stateDiagram-v2
     running --> succeeded
     running --> failed
 ```
+
+### Queued state (Cloud Pro and Enterprise Flex)
+
+On capacity-based Cloud plans, the `queued` state is used when capacity enforcement is active and all committed data workers are in use. A job transitions from `pending` to `queued` when no capacity is available. The job stays in `queued` until capacity frees up, at which point it transitions to `running`.
+
+A queued job is cancelled if:
+
+- The connection is modified, cancelled, deleted, or reset.
+- The next scheduled sync for that connection arrives. The newer sync replaces the queued one.
+- Eight hours have elapsed and the connection uses a manual schedule type.
+
+Capacity enforcement applies only to sync jobs, not to check, discover, or spec operations. For more information, see [Monitor data worker usage](/platform/cloud/managing-airbyte-cloud/manage-data-workers).
 
 ### Attempts and Retries
 
