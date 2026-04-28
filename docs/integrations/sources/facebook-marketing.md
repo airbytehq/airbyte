@@ -216,11 +216,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_report_time">
-   6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
-
-      - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
-      - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
-      - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
+   6. **Action Report Time** is deprecated and hidden from the UI since v3.5.0. The value defaults to `mixed`. If you previously configured this field through the API, your setting is preserved.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
@@ -457,7 +453,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |
-| 5.2.10 | 2026-04-24 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
+| 5.2.10 | 2026-04-27 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
 | 5.2.9 | 2026-04-24 | [76995](https://github.com/airbytehq/airbyte/pull/76995) | Fix TypeError crash when Facebook API returns error response with no message body |
 | 5.2.8 | 2026-04-24 | [76996](https://github.com/airbytehq/airbyte/pull/76996) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
 | 5.2.7 | 2026-04-23 | [76951](https://github.com/airbytehq/airbyte/pull/76951) | Promoted release candidate to GA |
