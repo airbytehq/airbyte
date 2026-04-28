@@ -39,7 +39,7 @@ def _make_report(
         "processingStatus": status,
         "dataStartTime": start_time,
         "dataEndTime": end_time,
-        "marketplaceIds": marketplace_ids or ["ATVPDKIKX0DER"],
+        "marketplaceIds": marketplace_ids if marketplace_ids is not None else ["ATVPDKIKX0DER"],
     }
     if created_time:
         report["createdTime"] = created_time
@@ -75,187 +75,83 @@ class TestDateRangesMatch:
     """Tests for ReportCreationRequester._date_ranges_match static method."""
 
     def test_matching_dates(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-            )
-            is True
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="2023-01-30T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is True
 
     def test_matching_dates_with_same_instant_different_timezones(self):
         """Same instant expressed in different timezones should match."""
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T05:00:00+05:00",
-                "2023-01-30T05:00:00+05:00",
-            )
-            is True
-        )
+        report = _make_report(start_time="2023-01-01T05:00:00+05:00", end_time="2023-01-30T05:00:00+05:00")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is True
 
     def test_non_matching_times_on_same_date(self):
         """Same date but different time-of-day should not match."""
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T12:00:00+00:00",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="2023-01-30T12:00:00+00:00")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is False
 
     def test_non_matching_start_date(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "2023-01-02T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-02T00:00:00Z", end_time="2023-01-30T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is False
 
     def test_non_matching_end_date(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T00:00:00Z",
-                "2023-01-31T00:00:00Z",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="2023-01-31T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is False
 
     def test_empty_report_start(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "",
-                "2023-01-30T00:00:00Z",
-            )
-            is False
-        )
+        report = _make_report(start_time="", end_time="2023-01-30T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is False
 
     def test_empty_report_end(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T00:00:00Z",
-                "",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z", report) is False
 
     def test_empty_requested_start(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="2023-01-30T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("", "2023-01-30T00:00:00Z", report) is False
 
     def test_empty_requested_end(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "2023-01-01T00:00:00Z",
-                "",
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="2023-01-30T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("2023-01-01T00:00:00Z", "", report) is False
 
     def test_invalid_date_format(self):
-        assert (
-            ReportCreationRequester._date_ranges_match(
-                "not-a-date",
-                "2023-01-30T00:00:00Z",
-                "2023-01-01T00:00:00Z",
-                "2023-01-30T00:00:00Z",
-            )
-            is False
-        )
+        report = _make_report(start_time="2023-01-01T00:00:00Z", end_time="2023-01-30T00:00:00Z")
+        assert ReportCreationRequester._date_ranges_match("not-a-date", "2023-01-30T00:00:00Z", report) is False
 
 
 class TestMarketplaceIdsMatch:
     """Tests for ReportCreationRequester._marketplace_ids_match static method."""
 
     def test_matching_single_marketplace(self):
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                ["ATVPDKIKX0DER"],
-                ["ATVPDKIKX0DER"],
-            )
-            is True
-        )
+        report = _make_report(marketplace_ids=["ATVPDKIKX0DER"])
+        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is True
 
     def test_matching_multiple_marketplaces(self):
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-            )
-            is True
-        )
+        report = _make_report(marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"])
+        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"], report) is True
 
     def test_matching_different_order(self):
         """Order shouldn't matter — sets should be compared."""
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                ["A2EUQ1WTGCTBG2", "ATVPDKIKX0DER"],
-                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-            )
-            is True
-        )
+        report = _make_report(marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"])
+        assert ReportCreationRequester._marketplace_ids_match(["A2EUQ1WTGCTBG2", "ATVPDKIKX0DER"], report) is True
 
     def test_non_matching_marketplace(self):
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                ["ATVPDKIKX0DER"],
-                ["A2EUQ1WTGCTBG2"],
-            )
-            is False
-        )
+        report = _make_report(marketplace_ids=["A2EUQ1WTGCTBG2"])
+        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is False
 
     def test_empty_requested(self):
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                [],
-                ["ATVPDKIKX0DER"],
-            )
-            is False
-        )
+        report = _make_report(marketplace_ids=["ATVPDKIKX0DER"])
+        assert ReportCreationRequester._marketplace_ids_match([], report) is False
 
     def test_empty_report(self):
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                ["ATVPDKIKX0DER"],
-                [],
-            )
-            is False
-        )
+        report = _make_report(marketplace_ids=[])
+        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is False
 
     def test_both_empty(self):
-        assert ReportCreationRequester._marketplace_ids_match([], []) is False
+        report = _make_report(marketplace_ids=[])
+        assert ReportCreationRequester._marketplace_ids_match([], report) is False
 
     def test_subset_does_not_match(self):
-        assert (
-            ReportCreationRequester._marketplace_ids_match(
-                ["ATVPDKIKX0DER"],
-                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-            )
-            is False
-        )
+        report = _make_report(marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"])
+        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is False
 
 
 class TestBuildSyntheticResponse:

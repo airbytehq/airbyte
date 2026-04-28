@@ -685,13 +685,10 @@ class ReportCreationRequester(HttpRequester):
         best_created_time = None
 
         for report in reports:
-            report_start = report.get("dataStartTime", "")
-            report_end = report.get("dataEndTime", "")
-            report_marketplace_ids = report.get("marketplaceIds", [])
-            if not self._marketplace_ids_match(requested_marketplace_ids, report_marketplace_ids):
+            if not self._marketplace_ids_match(requested_marketplace_ids, report):
                 continue
 
-            if not self._date_ranges_match(requested_start, requested_end, report_start, report_end):
+            if not self._date_ranges_match(requested_start, requested_end, report):
                 continue
 
             if not self._is_report_fresh(report, report_type, self.config):
@@ -772,12 +769,13 @@ class ReportCreationRequester(HttpRequester):
     @staticmethod
     def _marketplace_ids_match(
         requested_marketplace_ids: List[str],
-        report_marketplace_ids: List[str],
+        report: Dict[str, Any],
     ) -> bool:
         """
         Check if the marketplace IDs from the creation request match those of an existing report.
-        Both are lists of marketplace ID strings. We compare as sorted sets to handle ordering differences.
+        Extracts marketplaceIds from the report and compares as sorted sets to handle ordering differences.
         """
+        report_marketplace_ids = report.get("marketplaceIds", [])
         if not requested_marketplace_ids or not report_marketplace_ids:
             return False
         return sorted(requested_marketplace_ids) == sorted(report_marketplace_ids)
@@ -786,15 +784,17 @@ class ReportCreationRequester(HttpRequester):
     def _date_ranges_match(
         requested_start: str,
         requested_end: str,
-        report_start: str,
-        report_end: str,
+        report: Dict[str, Any],
     ) -> bool:
         """
         Compare requested date range with a report's date range.
+        Extracts dataStartTime/dataEndTime from the report.
         Both sides use ISO 8601 format from the Amazon SP-API.
         We compare full datetime values (including hours, minutes, seconds)
         to ensure exact match of the requested time range.
         """
+        report_start = report.get("dataStartTime", "")
+        report_end = report.get("dataEndTime", "")
         if not report_start or not report_end:
             return False
         try:
