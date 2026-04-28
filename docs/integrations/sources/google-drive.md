@@ -324,6 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.16 | 2026-04-28 | [77266](https://github.com/airbytehq/airbyte/pull/77266) | Update dependencies |
 | 0.5.15 | 2026-04-21 | [76611](https://github.com/airbytehq/airbyte/pull/76611) | Update dependencies |
 | 0.5.14 | 2026-03-31 | [75573](https://github.com/airbytehq/airbyte/pull/75573) | Migrate OAuth scope to scopes object array for granular scopes support |
 | 0.5.13 | 2026-03-31 | [75368](https://github.com/airbytehq/airbyte/pull/75368) | Update dependencies |

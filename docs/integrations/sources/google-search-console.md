@@ -244,6 +244,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.10.33 | 2026-04-28 | [77276](https://github.com/airbytehq/airbyte/pull/77276) | Update dependencies |
 | 1.10.32 | 2026-04-21 | [76624](https://github.com/airbytehq/airbyte/pull/76624) | Update dependencies |
 | 1.10.31 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 1.10.30 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |

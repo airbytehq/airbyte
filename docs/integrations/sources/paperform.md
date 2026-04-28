@@ -24,6 +24,7 @@ Airbyte connector for [Paperform](https://paperform.co/) enables seamless data i
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-04-28 | [77388](https://github.com/airbytehq/airbyte/pull/77388) | Update dependencies |
 | 0.0.46 | 2026-04-21 | [76728](https://github.com/airbytehq/airbyte/pull/76728) | Update dependencies |
 | 0.0.45 | 2026-03-17 | [74956](https://github.com/airbytehq/airbyte/pull/74956) | Update dependencies |
 | 0.0.44 | 2026-03-03 | [74236](https://github.com/airbytehq/airbyte/pull/74236) | Update dependencies |
