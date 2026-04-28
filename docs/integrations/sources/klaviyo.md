@@ -38,6 +38,11 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
+5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
+7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
+8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
+9. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -78,6 +83,8 @@ Both streams partition data by conversion metric. By default, the connector fetc
 :::warning
 These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exceed the daily rate limit. Specify only the conversion metrics you need using the **Conversion Metric ID(s)** field.
 :::
+
+Not all Klaviyo metrics support conversion value queries. For example, metrics without a `$value` property cannot be queried for values data. The connector automatically skips these unsupported metrics and continues syncing the remaining ones. If you see fewer results than expected, verify that your selected metrics support values data in Klaviyo.
 
 To find your conversion metric IDs:
 
@@ -121,10 +128,9 @@ contain the `predictive_analytics` field, and workflows depending on this field 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.17.5 | 2026-04-16 | [75180](https://github.com/airbytehq/airbyte/pull/75180) | Restore `subscriptions` data to the `profiles` stream, fixing a regression introduced in v2.16.0 where subscription and consent data was no longer fetched from the Klaviyo API |
-| 2.17.7 | 2026-04-24 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
+| 2.17.7 | 2026-04-25 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
 | 2.17.6 | 2026-04-21 | [75707](https://github.com/airbytehq/airbyte/pull/75707) | Update dependencies |
-| 2.17.5 | 2026-04-15 | [75180](https://github.com/airbytehq/airbyte/pull/75180) | Restore `subscriptions` field to profiles stream `additional-fields[profile]` parameter, fixing a regression introduced in v2.16.x where the subscriptions data was no longer fetched from the Klaviyo API |
+| 2.17.5 | 2026-04-16 | [75180](https://github.com/airbytehq/airbyte/pull/75180) | Restore `subscriptions` field to profiles stream `additional-fields[profile]` parameter, fixing a regression introduced in v2.16.x where the subscriptions data was no longer fetched from the Klaviyo API |
 | 2.17.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 2.17.3 | 2026-03-17 | [74995](https://github.com/airbytehq/airbyte/pull/74995) | Update dependencies |
 | 2.17.2 | 2026-03-10 | [74435](https://github.com/airbytehq/airbyte/pull/74435) | Update dependencies |
@@ -145,9 +151,9 @@ contain the `predictive_analytics` field, and workflows depending on this field 
 | 2.16.3 | 2025-10-07 | [67517](https://github.com/airbytehq/airbyte/pull/67517) | Update dependencies |
 | 2.16.2 | 2025-09-30 | [66643](https://github.com/airbytehq/airbyte/pull/66643) | Update dependencies |
 | 2.16.1 | 2025-09-09 | [66070](https://github.com/airbytehq/airbyte/pull/66070) | Update dependencies |
-| 2.16.0 | 2025-09-08 | [65990](https://github.com/airbytehq/airbyte/pull/65990)   | Revert the v2.15.0 change, which caused `subscriptions` data to stop being fetched on the `profiles` stream (fixed in v2.17.5)                                           |
-| 2.15.0 | 2025-09-07 | [65935](https://github.com/airbytehq/airbyte/pull/65935)   | Fetch `subscriptions` data on the `profiles` stream                                                                                                                    |
-| 2.14.22 | 2025-08-25 | [65509](https://github.com/airbytehq/airbyte/pull/65509)       | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component                                                                       |\
+| 2.16.0 | 2025-09-08 | [65990](https://github.com/airbytehq/airbyte/pull/65990) | Revert the v2.15.0 change, which caused `subscriptions` data to stop being fetched on the `profiles` stream (fixed in v2.17.5) |
+| 2.15.0 | 2025-09-07 | [65935](https://github.com/airbytehq/airbyte/pull/65935) | Fetch `subscriptions` data on the `profiles` stream |
+| 2.14.22 | 2025-08-25 | [65509](https://github.com/airbytehq/airbyte/pull/65509) | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component |
 | 2.14.21 | 2025-08-23 | [65317](https://github.com/airbytehq/airbyte/pull/65317)   | Update dependencies                                                                                                                                                    |
 | 2.14.20 | 2025-08-09 | [64618](https://github.com/airbytehq/airbyte/pull/64618)   | Update dependencies                                                                                                                                                    |
 | 2.14.19 | 2025-08-02 | [64210](https://github.com/airbytehq/airbyte/pull/64210)   | Update dependencies                                                                                                                                                    |

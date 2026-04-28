@@ -103,6 +103,7 @@ The connector handles rate limiting automatically by retrying requests when a `4
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
+| 0.2.0-rc.1 | 2026-04-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | set default_concurrency=4 for concurrency tuning iteration 1 (Path A, max_rate_limit=5 req/s) |
 | 0.1.3 | 2026-04-21 | [76632](https://github.com/airbytehq/airbyte/pull/76632) | Update dependencies |
 | 0.1.2 | 2026-03-31 | [75737](https://github.com/airbytehq/airbyte/pull/75737) | Update dependencies |
 | 0.1.1 | 2026-03-24 | [75353](https://github.com/airbytehq/airbyte/pull/75353) | Update dependencies |

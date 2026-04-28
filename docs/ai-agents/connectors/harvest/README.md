@@ -74,8 +74,25 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
+The `connect()` factory returns a fully typed `HarvestConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = HarvestConnector(
     auth_config=AirbyteAuthConfig(

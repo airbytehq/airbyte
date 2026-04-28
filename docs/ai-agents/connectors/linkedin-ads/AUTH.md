@@ -130,8 +130,25 @@ If your Airbyte client can access multiple organizations, include `organization_
 
 **Python SDK**
 
+The `connect()` factory returns a fully typed `LinkedinAdsConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+
+connector = connect("linkedin-ads", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = LinkedinAdsConnector(
     auth_config=AirbyteAuthConfig(

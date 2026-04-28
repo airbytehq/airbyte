@@ -95,8 +95,25 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
+The `connect()` factory returns a fully typed `SlackConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_sdk.connectors.slack import SlackConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+
+connector = connect("slack", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@SlackConnector.tool_utils
+async def slack_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = SlackConnector(
     auth_config=AirbyteAuthConfig(

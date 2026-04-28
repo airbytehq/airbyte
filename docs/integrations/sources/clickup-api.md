@@ -58,6 +58,7 @@ Here are some optional fields:
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
 | 0.4.0 | 2026-04-27 | | feat(source-clickup-api): add incremental sync for task stream via `date_updated_gt` API filter |
+| 0.3.47 | 2026-04-28 | [77210](https://github.com/airbytehq/airbyte/pull/77210) | Update dependencies |
 | 0.3.46 | 2026-04-21 | [76539](https://github.com/airbytehq/airbyte/pull/76539) | Update dependencies |
 | 0.3.45 | 2026-03-31 | [75750](https://github.com/airbytehq/airbyte/pull/75750) | Update dependencies |
 | 0.3.44 | 2026-03-17 | [75076](https://github.com/airbytehq/airbyte/pull/75076) | Update dependencies |

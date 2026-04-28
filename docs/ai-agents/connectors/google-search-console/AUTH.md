@@ -136,8 +136,25 @@ If your Airbyte client can access multiple organizations, include `organization_
 
 **Python SDK**
 
+The `connect()` factory returns a fully typed `GoogleSearchConsoleConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+
+connector = connect("google-search-console", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@GoogleSearchConsoleConnector.tool_utils
+async def google_search_console_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.google_search_console import GoogleSearchConsoleConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = GoogleSearchConsoleConnector(
     auth_config=AirbyteAuthConfig(
