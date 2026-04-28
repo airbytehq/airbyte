@@ -1,6 +1,7 @@
 ---
 sidebar_position: 3
 sidebar_label: Developer Quickstart
+description: Build agents that use Airbyte connectors. Pick a tutorial or install a skill for your coding agent.
 ---
 
 # Developer Quickstart
