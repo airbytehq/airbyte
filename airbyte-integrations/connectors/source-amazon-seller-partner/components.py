@@ -701,34 +701,12 @@ class ReportCreationRequester(HttpRequester):
             if not self._date_ranges_match(requested_start, requested_end, report_start, report_end):
                 continue
 
-            # Check createdTime freshness for DONE reports.
-            # When max_done_report_age_hours is 0 (default), DONE reports are never reused.
-            report_status = report.get("processingStatus", "")
-            created_time_str = report.get("createdTime", "")
-            if report_status == "DONE":
-                if max_done_report_age_hours == 0:
-                    report_id = report.get("reportId", "")
-                    logger.info(
-                        f"Skipping DONE report {report_id} for {report_type} "
-                        f"because max_done_report_age_hours is 0 (always create new reports)."
-                    )
-                    continue
-                if created_time_str:
-                    try:
-                        created_time = ab_datetime_parse(created_time_str)
-                        age_hours = (now - created_time).total_seconds() / 3600
-                        if age_hours > max_done_report_age_hours:
-                            report_id = report.get("reportId", "")
-                            logger.info(
-                                f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
-                                f"for {report_type}. Will look for a newer one."
-                            )
-                            continue
-                    except (ValueError, TypeError):
-                        pass  # If we can't parse createdTime, don't skip — still usable
+            if not self._is_report_fresh(report, report_type, max_done_report_age_hours, now):
+                continue
 
             # Parse createdTime to compare candidates
             report_created_time = None
+            created_time_str = report.get("createdTime", "")
             if created_time_str:
                 try:
                     report_created_time = ab_datetime_parse(created_time_str)
@@ -754,6 +732,48 @@ class ReportCreationRequester(HttpRequester):
             return self._build_synthetic_response(best_candidate, get_response)
 
         return None
+
+    @staticmethod
+    def _is_report_fresh(
+        report: Dict[str, Any],
+        report_type: str,
+        max_done_report_age_hours: int,
+        now: Any,
+    ) -> bool:
+        """
+        Check whether a DONE report is fresh enough to reuse.
+
+        When max_done_report_age_hours is 0 (default), DONE reports are never reused —
+        only IN_QUEUE / IN_PROGRESS reports pass through.
+        When max_done_report_age_hours > 0, DONE reports older than that threshold are skipped.
+        Non-DONE reports (IN_QUEUE, IN_PROGRESS, etc.) are always considered fresh.
+        """
+        report_status = report.get("processingStatus", "")
+        if report_status != "DONE":
+            return True
+
+        report_id = report.get("reportId", "")
+        if max_done_report_age_hours == 0:
+            logger.info(
+                f"Skipping DONE report {report_id} for {report_type} because max_done_report_age_hours is 0 (always create new reports)."
+            )
+            return False
+
+        created_time_str = report.get("createdTime", "")
+        if created_time_str:
+            try:
+                created_time = ab_datetime_parse(created_time_str)
+                age_hours = (now - created_time).total_seconds() / 3600
+                if age_hours > max_done_report_age_hours:
+                    logger.info(
+                        f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
+                        f"for {report_type}. Will look for a newer one."
+                    )
+                    return False
+            except (ValueError, TypeError):
+                pass  # If we can't parse createdTime, don't skip — still usable
+
+        return True
 
     @staticmethod
     def _marketplace_ids_match(
