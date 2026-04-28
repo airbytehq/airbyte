@@ -5,6 +5,7 @@ on:
 
 jobs:
   ai-unpin:
+    runs-on: ubuntu-latest
     name: AI Unpin Connections
     steps:
       - name: No-op
