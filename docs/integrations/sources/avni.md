@@ -54,6 +54,7 @@ avirajsingh7 marked this conversation as resolved.
 
 | Version | Date | Pull Request | Subject |
 | 0.1.1 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock version |
+| 0.1.2 | 2026-04-28 | [65044](https://github.com/airbytehq/airbyte/pull/65044) | Update dependencies |
 | 0.1.0 | 2023-09-07 | [30222](https://github.com/airbytehq/airbyte/pull/30222) | Avni Source Connector |
 
 </details>
