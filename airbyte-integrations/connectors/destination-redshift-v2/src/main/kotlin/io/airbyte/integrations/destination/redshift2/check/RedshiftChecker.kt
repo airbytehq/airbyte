@@ -4,21 +4,23 @@
 
 package io.airbyte.integrations.destination.redshift2.check
 
-import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftDataType
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
@@ -26,7 +28,7 @@ import java.sql.SQLException
 import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.zip.GZIPOutputStream
-import javax.sql.DataSource
+import kotlinx.coroutines.runBlocking
 
 private val log = KotlinLogging.logger {}
 
@@ -49,10 +51,8 @@ private const val CHECK_ALTER_COLUMN_NAME = "_airbyte_check_alter"
  */
 @Singleton
 class RedshiftChecker(
-    private val dataSource: DataSource,
+    private val client: RedshiftAirbyteClient,
     private val configuration: RedshiftConfiguration,
-    private val s3Client: AmazonS3,
-    private val sqlGenerator: RedshiftSqlGenerator,
 ) : DestinationChecker {
 
     private var s3Key: String? = null
@@ -69,20 +69,26 @@ class RedshiftChecker(
         s3Key = buildS3TestKey(testId)
 
         try {
-            testRedshiftConnection()
-            testCreateTable(tableName!!)
+            runBlocking {
+                testRedshiftConnection()
+                testCreateTable(tableName!!)
 
-            testS3WriteAccess(s3Key!!, rawId)
-            testCopyFromS3(tableName!!, s3Key!!)
+                testS3WriteAccess(s3Key!!, rawId)
+                testCopyFromS3(tableName!!, s3Key!!)
 
-            testAlterTable(tableName!!)
+                testAlterTable(tableName!!)
 
-            testDeleteRow(tableName!!, rawId)
-            testS3Cleanup(s3Key!!)
+                testDeleteRow(tableName!!, rawId)
+                testS3Cleanup(s3Key!!)
+            }
 
             log.info { "Redshift connection check completed successfully" }
         } catch (e: SQLException) {
             val errorMessage = buildErrorMessage(e)
+            log.error(e) { "Redshift connection check failed: $errorMessage" }
+            throw IllegalStateException(errorMessage, e)
+        } catch (e: AmazonServiceException) {
+            val errorMessage = e.errorMessage ?: e.message ?: "Unknown S3 error"
             log.error(e) { "Redshift connection check failed: $errorMessage" }
             throw IllegalStateException(errorMessage, e)
         } catch (e: Exception) {
@@ -91,18 +97,14 @@ class RedshiftChecker(
         }
     }
 
-    /** Best-effort cleanup of the S3 test object and Redshift test table */
+    /** Best-effort cleanup of the Redshift test table */
     override fun cleanup() {
         log.info { "Checker Cleaning up..." }
 
-        // Drop Redshift table
         try {
             val table = tableName
             if (table != null) {
-                val dropSql = sqlGenerator.dropTable(table)
-                dataSource.connection.use { conn ->
-                    conn.createStatement().use { stmt -> stmt.execute(dropSql) }
-                }
+                runBlocking { client.dropTable(table) }
                 log.info { "Cleaned up Redshift table: ${table.namespace}.${table.name}" }
             }
         } catch (e: Exception) {
@@ -114,22 +116,16 @@ class RedshiftChecker(
      * Validates JDBC connectivity, credentials, and network reachability by executing a query. This
      * exercises the full connection path: SSL, SSH tunnel (if configured),
      */
-    private fun testRedshiftConnection() {
+    private suspend fun testRedshiftConnection() {
         log.info {
             "Test 1: Check Redshift connectivity to " +
                 "${configuration.host}:${configuration.port}/${configuration.database}..."
         }
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                stmt.executeQuery("SELECT 1").use { rs ->
-                    require(rs.next()) { "Failed to execute basic query against Redshift" }
-                }
-            }
-        }
+        client.ping()
     }
 
     /** Uploads a gzip-compressed CSV file with one test row to S3. */
-    private fun testS3WriteAccess(s3Key: String, rawId: String) {
+    private suspend fun testS3WriteAccess(s3Key: String, rawId: String) {
         log.info { "Test 2: Check S3 write access..." }
         val s3Config = configuration.uploadingMethod!!
 
@@ -139,99 +135,59 @@ class RedshiftChecker(
                 contentLength = csvBytes.size.toLong()
                 contentType = "application/gzip"
             }
-        s3Client.putObject(
-            s3Config.s3BucketName,
-            s3Key,
-            ByteArrayInputStream(csvBytes),
-            metadata,
-        )
+        client.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes, metadata)
     }
 
     /**
      * Creates the test schema (if needed) and table in Redshift. The table has the standard Airbyte
      * meta columns plus one user column (`test_key`).
      */
-    private fun testCreateTable(tableName: TableName) {
+    private suspend fun testCreateTable(tableName: TableName) {
         log.info { "Test 3: Check CREATE access for ${tableName.namespace}.${tableName.name}..." }
-        val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
-        val createTableSql =
-            sqlGenerator.createTableForCheck(tableName, buildCheckTableSchema(tableName))
-
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                stmt.execute(createSchemaSql)
-                stmt.execute(createTableSql)
-            }
-        }
+        client.createNamespace(tableName.namespace)
+        client.createTable(
+            buildCheckStream(tableName),
+            tableName,
+            ColumnNameMapping(emptyMap()),
+            replace = false,
+        )
     }
 
     /** Executes the Redshift COPY command to load the gzip CSV from S3 into the test table */
-    private fun testCopyFromS3(tableName: TableName, s3Key: String) {
+    private suspend fun testCopyFromS3(tableName: TableName, s3Key: String) {
         log.info { "Test 4: Check COPY permission to move data from S3 to Redshift..." }
         val s3Config = configuration.uploadingMethod!!
         val s3Path = "s3://${s3Config.s3BucketName}/$s3Key"
 
-        val copySql =
-            sqlGenerator.copyFromS3(
-                tableName = tableName,
-                s3Path = s3Path,
-                accessKeyId = s3Config.accessKeyId,
-                secretAccessKey = s3Config.secretAccessKey,
-                region = s3Config.s3BucketRegion!!,
-            )
+        client.copyFromS3(
+            tableName = tableName,
+            s3Path = s3Path,
+            accessKeyId = s3Config.accessKeyId,
+            secretAccessKey = s3Config.secretAccessKey,
+            region = s3Config.s3BucketRegion!!,
+        )
 
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt -> stmt.execute(copySql) }
-        }
-
-        val countSql = sqlGenerator.countTable(tableName)
-
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                stmt.executeQuery(countSql).use { rs ->
-                    require(rs.next()) { "Failed to execute count query" }
-                    val count = rs.getLong(1)
-                    require(count == 1L) { "Expected 1 row in check table, found $count" }
-                }
-            }
-        }
+        val count = client.countTable(tableName)
+        require(count == 1L) { "Expected 1 row in check table, found $count" }
     }
 
     /** Tests ALTER TABLE permission by adding a throwaway column to the test table. */
-    private fun testAlterTable(tableName: TableName) {
+    private suspend fun testAlterTable(tableName: TableName) {
         log.info { "Test 5: Check ALTER TABLE permission..." }
-        val alterSql =
-            sqlGenerator.addColumn(
-                tableName,
-                CHECK_ALTER_COLUMN_NAME,
-                RedshiftDataType.VARCHAR.typeName,
-            )
-
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt -> stmt.execute(alterSql) }
-        }
+        client.addColumn(tableName, CHECK_ALTER_COLUMN_NAME, RedshiftDataType.VARCHAR.typeName)
     }
 
     /** Deletes the test row by its `_airbyte_raw_id` */
-    private fun testDeleteRow(tableName: TableName, rawId: String) {
+    private suspend fun testDeleteRow(tableName: TableName, rawId: String) {
         log.info { "Test 6: Check DELETE permission..." }
-        val deleteSql = sqlGenerator.deleteByRawId(tableName)
-
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(deleteSql).use { pstmt ->
-                pstmt.setString(1, rawId)
-                val deleted = pstmt.executeUpdate()
-                require(deleted == 1) { "Expected to delete 1 row, deleted $deleted" }
-            }
-        }
+        client.deleteByRawId(tableName, rawId)
     }
 
     /** Deletes the test S3 object to verify S3 delete permissions. */
-    private fun testS3Cleanup(s3Key: String) {
+    private suspend fun testS3Cleanup(s3Key: String) {
         log.info { "Test 7: Check S3 DELETE object permission..." }
         val s3Config = configuration.uploadingMethod!!
-        s3Client.deleteObject(s3Config.s3BucketName, s3Key)
-        log.info { "Cleaned up S3 object: $s3Key" }
+        client.deleteFromS3(s3Config.s3BucketName, s3Key)
     }
 
     /** Builds the S3 key for the test CSV file, respecting the configured bucket path prefix. */
@@ -245,30 +201,40 @@ class RedshiftChecker(
         return "${prefix}_airbyte_check_$testId.csv.gz"
     }
 
-    /** Builds a [StreamTableSchema] for the check table with one user column (`test_key`). */
-    private fun buildCheckTableSchema(tableName: TableName): StreamTableSchema =
-        StreamTableSchema(
-            tableNames =
-                TableNames(
-                    finalTableName = tableName,
-                    tempTableName = tableName,
-                ),
-            columnSchema =
-                ColumnSchema(
-                    inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
-                    finalSchema =
-                        mapOf(
-                            CHECK_COLUMN_NAME to ColumnType(RedshiftDataType.VARCHAR.typeName, true)
+    /** Builds a [DestinationStream] for the check table with one user column (`test_key`). */
+    private fun buildCheckStream(tableName: TableName): DestinationStream =
+        DestinationStream(
+            unmappedNamespace = tableName.namespace,
+            unmappedName = tableName.name,
+            generationId = 0L,
+            minimumGenerationId = 0L,
+            syncId = 0L,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames =
+                        TableNames(
+                            finalTableName = tableName,
+                            tempTableName = tableName,
                         ),
-                    inputSchema = emptyMap(),
+                    columnSchema =
+                        ColumnSchema(
+                            inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
+                            finalSchema =
+                                mapOf(
+                                    CHECK_COLUMN_NAME to
+                                        ColumnType(RedshiftDataType.VARCHAR.typeName, true)
+                                ),
+                            inputSchema = emptyMap(),
+                        ),
+                    importType = Append,
                 ),
-            importType = Append,
         )
 
     /**
      * Builds a gzip-compressed CSV byte array with a header row and one data row.
      *
-     * The columns match the table created by [buildCheckTableSchema]: `_airbyte_raw_id,
+     * The columns match the table created by [buildCheckStream]: `_airbyte_raw_id,
      * _airbyte_extracted_at, _airbyte_meta, _airbyte_generation_id, test_key`
      */
     private fun buildGzipCsv(rawId: String): ByteArray {

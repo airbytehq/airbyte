@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
 import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
@@ -145,8 +146,10 @@ class RedshiftCheckerTest {
     private fun buildChecker(
         config: RedshiftConfiguration,
         ds: HikariDataSource,
-    ): RedshiftChecker =
-        RedshiftChecker(ds, config, S3Connect(config).createS3Client(), sqlGenerator)
+    ): RedshiftChecker {
+        val client = RedshiftAirbyteClient(ds, sqlGenerator, S3Connect(config).createS3Client())
+        return RedshiftChecker(client, config)
+    }
 
     /**
      * Creates a [HikariDataSource] with 10-second timeouts (lower than real) for fast failure in
