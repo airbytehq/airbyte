@@ -24,10 +24,10 @@ def _create_jsonl_response(records: list[dict]) -> Response:
 @pytest.mark.parametrize(
     "status_code,expected_message_fragment",
     [
-        pytest.param(304, "Dataset is not ready, please contact infor member services", id="http_304_not_ready"),
-        pytest.param(202, "Dataset is not ready, try again later", id="http_202_not_ready"),
-        pytest.param(500, "Unexpected status code: 500", id="http_500_unexpected"),
-        pytest.param(403, "Unexpected status code: 403", id="http_403_unexpected"),
+        pytest.param(304, "Dataset is not ready, please contact Infor member services.", id="http_304_not_ready"),
+        pytest.param(202, "Dataset is not ready — try again later.", id="http_202_not_ready"),
+        pytest.param(500, "Unexpected status code 500. Please contact Infor member services.", id="http_500_unexpected"),
+        pytest.param(403, "Unexpected status code 403. Please contact Infor member services.", id="http_403_unexpected"),
     ],
 )
 def test_decode_error_status_raises_traced_exception(components_module, status_code, expected_message_fragment):
@@ -51,9 +51,8 @@ def test_decode_success_yields_records(components_module):
     result = list(decoder.decode(response))
 
     assert len(result) == 2
-    assert result[0]["raw_data"] == {"id": "1", "name": "test"}
-    assert result[1]["raw_data"] == {"id": "2", "name": "test2"}
-    assert "raw_data_string" in result[0]
+    assert result[0] == {"id": "1", "name": "test"}
+    assert result[1] == {"id": "2", "name": "test2"}
 
 
 def test_decode_octet_stream_yields_records(components_module):
@@ -67,7 +66,7 @@ def test_decode_octet_stream_yields_records(components_module):
     result = list(decoder.decode(response))
 
     assert len(result) == 1
-    assert result[0]["raw_data"] == {"id": "1", "name": "test"}
+    assert result[0] == {"id": "1", "name": "test"}
 
 
 def test_decode_unsupported_content_type_raises_value_error(components_module):
