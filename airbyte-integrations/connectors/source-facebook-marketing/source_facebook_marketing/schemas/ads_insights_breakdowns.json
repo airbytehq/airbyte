@@ -297,6 +297,10 @@
       "type": ["null", "boolean"],
       "description": "Indicates if the ad is a redownload."
     },
+    "reels_trending_topic": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "region": {
       "description": "The region being targeted by the ad campaign.",
       "type": ["null", "string"]
