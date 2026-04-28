@@ -1,0 +1,11 @@
+name: PR unpin connections on merge
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  ai-unpin:
+    name: AI Unpin Connections
+    steps:
+      - name: No-op
+        run: true
