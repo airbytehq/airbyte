@@ -105,8 +105,9 @@ By default, Airbyte uses its own OAuth app credentials. You can override these w
 **Python SDK**
 
 ```python
-from airbyte_agent_sdk.connectors.hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
 from airbyte_agent_sdk.connectors.hubspot.models import HubspotOAuthCredentials
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 await HubspotConnector.configure_oauth_app_parameters(
     airbyte_config=AirbyteAuthConfig(
@@ -225,8 +226,25 @@ If your Airbyte client can access multiple organizations, include `organization_
 
 **Python SDK**
 
+The `connect()` factory returns a fully typed `HubspotConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_sdk.connectors.hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+
+connector = connect("hubspot", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@HubspotConnector.tool_utils
+async def hubspot_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = HubspotConnector(
     auth_config=AirbyteAuthConfig(
