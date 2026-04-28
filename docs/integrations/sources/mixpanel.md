@@ -80,8 +80,9 @@ Syncing large date windows may take longer due to these rate limits. You can adj
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 3.6.4 | 2026-04-28 | [66940](https://github.com/airbytehq/airbyte/pull/66940) | Update dependencies |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 3.6.2 | 2026-04-02 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 3.6.1 | 2025-08-02 | [64298](https://github.com/airbytehq/airbyte/pull/64298) | Update dependencies |
 | 3.6.0 | 2025-07-30 | [64122](https://github.com/airbytehq/airbyte/pull/64122) | Promoting release candidate 3.6.0-rc.4 to a main version. |
