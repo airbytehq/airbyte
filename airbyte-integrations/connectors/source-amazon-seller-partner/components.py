@@ -680,13 +680,6 @@ class ReportCreationRequester(HttpRequester):
         if not reports:
             return None
 
-        # DONE reports older than this threshold are considered stale (data snapshot may be outdated,
-        # report document may have expired). IN_QUEUE and IN_PROGRESS reports are not subject to
-        # this check because they are still being processed.
-        # When max_done_report_age_hours is 0 (default), DONE reports are never reused.
-        max_done_report_age_hours = self.config.get("max_done_report_age_hours", 0)
-        now = ab_datetime_now()
-
         # Collect all matching candidates, then pick the most recently created one
         best_candidate = None
         best_created_time = None
@@ -701,7 +694,7 @@ class ReportCreationRequester(HttpRequester):
             if not self._date_ranges_match(requested_start, requested_end, report_start, report_end):
                 continue
 
-            if not self._is_report_fresh(report, report_type, max_done_report_age_hours, now):
+            if not self._is_report_fresh(report, report_type, self.config):
                 continue
 
             # Parse createdTime to compare candidates
@@ -737,12 +730,12 @@ class ReportCreationRequester(HttpRequester):
     def _is_report_fresh(
         report: Dict[str, Any],
         report_type: str,
-        max_done_report_age_hours: int,
-        now: Any,
+        config: Mapping[str, Any],
     ) -> bool:
         """
         Check whether a DONE report is fresh enough to reuse.
 
+        Reads max_done_report_age_hours from config (default 0).
         When max_done_report_age_hours is 0 (default), DONE reports are never reused —
         only IN_QUEUE / IN_PROGRESS reports pass through.
         When max_done_report_age_hours > 0, DONE reports older than that threshold are skipped.
@@ -752,6 +745,7 @@ class ReportCreationRequester(HttpRequester):
         if report_status != "DONE":
             return True
 
+        max_done_report_age_hours = config.get("max_done_report_age_hours", 0)
         report_id = report.get("reportId", "")
         if max_done_report_age_hours == 0:
             logger.info(
@@ -763,7 +757,7 @@ class ReportCreationRequester(HttpRequester):
         if created_time_str:
             try:
                 created_time = ab_datetime_parse(created_time_str)
-                age_hours = (now - created_time).total_seconds() / 3600
+                age_hours = (ab_datetime_now() - created_time).total_seconds() / 3600
                 if age_hours > max_done_report_age_hours:
                     logger.info(
                         f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
