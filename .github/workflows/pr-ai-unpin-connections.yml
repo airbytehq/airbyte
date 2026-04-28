@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [closed]
 
+permissions: {}
+
 jobs:
   ai-unpin:
     runs-on: ubuntu-latest
