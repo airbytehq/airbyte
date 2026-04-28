@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.aws.AwsEnvVarConstants
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.util.Jsons
@@ -55,7 +56,11 @@ object S3DataLakeTestUtil {
         config: S3DataLakeConfiguration,
         awsAssumeRoleCredentials: AwsAssumeRoleCredentials?
     ): Catalog {
-        val icebergUtil = IcebergUtil(SimpleTableIdGenerator())
+        val icebergUtil =
+            IcebergUtil(
+                SimpleTableIdGenerator(),
+                AirbyteValueCoercer(useFastTimestampParsing = true)
+            )
         val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)
         val props = s3DataLakeUtil.toCatalogProperties(config)
         return icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
