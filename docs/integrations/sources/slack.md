@@ -163,6 +163,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 ##### Rate limits for Channel Messages and Threads streams
 
 **OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
+
 - [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
 - [`conversations.history`](https://api.slack.com/methods/conversations.history)
 
