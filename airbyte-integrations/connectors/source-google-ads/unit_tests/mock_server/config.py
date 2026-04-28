@@ -38,6 +38,7 @@ class ConfigBuilder:
     def build(self) -> dict:
         config = {
             "credentials": {
+                "auth_type": "oauth2",
                 "developer_token": self._developer_token,
                 "client_id": self._client_id,
                 "client_secret": self._client_secret,
