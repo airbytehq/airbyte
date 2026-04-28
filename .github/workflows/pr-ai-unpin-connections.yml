@@ -1,7 +1,15 @@
 name: PR unpin connections on merge
 on:
-  pull_request:
-    types: [closed]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run'
+        required: false
+        default: 'false'
+        type: boolean
+
+#  pull_request:
+#    types: [closed]
 
 permissions: {}
 
