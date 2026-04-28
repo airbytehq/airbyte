@@ -280,35 +280,36 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.7.20 | 2026-04-02 | [75201](https://github.com/airbytehq/airbyte/pull/75201) | Fix Bulk API INVALID_SESSION_ID by replacing static token provider with auto-refreshing SalesforceTokenProvider |
-| 2.7.19 | 2026-03-31 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
+| 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
 | 2.7.21-rc.1 | 2026-04-21 | [76389](https://github.com/airbytehq/airbyte/pull/76389) | Fix bulk job slicing by bypassing deprecated DeclarativeStream.stream_slices() after CDK 7.13+ upgrade |
+| 2.7.20 | 2026-04-02 | [75201](https://github.com/airbytehq/airbyte/pull/75201) | Fix Bulk API INVALID_SESSION_ID by replacing static token provider with auto-refreshing SalesforceTokenProvider |
 | 2.7.20 | 2026-03-18 | [75201](https://github.com/airbytehq/airbyte/pull/75201) | Fix Bulk API INVALID_SESSION_ID by replacing static token provider with auto-refreshing SalesforceTokenProvider |
+| 2.7.19 | 2026-03-31 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
 | 2.7.19 | 2026-03-30 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
 | 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
 | 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
 | 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
-| 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
-| 2.7.14      | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
-| 2.7.13      | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
-| 2.7.12      | 2025-09-15 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
-| 2.7.11      | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
-| 2.7.10      | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
-| 2.7.9       | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
-| 2.7.8       | 2025-04-27 | [58997](https://github.com/airbytehq/airbyte/pull/58997) | Update dependencies |
-| 2.7.7       | 2025-04-19 | [58453](https://github.com/airbytehq/airbyte/pull/58453) | Update dependencies |
-| 2.7.6       | 2025-04-12 | [57976](https://github.com/airbytehq/airbyte/pull/57976) | Update dependencies |
-| 2.7.5       | 2025-04-05 | [57424](https://github.com/airbytehq/airbyte/pull/57424) | Update dependencies |
-| 2.7.4       | 2025-03-27 | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response |
-| 2.7.3       | 2025-03-29 | [56776](https://github.com/airbytehq/airbyte/pull/56776) | Update dependencies |
-| 2.7.2       | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
-| 2.7.1       | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
-| 2.7.0       | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever |
-| 2.6.5       | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
-| 2.6.5-rc.1  | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
-| 2.6.4       | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 2.6.3       | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies                                                                                                                                                    |
+| 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records |
+| 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
+| 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
+| 2.7.12 | 2025-09-15 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
+| 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
+| 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
+| 2.7.9 | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
+| 2.7.8 | 2025-04-27 | [58997](https://github.com/airbytehq/airbyte/pull/58997) | Update dependencies |
+| 2.7.7 | 2025-04-19 | [58453](https://github.com/airbytehq/airbyte/pull/58453) | Update dependencies |
+| 2.7.6 | 2025-04-12 | [57976](https://github.com/airbytehq/airbyte/pull/57976) | Update dependencies |
+| 2.7.5 | 2025-04-05 | [57424](https://github.com/airbytehq/airbyte/pull/57424) | Update dependencies |
+| 2.7.4 | 2025-03-27 | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response |
+| 2.7.3 | 2025-03-29 | [56776](https://github.com/airbytehq/airbyte/pull/56776) | Update dependencies |
+| 2.7.2 | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
+| 2.7.1 | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
+| 2.7.0 | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever |
+| 2.6.5 | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
+| 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0 |
+| 2.6.4 | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.6.3 | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies |
 | 2.6.2       | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1       | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0       | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
