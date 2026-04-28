@@ -85,3 +85,69 @@ def test_oauth_scopes_contain_only_used_scopes():
 
     unused_scopes = {"im:history", "mpim:history", "im:read", "mpim:read"}
     assert unused_scopes.isdisjoint(set(scopes)), f"Found unused IM/MPIM scopes: {unused_scopes & set(scopes)}"
+
+
+def test_stream_groups_serializes_substream_execution(token_config):
+    """Verify stream_groups assigns block_simultaneous_read so substreams do not run concurrently."""
+    source = get_source(token_config)
+    streams = source.streams(token_config)
+    groups_by_stream = {s.name: s.block_simultaneous_read for s in streams}
+
+    assert groups_by_stream["users"] == "", "users should be ungrouped"
+    assert groups_by_stream["channels"] == "channels_lock"
+    assert groups_by_stream["channel_members"] == "channel_messages_lock"
+    assert groups_by_stream["channel_messages"] == "channel_messages_lock"
+    assert groups_by_stream["threads"] == "threads_lock"
+
+
+def test_stream_groups_manifest_structure():
+    """Verify the manifest declares stream_groups that serialize substream parent walks."""
+    manifest = yaml.safe_load(YAML_FILE_PATH.read_text())
+    groups = manifest["stream_groups"]
+
+    assert "channels_lock" in groups
+    assert "channel_messages_lock" in groups
+    assert "threads_lock" in groups
+
+    assert len(groups["channels_lock"]["streams"]) == 1
+    assert len(groups["channel_messages_lock"]["streams"]) == 2
+    assert len(groups["threads_lock"]["streams"]) == 1
+
+    for group in groups.values():
+        assert group["action"]["type"] == "BlockSimultaneousSyncsAction"
+
+
+def test_stream_groups_no_parent_child_in_same_group():
+    """Verify no stream shares a group with its parent to prevent deadlock.
+
+    `channels` is a parent of `channel_members`, `channel_messages`, and
+    (transitively) `threads`, so it must sit in its own group. `threads` depends
+    on `channel_messages`, so they must also be in separate groups.
+    """
+    manifest = yaml.safe_load(YAML_FILE_PATH.read_text())
+    groups = manifest["stream_groups"]
+
+    def _stream_names(group_name):
+        return {s["name"] for s in groups[group_name]["streams"]}
+
+    channels_names = _stream_names("channels_lock")
+    messages_names = _stream_names("channel_messages_lock")
+    threads_names = _stream_names("threads_lock")
+
+    assert channels_names.isdisjoint(messages_names), "channels must not share a group with its children"
+    assert channels_names.isdisjoint(threads_names), "channels must not share a group with threads"
+    assert messages_names.isdisjoint(threads_names), "channel_messages must not share a group with threads"
+
+
+def test_stream_groups_covers_all_substreams():
+    """Every substream that walks `channels` as a parent must be in a stream group."""
+    manifest = yaml.safe_load(YAML_FILE_PATH.read_text())
+    groups = manifest["stream_groups"]
+
+    all_grouped_names = set()
+    for group in groups.values():
+        all_grouped_names.update(s["name"] for s in group["streams"])
+
+    expected_grouped_streams = ["channels", "channel_members", "channel_messages", "threads"]
+    for name in expected_grouped_streams:
+        assert name in all_grouped_names, f"{name} should be covered by a stream group"

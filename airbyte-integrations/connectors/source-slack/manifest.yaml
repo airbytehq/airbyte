@@ -461,6 +461,68 @@ streams:
   - "#/definitions/channel_messages_stream"
   - "#/definitions/threads_stream"
 
+stream_groups:
+  channels_lock:
+    streams:
+      - type: DeclarativeStream
+        name: channels
+        retriever:
+          type: SimpleRetriever
+          requester:
+            type: HttpRequester
+            url: "https://slack.com/api/"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+    action:
+      type: BlockSimultaneousSyncsAction
+  channel_messages_lock:
+    streams:
+      - type: DeclarativeStream
+        name: channel_members
+        retriever:
+          type: SimpleRetriever
+          requester:
+            type: HttpRequester
+            url: "https://slack.com/api/"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+      - type: DeclarativeStream
+        name: channel_messages
+        retriever:
+          type: SimpleRetriever
+          requester:
+            type: HttpRequester
+            url: "https://slack.com/api/"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+    action:
+      type: BlockSimultaneousSyncsAction
+  threads_lock:
+    streams:
+      - type: DeclarativeStream
+        name: threads
+        retriever:
+          type: SimpleRetriever
+          requester:
+            type: HttpRequester
+            url: "https://slack.com/api/"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+    action:
+      type: BlockSimultaneousSyncsAction
+
 check:
   type: CheckStream
   stream_names:
