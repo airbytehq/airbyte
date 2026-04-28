@@ -30,15 +30,11 @@ const Link = ({ children, href, variant = "primary" }) => {
   const linkClass =
     variant === "secondary" ? styles.cardCtaSecondary : styles.cardCtaPrimary;
 
-  const handleClick = () => {
-    window.location.href = href;
-  };
-
   return (
-    <button className={`${styles.cardCta} ${linkClass}`} onClick={handleClick} role="link">
+    <a className={`${styles.cardCta} ${linkClass}`} href={href}>
       {children}
       <FontAwesomeIcon icon={faArrowRight} />
-    </button>
+    </a>
   );
 };
 
