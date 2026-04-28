@@ -11,7 +11,7 @@ import time
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
-from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import dateparser
@@ -634,21 +634,15 @@ class ReportCreationRequester(HttpRequester):
             log_formatter=log_formatter,
         )
 
-    def _find_existing_report(
+    def _fetch_reports(
         self,
         stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Any],
         report_type: str,
-        requested_start: str,
-        requested_end: str,
-        requested_marketplace_ids: List[str],
-    ) -> Optional[requests.Response]:
+    ) -> Tuple[List[Dict[str, Any]], Optional[requests.Response]]:
         """
-        Query GET /reports to find an existing report matching the given reportType, date range,
-        and marketplaceIds. Returns a synthetic Response wrapping the most recently created
-        matching report if found, or None. DONE reports older than 1 day are skipped to avoid
-        reusing stale data snapshots. No status filtering is applied here — the manifest's
-        status_mapping is the single source of truth for handling each report status.
+        Query GET /reports to retrieve the list of existing reports for the given reportType.
+        Returns a tuple of (reports_list, original_response). Returns ([], None) on any error.
         """
         try:
             url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
@@ -666,17 +660,34 @@ class ReportCreationRequester(HttpRequester):
                 f"Failed to query existing reports for {report_type}. Will create a new report.",
                 exc_info=True,
             )
-            return None
+            return [], None
 
         if not get_response or not get_response.ok:
-            return None
+            return [], None
 
         try:
             data = get_response.json()
         except (json.JSONDecodeError, ValueError):
-            return None
+            return [], None
 
-        reports = data.get("reports", [])
+        return data.get("reports", []), get_response
+
+    def _find_existing_report(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Any],
+        report_type: str,
+        requested_start: str,
+        requested_end: str,
+        requested_marketplace_ids: List[str],
+    ) -> Optional[requests.Response]:
+        """
+        Find an existing report matching the given reportType, date range, and marketplaceIds.
+        Returns a synthetic Response wrapping the most recently created matching report if found,
+        or None. No status filtering is applied here — the manifest's status_mapping is the
+        single source of truth for handling each report status.
+        """
+        reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type)
         if not reports:
             return None
 
