@@ -21,7 +21,7 @@ AI models can reason, plan, and use tools. What they lack is data.
 
 - **Scattered data produces scattered answers.** Without a unified view, agents make separate API calls to separate systems and try to piece the picture together at runtime. The result is slow, expensive, and unreliable.
 
-Organizations end up with agents that demo well but fail in production, or they never ship agents at all because the data infrastructure is too costly to build.
+Organizations either end up with agents that demo well but fail in production, or they never ship agents at all because the data infrastructure is too costly to build.
 
 ## How Airbyte Agents works
 
@@ -95,9 +95,9 @@ The interface is the same across every connector and every access path. Whether 
 
 Airbyte Agents supports four interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
 
-- [**Web app**](../interfaces/ui): chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
+- [**Web app**](../interfaces/ui): chat with an Airbyte-hosted agent or build scheduled automations. No code required.
 
-- [**MCP server**](../interfaces/mcp): connectagents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
+- [**MCP server**](../interfaces/mcp): connect agents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
 
 - [**Python SDK**](../interfaces/sdk): build agents with typed connectors, automatic credential handling, and framework integrations.
 
@@ -107,12 +107,12 @@ For help choosing, see [Choose how to use Airbyte Agents](choose-how-to-use).
 
 ## Pricing
 
-Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
+Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations (AOs)](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
 
 ## Next steps
 
 - [Choose how to use Airbyte Agents](choose-how-to-use): find the right interface for your use case.
 
-- [Developer Quickstart](developer-quickstart): tutorials and coding-agent skills to start building in minutes.
+- [Developer Quickstart](developer-quickstart): explore tutorials and coding-agent skills to start building in minutes.
 
-- [Core concepts](../concepts): a deeper explanation of the platform architecture, the Context Store, and agent operations.
+- [Core concepts](../concepts): dive deeper into platform architecture, the Context Store, and agent operations.

@@ -491,7 +491,7 @@ def test_next_page_token(token_config):
         pytest.param(403, {}, ResponseAction.FAIL, id="403_fail"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_rate_limited"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
-        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RETRY, id="ok_false_ratelimited"),
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(200, {"ok": False, "error": "not_in_channel"}, ResponseAction.IGNORE, id="ok_false_not_in_channel"),
         pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
         pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
@@ -500,7 +500,7 @@ def test_next_page_token(token_config):
         pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
         pytest.param(200, {"ok": False, "error": "missing_scope"}, ResponseAction.FAIL, id="ok_false_auth_error"),
         pytest.param(200, {"ok": False, "error": "token_expired"}, ResponseAction.FAIL, id="ok_false_token_expired"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
     ),
 )
 def test_should_retry(token_config, status_code, response_json, expected):
@@ -536,7 +536,6 @@ def test_should_retry(token_config, status_code, response_json, expected):
             FailureType.config_error,
             id="auth_error_token_expired",
         ),
-        pytest.param("method_not_allowed", "Slack API error: method_not_allowed.", FailureType.system_error, id="general_error_catch_all"),
     ],
 )
 def test_channels_stream_ok_false_error_handling(requests_mock, token_config, slack_error, expected_error_message, expected_failure_type):
@@ -773,3 +772,42 @@ def test_channels_stream_includes_archived_when_configured(token_config) -> None
     params = get_retriever(stream).requester.get_request_params()
 
     assert params.get("exclude_archived") == "false"
+
+
+@pytest.mark.parametrize(
+    "status_code, response_json, expected",
+    (
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
+        pytest.param(429, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="429_ok_false_ratelimited"),
+        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_empty_body"),
+        pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
+    ),
+)
+def test_users_stream_error_handler_response_action(token_config, status_code, response_json, expected):
+    """Verify users_stream error handler returns correct action, especially for rate-limit ordering."""
+    stream = get_stream_by_name("users", token_config)
+    mocked_response = MagicMock(spec=Response, status_code=status_code)
+    mocked_response.ok = status_code == 200
+    mocked_response.headers = {"Content-Type": "application/json"}
+    mocked_response.json.return_value = response_json
+    assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+@pytest.mark.parametrize(
+    "status_code, response_json, expected",
+    (
+        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+    ),
+)
+def test_channel_members_error_handler_response_action(token_config, status_code, response_json, expected):
+    """Verify channel_members (base requester) error handler returns correct action for rate-limit ordering."""
+    stream = get_stream_by_name("channel_members", token_config)
+    mocked_response = MagicMock(spec=Response, status_code=status_code)
+    mocked_response.ok = status_code == 200
+    mocked_response.headers = {"Content-Type": "application/json"}
+    mocked_response.json.return_value = response_json
+    assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
