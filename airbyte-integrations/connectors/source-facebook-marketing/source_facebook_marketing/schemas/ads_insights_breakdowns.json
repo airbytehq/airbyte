@@ -73,28 +73,28 @@
       "type": ["null", "string"]
     },
     "creative_automation_asset_id": {
-      "type": ["null", "string"],
-      "description": "The ID of the creative automation asset."
+      "description": "The ID of the asset used in creative automation.",
+      "type": ["null", "string"]
     },
     "creative_relaxation_asset_type": {
       "description": "",
       "type": ["null", "string"]
     },
     "crm_advertiser_l12_territory_ids": {
-      "type": ["null", "string"],
-      "description": "CRM advertiser L12 territory IDs."
+      "description": "CRM-based L12 territory IDs for the advertiser.",
+      "type": ["null", "string"]
     },
     "crm_advertiser_subvertical_id": {
-      "type": ["null", "string"],
-      "description": "CRM advertiser subvertical ID."
+      "description": "CRM-based subvertical ID for the advertiser.",
+      "type": ["null", "string"]
     },
     "crm_advertiser_vertical_id": {
-      "type": ["null", "string"],
-      "description": "CRM advertiser vertical ID."
+      "description": "CRM-based vertical ID for the advertiser.",
+      "type": ["null", "string"]
     },
     "crm_ult_advertiser_id": {
-      "type": ["null", "string"],
-      "description": "CRM ultimate advertiser ID."
+      "description": "CRM-based ultimate advertiser ID.",
+      "type": ["null", "string"]
     },
     "description_asset": {
       "description": "Additional descriptive text accompanying the ad content.",
@@ -250,39 +250,43 @@
       "description": "Index of the postback sequence."
     },
     "product_brand_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product brand breakdown."
+      "description": "Breakdown by product brand.",
+      "type": ["null", "string"]
     },
     "product_category_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product category breakdown."
+      "description": "Breakdown by product category.",
+      "type": ["null", "string"]
     },
     "product_custom_label_0_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product custom label 0 breakdown."
+      "description": "Breakdown by product custom label 0.",
+      "type": ["null", "string"]
     },
     "product_custom_label_1_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product custom label 1 breakdown."
+      "description": "Breakdown by product custom label 1.",
+      "type": ["null", "string"]
     },
     "product_custom_label_2_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product custom label 2 breakdown."
+      "description": "Breakdown by product custom label 2.",
+      "type": ["null", "string"]
     },
     "product_custom_label_3_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product custom label 3 breakdown."
+      "description": "Breakdown by product custom label 3.",
+      "type": ["null", "string"]
     },
     "product_custom_label_4_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product custom label 4 breakdown."
+      "description": "Breakdown by product custom label 4.",
+      "type": ["null", "string"]
     },
     "product_group_content_id_breakdown": {
-      "type": ["null", "string"],
-      "description": "Product group content ID breakdown."
+      "description": "Breakdown by product group content ID.",
+      "type": ["null", "string"]
     },
     "product_id": {
       "description": "The identifier of the product featured in the ad.",
+      "type": ["null", "string"]
+    },
+    "product_set_id_breakdown": {
+      "description": "Breakdown by product set ID.",
       "type": ["null", "string"]
     },
     "publisher_platform": {
@@ -294,24 +298,12 @@
       "description": "Indicates if the ad is a redownload."
     },
     "reels_trending_topic": {
-      "type": ["null", "string"],
-      "description": "Reels trending topic."
+      "description": "The trending topic associated with Reels content.",
+      "type": ["null", "string"]
     },
     "region": {
       "description": "The region being targeted by the ad campaign.",
       "type": ["null", "string"]
-    },
-    "rta_ugc_topic": {
-      "type": ["null", "string"],
-      "description": "RTA UGC topic."
-    },
-    "rule_set_id": {
-      "type": ["null", "string"],
-      "description": "Rule set ID."
-    },
-    "rule_set_name": {
-      "type": ["null", "string"],
-      "description": "Rule set name."
     },
     "signal_source_bucket": {
       "type": ["null", "string"],
@@ -348,6 +340,18 @@
     "sot_source": {
       "type": ["null", "string"],
       "description": "Source for SOT."
+    },
+    "rta_ugc_topic": {
+      "description": "The user-generated content topic for real-time ads.",
+      "type": ["null", "string"]
+    },
+    "rule_set_id": {
+      "description": "The ID of the rule set applied to the ad.",
+      "type": ["null", "string"]
+    },
+    "rule_set_name": {
+      "description": "The name of the rule set applied to the ad.",
+      "type": ["null", "string"]
     },
     "standard_event_content_type": {
       "type": ["null", "string"],

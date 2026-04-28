@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.2@sha256:1bfcca53335b2669b02414180fe9ad96b0abd9c95d6cbf50089c1d881fc07801
   connectorSubtype: api
   connectorType: source
   definitionId: 9023923c-002f-4131-9554-3ebdf56540a4
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0-rc.1
   dockerRepository: airbyte/source-granola
   documentationUrl: https://docs.airbyte.com/integrations/sources/granola
   githubIssueLabel: source-granola
@@ -16,8 +16,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 0.1.3
     oss:
       enabled: true
+      dockerImageTag: 0.1.3
   releaseStage: alpha
   remoteRegistries:
     pypi:
@@ -45,4 +47,7 @@ data:
     - title: Granola Enterprise API documentation
       url: https://docs.granola.ai/introduction
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"

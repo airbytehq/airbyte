@@ -1,0 +1,383 @@
+# This workflow generates airbyte-agent-sdk API documentation using pdoc3
+# and commits the generated markdown files to the docs/ai-agents/reference/sdk
+# directory.
+#
+# The SDK lives inside the private airbytehq/sonar monorepo under
+# connector-sdk/. This workflow always builds docs from the tip of sonar's
+# default branch (main) — there is no versioned release stream for the SDK
+# today and we intentionally track main as the source of truth.
+#
+# The workflow can be triggered:
+# - Manually via workflow_dispatch
+# - On a schedule (daily)
+#
+# pdoc3 generates markdown output when --output-dir is specified without
+# --html or --pdf flags. See: https://github.com/pdoc3/pdoc/issues/257
+#
+# The MDX sanitization logic mirrors pyairbyte-docs-generate.yml so both
+# pipelines produce output that Docusaurus/MDX can compile cleanly.
+
+name: agent-sdk-docs-generate
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily at 00:00 UTC so Docusaurus reflects the latest sonar main
+    # within 24h of any SDK change.
+    - cron: "0 0 * * *"
+
+jobs:
+  generate-docs:
+    name: agent-sdk-docs-generate
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Airbyte Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Authenticate as GitHub App (sonar read + airbyte write)
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,sonar"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@f06b870e0a91d23284a3013acc55e6f88ab4b904 # v7
+
+      - name: Clone sonar Repository at main
+        run: |
+          # Track main as the source of truth — no version pin.
+          git clone --depth 1 --branch main \
+            "https://x-access-token:${{ steps.get-app-token.outputs.token }}@github.com/airbytehq/sonar.git" \
+            sonar-source
+          cd sonar-source
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "sonar_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "Cloned sonar@${SHORT_SHA}"
+        id: clone
+
+      - name: Generate Typed Connector Modules
+        working-directory: sonar-source
+        run: |
+          # Mirrors connector-sdk-pdoc-publish.yml: populate the typed
+          # connector modules into airbyte_agent_sdk/ before running pdoc3
+          # so the reference includes per-connector typed APIs.
+          uv sync --project connector-sdk --extra dev --dev
+          ./scripts/connectors/generate-sdk.sh
+
+      - name: Install airbyte-agent-sdk and pdoc3
+        run: |
+          pip install -e sonar-source/connector-sdk
+          pip install pdoc3
+
+      - name: Generate API Documentation
+        run: |
+          # Create the reference directory if it doesn't exist
+          mkdir -p docs/ai-agents/reference/sdk
+
+          # Generate markdown documentation using pdoc3
+          # Without --html or --pdf flags, pdoc3 outputs Markdown-Extra format
+          # See: https://github.com/pdoc3/pdoc/issues/257
+          pdoc3 --force --output-dir docs/ai-agents/reference/sdk \
+            --config show_source_code=False \
+            --config sort_identifiers=True \
+            --config show_type_annotations=True \
+            airbyte_agent_sdk
+
+          echo "Generated documentation files:"
+          find docs/ai-agents/reference/sdk -name "*.md" | head -20
+
+      - name: Add Docusaurus Frontmatter
+        run: |
+          # Add Docusaurus-compatible frontmatter to generated markdown files.
+          # Use a unique id and title derived from file path to avoid
+          # translation-key conflicts across the generated tree.
+          # See: https://github.com/facebook/docusaurus/discussions/11458
+          # Skip the hand-written landing readme (see commit adding it).
+          base_dir="docs/ai-agents/reference/sdk"
+          # Use -print0 / read -d '' so paths containing whitespace or glob
+          # characters are handled safely.
+          find "$base_dir" -name "*.md" ! -iname "readme.md" -print0 | while IFS= read -r -d '' file; do
+            rel_path="${file#$base_dir/}"
+            module_path="${rel_path%.md}"
+            module_title=$(echo "$module_path" | tr '/' '.')
+            unique_id=$(echo "$module_path" | tr '/' '-')
+            {
+              echo "---"
+              echo "id: ${unique_id}"
+              echo "title: ${module_title}"
+              echo "---"
+              echo ""
+              cat "$file"
+            } > "${file}.tmp"
+            mv "${file}.tmp" "$file"
+          done
+          echo "Added Docusaurus frontmatter to all generated files (excluding readme.md)"
+
+      - name: Resolve pdoc3 Cross-References
+        run: |
+          # pdoc3 generates same-page anchor links (#SymbolName) that assume
+          # every symbol lives on a single HTML page. In Docusaurus each
+          # module is its own page, so these anchors are broken.
+          #
+          # This step:
+          #   1. Adds <a id="SymbolName"></a> anchors before each
+          #      function/class definition so same-page links work.
+          #   2. Rewrites cross-page #anchor links to relative file paths
+          #      (e.g. index.md#connect) so inter-module references work.
+          python3 << 'PYEOF'
+          import re
+          from collections import defaultdict
+          from pathlib import Path
+
+          base_dir = Path("docs/ai-agents/reference/sdk")
+
+          # ── Build symbol index ──────────────────────────────────────
+          symbol_files: dict[str, set[str]] = defaultdict(set)
+          file_symbols: dict[str, set[str]] = defaultdict(set)
+
+          for md_path in base_dir.rglob("*.md"):
+              if md_path.name.lower() == "readme.md":
+                  continue
+              rel = str(md_path.relative_to(base_dir))
+              content = md_path.read_text(encoding="utf-8")
+              for m in re.finditer(r"^`(\w+)\(", content, re.MULTILINE):
+                  sym = m.group(1)
+                  symbol_files[sym].add(rel)
+                  file_symbols[rel].add(sym)
+
+          print(f"Indexed {len(symbol_files)} symbols across {len(file_symbols)} files")
+
+          # ── Add anchors and resolve links ───────────────────────────
+          for md_path in base_dir.rglob("*.md"):
+              if md_path.name.lower() == "readme.md":
+                  continue
+              rel = str(md_path.relative_to(base_dir))
+              content = md_path.read_text(encoding="utf-8")
+              original = content
+
+              # 1. Insert HTML anchor IDs before symbol definitions.
+              def _add_anchor(m: re.Match) -> str:
+                  return f'<a id="{m.group(1)}"></a>\n\n`{m.group(1)}('
+              content = re.sub(
+                  r"^`(\w+)\(", _add_anchor, content, flags=re.MULTILINE,
+              )
+
+              # 2. Resolve [text](#anchor) links.
+              current_dir = str(Path(rel).parent)
+
+              def _resolve_link(m: re.Match) -> str:
+                  text, anchor = m.group(1), m.group(2)
+
+                  # Same-page symbol — keep the anchor link as-is.
+                  if anchor in file_symbols[rel]:
+                      return m.group(0)
+
+                  candidates = symbol_files.get(anchor)
+                  if not candidates:
+                      # Unknown symbol — drop the link, keep display text.
+                      return text
+
+                  # Pick the best target: prefer index.md in the same
+                  # directory, then any index.md, then first alphabetically.
+                  target = None
+                  for c in sorted(candidates):
+                      if (
+                          Path(c).name == "index.md"
+                          and str(Path(c).parent) == current_dir
+                      ):
+                          target = c
+                          break
+                  if target is None:
+                      for c in sorted(candidates):
+                          if Path(c).name == "index.md":
+                              target = c
+                              break
+                  if target is None:
+                      target = sorted(candidates)[0]
+
+                  from os.path import relpath
+                  target_rel = relpath(target, current_dir)
+                  return f"[{text}]({target_rel}#{anchor})"
+
+              content = re.sub(
+                  r"\[([^\]]+)\]\(#(\w+)\)", _resolve_link, content,
+              )
+
+              if content != original:
+                  md_path.write_text(content, encoding="utf-8")
+                  print(f"Resolved: {md_path}")
+
+          print("Cross-reference resolution complete")
+          PYEOF
+
+      - name: Sanitize for MDX Compatibility
+        run: |
+          # Docusaurus uses MDX which interprets { and } as JSX expressions,
+          # and <...> patterns as JSX tags. We escape these in the generated
+          # markdown to prevent MDX compilation errors. Logic mirrors
+          # pyairbyte-docs-generate.yml so both pipelines stay in sync.
+          python3 << 'EOF'
+          import os
+          import re
+
+          # HTML tags that should NOT be escaped (legitimate HTML in Markdown)
+          ALLOWED_HTML_TAGS = {
+              'a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo',
+              'blockquote', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col',
+              'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog',
+              'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure',
+              'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr',
+              'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li',
+              'main', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object',
+              'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress',
+              'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'small',
+              'source', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody',
+              'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr',
+              'track', 'u', 'ul', 'var', 'video', 'wbr',
+          }
+
+          def is_allowed_html_tag(match_text):
+              """Check if a <...> pattern is a legitimate HTML tag.
+
+              Case-sensitive: uppercase tokens like `<DATA>` in docstrings
+              are almost always placeholders, not real HTML.
+              """
+              tag_match = re.match(r'</?([a-z][a-z0-9]*)', match_text)
+              if tag_match:
+                  return tag_match.group(1) in ALLOWED_HTML_TAGS
+              return False
+
+          def escape_angle_brackets(text):
+              """Escape angle brackets that look like JSX but aren't valid HTML tags."""
+              def replace_angles(match):
+                  content = match.group(0)
+                  if is_allowed_html_tag(content):
+                      return content
+                  return content.replace('<', '&lt;').replace('>', '&gt;')
+
+              pattern = r'<[^>]+>'
+              out = re.sub(pattern, replace_angles, text)
+              # MDX treats '<' as a tag opener only when followed by a letter
+              # or '/'. Anything else (e.g. `field <= value`) needs escaping.
+              out = re.sub(r'<(?![a-zA-Z/])', '&lt;', out)
+              return out
+
+          def sanitize_for_mdx(content):
+              """Sanitize content for MDX compatibility, preserving code blocks and frontmatter."""
+              lines = content.split('\n')
+              result = []
+              in_code_block = False
+              in_frontmatter = False
+              frontmatter_count = 0
+
+              for line in lines:
+                  if line.strip() == '---':
+                      frontmatter_count += 1
+                      if frontmatter_count == 1:
+                          in_frontmatter = True
+                      elif frontmatter_count == 2:
+                          in_frontmatter = False
+                      result.append(line)
+                      continue
+
+                  if in_frontmatter:
+                      result.append(line)
+                      continue
+
+                  if line.strip().startswith('```') or line.strip().startswith('~~~'):
+                      in_code_block = not in_code_block
+                      result.append(line)
+                      continue
+
+                  if in_code_block:
+                      result.append(line)
+                      continue
+
+                  parts = re.split(r'(`[^`]+`)', line)
+                  escaped_parts = []
+                  for part in parts:
+                      if part.startswith('`') and part.endswith('`'):
+                          escaped_parts.append(part)
+                      else:
+                          part = re.sub(r'(?<!\\)\{', r'\\{', part)
+                          part = re.sub(r'(?<!\\)\}', r'\\}', part)
+                          part = escape_angle_brackets(part)
+                          escaped_parts.append(part)
+                  result.append(''.join(escaped_parts))
+
+              return '\n'.join(result)
+
+          base_dir = 'docs/ai-agents/reference/sdk'
+          for root, dirs, files in os.walk(base_dir):
+              for filename in files:
+                  if filename.endswith('.md') and filename.lower() != 'readme.md':
+                      filepath = os.path.join(root, filename)
+                      with open(filepath, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                      sanitized_content = sanitize_for_mdx(content)
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          f.write(sanitized_content)
+                      print(f"Processed: {filepath}")
+
+          print("Sanitized all generated markdown files for MDX compatibility")
+          EOF
+
+      - name: Cleanup sonar Source
+        run: |
+          # Remove the cloned sonar source directory to prevent it from being
+          # committed as a submodule (it contains a .git directory).
+          rm -rf sonar-source
+          echo "Cleaned up temporary files"
+
+      - name: Check for Changes
+        id: changes
+        run: |
+          # Only stage generated reference pages, not the hand-written
+          # landing readme.md.
+          git add docs/ai-agents/reference/sdk/
+          if git diff --cached --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "docs: Update airbyte-agent-sdk API reference documentation (sonar@${{ steps.clone.outputs.sonar_sha }})"
+          title: "docs: Update airbyte-agent-sdk API reference documentation (sonar@${{ steps.clone.outputs.sonar_sha }})"
+          body: |
+            This PR updates the airbyte-agent-sdk API reference documentation.
+
+            **Source:** airbytehq/sonar @ `${{ steps.clone.outputs.sonar_sha }}` (main)
+
+            The documentation was auto-generated using [pdoc3](https://github.com/pdoc3/pdoc)
+            from the `airbyte_agent_sdk` package. The SDK tracks sonar main as the
+            source of truth — see `.github/workflows/agent-sdk-docs-generate.yml`.
+
+            ---
+            *This PR was automatically generated by the [agent-sdk-docs-generate](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow.*
+          branch: docs/agent-sdk-api-reference
+          base: docs-airbyte-agents
+          labels: |
+            area/documentation
+            auto-generated
+            auto-merge
+          delete-branch: true

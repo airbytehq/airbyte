@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
@@ -204,7 +203,7 @@ class SourceGithub(AbstractSource):
                 )
             return True, None
 
-        except MessageRepresentationAirbyteTracedErrors as e:
+        except AirbyteTracedException as e:
             user_message = self.user_friendly_error_message(e.message)
             return False, user_message or e.message
         except Exception as e:
@@ -242,7 +241,7 @@ class SourceGithub(AbstractSource):
         # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
-        max_waiting_time = config.get("max_waiting_time", 10) * 60
+        max_waiting_time = config.get("max_waiting_time", 120) * 60
         organization_args = {
             "authenticator": authenticator,
             "organizations": organizations,

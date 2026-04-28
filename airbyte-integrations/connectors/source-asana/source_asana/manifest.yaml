@@ -1,4 +1,4 @@
-version: "0.78.5"
+version: "0.78.6"
 
 definitions:
   selector:
@@ -40,6 +40,27 @@ definitions:
         - type: "WaitTimeFromHeader"
           header: "Retry-After"
       response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 401
+          failure_type: config_error
+          error_message: >-
+            Authentication failed. Verify the credentials in your source configuration.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 400
+          failure_type: system_error
+          error_message: >-
+            Request returned HTTP 400: {{ response.get('errors', [{}])[0].get('message', 'Bad request.') }}
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+          failure_type: transient_error
+          error_message: >-
+            Rate limit exceeded for Asana API.
         - type: HttpResponseFilter
           action: IGNORE
           http_codes:
@@ -2645,7 +2666,7 @@ spec:
           type: string
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 25
         default: 10

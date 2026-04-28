@@ -22,8 +22,8 @@ This authentication method isn't available for this connector.
 Example request:
 
 ```python
-from airbyte_agent_incident_io import IncidentIoConnector
-from airbyte_agent_incident_io.models import IncidentIoAuthConfig
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.connectors.incident_io.models import IncidentIoAuthConfig
 
 connector = IncidentIoConnector(
     auth_config=IncidentIoAuthConfig(
@@ -60,7 +60,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Incident-Io",
     "name": "My Incident-Io Connector",
     "credentials": {
@@ -76,12 +76,29 @@ If your Airbyte client can access multiple organizations, include `organization_
 
 **Python SDK**
 
+The `connect()` factory returns a fully typed `IncidentIoConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
 ```python
-from airbyte_agent_incident_io import IncidentIoConnector, AirbyteAuthConfig
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+
+connector = connect("incident-io", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain # assumes you're using Pydantic AI
+@IncidentIoConnector.tool_utils
+async def incident_io_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+```python
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = IncidentIoConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"

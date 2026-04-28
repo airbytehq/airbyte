@@ -8,11 +8,11 @@ The Confluence connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Spaces | [List](#spaces-list), [Get](#spaces-get), [Search](#spaces-search) |
-| Pages | [List](#pages-list), [Get](#pages-get), [Search](#pages-search) |
-| Blog Posts | [List](#blog-posts-list), [Get](#blog-posts-get), [Search](#blog-posts-search) |
-| Groups | [List](#groups-list), [Search](#groups-search) |
-| Audit | [List](#audit-list), [Search](#audit-search) |
+| Spaces | [List](#spaces-list), [Get](#spaces-get), [Context Store Search](#spaces-context-store-search) |
+| Pages | [List](#pages-list), [Get](#pages-get), [Context Store Search](#pages-context-store-search) |
+| Blog Posts | [List](#blog-posts-list), [Get](#blog-posts-get), [Context Store Search](#blog-posts-context-store-search) |
+| Groups | [List](#groups-list), [Context Store Search](#groups-context-store-search) |
+| Audit | [List](#audit-list), [Context Store Search](#audit-context-store-search) |
 
 ## Spaces
 
@@ -141,14 +141,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Spaces Search
+### Spaces Context Store Search
 
 Search and filter spaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await confluence.spaces.search(
+await confluence.spaces.context_store_search(
     query={"filter": {"eq": {"_links": {}}}}
 )
 ```
@@ -161,7 +161,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "spaces",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_links": {}}}}
     }
@@ -350,14 +350,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Pages Search
+### Pages Context Store Search
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await confluence.pages.search(
+await confluence.pages.context_store_search(
     query={"filter": {"eq": {"_links": {}}}}
 )
 ```
@@ -370,7 +370,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "pages",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_links": {}}}}
     }
@@ -555,14 +555,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Blog Posts Search
+### Blog Posts Context Store Search
 
 Search and filter blog posts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await confluence.blog_posts.search(
+await confluence.blog_posts.context_store_search(
     query={"filter": {"eq": {"_links": {}}}}
 )
 ```
@@ -575,7 +575,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "blog_posts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_links": {}}}}
     }
@@ -682,20 +682,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
+| `next` | `string` |  |
 | `start` | `integer` |  |
 | `limit` | `integer` |  |
 | `size` | `integer` |  |
 
 </details>
 
-### Groups Search
+### Groups Context Store Search
 
 Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await confluence.groups.search(
+await confluence.groups.context_store_search(
     query={"filter": {"eq": {"_links": {}}}}
 )
 ```
@@ -708,7 +709,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_links": {}}}}
     }
@@ -812,20 +813,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
+| `next` | `string` |  |
 | `start` | `integer` |  |
 | `limit` | `integer` |  |
 | `size` | `integer` |  |
 
 </details>
 
-### Audit Search
+### Audit Context Store Search
 
 Search and filter audit records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await confluence.audit.search(
+await confluence.audit.context_store_search(
     query={"filter": {"eq": {"affectedObject": {}}}}
 )
 ```
@@ -838,7 +840,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "audit",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"affectedObject": {}}}}
     }

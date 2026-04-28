@@ -9,16 +9,16 @@ The Facebook-Marketing connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](#current-user-get) |
-| Ad Accounts | [List](#ad-accounts-list), [Search](#ad-accounts-search) |
-| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Search](#campaigns-search) |
-| Ad Sets | [List](#ad-sets-list), [Create](#ad-sets-create), [Get](#ad-sets-get), [Update](#ad-sets-update), [Search](#ad-sets-search) |
-| Ads | [List](#ads-list), [Create](#ads-create), [Get](#ads-get), [Update](#ads-update), [Search](#ads-search) |
-| Ad Creatives | [List](#ad-creatives-list), [Search](#ad-creatives-search) |
-| Ads Insights | [List](#ads-insights-list), [Search](#ads-insights-search) |
-| Ad Account | [Get](#ad-account-get), [Search](#ad-account-search) |
-| Custom Conversions | [List](#custom-conversions-list), [Search](#custom-conversions-search) |
-| Images | [List](#images-list), [Search](#images-search) |
-| Videos | [List](#videos-list), [Search](#videos-search) |
+| Ad Accounts | [List](#ad-accounts-list), [Context Store Search](#ad-accounts-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Context Store Search](#campaigns-context-store-search) |
+| Ad Sets | [List](#ad-sets-list), [Create](#ad-sets-create), [Get](#ad-sets-get), [Update](#ad-sets-update), [Context Store Search](#ad-sets-context-store-search) |
+| Ads | [List](#ads-list), [Create](#ads-create), [Get](#ads-get), [Update](#ads-update), [Context Store Search](#ads-context-store-search) |
+| Ad Creatives | [List](#ad-creatives-list), [Context Store Search](#ad-creatives-context-store-search) |
+| Ads Insights | [List](#ads-insights-list), [Context Store Search](#ads-insights-context-store-search) |
+| Ad Account | [Get](#ad-account-get), [Context Store Search](#ad-account-context-store-search) |
+| Custom Conversions | [List](#custom-conversions-list), [Context Store Search](#custom-conversions-context-store-search) |
+| Images | [List](#images-list), [Context Store Search](#images-context-store-search) |
+| Videos | [List](#videos-list), [Context Store Search](#videos-context-store-search) |
 | Pixels | [List](#pixels-list), [Get](#pixels-get) |
 | Pixel Stats | [List](#pixel-stats-list) |
 | Ad Library | [List](#ad-library-list) |
@@ -134,14 +134,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Accounts Search
+### Ad Accounts Context Store Search
 
 Search and filter ad accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_accounts.search(
+await facebook_marketing.ad_accounts.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -154,7 +154,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -478,14 +478,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.campaigns.search(
+await facebook_marketing.campaigns.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -498,7 +498,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -806,14 +806,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Sets Search
+### Ad Sets Context Store Search
 
 Search and filter ad sets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_sets.search(
+await facebook_marketing.ad_sets.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -826,7 +826,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_sets",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1148,14 +1148,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ads Search
+### Ads Context Store Search
 
 Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ads.search(
+await facebook_marketing.ads.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1168,7 +1168,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1296,14 +1296,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Creatives Search
+### Ad Creatives Context Store Search
 
 Search and filter ad creatives records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_creatives.search(
+await facebook_marketing.ad_creatives.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1316,7 +1316,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_creatives",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1472,14 +1472,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ads Insights Search
+### Ads Insights Context Store Search
 
 Search and filter ads insights records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ads_insights.search(
+await facebook_marketing.ads_insights.context_store_search(
     query={"filter": {"eq": {"account_id": "<str>"}}}
 )
 ```
@@ -1492,7 +1492,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ads_insights",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account_id": "<str>"}}}
     }
@@ -1648,14 +1648,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ad Account Search
+### Ad Account Context Store Search
 
 Search and filter ad account records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.ad_account.search(
+await facebook_marketing.ad_account.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1668,7 +1668,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ad_account",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1803,14 +1803,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Custom Conversions Search
+### Custom Conversions Context Store Search
 
 Search and filter custom conversions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.custom_conversions.search(
+await facebook_marketing.custom_conversions.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1823,7 +1823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "custom_conversions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1951,14 +1951,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Images Search
+### Images Context Store Search
 
 Search and filter images records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.images.search(
+await facebook_marketing.images.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1971,7 +1971,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "images",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -2121,14 +2121,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Videos Search
+### Videos Context Store Search
 
 Search and filter videos records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await facebook_marketing.videos.search(
+await facebook_marketing.videos.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -2141,7 +2141,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "videos",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
