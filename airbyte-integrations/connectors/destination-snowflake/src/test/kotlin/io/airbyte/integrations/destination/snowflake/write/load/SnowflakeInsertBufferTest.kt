@@ -211,6 +211,67 @@ internal class SnowflakeInsertBufferTest {
         }
     }
 
+    @Test
+    fun testTrailingWhitespaceWrittenUnquotedInCsv() {
+        val tableName = TableName(namespace = "test", name = "table")
+        val column = "columnName"
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("VARCHAR", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
+        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        val trailingWhitespaceValue = "hello   "
+        val record =
+            mapOf(
+                column to StringValue(trailingWhitespaceValue),
+                Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
+                Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id-1"),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234567890),
+                Meta.COLUMN_NAME_AB_META to StringValue("meta-data-foo"),
+            )
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
+                flushLimit = 1,
+            )
+        runBlocking {
+            buffer.accumulate(record)
+            val filepath = buffer.csvFilePath
+            assertNotNull(filepath)
+            val file = filepath!!.toFile()
+            assert(file.exists())
+            buffer.csvWriter?.close()
+            val lines = mutableListOf<String>()
+            GZIPInputStream(file.inputStream()).use { gzip ->
+                BufferedReader(InputStreamReader(gzip)).use { bufferedReader ->
+                    bufferedReader.forEachLine { line -> lines.add(line) }
+                }
+            }
+            assertEquals(1, lines.size)
+            val csvLine = lines[0]
+            // The CSV line must contain the trailing whitespace value WITHOUT quotes.
+            // QuoteStrategies.REQUIRED only quotes fields that contain the delimiter,
+            // quote character, or line break — trailing spaces do NOT trigger quoting.
+            // This means Snowflake's TRIM_SPACE = TRUE would trim "hello   " to "hello",
+            // causing silent data loss. TRIM_SPACE = FALSE preserves the original value.
+            assert(csvLine.contains(trailingWhitespaceValue)) {
+                "CSV should contain the trailing whitespace value: '$trailingWhitespaceValue'"
+            }
+            assert(!csvLine.contains("\"$trailingWhitespaceValue\"")) {
+                "CSV should NOT quote the trailing whitespace value (QuoteStrategies.REQUIRED " +
+                    "does not quote fields with only spaces), making it subject to TRIM_SPACE behavior"
+            }
+            file.delete()
+        }
+    }
+
     private fun createRecord(column: String): Map<String, AirbyteValue> {
         return mapOf(
             column to IntegerValue(value = 42),
