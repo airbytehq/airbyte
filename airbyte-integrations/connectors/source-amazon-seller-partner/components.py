@@ -798,7 +798,8 @@ class ReportCreationRequester(HttpRequester):
         """
         Compare requested date range with a report's date range.
         Both sides use ISO 8601 format from the Amazon SP-API.
-        We normalize to date-only comparison to handle timezone/time variations.
+        We compare full datetime values (including hours, minutes, seconds)
+        to ensure exact match of the requested time range.
         """
         if not report_start or not report_end:
             return False
@@ -811,7 +812,7 @@ class ReportCreationRequester(HttpRequester):
             if req_start_dt is None or req_end_dt is None:
                 return False
 
-            return req_start_dt.date() == rep_start_dt.date() and req_end_dt.date() == rep_end_dt.date()
+            return req_start_dt == rep_start_dt and req_end_dt == rep_end_dt
         except (ValueError, TypeError):
             return False
 

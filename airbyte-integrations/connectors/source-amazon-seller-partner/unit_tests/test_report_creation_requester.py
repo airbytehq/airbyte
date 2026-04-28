@@ -85,16 +85,28 @@ class TestDateRangesMatch:
             is True
         )
 
-    def test_matching_dates_with_different_timezones(self):
-        """Date-only comparison should match even if times differ."""
+    def test_matching_dates_with_same_instant_different_timezones(self):
+        """Same instant expressed in different timezones should match."""
         assert (
             ReportCreationRequester._date_ranges_match(
                 "2023-01-01T00:00:00Z",
                 "2023-01-30T00:00:00Z",
                 "2023-01-01T05:00:00+05:00",
-                "2023-01-30T12:00:00+00:00",
+                "2023-01-30T05:00:00+05:00",
             )
             is True
+        )
+
+    def test_non_matching_times_on_same_date(self):
+        """Same date but different time-of-day should not match."""
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T12:00:00+00:00",
+            )
+            is False
         )
 
     def test_non_matching_start_date(self):
