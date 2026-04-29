@@ -8,6 +8,7 @@ backoff behaviour end-to-end.
 
 from urllib.parse import parse_qs, urlparse
 
+import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -121,12 +122,14 @@ def test_messages_details_checkpoints_on_internal_date(base_config, requests_moc
         assert entry["cursor"].get("internalDate"), f"Expected each partition cursor to carry internalDate; got {entry!r}"
 
 
-def test_messages_parent_defaults_to_pre_gmail_epoch_when_no_start_date(base_config, requests_mock):
-    """With no configured `start_date` and no prior state, the parent
-    `messages` list call uses its cursor's `start_datetime` default
-    (2004-04-01T00:00:00Z → unix 1080777600). That date predates Gmail, so
-    the filter is effectively a no-op for real mailboxes — but it must be
-    present so subsequent syncs can advance it via cursor state.
+def test_messages_details_parent_omits_q_when_no_start_date(base_config, requests_mock):
+    """When `messages_details` runs with no configured `start_date`, the
+    parent `messages` list call must not inject any `q=after:` filter.
+    Pure declarative cannot bound the list call by the child's last-seen
+    cursor (parent records lack `internalDate`, and there's no declarative
+    state migration to copy the child cursor into a parent state), so we
+    deliberately do NOT claim list-call bounding here. The `q` parameter
+    must simply be absent (or empty) when no `start_date` is configured.
     """
     requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
 
@@ -135,15 +138,17 @@ def test_messages_parent_defaults_to_pre_gmail_epoch_when_no_start_date(base_con
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert qs.get("q") == [
-        "after:1080777600"
-    ], f"Expected q=after:1080777600 (2004-04-01 unix seconds) when no start_date and no state; got {qs.get('q')!r}"
+    assert "q" not in qs or qs.get("q") == [
+        ""
+    ], f"Parent `messages` list call must not inject `q=after:` without a configured `start_date`; got {qs.get('q')!r}"
 
 
-def test_messages_request_injects_after_from_start_date(config_with_start_date, requests_mock):
-    """With `start_date=2024-01-01T00:00:00Z` and no prior state, the parent
-    `messages` list call must include `q=after:1704067200` (unix seconds) so
-    Gmail filters server-side."""
+def test_messages_details_parent_injects_after_from_start_date(config_with_start_date, requests_mock):
+    """With `start_date=2024-01-01T00:00:00Z` configured, the parent
+    `messages` list call (driven by `messages_details`) must include
+    `q=after:1704067200` (unix seconds) so Gmail filters server-side from
+    the configured start date.
+    """
     requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
 
     _read_stream("messages_details", SyncMode.incremental, config_with_start_date)
@@ -154,43 +159,58 @@ def test_messages_request_injects_after_from_start_date(config_with_start_date, 
     assert qs.get("q") == ["after:1704067200"], f"Expected q=after:1704067200, got {qs.get('q')!r}"
 
 
-def test_messages_parent_q_advances_with_prior_state(base_config, requests_mock):
-    """When prior state carries `internalDate` (unix seconds), the parent
-    `messages` list call must bound its `q=after:` to that cursor value — not
-    to `start_date` or the default epoch. This proves `incremental_dependency:
-    true` on the child's `ParentStreamConfig` actually migrates state to the
-    parent's own cursor, making repeat syncs cheap.
-    """
-    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
+def test_messages_details_repeat_sync_state_is_continuous(base_config, requests_mock):
+    """Repeat-sync regression: when a prior state cursor exists, the second
+    sync must (a) preserve the prior cursor as a floor and (b) advance to
+    the latest observed `internalDate`. This is the core guarantee
+    incremental on `messages_details` provides — state continuity across
+    syncs.
 
-    # A real second sync would receive the state emitted at the end of the
-    # first sync. `incremental_dependency: true` captures the parent's cursor
-    # under `parent_state.messages.internalDate`; this is what drives the
-    # parent's `q=after:` on resume.
+    What this test does NOT assert (and what we deliberately do not claim):
+    the parent list call is NOT bounded by the prior cursor. Pure
+    declarative cannot copy a child's cursor into a parent's state without
+    a custom Python state migration; parent records (list stubs) lack
+    `internalDate`, so the parent's own cursor cannot advance from
+    observation. The reviewer's `incremental_dependency` regression check
+    is therefore expressed here as a state-continuity assertion rather
+    than a list-call-bound assertion. See manifest comments on
+    `messages_details` for the full rationale.
+    """
+    # New messages observed on the second sync; both newer than prior cursor.
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        json={"messages": [{"id": "n1", "threadId": "t1"}, {"id": "n2", "threadId": "t2"}]},
+    )
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/n1",
+        json={"id": "n1", "threadId": "t1", "internalDate": "1700001000000", "snippet": "a"},
+    )
+    requests_mock.get(
+        f"{_MESSAGES_LIST_URL}/n2",
+        json={"id": "n2", "threadId": "t2", "internalDate": "1700002000000", "snippet": "b"},
+    )
+
+    # Seed prior state at the value the previous sync's checkpoint test
+    # emitted (1700001000 unix seconds = 1700001000000 ms).
     prior_state = (
         StateBuilder()
         .with_stream_state(
             "messages_details",
-            {
-                "state": {"internalDate": "1725000000"},
-                "states": [],
-                "parent_state": {"messages": {"internalDate": "1725000000"}},
-                "lookback_window": 0,
-            },
+            {"state": {"internalDate": "1700001000"}, "states": [], "lookback_window": 0},
         )
         .build()
     )
-    _read_stream("messages_details", SyncMode.incremental, base_config, state=prior_state)
+    output = _read_stream("messages_details", SyncMode.incremental, base_config, state=prior_state)
 
-    list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
-    assert list_calls, "Expected at least one call to the messages list endpoint"
-    # Every list call must be bounded by the prior cursor value.
-    for call in list_calls:
-        qs = parse_qs(urlparse(call.url).query)
-        assert qs.get("q") == ["after:1725000000"], (
-            f"Expected q=after:1725000000 from prior state, got {qs.get('q')!r}. "
-            f"This indicates incremental_dependency did not migrate child state to the parent."
-        )
+    # State must advance to the latest observed value, not regress to start_datetime.
+    states = output.state_messages
+    assert states, "Expected the second sync to emit state"
+    final_state = states[-1].state.stream.stream_state.__dict__
+    global_cursor = final_state.get("state", {}).get("internalDate")
+    assert global_cursor == "1700002000", (
+        f"Expected state to advance to max observed internalDate=1700002000; got {global_cursor!r}. "
+        "If this regresses, the cursor is being reset on repeat syncs and incremental is broken."
+    )
 
 
 def test_drafts_injects_after_unix_seconds_when_start_date_set(config_with_start_date, requests_mock):
@@ -256,14 +276,19 @@ def test_retry_after_on_429_is_honoured(base_config, requests_mock, mocker):
     assert output.records, "Expected the retry to succeed and produce a record"
 
 
-def test_retry_after_on_403_rate_limit_exceeded_is_honoured(base_config, requests_mock, mocker):
+@pytest.mark.parametrize("reason", ["rateLimitExceeded", "userRateLimitExceeded"])
+def test_retry_after_on_403_rate_limit_exceeded_is_honoured(reason, base_config, requests_mock, mocker):
     """Gmail returns HTTP 403 with reason `rateLimitExceeded` or
     `userRateLimitExceeded` on quota-unit saturation (per
     https://developers.google.com/gmail/api/guides/handle-errors). Without an
     explicit response filter, the CDK's default error mapping would classify
     403 as FAIL/config_error and abort the sync. The manifest's second
-    `HttpResponseFilter` re-classifies 403s whose body carries the
-    `rateLimitExceeded` marker as `RATE_LIMITED`, so the sync retries instead.
+    `HttpResponseFilter` re-classifies 403s whose `error.errors[0].reason`
+    matches either documented marker as `RATE_LIMITED`, so the sync retries.
+
+    Both reasons must be covered: a substring check `'rateLimitExceeded' in
+    'userRateLimitExceeded'` evaluates to False (case-sensitive `R` vs `r`),
+    so the predicate must use exact membership against the documented list.
     """
     sleep_mock = mocker.patch("time.sleep")
 
@@ -277,7 +302,7 @@ def test_retry_after_on_403_rate_limit_exceeded_is_honoured(base_config, request
                     "error": {
                         "code": 403,
                         "message": "User-rate limit exceeded.",
-                        "errors": [{"reason": "rateLimitExceeded", "message": "Rate Limit Exceeded"}],
+                        "errors": [{"reason": reason, "message": "Rate Limit Exceeded"}],
                     }
                 },
             },
@@ -297,14 +322,14 @@ def test_retry_after_on_403_rate_limit_exceeded_is_honoured(base_config, request
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
     assert any(
         5 <= duration <= 8 for duration in sleep_durations
-    ), f"Expected a backoff honouring Retry-After=5s on 403 rateLimitExceeded; got {sleep_durations!r}"
-    assert output.records, "Expected the retry to succeed and produce a record"
-    # Sanity: the sync must not have failed — a 403 without the rateLimitExceeded
-    # filter would have produced no records and an auth/config error trace.
+    ), f"Expected a backoff honouring Retry-After=5s on 403 {reason}; got {sleep_durations!r}"
+    assert output.records, f"Expected the retry to succeed and produce a record for reason={reason!r}"
+    # Sanity: the sync must not have failed — a 403 without the predicate match
+    # would have produced no records and an auth/config error trace.
     assert not any(
         "config_error" in (msg.trace.error.failure_type.value if msg.trace and msg.trace.error and msg.trace.error.failure_type else "")
         for msg in output.trace_messages
-    ), "403 rateLimitExceeded must not be surfaced as a config_error"
+    ), f"403 {reason} must not be surfaced as a config_error"
 
 
 def test_non_rate_limit_403_is_not_retried(base_config, requests_mock, mocker):

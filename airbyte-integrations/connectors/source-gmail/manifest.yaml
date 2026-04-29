@@ -128,9 +128,18 @@ definitions:
       # cursor value available on this stream. Exposing it as incremental
       # would silently drop every record when selected standalone
       # (DatetimeBasedCursor._is_within_daterange_boundaries returns False +
-      # WARN for records missing the cursor field). The repeat-sync
-      # efficiency gain is instead realised inside `messages_details` via
-      # the internal `_messages_for_details` parent.
+      # WARN for records missing the cursor field).
+      #
+      # `messages_details` carries its own DatetimeBasedCursor on
+      # `internalDate` (which IS populated by `users.messages.get`); that
+      # cursor advances via the child's own observed records and filters
+      # records older than the prior cursor on repeat syncs. It does NOT
+      # bound this list call — bounding the list request by last-seen
+      # cursor in pure declarative is not supported because (a) parent
+      # records lack the cursor field so the parent's own cursor can't
+      # advance, and (b) declarative state migrations cannot copy the
+      # child's cursor into the parent's state. That optimisation is
+      # tracked separately and would require a custom state migration.
       type: DeclarativeStream
       name: messages
       primary_key:
@@ -169,63 +178,19 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/messages"
-    # INTERNAL — do not add to the top-level `streams:` list. This stream
-    # exists only so `messages_details` has a parent whose cursor can
-    # receive migrated child state via `incremental_dependency: true`,
-    # letting repeat syncs bound the `messages` list call by the last-seen
-    # `internalDate` instead of re-crawling from the configured start.
-    #
-    # The `cursor_field: internalDate` on this internal parent is unusual:
-    # list-endpoint responses don't populate it, so the cursor only ever
-    # advances via state migration from the child. That is acceptable here
-    # because (a) this stream is never surfaced to users, so standalone
-    # selection is impossible, and (b) the child's state write is the only
-    # driver of the parent's cursor value by design. See pnilan's review
-    # on PR #76431 for the full rationale.
-    _messages_for_details:
-      $ref: "#/definitions/streams/messages"
-      name: _messages_for_details
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: messages
-          http_method: GET
-          request_parameters:
-            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
-            q: "after:{{ stream_interval.start_time }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - messages
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
-          page_size_option:
-            type: RequestOption
-            field_name: maxResults
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
-            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: internalDate
-        cursor_datetime_formats:
-          - "%s"
-        datetime_format: "%s"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     messages_details:
+      # Incremental on `internalDate` (populated by `users.messages.get`).
+      # The cursor advances via this stream's own observed records, so
+      # state hygiene works correctly: repeat syncs filter records whose
+      # `internalDate` is older than the prior cursor and skip emitting
+      # them downstream.
+      #
+      # The list call (parent `messages`) is NOT bounded by the cursor:
+      # parent records lack `internalDate`, and pure declarative cannot
+      # copy the child's cursor into a parent's state without a custom
+      # Python state migration. So `users.messages.get` is still called
+      # for every id returned by the list call — the gain here is record
+      # filtering / state correctness, not API quota reduction.
       type: DeclarativeStream
       name: messages_details
       primary_key:
@@ -247,9 +212,8 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: message_id
-              incremental_dependency: true
               stream:
-                $ref: "#/definitions/streams/_messages_for_details"
+                $ref: "#/definitions/streams/messages"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: internalDate
@@ -374,12 +338,17 @@ definitions:
         # 403 regardless of the predicate. Also, `error_message_contains`
         # scans the top-level `error.message` ("User-rate limit
         # exceeded."), not the nested `error.errors[0].reason`, so the
-        # reason string must be checked explicitly.
+        # reason string must be checked explicitly. The check uses an
+        # exact membership match against the documented reasons rather
+        # than substring containment because `'rateLimitExceeded' in
+        # 'userRateLimitExceeded'` is False (case-sensitive `R` vs `r`),
+        # so a substring check would silently miss `userRateLimitExceeded`.
         # See https://developers.google.com/gmail/api/guides/handle-errors.
         - type: HttpResponseFilter
           action: RATE_LIMITED
+          error_message: "Gmail returned a per-user or per-project quota saturation 403 (rateLimitExceeded / userRateLimitExceeded). Honouring `Retry-After` and retrying — the sync will resume once Gmail's rolling quota window frees up."
           predicate: >-
-            {{ 'rateLimitExceeded' in (response.get('error', {}).get('errors', [{}]) | first).get('reason', '') }}
+            {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['rateLimitExceeded', 'userRateLimitExceeded'] }}
 
 streams:
   - $ref: "#/definitions/streams/profile"
