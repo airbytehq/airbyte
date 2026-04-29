@@ -21,6 +21,7 @@ flowchart TD
     SKILL --> S2["Codex"]
     SKILL --> S3["Lovable"]
 ```
+<sould we add cursor>
 
 ## Tutorials
 
@@ -42,6 +43,8 @@ Pick the coding agent you use:
 - [**Codex**](skills/codex) — Install Airbyte skills into OpenAI Codex through skills.sh or a manual symlink.
 - [**Lovable**](skills/lovable) — Paste the Airbyte skill into a Lovable build prompt to generate full-stack apps with Airbyte connectors.
 
+<the docs have a mix of ChatGPT and Codex. I think we should standardize to Codex?>
+
 ## Before you start
 
 Both paths share a few common requirements.
@@ -49,7 +52,7 @@ Both paths share a few common requirements.
 - **An Airbyte Agents account.** Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
 - **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
 - **A connector.** Add at least one connector to your workspace from the [Credentials page](https://app.airbyte.ai/credentials) in the web app. The tutorials use GitHub, but any connector works.
-- **Python 3.13+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
+- **Python 3.10+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
 
 import DocCardList from '@theme/DocCardList';
 

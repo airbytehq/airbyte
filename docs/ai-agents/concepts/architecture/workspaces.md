@@ -29,6 +29,8 @@ Every workspace has two identifiers:
 
 The UUID is the durable identifier. The name is a convenience for routing.
 
+<The workspace name needs to still be a unique identifier>
+
 ## Create a workspace
 
 Workspaces are created programmatically through the API or SDK — they can't be created through the web app. The first time you mint a [scoped token](../../interfaces/api/authentication#scoped-token) against a new `workspace_name`, Airbyte creates the workspace for you. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.

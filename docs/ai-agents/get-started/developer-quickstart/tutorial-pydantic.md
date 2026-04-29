@@ -23,7 +23,7 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.13 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
@@ -76,6 +76,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
 ## Part 3: Import Pydantic AI and the GitHub agent connector
 
+<let's merge with step 2>
 1. Create an `agent.py` file for your agent definition:
 
     ```bash
@@ -138,6 +139,7 @@ One line does four things for you:
 
 - Reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment.
 - Defaults to the `"default"` workspace, which is where the web app stores credentials unless you change it.
+<what's a workspace? do users need to know about this in a quickstart?>
 - Returns a typed `GithubConnector` bound to the authenticated GitHub connector you added earlier.
 - Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub OAuth tokens and refreshes them for you.
 

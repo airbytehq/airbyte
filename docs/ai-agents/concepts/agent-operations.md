@@ -16,7 +16,7 @@ Simple tasks typically make fewer tool calls and use fewer tokens, so they consu
 ## What produces agent operations
 
 Any interaction with an agent consumes AOs. The source of the interaction determines how Airbyte tracks it.
-
+<another column for tracked in tool calls?>
 | Source | Description | Tracked as a session? |
 | --- | --- | --- |
 | **Chat** | A conversation with an agent in the web app. | Yes |
