@@ -34,14 +34,14 @@ stripe = connect("stripe", workspace_name="acme_corp")
 
 ## `async with` vs direct construction
 
-`Workspace` can be used as an async context manager or constructed directly. The context manager form is recommended — it closes the underlying HTTP client when the block exits. If you construct a `Workspace` directly, call `await ws.close()` yourself when you're done with it.
+`Workspace` can be used as an async context manager or constructed directly. The context manager form is recommended because it closes the underlying HTTP client when the block exits. If you construct a `Workspace` directly, call `await ws.close()` yourself when you're done with it.
 
 ```python title="agent.py"
-# Preferred — automatic cleanup
+# Preferred: automatic cleanup
 async with Workspace() as ws:
     connectors = await ws.list_connectors()
 
-# Also valid — you own the lifecycle
+# Also valid: you own the lifecycle
 ws = Workspace()
 try:
     connectors = await ws.list_connectors()
@@ -53,7 +53,7 @@ finally:
 
 You don't explicitly create a workspace. Airbyte provisions one automatically the first time you mint a scoped or widget token for a new `workspace_name` (see [Authentication](../api/authentication#scoped-token) on the API side). Under the hood, `Workspace()` and `connect()` both mint a scoped token on first use, so opening a `Workspace` is enough.
 
-`list_connectors()` and `get_connector()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status — they don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404 and then call `create_connector` (or open the workspace in the Airbyte Agents app and add a connector there):
+`list_connectors()` and `get_connector()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status. They don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404 and then call `create_connector` (or open the workspace in the Airbyte Agents app and add a connector there):
 
 ```python title="agent.py"
 import httpx
@@ -70,7 +70,7 @@ async with Workspace(workspace_name="tenant-123") as ws:
 ```
 
 <!--
-AGENTIC-1140: create_connector doesn't autocreate a workspace — it 404s if
+AGENTIC-1140: create_connector doesn't autocreate a workspace. It 404s if
 no scoped token has been minted for that workspace_name yet. `Workspace(...)`
 mints one on open, so readers who follow the SDK pattern above never hit
 this, which is why we don't surface the quirk in the public narrative.

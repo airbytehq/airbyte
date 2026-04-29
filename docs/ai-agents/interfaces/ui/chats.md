@@ -12,7 +12,7 @@ To open Chats, click **New chat** in the left sidebar, or click an existing chat
 
 Click **New chat** in the sidebar to open the Chat landing page. Type a prompt in the text box and press Enter, or click the send button. Airbyte creates a new chat session, opens it, and sends your first message automatically.
 
-Every chat runs against the connectors you've already authenticated in your workspace. You don't need to select connectors up front—the agent picks the right ones based on your prompt and the [context](#context) available to it.
+Every chat runs against the connectors you've already authenticated in your workspace. You don't need to select connectors up front. The agent picks the right ones based on your prompt and the [context](#context) available to it.
 
 ### Templates
 
@@ -24,7 +24,7 @@ Suggestions are starting points, not fixed templates. The agent treats the text 
 
 Every chat you start is saved. To return to a chat, open the sidebar and click the chat under **Recent Chats**. The sidebar shows your five most recent chats by default. Click **Show more** to expand the list, or open the Sessions page from Settings to browse every chat and automation run in your organization.
 
-When you reopen a chat, the full history loads in place and you can continue the conversation by sending another message. Older messages stay available—scroll up or click **Load older messages** to page through the history.
+When you reopen a chat, the full history loads in place and you can continue the conversation by sending another message. Older messages stay available. Scroll up or click **Load older messages** to page through the history.
 
 Only the person who started a chat can send messages in it. If another member of your organization opens the chat (for example, via a link to its URL), they see the full conversation in read-only mode and can't post new messages.
 
@@ -71,4 +71,4 @@ As your chat develops, you may want to turn it into something that can run repea
 
 To convert a chat, click **Automate this** at the top of the chat. Airbyte takes the prompt and tools you've been iterating on, converts the existing chat session into a new Automation seeded with those settings, and opens it in the [Automation Builder](./automations#the-automation-builder) so you can add a trigger, fine-tune the prompt, and run it.
 
-Converting a chat replaces it—the original chat is turned into the Automation and no longer appears as a chat. If you want to keep exploring the same question as a chat after converting, start a new chat. The resulting Automation starts in draft, so it doesn't run until you configure a trigger and enable it. See [Automations](./automations) for the full builder workflow.
+Converting a chat replaces it: the original chat is turned into the Automation and no longer appears as a chat. If you want to keep exploring the same question as a chat after converting, start a new chat. The resulting Automation starts in draft, so it doesn't run until you configure a trigger and enable it. See [Automations](./automations) for the full builder workflow.

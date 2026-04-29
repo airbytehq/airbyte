@@ -21,7 +21,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=defau
   --header 'Authorization: Bearer <your_application_token>'
 ```
 
-`definition_id` is the connector type (GitHub, HubSpot, and so on). See [Find a `definition_id`](./add-connector#find-a-definition_id) for how to look one up. The response includes each matching connector's `id` — use it in the execute URL below.
+`definition_id` is the connector type (GitHub, HubSpot, and so on). See [Find a `definition_id`](./add-connector#find-a-definition_id) for how to look one up. The response includes each matching connector's `id`. Use it in the execute URL below.
 
 The Airbyte Agent Python SDK can resolve a connector by its slug (for example, `"hubspot"`) without any IDs. Consider using the [SDK](../sdk/execute) if you want to avoid managing connector IDs in application code.
 
@@ -197,7 +197,7 @@ Every execute response uses the same top-level envelope. The connector's records
 }
 ```
 
-- `result` is whatever the operation returns — an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
+- `result` is whatever the operation returns: an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
 - `connector_metadata` surfaces pagination state. The exact key names depend on the connector; expect `has_next_page` and `end_cursor`.
 - `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`.
 

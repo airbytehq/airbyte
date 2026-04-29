@@ -15,7 +15,7 @@ Airbyte Agents handles dates and times the same way across every interface: disp
 
 ## Display in the web app
 
-Every timestamp the web app shows—run history, session tables, activity feeds, Automation schedules—renders in the time zone the browser reports. If you travel, change your operating system's time zone, or open the app in a different browser profile, the same timestamp displays in the new local time. The underlying value doesn't change; only the formatting does.
+Every timestamp the web app shows (run history, session tables, activity feeds, Automation schedules) renders in the time zone the browser reports. If you travel, change your operating system's time zone, or open the app in a different browser profile, the same timestamp displays in the new local time. The underlying value doesn't change; only the formatting does.
 
 This applies to both absolute times (for example, `Mar 18, 09:32`) and relative times (for example, `2 hours ago`).
 
@@ -28,7 +28,7 @@ All timestamps are UTC on the backend, and every interface that reads or writes 
 - **MCP server**: Tools that return timestamps return them in UTC. The `current_datetime` tool, which an agent calls to resolve relative dates like "today" or "last week," returns the current UTC time.
 
 :::warning
-If you pass a timestamp into a connector action—for example, as a date filter on a list query—use UTC. The agent doing the calling is responsible for any time zone conversion before it hands the value to the platform.
+If you pass a timestamp into a connector action (for example, as a date filter on a list query), use UTC. The agent doing the calling is responsible for any time zone conversion before it hands the value to the platform.
 :::
 
 ## Scheduling Automations
@@ -60,6 +60,6 @@ The MCP server doesn't currently expose tools for creating, updating, or running
 
 ## Related topics
 
-- [Automations](../interfaces/ui/automations) — Pick a schedule and time zone.
-- [Sessions](../admin/sessions) — Review when Automation runs and chat sessions happened.
-- [MCP server](../interfaces/mcp) — Connect an external agent to Airbyte.
+- [Automations](../interfaces/ui/automations). Pick a schedule and time zone.
+- [Sessions](../admin/sessions). Review when Automation runs and chat sessions happened.
+- [MCP server](../interfaces/mcp). Connect an external agent to Airbyte.

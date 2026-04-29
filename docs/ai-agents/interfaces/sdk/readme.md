@@ -55,7 +55,7 @@ async def main():
         )
 
         # Execute an operation against the connector. `connect()` resolves the
-        # connector by its slug within the current workspace — no ID needed
+        # connector by its slug within the current workspace. No ID needed
         # when the workspace has one connector of this type.
         github = connect("github")
         try:

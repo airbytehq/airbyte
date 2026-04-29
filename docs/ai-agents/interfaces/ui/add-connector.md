@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Add a connector
 
-Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use—Chats, Automations, the SDK, the API, and the MCP server—can use the resulting connector.
+Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use (Chats, Automations, the SDK, the API, and the MCP server) can use the resulting connector.
 
 This page walks through adding connectors end-to-end: where to add them, how to add them from inside a chat or the Automation Builder, how workspaces and multiple connectors fit together, and how to update or remove connectors you've already added.
 
@@ -21,7 +21,7 @@ Adding a connector is a one-time setup step per workspace. You don't need to pic
 
 ## Workspaces and connectors
 
-A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace and a `Test Environment` workspace, and you can create more. Use workspaces to separate credentials that shouldn't mix—for example, production data from sandbox data, or one customer's credentials from another customer's.
+A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace and a `Test Environment` workspace, and you can create more. Use workspaces to separate credentials that shouldn't mix. For example, separate production data from sandbox data, or one customer's credentials from another customer's.
 
 A workspace can hold as many connectors as you need:
 
@@ -60,7 +60,7 @@ The result is granular, read/write scope control. The connector can only reach t
 
 When you paste an access token, API key, or PAT into the form, you're handing Airbyte a credential that already carries whatever permissions you assigned to it on the third-party side. Airbyte has no way to narrow that credential. The token grants access to data, but Airbyte can't see what data.
 
-In token mode, selecting entities controls what Airbyte replicates into the [Context Store](../../concepts/context-store), not what the token can reach. The entity picker shows a single **Include** column—there are no read/write modes, because the mode isn't Airbyte's to enforce. If you need to keep the connector away from a piece of data, restrict the token itself on the third-party service before you paste it in.
+In token mode, selecting entities controls what Airbyte replicates into the [Context Store](../../concepts/context-store), not what the token can reach. The entity picker shows a single **Include** column. There are no read/write modes, because the mode isn't Airbyte's to enforce. If you need to keep the connector away from a piece of data, restrict the token itself on the third-party service before you paste it in.
 
 ### Why the entity list can differ
 
@@ -69,7 +69,7 @@ The list of entities the picker shows can differ between the two authentication 
 - In OAuth mode, the picker shows every entity the connector knows about, including write-only ones, because OAuth scopes can express write-only access.
 - In token mode, the picker hides write-only entities, because selecting one wouldn't put anything into the Context Store.
 
-This is by design, not a bug. A different entity list doesn't mean one method gives you less data than the other—the connector can still read the same underlying entities from the third-party service. In token mode the picker just limits itself to the entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
+This is by design, not a bug. A different entity list doesn't mean one method gives you less data than the other. The connector can still read the same underlying entities from the third-party service. In token mode the picker just limits itself to the entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
 
 ## Add a connector during a Chat
 
@@ -87,13 +87,13 @@ When this happens, the agent's message includes one or more connector tiles next
 
 Anything you add through this inline flow is saved to the workspace the Chat is running in, just like connectors added from the Connectors page. It's visible afterward in the Connectors list and usable by other Chats and Automations in the same workspace.
 
-If you'd rather not add a connector inline—for example, because you want to pick a different workspace, or because you need to finish authentication elsewhere first—you can also open the **Connectors** page in another tab, add the connector there, then come back to the Chat. Send the agent a short message like "try again" and it re-reads the available context and picks up the new connector on its next turn.
+If you'd rather not add a connector inline (for example, because you want to pick a different workspace, or because you need to finish authentication elsewhere first), you can also open the **Connectors** page in another tab, add the connector there, then come back to the Chat. Send the agent a short message like "try again" and it re-reads the available context and picks up the new connector on its next turn.
 
 ## Add a connector from the Automation Builder
 
 Automations run without a person sitting in the loop, so every connector an automation uses must be authenticated ahead of time. The [Automation Builder](./automations#the-automation-builder) makes this part of the setup conversation.
 
-The fastest path is to tell the Automation Builder Agent what you want and let it flag missing connectors. Describe the automation in plain language. If a required data source isn't authenticated yet, the agent says so—often with connector tiles right in the chat—exactly like in a regular Chat. Click a tile, authenticate, and continue iterating on the automation. The agent re-reads the workspace context and adjusts its plan once the new connector is available.
+The fastest path is to tell the Automation Builder Agent what you want and let it flag missing connectors. Describe the automation in plain language. If a required data source isn't authenticated yet, the agent says so, often with connector tiles right in the chat, exactly like in a regular Chat. Click a tile, authenticate, and continue iterating on the automation. The agent re-reads the workspace context and adjusts its plan once the new connector is available.
 
 You can also ask the Automation Builder Agent to change which connectors the automation uses. Sending a message like "use the Salesforce connector instead" or "add HubSpot" tells it to update the automation's [**Context**](./automations#properties) to match. Airbyte blocks direct edits to the Context list in the Properties panel on purpose, so that the prompt and the connectors it relies on stay in sync.
 
