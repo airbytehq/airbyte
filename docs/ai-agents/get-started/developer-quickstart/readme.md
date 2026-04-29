@@ -48,7 +48,7 @@ Both paths share a few common requirements.
 
 - **An Airbyte Agents account.** Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
 - **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- **A connector.** Add at least one connector to your workspace from the [Credentials page](https://app.airbyte.ai/credentials) in the web app. The tutorials use GitHub, but any connector works.
+- **A connector.** Add at least one connector to your workspace from the [Connectors page](https://app.airbyte.ai/connectors) in the web app. The tutorials use GitHub, but any connector works.
 - **Python 3.13+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
 
 import DocCardList from '@theme/DocCardList';
