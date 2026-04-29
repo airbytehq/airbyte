@@ -57,7 +57,7 @@ my-mcp-agent/
 
 ## Part 2: Install dependencies
 
-Install the Airbyte agent SDK and FastMCP:
+Install the Airbyte Agent SDK and FastMCP:
 
 ```bash
 uv add airbyte-agent-sdk fastmcp python-dotenv
@@ -65,7 +65,7 @@ uv add airbyte-agent-sdk fastmcp python-dotenv
 
 This command installs:
 
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+- `airbyte-agent-sdk`: The Airbyte Agent Python SDK, which ships every connector as a typed submodule.
 - `fastmcp`: A Python framework for building MCP servers with minimal boilerplate.
 - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 

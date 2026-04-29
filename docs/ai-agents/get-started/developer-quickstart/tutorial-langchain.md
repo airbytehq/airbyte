@@ -58,7 +58,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
 ## Part 2: Install dependencies
 
-Install the Airbyte agent SDK, LangChain with OpenAI support, and LangGraph for the agent runtime:
+Install the Airbyte Agent SDK, LangChain with OpenAI support, and LangGraph for the agent runtime:
 
 ```bash
 uv add airbyte-agent-sdk langchain langchain-openai langgraph python-dotenv
@@ -66,7 +66,7 @@ uv add airbyte-agent-sdk langchain langchain-openai langgraph python-dotenv
 
 This command installs:
 
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+- `airbyte-agent-sdk`: The Airbyte Agent Python SDK, which ships every connector as a typed submodule.
 - `langchain`: The LangChain framework core.
 - `langchain-openai`: LangChain's OpenAI integration for chat models.
 - `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.

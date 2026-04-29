@@ -58,7 +58,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
 ## Part 2: Install dependencies
 
-Install the Airbyte agent SDK, Pydantic AI, and `python-dotenv`:
+Install the Airbyte Agent SDK, Pydantic AI, and `python-dotenv`:
 
 ```bash
 uv add airbyte-agent-sdk pydantic-ai python-dotenv
@@ -66,7 +66,7 @@ uv add airbyte-agent-sdk pydantic-ai python-dotenv
 
 This command installs:
 
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+- `airbyte-agent-sdk`: The Airbyte Agent Python SDK, which ships every connector as a typed submodule.
 - `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
 - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
