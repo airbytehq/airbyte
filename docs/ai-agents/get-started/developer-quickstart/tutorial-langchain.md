@@ -74,6 +74,7 @@ This command installs:
 
 ## Part 3: Import LangChain and the GitHub agent connector
 
+<let's merge with step 2>
 1. Create an `agent.py` file for your agent definition:
 
     ```bash
