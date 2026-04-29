@@ -331,6 +331,40 @@ def test_get_iam_s3_client(boto3_client_mock):
     assert s3_client is not None
 
 
+@mock_sts
+@patch("source_s3.v4.stream_reader.boto3.client")
+def test_get_iam_s3_client_passes_credentials_to_sts(boto3_client_mock):
+    """Verify that user-provided AWS credentials are forwarded to the STS client
+    so that assume_role works in environments without instance profiles."""
+    boto3_client_mock.return_value.assume_role.return_value = {
+        "Credentials": {
+            "AccessKeyId": "assumed_access_key_id",
+            "SecretAccessKey": "assumed_secret_access_key",
+            "SessionToken": "assumed_session_token",
+            "Expiration": datetime.now(),
+        }
+    }
+
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="config_access_key",
+        aws_secret_access_key="config_secret_key",
+        role_arn="arn:aws:iam::123456789012:role/my-role",
+        streams=[],
+        endpoint=None,
+    )
+
+    with Stubber(reader.s3_client):
+        reader._get_iam_s3_client({})
+
+    # The first boto3.client() call should be for "sts" with the config credentials
+    first_call = boto3_client_mock.call_args_list[0]
+    assert first_call[0][0] == "sts"
+    assert first_call[1]["aws_access_key_id"] == "config_access_key"
+    assert first_call[1]["aws_secret_access_key"] == "config_secret_key"
+
+
 @pytest.mark.parametrize(
     "start_date, last_modified_date, expected_result",
     (
