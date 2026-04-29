@@ -11,11 +11,26 @@ on: workflow_dispatch
 #  pull_request:
 #    types: [closed]
 
-#permissions: {}
+permissions: {}
 #  issues: write
 #  discussions: write
 
 jobs:
+  check-permissions:
+    name: Resolve Input Variables
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Gather event metadata
+        id: gather-metadata
+        run: |
+          if [[ "${{ github.event_name }}" == "issues" ]]; then
+            echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
+            echo "event-type=issue" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "discussion" ]]; then
+            echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
+            echo "event-type=discussion" >> $GITHUB_OUTPUT
+          fi
+
   ai-unpin:
     runs-on: ubuntu-latest
     name: AI Unpin Connections
