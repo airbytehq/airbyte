@@ -130,6 +130,8 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdGroupsByCountryDaily                    | Prod         | adgroup_id, stat_time_day, country_code    | Yes         |
 | AdGroupsByCountryHourly                   | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
+The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
+
 :::info
 
 The TikTok Reporting API has [data latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337) of approximately 11 hours. To ensure that the connector captures updated metrics in existing records, use an attribution window of at least 3 days for incremental syncs.
@@ -157,7 +159,7 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.8 | 2026-04-02 | [76062](https://github.com/airbytehq/airbyte/pull/76062) | Add support for TopView and Reach & Frequency campaigns by including all buying types in campaigns stream |
+| 5.0.8 | 2026-04-29 | [76062](https://github.com/airbytehq/airbyte/pull/76062) | Add support for TopView and Reach & Frequency campaigns by including all buying types in campaigns stream |
 | 5.0.7 | 2026-04-28 | [77465](https://github.com/airbytehq/airbyte/pull/77465) | Update dependencies |
 | 5.0.6 | 2026-04-21 | [76807](https://github.com/airbytehq/airbyte/pull/76807) | Update dependencies |
 | 5.0.5 | 2026-03-31 | [75063](https://github.com/airbytehq/airbyte/pull/75063) | Update dependencies |
