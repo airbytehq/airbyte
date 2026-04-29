@@ -6,7 +6,6 @@ import csv
 import logging
 from abc import ABC
 from datetime import date, datetime, timedelta
-from decimal import Decimal
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
@@ -122,8 +121,6 @@ class AppsflyerStream(HttpStream, ABC):
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         if original_value == "" or original_value == "N/A" or original_value == "NULL":
             return None
-        if isinstance(original_value, float):
-            return Decimal(original_value)
         return original_value
 
 

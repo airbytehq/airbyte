@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
@@ -122,6 +123,27 @@ def test_cdk_7x_error_handler_adapter(patch_base_class):
     backoff_strategy = stream.get_backoff_strategy()
     assert error_handler is not None, "CDK 7.x adapter should detect custom should_retry"
     assert backoff_strategy is not None, "CDK 7.x adapter should detect custom backoff_time"
+
+
+@pytest.mark.parametrize(
+    "original_value,field_schema,expected",
+    [
+        pytest.param(3.14, {"type": ["null", "number"]}, 3.14, id="float_passthrough"),
+        pytest.param(0.0, {"type": ["null", "number"]}, 0.0, id="float_zero"),
+        pytest.param("", {}, None, id="empty_string_to_none"),
+        pytest.param("N/A", {}, None, id="na_to_none"),
+        pytest.param("NULL", {}, None, id="null_to_none"),
+        pytest.param("hello", {}, "hello", id="string_passthrough"),
+        pytest.param(42, {}, 42, id="int_passthrough"),
+    ],
+)
+def test_transform_function_no_decimal(patch_base_class, original_value, field_schema, expected):
+    """Verify transform_function returns JSON-serializable values (no decimal.Decimal)."""
+    transform = AppsflyerStream.transformer._custom_normalizer
+    result = transform(original_value, field_schema)
+    assert result == expected
+    # All results must be JSON-serializable (decimal.Decimal is not with orjson)
+    json.dumps(result)
 
 
 def test_cdk_7x_streams_instantiation():
