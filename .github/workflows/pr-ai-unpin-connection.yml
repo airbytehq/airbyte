@@ -23,17 +23,12 @@ jobs:
       - name: Gather event metadata
         id: gather-metadata
         run: |
-          echo "event-name=${{ github.event_name }}" >> $GITHUB_OUTPUT
           if [[ "${{ github.event_name }}" == "issues" ]]; then
             echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
             echo "event-type=issue" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event_name }}" == "discussion" ]]; then
             echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
             echo "event-type=discussion" >> $GITHUB_OUTPUT
-#          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-#               echo "Rodi" >> $GITHUB_OUTPUT
-#            echo "author=${{ github.event.workflow_dispatch.user.login }}" >> $GITHUB_OUTPUT
-#            echo "event-type=workflow_dispatch" >> $GITHUB_OUTPUT
           fi
 
   ai-unpin:
