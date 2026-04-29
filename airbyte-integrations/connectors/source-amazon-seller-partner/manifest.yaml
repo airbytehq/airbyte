@@ -3028,9 +3028,12 @@ definitions:
       running:
         - IN_PROGRESS
         - IN_QUEUE
-      # CANCELLED means the report was either explicitly cancelled or automatically cancelled because
-      # there is no data to return (per SP-API docs: https://developer-docs.amazon.com/sp-api/reference/getreport).
+      # CANCELLED means the report was either explicitly cancelled by a user/application via cancelReport API,
+      # or automatically cancelled because there is no data to return
+      # (per SP-API docs: https://developer-docs.amazon.com/sp-api/reference/getreport).
       # We map it to skipped so the CDK silently drops the partition without retrying or fetching records.
+      # WARNING: If a report was manually cancelled (not auto-cancelled), data for that period will be
+      # skipped and not synced. The cursor state is not advanced, so it will be retried on the next sync.
       skipped:
         - CANCELLED
       timeout: []

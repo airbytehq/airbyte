@@ -202,10 +202,23 @@ Before creating a new report, the connector checks the Amazon SP-API for an exis
 
 - **In-progress reports** (IN_QUEUE, IN_PROGRESS) are always reused regardless of age.
 - **Completed reports** (DONE) are reused only if `max_done_report_age_hours` is greater than 0 and the report was created within that time window. With the default value of `0`, a fresh report is always created.
-- **Cancelled reports** (CANCELLED) are reused and silently skipped. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/reference/getreport), a CANCELLED status means there is no data to return for the requested parameters. The connector does not retry cancelled reports — the sync continues with the next date slice and the cursor state is not advanced, so the same period will be retried on the next sync.
+- **Cancelled reports** (CANCELLED) are reused and silently skipped. The connector does not retry cancelled reports — the sync continues with the next date slice and the cursor state is not advanced, so the same period will be retried on the next sync.
 - **Failed reports** (FATAL) are reused and handled by the connector's retry logic.
 
 If the pre-check fails for any reason (network error, API error), the connector falls back to creating a new report normally.
+
+#### Report cancellation and data loss
+
+According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/reference/getreport), a report can be cancelled in two ways:
+
+1. **Automatic cancellation** — Amazon automatically cancels a report when there is no data to return for the requested parameters. This is normal behavior and no data is lost — there was simply nothing to report for that time period.
+2. **Manual cancellation** — A user or application explicitly cancels a report via the [cancelReport](https://developer-docs.amazon.com/sp-api/reference/cancelreport) API before processing completes.
+
+:::caution
+**If a report is manually cancelled, data for that time period will be skipped.** The connector treats all CANCELLED reports the same way — it skips the report without retrying or fetching records. If you or another application cancels a report that was being processed by the connector, the data for that report's date range will not be synced. The cursor state is not advanced, so the connector will attempt to create a new report for the same period on the next sync, but if the cancelled report is still the most recent match, it will be skipped again until it ages out of the report list.
+
+To avoid data loss, do not manually cancel reports that are being used by Airbyte syncs.
+:::
 
 - Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
   - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.

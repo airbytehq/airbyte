@@ -730,6 +730,14 @@ class ReportCreationRequester(HttpRequester):
                 f"Found existing report {report_id} (status={report_status}) "
                 f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
             )
+            if report_status == "CANCELLED":
+                logger.warning(
+                    f"Report {report_id} for {report_type} [{report_start} - {report_end}] has CANCELLED status. "
+                    f"Amazon cancels reports either automatically (no data to return) or manually via the cancelReport API. "
+                    f"If this report was manually cancelled, data for this period will be skipped and not synced. "
+                    f"The cursor state will not advance, so the same period will be retried on the next sync. "
+                    f"To avoid data loss, do not manually cancel reports that are being used by Airbyte syncs."
+                )
             return self._build_synthetic_response(best_candidate, get_response)
 
         return None
