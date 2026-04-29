@@ -24,13 +24,13 @@ For more details, see AppsFlyer's [token management documentation](https://suppo
 
 ### Step 2: Find your App ID
 
-Your App ID is the application identifier as registered in AppsFlyer. You can find it in the AppsFlyer dashboard URL or in your app's settings page.
+Your App ID is the app identifier as registered in AppsFlyer. You can find it in the AppsFlyer dashboard URL or in your app's settings page.
 
 ### Step 3: Set up the connector in Airbyte
 
 1. Enter your **App ID**.
 2. Enter your **API Token**.
-3. Enter a **Start Date** in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format. Raw data reports have a 90-day lookback limit; if your start date is more than 90 days ago, the connector automatically adjusts it to 90 days before the current date.
+3. Enter a **Start Date** in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format. Raw data reports are limited to the last 90 days; if your start date is more than 90 days ago, the connector automatically adjusts it to 90 days before the current date.
 4. Optionally, set the **Timezone**. This controls the timezone for date parameters in API requests. Defaults to `UTC`. Use the timezone configured in your AppsFlyer app settings to align data with the AppsFlyer dashboard.
 
 ## Supported sync modes
@@ -89,7 +89,7 @@ All streams support incremental sync based on a date cursor.
 
 ### Unsupported report categories
 
-The following AppsFlyer Pull API report categories are not supported by this connector:
+The following AppsFlyer Pull API report categories aren't supported by this connector:
 
 - Raw data reinstall reports (organic and non-organic)
 - Ad revenue reports
@@ -98,7 +98,7 @@ The following AppsFlyer Pull API report categories are not supported by this con
 
 ## Limitations and troubleshooting
 
-- **90-day lookback for raw data**: The AppsFlyer Pull API limits raw data report requests to the last 90 days. The connector enforces this automatically.
+- **90-day limit for raw data**: The AppsFlyer Pull API limits raw data report requests to the last 90 days. The connector enforces this automatically.
 - **1,000,000 row maximum per request**: Each API request returns a maximum of 1,000,000 rows. If a report exceeds this limit, the response is truncated.
 - **Rate limits**: AppsFlyer applies daily rate limits per report type, per app, and per account. For aggregate reports with a date range of 2 days or fewer, the limit is 1 request per minute per app. For raw data reports, limits vary by subscription plan. See [AppsFlyer's rate limit documentation](https://support.appsflyer.com/hc/en-us/articles/207034366-Report-generation-quotas-rate-limitations) for details.
 - **Currency**: Raw data streams use the currency configured in your AppsFlyer app settings (`preferred` currency mode).
