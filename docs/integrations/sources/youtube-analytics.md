@@ -96,6 +96,7 @@ The connector retrieves bulk report data from YouTube's reporting jobs, which mi
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.2.5 | 2026-04-28 | [77489](https://github.com/airbytehq/airbyte/pull/77489) | Update dependencies |
 | 1.2.4 | 2026-04-21 | [74693](https://github.com/airbytehq/airbyte/pull/74693) | Update dependencies |
 | 1.2.3 | 2026-02-24 | [73149](https://github.com/airbytehq/airbyte/pull/73149) | Update dependencies |
 | 1.2.2 | 2026-02-03 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |

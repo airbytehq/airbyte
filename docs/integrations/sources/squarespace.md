@@ -25,6 +25,7 @@ The Squarespace connector enables seamless integration with your Squarespace sto
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-04-28 | [77425](https://github.com/airbytehq/airbyte/pull/77425) | Update dependencies |
 | 0.0.43 | 2026-04-21 | [76783](https://github.com/airbytehq/airbyte/pull/76783) | Update dependencies |
 | 0.0.42 | 2026-03-24 | [75382](https://github.com/airbytehq/airbyte/pull/75382) | Update dependencies |
 | 0.0.41 | 2026-03-03 | [73961](https://github.com/airbytehq/airbyte/pull/73961) | Update dependencies |
