@@ -3,9 +3,6 @@ sidebar_label: "FastMCP"
 sidebar_position: 1
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Agent connector tutorial: FastMCP
 
 In this tutorial, you'll create a new Python project with uv, build a FastMCP server that exposes one of Airbyte's agent connectors as an MCP tool, and use it to query GitHub data from any MCP-compatible agent. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
@@ -30,7 +27,7 @@ Before you begin this tutorial, ensure you have the following.
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or a GitHub [OAuth access token](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
+- A GitHub [personal access token](https://github.com/settings/tokens). A classic token with `repo` scope is sufficient.
 - An agent that supports MCP servers, such as [Claude Desktop](https://claude.ai/download), [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview), or [Cursor](https://www.cursor.com/).
 
 ## Part 1: Create a new Python project
@@ -98,26 +95,11 @@ This command installs:
 
 1. Create a `.env` file in your project root and add your Airbyte API credentials to it. Replace the placeholder values with your actual credentials.
 
-    <Tabs>
-    <TabItem value="pat" label="Personal access token" default>
-
     ```text title=".env"
     AIRBYTE_CLIENT_ID=your-airbyte-client-id
     AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
     GITHUB_PAT=your-github-personal-access-token
     ```
-
-    </TabItem>
-    <TabItem value="oauth" label="OAuth">
-
-    ```text title=".env"
-    AIRBYTE_CLIENT_ID=your-airbyte-client-id
-    AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
-    GITHUB_ACCESS_TOKEN=your-github-oauth-access-token
-    ```
-
-    </TabItem>
-    </Tabs>
 
     Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app.
 
@@ -142,9 +124,6 @@ touch setup.py
 ```
 
 Add the following to `setup.py`:
-
-<Tabs>
-<TabItem value="pat" label="Personal access token" default>
 
 ```python title="setup.py"
 import asyncio
@@ -172,39 +151,6 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-
-</TabItem>
-<TabItem value="oauth" label="OAuth">
-
-```python title="setup.py"
-import asyncio
-import os
-
-from dotenv import load_dotenv
-from airbyte_agent_sdk import Workspace
-
-load_dotenv()
-
-async def main():
-    async with Workspace() as ws:
-        await ws.create_connector(
-            definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
-            name="GitHub",
-            credentials={
-                "access_token": os.environ["GITHUB_ACCESS_TOKEN"],
-            },
-            replication_config={
-                "repositories": ["airbytehq/airbyte"],
-            },
-        )
-    print("GitHub connector created.")
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-</TabItem>
-</Tabs>
 
 Run it once to create the connector:
 

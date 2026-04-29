@@ -3,9 +3,6 @@ sidebar_label: "LangChain"
 sidebar_position: 2
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Agent connector tutorial: LangChain
 
 In this tutorial, you'll create a new Python project with uv, add a LangChain agent, equip it with one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
@@ -30,7 +27,7 @@ Before you begin this tutorial, ensure you have the following.
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or a GitHub [OAuth access token](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
+- A GitHub [personal access token](https://github.com/settings/tokens). A classic token with `repo` scope is sufficient.
 - An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but LangChain supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
@@ -108,28 +105,12 @@ This command installs:
 
 1. Create a `.env` file in your project root and add your secrets to it. Replace the placeholder values with your actual credentials.
 
-    <Tabs>
-    <TabItem value="pat" label="Personal access token" default>
-
     ```text title=".env"
     AIRBYTE_CLIENT_ID=your-airbyte-client-id
     AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
     GITHUB_PAT=your-github-personal-access-token
     OPENAI_API_KEY=your-openai-api-key
     ```
-
-    </TabItem>
-    <TabItem value="oauth" label="OAuth">
-
-    ```text title=".env"
-    AIRBYTE_CLIENT_ID=your-airbyte-client-id
-    AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
-    GITHUB_ACCESS_TOKEN=your-github-oauth-access-token
-    OPENAI_API_KEY=your-openai-api-key
-    ```
-
-    </TabItem>
-    </Tabs>
 
     Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app.
 
@@ -157,9 +138,6 @@ Before you can query GitHub data, add a GitHub connector to your Airbyte Agents 
 
 2. Add the following to `setup.py`:
 
-<Tabs>
-<TabItem value="pat" label="Personal access token" default>
-
 ```python title="setup.py"
 import asyncio
 import os
@@ -186,39 +164,6 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-
-</TabItem>
-<TabItem value="oauth" label="OAuth">
-
-```python title="setup.py"
-import asyncio
-import os
-
-from dotenv import load_dotenv
-from airbyte_agent_sdk import Workspace
-
-load_dotenv()
-
-async def main():
-    async with Workspace() as ws:
-        await ws.create_connector(
-            definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
-            name="GitHub",
-            credentials={
-                "access_token": os.environ["GITHUB_ACCESS_TOKEN"],
-            },
-            replication_config={
-                "repositories": ["airbytehq/airbyte"],
-            },
-        )
-    print("GitHub connector created.")
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-</TabItem>
-</Tabs>
 
 3. Run the setup script:
 
