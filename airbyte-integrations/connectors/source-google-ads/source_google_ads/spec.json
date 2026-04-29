@@ -17,7 +17,6 @@
             "title": "OAuth Credentials",
             "type": "object",
             "required": [
-              "auth_type",
               "developer_token",
               "client_id",
               "client_secret",
@@ -27,6 +26,7 @@
               "auth_type": {
                 "type": "string",
                 "const": "oauth2",
+                "default": "oauth2",
                 "order": 0
               },
               "developer_token": {

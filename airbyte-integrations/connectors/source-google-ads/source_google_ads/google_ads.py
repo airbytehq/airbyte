@@ -53,6 +53,7 @@ class GoogleAds:
         # and replace the raw JSON content with a file path for the SDK.
         if "service_account_json" in credentials:
             self._temp_key_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w")
+            os.chmod(self._temp_key_file.name, 0o600)
             json.dump(json.loads(credentials["service_account_json"]), self._temp_key_file)
             self._temp_key_file.close()
             credentials["json_key_file_path"] = self._temp_key_file.name
