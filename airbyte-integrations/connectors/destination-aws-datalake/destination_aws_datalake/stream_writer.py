@@ -7,7 +7,7 @@ import logging
 import re
 from datetime import date, datetime
 from decimal import Decimal, getcontext
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import pandas as pd
 import pyarrow as pa
@@ -38,6 +38,22 @@ _TARGET_TO_JSON_SCHEMA: Dict[str, Tuple[str, ...]] = {
     "bool": ("boolean",),
     "boolean": ("boolean",),
 }
+_TARGET_TO_PYTHON_TYPES: Dict[str, Tuple[str, ...]] = {
+    "int": ("int", "Decimal"),
+    "int64": ("int", "Decimal"),
+    "int32": ("int", "Decimal"),
+    "double": ("float", "Decimal"),
+    "float": ("float", "Decimal"),
+    "float64": ("float", "Decimal"),
+    "float32": ("float", "Decimal"),
+    "string": ("str",),
+    "str": ("str",),
+    "bool": ("bool",),
+    "boolean": ("bool",),
+}
+# Cap how many records the mixed-type discoverer walks to avoid pathological cost on large batches.
+_MIXED_TYPE_RECORD_CAP = 5000
+_MAX_MIXED_TYPE_CANDIDATES = 8
 
 
 # By default we set glue decimal type to decimal(28,25)
@@ -476,41 +492,59 @@ class StreamWriter:
         The underlying pyarrow error only names the top-level column (for example
         `Conversion failed for column properties with type object`). For nested
         struct/array columns that makes it hard to tell which specific subfield
-        actually violated the declared schema. This helper parses the column name
-        and (when present) the observed-Python-type / target-pyarrow-type pair
-        out of the error, walks the offending column's values against the stream's
-        JSON schema, and returns the first dotted field path whose value type does
-        not match the declared type along with the observed Python type and the
-        declared JSON Schema type.
+        actually violated the declared schema.
 
-        The walk is filtered to only return mismatches that match the
-        `(observed, target)` types in the pyarrow message when those can be
-        parsed, so that for example a `str -> int` failure does not get
-        misattributed to an unrelated `Timestamp -> string` mismatch in the
-        same struct. Falls back to the first mismatch if no filtered match is
+        The destination's `_json_schema_cast_value` already coerces declared
+        `number`/`integer` fields via `pd.to_numeric(..., errors="coerce")`, so by
+        the time pyarrow fails the original offending value has often been
+        replaced with `NaN`. That means walking the post-cast dataframe against
+        the JSON schema cannot recover the field that actually crashed pyarrow:
+        the crash is typically on a sub-field that was never in the declared
+        schema (so the cast skipped it), but for which different records have
+        different Python types (for example one record has a numeric value and
+        another has a string), causing pyarrow's struct-inference to fail.
+
+        This helper therefore looks for sub-paths under the offending column
+        whose values have more than one distinct Python type across the batch,
+        and prefers ones whose observed type set matches the
+        `(observed, target)` pair parsed from pyarrow's error message. It falls
+        back to the JSON-schema walker only when no mixed-type sub-path is
         found.
         """
         err_msg = str(ex)
         column_match = _PYARROW_COLUMN_RE.search(err_msg)
         column = column_match.group(1) if column_match else None
         observed_filter, declared_filter = self._parse_pyarrow_type_hint(err_msg)
+        target_python_types = self._parse_pyarrow_target_python_types(err_msg)
 
         bad_path: Optional[str] = None
         observed_type: Optional[str] = None
         declared_type: Optional[str] = None
-        if column and column in df.columns and column in self._schema:
+        mixed_candidates: List[Tuple[str, Set[str]]] = []
+        if column and column in df.columns:
             values = df[column].tolist()
-            schema_entry = self._schema[column]
-            if observed_filter is not None or declared_filter is not None:
-                bad_path, observed_type, declared_type = self._find_first_type_mismatch(
-                    values,
-                    schema_entry,
-                    prefix=column,
-                    observed_filter=observed_filter,
-                    declared_filter=declared_filter,
-                )
-            if bad_path is None:
-                bad_path, observed_type, declared_type = self._find_first_type_mismatch(values, schema_entry, prefix=column)
+            mixed_candidates = self._find_mixed_type_paths(
+                values,
+                prefix=column,
+                observed_filter=observed_filter,
+                target_python_types=target_python_types,
+            )
+            if mixed_candidates:
+                bad_path, observed_types_set = mixed_candidates[0]
+                observed_type = "/".join(sorted(observed_types_set))
+                declared_type = "/".join(declared_filter) if declared_filter else (observed_filter or "?")
+            elif column in self._schema:
+                schema_entry = self._schema[column]
+                if observed_filter is not None or declared_filter is not None:
+                    bad_path, observed_type, declared_type = self._find_first_type_mismatch(
+                        values,
+                        schema_entry,
+                        prefix=column,
+                        observed_filter=observed_filter,
+                        declared_filter=declared_filter,
+                    )
+                if bad_path is None:
+                    bad_path, observed_type, declared_type = self._find_first_type_mismatch(values, schema_entry, prefix=column)
 
         if bad_path is not None:
             message = (
@@ -522,9 +556,14 @@ class StreamWriter:
         else:
             message = f'Stream "{self._table}" produced values that cannot be converted to the declared schema types.'
 
+        candidates_repr = "; ".join(
+            f"{path}={{{','.join(sorted(types))}}}" for path, types in mixed_candidates[:_MAX_MIXED_TYPE_CANDIDATES]
+        )
         internal_message = (
             f"[stream={self._table} column={column} field={bad_path} "
-            f"observed_type={observed_type} declared_type={declared_type}] "
+            f"observed_type={observed_type} declared_type={declared_type} "
+            f"observed_filter={observed_filter} target_python_types={target_python_types} "
+            f"mixed_type_candidates=[{candidates_repr}]] "
             f"pyarrow conversion failed: {ex!r}"
         )
         return AirbyteTracedException(
@@ -552,6 +591,91 @@ class StreamWriter:
             allowed = _TARGET_TO_JSON_SCHEMA.get(target)
             return observed, allowed
         return None, None
+
+    @staticmethod
+    def _parse_pyarrow_target_python_types(err_msg: str) -> Optional[Tuple[str, ...]]:
+        """
+        Parse the target conversion type out of a pyarrow error message and map
+        it to the set of Python type names that satisfy it. Returns `None` if
+        the target type cannot be parsed or has no known Python type mapping.
+        """
+        for pattern in _PYARROW_TYPE_HINT_RES:
+            match = pattern.search(err_msg)
+            if not match:
+                continue
+            target = match.group(2)
+            return _TARGET_TO_PYTHON_TYPES.get(target)
+        return None
+
+    def _find_mixed_type_paths(
+        self,
+        values: List[Any],
+        prefix: str,
+        observed_filter: Optional[str] = None,
+        target_python_types: Optional[Tuple[str, ...]] = None,
+    ) -> List[Tuple[str, Set[str]]]:
+        """
+        Walk a list of dict/array `values` and return all sub-paths that have
+        more than one distinct non-null Python type across the batch. Results
+        are ranked so that paths whose observed-type set is the strongest match
+        for the `(observed_filter, target_python_types)` pair come first. When
+        `observed_filter` is provided, paths whose type set does not contain
+        that observed type are filtered out.
+        """
+        type_map: Dict[str, Set[str]] = {}
+        for value in values[:_MIXED_TYPE_RECORD_CAP]:
+            self._collect_observed_types(value, prefix, type_map)
+
+        candidates: List[Tuple[str, Set[str]]] = []
+        for path, types in type_map.items():
+            non_null = {t for t in types if t != "NoneType"}
+            if len(non_null) <= 1:
+                continue
+            if observed_filter is not None and observed_filter not in non_null:
+                continue
+            candidates.append((path, non_null))
+
+        target_set = set(target_python_types or ())
+
+        def rank(item: Tuple[str, Set[str]]) -> Tuple[int, int, str]:
+            _, types = item
+            has_observed = observed_filter is not None and observed_filter in types
+            has_target = bool(target_set & types)
+            # Lower tuple sorts first: prefer paths that contain BOTH the
+            # observed-from-error type and any target Python type, then paths
+            # that contain at least the observed type, then anything else. Tie-
+            # break on number of distinct types (higher = more ambiguous = more
+            # likely to be the culprit), then alphabetically.
+            primary = 0 if has_observed and has_target else (1 if has_observed else 2)
+            return primary, -len(types), item[0]
+
+        candidates.sort(key=rank)
+        return candidates
+
+    @staticmethod
+    def _collect_observed_types(value: Any, prefix: str, type_map: Dict[str, Set[str]]) -> None:
+        """
+        Recursively record the Python type of every leaf value reached from
+        `value` into `type_map`, keyed by dotted path. Dict keys extend the
+        path with `.<key>`; list elements extend it with `[]` so that all
+        elements of a list are aggregated under the same path. Dict-valued
+        leaves and `None` values are not recorded.
+        """
+        if isinstance(value, dict):
+            if not value:
+                return
+            for key, sub_value in value.items():
+                StreamWriter._collect_observed_types(sub_value, f"{prefix}.{key}", type_map)
+            return
+        if isinstance(value, list):
+            if not value:
+                return
+            for item in value:
+                StreamWriter._collect_observed_types(item, f"{prefix}[]", type_map)
+            return
+        if value is None:
+            return
+        type_map.setdefault(prefix, set()).add(type(value).__name__)
 
     def _find_first_type_mismatch(
         self,

@@ -808,7 +808,11 @@ def test_build_type_mismatch_exception_identifies_array_field():
     traced = writer._build_type_mismatch_exception(df, ex)
 
     assert isinstance(traced, AirbyteTracedException)
-    assert "questions[1].id" in traced.message
+    # Array elements are aggregated under `[]` rather than indexed,
+    # because pyarrow's per-column type inference is also position-agnostic.
+    assert "questions[].id" in traced.message
+    assert "int" in traced.message
+    assert "str" in traced.message
 
 
 def test_build_type_mismatch_exception_falls_back_to_column_when_no_leaf_mismatch():
@@ -910,3 +914,78 @@ def test_parse_pyarrow_type_hint():
     observed, declared = StreamWriter._parse_pyarrow_type_hint("completely unrelated error message")
     assert observed is None
     assert declared is None
+
+
+def test_build_type_mismatch_exception_finds_mixed_type_subfield_not_in_schema():
+    """The real production case: pyarrow's struct-inference fails on a sub-field
+    of `properties` that is NOT in the declared JSON schema (so the json-schema
+    cast skips it), but for which different records have different Python types.
+    The mixed-type discoverer should pinpoint that field even though the
+    json-schema walker cannot."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            # Note: `mystery_id` is not in the declared schema's `location.properties`.
+            # Without mixed-type discovery, the walker would never find it.
+            {"location": {"city": pd.Timestamp("2023-01-01"), "mystery_id": 12345}},
+            {"location": {"city": pd.Timestamp("2023-01-02"), "mystery_id": "9876;5432"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.mystery_id"' in traced.message
+    assert "int" in traced.message
+    assert "str" in traced.message
+
+
+def test_build_type_mismatch_exception_prefers_observed_type_match_over_other_mixed_paths():
+    """When several sub-paths have mixed Python types but only some contain
+    the observed type from the pyarrow error, the discoverer should prefer
+    the ones that contain that observed type."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"foo": 1, "bar": 1.5}},
+            {"location": {"foo": 2.5, "bar": "this-is-a-str"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    # `location.bar` contains `str` (matches the observed type from pyarrow);
+    # `location.foo` is mixed int/float but does not contain `str`, so it
+    # must NOT be ranked first.
+    assert 'field "location.bar"' in traced.message
+    assert 'field "location.foo"' not in traced.message
+
+
+def test_collect_observed_types_aggregates_arrays_under_bracket_path():
+    """Lists are walked as a single position-agnostic group: every element
+    contributes its types to the same `<prefix>[]` path."""
+    type_map: dict = {}
+    StreamWriter._collect_observed_types(
+        {"items": [{"id": 1}, {"id": "two"}, None]},
+        prefix="root",
+        type_map=type_map,
+    )
+    assert type_map == {"root.items[].id": {"int", "str"}}
+
+
+def test_parse_pyarrow_target_python_types():
+    assert StreamWriter._parse_pyarrow_target_python_types("object of type <class 'str'> cannot be converted to int") == ("int", "Decimal")
+    assert StreamWriter._parse_pyarrow_target_python_types("Could not convert 'foo' with type str: tried to convert to double") == (
+        "float",
+        "Decimal",
+    )
+    assert StreamWriter._parse_pyarrow_target_python_types("unrelated message") is None
