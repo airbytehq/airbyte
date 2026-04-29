@@ -6,7 +6,7 @@ sidebar_position: 4
 
 A **workspace** is a container inside your Airbyte Agents organization that holds a set of connectors and credentials. A token scoped to one workspace can't reach another.
 
-Most apps use the `default` workspace and never think about this again. The `Workspace` class, `connect()`, and `ask()` all default to `workspace_name="default"`. Reach for multiple workspaces only when you actively need to isolate credentials across distinct tenants, teams, or environments.
+Most apps use the `default` workspace and never think about this again. The `Workspace` class and `connect()` both default to `workspace_name="default"`. Reach for multiple workspaces only when you actively need to isolate credentials across distinct tenants, teams, or environments.
 
 ## Use a specific workspace
 
@@ -24,13 +24,12 @@ async def main():
 asyncio.run(main())
 ```
 
-`connect()` and `ask()` accept the same argument.
+`connect()` accepts the same argument.
 
 ```python title="agent.py"
-from airbyte_agent_sdk import ask, connect
+from airbyte_agent_sdk import connect
 
 stripe = connect("stripe", workspace_name="acme_corp")
-result = await ask("list my 5 most recent customers", workspace_name="acme_corp")
 ```
 
 ## `async with` vs direct construction
@@ -54,7 +53,7 @@ finally:
 
 You don't explicitly create a workspace. Airbyte provisions one automatically the first time you mint a scoped or widget token for a new `workspace_name` (see [Authentication](../api/authentication#scoped-token) on the API side). Under the hood, `Workspace()` and `connect()` both mint a scoped token on first use, so opening a `Workspace` is enough.
 
-`list_connectors()`, `get_connector()`, and `ask()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status — they don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404 and then call `create_connector` (or open the workspace in the Airbyte Agents app and add a connector there):
+`list_connectors()` and `get_connector()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status — they don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404 and then call `create_connector` (or open the workspace in the Airbyte Agents app and add a connector there):
 
 ```python title="agent.py"
 import httpx
