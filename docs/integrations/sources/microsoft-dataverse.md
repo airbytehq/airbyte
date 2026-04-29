@@ -17,7 +17,7 @@ This source will automatically discover the schema of the Entities of your Datav
 | :----------------- | :------------------------ | :-------------------- |
 | `String`           | `string`                  |                       |
 | `UniqueIdentifier` | `string`                  |                       |
-| `DateTime`         | `timestamp with timezone` |                       |
+| `DateTime`         | `timestamp with timezone` | When `DateTimeBehavior` is `DateOnly`, mapped to `date` instead |
 | `Integer`          | `integer`                 |                       |
 | `BigInt`           | `integer`                 |                       |
 | `Money`            | `number`                  |                       |

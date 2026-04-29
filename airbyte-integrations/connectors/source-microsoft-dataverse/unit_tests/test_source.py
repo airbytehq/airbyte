@@ -111,6 +111,58 @@ def test_discover_incremental(mock_request):
 
 
 @mock.patch("source_microsoft_dataverse.source.do_request")
+def test_discover_date_only_field(mock_request):
+    result_json = json.loads(
+        """
+        {
+            "value": [
+                {
+                    "LogicalName": "stream",
+                    "PrimaryIdAttribute": "primary",
+                    "ChangeTrackingEnabled": false,
+                    "CanChangeTrackingBeEnabled": {
+                        "Value": false
+                    },
+                    "Attributes": [
+                        {
+                            "LogicalName": "date_field",
+                            "AttributeType": "DateTime",
+                            "DateTimeBehavior": {
+                                "Value": "DateOnly"
+                            }
+                        },
+                        {
+                            "LogicalName": "datetime_field",
+                            "AttributeType": "DateTime",
+                            "DateTimeBehavior": {
+                                "Value": "UserLocal"
+                            }
+                        },
+                        {
+                            "LogicalName": "datetime_no_behavior",
+                            "AttributeType": "DateTime"
+                        }
+                    ]
+                }
+            ]
+        }
+    """
+    )
+
+    mock_request.return_value.status.return_value = 200
+    mock_request.return_value.json.return_value = result_json
+
+    source = SourceMicrosoftDataverse()
+    logger_mock, config_mock = MagicMock(), MagicMock()
+
+    catalog = source.discover(logger_mock, config_mock)
+
+    assert catalog.streams[0].json_schema["properties"]["date_field"] == AirbyteType.Date.value
+    assert catalog.streams[0].json_schema["properties"]["datetime_field"] == AirbyteType.Timestamp.value
+    assert catalog.streams[0].json_schema["properties"]["datetime_no_behavior"] == AirbyteType.Timestamp.value
+
+
+@mock.patch("source_microsoft_dataverse.source.do_request")
 def test_discover_full_refresh(mock_request):
     result_json = json.loads(
         """

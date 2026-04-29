@@ -28,6 +28,7 @@ class MicrosoftOauth2Authenticator(Oauth2Authenticator):
 class AirbyteType(Enum):
     String = {"type": ["null", "string"]}
     Boolean = {"type": ["null", "boolean"]}
+    Date = {"type": ["null", "string"], "format": "date"}
     Timestamp = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
     Integer = {"type": ["null", "integer"]}
     Number = {"type": ["null", "number"]}
@@ -70,7 +71,9 @@ def do_request(config: Mapping[str, Any], path: str):
     )
 
 
-def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
+def convert_dataverse_type(dataverse_type: str, date_time_behavior: Optional[str] = None) -> Optional[dict]:
+    if dataverse_type == "DateTime" and date_time_behavior == "DateOnly":
+        return AirbyteType.Date.value
     if dataverse_type in DataverseType.__members__:
         enum_type = DataverseType[dataverse_type]
         if enum_type:
