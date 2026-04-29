@@ -36,7 +36,7 @@ A typical connector lifecycle looks like this:
 
 1. **Add credentials** — Provide the third-party service's credentials through the [web app](../../interfaces/ui/add-connector), [API](../../interfaces/api/add-connector), or [SDK](../../interfaces/sdk/add-connector). Airbyte stores the credentials and returns a connector ID.
 2. **Execute operations** — Make tool calls against the connector. Each call targets an entity and an action. See [Execute operations (API)](../../interfaces/api/execute) or [Execute operations (SDK)](../../interfaces/sdk/execute).
-3. **Use the Context Store** — The [Context Store](../context-store) is enabled by default and replicates and indexes a subset of your connector data. This powers fast search operations without hitting the upstream API.
+3. **Use the Context Store** — The [Context Store](../context-store) is always on and automatically replicates and indexes a subset of your connector data. This powers fast search operations without hitting the upstream API.
 
 ## Entities and actions {#entities-and-actions}
 
