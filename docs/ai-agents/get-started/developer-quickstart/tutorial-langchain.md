@@ -122,13 +122,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
-1. Create a `setup.py` file:
-
-    ```bash
-    touch setup.py
-    ```
-
-2. Add the following to `setup.py`:
+1. Create a `setup.py` file with the following:
 
 ```python title="setup.py"
 import asyncio
@@ -157,7 +151,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-3. Run the setup script:
+2. Run the setup script:
 
     ```bash
     uv run setup.py

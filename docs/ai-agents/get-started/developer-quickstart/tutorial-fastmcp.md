@@ -112,13 +112,7 @@ my-mcp-agent/
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
-Create a `setup.py` file:
-
-```bash
-touch setup.py
-```
-
-Add the following to `setup.py`:
+Create a `setup.py` file with the following:
 
 ```python title="setup.py"
 import asyncio
