@@ -30,7 +30,7 @@ Before you begin this tutorial, ensure you have the following.
 - A GitHub connector added to your Airbyte Agents workspace. Add one of these two ways:
     - **Web app (recommended)**: Go to [Credentials](https://app.airbyte.ai/credentials) in the Airbyte Agents web app, add a GitHub connector, and authenticate it with a [GitHub personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient for this tutorial) or OAuth. See [Add a connector](../../interfaces/ui/add-connector) for details.
     - **API**: Create a connector with `POST /api/v1/integrations/connectors` and store your GitHub credentials. See [Add a connector](../../interfaces/api/add-connector) for details.
-- An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but Pydantic AI supports other LLM providers if you prefer.
+- An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but [Pydantic AI](https://pydantic.dev/docs/ai/models/overview) supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
 
@@ -67,7 +67,7 @@ uv add airbyte-agent-sdk pydantic-ai python-dotenv
 This command installs:
 
 - `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
-- `pydantic-ai`: The AI agent framework, which includes support for multiple LLM providers including OpenAI, Anthropic, and Google.
+- `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
 - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
 :::note
@@ -233,6 +233,8 @@ If your agent fails to retrieve GitHub data, check the following:
 - **HTTP 401/403 errors from GitHub**: The GitHub token or OAuth credentials stored in your connector are invalid or missing required scopes. Open your GitHub connector in the web app and reauthenticate with a valid token that has `repo` scope.
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The system prompt in this tutorial nudges the model to do that by default.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
+
+See the [Github agent connector page](https://docs.airbyte.com/ai-agents/connectors/github/) for more details.
 
 ## Summary
 
