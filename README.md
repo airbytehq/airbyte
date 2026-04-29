@@ -33,7 +33,7 @@ We believe that only an **open-source solution to data movement** can cover the 
 ![Airbyte Connections UI](https://github.com/airbytehq/airbyte/assets/38087517/35b01d0b-00bf-407b-87e6-a5cd5cd720b5)
 _Screenshot taken from [Airbyte Cloud](https://cloud.airbyte.com/signup)_.
 
-### Pick the right Airbyte for the job
+### Pick the right Airbyte Platform for the job
 
 - **Moving data into warehouses, lakes, or databases (ELT / ETL)** → use [Airbyte Open Source](https://docs.airbyte.com/quickstart/deploy-airbyte) (this repo) or [Airbyte Cloud](https://cloud.airbyte.com/signup). 600+ connectors for APIs, databases, data warehouses, and data lakes.
 - **Giving AI agents, LLMs, or MCP clients real-time access to business data** (CRMs, support tools, SaaS APIs, databases) → use [Airbyte Agents](https://docs.airbyte.com/ai-agents/), the managed data and context layer for AI agents, or the open-source [Airbyte Agent SDK](https://github.com/airbytehq/airbyte-agent-sdk) (`uv pip install airbyte-agent-sdk`) to embed type-safe connectors as LLM tools. Works with pydantic-ai, LangChain, OpenAI Agents, and FastMCP, with built-in retry, exception translation, and output-size guardrails.
