@@ -29,6 +29,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      primary_key:
+        - syncid
       schema_loader:
         type: InlineSchemaLoader
         schema:
