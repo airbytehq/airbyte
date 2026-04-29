@@ -372,16 +372,16 @@ Classes
 
     ### Class variables
 
-    `auction_buyer_id: str | Any`
+    `auction_buyer_id: str | None`
     :   The type of the None singleton.
 
-    `auction_closing_date: str | Any`
+    `auction_closing_date: str | None`
     :   The type of the None singleton.
 
-    `auction_item_site: str | Any`
+    `auction_item_site: str | None`
     :   The type of the None singleton.
 
-    `auction_site: str | Any`
+    `auction_site: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -405,22 +405,22 @@ Classes
 
     ### Class variables
 
-    `available_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `available_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `primary: bool | Any`
+    `primary: bool | None`
     :   The type of the None singleton.
 
-    `total_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `total_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `withheld_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `withheld_balance: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
 <a id="BalancesResponse"></a>
@@ -441,16 +441,16 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `as_of_time: str | Any`
+    `as_of_time: str | None`
     :   The type of the None singleton.
 
-    `balances: list[airbyte_agent_sdk.connectors.paypal_transaction.models.BalanceDetail] | Any`
+    `balances: list[airbyte_agent_sdk.connectors.paypal_transaction.models.BalanceDetail] | None`
     :   The type of the None singleton.
 
-    `last_refresh_time: str | Any`
+    `last_refresh_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -507,16 +507,16 @@ Classes
 
     ### Class variables
 
-    `item_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ItemDetail] | Any`
+    `item_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ItemDetail] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `paypal_invoice_id: str | Any`
+    `paypal_invoice_id: str | None`
     :   The type of the None singleton.
 
-    `tax_inclusive: bool | Any`
+    `tax_inclusive: bool | None`
     :   The type of the None singleton.
 
 <a id="Dispute"></a>
@@ -537,43 +537,43 @@ Classes
 
     ### Class variables
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `dispute_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `dispute_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `dispute_channel: str | Any`
+    `dispute_channel: str | None`
     :   The type of the None singleton.
 
-    `dispute_id: str | Any`
+    `dispute_id: str | None`
     :   The type of the None singleton.
 
-    `dispute_life_cycle_stage: str | Any`
+    `dispute_life_cycle_stage: str | None`
     :   The type of the None singleton.
 
-    `dispute_state: str | Any`
+    `dispute_state: str | None`
     :   The type of the None singleton.
 
-    `disputed_transactions: list[airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeDisputedTransactionsItem] | Any`
+    `disputed_transactions: list[airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeDisputedTransactionsItem] | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `outcome: str | Any`
+    `outcome: str | None`
     :   The type of the None singleton.
 
-    `reason: str | Any`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `update_time: str | Any`
+    `update_time: str | None`
     :   The type of the None singleton.
 
 <a id="DisputeDisputedTransactionsItem"></a>
@@ -594,13 +594,13 @@ Classes
 
     ### Class variables
 
-    `buyer_transaction_id: str | Any`
+    `buyer_transaction_id: str | None`
     :   Buyer's transaction ID.
 
     `model_config`
     :   The type of the None singleton.
 
-    `seller: airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeDisputedTransactionsItemSeller | Any`
+    `seller: airbyte_agent_sdk.connectors.paypal_transaction.models.DisputeDisputedTransactionsItemSeller | None`
     :   The type of the None singleton.
 
 <a id="DisputeDisputedTransactionsItemSeller"></a>
@@ -621,7 +621,7 @@ Classes
 
     ### Class variables
 
-    `merchant_id: str | Any`
+    `merchant_id: str | None`
     :   Seller's merchant ID.
 
     `model_config`
@@ -645,16 +645,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="DisputesList"></a>
@@ -675,10 +675,10 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Dispute] | Any`
+    `items: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Dispute] | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.DisputesListLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.DisputesListLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -702,16 +702,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="IncentiveDetail"></a>
@@ -732,16 +732,16 @@ Classes
 
     ### Class variables
 
-    `incentive_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `incentive_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `incentive_code: str | Any`
+    `incentive_code: str | None`
     :   The type of the None singleton.
 
-    `incentive_program_code: str | Any`
+    `incentive_program_code: str | None`
     :   The type of the None singleton.
 
-    `incentive_type: str | Any`
+    `incentive_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -765,7 +765,7 @@ Classes
 
     ### Class variables
 
-    `incentive_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.IncentiveDetail] | Any`
+    `incentive_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.IncentiveDetail] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -789,46 +789,46 @@ Classes
 
     ### Class variables
 
-    `additional_recipients: list[str] | Any`
+    `additional_recipients: list[str] | None`
     :   The type of the None singleton.
 
-    `amount: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceAmount | Any`
+    `amount: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceAmount | None`
     :   The type of the None singleton.
 
-    `configuration: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceConfiguration | Any`
+    `configuration: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceConfiguration | None`
     :   The type of the None singleton.
 
-    `detail: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceDetail | Any`
+    `detail: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceDetail | None`
     :   The type of the None singleton.
 
-    `due_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `due_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `invoicer: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceInvoicer | Any`
+    `invoicer: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceInvoicer | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceItemsItem] | Any`
+    `items: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceItemsItem] | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `payments: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePayments | Any`
+    `payments: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePayments | None`
     :   The type of the None singleton.
 
-    `primary_recipients: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItem] | Any`
+    `primary_recipients: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItem] | None`
     :   The type of the None singleton.
 
-    `refunds: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceRefunds | Any`
+    `refunds: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceRefunds | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceAmount"></a>
@@ -849,16 +849,16 @@ Classes
 
     ### Class variables
 
-    `breakdown: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceAmountBreakdown | Any`
+    `breakdown: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceAmountBreakdown | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceAmountBreakdown"></a>
@@ -879,22 +879,22 @@ Classes
 
     ### Class variables
 
-    `custom: dict[str, typing.Any] | Any`
+    `custom: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `discount: dict[str, typing.Any] | Any`
+    `discount: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `item_total: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `item_total: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `shipping: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `shipping: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `tax_total: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `tax_total: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
 <a id="InvoiceConfiguration"></a>
@@ -915,22 +915,22 @@ Classes
 
     ### Class variables
 
-    `allow_tip: str | Any`
+    `allow_tip: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `partial_payment: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceConfigurationPartialPayment | Any`
+    `partial_payment: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceConfigurationPartialPayment | None`
     :   The type of the None singleton.
 
-    `tax_calculated_after_discount: str | Any`
+    `tax_calculated_after_discount: str | None`
     :   The type of the None singleton.
 
-    `tax_inclusive: str | Any`
+    `tax_inclusive: str | None`
     :   The type of the None singleton.
 
-    `template_id: str | Any`
+    `template_id: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceConfigurationPartialPayment"></a>
@@ -951,10 +951,10 @@ Classes
 
     ### Class variables
 
-    `allow_partial_payment: str | Any`
+    `allow_partial_payment: str | None`
     :   The type of the None singleton.
 
-    `minimum_amount_due: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `minimum_amount_due: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -978,34 +978,34 @@ Classes
 
     ### Class variables
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   Currency code.
 
-    `invoice_date: str | Any`
+    `invoice_date: str | None`
     :   Invoice date.
 
-    `invoice_number: str | Any`
+    `invoice_number: str | None`
     :   Invoice number.
 
-    `memo: str | Any`
+    `memo: str | None`
     :   Memo for the invoice.
 
-    `metadata: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceDetailMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceDetailMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `note: str | Any`
+    `note: str | None`
     :   Note to the recipient.
 
-    `payment_term: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceDetailPaymentTerm | Any`
+    `payment_term: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceDetailPaymentTerm | None`
     :   The type of the None singleton.
 
-    `reference: str | Any`
+    `reference: str | None`
     :   Reference for the invoice.
 
-    `terms_and_conditions: str | Any`
+    `terms_and_conditions: str | None`
     :   Terms and conditions.
 
 <a id="InvoiceDetailMetadata"></a>
@@ -1026,40 +1026,40 @@ Classes
 
     ### Class variables
 
-    `cancel_time: str | Any`
+    `cancel_time: str | None`
     :   Cancellation time.
 
-    `cancelled_by: str | Any`
+    `cancelled_by: str | None`
     :   Canceller.
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   Invoice creation time.
 
-    `created_by: str | Any`
+    `created_by: str | None`
     :   Creator of the invoice.
 
-    `created_by_flow: str | Any`
+    `created_by_flow: str | None`
     :   Flow that created the invoice.
 
-    `first_sent_time: str | Any`
+    `first_sent_time: str | None`
     :   First sent time.
 
-    `invoicer_view_url: str | Any`
+    `invoicer_view_url: str | None`
     :   Invoicer view URL.
 
-    `last_sent_time: str | Any`
+    `last_sent_time: str | None`
     :   Last sent time.
 
-    `last_update_time: str | Any`
+    `last_update_time: str | None`
     :   Last update time.
 
-    `last_updated_by: str | Any`
+    `last_updated_by: str | None`
     :   Last updater.
 
     `model_config`
     :   The type of the None singleton.
 
-    `recipient_view_url: str | Any`
+    `recipient_view_url: str | None`
     :   Recipient view URL.
 
 <a id="InvoiceDetailPaymentTerm"></a>
@@ -1080,13 +1080,13 @@ Classes
 
     ### Class variables
 
-    `due_date: str | Any`
+    `due_date: str | None`
     :   Due date.
 
     `model_config`
     :   The type of the None singleton.
 
-    `term_type: str | Any`
+    `term_type: str | None`
     :   Payment term type.
 
 <a id="InvoiceInvoicer"></a>
@@ -1107,16 +1107,16 @@ Classes
 
     ### Class variables
 
-    `address: dict[str, typing.Any] | Any`
+    `address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   Invoicer email.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceInvoicerName | Any`
+    `name: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceInvoicerName | None`
     :   The type of the None singleton.
 
 <a id="InvoiceInvoicerName"></a>
@@ -1137,16 +1137,16 @@ Classes
 
     ### Class variables
 
-    `full_name: str | Any`
+    `full_name: str | None`
     :   The type of the None singleton.
 
-    `given_name: str | Any`
+    `given_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `surname: str | Any`
+    `surname: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceItemsItem"></a>
@@ -1167,25 +1167,25 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `quantity: str | Any`
+    `quantity: str | None`
     :   The type of the None singleton.
 
-    `tax: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceItemsItemTax | Any`
+    `tax: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceItemsItemTax | None`
     :   The type of the None singleton.
 
-    `unit_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `unit_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `unit_of_measure: str | Any`
+    `unit_of_measure: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceItemsItemTax"></a>
@@ -1206,16 +1206,16 @@ Classes
 
     ### Class variables
 
-    `amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `percent: str | Any`
+    `percent: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceLinksItem"></a>
@@ -1236,16 +1236,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="InvoicePayments"></a>
@@ -1269,10 +1269,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `paid_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `paid_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `transactions: list[dict[str, typing.Any]] | Any`
+    `transactions: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="InvoicePrimaryRecipientsItem"></a>
@@ -1293,7 +1293,7 @@ Classes
 
     ### Class variables
 
-    `billing_info: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItemBillingInfo | Any`
+    `billing_info: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItemBillingInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1317,16 +1317,16 @@ Classes
 
     ### Class variables
 
-    `additional_info_value: str | Any`
+    `additional_info_value: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItemBillingInfoName | Any`
+    `name: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicePrimaryRecipientsItemBillingInfoName | None`
     :   The type of the None singleton.
 
 <a id="InvoicePrimaryRecipientsItemBillingInfoName"></a>
@@ -1347,16 +1347,16 @@ Classes
 
     ### Class variables
 
-    `full_name: str | Any`
+    `full_name: str | None`
     :   The type of the None singleton.
 
-    `given_name: str | Any`
+    `given_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `surname: str | Any`
+    `surname: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceRefunds"></a>
@@ -1380,10 +1380,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `refund_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `refund_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `transactions: list[dict[str, typing.Any]] | Any`
+    `transactions: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="InvoiceSearchParams"></a>
@@ -1404,7 +1404,7 @@ Classes
 
     ### Class variables
 
-    `creation_date_range: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceSearchParamsCreationDateRange | Any`
+    `creation_date_range: airbyte_agent_sdk.connectors.paypal_transaction.models.InvoiceSearchParamsCreationDateRange | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1428,13 +1428,13 @@ Classes
 
     ### Class variables
 
-    `end: str | Any`
+    `end: str | None`
     :   End date in ISO 8601 format.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: str | Any`
+    `start: str | None`
     :   Start date in ISO 8601 format.
 
 <a id="InvoicesList"></a>
@@ -1455,19 +1455,19 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Invoice] | Any`
+    `items: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Invoice] | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicesListLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.InvoicesListLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_items: int | Any`
+    `total_items: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="InvoicesListLinksItem"></a>
@@ -1488,16 +1488,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="ItemDetail"></a>
@@ -1518,34 +1518,34 @@ Classes
 
     ### Class variables
 
-    `invoice_number: str | Any`
+    `invoice_number: str | None`
     :   The type of the None singleton.
 
-    `item_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `item_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `item_code: str | Any`
+    `item_code: str | None`
     :   The type of the None singleton.
 
-    `item_description: str | Any`
+    `item_description: str | None`
     :   The type of the None singleton.
 
-    `item_name: str | Any`
+    `item_name: str | None`
     :   The type of the None singleton.
 
-    `item_quantity: str | Any`
+    `item_quantity: str | None`
     :   The type of the None singleton.
 
-    `item_unit_price: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `item_unit_price: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `tax_amounts: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ItemDetailTaxAmountsItem] | Any`
+    `tax_amounts: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ItemDetailTaxAmountsItem] | None`
     :   The type of the None singleton.
 
-    `total_item_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `total_item_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
 <a id="ItemDetailTaxAmountsItem"></a>
@@ -1569,7 +1569,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tax_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `tax_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
 <a id="ListDisputesListResultMeta"></a>
@@ -1593,7 +1593,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: list[dict[str, typing.Any]] | Any`
+    `next: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="ListDisputesSearchData"></a>
@@ -1677,7 +1677,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_id: str | Any`
+    `next_id: str | None`
     :   The type of the None singleton.
 
 <a id="ListPaymentsSearchData"></a>
@@ -1749,7 +1749,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: list[dict[str, typing.Any]] | Any`
+    `next: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="ListProductsSearchData"></a>
@@ -1806,13 +1806,13 @@ Classes
 
     ### Class variables
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="PayerInfo"></a>
@@ -1833,25 +1833,25 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `address_status: str | Any`
+    `address_status: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `payer_name: airbyte_agent_sdk.connectors.paypal_transaction.models.PayerName | Any`
+    `payer_name: airbyte_agent_sdk.connectors.paypal_transaction.models.PayerName | None`
     :   The type of the None singleton.
 
-    `payer_status: str | Any`
+    `payer_status: str | None`
     :   The type of the None singleton.
 
 <a id="PayerName"></a>
@@ -1872,16 +1872,16 @@ Classes
 
     ### Class variables
 
-    `alternate_full_name: str | Any`
+    `alternate_full_name: str | None`
     :   The type of the None singleton.
 
-    `given_name: str | Any`
+    `given_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `surname: str | Any`
+    `surname: str | None`
     :   The type of the None singleton.
 
 <a id="Payment"></a>
@@ -1902,34 +1902,34 @@ Classes
 
     ### Class variables
 
-    `cart: str | Any`
+    `cart: str | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `intent: str | Any`
+    `intent: str | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `payer: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentPayer | Any`
+    `payer: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentPayer | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `transactions: list[airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentTransactionsItem] | Any`
+    `transactions: list[airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentTransactionsItem] | None`
     :   The type of the None singleton.
 
-    `update_time: str | Any`
+    `update_time: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentLinksItem"></a>
@@ -1950,16 +1950,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentPayer"></a>
@@ -1983,13 +1983,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payer_info: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentPayerPayerInfo | Any`
+    `payer_info: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentPayerPayerInfo | None`
     :   The type of the None singleton.
 
-    `payment_method: str | Any`
+    `payment_method: str | None`
     :   Payment method.
 
-    `status: str | Any`
+    `status: str | None`
     :   Payer status.
 
 <a id="PaymentPayerPayerInfo"></a>
@@ -2010,22 +2010,22 @@ Classes
 
     ### Class variables
 
-    `country_code: str | Any`
+    `country_code: str | None`
     :   Payer country code.
 
-    `email: str | Any`
+    `email: str | None`
     :   Payer email.
 
-    `first_name: str | Any`
+    `first_name: str | None`
     :   Payer first name.
 
-    `last_name: str | Any`
+    `last_name: str | None`
     :   Payer last name.
 
     `model_config`
     :   The type of the None singleton.
 
-    `payer_id: str | Any`
+    `payer_id: str | None`
     :   Payer ID.
 
 <a id="PaymentTransactionsItem"></a>
@@ -2046,16 +2046,16 @@ Classes
 
     ### Class variables
 
-    `amount: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentTransactionsItemAmount | Any`
+    `amount: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentTransactionsItemAmount | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   Transaction description.
 
     `model_config`
     :   The type of the None singleton.
 
-    `related_resources: list[dict[str, typing.Any]] | Any`
+    `related_resources: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="PaymentTransactionsItemAmount"></a>
@@ -2076,16 +2076,16 @@ Classes
 
     ### Class variables
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Currency code.
 
-    `details: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentTransactionsItemAmountDetails | Any`
+    `details: airbyte_agent_sdk.connectors.paypal_transaction.models.PaymentTransactionsItemAmountDetails | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total: str | Any`
+    `total: str | None`
     :   Total amount.
 
 <a id="PaymentTransactionsItemAmountDetails"></a>
@@ -2106,22 +2106,22 @@ Classes
 
     ### Class variables
 
-    `handling_fee: str | Any`
+    `handling_fee: str | None`
     :   The type of the None singleton.
 
-    `insurance: str | Any`
+    `insurance: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `shipping: str | Any`
+    `shipping: str | None`
     :   The type of the None singleton.
 
-    `shipping_discount: str | Any`
+    `shipping_discount: str | None`
     :   The type of the None singleton.
 
-    `subtotal: str | Any`
+    `subtotal: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentsList"></a>
@@ -2142,16 +2142,16 @@ Classes
 
     ### Class variables
 
-    `count: int | Any`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_id: str | Any`
+    `next_id: str | None`
     :   The type of the None singleton.
 
-    `payments: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Payment] | Any`
+    `payments: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Payment] | None`
     :   The type of the None singleton.
 
 <a id="PaypalTransactionAuthConfig"></a>
@@ -2594,22 +2594,22 @@ Classes
 
     ### Class variables
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ProductLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ProductLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ProductDetails"></a>
@@ -2630,37 +2630,37 @@ Classes
 
     ### Class variables
 
-    `category: str | Any`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `home_url: str | Any`
+    `home_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `image_url: str | Any`
+    `image_url: str | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ProductDetailsLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ProductDetailsLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `update_time: str | Any`
+    `update_time: str | None`
     :   The type of the None singleton.
 
 <a id="ProductDetailsLinksItem"></a>
@@ -2681,16 +2681,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="ProductLinksItem"></a>
@@ -2711,16 +2711,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="ProductsList"></a>
@@ -2741,13 +2741,13 @@ Classes
 
     ### Class variables
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ProductsListLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.ProductsListLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `products: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Product] | Any`
+    `products: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Product] | None`
     :   The type of the None singleton.
 
 <a id="ProductsListLinksItem"></a>
@@ -2768,16 +2768,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="SearchInvoicesListResultMeta"></a>
@@ -2801,7 +2801,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: list[dict[str, typing.Any]] | Any`
+    `next: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="SearchInvoicesSearchData"></a>
@@ -2885,22 +2885,22 @@ Classes
 
     ### Class variables
 
-    `city: str | Any`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `line1: str | Any`
+    `line1: str | None`
     :   The type of the None singleton.
 
-    `line2: str | Any`
+    `line2: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
 <a id="ShippingInfo"></a>
@@ -2921,13 +2921,13 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.paypal_transaction.models.ShippingAddress | Any`
+    `address: airbyte_agent_sdk.connectors.paypal_transaction.models.ShippingAddress | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ShowProductDetailsSearchData"></a>
@@ -3002,10 +3002,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `store_id: str | Any`
+    `store_id: str | None`
     :   The type of the None singleton.
 
-    `terminal_id: str | Any`
+    `terminal_id: str | None`
     :   The type of the None singleton.
 
 <a id="Transaction"></a>
@@ -3026,34 +3026,34 @@ Classes
 
     ### Class variables
 
-    `auction_info: airbyte_agent_sdk.connectors.paypal_transaction.models.AuctionInfo | Any`
+    `auction_info: airbyte_agent_sdk.connectors.paypal_transaction.models.AuctionInfo | None`
     :   The type of the None singleton.
 
-    `cart_info: airbyte_agent_sdk.connectors.paypal_transaction.models.CartInfo | Any`
+    `cart_info: airbyte_agent_sdk.connectors.paypal_transaction.models.CartInfo | None`
     :   The type of the None singleton.
 
-    `incentive_info: airbyte_agent_sdk.connectors.paypal_transaction.models.IncentiveInfo | Any`
+    `incentive_info: airbyte_agent_sdk.connectors.paypal_transaction.models.IncentiveInfo | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `payer_info: airbyte_agent_sdk.connectors.paypal_transaction.models.PayerInfo | Any`
+    `payer_info: airbyte_agent_sdk.connectors.paypal_transaction.models.PayerInfo | None`
     :   The type of the None singleton.
 
-    `shipping_info: airbyte_agent_sdk.connectors.paypal_transaction.models.ShippingInfo | Any`
+    `shipping_info: airbyte_agent_sdk.connectors.paypal_transaction.models.ShippingInfo | None`
     :   The type of the None singleton.
 
-    `store_info: airbyte_agent_sdk.connectors.paypal_transaction.models.StoreInfo | Any`
+    `store_info: airbyte_agent_sdk.connectors.paypal_transaction.models.StoreInfo | None`
     :   The type of the None singleton.
 
-    `transaction_id: str | Any`
+    `transaction_id: str | None`
     :   The type of the None singleton.
 
-    `transaction_info: airbyte_agent_sdk.connectors.paypal_transaction.models.TransactionInfo | Any`
+    `transaction_info: airbyte_agent_sdk.connectors.paypal_transaction.models.TransactionInfo | None`
     :   The type of the None singleton.
 
-    `transaction_updated_date: str | Any`
+    `transaction_updated_date: str | None`
     :   The type of the None singleton.
 
 <a id="TransactionInfo"></a>
@@ -3074,61 +3074,61 @@ Classes
 
     ### Class variables
 
-    `custom_field: str | Any`
+    `custom_field: str | None`
     :   The type of the None singleton.
 
-    `fee_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `fee_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `insurance_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `insurance_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `invoice_id: str | Any`
+    `invoice_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `paypal_account_id: str | Any`
+    `paypal_account_id: str | None`
     :   The type of the None singleton.
 
-    `paypal_reference_id: str | Any`
+    `paypal_reference_id: str | None`
     :   The type of the None singleton.
 
-    `paypal_reference_id_type: str | Any`
+    `paypal_reference_id_type: str | None`
     :   The type of the None singleton.
 
-    `protection_eligibility: str | Any`
+    `protection_eligibility: str | None`
     :   The type of the None singleton.
 
-    `shipping_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `shipping_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `shipping_discount_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `shipping_discount_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `transaction_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | Any`
+    `transaction_amount: airbyte_agent_sdk.connectors.paypal_transaction.models.Money | None`
     :   The type of the None singleton.
 
-    `transaction_event_code: str | Any`
+    `transaction_event_code: str | None`
     :   The type of the None singleton.
 
-    `transaction_id: str | Any`
+    `transaction_id: str | None`
     :   The type of the None singleton.
 
-    `transaction_initiation_date: str | Any`
+    `transaction_initiation_date: str | None`
     :   The type of the None singleton.
 
-    `transaction_note: str | Any`
+    `transaction_note: str | None`
     :   The type of the None singleton.
 
-    `transaction_status: str | Any`
+    `transaction_status: str | None`
     :   The type of the None singleton.
 
-    `transaction_subject: str | Any`
+    `transaction_subject: str | None`
     :   The type of the None singleton.
 
-    `transaction_updated_date: str | Any`
+    `transaction_updated_date: str | None`
     :   The type of the None singleton.
 
 <a id="TransactionsList"></a>
@@ -3149,34 +3149,34 @@ Classes
 
     ### Class variables
 
-    `account_number: str | Any`
+    `account_number: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   The type of the None singleton.
 
-    `last_refreshed_datetime: str | Any`
+    `last_refreshed_datetime: str | None`
     :   The type of the None singleton.
 
-    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.TransactionsListLinksItem] | Any`
+    `links: list[airbyte_agent_sdk.connectors.paypal_transaction.models.TransactionsListLinksItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any`
+    `total_items: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
-    `transaction_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Transaction] | Any`
+    `transaction_details: list[airbyte_agent_sdk.connectors.paypal_transaction.models.Transaction] | None`
     :   The type of the None singleton.
 
 <a id="TransactionsListLinksItem"></a>
@@ -3197,16 +3197,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rel: str | Any`
+    `rel: str | None`
     :   The type of the None singleton.
 
 <a id="TransactionsListResultMeta"></a>
@@ -3230,13 +3230,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any`
+    `total_items: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="TransactionsSearchData"></a>

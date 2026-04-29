@@ -112,7 +112,14 @@ Classes
                 Args:
                     q: SOQL query for accounts. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
+          SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
+          SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
+        
+        Use dot-path traversal (Owner.Name, Parent.Name) to resolve relationship
+        fields inline instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -243,7 +250,14 @@ Classes
                 Args:
                     q: SOQL query for campaigns. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50
+          SELECT Id, Name, Type, Status, Owner.Name FROM Campaign LIMIT 50
+          SELECT Id, Name, Owner.Name, Owner.Email, StartDate FROM Campaign WHERE IsActive = true LIMIT 50
+        
+        Use dot-path traversal (Owner.Name) to resolve relationship fields inline
+        instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -298,7 +312,14 @@ Classes
                 Args:
                     q: SOQL query for cases. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100
+          SELECT Id, CaseNumber, Subject, Account.Name, Owner.Name, Contact.Name FROM Case LIMIT 50
+          SELECT Id, CaseNumber, Subject, Status, Account.Name, Owner.Name FROM Case WHERE Status = 'Escalated' LIMIT 50
+        
+        Use dot-path traversal (Account.Name, Owner.Name, Contact.Name) to resolve
+        relationship fields inline instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -401,7 +422,14 @@ Classes
                 Args:
                     q: SOQL query for contacts. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50
+          SELECT Id, FirstName, LastName, Account.Name, Owner.Name FROM Contact LIMIT 50
+          SELECT Id, Name, Email, Account.Name, ReportsTo.Name FROM Contact WHERE AccountId != null LIMIT 50
+        
+        Use dot-path traversal (Account.Name, Owner.Name, ReportsTo.Name) to resolve
+        relationship fields inline instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -531,7 +559,15 @@ Classes
                 Args:
                     q: SOQL query for events. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 50"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 50
+          SELECT Id, Subject, StartDateTime, Owner.Name, Account.Name FROM Event LIMIT 50
+          SELECT Id, Subject, StartDateTime, Owner.Name, Who.Name, What.Name FROM Event WHERE StartDateTime = THIS_WEEK LIMIT 50
+        
+        Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
+        fields inline instead of returning raw IDs. Who.Name and What.Name resolve
+        polymorphic WhoId/WhatId references to the related record's name.
         
                     **kwargs: Additional parameters
         
@@ -642,7 +678,14 @@ Classes
                 Args:
                     q: SOQL query for leads. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100
+          SELECT Id, Name, Company, Owner.Name FROM Lead LIMIT 50
+          SELECT Id, Name, Owner.Name, ConvertedAccount.Name, ConvertedContact.Name, ConvertedOpportunity.Name FROM Lead WHERE IsConverted = true LIMIT 50
+        
+        Use dot-path traversal (Owner.Name, ConvertedAccount.Name, ConvertedContact.Name,
+        ConvertedOpportunity.Name) to resolve relationship fields inline instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -697,7 +740,14 @@ Classes
                 Args:
                     q: SOQL query for notes. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
+          SELECT Id, Title, Body, Owner.Name FROM Note LIMIT 50
+          SELECT Id, Title, Owner.Name, CreatedDate FROM Note ORDER BY CreatedDate DESC LIMIT 50
+        
+        Use dot-path traversal (Owner.Name) to resolve relationship fields inline
+        instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -800,12 +850,102 @@ Classes
                 Args:
                     q: SOQL query for opportunities. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
+          SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
+          SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
+        
+        Use dot-path traversal (Account.Name, Owner.Name, Campaign.Name) to resolve
+        relationship fields inline instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
                 Returns:
                     OpportunitiesListResult
+
+<a id="OpportunityStagesQuery"></a>
+
+`OpportunityStagesQuery(connector: SalesforceConnector)`
+:   Query class for OpportunityStages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: OpportunityStagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[OpportunityStagesSearchData]`
+    :   Search opportunity_stages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (OpportunityStagesSearchFilter):
+        - id: Unique identifier for the opportunity stage record
+        - api_name: API name of the stage used in code and integrations
+        - created_by_id: ID of the user who created this stage
+        - created_date: Date and time when the stage was created
+        - default_probability: Default probability percentage for opportunities at this stage
+        - description: Description of the stage
+        - forecast_category: Forecast category for opportunities at this stage
+        - forecast_category_name: Display name of the forecast category
+        - is_active: Whether the stage is currently active and can be used
+        - is_closed: Whether opportunities at this stage are considered closed
+        - is_won: Whether opportunities at this stage are considered won
+        - last_modified_by_id: ID of the user who last modified this stage
+        - last_modified_date: Date and time when the stage was last modified
+        - master_label: Display label for the stage
+        - sort_order: Order in which the stage appears in the sales process
+        - system_modstamp: System timestamp when the record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            OpportunityStagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.OpportunityStage`
+    :   Get a single opportunity stage by ID. Returns all accessible fields by default.
+        Use the `fields` parameter to retrieve only specific fields for better performance.
+        
+        
+                Args:
+                    id: Salesforce OpportunityStage ID
+                    fields: Comma-separated list of fields to retrieve. If omitted, returns all accessible fields.
+        Example: "Id,MasterLabel,ApiName,DefaultProbability,IsClosed,IsWon,IsActive"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OpportunityStage
+
+    `list(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[OpportunityStage], OpportunityStagesListResultMeta]`
+    :   Returns a list of opportunity stages via SOQL query. Default returns all stages.
+        OpportunityStage defines the sales process stages that opportunities move through.
+        
+        
+                Args:
+                    q: SOQL query for opportunity stages. Default returns all stages.
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM OpportunityStage ORDER BY SortOrder ASC
+          SELECT Id, MasterLabel, ApiName, DefaultProbability, IsClosed, IsWon, IsActive, ForecastCategoryName FROM OpportunityStage WHERE IsActive = true ORDER BY SortOrder ASC
+          SELECT Id, MasterLabel, DefaultProbability, CreatedBy.Name FROM OpportunityStage ORDER BY SortOrder ASC
+        
+        Use dot-path traversal (CreatedBy.Name, LastModifiedBy.Name) to resolve
+        relationship fields inline instead of returning raw IDs.
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OpportunityStagesListResult
 
 <a id="QueryQuery"></a>
 
@@ -827,6 +967,10 @@ Classes
         - "SELECT Id, Name FROM Account LIMIT 100"
         - "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50"
         - "SELECT Id, Subject, Status FROM Case WHERE CreatedDate = TODAY"
+        - "SELECT Id, Name, Account.Name, Owner.Name FROM Opportunity LIMIT 50"
+        
+        Use dot-path traversal (e.g. Owner.Name, Account.Name) to resolve relationship
+        fields inline instead of returning raw IDs.
         
                     **kwargs: Additional parameters
         
@@ -1012,8 +1156,13 @@ Classes
             # Redirect user to: consent_url
             # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -1026,9 +1175,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @SalesforceConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1225,9 +1394,117 @@ Classes
                 Args:
                     q: SOQL query for tasks. Default returns up to 200 records.
         To change the limit, provide your own query with a LIMIT clause.
-        Example: "SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100"
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100
+          SELECT Id, Subject, Status, Owner.Name, Account.Name FROM Task LIMIT 50
+          SELECT Id, Subject, Status, Owner.Name, Who.Name, What.Name FROM Task WHERE ActivityDate = THIS_WEEK LIMIT 50
+        
+        Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
+        fields inline instead of returning raw IDs. Who.Name and What.Name resolve
+        polymorphic WhoId/WhatId references to the related record's name.
         
                     **kwargs: Additional parameters
         
                 Returns:
                     TasksListResult
+
+<a id="UsersQuery"></a>
+
+`UsersQuery(connector: SalesforceConnector)`
+:   Query class for Users entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: UsersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[UsersSearchData]`
+    :   Search users records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (UsersSearchFilter):
+        - id: Unique identifier for the user record
+        - account_id: ID of the account associated with this user (for portal users)
+        - alias: Short name used to identify the user in list views and reports
+        - city: City portion of the user's address
+        - company_name: Name of the user's company
+        - contact_id: ID of the contact associated with this user (for portal users)
+        - country: Country portion of the user's address
+        - created_by_id: ID of the user who created this user record
+        - created_date: Date and time when the user was created
+        - department: Department within the organization
+        - division: Division within the organization
+        - email: Email address of the user
+        - employee_number: Employee number or ID assigned by the organization
+        - first_name: First name of the user
+        - is_active: Whether the user is active and can log in
+        - last_login_date: Date and time of the user's most recent login
+        - last_modified_by_id: ID of the user who last modified this user record
+        - last_modified_date: Date and time when the user was last modified
+        - last_name: Last name of the user
+        - manager_id: ID of the user's manager
+        - mobile_phone: Mobile phone number of the user
+        - name: Full name of the user
+        - phone: Business phone number of the user
+        - postal_code: Postal code portion of the user's address
+        - profile_id: ID of the user's profile
+        - state: State or province portion of the user's address
+        - street: Street address of the user
+        - title: Job title of the user
+        - user_role_id: ID of the user's role in the organization
+        - user_type: Type of user license (e.g., Standard, PowerPartner)
+        - username: Username for logging into Salesforce (unique across all orgs)
+        - system_modstamp: System timestamp when the record was last modified
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            UsersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.User`
+    :   Get a single user by ID. Returns all accessible fields by default.
+        Use the `fields` parameter to retrieve only specific fields for better performance.
+        
+        
+                Args:
+                    id: Salesforce User ID (18-character ID starting with '005')
+                    fields: Comma-separated list of fields to retrieve. If omitted, returns all accessible fields.
+        Example: "Id,Name,Email,Username,IsActive,ProfileId,UserRoleId"
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    User
+
+    `list(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[User], UsersListResultMeta]`
+    :   Returns a list of users via SOQL query. Default returns up to 200 records.
+        For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+        
+        
+                Args:
+                    q: SOQL query for users. Default returns up to 200 records.
+        To change the limit, provide your own query with a LIMIT clause.
+        
+        Examples:
+          SELECT FIELDS(STANDARD) FROM User WHERE IsActive = true ORDER BY LastModifiedDate DESC LIMIT 50
+          SELECT Id, Name, Email, Manager.Name, Profile.Name FROM User WHERE IsActive = true LIMIT 50
+          SELECT Id, Name, Email, Department, UserRole.Name FROM User LIMIT 50
+        
+        Use dot-path traversal (Manager.Name, Profile.Name, UserRole.Name) to resolve
+        relationship fields inline instead of returning raw IDs.
+        
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    UsersListResult

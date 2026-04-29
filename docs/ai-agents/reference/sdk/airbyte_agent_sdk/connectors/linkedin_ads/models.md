@@ -31,52 +31,52 @@ Classes
 
     ### Class variables
 
-    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountChangeauditstamps | Any | None`
+    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountChangeauditstamps | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `notified_on_campaign_optimization: bool | Any | None`
+    `notified_on_campaign_optimization: bool | None`
     :   The type of the None singleton.
 
-    `notified_on_creative_approval: bool | Any | None`
+    `notified_on_creative_approval: bool | None`
     :   The type of the None singleton.
 
-    `notified_on_creative_rejection: bool | Any | None`
+    `notified_on_creative_rejection: bool | None`
     :   The type of the None singleton.
 
-    `notified_on_end_of_campaign: bool | Any | None`
+    `notified_on_end_of_campaign: bool | None`
     :   The type of the None singleton.
 
-    `notified_on_new_features_enabled: bool | Any | None`
+    `notified_on_new_features_enabled: bool | None`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The type of the None singleton.
 
-    `serving_statuses: list[str] | Any | None`
+    `serving_statuses: list[str] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `test: bool | Any | None`
+    `test: bool | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `version: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountVersion | Any | None`
+    `version: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountVersion | None`
     :   The type of the None singleton.
 
 <a id="AccountChangeauditstamps"></a>
@@ -97,10 +97,10 @@ Classes
 
     ### Class variables
 
-    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountChangeauditstampsCreated | Any | None`
+    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountChangeauditstampsCreated | None`
     :   The type of the None singleton.
 
-    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountChangeauditstampsLastmodified | Any | None`
+    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountChangeauditstampsLastmodified | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -124,13 +124,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="AccountChangeauditstampsLastmodified"></a>
@@ -151,13 +151,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="AccountUser"></a>
@@ -178,19 +178,19 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The type of the None singleton.
 
-    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUserChangeauditstamps | Any | None`
+    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUserChangeauditstamps | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any | None`
+    `user: str | None`
     :   The type of the None singleton.
 
 <a id="AccountUserChangeauditstamps"></a>
@@ -211,10 +211,10 @@ Classes
 
     ### Class variables
 
-    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUserChangeauditstampsCreated | Any | None`
+    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUserChangeauditstampsCreated | None`
     :   The type of the None singleton.
 
-    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUserChangeauditstampsLastmodified | Any | None`
+    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUserChangeauditstampsLastmodified | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -238,13 +238,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="AccountUserChangeauditstampsLastmodified"></a>
@@ -265,13 +265,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="AccountUsersList"></a>
@@ -292,10 +292,10 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUser] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUser] | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUsersListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountUsersListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -322,7 +322,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="AccountUsersListResultMeta"></a>
@@ -346,7 +346,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="AccountUsersSearchData"></a>
@@ -400,7 +400,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `version_tag: str | Any | None`
+    `version_tag: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsList"></a>
@@ -421,10 +421,10 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Account] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Account] | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.AccountsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -451,7 +451,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsListResultMeta"></a>
@@ -475,7 +475,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsSearchData"></a>
@@ -559,172 +559,172 @@ Classes
 
     ### Class variables
 
-    `action_clicks: int | Any | None`
+    `action_clicks: int | None`
     :   The type of the None singleton.
 
-    `ad_unit_clicks: int | Any | None`
+    `ad_unit_clicks: int | None`
     :   The type of the None singleton.
 
-    `approximate_member_reach: int | Any | None`
+    `approximate_member_reach: int | None`
     :   The type of the None singleton.
 
-    `card_clicks: int | Any | None`
+    `card_clicks: int | None`
     :   The type of the None singleton.
 
-    `card_impressions: int | Any | None`
+    `card_impressions: int | None`
     :   The type of the None singleton.
 
-    `clicks: int | Any | None`
+    `clicks: int | None`
     :   The type of the None singleton.
 
-    `comment_likes: int | Any | None`
+    `comment_likes: int | None`
     :   The type of the None singleton.
 
-    `comments: int | Any | None`
+    `comments: int | None`
     :   The type of the None singleton.
 
-    `company_page_clicks: int | Any | None`
+    `company_page_clicks: int | None`
     :   The type of the None singleton.
 
-    `conversion_value_in_local_currency: str | Any | None`
+    `conversion_value_in_local_currency: str | None`
     :   The type of the None singleton.
 
-    `cost_in_local_currency: str | Any | None`
+    `cost_in_local_currency: str | None`
     :   The type of the None singleton.
 
-    `cost_in_usd: str | Any | None`
+    `cost_in_usd: str | None`
     :   The type of the None singleton.
 
-    `date_range: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterange | Any | None`
+    `date_range: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterange | None`
     :   The type of the None singleton.
 
-    `document_completions: int | Any | None`
+    `document_completions: int | None`
     :   The type of the None singleton.
 
-    `document_first_quartile_completions: int | Any | None`
+    `document_first_quartile_completions: int | None`
     :   The type of the None singleton.
 
-    `document_midpoint_completions: int | Any | None`
+    `document_midpoint_completions: int | None`
     :   The type of the None singleton.
 
-    `document_third_quartile_completions: int | Any | None`
+    `document_third_quartile_completions: int | None`
     :   The type of the None singleton.
 
-    `download_clicks: int | Any | None`
+    `download_clicks: int | None`
     :   The type of the None singleton.
 
-    `external_website_conversions: int | Any | None`
+    `external_website_conversions: int | None`
     :   The type of the None singleton.
 
-    `external_website_post_click_conversions: int | Any | None`
+    `external_website_post_click_conversions: int | None`
     :   The type of the None singleton.
 
-    `external_website_post_view_conversions: int | Any | None`
+    `external_website_post_view_conversions: int | None`
     :   The type of the None singleton.
 
-    `follows: int | Any | None`
+    `follows: int | None`
     :   The type of the None singleton.
 
-    `full_screen_plays: int | Any | None`
+    `full_screen_plays: int | None`
     :   The type of the None singleton.
 
-    `impressions: int | Any | None`
+    `impressions: int | None`
     :   The type of the None singleton.
 
-    `job_applications: int | Any | None`
+    `job_applications: int | None`
     :   The type of the None singleton.
 
-    `job_apply_clicks: int | Any | None`
+    `job_apply_clicks: int | None`
     :   The type of the None singleton.
 
-    `landing_page_clicks: int | Any | None`
+    `landing_page_clicks: int | None`
     :   The type of the None singleton.
 
-    `lead_generation_mail_contact_info_shares: int | Any | None`
+    `lead_generation_mail_contact_info_shares: int | None`
     :   The type of the None singleton.
 
-    `lead_generation_mail_interested_clicks: int | Any | None`
+    `lead_generation_mail_interested_clicks: int | None`
     :   The type of the None singleton.
 
-    `likes: int | Any | None`
+    `likes: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `one_click_lead_form_opens: int | Any | None`
+    `one_click_lead_form_opens: int | None`
     :   The type of the None singleton.
 
-    `one_click_leads: int | Any | None`
+    `one_click_leads: int | None`
     :   The type of the None singleton.
 
-    `opens: int | Any | None`
+    `opens: int | None`
     :   The type of the None singleton.
 
-    `other_engagements: int | Any | None`
+    `other_engagements: int | None`
     :   The type of the None singleton.
 
-    `pivot_values: list[str] | Any | None`
+    `pivot_values: list[str] | None`
     :   The type of the None singleton.
 
-    `post_click_job_applications: int | Any | None`
+    `post_click_job_applications: int | None`
     :   The type of the None singleton.
 
-    `post_click_job_apply_clicks: int | Any | None`
+    `post_click_job_apply_clicks: int | None`
     :   The type of the None singleton.
 
-    `post_click_registrations: int | Any | None`
+    `post_click_registrations: int | None`
     :   The type of the None singleton.
 
-    `post_view_job_applications: int | Any | None`
+    `post_view_job_applications: int | None`
     :   The type of the None singleton.
 
-    `post_view_job_apply_clicks: int | Any | None`
+    `post_view_job_apply_clicks: int | None`
     :   The type of the None singleton.
 
-    `post_view_registrations: int | Any | None`
+    `post_view_registrations: int | None`
     :   The type of the None singleton.
 
-    `reactions: int | Any | None`
+    `reactions: int | None`
     :   The type of the None singleton.
 
-    `registrations: int | Any | None`
+    `registrations: int | None`
     :   The type of the None singleton.
 
-    `sends: int | Any | None`
+    `sends: int | None`
     :   The type of the None singleton.
 
-    `shares: int | Any | None`
+    `shares: int | None`
     :   The type of the None singleton.
 
-    `talent_leads: int | Any | None`
+    `talent_leads: int | None`
     :   The type of the None singleton.
 
-    `text_url_clicks: int | Any | None`
+    `text_url_clicks: int | None`
     :   The type of the None singleton.
 
-    `total_engagements: int | Any | None`
+    `total_engagements: int | None`
     :   The type of the None singleton.
 
-    `valid_work_email_leads: int | Any | None`
+    `valid_work_email_leads: int | None`
     :   The type of the None singleton.
 
-    `video_completions: int | Any | None`
+    `video_completions: int | None`
     :   The type of the None singleton.
 
-    `video_first_quartile_completions: int | Any | None`
+    `video_first_quartile_completions: int | None`
     :   The type of the None singleton.
 
-    `video_midpoint_completions: int | Any | None`
+    `video_midpoint_completions: int | None`
     :   The type of the None singleton.
 
-    `video_starts: int | Any | None`
+    `video_starts: int | None`
     :   The type of the None singleton.
 
-    `video_third_quartile_completions: int | Any | None`
+    `video_third_quartile_completions: int | None`
     :   The type of the None singleton.
 
-    `video_views: int | Any | None`
+    `video_views: int | None`
     :   The type of the None singleton.
 
 <a id="AdAnalyticsRecordDaterange"></a>
@@ -745,13 +745,13 @@ Classes
 
     ### Class variables
 
-    `end: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterangeEnd | Any`
+    `end: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterangeEnd | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterangeStart | Any`
+    `start: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecordDaterangeStart | None`
     :   The type of the None singleton.
 
 <a id="AdAnalyticsRecordDaterangeEnd"></a>
@@ -772,16 +772,16 @@ Classes
 
     ### Class variables
 
-    `day: int | Any`
+    `day: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `month: int | Any`
+    `month: int | None`
     :   The type of the None singleton.
 
-    `year: int | Any`
+    `year: int | None`
     :   The type of the None singleton.
 
 <a id="AdAnalyticsRecordDaterangeStart"></a>
@@ -802,16 +802,16 @@ Classes
 
     ### Class variables
 
-    `day: int | Any`
+    `day: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `month: int | Any`
+    `month: int | None`
     :   The type of the None singleton.
 
-    `year: int | Any`
+    `year: int | None`
     :   The type of the None singleton.
 
 <a id="AdAnalyticsResponse"></a>
@@ -832,13 +832,13 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecord] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsRecord] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsResponsePaging | Any`
+    `paging: airbyte_agent_sdk.connectors.linkedin_ads.models.AdAnalyticsResponsePaging | None`
     :   The type of the None singleton.
 
 <a id="AdAnalyticsResponsePaging"></a>
@@ -859,13 +859,13 @@ Classes
 
     ### Class variables
 
-    `count: int | Any`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="AdCampaignAnalyticsSearchData"></a>
@@ -1543,94 +1543,94 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The type of the None singleton.
 
-    `associated_entity: str | Any | None`
+    `associated_entity: str | None`
     :   The type of the None singleton.
 
-    `audience_expansion_enabled: bool | Any | None`
+    `audience_expansion_enabled: bool | None`
     :   The type of the None singleton.
 
-    `campaign_group: str | Any | None`
+    `campaign_group: str | None`
     :   The type of the None singleton.
 
-    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignChangeauditstamps | Any | None`
+    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignChangeauditstamps | None`
     :   The type of the None singleton.
 
-    `connected_television_only: bool | Any | None`
+    `connected_television_only: bool | None`
     :   The type of the None singleton.
 
-    `cost_type: str | Any | None`
+    `cost_type: str | None`
     :   The type of the None singleton.
 
-    `creative_selection: str | Any | None`
+    `creative_selection: str | None`
     :   The type of the None singleton.
 
-    `daily_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignDailybudget | Any | None`
+    `daily_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignDailybudget | None`
     :   The type of the None singleton.
 
-    `format: str | Any | None`
+    `format: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `locale: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignLocale | Any | None`
+    `locale: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignLocale | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `objective_type: str | Any | None`
+    `objective_type: str | None`
     :   The type of the None singleton.
 
-    `offsite_delivery_enabled: bool | Any | None`
+    `offsite_delivery_enabled: bool | None`
     :   The type of the None singleton.
 
-    `offsite_preferences: dict[str, typing.Any] | Any | None`
+    `offsite_preferences: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `optimization_target_type: str | Any | None`
+    `optimization_target_type: str | None`
     :   The type of the None singleton.
 
-    `pacing_strategy: str | Any | None`
+    `pacing_strategy: str | None`
     :   The type of the None singleton.
 
-    `political_intent: str | Any | None`
+    `political_intent: str | None`
     :   The type of the None singleton.
 
-    `run_schedule: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignRunschedule | Any | None`
+    `run_schedule: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignRunschedule | None`
     :   The type of the None singleton.
 
-    `serving_statuses: list[str] | Any | None`
+    `serving_statuses: list[str] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `story_delivery_enabled: bool | Any | None`
+    `story_delivery_enabled: bool | None`
     :   The type of the None singleton.
 
-    `targeting_criteria: dict[str, typing.Any] | Any | None`
+    `targeting_criteria: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `test: bool | Any | None`
+    `test: bool | None`
     :   The type of the None singleton.
 
-    `total_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignTotalbudget | Any | None`
+    `total_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignTotalbudget | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `unit_cost: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignUnitcost | Any | None`
+    `unit_cost: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignUnitcost | None`
     :   The type of the None singleton.
 
-    `version: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignVersion | Any | None`
+    `version: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignVersion | None`
     :   The type of the None singleton.
 
 <a id="CampaignChangeauditstamps"></a>
@@ -1651,10 +1651,10 @@ Classes
 
     ### Class variables
 
-    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignChangeauditstampsCreated | Any | None`
+    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignChangeauditstampsCreated | None`
     :   The type of the None singleton.
 
-    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignChangeauditstampsLastmodified | Any | None`
+    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignChangeauditstampsLastmodified | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1678,13 +1678,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignChangeauditstampsLastmodified"></a>
@@ -1705,13 +1705,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignDailybudget"></a>
@@ -1732,10 +1732,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1759,40 +1759,40 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The type of the None singleton.
 
-    `allowed_campaign_types: list[str] | Any | None`
+    `allowed_campaign_types: list[str] | None`
     :   The type of the None singleton.
 
-    `backfilled: bool | Any | None`
+    `backfilled: bool | None`
     :   The type of the None singleton.
 
-    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupChangeauditstamps | Any | None`
+    `change_audit_stamps: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupChangeauditstamps | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `run_schedule: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupRunschedule | Any | None`
+    `run_schedule: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupRunschedule | None`
     :   The type of the None singleton.
 
-    `serving_statuses: list[str] | Any | None`
+    `serving_statuses: list[str] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `test: bool | Any | None`
+    `test: bool | None`
     :   The type of the None singleton.
 
-    `total_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupTotalbudget | Any | None`
+    `total_budget: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupTotalbudget | None`
     :   The type of the None singleton.
 
 <a id="CampaignGroupChangeauditstamps"></a>
@@ -1813,10 +1813,10 @@ Classes
 
     ### Class variables
 
-    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupChangeauditstampsCreated | Any | None`
+    `created: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupChangeauditstampsCreated | None`
     :   The type of the None singleton.
 
-    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupChangeauditstampsLastmodified | Any | None`
+    `last_modified: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupChangeauditstampsLastmodified | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1840,13 +1840,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignGroupChangeauditstampsLastmodified"></a>
@@ -1867,13 +1867,13 @@ Classes
 
     ### Class variables
 
-    `actor: str | Any | None`
+    `actor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time: int | Any | None`
+    `time: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignGroupRunschedule"></a>
@@ -1894,13 +1894,13 @@ Classes
 
     ### Class variables
 
-    `end: int | Any | None`
+    `end: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: int | Any | None`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignGroupTotalbudget"></a>
@@ -1921,10 +1921,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1948,10 +1948,10 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroup] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroup] | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignGroupsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1978,7 +1978,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignGroupsListResultMeta"></a>
@@ -2002,7 +2002,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignGroupsSearchData"></a>
@@ -2074,10 +2074,10 @@ Classes
 
     ### Class variables
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `language: str | Any | None`
+    `language: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2101,13 +2101,13 @@ Classes
 
     ### Class variables
 
-    `end: int | Any | None`
+    `end: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: int | Any | None`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignTotalbudget"></a>
@@ -2128,10 +2128,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2155,10 +2155,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2185,7 +2185,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `version_tag: str | Any | None`
+    `version_tag: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsList"></a>
@@ -2206,10 +2206,10 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Campaign] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Campaign] | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.CampaignsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2236,7 +2236,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListResultMeta"></a>
@@ -2260,7 +2260,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchData"></a>
@@ -2374,67 +2374,67 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The type of the None singleton.
 
-    `associated_campaigns: list[typing.Any] | Any | None`
+    `associated_campaigns: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `attribution_type: str | Any | None`
+    `attribution_type: str | None`
     :   The type of the None singleton.
 
-    `campaigns: list[str] | Any | None`
+    `campaigns: list[str] | None`
     :   The type of the None singleton.
 
-    `conversion_method: str | Any | None`
+    `conversion_method: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any | None`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `enabled: bool | Any | None`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `image_pixel_tag: str | Any | None`
+    `image_pixel_tag: str | None`
     :   The type of the None singleton.
 
-    `last_callback_at: int | Any | None`
+    `last_callback_at: int | None`
     :   The type of the None singleton.
 
-    `last_modified: int | Any | None`
+    `last_modified: int | None`
     :   The type of the None singleton.
 
-    `latest_first_party_callback_at: int | Any | None`
+    `latest_first_party_callback_at: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `post_click_attribution_window_size: int | Any | None`
+    `post_click_attribution_window_size: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url_match_rule_expression: list[typing.Any] | Any | None`
+    `url_match_rule_expression: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `url_rules: list[typing.Any] | Any | None`
+    `url_rules: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `value: airbyte_agent_sdk.connectors.linkedin_ads.models.ConversionValue | Any | None`
+    `value: airbyte_agent_sdk.connectors.linkedin_ads.models.ConversionValue | None`
     :   The type of the None singleton.
 
-    `value_type: str | Any | None`
+    `value_type: str | None`
     :   The type of the None singleton.
 
-    `view_through_attribution_window_size: int | Any | None`
+    `view_through_attribution_window_size: int | None`
     :   The type of the None singleton.
 
 <a id="ConversionValue"></a>
@@ -2455,10 +2455,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2482,13 +2482,13 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Conversion] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Conversion] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `paging: airbyte_agent_sdk.connectors.linkedin_ads.models.ConversionsListPaging | Any`
+    `paging: airbyte_agent_sdk.connectors.linkedin_ads.models.ConversionsListPaging | None`
     :   The type of the None singleton.
 
 <a id="ConversionsListPaging"></a>
@@ -2509,16 +2509,16 @@ Classes
 
     ### Class variables
 
-    `count: int | Any`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="ConversionsListResultMeta"></a>
@@ -2542,7 +2542,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="ConversionsSearchData"></a>
@@ -2626,52 +2626,52 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The type of the None singleton.
 
-    `campaign: str | Any | None`
+    `campaign: str | None`
     :   The type of the None singleton.
 
-    `content: dict[str, typing.Any] | Any | None`
+    `content: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `created_by: str | Any | None`
+    `created_by: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `intended_status: str | Any | None`
+    `intended_status: str | None`
     :   The type of the None singleton.
 
-    `is_serving: bool | Any | None`
+    `is_serving: bool | None`
     :   The type of the None singleton.
 
-    `is_test: bool | Any | None`
+    `is_test: bool | None`
     :   The type of the None singleton.
 
-    `last_modified_at: int | Any | None`
+    `last_modified_at: int | None`
     :   The type of the None singleton.
 
-    `last_modified_by: str | Any | None`
+    `last_modified_by: str | None`
     :   The type of the None singleton.
 
-    `leadgen_call_to_action: airbyte_agent_sdk.connectors.linkedin_ads.models.CreativeLeadgencalltoaction | Any | None`
+    `leadgen_call_to_action: airbyte_agent_sdk.connectors.linkedin_ads.models.CreativeLeadgencalltoaction | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `review: airbyte_agent_sdk.connectors.linkedin_ads.models.CreativeReview | Any | None`
+    `review: airbyte_agent_sdk.connectors.linkedin_ads.models.CreativeReview | None`
     :   The type of the None singleton.
 
-    `serving_hold_reasons: list[str] | Any | None`
+    `serving_hold_reasons: list[str] | None`
     :   The type of the None singleton.
 
 <a id="CreativeLeadgencalltoaction"></a>
@@ -2692,10 +2692,10 @@ Classes
 
     ### Class variables
 
-    `destination: str | Any | None`
+    `destination: str | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2722,10 +2722,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `rejection_reasons: list[typing.Any] | Any | None`
+    `rejection_reasons: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="CreativesList"></a>
@@ -2746,10 +2746,10 @@ Classes
 
     ### Class variables
 
-    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Creative] | Any`
+    `elements: list[airbyte_agent_sdk.connectors.linkedin_ads.models.Creative] | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.CreativesListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.linkedin_ads.models.CreativesListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2776,7 +2776,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CreativesListResultMeta"></a>
@@ -2800,7 +2800,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CreativesSearchData"></a>

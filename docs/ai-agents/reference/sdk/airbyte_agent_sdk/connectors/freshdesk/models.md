@@ -31,76 +31,76 @@ Classes
 
     ### Class variables
 
-    `agent_operational_status: str | Any | None`
+    `agent_operational_status: str | None`
     :   The type of the None singleton.
 
-    `availability: Any`
+    `availability: typing.Any | None`
     :   The type of the None singleton.
 
-    `available: bool | Any | None`
+    `available: bool | None`
     :   The type of the None singleton.
 
-    `available_since: str | Any | None`
+    `available_since: str | None`
     :   The type of the None singleton.
 
-    `contact: airbyte_agent_sdk.connectors.freshdesk.models.AgentContact | Any | None`
+    `contact: airbyte_agent_sdk.connectors.freshdesk.models.AgentContact | None`
     :   The type of the None singleton.
 
-    `contribution_group_ids: list[int] | Any | None`
+    `contribution_group_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `deactivated: bool | Any | None`
+    `deactivated: bool | None`
     :   The type of the None singleton.
 
-    `focus_mode: bool | Any | None`
+    `focus_mode: bool | None`
     :   The type of the None singleton.
 
-    `group_ids: list[int] | Any | None`
+    `group_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `last_active_at: str | Any | None`
+    `last_active_at: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `occasional: bool | Any | None`
+    `occasional: bool | None`
     :   The type of the None singleton.
 
-    `org_agent_id: str | Any | None`
+    `org_agent_id: str | None`
     :   The type of the None singleton.
 
-    `org_contribution_group_ids: list[str] | Any | None`
+    `org_contribution_group_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `org_group_ids: list[str] | Any | None`
+    `org_group_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `role_ids: list[int] | Any | None`
+    `role_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `scope: Any`
+    `scope: typing.Any | None`
     :   The type of the None singleton.
 
-    `signature: str | Any | None`
+    `signature: str | None`
     :   The type of the None singleton.
 
-    `skill_ids: list[int] | Any | None`
+    `skill_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `ticket_scope: int | Any | None`
+    `ticket_scope: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="AgentContact"></a>
@@ -121,40 +121,40 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any | None`
+    `active: bool | None`
     :   Whether the contact is active
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   Contact creation timestamp
 
-    `email: str | Any | None`
+    `email: str | None`
     :   Email of the agent
 
-    `job_title: str | Any | None`
+    `job_title: str | None`
     :   Job title
 
-    `language: str | Any | None`
+    `language: str | None`
     :   Language
 
-    `last_login_at: str | Any | None`
+    `last_login_at: str | None`
     :   Last login timestamp
 
-    `mobile: str | Any | None`
+    `mobile: str | None`
     :   Mobile number
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Name of the agent
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   Phone number
 
-    `time_zone: str | Any | None`
+    `time_zone: str | None`
     :   Time zone
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   Contact update timestamp
 
 <a id="AgentsListResultMeta"></a>
@@ -178,7 +178,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="AgentsSearchData"></a>
@@ -437,7 +437,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="Company"></a>
@@ -458,49 +458,49 @@ Classes
 
     ### Class variables
 
-    `account_tier: str | Any | None`
+    `account_tier: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any | None`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `domains: list[str] | Any | None`
+    `domains: list[str] | None`
     :   The type of the None singleton.
 
-    `health_score: str | Any | None`
+    `health_score: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `industry: str | Any | None`
+    `industry: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `org_company_id: Any`
+    `org_company_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `org_company_id_str: str | Any | None`
+    `org_company_id_str: str | None`
     :   The type of the None singleton.
 
-    `renewal_date: str | Any | None`
+    `renewal_date: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="Contact"></a>
@@ -521,103 +521,103 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any | None`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `address: str | Any | None`
+    `address: str | None`
     :   The type of the None singleton.
 
-    `avatar: dict[str, typing.Any] | Any | None`
+    `avatar: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `company_id: int | Any | None`
+    `company_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `csat_rating: int | Any | None`
+    `csat_rating: int | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any | None`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `facebook_id: str | Any | None`
+    `facebook_id: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `job_title: str | Any | None`
+    `job_title: str | None`
     :   The type of the None singleton.
 
-    `language: str | Any | None`
+    `language: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `mobile: str | Any | None`
+    `mobile: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `org_contact_id: int | Any | None`
+    `org_contact_id: int | None`
     :   The type of the None singleton.
 
-    `org_contact_id_str: str | Any | None`
+    `org_contact_id_str: str | None`
     :   The type of the None singleton.
 
-    `other_companies: list[dict[str, typing.Any]] | Any | None`
+    `other_companies: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `other_emails: list[str] | Any | None`
+    `other_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `other_phone_numbers: list[str] | Any | None`
+    `other_phone_numbers: list[str] | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `preferred_source: str | Any | None`
+    `preferred_source: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any | None`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any | None`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
-    `twitter_id: str | Any | None`
+    `twitter_id: str | None`
     :   The type of the None singleton.
 
-    `unique_external_id: str | Any | None`
+    `unique_external_id: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `view_all_tickets: bool | Any | None`
+    `view_all_tickets: bool | None`
     :   The type of the None singleton.
 
-    `visitor_id: str | Any | None`
+    `visitor_id: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -641,7 +641,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="FreshdeskAuthConfig"></a>
@@ -1240,46 +1240,46 @@ Classes
 
     ### Class variables
 
-    `agent_availability_status: bool | Any | None`
+    `agent_availability_status: bool | None`
     :   The type of the None singleton.
 
-    `agent_ids: list[int] | Any | None`
+    `agent_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `allow_agents_to_change_availability: bool | Any | None`
+    `allow_agents_to_change_availability: bool | None`
     :   The type of the None singleton.
 
-    `auto_ticket_assign: int | Any | None`
+    `auto_ticket_assign: int | None`
     :   The type of the None singleton.
 
-    `business_hour_id: int | Any | None`
+    `business_hour_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `escalate_to: int | Any | None`
+    `escalate_to: int | None`
     :   The type of the None singleton.
 
-    `group_type: str | Any | None`
+    `group_type: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `unassigned_for: str | Any | None`
+    `unassigned_for: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="GroupsListResultMeta"></a>
@@ -1303,7 +1303,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="GroupsSearchData"></a>
@@ -1375,28 +1375,28 @@ Classes
 
     ### Class variables
 
-    `agent_type: int | Any | None`
+    `agent_type: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default: bool | Any | None`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="RolesListResultMeta"></a>
@@ -1420,7 +1420,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SatisfactionRating"></a>
@@ -1441,37 +1441,37 @@ Classes
 
     ### Class variables
 
-    `agent_id: int | Any | None`
+    `agent_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `feedback: str | Any | None`
+    `feedback: str | None`
     :   The type of the None singleton.
 
-    `group_id: int | Any | None`
+    `group_id: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ratings: dict[str, typing.Any] | Any | None`
+    `ratings: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `survey_id: int | Any | None`
+    `survey_id: int | None`
     :   The type of the None singleton.
 
-    `ticket_id: int | Any | None`
+    `ticket_id: int | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsListResultMeta"></a>
@@ -1495,7 +1495,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="Survey"></a>
@@ -1516,25 +1516,25 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any | None`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `questions: list[airbyte_agent_sdk.connectors.freshdesk.models.SurveyQuestionsItem] | Any | None`
+    `questions: list[airbyte_agent_sdk.connectors.freshdesk.models.SurveyQuestionsItem] | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="SurveyQuestionsItem"></a>
@@ -1555,13 +1555,13 @@ Classes
 
     ### Class variables
 
-    `accepted_ratings: list[int] | Any | None`
+    `accepted_ratings: list[int] | None`
     :   Accepted rating values
 
-    `id: str | Any | None`
+    `id: str | None`
     :   Question ID
 
-    `label: str | Any | None`
+    `label: str | None`
     :   Question label
 
     `model_config`
@@ -1588,7 +1588,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="Ticket"></a>
@@ -1609,124 +1609,124 @@ Classes
 
     ### Class variables
 
-    `associated_tickets_count: int | Any | None`
+    `associated_tickets_count: int | None`
     :   The type of the None singleton.
 
-    `association_type: int | Any | None`
+    `association_type: int | None`
     :   The type of the None singleton.
 
-    `attachments: list[dict[str, typing.Any]] | Any | None`
+    `attachments: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `cc_emails: list[str] | Any | None`
+    `cc_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `company_id: int | Any | None`
+    `company_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any | None`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `description_text: str | Any | None`
+    `description_text: str | None`
     :   The type of the None singleton.
 
-    `due_by: str | Any | None`
+    `due_by: str | None`
     :   The type of the None singleton.
 
-    `email_config_id: int | Any | None`
+    `email_config_id: int | None`
     :   The type of the None singleton.
 
-    `form_id: int | Any | None`
+    `form_id: int | None`
     :   The type of the None singleton.
 
-    `fr_due_by: str | Any | None`
+    `fr_due_by: str | None`
     :   The type of the None singleton.
 
-    `fr_escalated: bool | Any | None`
+    `fr_escalated: bool | None`
     :   The type of the None singleton.
 
-    `fwd_emails: list[str] | Any | None`
+    `fwd_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `group_id: int | Any | None`
+    `group_id: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_escalated: bool | Any | None`
+    `is_escalated: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `nr_due_by: str | Any | None`
+    `nr_due_by: str | None`
     :   The type of the None singleton.
 
-    `nr_escalated: bool | Any | None`
+    `nr_escalated: bool | None`
     :   The type of the None singleton.
 
-    `priority: int | Any | None`
+    `priority: int | None`
     :   The type of the None singleton.
 
-    `product_id: int | Any | None`
+    `product_id: int | None`
     :   The type of the None singleton.
 
-    `reply_cc_emails: list[str] | Any | None`
+    `reply_cc_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `requester_id: int | Any | None`
+    `requester_id: int | None`
     :   The type of the None singleton.
 
-    `responder_id: int | Any | None`
+    `responder_id: int | None`
     :   The type of the None singleton.
 
-    `source: int | Any | None`
+    `source: int | None`
     :   The type of the None singleton.
 
-    `source_additional_info: dict[str, typing.Any] | Any | None`
+    `source_additional_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `spam: bool | Any | None`
+    `spam: bool | None`
     :   The type of the None singleton.
 
-    `status: int | Any | None`
+    `status: int | None`
     :   The type of the None singleton.
 
-    `structured_description: dict[str, typing.Any] | Any | None`
+    `structured_description: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `support_email: str | Any | None`
+    `support_email: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any | None`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `ticket_bcc_emails: list[str] | Any | None`
+    `ticket_bcc_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `ticket_cc_emails: list[str] | Any | None`
+    `ticket_cc_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `to_emails: list[str] | Any | None`
+    `to_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="TicketField"></a>
@@ -1747,64 +1747,64 @@ Classes
 
     ### Class variables
 
-    `choices: Any`
+    `choices: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `customers_can_edit: bool | Any | None`
+    `customers_can_edit: bool | None`
     :   The type of the None singleton.
 
-    `customers_can_filter: bool | Any | None`
+    `customers_can_filter: bool | None`
     :   The type of the None singleton.
 
-    `default: bool | Any | None`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `displayed_to_customers: bool | Any | None`
+    `displayed_to_customers: bool | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
-    `label_for_customers: str | Any | None`
+    `label_for_customers: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `portal_cc: bool | Any | None`
+    `portal_cc: bool | None`
     :   The type of the None singleton.
 
-    `portal_cc_to: str | Any | None`
+    `portal_cc_to: str | None`
     :   The type of the None singleton.
 
-    `position: int | Any | None`
+    `position: int | None`
     :   The type of the None singleton.
 
-    `required_for_agents: bool | Any | None`
+    `required_for_agents: bool | None`
     :   The type of the None singleton.
 
-    `required_for_closure: bool | Any | None`
+    `required_for_closure: bool | None`
     :   The type of the None singleton.
 
-    `required_for_customers: bool | Any | None`
+    `required_for_customers: bool | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="TicketFieldsListResultMeta"></a>
@@ -1828,7 +1828,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="TicketsListResultMeta"></a>
@@ -1852,7 +1852,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="TicketsSearchData"></a>
@@ -1999,7 +1999,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="TimeEntry"></a>
@@ -2020,44 +2020,44 @@ Classes
 
     ### Class variables
 
-    `agent_id: int | Any | None`
+    `agent_id: int | None`
     :   The type of the None singleton.
 
-    `billable: bool | Any | None`
+    `billable: bool | None`
     :   The type of the None singleton.
 
-    `company_id: int | Any | None`
+    `company_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `executed_at: str | Any | None`
+    `executed_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `start_time: str | Any | None`
+    `start_time: str | None`
     :   The type of the None singleton.
 
-    `ticket_id: int | Any | None`
+    `ticket_id: int | None`
     :   The type of the None singleton.
 
-    `time_spent: str | Any | None`
+    `time_spent: str | None`
     :   The type of the None singleton.
 
-    `time_spent_in_seconds: int | Any | None`
+    `time_spent_in_seconds: int | None`
     :   The type of the None singleton.
 
-    `timer_running: bool | Any | None`
+    `timer_running: bool | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.

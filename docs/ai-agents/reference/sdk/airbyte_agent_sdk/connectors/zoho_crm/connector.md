@@ -58,6 +58,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, data: list[AccountsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Creates a new account record in Zoho CRM
+        
+        Args:
+            data: Array containing the account record to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single account by ID
         
@@ -81,6 +91,17 @@ Classes
         
         Returns:
             AccountsListResult
+
+    `update(self, data: list[AccountsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Updates an existing account record in Zoho CRM
+        
+        Args:
+            data: Array containing the account fields to update
+            id: Account ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
 
 <a id="CallsQuery"></a>
 
@@ -267,6 +288,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, data: list[ContactsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Creates a new contact record in Zoho CRM
+        
+        Args:
+            data: Array containing the contact record to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single contact by ID
         
@@ -290,6 +321,17 @@ Classes
         
         Returns:
             ContactsListResult
+
+    `update(self, data: list[ContactsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Updates an existing contact record in Zoho CRM
+        
+        Args:
+            data: Array containing the contact fields to update
+            id: Contact ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
 
 <a id="DealsQuery"></a>
 
@@ -334,6 +376,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, data: list[DealsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Creates a new deal record in Zoho CRM
+        
+        Args:
+            data: Array containing the deal record to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single deal by ID
         
@@ -357,6 +409,17 @@ Classes
         
         Returns:
             DealsListResult
+
+    `update(self, data: list[DealsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Updates an existing deal record in Zoho CRM
+        
+        Args:
+            data: Array containing the deal fields to update
+            id: Deal ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
 
 <a id="EventsQuery"></a>
 
@@ -547,6 +610,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, data: list[LeadsCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Creates a new lead record in Zoho CRM
+        
+        Args:
+            data: Array containing the lead record to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single lead by ID
         
@@ -570,6 +643,17 @@ Classes
         
         Returns:
             LeadsListResult
+
+    `update(self, data: list[LeadsUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Updates an existing lead record in Zoho CRM
+        
+        Args:
+            data: Array containing the lead fields to update
+            id: Lead ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
 
 <a id="ProductsQuery"></a>
 
@@ -752,6 +836,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, data: list[TasksCreateParamsDataItem], **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Creates a new task record in Zoho CRM
+        
+        Args:
+            data: Array containing the task record to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Get a single task by ID
         
@@ -775,6 +869,17 @@ Classes
         
         Returns:
             TasksListResult
+
+    `update(self, data: list[TasksUpdateParamsDataItem], id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponse`
+    :   Updates an existing task record in Zoho CRM
+        
+        Args:
+            data: Array containing the task fields to update
+            id: Task ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            WriteResponse
 
 <a id="ZohoCrmConnector"></a>
 
@@ -919,8 +1024,13 @@ Classes
             # Redirect user to: consent_url
             # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -933,9 +1043,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @ZohoCrmConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -984,7 +1114,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

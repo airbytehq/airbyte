@@ -1329,6 +1329,228 @@ Classes
     `untranslated_name: str`
     :   The untranslated name of the field
 
+<a id="IssueLinksCreateParams"></a>
+
+`IssueLinksCreateParams(*args, **kwargs)`
+:   Parameters for issue_links.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `comment: airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsComment`
+    :   The type of the None singleton.
+
+    `inward_issue: airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsInwardissue`
+    :   The type of the None singleton.
+
+    `outward_issue: airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsOutwardissue`
+    :   The type of the None singleton.
+
+    `type: airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsType`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsComment"></a>
+
+`IssueLinksCreateParamsComment(*args, **kwargs)`
+:   A comment about the link in Atlassian Document Format (ADF)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsCommentBody`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsCommentBody"></a>
+
+`IssueLinksCreateParamsCommentBody(*args, **kwargs)`
+:   Nested schema for IssueLinksCreateParamsComment.body
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsCommentBodyContentItem]`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `version: int`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsCommentBodyContentItem"></a>
+
+`IssueLinksCreateParamsCommentBodyContentItem(*args, **kwargs)`
+:   Nested schema for IssueLinksCreateParamsCommentBody.content_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsCommentBodyContentItemContentItem]`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsCommentBodyContentItemContentItem"></a>
+
+`IssueLinksCreateParamsCommentBodyContentItemContentItem(*args, **kwargs)`
+:   Nested schema for IssueLinksCreateParamsCommentBodyContentItem.content_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `text: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsInwardissue"></a>
+
+`IssueLinksCreateParamsInwardissue(*args, **kwargs)`
+:   The inward issue (the issue that is affected by the link)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `key: str`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsOutwardissue"></a>
+
+`IssueLinksCreateParamsOutwardissue(*args, **kwargs)`
+:   The outward issue (the issue that causes the link)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `key: str`
+    :   The type of the None singleton.
+
+<a id="IssueLinksCreateParamsType"></a>
+
+`IssueLinksCreateParamsType(*args, **kwargs)`
+:   The type of link (e.g., Blocks, Duplicate, Relates)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `inward: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `outward: str`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionsCreateParams"></a>
+
+`IssueTransitionsCreateParams(*args, **kwargs)`
+:   Parameters for issue_transitions.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fields: dict[str, typing.Any]`
+    :   The type of the None singleton.
+
+    `history_metadata: dict[str, typing.Any]`
+    :   The type of the None singleton.
+
+    `issue_id_or_key: str`
+    :   The type of the None singleton.
+
+    `transition: airbyte_agent_sdk.connectors.jira.types.IssueTransitionsCreateParamsTransition`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `update(...) ‑> dict[str, typing.Any]`
+    :   D.update([E, ]**F) -> None.  Update D from mapping/iterable E and F.
+        If E is present and has a .keys() method, then does:  for k in E.keys(): D[k] = E[k]
+        If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
+        In either case, this is followed by: for k in F:  D[k] = F[k]
+
+<a id="IssueTransitionsCreateParamsTransition"></a>
+
+`IssueTransitionsCreateParamsTransition(*args, **kwargs)`
+:   The transition to perform
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionsListParams"></a>
+
+`IssueTransitionsListParams(*args, **kwargs)`
+:   Parameters for issue_transitions.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `expand: str`
+    :   The type of the None singleton.
+
+    `include_unavailable_transitions: bool`
+    :   The type of the None singleton.
+
+    `issue_id_or_key: str`
+    :   The type of the None singleton.
+
+    `skip_remote_only_condition: bool`
+    :   The type of the None singleton.
+
+    `sort_by_ops_bar_and_status: bool`
+    :   The type of the None singleton.
+
+    `transition_id: str`
+    :   The type of the None singleton.
+
 <a id="IssueWorklogsAndCondition"></a>
 
 `IssueWorklogsAndCondition(*args, **kwargs)`
@@ -1435,6 +1657,115 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="IssueWorklogsCreateParams"></a>
+
+`IssueWorklogsCreateParams(*args, **kwargs)`
+:   Parameters for issue_worklogs.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `adjust_estimate: str`
+    :   The type of the None singleton.
+
+    `comment: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsCreateParamsComment`
+    :   The type of the None singleton.
+
+    `issue_id_or_key: str`
+    :   The type of the None singleton.
+
+    `notify_users: bool`
+    :   The type of the None singleton.
+
+    `started: str`
+    :   The type of the None singleton.
+
+    `time_spent: str`
+    :   The type of the None singleton.
+
+    `time_spent_seconds: int`
+    :   The type of the None singleton.
+
+    `visibility: airbyte_agent_sdk.connectors.jira.types.IssueWorklogsCreateParamsVisibility`
+    :   The type of the None singleton.
+
+<a id="IssueWorklogsCreateParamsComment"></a>
+
+`IssueWorklogsCreateParamsComment(*args, **kwargs)`
+:   A comment about the work done in Atlassian Document Format (ADF)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsCreateParamsCommentContentItem]`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `version: int`
+    :   The type of the None singleton.
+
+<a id="IssueWorklogsCreateParamsCommentContentItem"></a>
+
+`IssueWorklogsCreateParamsCommentContentItem(*args, **kwargs)`
+:   Nested schema for IssueWorklogsCreateParamsComment.content_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsCreateParamsCommentContentItemContentItem]`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="IssueWorklogsCreateParamsCommentContentItemContentItem"></a>
+
+`IssueWorklogsCreateParamsCommentContentItemContentItem(*args, **kwargs)`
+:   Nested schema for IssueWorklogsCreateParamsCommentContentItem.content_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `text: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="IssueWorklogsCreateParamsVisibility"></a>
+
+`IssueWorklogsCreateParamsVisibility(*args, **kwargs)`
+:   Restrict worklog visibility to a group or role
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `identifier: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `value: str`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsEqCondition"></a>

@@ -31,40 +31,40 @@ Classes
 
     ### Class variables
 
-    `avatar: Any`
+    `avatar: typing.Any | None`
     :   The type of the None singleton.
 
-    `away_mode_enabled: bool | Any | None`
+    `away_mode_enabled: bool | None`
     :   The type of the None singleton.
 
-    `away_mode_reassign: bool | Any | None`
+    `away_mode_reassign: bool | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `email_verified: bool | Any | None`
+    `email_verified: bool | None`
     :   The type of the None singleton.
 
-    `has_inbox_seat: bool | Any | None`
+    `has_inbox_seat: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `job_title: str | Any | None`
+    `job_title: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `team_ids: list[int] | Any`
+    `team_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="AdminPriorityLevel"></a>
@@ -88,10 +88,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `primary_admin_ids: list[int] | Any`
+    `primary_admin_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `secondary_admin_ids: list[int] | Any`
+    `secondary_admin_ids: list[int] | None`
     :   The type of the None singleton.
 
 <a id="AdminReference"></a>
@@ -112,13 +112,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="AdminsList"></a>
@@ -139,13 +139,13 @@ Classes
 
     ### Class variables
 
-    `admins: list[airbyte_agent_sdk.connectors.intercom.models.Admin] | Any`
+    `admins: list[airbyte_agent_sdk.connectors.intercom.models.Admin] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="AirbyteSearchMeta"></a>
@@ -387,28 +387,28 @@ Classes
 
     ### Class variables
 
-    `content_type: str | Any | None`
+    `content_type: str | None`
     :   The type of the None singleton.
 
-    `filesize: int | Any | None`
+    `filesize: int | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="Author"></a>
@@ -429,19 +429,19 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="Avatar"></a>
@@ -462,13 +462,13 @@ Classes
 
     ### Class variables
 
-    `image_url: str | Any | None`
+    `image_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CompaniesList"></a>
@@ -489,19 +489,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.Company] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.Company] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pages: airbyte_agent_sdk.connectors.intercom.models.CompaniesListPages | Any | None`
+    `pages: airbyte_agent_sdk.connectors.intercom.models.CompaniesListPages | None`
     :   The type of the None singleton.
 
-    `total_count: int | Any | None`
+    `total_count: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CompaniesListPages"></a>
@@ -525,19 +525,19 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: airbyte_agent_sdk.connectors.intercom.models.CompaniesListPagesNext | Any | None`
+    `next: airbyte_agent_sdk.connectors.intercom.models.CompaniesListPagesNext | None`
     :   Cursor for next page
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Current page number
 
-    `per_page: int | Any | None`
+    `per_page: int | None`
     :   Number of items per page
 
-    `total_pages: int | Any | None`
+    `total_pages: int | None`
     :   Total number of pages
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   Type of pagination
 
 <a id="CompaniesListPagesNext"></a>
@@ -561,10 +561,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Next page number
 
-    `starting_after: str | Any | None`
+    `starting_after: str | None`
     :   Cursor for next page
 
 <a id="CompaniesListResultMeta"></a>
@@ -588,7 +588,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="CompaniesSearchData"></a>
@@ -684,64 +684,64 @@ Classes
 
     ### Class variables
 
-    `app_id: str | Any | None`
+    `app_id: str | None`
     :   The type of the None singleton.
 
-    `company_id: str | Any | None`
+    `company_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `custom_attributes: dict[str, typing.Any] | Any | None`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `industry: str | Any | None`
+    `industry: str | None`
     :   The type of the None singleton.
 
-    `last_request_at: int | Any | None`
+    `last_request_at: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `monthly_spend: float | Any | None`
+    `monthly_spend: float | None`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `plan: Any`
+    `plan: typing.Any | None`
     :   The type of the None singleton.
 
-    `remote_created_at: int | Any | None`
+    `remote_created_at: int | None`
     :   The type of the None singleton.
 
-    `segments: Any`
+    `segments: typing.Any | None`
     :   The type of the None singleton.
 
-    `session_count: int | Any | None`
+    `session_count: int | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `tags: Any`
+    `tags: typing.Any | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `user_count: int | Any | None`
+    `user_count: int | None`
     :   The type of the None singleton.
 
-    `website: str | Any | None`
+    `website: str | None`
     :   The type of the None singleton.
 
 <a id="CompanyCreateParams"></a>
@@ -762,31 +762,31 @@ Classes
 
     ### Class variables
 
-    `company_id: str | Any`
+    `company_id: str`
     :   The type of the None singleton.
 
-    `custom_attributes: dict[str, typing.Any] | Any`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `industry: str | Any`
+    `industry: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `monthly_spend: float | Any`
+    `monthly_spend: float | None`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `plan: str | Any`
+    `plan: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `website: str | Any`
+    `website: str | None`
     :   The type of the None singleton.
 
 <a id="CompanyPlan"></a>
@@ -807,16 +807,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CompanyReference"></a>
@@ -837,16 +837,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CompanySegments"></a>
@@ -870,10 +870,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `segments: list[airbyte_agent_sdk.connectors.intercom.models.Segment] | Any`
+    `segments: list[airbyte_agent_sdk.connectors.intercom.models.Segment] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CompanyTags"></a>
@@ -897,10 +897,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tags: list[airbyte_agent_sdk.connectors.intercom.models.Tag] | Any`
+    `tags: list[airbyte_agent_sdk.connectors.intercom.models.Tag] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CompanyUpdateParams"></a>
@@ -921,28 +921,28 @@ Classes
 
     ### Class variables
 
-    `custom_attributes: dict[str, typing.Any] | Any`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `industry: str | Any`
+    `industry: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `monthly_spend: float | Any`
+    `monthly_spend: float | None`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `plan: str | Any`
+    `plan: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `website: str | Any`
+    `website: str | None`
     :   The type of the None singleton.
 
 <a id="Contact"></a>
@@ -963,139 +963,139 @@ Classes
 
     ### Class variables
 
-    `android_app_name: str | Any | None`
+    `android_app_name: str | None`
     :   The type of the None singleton.
 
-    `android_app_version: str | Any | None`
+    `android_app_version: str | None`
     :   The type of the None singleton.
 
-    `android_device: str | Any | None`
+    `android_device: str | None`
     :   The type of the None singleton.
 
-    `android_last_seen_at: int | Any | None`
+    `android_last_seen_at: int | None`
     :   The type of the None singleton.
 
-    `android_os_version: str | Any | None`
+    `android_os_version: str | None`
     :   The type of the None singleton.
 
-    `android_sdk_version: str | Any | None`
+    `android_sdk_version: str | None`
     :   The type of the None singleton.
 
-    `avatar: str | Any | None`
+    `avatar: str | None`
     :   The type of the None singleton.
 
-    `browser: str | Any | None`
+    `browser: str | None`
     :   The type of the None singleton.
 
-    `browser_language: str | Any | None`
+    `browser_language: str | None`
     :   The type of the None singleton.
 
-    `browser_version: str | Any | None`
+    `browser_version: str | None`
     :   The type of the None singleton.
 
-    `companies: Any`
+    `companies: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `custom_attributes: dict[str, typing.Any] | Any | None`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `external_id: str | Any | None`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `has_hard_bounced: bool | Any | None`
+    `has_hard_bounced: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `ios_app_name: str | Any | None`
+    `ios_app_name: str | None`
     :   The type of the None singleton.
 
-    `ios_app_version: str | Any | None`
+    `ios_app_version: str | None`
     :   The type of the None singleton.
 
-    `ios_device: str | Any | None`
+    `ios_device: str | None`
     :   The type of the None singleton.
 
-    `ios_last_seen_at: int | Any | None`
+    `ios_last_seen_at: int | None`
     :   The type of the None singleton.
 
-    `ios_os_version: str | Any | None`
+    `ios_os_version: str | None`
     :   The type of the None singleton.
 
-    `ios_sdk_version: str | Any | None`
+    `ios_sdk_version: str | None`
     :   The type of the None singleton.
 
-    `language_override: str | Any | None`
+    `language_override: str | None`
     :   The type of the None singleton.
 
-    `last_contacted_at: int | Any | None`
+    `last_contacted_at: int | None`
     :   The type of the None singleton.
 
-    `last_email_clicked_at: int | Any | None`
+    `last_email_clicked_at: int | None`
     :   The type of the None singleton.
 
-    `last_email_opened_at: int | Any | None`
+    `last_email_opened_at: int | None`
     :   The type of the None singleton.
 
-    `last_replied_at: int | Any | None`
+    `last_replied_at: int | None`
     :   The type of the None singleton.
 
-    `last_seen_at: int | Any | None`
+    `last_seen_at: int | None`
     :   The type of the None singleton.
 
-    `location: Any`
+    `location: typing.Any | None`
     :   The type of the None singleton.
 
-    `marked_email_as_spam: bool | Any | None`
+    `marked_email_as_spam: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `notes: Any`
+    `notes: typing.Any | None`
     :   The type of the None singleton.
 
-    `os: str | Any | None`
+    `os: str | None`
     :   The type of the None singleton.
 
-    `owner_id: int | Any | None`
+    `owner_id: int | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `signed_up_at: int | Any | None`
+    `signed_up_at: int | None`
     :   The type of the None singleton.
 
-    `social_profiles: Any`
+    `social_profiles: typing.Any | None`
     :   The type of the None singleton.
 
-    `tags: Any`
+    `tags: typing.Any | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `unsubscribed_from_emails: bool | Any | None`
+    `unsubscribed_from_emails: bool | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `workspace_id: str | Any | None`
+    `workspace_id: str | None`
     :   The type of the None singleton.
 
 <a id="ContactCompanies"></a>
@@ -1116,13 +1116,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.CompanyReference] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.CompanyReference] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ContactCreateParams"></a>
@@ -1143,40 +1143,40 @@ Classes
 
     ### Class variables
 
-    `avatar: str | Any`
+    `avatar: str | None`
     :   The type of the None singleton.
 
-    `custom_attributes: dict[str, typing.Any] | Any`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `external_id: str | Any`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `last_seen_at: int | Any`
+    `last_seen_at: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner_id: int | Any`
+    `owner_id: int | None`
     :   The type of the None singleton.
 
-    `phone: str | Any`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any`
+    `role: str`
     :   The type of the None singleton.
 
-    `signed_up_at: int | Any`
+    `signed_up_at: int | None`
     :   The type of the None singleton.
 
-    `unsubscribed_from_emails: bool | Any`
+    `unsubscribed_from_emails: bool | None`
     :   The type of the None singleton.
 
 <a id="ContactNotes"></a>
@@ -1197,13 +1197,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.NoteReference] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.NoteReference] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ContactReference"></a>
@@ -1224,13 +1224,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ContactTags"></a>
@@ -1251,13 +1251,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.TagReference] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.TagReference] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ContactUpdateParams"></a>
@@ -1278,40 +1278,40 @@ Classes
 
     ### Class variables
 
-    `avatar: str | Any`
+    `avatar: str | None`
     :   The type of the None singleton.
 
-    `custom_attributes: dict[str, typing.Any] | Any`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `external_id: str | Any`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `last_seen_at: int | Any`
+    `last_seen_at: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner_id: int | Any`
+    `owner_id: int | None`
     :   The type of the None singleton.
 
-    `phone: str | Any`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `signed_up_at: int | Any`
+    `signed_up_at: int | None`
     :   The type of the None singleton.
 
-    `unsubscribed_from_emails: bool | Any`
+    `unsubscribed_from_emails: bool | None`
     :   The type of the None singleton.
 
 <a id="ContactsList"></a>
@@ -1332,19 +1332,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.Contact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.Contact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pages: airbyte_agent_sdk.connectors.intercom.models.ContactsListPages | Any | None`
+    `pages: airbyte_agent_sdk.connectors.intercom.models.ContactsListPages | None`
     :   The type of the None singleton.
 
-    `total_count: int | Any | None`
+    `total_count: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsListPages"></a>
@@ -1368,19 +1368,19 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: airbyte_agent_sdk.connectors.intercom.models.ContactsListPagesNext | Any | None`
+    `next: airbyte_agent_sdk.connectors.intercom.models.ContactsListPagesNext | None`
     :   Cursor for next page
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Current page number
 
-    `per_page: int | Any | None`
+    `per_page: int | None`
     :   Number of items per page
 
-    `total_pages: int | Any | None`
+    `total_pages: int | None`
     :   Total number of pages
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   Type of pagination
 
 <a id="ContactsListPagesNext"></a>
@@ -1404,10 +1404,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Next page number
 
-    `starting_after: str | Any | None`
+    `starting_after: str | None`
     :   Cursor for next page
 
 <a id="ContactsListResultMeta"></a>
@@ -1431,7 +1431,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsSearchData"></a>
@@ -1635,76 +1635,76 @@ Classes
 
     ### Class variables
 
-    `admin_assignee_id: int | Any | None`
+    `admin_assignee_id: int | None`
     :   The type of the None singleton.
 
-    `contacts: Any`
+    `contacts: typing.Any | None`
     :   The type of the None singleton.
 
-    `conversation_parts: Any`
+    `conversation_parts: typing.Any | None`
     :   The type of the None singleton.
 
-    `conversation_rating: Any`
+    `conversation_rating: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `custom_attributes: dict[str, typing.Any] | Any | None`
+    `custom_attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `first_contact_reply: Any`
+    `first_contact_reply: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `open: bool | Any | None`
+    `open: bool | None`
     :   The type of the None singleton.
 
-    `priority: str | Any | None`
+    `priority: str | None`
     :   The type of the None singleton.
 
-    `read: bool | Any | None`
+    `read: bool | None`
     :   The type of the None singleton.
 
-    `sla_applied: Any`
+    `sla_applied: typing.Any | None`
     :   The type of the None singleton.
 
-    `snoozed_until: int | Any | None`
+    `snoozed_until: int | None`
     :   The type of the None singleton.
 
-    `source: Any`
+    `source: typing.Any | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `statistics: Any`
+    `statistics: typing.Any | None`
     :   The type of the None singleton.
 
-    `tags: Any`
+    `tags: typing.Any | None`
     :   The type of the None singleton.
 
-    `team_assignee_id: str | Any | None`
+    `team_assignee_id: str | None`
     :   The type of the None singleton.
 
-    `teammates: Any`
+    `teammates: typing.Any | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `waiting_since: int | Any | None`
+    `waiting_since: int | None`
     :   The type of the None singleton.
 
 <a id="ConversationContacts"></a>
@@ -1725,13 +1725,13 @@ Classes
 
     ### Class variables
 
-    `contacts: list[airbyte_agent_sdk.connectors.intercom.models.ContactReference] | Any`
+    `contacts: list[airbyte_agent_sdk.connectors.intercom.models.ContactReference] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationPart"></a>
@@ -1752,43 +1752,43 @@ Classes
 
     ### Class variables
 
-    `assigned_to: Any`
+    `assigned_to: typing.Any | None`
     :   The type of the None singleton.
 
-    `attachments: list[airbyte_agent_sdk.connectors.intercom.models.Attachment] | Any`
+    `attachments: list[airbyte_agent_sdk.connectors.intercom.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `external_id: str | Any | None`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `notified_at: int | Any | None`
+    `notified_at: int | None`
     :   The type of the None singleton.
 
-    `part_type: str | Any | None`
+    `part_type: str | None`
     :   The type of the None singleton.
 
-    `redacted: bool | Any | None`
+    `redacted: bool | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="ConversationPartsReference"></a>
@@ -1809,16 +1809,16 @@ Classes
 
     ### Class variables
 
-    `conversation_parts: list[airbyte_agent_sdk.connectors.intercom.models.ConversationPart] | Any`
+    `conversation_parts: list[airbyte_agent_sdk.connectors.intercom.models.ConversationPart] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_count: int | Any | None`
+    `total_count: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationRating"></a>
@@ -1839,22 +1839,22 @@ Classes
 
     ### Class variables
 
-    `contact: Any`
+    `contact: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rating: int | Any | None`
+    `rating: int | None`
     :   The type of the None singleton.
 
-    `remark: str | Any | None`
+    `remark: str | None`
     :   The type of the None singleton.
 
-    `teammate: Any`
+    `teammate: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="ConversationSource"></a>
@@ -1875,34 +1875,34 @@ Classes
 
     ### Class variables
 
-    `attachments: list[airbyte_agent_sdk.connectors.intercom.models.Attachment] | Any`
+    `attachments: list[airbyte_agent_sdk.connectors.intercom.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `delivered_as: str | Any | None`
+    `delivered_as: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `redacted: bool | Any | None`
+    `redacted: bool | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationStatistics"></a>
@@ -1923,64 +1923,64 @@ Classes
 
     ### Class variables
 
-    `count_assignments: int | Any | None`
+    `count_assignments: int | None`
     :   The type of the None singleton.
 
-    `count_conversation_parts: int | Any | None`
+    `count_conversation_parts: int | None`
     :   The type of the None singleton.
 
-    `count_reopens: int | Any | None`
+    `count_reopens: int | None`
     :   The type of the None singleton.
 
-    `first_admin_reply_at: int | Any | None`
+    `first_admin_reply_at: int | None`
     :   The type of the None singleton.
 
-    `first_assignment_at: int | Any | None`
+    `first_assignment_at: int | None`
     :   The type of the None singleton.
 
-    `first_close_at: int | Any | None`
+    `first_close_at: int | None`
     :   The type of the None singleton.
 
-    `first_contact_reply_at: int | Any | None`
+    `first_contact_reply_at: int | None`
     :   The type of the None singleton.
 
-    `last_admin_reply_at: int | Any | None`
+    `last_admin_reply_at: int | None`
     :   The type of the None singleton.
 
-    `last_assignment_admin_reply_at: int | Any | None`
+    `last_assignment_admin_reply_at: int | None`
     :   The type of the None singleton.
 
-    `last_assignment_at: int | Any | None`
+    `last_assignment_at: int | None`
     :   The type of the None singleton.
 
-    `last_close_at: int | Any | None`
+    `last_close_at: int | None`
     :   The type of the None singleton.
 
-    `last_closed_by_id: str | Any | None`
+    `last_closed_by_id: str | None`
     :   The type of the None singleton.
 
-    `last_contact_reply_at: int | Any | None`
+    `last_contact_reply_at: int | None`
     :   The type of the None singleton.
 
-    `median_time_to_reply: int | Any | None`
+    `median_time_to_reply: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `time_to_admin_reply: int | Any | None`
+    `time_to_admin_reply: int | None`
     :   The type of the None singleton.
 
-    `time_to_assignment: int | Any | None`
+    `time_to_assignment: int | None`
     :   The type of the None singleton.
 
-    `time_to_first_close: int | Any | None`
+    `time_to_first_close: int | None`
     :   The type of the None singleton.
 
-    `time_to_last_close: int | Any | None`
+    `time_to_last_close: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationTags"></a>
@@ -2004,10 +2004,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tags: list[airbyte_agent_sdk.connectors.intercom.models.Tag] | Any`
+    `tags: list[airbyte_agent_sdk.connectors.intercom.models.Tag] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationTeammates"></a>
@@ -2028,13 +2028,13 @@ Classes
 
     ### Class variables
 
-    `admins: list[airbyte_agent_sdk.connectors.intercom.models.AdminReference] | Any`
+    `admins: list[airbyte_agent_sdk.connectors.intercom.models.AdminReference] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationsList"></a>
@@ -2055,19 +2055,19 @@ Classes
 
     ### Class variables
 
-    `conversations: list[airbyte_agent_sdk.connectors.intercom.models.Conversation] | Any`
+    `conversations: list[airbyte_agent_sdk.connectors.intercom.models.Conversation] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pages: airbyte_agent_sdk.connectors.intercom.models.ConversationsListPages | Any | None`
+    `pages: airbyte_agent_sdk.connectors.intercom.models.ConversationsListPages | None`
     :   The type of the None singleton.
 
-    `total_count: int | Any | None`
+    `total_count: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationsListPages"></a>
@@ -2091,19 +2091,19 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: airbyte_agent_sdk.connectors.intercom.models.ConversationsListPagesNext | Any | None`
+    `next: airbyte_agent_sdk.connectors.intercom.models.ConversationsListPagesNext | None`
     :   Cursor for next page
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Current page number
 
-    `per_page: int | Any | None`
+    `per_page: int | None`
     :   Number of items per page
 
-    `total_pages: int | Any | None`
+    `total_pages: int | None`
     :   Total number of pages
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   Type of pagination
 
 <a id="ConversationsListPagesNext"></a>
@@ -2127,10 +2127,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Next page number
 
-    `starting_after: str | Any | None`
+    `starting_after: str | None`
     :   Cursor for next page
 
 <a id="ConversationsListResultMeta"></a>
@@ -2154,7 +2154,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="ConversationsSearchData"></a>
@@ -2295,16 +2295,16 @@ Classes
 
     ### Class variables
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="IntercomAuthConfig"></a>
@@ -2781,31 +2781,31 @@ Classes
 
     ### Class variables
 
-    `author_id: int | Any | None`
+    `author_id: int | None`
     :   The type of the None singleton.
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `id: Any`
+    `id: typing.Any | None`
     :   The type of the None singleton.
 
-    `locale: str | Any | None`
+    `locale: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `owner_id: int | Any | None`
+    `owner_id: int | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="InternalArticleCreateParams"></a>
@@ -2826,19 +2826,19 @@ Classes
 
     ### Class variables
 
-    `author_id: int | Any`
+    `author_id: int`
     :   The type of the None singleton.
 
-    `body: str | Any`
+    `body: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `owner_id: int | Any`
+    `owner_id: int`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="Location"></a>
@@ -2859,25 +2859,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `continent_code: str | Any | None`
+    `continent_code: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `region: str | Any | None`
+    `region: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="Note"></a>
@@ -2898,25 +2898,25 @@ Classes
 
     ### Class variables
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `contact: Any`
+    `contact: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="NoteCreateParams"></a>
@@ -2937,10 +2937,10 @@ Classes
 
     ### Class variables
 
-    `admin_id: str | Any`
+    `admin_id: str | None`
     :   The type of the None singleton.
 
-    `body: str | Any`
+    `body: str`
     :   The type of the None singleton.
 
     `model_config`
@@ -2964,16 +2964,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="Pages"></a>
@@ -2997,19 +2997,19 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: airbyte_agent_sdk.connectors.intercom.models.PagesNext | Any | None`
+    `next: airbyte_agent_sdk.connectors.intercom.models.PagesNext | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any | None`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any | None`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="PagesNext"></a>
@@ -3033,10 +3033,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   Next page number
 
-    `starting_after: str | Any | None`
+    `starting_after: str | None`
     :   Cursor for next page
 
 <a id="Segment"></a>
@@ -3057,28 +3057,28 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `person_type: str | Any | None`
+    `person_type: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="SegmentsList"></a>
@@ -3102,10 +3102,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `segments: list[airbyte_agent_sdk.connectors.intercom.models.Segment] | Any`
+    `segments: list[airbyte_agent_sdk.connectors.intercom.models.Segment] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SlaApplied"></a>
@@ -3129,13 +3129,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `sla_name: str | Any | None`
+    `sla_name: str | None`
     :   The type of the None singleton.
 
-    `sla_status: str | Any | None`
+    `sla_status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SocialProfile"></a>
@@ -3159,13 +3159,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="SocialProfiles"></a>
@@ -3186,13 +3186,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.SocialProfile] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.SocialProfile] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="Tag"></a>
@@ -3213,22 +3213,22 @@ Classes
 
     ### Class variables
 
-    `applied_at: int | Any | None`
+    `applied_at: int | None`
     :   The type of the None singleton.
 
-    `applied_by: Any`
+    `applied_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="TagCreateParams"></a>
@@ -3252,7 +3252,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
 <a id="TagReference"></a>
@@ -3273,16 +3273,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="TagsList"></a>
@@ -3303,13 +3303,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.intercom.models.Tag] | Any`
+    `data: list[airbyte_agent_sdk.connectors.intercom.models.Tag] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="Team"></a>
@@ -3330,22 +3330,22 @@ Classes
 
     ### Class variables
 
-    `admin_ids: list[int] | Any`
+    `admin_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `admin_priority_level: Any`
+    `admin_priority_level: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="TeamsList"></a>
@@ -3369,10 +3369,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `teams: list[airbyte_agent_sdk.connectors.intercom.models.Team] | Any`
+    `teams: list[airbyte_agent_sdk.connectors.intercom.models.Team] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="TeamsSearchData"></a>

@@ -679,40 +679,40 @@ Classes
 
     ### Class variables
 
-    `asin: str | Any`
+    `asin: str`
     :   The type of the None singleton.
 
-    `attributes: dict[str, typing.Any] | Any`
+    `attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `classifications: list[dict[str, typing.Any]] | Any`
+    `classifications: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[dict[str, typing.Any]] | Any`
+    `dimensions: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `identifiers: list[dict[str, typing.Any]] | Any`
+    `identifiers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `images: list[dict[str, typing.Any]] | Any`
+    `images: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `product_types: list[dict[str, typing.Any]] | Any`
+    `product_types: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `relationships: list[dict[str, typing.Any]] | Any`
+    `relationships: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `sales_ranks: list[dict[str, typing.Any]] | Any`
+    `sales_ranks: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `summaries: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemSummariesItem] | Any`
+    `summaries: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemSummariesItem] | None`
     :   The type of the None singleton.
 
-    `vendor_details: list[dict[str, typing.Any]] | Any`
+    `vendor_details: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="CatalogItemSummariesItem"></a>
@@ -733,61 +733,61 @@ Classes
 
     ### Class variables
 
-    `adult_product: bool | Any`
+    `adult_product: bool | None`
     :   The type of the None singleton.
 
-    `autographed: bool | Any`
+    `autographed: bool | None`
     :   The type of the None singleton.
 
-    `brand: str | Any`
+    `brand: str | None`
     :   The type of the None singleton.
 
-    `browse_classification: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemSummariesItemBrowseclassification | Any`
+    `browse_classification: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemSummariesItemBrowseclassification | None`
     :   The type of the None singleton.
 
-    `color: str | Any`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `item_classification: str | Any`
+    `item_classification: str | None`
     :   The type of the None singleton.
 
-    `item_name: str | Any`
+    `item_name: str | None`
     :   The type of the None singleton.
 
-    `manufacturer: str | Any`
+    `manufacturer: str | None`
     :   The type of the None singleton.
 
-    `marketplace_id: str | Any`
+    `marketplace_id: str | None`
     :   The type of the None singleton.
 
-    `memorabilia: bool | Any`
+    `memorabilia: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `model_number: str | Any`
+    `model_number: str | None`
     :   The type of the None singleton.
 
-    `package_quantity: int | Any`
+    `package_quantity: int | None`
     :   The type of the None singleton.
 
-    `part_number: str | Any`
+    `part_number: str | None`
     :   The type of the None singleton.
 
-    `size: str | Any`
+    `size: str | None`
     :   The type of the None singleton.
 
-    `style: str | Any`
+    `style: str | None`
     :   The type of the None singleton.
 
-    `trade_in_eligible: bool | Any`
+    `trade_in_eligible: bool | None`
     :   The type of the None singleton.
 
-    `website_display_group: str | Any`
+    `website_display_group: str | None`
     :   The type of the None singleton.
 
-    `website_display_group_name: str | Any`
+    `website_display_group_name: str | None`
     :   The type of the None singleton.
 
 <a id="CatalogItemSummariesItemBrowseclassification"></a>
@@ -808,10 +808,10 @@ Classes
 
     ### Class variables
 
-    `classification_id: str | Any`
+    `classification_id: str | None`
     :   The type of the None singleton.
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -835,19 +835,19 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItem] | Any`
+    `items: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number_of_results: int | Any`
+    `number_of_results: int | None`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListPagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListPagination | None`
     :   The type of the None singleton.
 
-    `refinements: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinements | Any`
+    `refinements: airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinements | None`
     :   The type of the None singleton.
 
 <a id="CatalogItemsListPagination"></a>
@@ -871,10 +871,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
-    `previous_token: str | Any`
+    `previous_token: str | None`
     :   The type of the None singleton.
 
 <a id="CatalogItemsListRefinements"></a>
@@ -895,10 +895,10 @@ Classes
 
     ### Class variables
 
-    `brands: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinementsBrandsItem] | Any`
+    `brands: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinementsBrandsItem] | None`
     :   The type of the None singleton.
 
-    `classifications: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinementsClassificationsItem] | Any`
+    `classifications: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.CatalogItemsListRefinementsClassificationsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -922,13 +922,13 @@ Classes
 
     ### Class variables
 
-    `brand_name: str | Any`
+    `brand_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number_of_results: int | Any`
+    `number_of_results: int | None`
     :   The type of the None singleton.
 
 <a id="CatalogItemsListRefinementsClassificationsItem"></a>
@@ -949,16 +949,16 @@ Classes
 
     ### Class variables
 
-    `classification_id: str | Any`
+    `classification_id: str | None`
     :   The type of the None singleton.
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number_of_results: int | Any`
+    `number_of_results: int | None`
     :   The type of the None singleton.
 
 <a id="CatalogItemsListResultMeta"></a>
@@ -982,10 +982,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
-    `number_of_results: int | Any`
+    `number_of_results: int | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventGroup"></a>
@@ -1006,40 +1006,40 @@ Classes
 
     ### Class variables
 
-    `account_tail: str | Any`
+    `account_tail: str | None`
     :   The type of the None singleton.
 
-    `beginning_balance: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupBeginningbalance | Any`
+    `beginning_balance: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupBeginningbalance | None`
     :   The type of the None singleton.
 
-    `converted_total: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupConvertedtotal | Any`
+    `converted_total: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupConvertedtotal | None`
     :   The type of the None singleton.
 
-    `financial_event_group_end: str | Any`
+    `financial_event_group_end: str | None`
     :   The type of the None singleton.
 
-    `financial_event_group_id: str | Any`
+    `financial_event_group_id: str`
     :   The type of the None singleton.
 
-    `financial_event_group_start: str | Any`
+    `financial_event_group_start: str | None`
     :   The type of the None singleton.
 
-    `fund_transfer_date: str | Any`
+    `fund_transfer_date: str | None`
     :   The type of the None singleton.
 
-    `fund_transfer_status: str | Any`
+    `fund_transfer_status: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `original_total: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupOriginaltotal | Any`
+    `original_total: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupOriginaltotal | None`
     :   The type of the None singleton.
 
-    `processing_status: str | Any`
+    `processing_status: str | None`
     :   The type of the None singleton.
 
-    `trace_id: str | Any`
+    `trace_id: str | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventGroupBeginningbalance"></a>
@@ -1060,10 +1060,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1087,10 +1087,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1117,7 +1117,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupListPayload | Any`
+    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroupListPayload | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventGroupListPayload"></a>
@@ -1138,13 +1138,13 @@ Classes
 
     ### Class variables
 
-    `financial_event_group_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroup] | Any`
+    `financial_event_group_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventGroup] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventGroupOriginaltotal"></a>
@@ -1165,10 +1165,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1192,112 +1192,112 @@ Classes
 
     ### Class variables
 
-    `adhoc_disbursement_event_list: list[dict[str, typing.Any]] | Any`
+    `adhoc_disbursement_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `adjustment_event_list: list[dict[str, typing.Any]] | Any`
+    `adjustment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `affordability_expense_event_list: list[dict[str, typing.Any]] | Any`
+    `affordability_expense_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `affordability_expense_reversal_event_list: list[dict[str, typing.Any]] | Any`
+    `affordability_expense_reversal_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `capacity_reservation_billing_event_list: list[dict[str, typing.Any]] | Any`
+    `capacity_reservation_billing_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `charge_refund_event_list: list[dict[str, typing.Any]] | Any`
+    `charge_refund_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `chargeback_event_list: list[dict[str, typing.Any]] | Any`
+    `chargeback_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `coupon_payment_event_list: list[dict[str, typing.Any]] | Any`
+    `coupon_payment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `debt_recovery_event_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItem] | Any`
+    `debt_recovery_event_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItem] | None`
     :   The type of the None singleton.
 
-    `ebt_refund_reimbursement_only_event_list: list[dict[str, typing.Any]] | Any`
+    `ebt_refund_reimbursement_only_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `failed_adhoc_disbursement_event_list: list[dict[str, typing.Any]] | Any`
+    `failed_adhoc_disbursement_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `fba_liquidation_event_list: list[dict[str, typing.Any]] | Any`
+    `fba_liquidation_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `guarantee_claim_event_list: list[dict[str, typing.Any]] | Any`
+    `guarantee_claim_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `imaging_services_fee_event_list: list[dict[str, typing.Any]] | Any`
+    `imaging_services_fee_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `loan_servicing_event_list: list[dict[str, typing.Any]] | Any`
+    `loan_servicing_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `network_commingling_transaction_event_list: list[dict[str, typing.Any]] | Any`
+    `network_commingling_transaction_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `pay_with_amazon_event_list: list[dict[str, typing.Any]] | Any`
+    `pay_with_amazon_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `performance_bond_refund_event_list: list[dict[str, typing.Any]] | Any`
+    `performance_bond_refund_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `product_ads_payment_event_list: list[dict[str, typing.Any]] | Any`
+    `product_ads_payment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `refund_event_list: list[dict[str, typing.Any]] | Any`
+    `refund_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `removal_shipment_adjustment_event_list: list[dict[str, typing.Any]] | Any`
+    `removal_shipment_adjustment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `removal_shipment_event_list: list[dict[str, typing.Any]] | Any`
+    `removal_shipment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `rental_transaction_event_list: list[dict[str, typing.Any]] | Any`
+    `rental_transaction_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `retrocharge_event_list: list[dict[str, typing.Any]] | Any`
+    `retrocharge_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `safet_reimbursement_event_list: list[dict[str, typing.Any]] | Any`
+    `safet_reimbursement_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `seller_deal_payment_event_list: list[dict[str, typing.Any]] | Any`
+    `seller_deal_payment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `seller_review_enrollment_payment_event_list: list[dict[str, typing.Any]] | Any`
+    `seller_review_enrollment_payment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `service_fee_event_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsServicefeeeventlistItem] | Any`
+    `service_fee_event_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsServicefeeeventlistItem] | None`
     :   The type of the None singleton.
 
-    `service_provider_credit_event_list: list[dict[str, typing.Any]] | Any`
+    `service_provider_credit_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `shipment_event_list: list[dict[str, typing.Any]] | Any`
+    `shipment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `shipment_settle_event_list: list[dict[str, typing.Any]] | Any`
+    `shipment_settle_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `tax_withholding_event_list: list[dict[str, typing.Any]] | Any`
+    `tax_withholding_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `tds_reimbursement_event_list: list[dict[str, typing.Any]] | Any`
+    `tds_reimbursement_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `trial_shipment_event_list: list[dict[str, typing.Any]] | Any`
+    `trial_shipment_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `value_added_service_charge_event_list: list[dict[str, typing.Any]] | Any`
+    `value_added_service_charge_event_list: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventsDebtrecoveryeventlistItem"></a>
@@ -1318,19 +1318,19 @@ Classes
 
     ### Class variables
 
-    `charge_instrument_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItem] | Any`
+    `charge_instrument_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItem] | None`
     :   The type of the None singleton.
 
-    `debt_recovery_item_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItem] | Any`
+    `debt_recovery_item_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItem] | None`
     :   The type of the None singleton.
 
-    `debt_recovery_type: str | Any`
+    `debt_recovery_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `recovery_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemRecoveryamount | Any`
+    `recovery_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemRecoveryamount | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItem"></a>
@@ -1351,16 +1351,16 @@ Classes
 
     ### Class variables
 
-    `amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItemAmount | Any`
+    `amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItemAmount | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `tail: str | Any`
+    `tail: str | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventsDebtrecoveryeventlistItemChargeinstrumentlistItemAmount"></a>
@@ -1381,10 +1381,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1408,19 +1408,19 @@ Classes
 
     ### Class variables
 
-    `group_begin_date: str | Any`
+    `group_begin_date: str | None`
     :   The type of the None singleton.
 
-    `group_end_date: str | Any`
+    `group_end_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `original_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemOriginalamount | Any`
+    `original_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemOriginalamount | None`
     :   The type of the None singleton.
 
-    `recovery_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemRecoveryamount | Any`
+    `recovery_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemRecoveryamount | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventsDebtrecoveryeventlistItemDebtrecoveryitemlistItemOriginalamount"></a>
@@ -1441,10 +1441,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1468,10 +1468,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1495,10 +1495,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1525,7 +1525,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsResponsePayload | Any`
+    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsResponsePayload | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventsResponsePayload"></a>
@@ -1546,13 +1546,13 @@ Classes
 
     ### Class variables
 
-    `financial_events: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEvents | Any`
+    `financial_events: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEvents | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="FinancialEventsServicefeeeventlistItem"></a>
@@ -1573,7 +1573,7 @@ Classes
 
     ### Class variables
 
-    `fee_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsServicefeeeventlistItemFeelistItem] | Any`
+    `fee_list: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsServicefeeeventlistItemFeelistItem] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1597,10 +1597,10 @@ Classes
 
     ### Class variables
 
-    `fee_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsServicefeeeventlistItemFeelistItemFeeamount | Any`
+    `fee_amount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.FinancialEventsServicefeeeventlistItemFeelistItemFeeamount | None`
     :   The type of the None singleton.
 
-    `fee_type: str | Any`
+    `fee_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1624,10 +1624,10 @@ Classes
 
     ### Class variables
 
-    `currency_amount: float | Any`
+    `currency_amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1654,7 +1654,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventGroupsSearchData"></a>
@@ -1732,7 +1732,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventsSearchData"></a>
@@ -1879,106 +1879,106 @@ Classes
 
     ### Class variables
 
-    `amazon_order_id: str | Any`
+    `amazon_order_id: str`
     :   The type of the None singleton.
 
-    `automated_shipping_settings: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderAutomatedshippingsettings | Any`
+    `automated_shipping_settings: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderAutomatedshippingsettings | None`
     :   The type of the None singleton.
 
-    `buyer_info: dict[str, typing.Any] | Any`
+    `buyer_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `default_ship_from_location_address: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderDefaultshipfromlocationaddress | Any`
+    `default_ship_from_location_address: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderDefaultshipfromlocationaddress | None`
     :   The type of the None singleton.
 
-    `earliest_delivery_date: str | Any`
+    `earliest_delivery_date: str | None`
     :   The type of the None singleton.
 
-    `earliest_ship_date: str | Any`
+    `earliest_ship_date: str | None`
     :   The type of the None singleton.
 
-    `fulfillment_channel: str | Any`
+    `fulfillment_channel: str | None`
     :   The type of the None singleton.
 
-    `has_regulated_items: bool | Any`
+    `has_regulated_items: bool | None`
     :   The type of the None singleton.
 
-    `is_access_point_order: bool | Any`
+    `is_access_point_order: bool | None`
     :   The type of the None singleton.
 
-    `is_business_order: bool | Any`
+    `is_business_order: bool | None`
     :   The type of the None singleton.
 
-    `is_global_express_enabled: bool | Any`
+    `is_global_express_enabled: bool | None`
     :   The type of the None singleton.
 
-    `is_ispu: bool | Any`
+    `is_ispu: bool | None`
     :   The type of the None singleton.
 
-    `is_premium_order: bool | Any`
+    `is_premium_order: bool | None`
     :   The type of the None singleton.
 
-    `is_prime: bool | Any`
+    `is_prime: bool | None`
     :   The type of the None singleton.
 
-    `is_replacement_order: str | Any`
+    `is_replacement_order: str | None`
     :   The type of the None singleton.
 
-    `is_sold_by_ab: bool | Any`
+    `is_sold_by_ab: bool | None`
     :   The type of the None singleton.
 
-    `last_update_date: str | Any`
+    `last_update_date: str | None`
     :   The type of the None singleton.
 
-    `latest_delivery_date: str | Any`
+    `latest_delivery_date: str | None`
     :   The type of the None singleton.
 
-    `latest_ship_date: str | Any`
+    `latest_ship_date: str | None`
     :   The type of the None singleton.
 
-    `marketplace_id: str | Any`
+    `marketplace_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number_of_items_shipped: int | Any`
+    `number_of_items_shipped: int | None`
     :   The type of the None singleton.
 
-    `number_of_items_unshipped: int | Any`
+    `number_of_items_unshipped: int | None`
     :   The type of the None singleton.
 
-    `order_status: str | Any`
+    `order_status: str | None`
     :   The type of the None singleton.
 
-    `order_total: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderOrdertotal | Any`
+    `order_total: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderOrdertotal | None`
     :   The type of the None singleton.
 
-    `order_type: str | Any`
+    `order_type: str | None`
     :   The type of the None singleton.
 
-    `payment_method: str | Any`
+    `payment_method: str | None`
     :   The type of the None singleton.
 
-    `payment_method_details: list[str] | Any`
+    `payment_method_details: list[str] | None`
     :   The type of the None singleton.
 
-    `purchase_date: str | Any`
+    `purchase_date: str | None`
     :   The type of the None singleton.
 
-    `sales_channel: str | Any`
+    `sales_channel: str | None`
     :   The type of the None singleton.
 
-    `seller_order_id: str | Any`
+    `seller_order_id: str | None`
     :   The type of the None singleton.
 
-    `ship_service_level: str | Any`
+    `ship_service_level: str | None`
     :   The type of the None singleton.
 
-    `shipment_service_level_category: str | Any`
+    `shipment_service_level_category: str | None`
     :   The type of the None singleton.
 
-    `shipping_address: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderShippingaddress | Any`
+    `shipping_address: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderShippingaddress | None`
     :   The type of the None singleton.
 
 <a id="OrderAutomatedshippingsettings"></a>
@@ -1999,7 +1999,7 @@ Classes
 
     ### Class variables
 
-    `has_automated_shipping_settings: bool | Any`
+    `has_automated_shipping_settings: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2023,25 +2023,25 @@ Classes
 
     ### Class variables
 
-    `address_line1: str | Any`
+    `address_line1: str | None`
     :   The type of the None singleton.
 
-    `city: str | Any`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any`
+    `country_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `postal_code: str | Any`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
-    `state_or_region: str | Any`
+    `state_or_region: str | None`
     :   The type of the None singleton.
 
 <a id="OrderItem"></a>
@@ -2062,106 +2062,106 @@ Classes
 
     ### Class variables
 
-    `amazon_order_id: str | Any`
+    `amazon_order_id: str | None`
     :   The type of the None singleton.
 
-    `asin: str | Any`
+    `asin: str | None`
     :   The type of the None singleton.
 
-    `buyer_info: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerinfo | Any`
+    `buyer_info: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerinfo | None`
     :   The type of the None singleton.
 
-    `buyer_requested_cancel: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerrequestedcancel | Any`
+    `buyer_requested_cancel: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerrequestedcancel | None`
     :   The type of the None singleton.
 
-    `cod_fee: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemCodfee | Any`
+    `cod_fee: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemCodfee | None`
     :   The type of the None singleton.
 
-    `cod_fee_discount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemCodfeediscount | Any`
+    `cod_fee_discount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemCodfeediscount | None`
     :   The type of the None singleton.
 
-    `condition_id: str | Any`
+    `condition_id: str | None`
     :   The type of the None singleton.
 
-    `condition_note: str | Any`
+    `condition_note: str | None`
     :   The type of the None singleton.
 
-    `condition_subtype_id: str | Any`
+    `condition_subtype_id: str | None`
     :   The type of the None singleton.
 
-    `deemed_reseller_category: str | Any`
+    `deemed_reseller_category: str | None`
     :   The type of the None singleton.
 
-    `ioss_number: str | Any`
+    `ioss_number: str | None`
     :   The type of the None singleton.
 
-    `is_gift: str | Any`
+    `is_gift: str | None`
     :   The type of the None singleton.
 
-    `is_transparency: bool | Any`
+    `is_transparency: bool | None`
     :   The type of the None singleton.
 
-    `item_price: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemItemprice | Any`
+    `item_price: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemItemprice | None`
     :   The type of the None singleton.
 
-    `item_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemItemtax | Any`
+    `item_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemItemtax | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `order_item_id: str | Any`
+    `order_item_id: str`
     :   The type of the None singleton.
 
-    `points_granted: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPointsgranted | Any`
+    `points_granted: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPointsgranted | None`
     :   The type of the None singleton.
 
-    `price_designation: str | Any`
+    `price_designation: str | None`
     :   The type of the None singleton.
 
-    `product_info: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemProductinfo | Any`
+    `product_info: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemProductinfo | None`
     :   The type of the None singleton.
 
-    `promotion_discount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPromotiondiscount | Any`
+    `promotion_discount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPromotiondiscount | None`
     :   The type of the None singleton.
 
-    `promotion_discount_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPromotiondiscounttax | Any`
+    `promotion_discount_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPromotiondiscounttax | None`
     :   The type of the None singleton.
 
-    `promotion_ids: list[str] | Any`
+    `promotion_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `quantity_ordered: int | Any`
+    `quantity_ordered: int | None`
     :   The type of the None singleton.
 
-    `quantity_shipped: int | Any`
+    `quantity_shipped: int | None`
     :   The type of the None singleton.
 
-    `seller_sku: str | Any`
+    `seller_sku: str | None`
     :   The type of the None singleton.
 
-    `serial_number_required: bool | Any`
+    `serial_number_required: bool | None`
     :   The type of the None singleton.
 
-    `shipping_discount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingdiscount | Any`
+    `shipping_discount: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingdiscount | None`
     :   The type of the None singleton.
 
-    `shipping_discount_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingdiscounttax | Any`
+    `shipping_discount_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingdiscounttax | None`
     :   The type of the None singleton.
 
-    `shipping_price: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingprice | Any`
+    `shipping_price: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingprice | None`
     :   The type of the None singleton.
 
-    `shipping_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingtax | Any`
+    `shipping_tax: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemShippingtax | None`
     :   The type of the None singleton.
 
-    `store_chain_store_id: str | Any`
+    `store_chain_store_id: str | None`
     :   The type of the None singleton.
 
-    `tax_collection: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemTaxcollection | Any`
+    `tax_collection: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemTaxcollection | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="OrderItemBuyerinfo"></a>
@@ -2182,16 +2182,16 @@ Classes
 
     ### Class variables
 
-    `buyer_customized_info: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerinfoBuyercustomizedinfo | Any`
+    `buyer_customized_info: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerinfoBuyercustomizedinfo | None`
     :   The type of the None singleton.
 
-    `gift_message_text: str | Any`
+    `gift_message_text: str | None`
     :   The type of the None singleton.
 
-    `gift_wrap_level: str | Any`
+    `gift_wrap_level: str | None`
     :   The type of the None singleton.
 
-    `gift_wrap_price: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerinfoGiftwrapprice | Any`
+    `gift_wrap_price: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemBuyerinfoGiftwrapprice | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2215,7 +2215,7 @@ Classes
 
     ### Class variables
 
-    `customized_url: str | Any`
+    `customized_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2239,10 +2239,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2266,10 +2266,10 @@ Classes
 
     ### Class variables
 
-    `buyer_cancel_reason: str | Any`
+    `buyer_cancel_reason: str | None`
     :   The type of the None singleton.
 
-    `is_buyer_requested_cancel: str | Any`
+    `is_buyer_requested_cancel: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2293,10 +2293,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2320,10 +2320,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2347,10 +2347,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2374,10 +2374,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2404,10 +2404,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `points_monetary_value: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPointsgrantedPointsmonetaryvalue | Any`
+    `points_monetary_value: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemPointsgrantedPointsmonetaryvalue | None`
     :   The type of the None singleton.
 
-    `points_number: int | Any`
+    `points_number: int | None`
     :   The type of the None singleton.
 
 <a id="OrderItemPointsgrantedPointsmonetaryvalue"></a>
@@ -2428,10 +2428,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2458,7 +2458,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `number_of_items: str | Any`
+    `number_of_items: str | None`
     :   The type of the None singleton.
 
 <a id="OrderItemPromotiondiscount"></a>
@@ -2479,10 +2479,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2506,10 +2506,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2533,10 +2533,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2560,10 +2560,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2587,10 +2587,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2614,10 +2614,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2641,13 +2641,13 @@ Classes
 
     ### Class variables
 
-    `model: str | Any`
+    `model: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `responsible_party: str | Any`
+    `responsible_party: str | None`
     :   The type of the None singleton.
 
 <a id="OrderItemsList"></a>
@@ -2671,7 +2671,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemsListPayload | Any`
+    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItemsListPayload | None`
     :   The type of the None singleton.
 
 <a id="OrderItemsListPayload"></a>
@@ -2692,16 +2692,16 @@ Classes
 
     ### Class variables
 
-    `amazon_order_id: str | Any`
+    `amazon_order_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
-    `order_items: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItem] | Any`
+    `order_items: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrderItem] | None`
     :   The type of the None singleton.
 
 <a id="OrderItemsListResultMeta"></a>
@@ -2725,7 +2725,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="OrderItemsSearchData"></a>
@@ -2878,10 +2878,10 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2905,19 +2905,19 @@ Classes
 
     ### Class variables
 
-    `city: str | Any`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any`
+    `country_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
-    `state_or_region: str | Any`
+    `state_or_region: str | None`
     :   The type of the None singleton.
 
 <a id="OrdersList"></a>
@@ -2941,7 +2941,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrdersListPayload | Any`
+    `payload: airbyte_agent_sdk.connectors.amazon_seller_partner.models.OrdersListPayload | None`
     :   The type of the None singleton.
 
 <a id="OrdersListPayload"></a>
@@ -2965,10 +2965,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   Pagination token for next page
 
-    `orders: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.Order] | Any`
+    `orders: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.Order] | None`
     :   The type of the None singleton.
 
 <a id="OrdersListResultMeta"></a>
@@ -2992,7 +2992,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="OrdersSearchData"></a>
@@ -3136,40 +3136,40 @@ Classes
 
     ### Class variables
 
-    `created_time: str | Any`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `data_end_time: str | Any`
+    `data_end_time: str | None`
     :   The type of the None singleton.
 
-    `data_start_time: str | Any`
+    `data_start_time: str | None`
     :   The type of the None singleton.
 
-    `marketplace_ids: list[str] | Any`
+    `marketplace_ids: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `processing_end_time: str | Any`
+    `processing_end_time: str | None`
     :   The type of the None singleton.
 
-    `processing_start_time: str | Any`
+    `processing_start_time: str | None`
     :   The type of the None singleton.
 
-    `processing_status: str | Any`
+    `processing_status: str | None`
     :   The type of the None singleton.
 
-    `report_document_id: str | Any`
+    `report_document_id: str | None`
     :   The type of the None singleton.
 
-    `report_id: str | Any`
+    `report_id: str`
     :   The type of the None singleton.
 
-    `report_schedule_id: str | Any`
+    `report_schedule_id: str | None`
     :   The type of the None singleton.
 
-    `report_type: str | Any`
+    `report_type: str | None`
     :   The type of the None singleton.
 
 <a id="ReportsList"></a>
@@ -3193,10 +3193,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.
 
-    `reports: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.Report] | Any`
+    `reports: list[airbyte_agent_sdk.connectors.amazon_seller_partner.models.Report] | None`
     :   The type of the None singleton.
 
 <a id="ReportsListResultMeta"></a>
@@ -3220,5 +3220,5 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any`
+    `next_token: str | None`
     :   The type of the None singleton.

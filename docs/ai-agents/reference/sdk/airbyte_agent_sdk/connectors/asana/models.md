@@ -1529,40 +1529,40 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `download_url: str | Any | None`
+    `download_url: str | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
-    `host: str | Any`
+    `host: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent: airbyte_agent_sdk.connectors.asana.models.AttachmentParent | Any`
+    `parent: airbyte_agent_sdk.connectors.asana.models.AttachmentParent | None`
     :   The type of the None singleton.
 
-    `permanent_url: str | Any | None`
+    `permanent_url: str | None`
     :   The type of the None singleton.
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `view_url: str | Any | None`
+    `view_url: str | None`
     :   The type of the None singleton.
 
 <a id="AttachmentCompact"></a>
@@ -1583,19 +1583,19 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="AttachmentParent"></a>
@@ -1616,19 +1616,19 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The subtype of the parent resource
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="AttachmentResponse"></a>
@@ -1649,7 +1649,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Attachment | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Attachment | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1673,13 +1673,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.AttachmentCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.AttachmentCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.AttachmentsListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.AttachmentsListNextPage | None`
     :   The type of the None singleton.
 
 <a id="AttachmentsListNextPage"></a>
@@ -1703,13 +1703,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="AttachmentsListResultMeta"></a>
@@ -1733,7 +1733,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AttachmentsSearchData"></a>
@@ -1811,7 +1811,7 @@ Classes
 
     ### Class variables
 
-    `data: dict[str, typing.Any] | Any`
+    `data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1835,97 +1835,97 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `completed: bool | Any`
+    `completed: bool | None`
     :   The type of the None singleton.
 
-    `completed_at: str | Any | None`
+    `completed_at: str | None`
     :   The type of the None singleton.
 
-    `completed_by: airbyte_agent_sdk.connectors.asana.models.ProjectCompletedBy | Any | None`
+    `completed_by: airbyte_agent_sdk.connectors.asana.models.ProjectCompletedBy | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `current_status: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatus | Any | None`
+    `current_status: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatus | None`
     :   The type of the None singleton.
 
-    `current_status_update: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatusUpdate | Any | None`
+    `current_status_update: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatusUpdate | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[typing.Any] | Any`
+    `custom_fields: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `default_access_level: str | Any`
+    `default_access_level: str | None`
     :   The type of the None singleton.
 
-    `default_view: str | Any`
+    `default_view: str | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `due_on: str | Any | None`
+    `due_on: str | None`
     :   The type of the None singleton.
 
-    `followers: list[airbyte_agent_sdk.connectors.asana.models.ProjectFollowersItem] | Any`
+    `followers: list[airbyte_agent_sdk.connectors.asana.models.ProjectFollowersItem] | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
-    `icon: str | Any | None`
+    `icon: str | None`
     :   The type of the None singleton.
 
-    `members: list[airbyte_agent_sdk.connectors.asana.models.ProjectMembersItem] | Any`
+    `members: list[airbyte_agent_sdk.connectors.asana.models.ProjectMembersItem] | None`
     :   The type of the None singleton.
 
-    `minimum_access_level_for_customization: str | Any`
+    `minimum_access_level_for_customization: str | None`
     :   The type of the None singleton.
 
-    `minimum_access_level_for_sharing: str | Any`
+    `minimum_access_level_for_sharing: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_at: str | Any`
+    `modified_at: str | None`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `notes: str | Any`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `owner: airbyte_agent_sdk.connectors.asana.models.ProjectOwner | Any`
+    `owner: airbyte_agent_sdk.connectors.asana.models.ProjectOwner | None`
     :   The type of the None singleton.
 
-    `permalink_url: str | Any`
+    `permalink_url: str | None`
     :   The type of the None singleton.
 
-    `privacy_setting: str | Any`
+    `privacy_setting: str | None`
     :   The type of the None singleton.
 
-    `public: bool | Any`
+    `public: bool | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `start_on: str | Any | None`
+    `start_on: str | None`
     :   The type of the None singleton.
 
-    `team: airbyte_agent_sdk.connectors.asana.models.ProjectTeam | Any | None`
+    `team: airbyte_agent_sdk.connectors.asana.models.ProjectTeam | None`
     :   The type of the None singleton.
 
-    `workspace: airbyte_agent_sdk.connectors.asana.models.ProjectWorkspace | Any`
+    `workspace: airbyte_agent_sdk.connectors.asana.models.ProjectWorkspace | None`
     :   The type of the None singleton.
 
 <a id="ProjectCompact"></a>
@@ -1946,16 +1946,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCompletedBy"></a>
@@ -1976,16 +1976,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCreateParams"></a>
@@ -2006,7 +2006,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.ProjectCreateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.ProjectCreateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -2030,40 +2030,40 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   Whether the project is archived
 
-    `color: str | Any`
+    `color: str | None`
     :   Color of the project (e.g., dark-pink, dark-green, dark-blue, dark-red, dark-teal, dark-brown, dark-orange, dark-purple, dark-warm-gray, light-pink, light-green, light-blue, light-red, light-teal, light-brown, light-orange, light-purple, light-warm-gray, none)
 
-    `default_view: str | Any`
+    `default_view: str | None`
     :   The default view of the project (list, board, calendar, timeline)
 
-    `due_on: str | Any`
+    `due_on: str | None`
     :   Due date in YYYY-MM-DD format
 
-    `html_notes: str | Any`
+    `html_notes: str | None`
     :   HTML-formatted description of the project
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   Name of the project
 
-    `notes: str | Any`
+    `notes: str | None`
     :   Free-form textual description of the project (plain text)
 
-    `privacy_setting: str | Any`
+    `privacy_setting: str | None`
     :   Privacy setting: public_to_workspace or private
 
-    `start_on: str | Any`
+    `start_on: str | None`
     :   Start date in YYYY-MM-DD format
 
-    `team: str | Any`
+    `team: str | None`
     :   GID of the team to share the project with (required for organizations)
 
-    `workspace: str | Any`
+    `workspace: str`
     :   GID of the workspace to create the project in
 
 <a id="ProjectCurrentStatus"></a>
@@ -2084,34 +2084,34 @@ Classes
 
     ### Class variables
 
-    `author: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatusAuthor | Any`
+    `author: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatusAuthor | None`
     :   The type of the None singleton.
 
-    `color: str | Any`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_by: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatusCreatedBy | Any`
+    `created_by: airbyte_agent_sdk.connectors.asana.models.ProjectCurrentStatusCreatedBy | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_at: str | Any`
+    `modified_at: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCurrentStatusAuthor"></a>
@@ -2132,16 +2132,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCurrentStatusCreatedBy"></a>
@@ -2162,16 +2162,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCurrentStatusUpdate"></a>
@@ -2192,19 +2192,19 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectFollowersItem"></a>
@@ -2225,16 +2225,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectMembersItem"></a>
@@ -2255,16 +2255,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectOwner"></a>
@@ -2285,16 +2285,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectResponse"></a>
@@ -2315,7 +2315,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Project | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Project | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2342,7 +2342,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="ProjectTasksListResultMeta"></a>
@@ -2366,7 +2366,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="ProjectTeam"></a>
@@ -2387,16 +2387,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectUpdateParams"></a>
@@ -2417,7 +2417,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.ProjectUpdateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.ProjectUpdateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -2441,31 +2441,31 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   Whether the project is archived
 
-    `color: str | Any`
+    `color: str | None`
     :   Color of the project
 
-    `default_view: str | Any`
+    `default_view: str | None`
     :   The default view of the project (list, board, calendar, timeline)
 
-    `due_on: str | Any`
+    `due_on: str | None`
     :   Due date in YYYY-MM-DD format
 
-    `html_notes: str | Any`
+    `html_notes: str | None`
     :   HTML-formatted description of the project
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Name of the project
 
-    `notes: str | Any`
+    `notes: str | None`
     :   Free-form textual description of the project (plain text)
 
-    `start_on: str | Any`
+    `start_on: str | None`
     :   Start date in YYYY-MM-DD format
 
 <a id="ProjectWorkspace"></a>
@@ -2486,16 +2486,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsList"></a>
@@ -2516,13 +2516,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.ProjectCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.ProjectCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.ProjectsListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.ProjectsListNextPage | None`
     :   The type of the None singleton.
 
 <a id="ProjectsListNextPage"></a>
@@ -2546,13 +2546,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsListResultMeta"></a>
@@ -2576,7 +2576,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchData"></a>
@@ -2693,22 +2693,22 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.asana.models.SectionProject | Any`
+    `project: airbyte_agent_sdk.connectors.asana.models.SectionProject | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="SectionAddTaskParams"></a>
@@ -2729,7 +2729,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.SectionAddTaskParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.SectionAddTaskParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -2753,16 +2753,16 @@ Classes
 
     ### Class variables
 
-    `insert_after: str | Any`
+    `insert_after: str | None`
     :   GID of a task in this section after which the added task should be inserted. Cannot be provided together with insert_before.
 
-    `insert_before: str | Any`
+    `insert_before: str | None`
     :   GID of a task in this section before which the added task should be inserted. Cannot be provided together with insert_after.
 
     `model_config`
     :   The type of the None singleton.
 
-    `task: str | Any`
+    `task: str`
     :   The GID of the task to add to this section
 
 <a id="SectionCompact"></a>
@@ -2783,16 +2783,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="SectionCreateParams"></a>
@@ -2813,7 +2813,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.SectionCreateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.SectionCreateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -2837,16 +2837,16 @@ Classes
 
     ### Class variables
 
-    `insert_after: str | Any`
+    `insert_after: str | None`
     :   GID of a section in the same project after which the new section should be inserted. Cannot be provided together with insert_before.
 
-    `insert_before: str | Any`
+    `insert_before: str | None`
     :   GID of a section in the same project before which the new section should be inserted. Cannot be provided together with insert_after.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The name of the section (this is displayed as the column header in board view)
 
 <a id="SectionProject"></a>
@@ -2867,16 +2867,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="SectionResponse"></a>
@@ -2897,7 +2897,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Section | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Section | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2924,7 +2924,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="SectionUpdateParams"></a>
@@ -2945,7 +2945,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.SectionUpdateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.SectionUpdateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -2972,7 +2972,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The new name of the section
 
 <a id="SectionsList"></a>
@@ -2993,13 +2993,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.SectionCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.SectionCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.SectionsListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.SectionsListNextPage | None`
     :   The type of the None singleton.
 
 <a id="SectionsListNextPage"></a>
@@ -3023,13 +3023,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="SectionsSearchData"></a>
@@ -3086,37 +3086,37 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_by: airbyte_agent_sdk.connectors.asana.models.StoryCreatedBy | Any`
+    `created_by: airbyte_agent_sdk.connectors.asana.models.StoryCreatedBy | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
-    `html_text: str | Any`
+    `html_text: str | None`
     :   The type of the None singleton.
 
-    `is_pinned: bool | Any`
+    `is_pinned: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `target: airbyte_agent_sdk.connectors.asana.models.StoryTarget | Any`
+    `target: airbyte_agent_sdk.connectors.asana.models.StoryTarget | None`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="StoryCreateParams"></a>
@@ -3137,7 +3137,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.StoryCreateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.StoryCreateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -3161,16 +3161,16 @@ Classes
 
     ### Class variables
 
-    `html_text: str | Any`
+    `html_text: str | None`
     :   HTML-formatted body of the comment
 
-    `is_pinned: bool | Any`
+    `is_pinned: bool | None`
     :   Whether the story should be pinned on the resource
 
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str`
     :   The plain text body of the comment
 
 <a id="StoryCreatedBy"></a>
@@ -3191,16 +3191,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="StoryResponse"></a>
@@ -3221,7 +3221,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Story | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Story | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3245,16 +3245,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="Tag"></a>
@@ -3275,34 +3275,34 @@ Classes
 
     ### Class variables
 
-    `color: str | Any`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `followers: list[typing.Any] | Any`
+    `followers: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `notes: str | Any`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `permalink_url: str | Any`
+    `permalink_url: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `workspace: airbyte_agent_sdk.connectors.asana.models.TagWorkspace | Any`
+    `workspace: airbyte_agent_sdk.connectors.asana.models.TagWorkspace | None`
     :   The type of the None singleton.
 
 <a id="TagCompact"></a>
@@ -3323,16 +3323,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TagCreateParams"></a>
@@ -3353,7 +3353,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.TagCreateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.TagCreateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -3377,16 +3377,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any`
+    `color: str | None`
     :   Color of the tag. Must be one of: dark-pink, dark-green, dark-blue, dark-red, dark-teal, dark-brown, dark-orange, dark-purple, dark-warm-gray, light-pink, light-green, light-blue, light-red, light-teal, light-brown, light-orange, light-purple, light-warm-gray, none, null
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   Name of the tag
 
-    `notes: str | Any`
+    `notes: str | None`
     :   Free-form textual description of the tag
 
 <a id="TagResponse"></a>
@@ -3407,7 +3407,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Tag | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Tag | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3434,7 +3434,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TagUpdateParams"></a>
@@ -3455,7 +3455,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.TagUpdateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.TagUpdateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -3479,16 +3479,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any`
+    `color: str | None`
     :   Color of the tag
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Name of the tag
 
-    `notes: str | Any`
+    `notes: str | None`
     :   Free-form textual description of the tag
 
 <a id="TagWorkspace"></a>
@@ -3509,16 +3509,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TagsList"></a>
@@ -3539,13 +3539,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.TagCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.TagCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.TagsListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.TagsListNextPage | None`
     :   The type of the None singleton.
 
 <a id="TagsListNextPage"></a>
@@ -3569,13 +3569,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="TagsSearchData"></a>
@@ -3638,7 +3638,7 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3662,7 +3662,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.TaskAddTagParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.TaskAddTagParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -3689,7 +3689,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tag: str | Any`
+    `tag: str`
     :   The GID of the tag to add to the task
 
 <a id="TaskCompact"></a>
@@ -3710,22 +3710,22 @@ Classes
 
     ### Class variables
 
-    `created_by: airbyte_agent_sdk.connectors.asana.models.TaskCompactCreatedBy | Any`
+    `created_by: airbyte_agent_sdk.connectors.asana.models.TaskCompactCreatedBy | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TaskCompactCreatedBy"></a>
@@ -3746,13 +3746,13 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TaskCreateParams"></a>
@@ -3773,7 +3773,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.TaskCreateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.TaskCreateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -3797,49 +3797,49 @@ Classes
 
     ### Class variables
 
-    `assignee: str | Any`
+    `assignee: str | None`
     :   GID of the user to assign the task to, or 'me' for the current user
 
-    `completed: bool | Any`
+    `completed: bool | None`
     :   Whether the task is completed
 
-    `due_at: str | Any`
+    `due_at: str | None`
     :   Due date and time in ISO 8601 format (e.g., 2025-03-20T12:00:00.000Z)
 
-    `due_on: str | Any`
+    `due_on: str | None`
     :   Due date in YYYY-MM-DD format
 
-    `followers: list[str] | Any`
+    `followers: list[str] | None`
     :   Array of user GIDs to add as followers
 
-    `html_notes: str | Any`
+    `html_notes: str | None`
     :   HTML-formatted description of the task
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   Name of the task
 
-    `notes: str | Any`
+    `notes: str | None`
     :   Free-form textual description of the task (plain text, no formatting)
 
-    `parent: str | Any`
+    `parent: str | None`
     :   GID of the parent task (to create a subtask)
 
-    `projects: list[str] | Any`
+    `projects: list[str] | None`
     :   Array of project GIDs to add the task to
 
-    `resource_subtype: str | Any`
+    `resource_subtype: str | None`
     :   The subtype of the task: default_task, milestone, section, or approval
 
-    `start_on: str | Any`
+    `start_on: str | None`
     :   Start date in YYYY-MM-DD format
 
-    `tags: list[str] | Any`
+    `tags: list[str] | None`
     :   Array of tag GIDs to add to the task
 
-    `workspace: str | Any`
+    `workspace: str`
     :   GID of the workspace to create the task in
 
 <a id="TaskDependenciesListResultMeta"></a>
@@ -3863,7 +3863,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TaskDependentsListResultMeta"></a>
@@ -3887,7 +3887,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TaskProjectsListResultMeta"></a>
@@ -3911,7 +3911,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TaskRemoveTagParams"></a>
@@ -3932,7 +3932,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.TaskRemoveTagParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.TaskRemoveTagParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -3959,7 +3959,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tag: str | Any`
+    `tag: str`
     :   The GID of the tag to remove from the task
 
 <a id="TaskResponse"></a>
@@ -3980,7 +3980,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Task | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Task | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -4007,7 +4007,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TaskUpdateParams"></a>
@@ -4028,7 +4028,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.TaskUpdateParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.TaskUpdateParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -4052,31 +4052,31 @@ Classes
 
     ### Class variables
 
-    `assignee: str | Any`
+    `assignee: str | None`
     :   GID of the user to assign the task to, or 'me' for the current user
 
-    `completed: bool | Any`
+    `completed: bool | None`
     :   Whether the task is completed
 
-    `due_at: str | Any`
+    `due_at: str | None`
     :   Due date and time in ISO 8601 format (e.g., 2025-03-20T12:00:00.000Z)
 
-    `due_on: str | Any`
+    `due_on: str | None`
     :   Due date in YYYY-MM-DD format
 
-    `html_notes: str | Any`
+    `html_notes: str | None`
     :   HTML-formatted description of the task
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Name of the task
 
-    `notes: str | Any`
+    `notes: str | None`
     :   Free-form textual description of the task (plain text, no formatting)
 
-    `start_on: str | Any`
+    `start_on: str | None`
     :   Start date in YYYY-MM-DD format
 
 <a id="TasksList"></a>
@@ -4097,13 +4097,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.TaskCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.TaskCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.TasksListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.TasksListNextPage | None`
     :   The type of the None singleton.
 
 <a id="TasksListNextPage"></a>
@@ -4127,13 +4127,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="TasksListResultMeta"></a>
@@ -4157,7 +4157,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TasksSearchData"></a>
@@ -4307,22 +4307,22 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `organization: airbyte_agent_sdk.connectors.asana.models.TeamOrganization | Any`
+    `organization: airbyte_agent_sdk.connectors.asana.models.TeamOrganization | None`
     :   The type of the None singleton.
 
-    `permalink_url: str | Any`
+    `permalink_url: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TeamCompact"></a>
@@ -4343,16 +4343,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TeamOrganization"></a>
@@ -4373,16 +4373,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="TeamProjectsListResultMeta"></a>
@@ -4406,7 +4406,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TeamResponse"></a>
@@ -4427,7 +4427,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Team | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Team | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -4454,7 +4454,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TeamsList"></a>
@@ -4475,13 +4475,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.TeamCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.TeamCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.TeamsListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.TeamsListNextPage | None`
     :   The type of the None singleton.
 
 <a id="TeamsListNextPage"></a>
@@ -4505,13 +4505,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="TeamsSearchData"></a>
@@ -4574,25 +4574,25 @@ Classes
 
     ### Class variables
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `photo: dict[str, typing.Any] | Any | None`
+    `photo: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
-    `workspaces: list[airbyte_agent_sdk.connectors.asana.models.UserWorkspacesItem] | Any`
+    `workspaces: list[airbyte_agent_sdk.connectors.asana.models.UserWorkspacesItem] | None`
     :   The type of the None singleton.
 
 <a id="UserCompact"></a>
@@ -4613,16 +4613,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="UserResponse"></a>
@@ -4643,7 +4643,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.User | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.User | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -4670,7 +4670,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="UserWorkspacesItem"></a>
@@ -4691,16 +4691,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="UsersList"></a>
@@ -4721,13 +4721,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.UserCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.UserCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.UsersListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.UsersListNextPage | None`
     :   The type of the None singleton.
 
 <a id="UsersListNextPage"></a>
@@ -4751,13 +4751,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -4781,7 +4781,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>
@@ -4841,22 +4841,22 @@ Classes
 
     ### Class variables
 
-    `email_domains: list[str] | Any`
+    `email_domains: list[str] | None`
     :   The type of the None singleton.
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
-    `is_organization: bool | Any`
+    `is_organization: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceAddUserParams"></a>
@@ -4877,7 +4877,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.WorkspaceAddUserParamsData | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.WorkspaceAddUserParamsData`
     :   The type of the None singleton.
 
     `model_config`
@@ -4904,7 +4904,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `user: str | Any`
+    `user: str`
     :   A user GID or email address to add to the workspace
 
 <a id="WorkspaceCompact"></a>
@@ -4925,16 +4925,16 @@ Classes
 
     ### Class variables
 
-    `gid: str | Any`
+    `gid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_type: str | Any`
+    `resource_type: str | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceProjectsListResultMeta"></a>
@@ -4958,7 +4958,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceResponse"></a>
@@ -4979,7 +4979,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.asana.models.Workspace | Any`
+    `data: airbyte_agent_sdk.connectors.asana.models.Workspace | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -5006,7 +5006,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceTaskSearchListResultMeta"></a>
@@ -5030,7 +5030,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceTeamsListResultMeta"></a>
@@ -5054,7 +5054,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceUsersListResultMeta"></a>
@@ -5078,7 +5078,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesList"></a>
@@ -5099,13 +5099,13 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.asana.models.WorkspaceCompact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.asana.models.WorkspaceCompact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: airbyte_agent_sdk.connectors.asana.models.WorkspacesListNextPage | Any | None`
+    `next_page: airbyte_agent_sdk.connectors.asana.models.WorkspacesListNextPage | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesListNextPage"></a>
@@ -5129,13 +5129,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesListResultMeta"></a>
@@ -5159,7 +5159,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: dict[str, typing.Any] | Any | None`
+    `next_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesSearchData"></a>

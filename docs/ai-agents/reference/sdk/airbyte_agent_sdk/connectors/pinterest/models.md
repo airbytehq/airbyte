@@ -31,106 +31,106 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any | None`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `ad_group_id: str | Any | None`
+    `ad_group_id: str | None`
     :   The type of the None singleton.
 
-    `android_deep_link: str | Any | None`
+    `android_deep_link: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: str | Any | None`
+    `campaign_id: str | None`
     :   The type of the None singleton.
 
-    `carousel_android_deep_links: list[str] | Any | None`
+    `carousel_android_deep_links: list[str] | None`
     :   The type of the None singleton.
 
-    `carousel_destination_urls: list[str] | Any | None`
+    `carousel_destination_urls: list[str] | None`
     :   The type of the None singleton.
 
-    `carousel_ios_deep_links: list[str] | Any | None`
+    `carousel_ios_deep_links: list[str] | None`
     :   The type of the None singleton.
 
-    `click_tracking_url: str | Any | None`
+    `click_tracking_url: str | None`
     :   The type of the None singleton.
 
-    `collection_items_destination_url_template: str | Any | None`
+    `collection_items_destination_url_template: str | None`
     :   The type of the None singleton.
 
-    `created_time: int | Any | None`
+    `created_time: int | None`
     :   The type of the None singleton.
 
-    `creative_type: str | Any | None`
+    `creative_type: str | None`
     :   The type of the None singleton.
 
-    `customizable_cta_type: str | Any | None`
+    `customizable_cta_type: str | None`
     :   The type of the None singleton.
 
-    `destination_url: str | Any | None`
+    `destination_url: str | None`
     :   The type of the None singleton.
 
-    `disclosure_type: str | Any | None`
+    `disclosure_type: str | None`
     :   The type of the None singleton.
 
-    `disclosure_url: str | Any | None`
+    `disclosure_url: str | None`
     :   The type of the None singleton.
 
-    `grid_click_type: str | Any | None`
+    `grid_click_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `ios_deep_link: str | Any | None`
+    `ios_deep_link: str | None`
     :   The type of the None singleton.
 
-    `is_pin_deleted: bool | Any | None`
+    `is_pin_deleted: bool | None`
     :   The type of the None singleton.
 
-    `is_removable: bool | Any | None`
+    `is_removable: bool | None`
     :   The type of the None singleton.
 
-    `lead_form_id: str | Any | None`
+    `lead_form_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `pin_id: str | Any | None`
+    `pin_id: str | None`
     :   The type of the None singleton.
 
-    `quiz_pin_data: dict[str, typing.Any] | Any | None`
+    `quiz_pin_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `rejected_reasons: list[str] | Any | None`
+    `rejected_reasons: list[str] | None`
     :   The type of the None singleton.
 
-    `rejection_labels: list[str] | Any | None`
+    `rejection_labels: list[str] | None`
     :   The type of the None singleton.
 
-    `review_status: str | Any | None`
+    `review_status: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `summary_status: str | Any | None`
+    `summary_status: str | None`
     :   The type of the None singleton.
 
-    `tracking_urls: airbyte_agent_sdk.connectors.pinterest.models.AdTrackingUrls | Any | None`
+    `tracking_urls: airbyte_agent_sdk.connectors.pinterest.models.AdTrackingUrls | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_time: int | Any | None`
+    `updated_time: int | None`
     :   The type of the None singleton.
 
-    `view_tracking_url: str | Any | None`
+    `view_tracking_url: str | None`
     :   The type of the None singleton.
 
 <a id="AdAccount"></a>
@@ -151,31 +151,31 @@ Classes
 
     ### Class variables
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `created_time: int | Any | None`
+    `created_time: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner: airbyte_agent_sdk.connectors.pinterest.models.AdAccountOwner | Any | None`
+    `owner: airbyte_agent_sdk.connectors.pinterest.models.AdAccountOwner | None`
     :   The type of the None singleton.
 
-    `permissions: list[str | None] | Any | None`
+    `permissions: list[str | None] | None`
     :   The type of the None singleton.
 
-    `updated_time: int | Any | None`
+    `updated_time: int | None`
     :   The type of the None singleton.
 
 <a id="AdAccountOwner"></a>
@@ -196,13 +196,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   Unique identifier of the owner
 
     `model_config`
     :   The type of the None singleton.
 
-    `username: str | Any | None`
+    `username: str | None`
     :   Username of the owner
 
 <a id="AdAccountsList"></a>
@@ -223,10 +223,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.AdAccount] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.AdAccount] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -250,7 +250,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -319,103 +319,103 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any | None`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `auto_targeting_enabled: bool | Any | None`
+    `auto_targeting_enabled: bool | None`
     :   The type of the None singleton.
 
-    `bid_in_micro_currency: float | Any | None`
+    `bid_in_micro_currency: float | None`
     :   The type of the None singleton.
 
-    `bid_multiplier: float | Any | None`
+    `bid_multiplier: float | None`
     :   The type of the None singleton.
 
-    `bid_strategy_type: str | Any | None`
+    `bid_strategy_type: str | None`
     :   The type of the None singleton.
 
-    `billable_event: str | Any | None`
+    `billable_event: str | None`
     :   The type of the None singleton.
 
-    `budget_in_micro_currency: float | Any | None`
+    `budget_in_micro_currency: float | None`
     :   The type of the None singleton.
 
-    `budget_type: str | Any | None`
+    `budget_type: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: str | Any | None`
+    `campaign_id: str | None`
     :   The type of the None singleton.
 
-    `conversion_learning_mode_type: str | Any | None`
+    `conversion_learning_mode_type: str | None`
     :   The type of the None singleton.
 
-    `created_time: float | Any | None`
+    `created_time: float | None`
     :   The type of the None singleton.
 
-    `end_time: float | Any | None`
+    `end_time: float | None`
     :   The type of the None singleton.
 
-    `feed_profile_id: str | Any | None`
+    `feed_profile_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_creative_optimization: bool | Any | None`
+    `is_creative_optimization: bool | None`
     :   The type of the None singleton.
 
-    `lifetime_frequency_cap: float | Any | None`
+    `lifetime_frequency_cap: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `optimization_goal_metadata: dict[str, typing.Any] | Any | None`
+    `optimization_goal_metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `pacing_delivery_type: str | Any | None`
+    `pacing_delivery_type: str | None`
     :   The type of the None singleton.
 
-    `placement_group: str | Any | None`
+    `placement_group: str | None`
     :   The type of the None singleton.
 
-    `placement_traffic_type: str | Any | None`
+    `placement_traffic_type: str | None`
     :   The type of the None singleton.
 
-    `promotion_application_level: str | Any | None`
+    `promotion_application_level: str | None`
     :   The type of the None singleton.
 
-    `promotion_id: str | Any | None`
+    `promotion_id: str | None`
     :   The type of the None singleton.
 
-    `promotion_ids: list[str] | Any | None`
+    `promotion_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `start_time: float | Any | None`
+    `start_time: float | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `summary_status: str | Any | None`
+    `summary_status: str | None`
     :   The type of the None singleton.
 
-    `targeting_spec: dict[str, typing.Any] | Any | None`
+    `targeting_spec: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `targeting_template_ids: list[str] | Any | None`
+    `targeting_template_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `tracking_urls: airbyte_agent_sdk.connectors.pinterest.models.AdGroupTrackingUrls | Any | None`
+    `tracking_urls: airbyte_agent_sdk.connectors.pinterest.models.AdGroupTrackingUrls | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_time: float | Any | None`
+    `updated_time: float | None`
     :   The type of the None singleton.
 
 <a id="AdGroupTrackingUrls"></a>
@@ -436,19 +436,19 @@ Classes
 
     ### Class variables
 
-    `audience_verification: list[str] | Any | None`
+    `audience_verification: list[str] | None`
     :   Audience verification tracking URLs
 
-    `buyable_button: list[str] | Any | None`
+    `buyable_button: list[str] | None`
     :   Buyable button tracking URLs
 
-    `click: list[str] | Any | None`
+    `click: list[str] | None`
     :   Click tracking URLs
 
-    `engagement: list[str] | Any | None`
+    `engagement: list[str] | None`
     :   Engagement tracking URLs
 
-    `impression: list[str] | Any | None`
+    `impression: list[str] | None`
     :   Impression tracking URLs
 
     `model_config`
@@ -472,10 +472,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.AdGroup] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.AdGroup] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -499,7 +499,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -619,19 +619,19 @@ Classes
 
     ### Class variables
 
-    `audience_verification: list[str] | Any | None`
+    `audience_verification: list[str] | None`
     :   Audience verification tracking URLs
 
-    `buyable_button: list[str] | Any | None`
+    `buyable_button: list[str] | None`
     :   Buyable button tracking URLs
 
-    `click: list[str] | Any | None`
+    `click: list[str] | None`
     :   Click tracking URLs
 
-    `engagement: list[str] | Any | None`
+    `engagement: list[str] | None`
     :   Engagement tracking URLs
 
-    `impression: list[str] | Any | None`
+    `impression: list[str] | None`
     :   Impression tracking URLs
 
     `model_config`
@@ -655,10 +655,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Ad] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Ad] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -682,7 +682,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1432,43 +1432,43 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any | None`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `audience_type: str | Any | None`
+    `audience_type: str | None`
     :   The type of the None singleton.
 
-    `created_by_company_name: str | Any | None`
+    `created_by_company_name: str | None`
     :   The type of the None singleton.
 
-    `created_timestamp: int | Any | None`
+    `created_timestamp: int | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rule: airbyte_agent_sdk.connectors.pinterest.models.AudienceRule | Any | None`
+    `rule: airbyte_agent_sdk.connectors.pinterest.models.AudienceRule | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_timestamp: int | Any | None`
+    `updated_timestamp: int | None`
     :   The type of the None singleton.
 
 <a id="AudienceRule"></a>
@@ -1489,28 +1489,28 @@ Classes
 
     ### Class variables
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Country criteria
 
-    `customer_list_id: str | Any | None`
+    `customer_list_id: str | None`
     :   Customer list ID
 
-    `engagement_domain: list[str] | Any | None`
+    `engagement_domain: list[str] | None`
     :   Domains for engagement tracking
 
-    `engagement_type: str | Any | None`
+    `engagement_type: str | None`
     :   Engagement type
 
-    `event: str | Any | None`
+    `event: str | None`
     :   Pinterest tag event
 
     `model_config`
     :   The type of the None singleton.
 
-    `retention_days: int | Any | None`
+    `retention_days: int | None`
     :   Days to retain audience data
 
-    `visitor_source_id: str | Any | None`
+    `visitor_source_id: str | None`
     :   Visitor source ID
 
 <a id="AudiencesList"></a>
@@ -1531,10 +1531,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Audience] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Audience] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1558,7 +1558,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1636,43 +1636,43 @@ Classes
 
     ### Class variables
 
-    `board_pins_modified_at: str | Any | None`
+    `board_pins_modified_at: str | None`
     :   The type of the None singleton.
 
-    `collaborator_count: int | Any | None`
+    `collaborator_count: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `follower_count: int | Any | None`
+    `follower_count: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_ads_only: bool | Any | None`
+    `is_ads_only: bool | None`
     :   The type of the None singleton.
 
-    `media: airbyte_agent_sdk.connectors.pinterest.models.BoardMedia | Any | None`
+    `media: airbyte_agent_sdk.connectors.pinterest.models.BoardMedia | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner: airbyte_agent_sdk.connectors.pinterest.models.BoardOwner | Any | None`
+    `owner: airbyte_agent_sdk.connectors.pinterest.models.BoardOwner | None`
     :   The type of the None singleton.
 
-    `pin_count: int | Any | None`
+    `pin_count: int | None`
     :   The type of the None singleton.
 
-    `privacy: str | Any | None`
+    `privacy: str | None`
     :   The type of the None singleton.
 
 <a id="BoardMedia"></a>
@@ -1693,13 +1693,13 @@ Classes
 
     ### Class variables
 
-    `image_cover_url: str | Any | None`
+    `image_cover_url: str | None`
     :   Cover image URL
 
     `model_config`
     :   The type of the None singleton.
 
-    `pin_thumbnail_urls: list[str] | Any | None`
+    `pin_thumbnail_urls: list[str] | None`
     :   Thumbnail URLs of pins
 
 <a id="BoardOwner"></a>
@@ -1723,7 +1723,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `username: str | Any | None`
+    `username: str | None`
     :   Username of the board owner
 
 <a id="BoardPin"></a>
@@ -1744,64 +1744,64 @@ Classes
 
     ### Class variables
 
-    `alt_text: str | Any | None`
+    `alt_text: str | None`
     :   The type of the None singleton.
 
-    `board_id: str | Any | None`
+    `board_id: str | None`
     :   The type of the None singleton.
 
-    `board_owner: airbyte_agent_sdk.connectors.pinterest.models.BoardPinBoardOwner | Any | None`
+    `board_owner: airbyte_agent_sdk.connectors.pinterest.models.BoardPinBoardOwner | None`
     :   The type of the None singleton.
 
-    `board_section_id: str | Any | None`
+    `board_section_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creative_type: str | Any | None`
+    `creative_type: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `dominant_color: str | Any | None`
+    `dominant_color: str | None`
     :   The type of the None singleton.
 
-    `has_been_promoted: bool | Any | None`
+    `has_been_promoted: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_owner: bool | Any | None`
+    `is_owner: bool | None`
     :   The type of the None singleton.
 
-    `is_removable: bool | Any | None`
+    `is_removable: bool | None`
     :   The type of the None singleton.
 
-    `is_standard: bool | Any | None`
+    `is_standard: bool | None`
     :   The type of the None singleton.
 
-    `link: str | Any | None`
+    `link: str | None`
     :   The type of the None singleton.
 
-    `media: airbyte_agent_sdk.connectors.pinterest.models.BoardPinMedia | Any | None`
+    `media: airbyte_agent_sdk.connectors.pinterest.models.BoardPinMedia | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `parent_pin_id: str | Any | None`
+    `parent_pin_id: str | None`
     :   The type of the None singleton.
 
-    `pin_metrics: dict[str, typing.Any] | Any | None`
+    `pin_metrics: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `product_tags: list[dict[str, typing.Any]] | Any | None`
+    `product_tags: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="BoardPinBoardOwner"></a>
@@ -1825,7 +1825,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `username: str | Any | None`
+    `username: str | None`
     :   Username of the board owner
 
 <a id="BoardPinMedia"></a>
@@ -1846,7 +1846,7 @@ Classes
 
     ### Class variables
 
-    `media_type: str | Any | None`
+    `media_type: str | None`
     :   Type of media
 
     `model_config`
@@ -1870,10 +1870,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.BoardPin] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.BoardPin] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1897,7 +1897,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1993,13 +1993,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="BoardSectionsList"></a>
@@ -2020,10 +2020,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.BoardSection] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.BoardSection] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2047,7 +2047,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2098,10 +2098,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Board] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Board] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2125,7 +2125,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2203,70 +2203,70 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any | None`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `bid_options: dict[str, typing.Any] | Any | None`
+    `bid_options: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_time: int | Any | None`
+    `created_time: int | None`
     :   The type of the None singleton.
 
-    `daily_spend_cap: int | Any | None`
+    `daily_spend_cap: int | None`
     :   The type of the None singleton.
 
-    `end_time: int | Any | None`
+    `end_time: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_automated_campaign: bool | Any | None`
+    `is_automated_campaign: bool | None`
     :   The type of the None singleton.
 
-    `is_campaign_budget_optimization: bool | Any | None`
+    `is_campaign_budget_optimization: bool | None`
     :   The type of the None singleton.
 
-    `is_flexible_daily_budgets: bool | Any | None`
+    `is_flexible_daily_budgets: bool | None`
     :   The type of the None singleton.
 
-    `is_performance_plus: bool | Any | None`
+    `is_performance_plus: bool | None`
     :   The type of the None singleton.
 
-    `is_top_of_search: bool | Any | None`
+    `is_top_of_search: bool | None`
     :   The type of the None singleton.
 
-    `lifetime_spend_cap: int | Any | None`
+    `lifetime_spend_cap: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `objective_type: str | Any | None`
+    `objective_type: str | None`
     :   The type of the None singleton.
 
-    `order_line_id: str | Any | None`
+    `order_line_id: str | None`
     :   The type of the None singleton.
 
-    `start_time: int | Any | None`
+    `start_time: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `summary_status: str | Any | None`
+    `summary_status: str | None`
     :   The type of the None singleton.
 
-    `tracking_urls: airbyte_agent_sdk.connectors.pinterest.models.CampaignTrackingUrls | Any | None`
+    `tracking_urls: airbyte_agent_sdk.connectors.pinterest.models.CampaignTrackingUrls | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_time: int | Any | None`
+    `updated_time: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignTrackingUrls"></a>
@@ -2287,19 +2287,19 @@ Classes
 
     ### Class variables
 
-    `audience_verification: list[str] | Any | None`
+    `audience_verification: list[str] | None`
     :   Audience verification tracking URLs
 
-    `buyable_button: list[str] | Any | None`
+    `buyable_button: list[str] | None`
     :   Buyable button tracking URLs
 
-    `click: list[str] | Any | None`
+    `click: list[str] | None`
     :   Click tracking URLs
 
-    `engagement: list[str] | Any | None`
+    `engagement: list[str] | None`
     :   Engagement tracking URLs
 
-    `impression: list[str] | Any | None`
+    `impression: list[str] | None`
     :   Impression tracking URLs
 
     `model_config`
@@ -2323,10 +2323,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Campaign] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Campaign] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2350,7 +2350,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2446,22 +2446,22 @@ Classes
 
     ### Class variables
 
-    `catalog_type: str | Any | None`
+    `catalog_type: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CatalogsFeed"></a>
@@ -2482,46 +2482,46 @@ Classes
 
     ### Class variables
 
-    `catalog_type: str | Any | None`
+    `catalog_type: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default_availability: str | Any | None`
+    `default_availability: str | None`
     :   The type of the None singleton.
 
-    `default_country: str | Any | None`
+    `default_country: str | None`
     :   The type of the None singleton.
 
-    `default_currency: str | Any | None`
+    `default_currency: str | None`
     :   The type of the None singleton.
 
-    `default_locale: str | Any | None`
+    `default_locale: str | None`
     :   The type of the None singleton.
 
-    `format: str | Any | None`
+    `format: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `location: str | Any | None`
+    `location: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `preferred_processing_schedule: airbyte_agent_sdk.connectors.pinterest.models.CatalogsFeedPreferredProcessingSchedule | Any | None`
+    `preferred_processing_schedule: airbyte_agent_sdk.connectors.pinterest.models.CatalogsFeedPreferredProcessingSchedule | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CatalogsFeedPreferredProcessingSchedule"></a>
@@ -2545,10 +2545,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `time: str | Any | None`
+    `time: str | None`
     :   Preferred processing time
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   Timezone for processing
 
 <a id="CatalogsFeedsList"></a>
@@ -2569,10 +2569,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.CatalogsFeed] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.CatalogsFeed] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2596,7 +2596,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2680,10 +2680,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Catalog] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Catalog] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2707,7 +2707,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2731,34 +2731,34 @@ Classes
 
     ### Class variables
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `feed_id: str | Any | None`
+    `feed_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_featured: bool | Any | None`
+    `is_featured: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="CatalogsProductGroupsList"></a>
@@ -2779,10 +2779,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.CatalogsProductGroup] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.CatalogsProductGroup] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2806,7 +2806,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2914,34 +2914,34 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any | None`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `code_snippet: str | Any | None`
+    `code_snippet: str | None`
     :   The type of the None singleton.
 
-    `configs: airbyte_agent_sdk.connectors.pinterest.models.ConversionTagConfigs | Any | None`
+    `configs: airbyte_agent_sdk.connectors.pinterest.models.ConversionTagConfigs | None`
     :   The type of the None singleton.
 
-    `enhanced_match_status: str | Any | None`
+    `enhanced_match_status: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `last_fired_time_ms: int | Any | None`
+    `last_fired_time_ms: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `version: str | Any | None`
+    `version: str | None`
     :   The type of the None singleton.
 
 <a id="ConversionTagConfigs"></a>
@@ -2962,25 +2962,25 @@ Classes
 
     ### Class variables
 
-    `aem_db_enabled: bool | Any | None`
+    `aem_db_enabled: bool | None`
     :   AEM birthdate integration enabled
 
-    `aem_enabled: bool | Any | None`
+    `aem_enabled: bool | None`
     :   AEM email integration enabled
 
-    `aem_fnln_enabled: bool | Any | None`
+    `aem_fnln_enabled: bool | None`
     :   AEM name integration enabled
 
-    `aem_ge_enabled: bool | Any | None`
+    `aem_ge_enabled: bool | None`
     :   AEM gender integration enabled
 
-    `aem_loc_enabled: bool | Any | None`
+    `aem_loc_enabled: bool | None`
     :   AEM location integration enabled
 
-    `aem_ph_enabled: bool | Any | None`
+    `aem_ph_enabled: bool | None`
     :   AEM phone integration enabled
 
-    `md_frequency: float | Any | None`
+    `md_frequency: float | None`
     :   Metadata ingestion frequency
 
     `model_config`
@@ -3004,10 +3004,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.ConversionTag] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.ConversionTag] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3031,7 +3031,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3103,37 +3103,37 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any | None`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `created_time: int | Any | None`
+    `created_time: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `num_batches: int | Any | None`
+    `num_batches: int | None`
     :   The type of the None singleton.
 
-    `num_removed_user_records: int | Any | None`
+    `num_removed_user_records: int | None`
     :   The type of the None singleton.
 
-    `num_uploaded_user_records: int | Any | None`
+    `num_uploaded_user_records: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_time: int | Any | None`
+    `updated_time: int | None`
     :   The type of the None singleton.
 
 <a id="CustomerListsList"></a>
@@ -3154,10 +3154,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.CustomerList] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.CustomerList] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3181,7 +3181,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3256,31 +3256,31 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `bid: int | Any | None`
+    `bid: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `match_type: str | Any | None`
+    `match_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `parent_id: str | Any | None`
+    `parent_id: str | None`
     :   The type of the None singleton.
 
-    `parent_type: str | Any | None`
+    `parent_type: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="KeywordsList"></a>
@@ -3301,10 +3301,10 @@ Classes
 
     ### Class variables
 
-    `bookmark: str | Any | None`
+    `bookmark: str | None`
     :   The type of the None singleton.
 
-    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Keyword] | Any`
+    `items: list[airbyte_agent_sdk.connectors.pinterest.models.Keyword] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3328,7 +3328,7 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`

@@ -372,19 +372,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.CampaignAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.CampaignAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.CampaignLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.CampaignLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignAttributes"></a>
@@ -405,40 +405,40 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   Whether campaign is archived
 
-    `audiences: dict[str, typing.Any] | Any | None`
+    `audiences: dict[str, typing.Any] | None`
     :   Target audiences
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   Creation timestamp
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Campaign name
 
-    `scheduled_at: str | Any | None`
+    `scheduled_at: str | None`
     :   Scheduled send time
 
-    `send_options: dict[str, typing.Any] | Any | None`
+    `send_options: dict[str, typing.Any] | None`
     :   Send options
 
-    `send_strategy: dict[str, typing.Any] | Any | None`
+    `send_strategy: dict[str, typing.Any] | None`
     :   Send strategy
 
-    `send_time: str | Any | None`
+    `send_time: str | None`
     :   Actual send time
 
-    `status: str | Any | None`
+    `status: str | None`
     :   Campaign status
 
-    `tracking_options: dict[str, typing.Any] | Any | None`
+    `tracking_options: dict[str, typing.Any] | None`
     :   Tracking options
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   Last update timestamp
 
 <a id="CampaignLinks"></a>
@@ -462,7 +462,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsList"></a>
@@ -483,10 +483,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Campaign] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Campaign] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.CampaignsListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.CampaignsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -513,13 +513,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListResultMeta"></a>
@@ -543,7 +543,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchData"></a>
@@ -606,7 +606,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="EmailTemplatesSearchData"></a>
@@ -663,22 +663,22 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.EventAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.EventAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.EventLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.EventLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `relationships: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationships | Any | None`
+    `relationships: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationships | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="EventAttributes"></a>
@@ -699,19 +699,19 @@ Classes
 
     ### Class variables
 
-    `datetime: str | Any | None`
+    `datetime: str | None`
     :   Event datetime
 
-    `event_properties: dict[str, typing.Any] | Any | None`
+    `event_properties: dict[str, typing.Any] | None`
     :   Custom event properties
 
     `model_config`
     :   The type of the None singleton.
 
-    `timestamp: Any`
+    `timestamp: typing.Any | None`
     :   Event timestamp (can be ISO string or Unix timestamp)
 
-    `uuid: str | Any | None`
+    `uuid: str | None`
     :   Event UUID
 
 <a id="EventLinks"></a>
@@ -735,7 +735,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="EventRelationships"></a>
@@ -756,13 +756,13 @@ Classes
 
     ### Class variables
 
-    `metric: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsMetric | Any | None`
+    `metric: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsMetric | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `profile: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsProfile | Any | None`
+    `profile: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsProfile | None`
     :   The type of the None singleton.
 
 <a id="EventRelationshipsMetric"></a>
@@ -783,7 +783,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsMetricData | Any | None`
+    `data: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsMetricData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -807,13 +807,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="EventRelationshipsProfile"></a>
@@ -834,7 +834,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsProfileData | Any | None`
+    `data: airbyte_agent_sdk.connectors.klaviyo.models.EventRelationshipsProfileData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -858,13 +858,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="EventsList"></a>
@@ -885,10 +885,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Event] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Event] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.EventsListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.EventsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -915,13 +915,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="EventsListResultMeta"></a>
@@ -945,7 +945,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="EventsSearchData"></a>
@@ -1005,19 +1005,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.FlowAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.FlowAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.FlowLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.FlowLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FlowAttributes"></a>
@@ -1038,25 +1038,25 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   Whether flow is archived
 
-    `created: str | Any | None`
+    `created: str | None`
     :   Creation timestamp
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Flow name
 
-    `status: str | Any | None`
+    `status: str | None`
     :   Flow status (draft, manual, live)
 
-    `trigger_type: str | Any | None`
+    `trigger_type: str | None`
     :   Type of trigger for the flow
 
-    `updated: str | Any | None`
+    `updated: str | None`
     :   Last update timestamp
 
 <a id="FlowLinks"></a>
@@ -1080,7 +1080,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="FlowsList"></a>
@@ -1101,10 +1101,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Flow] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Flow] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.FlowsListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.FlowsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1131,13 +1131,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="FlowsListResultMeta"></a>
@@ -1161,7 +1161,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="FlowsSearchData"></a>
@@ -1661,19 +1661,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.ListAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.ListAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.ListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.ListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ListAttributes"></a>
@@ -1694,19 +1694,19 @@ Classes
 
     ### Class variables
 
-    `created: str | Any | None`
+    `created: str | None`
     :   Creation timestamp
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   List name
 
-    `opt_in_process: str | Any | None`
+    `opt_in_process: str | None`
     :   Opt-in process type
 
-    `updated: str | Any | None`
+    `updated: str | None`
     :   Last update timestamp
 
 <a id="ListLinks"></a>
@@ -1730,7 +1730,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ListsList"></a>
@@ -1751,10 +1751,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.List] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.List] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.ListsListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.ListsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1781,13 +1781,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ListsListResultMeta"></a>
@@ -1811,7 +1811,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ListsSearchData"></a>
@@ -1871,19 +1871,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.MetricAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.MetricAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.MetricLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.MetricLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="MetricAttributes"></a>
@@ -1904,19 +1904,19 @@ Classes
 
     ### Class variables
 
-    `created: str | Any | None`
+    `created: str | None`
     :   Creation timestamp
 
-    `integration: airbyte_agent_sdk.connectors.klaviyo.models.MetricAttributesIntegration | Any | None`
+    `integration: airbyte_agent_sdk.connectors.klaviyo.models.MetricAttributesIntegration | None`
     :   Integration information
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Metric name
 
-    `updated: str | Any | None`
+    `updated: str | None`
     :   Last update timestamp
 
 <a id="MetricAttributesIntegration"></a>
@@ -1937,16 +1937,16 @@ Classes
 
     ### Class variables
 
-    `category: str | Any | None`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="MetricLinks"></a>
@@ -1970,7 +1970,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="MetricsList"></a>
@@ -1991,10 +1991,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Metric] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Metric] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.MetricsListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.MetricsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2021,13 +2021,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="MetricsListResultMeta"></a>
@@ -2051,7 +2051,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="MetricsSearchData"></a>
@@ -2111,19 +2111,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.ProfileAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.ProfileAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.ProfileLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.ProfileLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ProfileAttributes"></a>
@@ -2144,43 +2144,43 @@ Classes
 
     ### Class variables
 
-    `created: str | Any | None`
+    `created: str | None`
     :   Creation timestamp
 
-    `email: str | Any | None`
+    `email: str | None`
     :   Email address
 
-    `external_id: str | Any | None`
+    `external_id: str | None`
     :   External identifier
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   First name
 
-    `image: str | Any | None`
+    `image: str | None`
     :   Profile image URL
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   Last name
 
-    `location: airbyte_agent_sdk.connectors.klaviyo.models.ProfileAttributesLocation | Any | None`
+    `location: airbyte_agent_sdk.connectors.klaviyo.models.ProfileAttributesLocation | None`
     :   Location information
 
     `model_config`
     :   The type of the None singleton.
 
-    `organization: str | Any | None`
+    `organization: str | None`
     :   Organization name
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   Phone number
 
-    `properties: dict[str, typing.Any] | Any | None`
+    `properties: dict[str, typing.Any] | None`
     :   Custom properties
 
-    `title: str | Any | None`
+    `title: str | None`
     :   Job title
 
-    `updated: str | Any | None`
+    `updated: str | None`
     :   Last update timestamp
 
 <a id="ProfileAttributesLocation"></a>
@@ -2201,34 +2201,34 @@ Classes
 
     ### Class variables
 
-    `address1: str | Any | None`
+    `address1: str | None`
     :   The type of the None singleton.
 
-    `address2: str | Any | None`
+    `address2: str | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `latitude: float | Any | None`
+    `latitude: float | None`
     :   The type of the None singleton.
 
-    `longitude: float | Any | None`
+    `longitude: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `region: str | Any | None`
+    `region: str | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
-    `zip: str | Any | None`
+    `zip: str | None`
     :   The type of the None singleton.
 
 <a id="ProfileLinks"></a>
@@ -2252,7 +2252,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ProfilesList"></a>
@@ -2273,10 +2273,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Profile] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Profile] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.ProfilesListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.ProfilesListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2303,13 +2303,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ProfilesListResultMeta"></a>
@@ -2333,7 +2333,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ProfilesSearchData"></a>
@@ -2396,19 +2396,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.TemplateAttributes | Any | None`
+    `attributes: airbyte_agent_sdk.connectors.klaviyo.models.TemplateAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.TemplateLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.TemplateLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="TemplateAttributes"></a>
@@ -2429,25 +2429,25 @@ Classes
 
     ### Class variables
 
-    `created: str | Any | None`
+    `created: str | None`
     :   Creation timestamp
 
-    `editor_type: str | Any | None`
+    `editor_type: str | None`
     :   Editor type used to create template
 
-    `html: str | Any | None`
+    `html: str | None`
     :   HTML content
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Template name
 
-    `text: str | Any | None`
+    `text: str | None`
     :   Plain text content
 
-    `updated: str | Any | None`
+    `updated: str | None`
     :   Last update timestamp
 
 <a id="TemplateLinks"></a>
@@ -2471,7 +2471,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="TemplatesList"></a>
@@ -2492,10 +2492,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Template] | Any`
+    `data: list[airbyte_agent_sdk.connectors.klaviyo.models.Template] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.klaviyo.models.TemplatesListLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.klaviyo.models.TemplatesListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2522,11 +2522,11 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `prev: str | Any | None`
+    `prev: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any | None`
+    `self: str | None`
     :   The type of the None singleton.

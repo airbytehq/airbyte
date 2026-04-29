@@ -432,6 +432,12 @@ Classes
     `record_extractor: str | None`
     :   The type of the None singleton.
 
+    `record_filter: str | None`
+    :   The type of the None singleton.
+
+    `record_transform: dict[str, str] | None`
+    :   The type of the None singleton.
+
     `request_body_defaults: dict[str, typing.Any]`
     :   The type of the None singleton.
 
