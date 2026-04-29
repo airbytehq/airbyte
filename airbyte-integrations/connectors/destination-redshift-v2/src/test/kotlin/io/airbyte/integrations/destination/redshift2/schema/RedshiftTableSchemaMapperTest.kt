@@ -207,7 +207,7 @@ class RedshiftTableSchemaMapperTest {
                         UnionType(setOf(StringType, IntegerType), isLegacyUnion = false),
                         true,
                     ),
-                    "super",
+                    "varchar(65535)",
                 ),
                 Arguments.of(
                     FieldType(
