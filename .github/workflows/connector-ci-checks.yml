@@ -237,7 +237,7 @@ jobs:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
-      - name: Get connector support level and test config
+      - name: Get connector support level
         if: matrix.connector
         id: support-level
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -248,19 +248,6 @@ jobs:
             echo "is_community=true" | tee -a $GITHUB_OUTPUT
           else
             echo "is_community=false" | tee -a $GITHUB_OUTPUT
-          fi
-
-          # Check for acceptance-test-config.yml to determine if the connector has test credentials.
-          # Connectors with this file are expected to have working test accounts, so their
-          # integration and container tests should be required to pass.
-          if [[ -f "acceptance-test-config.yml" ]]; then
-            echo "has_test_config=true" | tee -a $GITHUB_OUTPUT
-            echo "::notice::Connector has acceptance-test-config.yml: integration and container tests are required."
-          else
-            echo "has_test_config=false" | tee -a $GITHUB_OUTPUT
-            if [[ "$SUPPORT_LEVEL" != "certified" ]]; then
-              echo "::notice::Community connector without acceptance-test-config.yml: test failures will not block the workflow."
-            fi
           fi
 
       # Python deps
@@ -310,9 +297,11 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
+        id: fetch-secrets
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
+        continue-on-error: true
         run: |
           airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
@@ -324,13 +313,13 @@ jobs:
 
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
-        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' && steps.support-level.outputs.has_test_config == 'false' }}
+        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' && steps.fetch-secrets.outcome != 'success' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
       - name: Container Tests
         if: matrix.connector
-        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' && steps.support-level.outputs.has_test_config == 'false' }}
+        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' && steps.fetch-secrets.outcome != 'success' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test
