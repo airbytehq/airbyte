@@ -2,6 +2,196 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/release_notes/v-2.1",
+      "destination": "/release_notes/self-managed/v-2.1",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-2.0",
+      "destination": "/release_notes/self-managed/v-2.0",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.8",
+      "destination": "/release_notes/self-managed/v-1.8",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.7",
+      "destination": "/release_notes/self-managed/v-1.7",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.6",
+      "destination": "/release_notes/self-managed/v-1.6",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.5",
+      "destination": "/release_notes/self-managed/v-1.5",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.4",
+      "destination": "/release_notes/self-managed/v-1.4",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.3",
+      "destination": "/release_notes/self-managed/v-1.3",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.2",
+      "destination": "/release_notes/self-managed/v-1.2",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.1",
+      "destination": "/release_notes/self-managed/v-1.1",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/v-1.0",
+      "destination": "/release_notes/self-managed/v-1.0",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/breaking-changes",
+      "destination": "/release_notes/self-managed/breaking-changes",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/upgrading_to_destinations_v2",
+      "destination": "/release_notes/self-managed/upgrading_to_destinations_v2",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/aug_2024",
+      "destination": "/release_notes/self-managed/aug_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/july_2024",
+      "destination": "/release_notes/self-managed/july_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/june_2024",
+      "destination": "/release_notes/self-managed/june_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/may_2024",
+      "destination": "/release_notes/self-managed/may_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/april_2024",
+      "destination": "/release_notes/self-managed/april_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/march_2024",
+      "destination": "/release_notes/self-managed/march_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/february_2024",
+      "destination": "/release_notes/self-managed/february_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/january_2024",
+      "destination": "/release_notes/self-managed/january_2024",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/december_2023",
+      "destination": "/release_notes/self-managed/december_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/november_2023",
+      "destination": "/release_notes/self-managed/november_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/october_2023",
+      "destination": "/release_notes/self-managed/october_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/september_2023",
+      "destination": "/release_notes/self-managed/september_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/july_2023",
+      "destination": "/release_notes/self-managed/july_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/june_2023",
+      "destination": "/release_notes/self-managed/june_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/may_2023",
+      "destination": "/release_notes/self-managed/may_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/april_2023",
+      "destination": "/release_notes/self-managed/april_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/march_2023",
+      "destination": "/release_notes/self-managed/march_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/february_2023",
+      "destination": "/release_notes/self-managed/february_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/january_2023",
+      "destination": "/release_notes/self-managed/january_2023",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/december_2022",
+      "destination": "/release_notes/self-managed/december_2022",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/november_2022",
+      "destination": "/release_notes/self-managed/november_2022",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/october_2022",
+      "destination": "/release_notes/self-managed/october_2022",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/september_2022",
+      "destination": "/release_notes/self-managed/september_2022",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/august_2022",
+      "destination": "/release_notes/self-managed/august_2022",
+      "statusCode": 301
+    },
+    {
+      "source": "/release_notes/july_2022",
+      "destination": "/release_notes/self-managed/july_2022",
+      "statusCode": 301
+    },
+    {
       "source": "/api-documentation",
       "destination": "/developers/api-documentation",
       "statusCode": 301
@@ -603,102 +793,247 @@
     },
     {
       "source": "/embedded-api/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api",
       "statusCode": 301
     },
     {
       "source": "/embedded-api/:path*",
-      "destination": "/ai-agents/api/api-reference/:path*",
+      "destination": "/ai-agents/reference/api/api-reference/:path*",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded/api-reference/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded/api-reference/:path*",
-      "destination": "/ai-agents/api/api-reference/:path*",
+      "destination": "/ai-agents/reference/api/api-reference/:path*",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded",
-      "destination": "/ai-agents/platform/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/api/authentication-module",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded/:path*",
-      "destination": "/ai-agents/platform/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/api/authentication-module",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-server-side-oauth",
-      "destination": "/ai-agents/platform/authenticate/build-auth/build-your-own",
+      "destination": "/ai-agents/interfaces/api/build-your-own",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-hosted",
-      "destination": "/ai-agents/tutorials/quickstarts/tutorial-hosted",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-hosted",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-mcp",
-      "destination": "/ai-agents/tutorials/quickstarts/tutorial-mcp",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-mcp",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-python",
-      "destination": "/ai-agents/tutorials/quickstarts/tutorial-python",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-python",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts",
-      "destination": "/ai-agents/tutorials/quickstarts",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/:path*",
-      "destination": "/ai-agents/tutorials/quickstarts/:path*",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/tutorials",
+      "destination": "/ai-agents/get-started/tutorials",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/tutorials/:path*",
+      "destination": "/ai-agents/get-started/tutorials/:path*",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/entity-cache",
-      "destination": "/ai-agents/platform/context-store",
+      "destination": "/ai-agents/concepts/context-store",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/entity-cache/:path*",
-      "destination": "/ai-agents/platform/context-store",
+      "destination": "/ai-agents/concepts/context-store",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/ui/context-store",
+      "destination": "/ai-agents/concepts/context-store",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/tools",
-      "destination": "/ai-agents/platform/execute",
+      "destination": "/ai-agents/interfaces/sdk/execute",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/tools/:path*",
-      "destination": "/ai-agents/platform/execute",
+      "destination": "/ai-agents/interfaces/sdk/execute",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/api/api-reference/sonar",
-      "destination": "/ai-agents/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/api/api-reference/sonar/:path*",
-      "destination": "/ai-agents/api/api-reference/agent-engine-api/:path*",
+      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api/:path*",
       "statusCode": 301
     },
     {
-      "source": "/ai-agents/tutorials/quickstarts/tutorial-python",
-      "destination": "/ai-agents/tutorials/quickstarts/tutorial-pydantic",
+      "source": "/ai-agents/api",
+      "destination": "/ai-agents/reference/api",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/api/:path*",
+      "destination": "/ai-agents/reference/api/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-python",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/platform/customers",
-      "destination": "/ai-agents/platform/workspaces",
+      "destination": "/ai-agents/interfaces/api/workspaces",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/platform",
+      "destination": "/ai-agents/interfaces/sdk",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/platform/:path*",
+      "destination": "/ai-agents/interfaces/sdk/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/mcp-server",
+      "destination": "/ai-agents/interfaces/mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/mcp-server/:path*",
+      "destination": "/ai-agents/interfaces/mcp/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/hosted",
+      "destination": "/ai-agents/interfaces/sdk/authenticate",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/open-source",
+      "destination": "/ai-agents/interfaces/sdk/authenticate",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/api/authentication-module",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/build-auth/build-your-own",
+      "destination": "/ai-agents/interfaces/api/build-your-own",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/build-auth",
+      "destination": "/ai-agents/interfaces/api",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/context-store",
+      "destination": "/ai-agents/concepts/context-store",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/enable-connector",
+      "destination": "/ai-agents/interfaces/ui/add-connector",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/ui/enable-connector",
+      "destination": "/ai-agents/interfaces/ui/add-connector",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/api/enable-connector",
+      "destination": "/ai-agents/interfaces/api/add-connector",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials",
+      "destination": "/ai-agents/get-started/developer-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts",
+      "destination": "/ai-agents/get-started/developer-quickstart",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
+      "destination": "/ai-agents/get-started/developer-quickstart/tutorial-pydantic",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-langchain",
+      "destination": "/ai-agents/get-started/developer-quickstart/tutorial-langchain",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-fastmcp",
+      "destination": "/ai-agents/get-started/developer-quickstart/tutorial-fastmcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/recipes",
+      "destination": "/ai-agents/get-started/developer-quickstart/recipes",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills/claude-code",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills/claude-code",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills/codex",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills/codex",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/skills/lovable",
+      "destination": "/ai-agents/get-started/developer-quickstart/skills/lovable",
       "statusCode": 301
     },
     {

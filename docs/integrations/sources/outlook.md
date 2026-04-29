@@ -129,6 +129,7 @@ For more information about Microsoft Graph Mail API capabilities, see the [Micro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2026-04-28 | [77353](https://github.com/airbytehq/airbyte/pull/77353) | Update dependencies |
 | 0.0.17 | 2026-04-21 | [76688](https://github.com/airbytehq/airbyte/pull/76688) | Update dependencies |
 | 0.0.16 | 2026-03-17 | [74968](https://github.com/airbytehq/airbyte/pull/74968) | Update dependencies |
 | 0.0.15 | 2026-03-03 | [73816](https://github.com/airbytehq/airbyte/pull/73816) | Update dependencies |

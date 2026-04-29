@@ -40,6 +40,7 @@ Using this stream we can extarct data from various streams such as contacts , de
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-04-28 | [77390](https://github.com/airbytehq/airbyte/pull/77390) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76678](https://github.com/airbytehq/airbyte/pull/76678) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75673](https://github.com/airbytehq/airbyte/pull/75673) | Update dependencies |
 | 0.0.49 | 2026-03-24 | [74988](https://github.com/airbytehq/airbyte/pull/74988) | Update dependencies |
