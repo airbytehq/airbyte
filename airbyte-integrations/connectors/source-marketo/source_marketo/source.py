@@ -12,15 +12,15 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 from .utils import STRING_TYPES, clean_string, format_value, to_datetime_str
 
@@ -419,10 +419,9 @@ class Leads(MarketoExportBase):
         """
         if self._available_fields is None:
             try:
-                resp = self._session.get(
-                    f"{self._url_base}rest/v1/leads/describe.json",
-                    headers=self._session.auth.get_auth_header(),
-                )
+                url = f"{self._url_base}rest/v1/leads/describe.json"
+                headers = {"Authorization": f"Bearer {self.config['authenticator'].get_access_token()}"}
+                resp = requests.get(url, headers=headers)
                 resp.raise_for_status()
                 fields = {}
                 for record in resp.json().get("result", []):
@@ -608,9 +607,9 @@ class MarketoAuthenticator(Oauth2Authenticator):
 
         return payload
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> Tuple[str, AirbyteDateTime]:
         """
-        Returns a tuple of (access_token, token_lifespan_in_seconds)
+        Returns a tuple of (access_token, token_expiry_date)
         """
         try:
             response = requests.request(
@@ -620,7 +619,7 @@ class MarketoAuthenticator(Oauth2Authenticator):
             )
             response.raise_for_status()
             response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
+            return response_json["access_token"], self._parse_token_expiration_date(response_json["expires_in"])
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
@@ -630,29 +629,43 @@ class SourceMarketo(YamlDeclarativeSource):
     Source Marketo fetch data of personalized multichannel programs and campaigns to prospects and customers.
     """
 
-    def __init__(self) -> None:
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog] = None,
+        config: Optional[Mapping[str, Any]] = None,
+        state: Optional[TState] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def _get_declarative_streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return super().streams(config)
+
+    def _fetch_activity_types(self, config: Mapping[str, Any]) -> List[Mapping[str, Any]]:
+        """Fetch activity types directly from the Marketo API."""
+        url = f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json"
+        headers = {"Authorization": f"Bearer {config['authenticator'].get_access_token()}"}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json().get("result", [])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = MarketoAuthenticator(config)
 
         streams = self._get_declarative_streams(config)
         streams.append(Leads(config))
-        activity_types_stream = [stream for stream in streams if stream.name == "activity_types"][0]
 
         # dynamically create activities by activity type id
         try:
-            for activity in activity_types_stream.read_records(sync_mode=None):
+            activity_types = self._fetch_activity_types(config)
+            for activity in activity_types:
                 stream_name = f"activities_{clean_string(activity['name'])}"
                 stream_class = type(stream_name, (Activities,), {"activity": activity})
 
                 # instantiate a stream with config
                 stream_instance = stream_class(config)
                 streams.append(stream_instance)
-        except ReadException as e:
+        except Exception as e:
             self.logger.warning(f"An error occurred while creating activity streams: {repr(e)}")
 
         return streams
