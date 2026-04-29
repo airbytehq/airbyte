@@ -93,8 +93,6 @@ The Context Store is always on and requires no configuration. It benefits most w
 - Prompts like "find all X where Y" run as a single search instead of a live API crawl.
 - Search behavior is consistent across connectors, including connectors whose APIs don't offer their own search endpoint.
 
-If you already maintain your own copy of the relevant data and prefer to expose it through your own tools, or if you only need to read or write a small number of records at a time and don't need to search across a dataset, agents still fall back to direct API requests automatically.
-
 ## Limitations
 
 - All agent connectors and interfaces can use the Context Store. Agents prefer it for search operations whenever the entity is available in the store.
