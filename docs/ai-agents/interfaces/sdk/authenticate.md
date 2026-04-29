@@ -20,7 +20,8 @@ For details, see [Manage your user profile](../../admin/profile).
 ## Provide credentials
 
 The SDK accepts credentials three ways. Pick whichever fits your app best. The SDK resolves them in the order:
-**explicit keyword arguments → `configure()` → environment variables**.
+
+**Explicit keyword arguments → `configure()` → environment variables**.
 
 ### Environment variables
 
