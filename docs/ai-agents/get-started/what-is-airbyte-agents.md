@@ -23,16 +23,16 @@ Organizations either end up with agents that demo well but fail in production, o
 
 ## How Airbyte Agents works
 
-Airbyte Agents solves this with three layers: Connect, Unify, and Act.
+Airbyte Agents solves this with three layers: connect, unify, and act.
 
 ```mermaid
 flowchart LR
     subgraph connect["Connect"]
-        C1["50+ SaaS connectors"]
+        C1["Connectors"]
         C2["Managed auth & credentials"]
     end
     subgraph unify["Unify"]
-        CS["Context Store<br/>(indexed, searchable)"]
+        CS["Context Store"]
     end
     subgraph act["Act"]
         A1["Read & search"]
