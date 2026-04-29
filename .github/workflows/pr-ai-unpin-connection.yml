@@ -11,9 +11,9 @@ on: workflow_dispatch
 #  pull_request:
 #    types: [closed]
 
-permissions: {}
-#  issues: write
-#  discussions: write
+permissions:
+  issues: write
+  discussions: write
 
 jobs:
   check-permissions:
