@@ -12,29 +12,16 @@ Use the flowchart below to find the best starting point, then read the section t
 ```mermaid
 flowchart TD
     START(["How do you want to use<br/>Airbyte Agents?"])
-    START -->|"No code needed"| WEB["Web app"]
     START -->|"I already use Claude,<br/>Cursor, or ChatGPT"| MCP["MCP server"]
     START -->|"I'm building a<br/>Python agent"| SDK["Python SDK"]
+    START -->|"No code needed"| WEB["Web app"]
     START -->|"Non-Python backend<br/>or custom admin"| API["HTTP API"]
 
-    click WEB "#web-app"
     click MCP "#mcp-server"
     click SDK "#python-sdk"
+    click WEB "#web-app-research-preview"
     click API "#http-api"
 ```
-
-## Web app
-
-**Best for:** Non-developers, operations teams, and anyone who wants to explore Airbyte Agents without writing code.
-
-The [web app](../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai) is the fastest way to get started. Describe what you need in natural language, and an Airbyte-hosted agent picks the right connectors, makes the necessary tool calls, and replies with an answer grounded in your data.
-
-Two primary surfaces:
-
-- **[Chats](../interfaces/ui/chats)** — Interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
-- **[Automations](../interfaces/ui/automations)** — Agent tasks that run on a schedule, on a webhook, or on demand. Use Automations when you need the same work to happen repeatedly without a person in the loop.
-
-**Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 
 ## MCP server
 
@@ -59,6 +46,19 @@ uv add airbyte-agent-sdk
 - [Pydantic AI tutorial](developer-quickstart/tutorial-pydantic)
 - [LangChain tutorial](developer-quickstart/tutorial-langchain)
 - [FastMCP tutorial](developer-quickstart/tutorial-fastmcp)
+
+## Web app (Research Preview)
+
+**Best for:** Non-developers, operations teams, and anyone who wants to explore Airbyte Agents without writing code.
+
+The [web app](../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai) is the fastest way to get started. Describe what you need in natural language, and an Airbyte-hosted agent picks the right connectors, makes the necessary tool calls, and replies with an answer grounded in your data.
+
+Two primary surfaces:
+
+- **[Chats](../interfaces/ui/chats)** — Interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
+- **[Automations](../interfaces/ui/automations)** — Agent tasks that run on a schedule, on a webhook, or on demand. Use Automations when you need the same work to happen repeatedly without a person in the loop.
+
+**Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 
 ## HTTP API
 

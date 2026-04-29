@@ -11,7 +11,7 @@ This section is for developers who want to build agents that use Airbyte connect
 flowchart TD
     START(["I want to build with<br/>Airbyte Agents"])
     START -->|"I write the code myself"| TUT["Tutorials"]
-    START -->|"I use a coding agent<br/>(Claude Code, Codex, Lovable)"| SKILL["Skills"]
+    START -->|"I use a coding agent<br/>(Claude Code, Cursor, Codex, Lovable)"| SKILL["Skills"]
 
     TUT --> T1["Pydantic AI"]
     TUT --> T2["LangChain"]
@@ -48,7 +48,7 @@ Both paths share a few common requirements.
 
 - **An Airbyte Agents account.** Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
 - **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- **Python 3.13+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
+- **Python 3.10+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
 
 import DocCardList from '@theme/DocCardList';
 

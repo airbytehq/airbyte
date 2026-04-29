@@ -26,7 +26,7 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.13 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
@@ -53,29 +53,27 @@ my-mcp-agent/
 └── README.md
 ```
 
-## Part 2: Install dependencies
+## Part 2: Install dependencies and create your server file
 
-Install the Airbyte agent SDK and FastMCP:
+1. Install the Airbyte agent SDK and FastMCP:
 
-```bash
-uv add airbyte-agent-sdk fastmcp python-dotenv
-```
+    ```bash
+    uv add airbyte-agent-sdk fastmcp python-dotenv
+    ```
 
-This command installs:
+    This command installs:
 
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
-- `fastmcp`: A Python framework for building MCP servers with minimal boilerplate.
-- `python-dotenv`: A library you can use to load environment variables from a `.env` file.
+    - `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+    - `fastmcp`: A Python framework for building MCP servers with minimal boilerplate.
+    - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
-## Part 3: Import FastMCP and the GitHub agent connector
-
-1. Create a `server.py` file for your MCP server definition:
+2. Create a `server.py` file for your MCP server definition:
 
    ```bash
    touch server.py
    ```
 
-2. Add the following imports to `server.py`:
+3. Add the following imports to `server.py`:
 
     ```python title="server.py"
     import json
@@ -94,7 +92,7 @@ This command installs:
     - `connect`: The Airbyte agent SDK entry point. One call returns a typed connector bound to your workspace.
     - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
-## Part 4: Add a .env file with your secrets
+## Part 3: Add a .env file with your secrets
 
 1. Create a `.env` file in your project root and add your Airbyte API credentials to it. Replace the placeholder values with your actual credentials.
 
@@ -116,7 +114,7 @@ This command installs:
     load_dotenv()
     ```
 
-## Part 5: Add the GitHub connector to your workspace
+## Part 4: Add the GitHub connector to your workspace
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
@@ -167,7 +165,7 @@ You only need to run this script once. After the connector exists in your worksp
 
 See [Add a connector](../../interfaces/sdk/add-connector) for more details, including how to find the `definition_id` for other connector types.
 
-## Part 6: Configure your MCP server
+## Part 5: Configure your MCP server
 
 Now add the following code to `server.py` to connect to the GitHub connector and create the FastMCP server.
 
@@ -192,7 +190,9 @@ If you want to connect to a different workspace or pass credentials explicitly, 
 
 ### Register the tool
 
-Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `@GithubConnector.tool_utils` decorator fills in the entity and action catalog as part of the tool description, so the agent knows what's available without you writing a schema.
+Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. This one-tool-per-connector model is context-efficient: instead of registering dozens of tools that consume the agent's context window, a single tool with a compact entity/action catalog gives the agent full connector coverage with minimal overhead.
+
+The `@GithubConnector.tool_utils` decorator fills in the entity and action catalog as part of the tool description, so the agent knows what's available without you writing a schema. It also enables automatic fallback to the `list` action when the Context Store is not yet ready, so your tool works immediately even before the first replication completes.
 
 ```python title="server.py"
 @mcp.tool()
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     mcp.run()
 ```
 
-## Part 7: Register with your agent
+## Part 6: Register with your agent
 
 Register the MCP server with your preferred agent. Provide the full path to your project's `server.py` file. Replace `/path/to/my-mcp-agent` with the actual path to your project directory.
 
@@ -264,7 +264,7 @@ Add the following to your Cursor MCP configuration file (`.cursor/mcp.json` in y
 </TabItem>
 </Tabs>
 
-## Part 8: Use the MCP server
+## Part 7: Use the MCP server
 
 1. Restart your agent so it picks up the new MCP server registration.
 

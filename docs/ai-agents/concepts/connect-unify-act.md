@@ -14,7 +14,7 @@ The platform manages the hard parts of connecting to third-party systems:
 
 - **Authentication.** The platform handles OAuth flows, API keys, and token refresh for you. Store end-user credentials once and use them from any interface.
 - **Multi-tenancy.** [Workspaces](../interfaces/sdk/workspaces) isolate connectors and credentials across tenants, teams, or environments within an organization.
-- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui), the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
+- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui), the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack. [Airbyte Agents](../interfaces/ui) in the web app can also use connectors directly through chats and automations.
 
 Connecting a new data source takes minutes, not weeks. You don't build or maintain API wrappers, manage credential storage, or handle token lifecycle.
 
@@ -22,7 +22,7 @@ Connecting a new data source takes minutes, not weeks. You don't build or mainta
 
 Once your agents are connected, the [Context Store](context-store) indexes and normalizes data from every source into one searchable layer.
 
-Without the Context Store, an agent that needs to answer a question like "find all open deals over $10,000" has to page through API results, manage rate limits, and accumulate records in its context window. This is slow, expensive, and unreliable.
+Without the Context Store, an agent that needs to answer a question like "find all open deals over $10,000" has to page through API results, manage rate limits, and accumulate records in its context window. This is slow, expensive, and unreliable. For benchmark data on how the Context Store compares to live API retrieval, see the [airbyte-agents-benchmarks](https://github.com/airbytehq/airbyte-agents-benchmarks) repository.
 
 The Context Store solves this:
 
@@ -42,11 +42,11 @@ execute(entity, action, params)
 ```
 
 - **Read.** `list`, `get`, and `search` retrieve records from a connector. When the Context Store is on, `context_store_search` provides fast, indexed retrieval.
-- **Write.** `create` and `update` push changes back to the source system, such as creating a ticket, updating a contact, or sending a message.
+- **Write.** `create`, `update`, and `delete` push changes back to the source system, such as creating a ticket, updating a contact, or sending a message.
 
 This pattern is the same across every connector and every interface. Whether an agent runs in the web app, through the SDK, over the API, or via MCP, it calls the same entities and actions with the same parameters.
 
-Agents act through two modes:
+Airbyte Agents act through two modes:
 
 - **[Chats](../interfaces/ui/chats).** Interactive, conversational sessions where an agent responds to prompts in real time.
 - **[Automations](../interfaces/ui/automations).** Scheduled or webhook-triggered flows that run without human intervention.
