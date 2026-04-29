@@ -34,7 +34,7 @@ For the list of entities each connector contributes, see [Agent connectors](../c
 
 ## Enabled by default
 
-The Context Store is enabled by default for every organization. There is no toggle to turn it on or off. When you add a connector, Airbyte automatically begins populating the store for that connector.
+The Context Store is enabled by default for every organization. No toggle exists to turn it on or off. When you add a connector, Airbyte automatically begins populating the store for that connector.
 
 - **Storage begins automatically.** Airbyte starts copying data from each agent connector in your workspace into the store.
 - **Search becomes available.** As soon as a connector has enough data, its entities are available to agents through the search action.
