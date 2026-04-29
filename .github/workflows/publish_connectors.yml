@@ -503,6 +503,34 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
+      # Record successfully published source connectors so the
+      # notify-on-replication-version-change workflow can detect them
+      # via artifact download instead of fragile job-name scraping.
+      - name: Record published source connector
+        if: >-
+          success()
+          && startsWith(matrix.connector, 'source-')
+          && needs.publish_options.outputs.with-semver-suffix == 'none'
+          && needs.publish_options.outputs.dry-run != 'true'
+        run: |
+          mkdir -p ./published-sources
+          jq -n \
+            --arg connector "${{ matrix.connector }}" \
+            --arg version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
+            '{connector: $connector, version: $version}' \
+            > "./published-sources/${{ matrix.connector }}.json"
+      - name: Upload published source manifest
+        if: >-
+          success()
+          && startsWith(matrix.connector, 'source-')
+          && needs.publish_options.outputs.with-semver-suffix == 'none'
+          && needs.publish_options.outputs.dry-run != 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: published-source-${{ matrix.connector }}
+          path: ./published-sources/${{ matrix.connector }}.json
+          retention-days: 1
+
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
