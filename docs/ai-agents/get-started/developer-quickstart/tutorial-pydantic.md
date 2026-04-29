@@ -3,6 +3,9 @@ sidebar_label: "Pydantic AI"
 sidebar_position: 3
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Agent connector tutorial: Pydantic AI
 
 In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it with one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
@@ -27,7 +30,7 @@ Before you begin this tutorial, ensure you have the following.
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- A [GitHub personal access token](https://github.com/settings/tokens). A classic token with `repo` scope is sufficient for this tutorial.
+- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or [OAuth app](https://github.com/settings/developers) credentials (`client_id`, `client_secret`, and a `refresh_token`).
 - An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but [Pydantic AI](https://pydantic.dev/docs/ai/models/overview) supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
@@ -100,12 +103,30 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
 1. Create a `.env` file in your project root and add your secrets to it. Replace the placeholder values with your actual credentials.
 
+    <Tabs>
+    <TabItem value="pat" label="Personal access token" default>
+
     ```text title=".env"
     AIRBYTE_CLIENT_ID=your-airbyte-client-id
     AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
     GITHUB_PAT=your-github-personal-access-token
     OPENAI_API_KEY=your-openai-api-key
     ```
+
+    </TabItem>
+    <TabItem value="oauth" label="OAuth">
+
+    ```text title=".env"
+    AIRBYTE_CLIENT_ID=your-airbyte-client-id
+    AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
+    GITHUB_CLIENT_ID=your-github-oauth-client-id
+    GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
+    GITHUB_REFRESH_TOKEN=your-github-oauth-refresh-token
+    OPENAI_API_KEY=your-openai-api-key
+    ```
+
+    </TabItem>
+    </Tabs>
 
     Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app.
 
@@ -127,6 +148,9 @@ Before you can query GitHub data, add a GitHub connector to your Airbyte Agents 
 
 Add the following to `agent.py`:
 
+<Tabs>
+<TabItem value="pat" label="Personal access token" default>
+
 ```python title="agent.py"
 import os
 from airbyte_agent_sdk import Workspace
@@ -143,7 +167,31 @@ async def setup():
         )
 ```
 
-`Workspace()` reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment. `create_connector` stores the GitHub token in Airbyte so you never paste it into agent code or handle token refresh yourself. The `definition_id` is the fixed UUID for the GitHub connector type.
+</TabItem>
+<TabItem value="oauth" label="OAuth">
+
+```python title="agent.py"
+import os
+from airbyte_agent_sdk import Workspace
+
+async def setup():
+    async with Workspace() as ws:
+        await ws.create_connector(
+            definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
+            name="GitHub",
+            credentials={
+                "option_title": "OAuth Credentials",
+                "client_id": os.environ["GITHUB_CLIENT_ID"],
+                "client_secret": os.environ["GITHUB_CLIENT_SECRET"],
+                "refresh_token": os.environ["GITHUB_REFRESH_TOKEN"],
+            },
+        )
+```
+
+</TabItem>
+</Tabs>
+
+`Workspace()` reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment. `create_connector` stores the GitHub credentials in Airbyte so you never paste them into agent code or handle token refresh yourself. The `definition_id` is the fixed UUID for the GitHub connector type.
 
 You only need to run `setup()` once. After the connector exists in your workspace, you can skip this step on subsequent runs. You call `setup()` from `main.py` in a later step.
 
