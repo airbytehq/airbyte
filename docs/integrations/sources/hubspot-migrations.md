@@ -1,5 +1,48 @@
 # HubSpot Migration Guide
 
+## Upgrading to 7.0.0
+
+:::note
+This change is only breaking if you are syncing custom object streams.
+:::
+
+Custom object streams now use the portal-qualified `fullyQualifiedName` value provided by HubSpot instead of the short object name. For example, a custom object previously discovered as `animals` will now appear as `p19936848_Animal`. This change prevents custom object stream names from colliding with built-in stream names such as `form_submissions` or `owners`.
+
+Users syncing custom object streams should:
+
+- Refresh the source schema.
+- Reselect the renamed custom object streams.
+- Reset affected streams to ensure uninterrupted syncs.
+
+Built-in streams are unaffected by this change.
+
+### Refresh affected schemas and reset data
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+
+:::note
+Any detected schema changes will be listed for your review.
+:::
+
+3. Select **Save changes** at the top right of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+:::note
+Depending on destination type you may not be prompted to reset your data.
+:::
+
+4. Select **Save connection**.
+
+:::note
+This will reset the data in your destination and initiate a fresh sync.
+:::
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear)
+
 ## Upgrading to 6.0.0
 
 :::note

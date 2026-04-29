@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 6.5.5
+  dockerImageTag: 7.0.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
@@ -43,6 +43,17 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      7.0.0:
+        message: >-
+          Custom object streams now use the portal-qualified `fullyQualifiedName`
+          (e.g. `p19936848_Animal`) instead of the short object name (e.g. `animals`).
+          This prevents name collisions with built-in streams. Users syncing custom
+          object streams must refresh the source schema and reset affected custom
+          object streams after upgrading.
+        upgradeDeadline: "2026-07-29"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["custom_objects"]
       6.0.0:
         message: >-
           This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to

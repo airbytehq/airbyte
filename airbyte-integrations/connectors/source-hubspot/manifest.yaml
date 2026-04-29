@@ -1,4 +1,4 @@
-version: 6.52.0
+version: 7.0.0
 
 type: DeclarativeSource
 
@@ -2286,17 +2286,17 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
-          value: "{{ components_values.name }}"
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
         - type: ComponentMappingDefinition
           field_path:
             - full_refresh_stream
             - name
-          value: "{{ components_values.name }}"
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
         - type: ComponentMappingDefinition
           field_path:
             - incremental_stream
             - name
-          value: "{{ components_values.name }}"
+          value: "{{ components_values.fullyQualifiedName or 'p_' + components_values.name }}"
         - type: ComponentMappingDefinition
           field_path:
             - $parameters
