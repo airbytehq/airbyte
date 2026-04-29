@@ -15,7 +15,7 @@ Confirm the fix ships and the docs' pinned SDK version includes it before
 merging.
 -->
 
-A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call — by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
 
 The `Workspace` class covers every connector operation: create, list, get, and delete.
 
@@ -23,7 +23,7 @@ The `Workspace` class covers every connector operation: create, list, get, and d
 
 Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the credentials in the shape that connector expects.
 
-`create_connector` returns a string `connector_id`. You can ignore it if the workspace only ever has one connector of this type — later calls can resolve the connector by slug. Store the ID if you plan to run multiple connectors of the same type in the same workspace.
+`create_connector` returns a string `connector_id`. You can ignore it if the workspace only ever has one connector of this type — later calls can resolve the connector by slug. Store the `connector_id` if you plan to run multiple connectors of the same type in the same workspace.
 
 ### API token connectors
 
