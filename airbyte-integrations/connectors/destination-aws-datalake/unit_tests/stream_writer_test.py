@@ -970,6 +970,81 @@ def test_build_type_mismatch_exception_prefers_observed_type_match_over_other_mi
     assert 'field "location.foo"' not in traced.message
 
 
+def test_build_type_mismatch_exception_identifies_uniform_offender_subfield():
+    """When every record has the same offending Python type (for example `str`)
+    at a sub-path but pyarrow wants a different type (for example `int`), the
+    walker should still flag that path as the culprit. Mixed-type detection
+    alone misses this case because only one type is observed at the path."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"city": pd.Timestamp("2023-01-01"), "mystery_id": "9876;5432"}},
+            {"location": {"city": pd.Timestamp("2023-01-02"), "mystery_id": "1234;abcd"}},
+            {"location": {"city": pd.Timestamp("2023-01-03"), "mystery_id": "0000;0001"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.mystery_id"' in traced.message
+    assert "str" in traced.message
+    assert "int" in traced.message
+
+
+def test_build_type_mismatch_exception_prefers_mixed_over_uniform_offender():
+    """When both a mixed-type path and a uniform-offender path exist under the
+    same column, mixed-type takes priority because it's the stronger signal of
+    pyarrow's struct-inference tripping."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"uniform_str_field": "aaa", "ambiguous": 1}},
+            {"location": {"uniform_str_field": "bbb", "ambiguous": "two"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    # `ambiguous` is mixed str/int (contains both observed and target) → rank 0.
+    # `uniform_str_field` is uniform str (rank 2). Mixed should win.
+    assert 'field "location.ambiguous"' in traced.message
+
+
+def test_build_type_mismatch_exception_uniform_field_of_target_type_is_not_flagged():
+    """A uniform sub-path whose single type matches the target type (for
+    example `Decimal` when target wants `int`) is a valid field, not a
+    culprit, and must not be reported."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"numeric_id": 12345}},
+            {"location": {"numeric_id": 67890}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    # No `str` sub-paths exist, so the mixed-type walker has nothing; the
+    # walker falls back to the JSON-schema walker and reports on the column
+    # as a whole.
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.numeric_id"' not in traced.message
+
+
 def test_collect_observed_types_aggregates_arrays_under_bracket_path():
     """Lists are walked as a single position-agnostic group: every element
     contributes its types to the same `<prefix>[]` path."""

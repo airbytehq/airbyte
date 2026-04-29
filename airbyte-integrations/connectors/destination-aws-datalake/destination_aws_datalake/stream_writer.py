@@ -521,18 +521,30 @@ class StreamWriter:
         observed_type: Optional[str] = None
         declared_type: Optional[str] = None
         mixed_candidates: List[Tuple[str, Set[str]]] = []
+        observed_type_map: Dict[str, Set[str]] = {}
         if column and column in df.columns:
             values = df[column].tolist()
-            mixed_candidates = self._find_mixed_type_paths(
-                values,
-                prefix=column,
+            observed_type_map = self._collect_observed_type_map(values, prefix=column)
+            mixed_candidates = self._rank_type_mismatch_candidates(
+                observed_type_map,
                 observed_filter=observed_filter,
                 target_python_types=target_python_types,
+                schema_entry=self._schema.get(column),
+                column_prefix=column,
             )
             if mixed_candidates:
                 bad_path, observed_types_set = mixed_candidates[0]
                 observed_type = "/".join(sorted(observed_types_set))
-                declared_type = "/".join(declared_filter) if declared_filter else (observed_filter or "?")
+                declared_for_bad_path: Optional[str] = None
+                schema_entry_for_column = self._schema.get(column)
+                if schema_entry_for_column is not None:
+                    declared_for_bad_path = self._lookup_declared_schema_type(schema_entry_for_column, bad_path, column)
+                if declared_for_bad_path is not None:
+                    declared_type = declared_for_bad_path
+                elif declared_filter:
+                    declared_type = "/".join(declared_filter)
+                else:
+                    declared_type = observed_filter or "?"
             elif column in self._schema:
                 schema_entry = self._schema[column]
                 if observed_filter is not None or declared_filter is not None:
@@ -559,11 +571,18 @@ class StreamWriter:
         candidates_repr = "; ".join(
             f"{path}={{{','.join(sorted(types))}}}" for path, types in mixed_candidates[:_MAX_MIXED_TYPE_CANDIDATES]
         )
+        # When no candidate was found, dump a bounded slice of the observed
+        # type map so we can diagnose why the walker missed the culprit.
+        fallback_type_map_repr = ""
+        if not mixed_candidates and observed_type_map:
+            sorted_entries = sorted(observed_type_map.items())[:_MAX_MIXED_TYPE_CANDIDATES]
+            fallback_type_map_repr = "; ".join(f"{path}={{{','.join(sorted(types))}}}" for path, types in sorted_entries)
         internal_message = (
             f"[stream={self._table} column={column} field={bad_path} "
             f"observed_type={observed_type} declared_type={declared_type} "
             f"observed_filter={observed_filter} target_python_types={target_python_types} "
-            f"mixed_type_candidates=[{candidates_repr}]] "
+            f"mixed_type_candidates=[{candidates_repr}] "
+            f"observed_type_map_sample=[{fallback_type_map_repr}]] "
             f"pyarrow conversion failed: {ex!r}"
         )
         return AirbyteTracedException(
@@ -607,47 +626,164 @@ class StreamWriter:
             return _TARGET_TO_PYTHON_TYPES.get(target)
         return None
 
-    def _find_mixed_type_paths(
-        self,
-        values: List[Any],
-        prefix: str,
-        observed_filter: Optional[str] = None,
-        target_python_types: Optional[Tuple[str, ...]] = None,
-    ) -> List[Tuple[str, Set[str]]]:
+    def _collect_observed_type_map(self, values: List[Any], prefix: str) -> Dict[str, Set[str]]:
         """
-        Walk a list of dict/array `values` and return all sub-paths that have
-        more than one distinct non-null Python type across the batch. Results
-        are ranked so that paths whose observed-type set is the strongest match
-        for the `(observed_filter, target_python_types)` pair come first. When
-        `observed_filter` is provided, paths whose type set does not contain
-        that observed type are filtered out.
+        Walk up to `_MIXED_TYPE_RECORD_CAP` of `values` and return a mapping
+        of dotted sub-path -> set of observed Python type names. Dict-valued
+        leaves and `None` are skipped; list elements are aggregated under
+        `<prefix>[]`.
         """
         type_map: Dict[str, Set[str]] = {}
         for value in values[:_MIXED_TYPE_RECORD_CAP]:
             self._collect_observed_types(value, prefix, type_map)
+        return type_map
 
+    def _lookup_declared_schema_type(self, schema_entry: Dict[str, Any], path: str, column_prefix: str) -> Optional[str]:
+        """
+        Resolve a dotted `path` (for example `properties.createdate` or
+        `questions[].id`) against `schema_entry` (the top-level column's JSON
+        Schema definition) and return the declared JSON Schema type of the
+        leaf, or `None` if the path is not declared. `column_prefix` is the
+        top-level column name, stripped before walking.
+        """
+        if not path.startswith(column_prefix):
+            return None
+        remainder = path[len(column_prefix) :]
+        current = schema_entry
+        if not remainder:
+            return self._get_json_schema_type(current.get("type"))
+
+        # Tokenize: split `.` boundaries but preserve `[]` as array markers.
+        token_pattern = re.compile(r"\.([^.\[]+)|\[\]")
+        pos = 0
+        for match in token_pattern.finditer(remainder):
+            if match.start() != pos:
+                return None
+            pos = match.end()
+            if match.group(0) == "[]":
+                typ = self._get_json_schema_type(current.get("type"))
+                if typ != "array":
+                    return None
+                items = current.get("items") or {}
+                if isinstance(items, list):
+                    items = items[0] if items else {}
+                current = items
+            else:
+                key = match.group(1)
+                typ = self._get_json_schema_type(current.get("type"))
+                if typ != "object":
+                    return None
+                props = current.get("properties") or {}
+                if key not in props:
+                    return None
+                current = props[key]
+        if pos != len(remainder):
+            return None
+        return self._get_json_schema_type(current.get("type"))
+
+    def _rank_type_mismatch_candidates(
+        self,
+        type_map: Dict[str, Set[str]],
+        observed_filter: Optional[str] = None,
+        target_python_types: Optional[Tuple[str, ...]] = None,
+        schema_entry: Optional[Dict[str, Any]] = None,
+        column_prefix: Optional[str] = None,
+    ) -> List[Tuple[str, Set[str]]]:
+        """
+        Rank entries in `type_map` by how likely they are to be the culprit
+        of pyarrow's conversion failure. Two kinds of paths are considered:
+
+        1. *Mixed-type paths* — more than one distinct non-null Python type
+           observed across the batch. These trip pyarrow's struct inference
+           on `object`-typed columns.
+        2. *Uniform-offender paths* — every observed value at the path is of
+           the offending Python type (for example `str`) and that type does
+           not match any of the target Python types implied by pyarrow's
+           error (for example pyarrow wanted `int`/`Decimal`). These are
+           considered only when both `observed_filter` and
+           `target_python_types` are known.
+
+        When `observed_filter` is provided, paths whose type set does not
+        contain that observed type are filtered out entirely.
+        """
+        target_set = set(target_python_types or ())
+        # Map of observed Python type name -> compatible JSON Schema types.
+        # Used to decide whether a uniform-type path is a genuine culprit or
+        # just a declared field of the right type.
+        observed_to_json_schema: Dict[str, Tuple[str, ...]] = {
+            "str": ("string",),
+            "int": ("integer", "number"),
+            "float": ("number",),
+            "Decimal": ("number", "integer"),
+            "bool": ("boolean",),
+        }
         candidates: List[Tuple[str, Set[str]]] = []
         for path, types in type_map.items():
             non_null = {t for t in types if t != "NoneType"}
-            if len(non_null) <= 1:
+            if not non_null:
                 continue
             if observed_filter is not None and observed_filter not in non_null:
                 continue
+            declared_for_path: Optional[str] = None
+            if schema_entry is not None and column_prefix is not None:
+                declared_for_path = self._lookup_declared_schema_type(schema_entry, path, column_prefix)
+            if len(non_null) == 1:
+                # Only keep a uniform path when it's the offending type and
+                # does not satisfy the target type. Otherwise it's a
+                # single-type field of the expected type, not a culprit.
+                if observed_filter is None or not target_set:
+                    continue
+                if non_null & target_set:
+                    continue
+                # When the path IS declared in the schema AND the observed
+                # type is already compatible with the declared type, this is
+                # not the culprit: pyarrow would not complain about a str
+                # value in a field declared as string.
+                if declared_for_path is not None:
+                    compatible = observed_to_json_schema.get(observed_filter, ())
+                    if declared_for_path in compatible:
+                        continue
             candidates.append((path, non_null))
 
-        target_set = set(target_python_types or ())
-
-        def rank(item: Tuple[str, Set[str]]) -> Tuple[int, int, str]:
-            _, types = item
+        def rank(item: Tuple[str, Set[str]]) -> Tuple[int, int, int, str]:
+            path, types = item
             has_observed = observed_filter is not None and observed_filter in types
             has_target = bool(target_set & types)
-            # Lower tuple sorts first: prefer paths that contain BOTH the
-            # observed-from-error type and any target Python type, then paths
-            # that contain at least the observed type, then anything else. Tie-
-            # break on number of distinct types (higher = more ambiguous = more
-            # likely to be the culprit), then alphabetically.
-            primary = 0 if has_observed and has_target else (1 if has_observed else 2)
-            return primary, -len(types), item[0]
+            is_mixed = len(types) > 1
+            # Lower tuple sorts first. Preference order:
+            # 0: mixed, contains BOTH observed + target (ambiguous, very
+            #    likely pyarrow's struct-inference culprit).
+            # 1: mixed, contains observed.
+            # 2: uniform offender (only observed type, target absent) — the
+            #    "every record has a str in a field we need to be int" case.
+            # 3: anything else (for example mixed without observed when the
+            #    filter is not set).
+            if is_mixed and has_observed and has_target:
+                primary = 0
+            elif is_mixed and has_observed:
+                primary = 1
+            elif not is_mixed and has_observed and not has_target:
+                primary = 2
+            else:
+                primary = 3
+            # Secondary: prefer paths whose declared JSON schema type matches
+            # the target (for example declared `number` when pyarrow wanted
+            # `int`). 0 = matches target, 1 = path not declared in schema,
+            # 2 = declared but not target type.
+            declared_rank = 1
+            if schema_entry is not None and column_prefix is not None:
+                declared = self._lookup_declared_schema_type(schema_entry, path, column_prefix)
+                if declared is None:
+                    declared_rank = 1
+                elif declared in ("integer", "number") and target_set & {"int", "float", "Decimal"}:
+                    declared_rank = 0
+                elif declared == "string" and "str" in target_set:
+                    declared_rank = 0
+                elif declared == "boolean" and "bool" in target_set:
+                    declared_rank = 0
+                else:
+                    declared_rank = 2
+            return primary, declared_rank, -len(types), path
 
         candidates.sort(key=rank)
         return candidates
