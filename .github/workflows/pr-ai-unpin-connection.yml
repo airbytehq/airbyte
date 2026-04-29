@@ -31,9 +31,9 @@ jobs:
             echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
             echo "event-type=discussion" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-               echo "Rodi" >> $GITHUB_OUTPUT
+#               echo "Rodi" >> $GITHUB_OUTPUT
 #            echo "author=${{ github.event.workflow_dispatch.user.login }}" >> $GITHUB_OUTPUT
-#            echo "event-type=workflow_dispatch" >> $GITHUB_OUTPUT
+            echo "event-type=workflow_dispatch" >> $GITHUB_OUTPUT
           fi
 
   ai-unpin:
