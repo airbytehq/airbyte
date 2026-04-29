@@ -3,7 +3,7 @@ sidebar_label: "LangChain"
 sidebar_position: 2
 ---
 
-# Agent connector tutorial: LangChain
+# LangChain quickstart
 
 In this tutorial, you'll create a new Python project with uv, add a LangChain agent, equip it with one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
 
