@@ -67,6 +67,7 @@ def test_http_method(patch_base_class):
         (HTTPStatus.TOO_MANY_REQUESTS, "", True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, "", True),
         (HTTPStatus.BAD_REQUEST, "Your API calls limit has been reached for report type", True),
+        (HTTPStatus.BAD_REQUEST, "You've reached your maximum number of raw data API calls", True),
         (HTTPStatus.FORBIDDEN, "Limit reached for ", True),
     ],
 )
@@ -91,6 +92,11 @@ def test_should_retry(patch_base_class, http_status, response_text, should_retry
             "Your API calls limit has been reached for report type",
             "Midnight",
         ),  # Wait time for raw data is Midnight UTC - Now UTC.
+        (
+            HTTPStatus.BAD_REQUEST,
+            "You've reached your maximum number of raw data API calls",
+            "Midnight",
+        ),  # Alternate raw data rate limit message.
     ],
 )
 def test_backoff_time(patch_base_class, http_status, response_text, expected_backoff_time):

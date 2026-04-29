@@ -85,9 +85,12 @@ class AppsflyerStream(HttpStream, ABC):
         return is_forbidden and is_template_match
 
     def is_raw_data_reports_reached_limit(self, response: requests.Response) -> bool:
-        template = "Your API calls limit has been reached for report type"
+        templates = [
+            "Your API calls limit has been reached for report type",
+            "You've reached your maximum number of",
+        ]
         is_bad_request = response.status_code == HTTPStatus.BAD_REQUEST
-        is_template_match = template in response.text
+        is_template_match = any(t in response.text for t in templates)
 
         return is_bad_request and is_template_match
 
