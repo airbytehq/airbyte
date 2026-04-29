@@ -278,13 +278,34 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": [stream_partition.buying_type]}|string if config.get("include_deleted", False) else {"buying_types": [stream_partition.buying_type]}|string }}'
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
-        $ref: "#/definitions/single_id_partition_router"
+        - type: ListPartitionRouter
+          values:
+            - AUCTION
+            - RESERVATION_TOP_VIEW
+            - RESERVATION_RF
+          cursor_field: buying_type
+        - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
+          $parameters:
+            path_in_config:
+              - ["credentials", "advertiser_id"]
+              - ["environment", "advertiser_id"]
+            partition_field: advertiser_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: advertiser_id
+              request_option:
+                inject_into: request_parameter
+                type: RequestOption
+                field_name: advertiser_id
+              partition_field: advertiser_id
+              stream:
+                $ref: "#/definitions/advertiser_ids_stream"
     incremental_sync:
       $ref: "#/definitions/semi_incremental_sync"
 

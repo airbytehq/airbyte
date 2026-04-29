@@ -415,7 +415,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersRequest"></a>
@@ -436,25 +436,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DailyActiveUsersRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DailyActiveUsersRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DailyActiveUsersRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DailyActiveUsersRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DailyActiveUsersRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DailyActiveUsersRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersRequestDaterangesItem"></a>
@@ -475,13 +475,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="DailyActiveUsersRequestDimensionsItem"></a>
@@ -505,7 +505,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersRequestMetricsItem"></a>
@@ -529,7 +529,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersSearchData"></a>
@@ -589,7 +589,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="DevicesRequest"></a>
@@ -610,25 +610,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DevicesRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DevicesRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DevicesRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DevicesRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DevicesRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DevicesRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="DevicesRequestDaterangesItem"></a>
@@ -649,13 +649,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="DevicesRequestDimensionsItem"></a>
@@ -679,7 +679,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="DevicesRequestMetricsItem"></a>
@@ -703,7 +703,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="DevicesSearchData"></a>
@@ -793,7 +793,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="DimensionValue"></a>
@@ -817,7 +817,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersListResultMeta"></a>
@@ -841,7 +841,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersRequest"></a>
@@ -862,25 +862,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.FourWeeklyActiveUsersRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.FourWeeklyActiveUsersRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.FourWeeklyActiveUsersRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.FourWeeklyActiveUsersRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.FourWeeklyActiveUsersRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.FourWeeklyActiveUsersRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersRequestDaterangesItem"></a>
@@ -901,13 +901,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="FourWeeklyActiveUsersRequestDimensionsItem"></a>
@@ -931,7 +931,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersRequestMetricsItem"></a>
@@ -955,7 +955,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersSearchData"></a>
@@ -1531,7 +1531,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="LocationsRequest"></a>
@@ -1552,25 +1552,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.LocationsRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.LocationsRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.LocationsRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.LocationsRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.LocationsRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.LocationsRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="LocationsRequestDaterangesItem"></a>
@@ -1591,13 +1591,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="LocationsRequestDimensionsItem"></a>
@@ -1621,7 +1621,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="LocationsRequestMetricsItem"></a>
@@ -1645,7 +1645,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="LocationsSearchData"></a>
@@ -1735,10 +1735,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="MetricValue"></a>
@@ -1762,7 +1762,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="PagesListResultMeta"></a>
@@ -1786,7 +1786,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="PagesRequest"></a>
@@ -1807,25 +1807,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.PagesRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.PagesRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.PagesRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.PagesRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.PagesRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.PagesRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="PagesRequestDaterangesItem"></a>
@@ -1846,13 +1846,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="PagesRequestDimensionsItem"></a>
@@ -1876,7 +1876,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="PagesRequestMetricsItem"></a>
@@ -1900,7 +1900,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="PagesSearchData"></a>
@@ -1966,10 +1966,10 @@ Classes
 
     ### Class variables
 
-    `dimension_values: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DimensionValue] | Any`
+    `dimension_values: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DimensionValue] | None`
     :   The type of the None singleton.
 
-    `metric_values: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.MetricValue] | Any`
+    `metric_values: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.MetricValue] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1993,28 +1993,28 @@ Classes
 
     ### Class variables
 
-    `dimension_headers: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DimensionHeader] | Any`
+    `dimension_headers: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.DimensionHeader] | None`
     :   The type of the None singleton.
 
-    `kind: str | Any`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponseMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponseMetadata | None`
     :   The type of the None singleton.
 
-    `metric_headers: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.MetricHeader] | Any`
+    `metric_headers: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.MetricHeader] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `property_quota: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquota | Any`
+    `property_quota: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquota | None`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
-    `rows: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.Row] | Any`
+    `rows: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.Row] | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponseMetadata"></a>
@@ -2035,13 +2035,13 @@ Classes
 
     ### Class variables
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The currency code used in this report
 
     `model_config`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The property's current timezone
 
 <a id="RunReportResponsePropertyquota"></a>
@@ -2062,25 +2062,25 @@ Classes
 
     ### Class variables
 
-    `concurrent_requests: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaConcurrentrequests | Any`
+    `concurrent_requests: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaConcurrentrequests | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `potentially_thresholded_requests_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaPotentiallythresholdedrequestsperhour | Any`
+    `potentially_thresholded_requests_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaPotentiallythresholdedrequestsperhour | None`
     :   The type of the None singleton.
 
-    `server_errors_per_project_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaServererrorsperprojectperhour | Any`
+    `server_errors_per_project_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaServererrorsperprojectperhour | None`
     :   The type of the None singleton.
 
-    `tokens_per_day: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperday | Any`
+    `tokens_per_day: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperday | None`
     :   The type of the None singleton.
 
-    `tokens_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperhour | Any`
+    `tokens_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperhour | None`
     :   The type of the None singleton.
 
-    `tokens_per_project_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperprojectperhour | Any`
+    `tokens_per_project_per_hour: airbyte_agent_sdk.connectors.google_analytics_data_api.models.RunReportResponsePropertyquotaTokensperprojectperhour | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponsePropertyquotaConcurrentrequests"></a>
@@ -2101,13 +2101,13 @@ Classes
 
     ### Class variables
 
-    `consumed: int | Any`
+    `consumed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remaining: int | Any`
+    `remaining: int | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponsePropertyquotaPotentiallythresholdedrequestsperhour"></a>
@@ -2128,13 +2128,13 @@ Classes
 
     ### Class variables
 
-    `consumed: int | Any`
+    `consumed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remaining: int | Any`
+    `remaining: int | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponsePropertyquotaServererrorsperprojectperhour"></a>
@@ -2155,13 +2155,13 @@ Classes
 
     ### Class variables
 
-    `consumed: int | Any`
+    `consumed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remaining: int | Any`
+    `remaining: int | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponsePropertyquotaTokensperday"></a>
@@ -2182,13 +2182,13 @@ Classes
 
     ### Class variables
 
-    `consumed: int | Any`
+    `consumed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remaining: int | Any`
+    `remaining: int | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponsePropertyquotaTokensperhour"></a>
@@ -2209,13 +2209,13 @@ Classes
 
     ### Class variables
 
-    `consumed: int | Any`
+    `consumed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remaining: int | Any`
+    `remaining: int | None`
     :   The type of the None singleton.
 
 <a id="RunReportResponsePropertyquotaTokensperprojectperhour"></a>
@@ -2236,13 +2236,13 @@ Classes
 
     ### Class variables
 
-    `consumed: int | Any`
+    `consumed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remaining: int | Any`
+    `remaining: int | None`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesListResultMeta"></a>
@@ -2266,7 +2266,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesRequest"></a>
@@ -2287,25 +2287,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.TrafficSourcesRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.TrafficSourcesRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.TrafficSourcesRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.TrafficSourcesRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.TrafficSourcesRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.TrafficSourcesRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesRequestDaterangesItem"></a>
@@ -2326,13 +2326,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="TrafficSourcesRequestDimensionsItem"></a>
@@ -2356,7 +2356,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesRequestMetricsItem"></a>
@@ -2380,7 +2380,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesSearchData"></a>
@@ -2467,7 +2467,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewRequest"></a>
@@ -2488,25 +2488,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WebsiteOverviewRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WebsiteOverviewRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WebsiteOverviewRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WebsiteOverviewRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WebsiteOverviewRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WebsiteOverviewRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewRequestDaterangesItem"></a>
@@ -2527,13 +2527,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="WebsiteOverviewRequestDimensionsItem"></a>
@@ -2557,7 +2557,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewRequestMetricsItem"></a>
@@ -2581,7 +2581,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewSearchData"></a>
@@ -2662,7 +2662,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `row_count: int | Any`
+    `row_count: int | None`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersRequest"></a>
@@ -2683,25 +2683,25 @@ Classes
 
     ### Class variables
 
-    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WeeklyActiveUsersRequestDaterangesItem] | Any`
+    `date_ranges: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WeeklyActiveUsersRequestDaterangesItem] | None`
     :   The type of the None singleton.
 
-    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WeeklyActiveUsersRequestDimensionsItem] | Any`
+    `dimensions: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WeeklyActiveUsersRequestDimensionsItem] | None`
     :   The type of the None singleton.
 
-    `keep_empty_rows: bool | Any`
+    `keep_empty_rows: bool | None`
     :   The type of the None singleton.
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WeeklyActiveUsersRequestMetricsItem] | Any`
+    `metrics: list[airbyte_agent_sdk.connectors.google_analytics_data_api.models.WeeklyActiveUsersRequestMetricsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `return_property_quota: bool | Any`
+    `return_property_quota: bool | None`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersRequestDaterangesItem"></a>
@@ -2722,13 +2722,13 @@ Classes
 
     ### Class variables
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   End date in YYYY-MM-DD format or relative (e.g., today)
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo)
 
 <a id="WeeklyActiveUsersRequestDimensionsItem"></a>
@@ -2752,7 +2752,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersRequestMetricsItem"></a>
@@ -2776,7 +2776,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersSearchData"></a>

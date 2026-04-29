@@ -31,25 +31,25 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `data: str | Any | None`
+    `data: str | None`
     :   The type of the None singleton.
 
-    `entity: str | Any | None`
+    `entity: str | None`
     :   The type of the None singleton.
 
-    `event: str | Any | None`
+    `event: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `user_id: str | Any | None`
+    `user_id: str | None`
     :   The type of the None singleton.
 
 <a id="ActivityLogsSearchData"></a>
@@ -499,58 +499,58 @@ Classes
 
     ### Class variables
 
-    `board_kind: str | Any | None`
+    `board_kind: str | None`
     :   The type of the None singleton.
 
-    `columns: list[airbyte_agent_sdk.connectors.monday.models.BoardColumnsItem | None] | Any | None`
+    `columns: list[airbyte_agent_sdk.connectors.monday.models.BoardColumnsItem | None] | None`
     :   The type of the None singleton.
 
-    `creator: airbyte_agent_sdk.connectors.monday.models.BoardCreator | Any | None`
+    `creator: airbyte_agent_sdk.connectors.monday.models.BoardCreator | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `groups: list[airbyte_agent_sdk.connectors.monday.models.BoardGroupsItem | None] | Any | None`
+    `groups: list[airbyte_agent_sdk.connectors.monday.models.BoardGroupsItem | None] | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owners: list[airbyte_agent_sdk.connectors.monday.models.BoardOwnersItem | None] | Any | None`
+    `owners: list[airbyte_agent_sdk.connectors.monday.models.BoardOwnersItem | None] | None`
     :   The type of the None singleton.
 
-    `permissions: str | Any | None`
+    `permissions: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `subscribers: list[airbyte_agent_sdk.connectors.monday.models.BoardSubscribersItem | None] | Any | None`
+    `subscribers: list[airbyte_agent_sdk.connectors.monday.models.BoardSubscribersItem | None] | None`
     :   The type of the None singleton.
 
-    `tags: list[airbyte_agent_sdk.connectors.monday.models.BoardTagsItem | None] | Any | None`
+    `tags: list[airbyte_agent_sdk.connectors.monday.models.BoardTagsItem | None] | None`
     :   The type of the None singleton.
 
-    `top_group: airbyte_agent_sdk.connectors.monday.models.BoardTopGroup | Any | None`
+    `top_group: airbyte_agent_sdk.connectors.monday.models.BoardTopGroup | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `views: list[airbyte_agent_sdk.connectors.monday.models.BoardViewsItem | None] | Any | None`
+    `views: list[airbyte_agent_sdk.connectors.monday.models.BoardViewsItem | None] | None`
     :   The type of the None singleton.
 
-    `workspace: airbyte_agent_sdk.connectors.monday.models.BoardWorkspace | Any | None`
+    `workspace: airbyte_agent_sdk.connectors.monday.models.BoardWorkspace | None`
     :   The type of the None singleton.
 
 <a id="BoardColumnsItem"></a>
@@ -571,28 +571,28 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `settings_str: str | Any | None`
+    `settings_str: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="BoardCreator"></a>
@@ -613,7 +613,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -637,25 +637,25 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `position: str | Any | None`
+    `position: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="BoardOwnersItem"></a>
@@ -676,7 +676,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -700,7 +700,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -724,7 +724,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -748,7 +748,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -772,22 +772,22 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `settings_str: str | Any | None`
+    `settings_str: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `view_specific_data_str: str | Any | None`
+    `view_specific_data_str: str | None`
     :   The type of the None singleton.
 
 <a id="BoardWorkspace"></a>
@@ -808,19 +808,19 @@ Classes
 
     ### Class variables
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="BoardsSearchData"></a>
@@ -922,40 +922,40 @@ Classes
 
     ### Class variables
 
-    `board: airbyte_agent_sdk.connectors.monday.models.ItemBoard | Any | None`
+    `board: airbyte_agent_sdk.connectors.monday.models.ItemBoard | None`
     :   The type of the None singleton.
 
-    `column_values: list[airbyte_agent_sdk.connectors.monday.models.ItemColumnValuesItem | None] | Any | None`
+    `column_values: list[airbyte_agent_sdk.connectors.monday.models.ItemColumnValuesItem | None] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator_id: str | Any | None`
+    `creator_id: str | None`
     :   The type of the None singleton.
 
-    `group: airbyte_agent_sdk.connectors.monday.models.ItemGroup | Any | None`
+    `group: airbyte_agent_sdk.connectors.monday.models.ItemGroup | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_item: airbyte_agent_sdk.connectors.monday.models.ItemParentItem | Any | None`
+    `parent_item: airbyte_agent_sdk.connectors.monday.models.ItemParentItem | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `subscribers: list[airbyte_agent_sdk.connectors.monday.models.ItemSubscribersItem | None] | Any | None`
+    `subscribers: list[airbyte_agent_sdk.connectors.monday.models.ItemSubscribersItem | None] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ItemBoard"></a>
@@ -976,13 +976,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ItemColumnValuesItem"></a>
@@ -1003,19 +1003,19 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="ItemGroup"></a>
@@ -1036,7 +1036,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1060,7 +1060,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1084,7 +1084,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1668,16 +1668,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="TagsSearchData"></a>
@@ -1728,19 +1728,19 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `picture_url: str | Any | None`
+    `picture_url: str | None`
     :   The type of the None singleton.
 
-    `users: list[airbyte_agent_sdk.connectors.monday.models.TeamUsersItem | None] | Any | None`
+    `users: list[airbyte_agent_sdk.connectors.monday.models.TeamUsersItem | None] | None`
     :   The type of the None singleton.
 
 <a id="TeamUsersItem"></a>
@@ -1761,7 +1761,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1818,34 +1818,34 @@ Classes
 
     ### Class variables
 
-    `assets: list[airbyte_agent_sdk.connectors.monday.models.UpdateAssetsItem | None] | Any | None`
+    `assets: list[airbyte_agent_sdk.connectors.monday.models.UpdateAssetsItem | None] | None`
     :   The type of the None singleton.
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator_id: str | Any | None`
+    `creator_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `item_id: str | Any | None`
+    `item_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `replies: list[airbyte_agent_sdk.connectors.monday.models.UpdateRepliesItem | None] | Any | None`
+    `replies: list[airbyte_agent_sdk.connectors.monday.models.UpdateRepliesItem | None] | None`
     :   The type of the None singleton.
 
-    `text_body: str | Any | None`
+    `text_body: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="UpdateAssetsItem"></a>
@@ -1866,37 +1866,37 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `file_extension: str | Any | None`
+    `file_extension: str | None`
     :   The type of the None singleton.
 
-    `file_size: int | Any | None`
+    `file_size: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `original_geometry: str | Any | None`
+    `original_geometry: str | None`
     :   The type of the None singleton.
 
-    `public_url: str | Any | None`
+    `public_url: str | None`
     :   The type of the None singleton.
 
-    `uploaded_by: airbyte_agent_sdk.connectors.monday.models.UpdateAssetsItemUploadedBy | Any | None`
+    `uploaded_by: airbyte_agent_sdk.connectors.monday.models.UpdateAssetsItemUploadedBy | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `url_thumbnail: str | Any | None`
+    `url_thumbnail: str | None`
     :   The type of the None singleton.
 
 <a id="UpdateAssetsItemUploadedBy"></a>
@@ -1917,7 +1917,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1941,25 +1941,25 @@ Classes
 
     ### Class variables
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator_id: str | Any | None`
+    `creator_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `text_body: str | Any | None`
+    `text_body: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="UpdatesSearchData"></a>
@@ -2028,82 +2028,82 @@ Classes
 
     ### Class variables
 
-    `birthday: str | Any | None`
+    `birthday: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `enabled: bool | Any | None`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_admin: bool | Any | None`
+    `is_admin: bool | None`
     :   The type of the None singleton.
 
-    `is_guest: bool | Any | None`
+    `is_guest: bool | None`
     :   The type of the None singleton.
 
-    `is_pending: bool | Any | None`
+    `is_pending: bool | None`
     :   The type of the None singleton.
 
-    `is_verified: bool | Any | None`
+    `is_verified: bool | None`
     :   The type of the None singleton.
 
-    `is_view_only: bool | Any | None`
+    `is_view_only: bool | None`
     :   The type of the None singleton.
 
-    `join_date: str | Any | None`
+    `join_date: str | None`
     :   The type of the None singleton.
 
-    `location: str | Any | None`
+    `location: str | None`
     :   The type of the None singleton.
 
-    `mobile_phone: str | Any | None`
+    `mobile_phone: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `photo_original: str | Any | None`
+    `photo_original: str | None`
     :   The type of the None singleton.
 
-    `photo_small: str | Any | None`
+    `photo_small: str | None`
     :   The type of the None singleton.
 
-    `photo_thumb: str | Any | None`
+    `photo_thumb: str | None`
     :   The type of the None singleton.
 
-    `photo_thumb_small: str | Any | None`
+    `photo_thumb_small: str | None`
     :   The type of the None singleton.
 
-    `photo_tiny: str | Any | None`
+    `photo_tiny: str | None`
     :   The type of the None singleton.
 
-    `time_zone_identifier: str | Any | None`
+    `time_zone_identifier: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `utc_hours_diff: int | Any | None`
+    `utc_hours_diff: int | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>
@@ -2220,43 +2220,43 @@ Classes
 
     ### Class variables
 
-    `account_product: airbyte_agent_sdk.connectors.monday.models.WorkspaceAccountProduct | Any | None`
+    `account_product: airbyte_agent_sdk.connectors.monday.models.WorkspaceAccountProduct | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owners_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceOwnersSubscribersItem | None] | Any | None`
+    `owners_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceOwnersSubscribersItem | None] | None`
     :   The type of the None singleton.
 
-    `settings: airbyte_agent_sdk.connectors.monday.models.WorkspaceSettings | Any | None`
+    `settings: airbyte_agent_sdk.connectors.monday.models.WorkspaceSettings | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `team_owners_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceTeamOwnersSubscribersItem | None] | Any | None`
+    `team_owners_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceTeamOwnersSubscribersItem | None] | None`
     :   The type of the None singleton.
 
-    `teams_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceTeamsSubscribersItem | None] | Any | None`
+    `teams_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceTeamsSubscribersItem | None] | None`
     :   The type of the None singleton.
 
-    `users_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceUsersSubscribersItem | None] | Any | None`
+    `users_subscribers: list[airbyte_agent_sdk.connectors.monday.models.WorkspaceUsersSubscribersItem | None] | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceAccountProduct"></a>
@@ -2277,10 +2277,10 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2304,7 +2304,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2328,7 +2328,7 @@ Classes
 
     ### Class variables
 
-    `icon: airbyte_agent_sdk.connectors.monday.models.WorkspaceSettingsIcon | Any | None`
+    `icon: airbyte_agent_sdk.connectors.monday.models.WorkspaceSettingsIcon | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2352,10 +2352,10 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `image: str | Any | None`
+    `image: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2379,13 +2379,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceTeamsSubscribersItem"></a>
@@ -2406,13 +2406,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceUsersSubscribersItem"></a>
@@ -2433,7 +2433,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`

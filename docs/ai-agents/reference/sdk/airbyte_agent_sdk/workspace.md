@@ -15,9 +15,9 @@ Classes
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
-    Provides workspace-level methods: list/create/delete connectors,
-    get a connector executor, and workflow/automation CRUD. Use `Workspace`
-    when you want to operate against a whole workspace (many connectors,
+    Provides workspace-level methods: list/create/delete connectors, get a
+    connector executor, and workflow/automation CRUD. Use `Workspace` when
+    you want to operate against a whole workspace (many connectors,
     workflows, automations); use [`connect()`](index.md#connect) when you already
     know which connector you want to execute.
     
@@ -51,7 +51,6 @@ Classes
             `AIRBYTE_CLIENT_ID`/`AIRBYTE_CLIENT_SECRET` env vars are set.
 
     ### Methods
-
 
     `close(self)`
     :   Close the cloud client.
@@ -98,8 +97,27 @@ Classes
     `get_workflow(self, workflow_id: str) ‑> airbyte_agent_sdk.executor.models.WorkflowInfo`
     :   Get a single workflow by ID.
 
-    `list_automations(self, workflow_id: str) ‑> list[airbyte_agent_sdk.executor.models.AutomationInfo]`
-    :   List automations for a workflow.
+    `list_automations(self, workflow_id: str | None = None) ‑> list[airbyte_agent_sdk.executor.models.AutomationInfo]`
+    :   List automations.
+        
+        When `workflow_id` is a non-`None` string, returns automations for that
+        single workflow (workflow-scoped path, unchanged behavior).
+        
+        When `workflow_id` is omitted or passed explicitly as `None`, returns all
+        automations across every workflow in the workspace via a bounded-concurrency
+        fan-out over `list_workflows()`. Omission and explicit `None` are treated
+        identically.
+        
+        Concurrent per-workflow HTTP requests are bounded by
+        `_AUTOMATION_FANOUT_CONCURRENCY`. The first per-workflow error propagates
+        to the caller immediately; sibling in-flight requests continue to
+        completion in the background (their results are discarded). Workflows
+        deleted mid-flight surface as an error rather than being silently
+        filtered.
+        
+        Result ordering: automations are grouped per workflow in the order
+        returned by `list_workflows()`; ordering within a workflow matches the
+        backend response.
 
     `list_connectors(self) ‑> list[airbyte_agent_sdk.executor.models.ConnectorInfo]`
     :   List connector instances in this workspace.

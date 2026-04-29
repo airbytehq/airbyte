@@ -3,7 +3,7 @@ sidebar_position: 3
 sidebar_label: Developer Quickstart
 ---
 
-# Developer Quickstart
+# Developer quickstart
 
 import DocCardList from '@theme/DocCardList';
 

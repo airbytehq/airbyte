@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Add a connector
 
-Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Credentials** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use—Chats, Automations, the SDK, the API, and the MCP server—can use the resulting connector.
+Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use—Chats, Automations, the SDK, the API, and the MCP server—can use the resulting connector.
 
 This page walks through adding connectors end-to-end: where to add them, how to add them from inside a chat or the Automation Builder, how workspaces and multiple connectors fit together, and how to update or remove connectors you've already added.
 
@@ -30,13 +30,13 @@ A workspace can hold as many connectors as you need:
 
 Each Chat or Automation runs in one workspace at a time and sees only the connectors in that workspace. If you can't find a connector you expect, check that you're in the right workspace.
 
-## Add a connector from the Credentials page
+## Add a connector from the Connectors page
 
-The Credentials page is the primary place to add, view, and manage connectors for every workspace in your organization. This is the right flow when you're setting up a new workspace, onboarding a data source before you need it, or adding a second account for a connector type you already use.
+The Connectors page is the primary place to add, view, and manage connectors for every workspace in your organization. This is the right flow when you're setting up a new workspace, onboarding a data source before you need it, or adding a second account for a connector type you already use.
 
-1. Click **Credentials** in the left sidebar.
+1. Click **Connectors** in the left sidebar.
 
-2. Click **Add Credential** in the top right. A slide-out panel opens.
+2. Click **Add Connector** in the top right. A slide-out panel opens.
 
 3. Under **Select Workspace**, pick the workspace the connector should belong to. To create a new workspace on the fly, click **+ Add new workspace** and give it a name.
 
@@ -46,7 +46,7 @@ The Credentials page is the primary place to add, view, and manage connectors fo
 
 6. When authentication finishes, the dialog closes and a **Credential Added** confirmation appears in the slide-out. From there you can click **Add Another Credential** to add more, or **Chat with your Agent** to jump straight into a Chat that uses the new connector.
 
-The new connector appears immediately in the Credentials table and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
+The new connector appears immediately in the Connectors list and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
 
 ## OAuth versus access tokens {#oauth-vs-tokens}
 
@@ -77,7 +77,7 @@ You don't have to add connectors up front. If you start a Chat and the agent rea
 
 When this happens, the agent's message includes one or more connector tiles next to its reply. Each tile shows the connector's logo, name, and current status. To authenticate:
 
-1. Click the tile for the connector you want to connect. The authentication module opens in a dialog, the same flow the Credentials page uses.
+1. Click the tile for the connector you want to connect. The authentication module opens in a dialog, the same flow the Connectors page uses.
 
 2. Complete the OAuth or API-key flow. When it finishes, the tile flips to a success state.
 
@@ -85,9 +85,9 @@ When this happens, the agent's message includes one or more connector tiles next
 
 4. Once you've handled the tiles you care about, the agent picks up the new connectors automatically and continues its response.
 
-Anything you add through this inline flow is saved to the workspace the Chat is running in, just like credentials added from the Credentials page. It's visible afterward in the Credentials table and usable by other Chats and Automations in the same workspace.
+Anything you add through this inline flow is saved to the workspace the Chat is running in, just like connectors added from the Connectors page. It's visible afterward in the Connectors list and usable by other Chats and Automations in the same workspace.
 
-If you'd rather not add a connector inline—for example, because you want to pick a different workspace, or because you need to finish authentication elsewhere first—you can also open the **Credentials** page in another tab, add the connector there, then come back to the Chat. Send the agent a short message like "try again" and it re-reads the available context and picks up the new connector on its next turn.
+If you'd rather not add a connector inline—for example, because you want to pick a different workspace, or because you need to finish authentication elsewhere first—you can also open the **Connectors** page in another tab, add the connector there, then come back to the Chat. Send the agent a short message like "try again" and it re-reads the available context and picks up the new connector on its next turn.
 
 ## Add a connector from the Automation Builder
 
@@ -97,11 +97,11 @@ The fastest path is to tell the Automation Builder Agent what you want and let i
 
 You can also ask the Automation Builder Agent to change which connectors the automation uses. Sending a message like "use the Salesforce connector instead" or "add HubSpot" tells it to update the automation's [**Context**](./automations#properties) to match. Airbyte blocks direct edits to the Context list in the Properties panel on purpose, so that the prompt and the connectors it relies on stay in sync.
 
-If you prefer, you can still pre-authenticate everything from the Credentials page first, then open the Automation Builder with the connectors already in place. That path is often faster when you already know exactly which sources the automation needs.
+If you prefer, you can still pre-authenticate everything from the Connectors page first, then open the Automation Builder with the connectors already in place. That path is often faster when you already know exactly which sources the automation needs.
 
 ## Manage existing connectors
 
-The Credentials page also shows every connector that's already been added across every workspace. Use it to audit what's authenticated, see how much each connector is being used, and retire ones you no longer need.
+The Connectors page also shows every connector that's already been added across every workspace. Use it to audit what's authenticated, see how much each connector is being used, and retire ones you no longer need.
 
 - **Filter the list**. Use the **All workspaces** and **All connectors** filters at the top of the table to narrow the list by workspace or connector type.
 

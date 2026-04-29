@@ -31,25 +31,25 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `marketplace_string_id: str | Any | None`
+    `marketplace_string_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `sub_type: str | Any | None`
+    `sub_type: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `valid_payment_method: bool | Any | None`
+    `valid_payment_method: bool | None`
     :   The type of the None singleton.
 
 <a id="AirbyteSearchMeta"></a>
@@ -799,10 +799,10 @@ Classes
 
     ### Class variables
 
-    `budget: float | Any | None`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `budget_type: str | Any | None`
+    `budget_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -829,10 +829,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `placement_bidding: list[airbyte_agent_sdk.connectors.amazon_ads.models.DynamicBiddingPlacementbiddingItem] | Any | None`
+    `placement_bidding: list[airbyte_agent_sdk.connectors.amazon_ads.models.DynamicBiddingPlacementbiddingItem] | None`
     :   The type of the None singleton.
 
-    `strategy: str | Any | None`
+    `strategy: str | None`
     :   The type of the None singleton.
 
 <a id="DynamicBiddingPlacementbiddingItem"></a>
@@ -856,10 +856,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `percentage: int | Any | None`
+    `percentage: int | None`
     :   The bid adjustment percentage
 
-    `placement: str | Any | None`
+    `placement: str | None`
     :   The placement type
 
 <a id="Portfolio"></a>
@@ -881,31 +881,31 @@ Classes
 
     ### Class variables
 
-    `budget: Any`
+    `budget: typing.Any | None`
     :   The type of the None singleton.
 
-    `creation_date: int | Any | None`
+    `creation_date: int | None`
     :   The type of the None singleton.
 
-    `in_budget: bool | Any | None`
+    `in_budget: bool | None`
     :   The type of the None singleton.
 
-    `last_updated_date: int | Any | None`
+    `last_updated_date: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `portfolio_id: Any`
+    `portfolio_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `serving_status: str | Any | None`
+    `serving_status: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="PortfolioBudget"></a>
@@ -926,22 +926,22 @@ Classes
 
     ### Class variables
 
-    `amount: float | Any | None`
+    `amount: float | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any | None`
+    `end_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `policy: str | Any | None`
+    `policy: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
 <a id="PortfoliosListResultMeta"></a>
@@ -965,7 +965,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="Profile"></a>
@@ -987,25 +987,25 @@ Classes
 
     ### Class variables
 
-    `account_info: Any`
+    `account_info: typing.Any | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any | None`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `daily_budget: float | Any | None`
+    `daily_budget: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `profile_id: int | Any`
+    `profile_id: int | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
 <a id="ProfilesSearchData"></a>
@@ -1066,25 +1066,25 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `bid: float | Any | None`
+    `bid: float | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredBrandsAdGroupsListResultMeta"></a>
@@ -1108,7 +1108,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredBrandsCampaign"></a>
@@ -1130,52 +1130,52 @@ Classes
 
     ### Class variables
 
-    `bid_multiplier: float | Any | None`
+    `bid_multiplier: float | None`
     :   The type of the None singleton.
 
-    `bid_optimization: bool | Any | None`
+    `bid_optimization: bool | None`
     :   The type of the None singleton.
 
-    `budget: float | Any | None`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `budget_type: str | Any | None`
+    `budget_type: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `cost_type: str | Any | None`
+    `cost_type: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any | None`
+    `end_date: str | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `portfolio_id: Any`
+    `portfolio_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `product_location: str | Any | None`
+    `product_location: str | None`
     :   The type of the None singleton.
 
-    `smart_default: str | Any | None`
+    `smart_default: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `tags: dict[str, typing.Any] | Any | None`
+    `tags: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="SponsoredBrandsCampaignsListResultMeta"></a>
@@ -1199,7 +1199,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductAdGroup"></a>
@@ -1221,25 +1221,25 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `default_bid: float | Any | None`
+    `default_bid: float | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductAdGroupsListResultMeta"></a>
@@ -1263,7 +1263,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductCampaign"></a>
@@ -1286,58 +1286,58 @@ Classes
 
     ### Class variables
 
-    `bidding: Any`
+    `bidding: typing.Any | None`
     :   The type of the None singleton.
 
-    `budget: Any`
+    `budget: typing.Any | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `campaign_type: str | Any | None`
+    `campaign_type: str | None`
     :   The type of the None singleton.
 
-    `daily_budget: float | Any | None`
+    `daily_budget: float | None`
     :   The type of the None singleton.
 
-    `dynamic_bidding: Any`
+    `dynamic_bidding: typing.Any | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any | None`
+    `end_date: str | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `marketplace_budget_allocation: str | Any | None`
+    `marketplace_budget_allocation: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `off_amazon_settings: dict[str, typing.Any] | Any | None`
+    `off_amazon_settings: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `portfolio_id: Any`
+    `portfolio_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `premium_bid_adjustment: bool | Any | None`
+    `premium_bid_adjustment: bool | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `tags: dict[str, typing.Any] | Any | None`
+    `tags: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `targeting_type: str | Any | None`
+    `targeting_type: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductCampaignsListResultMeta"></a>
@@ -1361,7 +1361,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductKeyword"></a>
@@ -1383,31 +1383,31 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `bid: float | Any | None`
+    `bid: float | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `keyword_id: Any`
+    `keyword_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `keyword_text: str | Any | None`
+    `keyword_text: str | None`
     :   The type of the None singleton.
 
-    `match_type: str | Any | None`
+    `match_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductKeywordsListResultMeta"></a>
@@ -1431,7 +1431,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductNegativeKeyword"></a>
@@ -1453,28 +1453,28 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `keyword_id: Any`
+    `keyword_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `keyword_text: str | Any | None`
+    `keyword_text: str | None`
     :   The type of the None singleton.
 
-    `match_type: str | Any | None`
+    `match_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductNegativeKeywordsListResultMeta"></a>
@@ -1498,7 +1498,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductNegativeTarget"></a>
@@ -1520,31 +1520,31 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductNegativeTargetExpressionItem] | Any | None`
+    `expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductNegativeTargetExpressionItem] | None`
     :   The type of the None singleton.
 
-    `expression_type: str | Any | None`
+    `expression_type: str | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resolved_expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductNegativeTargetResolvedexpressionItem] | Any | None`
+    `resolved_expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductNegativeTargetResolvedexpressionItem] | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `target_id: Any`
+    `target_id: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductNegativeTargetExpressionItem"></a>
@@ -1568,10 +1568,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The expression type
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The expression value
 
 <a id="SponsoredProductNegativeTargetResolvedexpressionItem"></a>
@@ -1595,10 +1595,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The resolved expression type
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The resolved expression value
 
 <a id="SponsoredProductNegativeTargetsListResultMeta"></a>
@@ -1622,7 +1622,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductProductAd"></a>
@@ -1644,28 +1644,28 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `ad_id: Any`
+    `ad_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `asin: str | Any | None`
+    `asin: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `sku: str | Any | None`
+    `sku: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductProductAdsListResultMeta"></a>
@@ -1689,7 +1689,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductTarget"></a>
@@ -1711,34 +1711,34 @@ Classes
 
     ### Class variables
 
-    `ad_group_id: Any`
+    `ad_group_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `bid: float | Any | None`
+    `bid: float | None`
     :   The type of the None singleton.
 
-    `campaign_id: Any`
+    `campaign_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductTargetExpressionItem] | Any | None`
+    `expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductTargetExpressionItem] | None`
     :   The type of the None singleton.
 
-    `expression_type: str | Any | None`
+    `expression_type: str | None`
     :   The type of the None singleton.
 
-    `extended_data: dict[str, typing.Any] | Any | None`
+    `extended_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resolved_expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductTargetResolvedexpressionItem] | Any | None`
+    `resolved_expression: list[airbyte_agent_sdk.connectors.amazon_ads.models.SponsoredProductTargetResolvedexpressionItem] | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `target_id: Any`
+    `target_id: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="SponsoredProductTargetExpressionItem"></a>
@@ -1762,10 +1762,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The expression type
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The expression value
 
 <a id="SponsoredProductTargetResolvedexpressionItem"></a>
@@ -1789,10 +1789,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The resolved expression type
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The resolved expression value
 
 <a id="SponsoredProductTargetsListResultMeta"></a>
@@ -1816,5 +1816,5 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_token: str | Any | None`
+    `next_token: str | None`
     :   The type of the None singleton.

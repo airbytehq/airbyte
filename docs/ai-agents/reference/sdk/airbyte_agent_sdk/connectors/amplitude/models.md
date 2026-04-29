@@ -34,19 +34,19 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `series: list[list[float]] | Any | None`
+    `series: list[list[float]] | None`
     :   The type of the None singleton.
 
-    `series_collapsed: list[list[float]] | Any | None`
+    `series_collapsed: list[list[float]] | None`
     :   The type of the None singleton.
 
-    `series_labels: list[typing.Any] | Any | None`
+    `series_labels: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `series_meta: list[airbyte_agent_sdk.connectors.amplitude.models.ActiveUsersDataSeriesmetaItem] | Any | None`
+    `series_meta: list[airbyte_agent_sdk.connectors.amplitude.models.ActiveUsersDataSeriesmetaItem] | None`
     :   The type of the None singleton.
 
-    `x_values: list[str] | Any | None`
+    `x_values: list[str] | None`
     :   The type of the None singleton.
 
 <a id="ActiveUsersDataSeriesmetaItem"></a>
@@ -70,7 +70,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `segment_index: int | Any`
+    `segment_index: int | None`
     :   The type of the None singleton.
 
 <a id="ActiveUsersResponse"></a>
@@ -91,7 +91,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.amplitude.models.ActiveUsersData | Any`
+    `data: airbyte_agent_sdk.connectors.amplitude.models.ActiveUsersData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -765,16 +765,16 @@ Classes
 
     ### Class variables
 
-    `date: str | Any | None`
+    `date: str | None`
     :   The type of the None singleton.
 
-    `details: str | Any | None`
+    `details: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -798,7 +798,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.amplitude.models.AnnotationV3 | Any`
+    `data: airbyte_agent_sdk.connectors.amplitude.models.AnnotationV3 | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -822,28 +822,28 @@ Classes
 
     ### Class variables
 
-    `category: airbyte_agent_sdk.connectors.amplitude.models.AnnotationV3Category | Any | None`
+    `category: airbyte_agent_sdk.connectors.amplitude.models.AnnotationV3Category | None`
     :   The type of the None singleton.
 
-    `chart_id: str | Any | None`
+    `chart_id: str | None`
     :   The type of the None singleton.
 
-    `details: str | Any | None`
+    `details: str | None`
     :   The type of the None singleton.
 
-    `end: str | Any | None`
+    `end: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: str | Any | None`
+    `start: str | None`
     :   The type of the None singleton.
 
 <a id="AnnotationV3Category"></a>
@@ -864,10 +864,10 @@ Classes
 
     ### Class variables
 
-    `category: str | Any`
+    `category: str | None`
     :   Category name
 
-    `id: int | Any`
+    `id: int | None`
     :   Category ID
 
     `model_config`
@@ -891,7 +891,7 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.amplitude.models.Annotation] | Any`
+    `data: list[airbyte_agent_sdk.connectors.amplitude.models.Annotation] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -951,16 +951,16 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `series: list[list[float]] | Any | None`
+    `series: list[list[float]] | None`
     :   The type of the None singleton.
 
-    `series_collapsed: list[list[airbyte_agent_sdk.connectors.amplitude.models.AverageSessionLengthDataSeriescollapsedItemItem]] | Any | None`
+    `series_collapsed: list[list[airbyte_agent_sdk.connectors.amplitude.models.AverageSessionLengthDataSeriescollapsedItemItem]] | None`
     :   The type of the None singleton.
 
-    `series_meta: list[airbyte_agent_sdk.connectors.amplitude.models.AverageSessionLengthDataSeriesmetaItem] | Any | None`
+    `series_meta: list[airbyte_agent_sdk.connectors.amplitude.models.AverageSessionLengthDataSeriesmetaItem] | None`
     :   The type of the None singleton.
 
-    `x_values: list[str] | Any | None`
+    `x_values: list[str] | None`
     :   The type of the None singleton.
 
 <a id="AverageSessionLengthDataSeriescollapsedItemItem"></a>
@@ -984,10 +984,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `set_id: str | Any`
+    `set_id: str | None`
     :   The type of the None singleton.
 
-    `value: float | Any`
+    `value: float | None`
     :   The type of the None singleton.
 
 <a id="AverageSessionLengthDataSeriesmetaItem"></a>
@@ -1011,10 +1011,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `segment_index: int | Any`
+    `segment_index: int | None`
     :   The type of the None singleton.
 
-    `session_index: int | Any`
+    `session_index: int | None`
     :   The type of the None singleton.
 
 <a id="AverageSessionLengthResponse"></a>
@@ -1035,7 +1035,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.amplitude.models.AverageSessionLengthData | Any`
+    `data: airbyte_agent_sdk.connectors.amplitude.models.AverageSessionLengthData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1086,100 +1086,100 @@ Classes
 
     ### Class variables
 
-    `app_id: int | Any | None`
+    `app_id: int | None`
     :   The type of the None singleton.
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `chart_id: str | Any | None`
+    `chart_id: str | None`
     :   The type of the None singleton.
 
-    `cohort_definition_type: str | Any | None`
+    `cohort_definition_type: str | None`
     :   The type of the None singleton.
 
-    `cohort_output_type: str | Any | None`
+    `cohort_output_type: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any | None`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `definition: dict[str, typing.Any] | Any | None`
+    `definition: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `edit_id: str | Any | None`
+    `edit_id: str | None`
     :   The type of the None singleton.
 
-    `finished: bool | Any | None`
+    `finished: bool | None`
     :   The type of the None singleton.
 
-    `hidden: bool | Any | None`
+    `hidden: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `include_data_app_types: list[str] | Any | None`
+    `include_data_app_types: list[str] | None`
     :   The type of the None singleton.
 
-    `is_generated_content: bool | Any | None`
+    `is_generated_content: bool | None`
     :   The type of the None singleton.
 
-    `is_official_content: bool | Any | None`
+    `is_official_content: bool | None`
     :   The type of the None singleton.
 
-    `is_predictive: bool | Any | None`
+    `is_predictive: bool | None`
     :   The type of the None singleton.
 
-    `last_computed: int | Any | None`
+    `last_computed: int | None`
     :   The type of the None singleton.
 
-    `last_mod: int | Any | None`
+    `last_mod: int | None`
     :   The type of the None singleton.
 
-    `last_viewed: int | Any | None`
+    `last_viewed: int | None`
     :   The type of the None singleton.
 
-    `location_id: str | Any | None`
+    `location_id: str | None`
     :   The type of the None singleton.
 
-    `metadata: list[str] | Any | None`
+    `metadata: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owners: list[str] | Any | None`
+    `owners: list[str] | None`
     :   The type of the None singleton.
 
-    `per_app_metadata: dict[str, typing.Any] | Any | None`
+    `per_app_metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `popularity: int | Any | None`
+    `popularity: int | None`
     :   The type of the None singleton.
 
-    `published: bool | Any | None`
+    `published: bool | None`
     :   The type of the None singleton.
 
-    `shortcut_ids: list[str] | Any | None`
+    `shortcut_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `view_count: int | Any | None`
+    `view_count: int | None`
     :   The type of the None singleton.
 
-    `viewers: list[str] | Any | None`
+    `viewers: list[str] | None`
     :   The type of the None singleton.
 
 <a id="CohortGetResponse"></a>
@@ -1200,7 +1200,7 @@ Classes
 
     ### Class variables
 
-    `cohort: airbyte_agent_sdk.connectors.amplitude.models.Cohort | Any`
+    `cohort: airbyte_agent_sdk.connectors.amplitude.models.Cohort | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1224,7 +1224,7 @@ Classes
 
     ### Class variables
 
-    `cohorts: list[airbyte_agent_sdk.connectors.amplitude.models.Cohort] | Any`
+    `cohorts: list[airbyte_agent_sdk.connectors.amplitude.models.Cohort] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1347,52 +1347,52 @@ Classes
 
     ### Class variables
 
-    `autohidden: bool | Any | None`
+    `autohidden: bool | None`
     :   The type of the None singleton.
 
-    `clusters_hidden: bool | Any | None`
+    `clusters_hidden: bool | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `display: str | Any | None`
+    `display: str | None`
     :   The type of the None singleton.
 
-    `flow_hidden: bool | Any | None`
+    `flow_hidden: bool | None`
     :   The type of the None singleton.
 
-    `hidden: bool | Any | None`
+    `hidden: bool | None`
     :   The type of the None singleton.
 
-    `id: float | Any`
+    `id: float`
     :   The type of the None singleton.
 
-    `in_waitroom: bool | Any | None`
+    `in_waitroom: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `non_active: bool | Any | None`
+    `non_active: bool | None`
     :   The type of the None singleton.
 
-    `timeline_hidden: bool | Any | None`
+    `timeline_hidden: bool | None`
     :   The type of the None singleton.
 
-    `totals: float | Any | None`
+    `totals: float | None`
     :   The type of the None singleton.
 
-    `totals_delta: float | Any | None`
+    `totals_delta: float | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
-    `waitroom_approved: bool | Any | None`
+    `waitroom_approved: bool | None`
     :   The type of the None singleton.
 
 <a id="EventsListResponse"></a>
@@ -1413,7 +1413,7 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.amplitude.models.EventType] | Any`
+    `data: list[airbyte_agent_sdk.connectors.amplitude.models.EventType] | None`
     :   The type of the None singleton.
 
     `model_config`

@@ -86,6 +86,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `archive_reason: Any`
+    :   Reason the application was archived, if applicable
+
+    `created_at: Any`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: Any`
+    :   Unique identifier for the application
+
+    `status: Any`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: Any`
+    :   Timestamp when the application was last updated, in ISO 8601 format
+
 <a id="ApplicationsContainsCondition"></a>
 
 `ApplicationsContainsCondition(*args, **kwargs)`
@@ -200,6 +217,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `archive_reason: list[str]`
+    :   Reason the application was archived, if applicable
+
+    `created_at: list[str]`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: list[str]`
+    :   Unique identifier for the application
+
+    `status: list[str]`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: list[str]`
+    :   Timestamp when the application was last updated, in ISO 8601 format
 
 <a id="ApplicationsKeywordCondition"></a>
 
@@ -341,6 +375,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `archive_reason: str | None`
+    :   Reason the application was archived, if applicable
+
+    `created_at: str | None`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: str | None`
+    :   Unique identifier for the application
+
+    `status: str | None`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: str | None`
+    :   Timestamp when the application was last updated, in ISO 8601 format
+
 <a id="ApplicationsSearchQuery"></a>
 
 `ApplicationsSearchQuery(*args, **kwargs)`
@@ -367,6 +418,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `archive_reason: Literal['asc', 'desc']`
+    :   Reason the application was archived, if applicable
+
+    `created_at: Literal['asc', 'desc']`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the application
+
+    `status: Literal['asc', 'desc']`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   Timestamp when the application was last updated, in ISO 8601 format
+
 <a id="ApplicationsStringFilter"></a>
 
 `ApplicationsStringFilter(*args, **kwargs)`
@@ -375,6 +443,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `archive_reason: str`
+    :   Reason the application was archived, if applicable
+
+    `created_at: str`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: str`
+    :   Unique identifier for the application
+
+    `status: str`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: str`
+    :   Timestamp when the application was last updated, in ISO 8601 format
 
 <a id="ArchiveReasonsListParams"></a>
 
@@ -462,6 +547,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `company: Any`
+    :   Candidate's current company
+
+    `id: Any`
+    :   Unique identifier for the candidate
+
+    `name: Any`
+    :   Full name of the candidate
+
+    `position: Any`
+    :   Candidate's current position or title
+
+    `school: Any`
+    :   School associated with the candidate's education
 
 <a id="CandidatesContainsCondition"></a>
 
@@ -577,6 +679,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `company: list[str]`
+    :   Candidate's current company
+
+    `id: list[str]`
+    :   Unique identifier for the candidate
+
+    `name: list[str]`
+    :   Full name of the candidate
+
+    `position: list[str]`
+    :   Candidate's current position or title
+
+    `school: list[str]`
+    :   School associated with the candidate's education
 
 <a id="CandidatesKeywordCondition"></a>
 
@@ -718,6 +837,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `company: str | None`
+    :   Candidate's current company
+
+    `id: str | None`
+    :   Unique identifier for the candidate
+
+    `name: str | None`
+    :   Full name of the candidate
+
+    `position: str | None`
+    :   Candidate's current position or title
+
+    `school: str | None`
+    :   School associated with the candidate's education
+
 <a id="CandidatesSearchQuery"></a>
 
 `CandidatesSearchQuery(*args, **kwargs)`
@@ -744,6 +880,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `company: Literal['asc', 'desc']`
+    :   Candidate's current company
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the candidate
+
+    `name: Literal['asc', 'desc']`
+    :   Full name of the candidate
+
+    `position: Literal['asc', 'desc']`
+    :   Candidate's current position or title
+
+    `school: Literal['asc', 'desc']`
+    :   School associated with the candidate's education
+
 <a id="CandidatesStringFilter"></a>
 
 `CandidatesStringFilter(*args, **kwargs)`
@@ -752,6 +905,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `company: str`
+    :   Candidate's current company
+
+    `id: str`
+    :   Unique identifier for the candidate
+
+    `name: str`
+    :   Full name of the candidate
+
+    `position: str`
+    :   Candidate's current position or title
+
+    `school: str`
+    :   School associated with the candidate's education
 
 <a id="CustomFieldsListParams"></a>
 
@@ -871,6 +1041,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `id: Any`
+    :   Unique identifier for the job posting
+
+    `is_listed: Any`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: Any`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: Any`
+    :   Name of the location associated with the posting
+
+    `title: Any`
+    :   Title of the job posting
+
 <a id="JobPostingsContainsCondition"></a>
 
 `JobPostingsContainsCondition(*args, **kwargs)`
@@ -985,6 +1172,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `id: list[str]`
+    :   Unique identifier for the job posting
+
+    `is_listed: list[bool]`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: list[str]`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: list[str]`
+    :   Name of the location associated with the posting
+
+    `title: list[str]`
+    :   Title of the job posting
 
 <a id="JobPostingsKeywordCondition"></a>
 
@@ -1126,6 +1330,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `id: str | None`
+    :   Unique identifier for the job posting
+
+    `is_listed: bool | None`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: str | None`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: str | None`
+    :   Name of the location associated with the posting
+
+    `title: str | None`
+    :   Title of the job posting
+
 <a id="JobPostingsSearchQuery"></a>
 
 `JobPostingsSearchQuery(*args, **kwargs)`
@@ -1152,6 +1373,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the job posting
+
+    `is_listed: Literal['asc', 'desc']`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: Literal['asc', 'desc']`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: Literal['asc', 'desc']`
+    :   Name of the location associated with the posting
+
+    `title: Literal['asc', 'desc']`
+    :   Title of the job posting
+
 <a id="JobPostingsStringFilter"></a>
 
 `JobPostingsStringFilter(*args, **kwargs)`
@@ -1160,6 +1398,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the job posting
+
+    `is_listed: str`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: str`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: str`
+    :   Name of the location associated with the posting
+
+    `title: str`
+    :   Title of the job posting
 
 <a id="JobsAndCondition"></a>
 
@@ -1213,6 +1468,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `department_id: Any`
+    :   Identifier of the department the job belongs to
+
+    `id: Any`
+    :   Unique identifier for the job
+
+    `location_id: Any`
+    :   Identifier of the primary location of the job
+
+    `status: Any`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: Any`
+    :   Title of the job
 
 <a id="JobsContainsCondition"></a>
 
@@ -1328,6 +1600,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `department_id: list[str]`
+    :   Identifier of the department the job belongs to
+
+    `id: list[str]`
+    :   Unique identifier for the job
+
+    `location_id: list[str]`
+    :   Identifier of the primary location of the job
+
+    `status: list[str]`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: list[str]`
+    :   Title of the job
 
 <a id="JobsKeywordCondition"></a>
 
@@ -1469,6 +1758,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `department_id: str | None`
+    :   Identifier of the department the job belongs to
+
+    `id: str | None`
+    :   Unique identifier for the job
+
+    `location_id: str | None`
+    :   Identifier of the primary location of the job
+
+    `status: str | None`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: str | None`
+    :   Title of the job
+
 <a id="JobsSearchQuery"></a>
 
 `JobsSearchQuery(*args, **kwargs)`
@@ -1495,6 +1801,23 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `department_id: Literal['asc', 'desc']`
+    :   Identifier of the department the job belongs to
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the job
+
+    `location_id: Literal['asc', 'desc']`
+    :   Identifier of the primary location of the job
+
+    `status: Literal['asc', 'desc']`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: Literal['asc', 'desc']`
+    :   Title of the job
+
 <a id="JobsStringFilter"></a>
 
 `JobsStringFilter(*args, **kwargs)`
@@ -1503,6 +1826,23 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `department_id: str`
+    :   Identifier of the department the job belongs to
+
+    `id: str`
+    :   Unique identifier for the job
+
+    `location_id: str`
+    :   Identifier of the primary location of the job
+
+    `status: str`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: str`
+    :   Title of the job
 
 <a id="LocationsGetParams"></a>
 
@@ -1604,6 +1944,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `email: Any`
+    :   Primary email address of the user
+
+    `first_name: Any`
+    :   First name of the user
+
+    `id: Any`
+    :   Unique identifier for the user
+
+    `last_name: Any`
+    :   Last name of the user
 
 <a id="UsersContainsCondition"></a>
 
@@ -1719,6 +2073,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `email: list[str]`
+    :   Primary email address of the user
+
+    `first_name: list[str]`
+    :   First name of the user
+
+    `id: list[str]`
+    :   Unique identifier for the user
+
+    `last_name: list[str]`
+    :   Last name of the user
 
 <a id="UsersKeywordCondition"></a>
 
@@ -1860,6 +2228,20 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the user
+
+    `first_name: str | None`
+    :   First name of the user
+
+    `id: str | None`
+    :   Unique identifier for the user
+
+    `last_name: str | None`
+    :   Last name of the user
+
 <a id="UsersSearchQuery"></a>
 
 `UsersSearchQuery(*args, **kwargs)`
@@ -1886,6 +2268,20 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `email: Literal['asc', 'desc']`
+    :   Primary email address of the user
+
+    `first_name: Literal['asc', 'desc']`
+    :   First name of the user
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the user
+
+    `last_name: Literal['asc', 'desc']`
+    :   Last name of the user
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
@@ -1894,3 +2290,17 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   Primary email address of the user
+
+    `first_name: str`
+    :   First name of the user
+
+    `id: str`
+    :   Unique identifier for the user
+
+    `last_name: str`
+    :   Last name of the user

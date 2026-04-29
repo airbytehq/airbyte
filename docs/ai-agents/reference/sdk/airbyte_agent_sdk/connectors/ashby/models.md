@@ -292,55 +292,55 @@ Classes
 
     ### Class variables
 
-    `applied_via_job_posting_id: str | Any | None`
+    `applied_via_job_posting_id: str | None`
     :   The type of the None singleton.
 
-    `archive_reason: Any`
+    `archive_reason: typing.Any | None`
     :   The type of the None singleton.
 
-    `archived_at: str | Any | None`
+    `archived_at: str | None`
     :   The type of the None singleton.
 
-    `candidate: Any`
+    `candidate: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `credited_to_user: Any`
+    `credited_to_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `current_interview_stage: Any`
+    `current_interview_stage: typing.Any | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[typing.Any] | Any | None`
+    `custom_fields: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `hiring_team: list[airbyte_agent_sdk.connectors.ashby.models.ApplicationHiringteamItem] | Any | None`
+    `hiring_team: list[airbyte_agent_sdk.connectors.ashby.models.ApplicationHiringteamItem] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `job: Any`
+    `job: typing.Any | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `source: Any`
+    `source: typing.Any | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `submitter_client_ip: str | Any | None`
+    `submitter_client_ip: str | None`
     :   The type of the None singleton.
 
-    `submitter_user_agent: str | Any | None`
+    `submitter_user_agent: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ApplicationHiringteamItem"></a>
@@ -361,22 +361,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `user_id: str | Any | None`
+    `user_id: str | None`
     :   The type of the None singleton.
 
 <a id="ApplicationsListResultMeta"></a>
@@ -397,10 +397,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -424,8 +424,23 @@ Classes
 
     ### Class variables
 
+    `archive_reason: str | None`
+    :   Reason the application was archived, if applicable
+
+    `created_at: str | None`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: str | None`
+    :   Unique identifier for the application
+
     `model_config`
     :   The type of the None singleton.
+
+    `status: str | None`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: str | None`
+    :   Timestamp when the application was last updated, in ISO 8601 format
 
 <a id="ArchiveReason"></a>
 
@@ -445,19 +460,19 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reason_type: str | Any | None`
+    `reason_type: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
 <a id="ArchiveReasonsListResultMeta"></a>
@@ -478,10 +493,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1199,52 +1214,52 @@ Classes
 
     ### Class variables
 
-    `application_ids: list[str | None] | Any | None`
+    `application_ids: list[str | None] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `credited_to_user: Any`
+    `credited_to_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[typing.Any] | Any | None`
+    `custom_fields: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `email_addresses: list[airbyte_agent_sdk.connectors.ashby.models.CandidateEmailaddressesItem] | Any | None`
+    `email_addresses: list[airbyte_agent_sdk.connectors.ashby.models.CandidateEmailaddressesItem] | None`
     :   The type of the None singleton.
 
-    `file_handles: list[typing.Any] | Any | None`
+    `file_handles: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone_numbers: list[airbyte_agent_sdk.connectors.ashby.models.CandidatePhonenumbersItem] | Any | None`
+    `phone_numbers: list[airbyte_agent_sdk.connectors.ashby.models.CandidatePhonenumbersItem] | None`
     :   The type of the None singleton.
 
-    `profile_url: str | Any | None`
+    `profile_url: str | None`
     :   The type of the None singleton.
 
-    `social_links: list[airbyte_agent_sdk.connectors.ashby.models.CandidateSociallinksItem] | Any | None`
+    `social_links: list[airbyte_agent_sdk.connectors.ashby.models.CandidateSociallinksItem] | None`
     :   The type of the None singleton.
 
-    `source: Any`
+    `source: typing.Any | None`
     :   The type of the None singleton.
 
-    `tags: list[airbyte_agent_sdk.connectors.ashby.models.CandidateTagsItem] | Any | None`
+    `tags: list[airbyte_agent_sdk.connectors.ashby.models.CandidateTagsItem] | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CandidateEmailaddressesItem"></a>
@@ -1265,16 +1280,16 @@ Classes
 
     ### Class variables
 
-    `is_primary: bool | Any | None`
+    `is_primary: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="CandidatePhonenumbersItem"></a>
@@ -1295,16 +1310,16 @@ Classes
 
     ### Class variables
 
-    `is_primary: bool | Any | None`
+    `is_primary: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="CandidateSociallinksItem"></a>
@@ -1328,10 +1343,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CandidateTag"></a>
@@ -1352,16 +1367,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="CandidateTagsItem"></a>
@@ -1382,16 +1397,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="CandidateTagsListResultMeta"></a>
@@ -1412,10 +1427,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1439,10 +1454,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1466,8 +1481,23 @@ Classes
 
     ### Class variables
 
+    `company: str | None`
+    :   Candidate's current company
+
+    `id: str | None`
+    :   Unique identifier for the candidate
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the candidate
+
+    `position: str | None`
+    :   Candidate's current position or title
+
+    `school: str | None`
+    :   School associated with the candidate's education
 
 <a id="CustomField"></a>
 
@@ -1487,25 +1517,25 @@ Classes
 
     ### Class variables
 
-    `field_type: str | Any | None`
+    `field_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any | None`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_type: str | Any | None`
+    `object_type: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="CustomFieldsListResultMeta"></a>
@@ -1526,10 +1556,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1553,31 +1583,31 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `external_name: str | Any | None`
+    `external_name: str | None`
     :   The type of the None singleton.
 
-    `extra_data: Any`
+    `extra_data: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_id: str | Any | None`
+    `parent_id: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="DepartmentsListResultMeta"></a>
@@ -1598,10 +1628,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1625,28 +1655,28 @@ Classes
 
     ### Class variables
 
-    `form_definition: Any`
+    `form_definition: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `interview_id: str | Any | None`
+    `interview_id: str | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
-    `is_default_form: bool | Any | None`
+    `is_default_form: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `organization_id: str | Any | None`
+    `organization_id: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="FeedbackFormDefinitionsListResultMeta"></a>
@@ -1667,10 +1697,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1694,64 +1724,64 @@ Classes
 
     ### Class variables
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `brand_id: str | Any | None`
+    `brand_id: str | None`
     :   The type of the None singleton.
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `confidential: bool | Any | None`
+    `confidential: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[airbyte_agent_sdk.connectors.ashby.models.JobCustomfieldsItem] | Any | None`
+    `custom_fields: list[airbyte_agent_sdk.connectors.ashby.models.JobCustomfieldsItem] | None`
     :   The type of the None singleton.
 
-    `custom_requisition_id: str | Any | None`
+    `custom_requisition_id: str | None`
     :   The type of the None singleton.
 
-    `default_interview_plan_id: str | Any | None`
+    `default_interview_plan_id: str | None`
     :   The type of the None singleton.
 
-    `department_id: str | Any | None`
+    `department_id: str | None`
     :   The type of the None singleton.
 
-    `employment_type: str | Any | None`
+    `employment_type: str | None`
     :   The type of the None singleton.
 
-    `hiring_team: list[airbyte_agent_sdk.connectors.ashby.models.JobHiringteamItem] | Any | None`
+    `hiring_team: list[airbyte_agent_sdk.connectors.ashby.models.JobHiringteamItem] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `interview_plan_ids: list[str | None] | Any | None`
+    `interview_plan_ids: list[str | None] | None`
     :   The type of the None singleton.
 
-    `job_posting_ids: list[str | None] | Any | None`
+    `job_posting_ids: list[str | None] | None`
     :   The type of the None singleton.
 
-    `location_id: str | Any | None`
+    `location_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `opened_at: str | Any | None`
+    `opened_at: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="JobCustomfieldsItem"></a>
@@ -1772,22 +1802,22 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any | None`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
-    `value_label: str | Any | None`
+    `value_label: str | None`
     :   The type of the None singleton.
 
 <a id="JobHiringteamItem"></a>
@@ -1808,22 +1838,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `user_id: str | Any | None`
+    `user_id: str | None`
     :   The type of the None singleton.
 
 <a id="JobPosting"></a>
@@ -1844,61 +1874,61 @@ Classes
 
     ### Class variables
 
-    `application_deadline: str | Any | None`
+    `application_deadline: str | None`
     :   The type of the None singleton.
 
-    `apply_link: str | Any | None`
+    `apply_link: str | None`
     :   The type of the None singleton.
 
-    `compensation_tier_summary: str | Any | None`
+    `compensation_tier_summary: str | None`
     :   The type of the None singleton.
 
-    `department_name: str | Any | None`
+    `department_name: str | None`
     :   The type of the None singleton.
 
-    `employment_type: str | Any | None`
+    `employment_type: str | None`
     :   The type of the None singleton.
 
-    `external_link: str | Any | None`
+    `external_link: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_listed: bool | Any | None`
+    `is_listed: bool | None`
     :   The type of the None singleton.
 
-    `job_id: str | Any | None`
+    `job_id: str | None`
     :   The type of the None singleton.
 
-    `location_external_name: str | Any | None`
+    `location_external_name: str | None`
     :   The type of the None singleton.
 
-    `location_ids: Any`
+    `location_ids: typing.Any | None`
     :   The type of the None singleton.
 
-    `location_name: str | Any | None`
+    `location_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `published_date: str | Any | None`
+    `published_date: str | None`
     :   The type of the None singleton.
 
-    `should_display_compensation_on_job_board: bool | Any | None`
+    `should_display_compensation_on_job_board: bool | None`
     :   The type of the None singleton.
 
-    `team_name: str | Any | None`
+    `team_name: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `workplace_type: str | Any | None`
+    `workplace_type: str | None`
     :   The type of the None singleton.
 
 <a id="JobPostingsListResultMeta"></a>
@@ -1919,10 +1949,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1946,8 +1976,23 @@ Classes
 
     ### Class variables
 
+    `id: str | None`
+    :   Unique identifier for the job posting
+
+    `is_listed: bool | None`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: str | None`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: str | None`
+    :   Name of the location associated with the posting
+
     `model_config`
     :   The type of the None singleton.
+
+    `title: str | None`
+    :   Title of the job posting
 
 <a id="JobsListResultMeta"></a>
 
@@ -1967,10 +2012,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1994,8 +2039,23 @@ Classes
 
     ### Class variables
 
+    `department_id: str | None`
+    :   Identifier of the department the job belongs to
+
+    `id: str | None`
+    :   Unique identifier for the job
+
+    `location_id: str | None`
+    :   Identifier of the primary location of the job
+
     `model_config`
     :   The type of the None singleton.
+
+    `status: str | None`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: str | None`
+    :   Title of the job
 
 <a id="Location"></a>
 
@@ -2015,37 +2075,37 @@ Classes
 
     ### Class variables
 
-    `address: Any`
+    `address: typing.Any | None`
     :   The type of the None singleton.
 
-    `external_name: str | Any | None`
+    `external_name: str | None`
     :   The type of the None singleton.
 
-    `extra_data: Any`
+    `extra_data: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
-    `is_remote: bool | Any | None`
+    `is_remote: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_location_id: str | Any | None`
+    `parent_location_id: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `workplace_type: str | Any | None`
+    `workplace_type: str | None`
     :   The type of the None singleton.
 
 <a id="LocationsListResultMeta"></a>
@@ -2066,10 +2126,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2093,19 +2153,19 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_type: Any`
+    `source_type: typing.Any | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="SourcesListResultMeta"></a>
@@ -2126,10 +2186,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2153,28 +2213,28 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `global_role: str | Any | None`
+    `global_role: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_enabled: bool | Any | None`
+    `is_enabled: bool | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -2195,10 +2255,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2221,6 +2281,18 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the user
+
+    `first_name: str | None`
+    :   First name of the user
+
+    `id: str | None`
+    :   Unique identifier for the user
+
+    `last_name: str | None`
+    :   Last name of the user
 
     `model_config`
     :   The type of the None singleton.

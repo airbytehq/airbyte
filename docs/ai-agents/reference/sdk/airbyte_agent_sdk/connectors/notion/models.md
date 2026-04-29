@@ -252,139 +252,139 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `bookmark: airbyte_agent_sdk.connectors.notion.models.BlockBookmark | Any | None`
+    `bookmark: airbyte_agent_sdk.connectors.notion.models.BlockBookmark | None`
     :   The type of the None singleton.
 
-    `breadcrumb: dict[str, typing.Any] | Any | None`
+    `breadcrumb: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `bulleted_list_item: airbyte_agent_sdk.connectors.notion.models.BlockBulletedListItem | Any | None`
+    `bulleted_list_item: airbyte_agent_sdk.connectors.notion.models.BlockBulletedListItem | None`
     :   The type of the None singleton.
 
-    `callout: airbyte_agent_sdk.connectors.notion.models.BlockCallout | Any | None`
+    `callout: airbyte_agent_sdk.connectors.notion.models.BlockCallout | None`
     :   The type of the None singleton.
 
-    `child_database: airbyte_agent_sdk.connectors.notion.models.BlockChildDatabase | Any | None`
+    `child_database: airbyte_agent_sdk.connectors.notion.models.BlockChildDatabase | None`
     :   The type of the None singleton.
 
-    `child_page: airbyte_agent_sdk.connectors.notion.models.BlockChildPage | Any | None`
+    `child_page: airbyte_agent_sdk.connectors.notion.models.BlockChildPage | None`
     :   The type of the None singleton.
 
-    `code: airbyte_agent_sdk.connectors.notion.models.BlockCode | Any | None`
+    `code: airbyte_agent_sdk.connectors.notion.models.BlockCode | None`
     :   The type of the None singleton.
 
-    `column: airbyte_agent_sdk.connectors.notion.models.BlockColumn | Any | None`
+    `column: airbyte_agent_sdk.connectors.notion.models.BlockColumn | None`
     :   The type of the None singleton.
 
-    `column_list: dict[str, typing.Any] | Any | None`
+    `column_list: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_by: airbyte_agent_sdk.connectors.notion.models.BlockCreatedBy | Any | None`
+    `created_by: airbyte_agent_sdk.connectors.notion.models.BlockCreatedBy | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `divider: dict[str, typing.Any] | Any | None`
+    `divider: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `embed: airbyte_agent_sdk.connectors.notion.models.BlockEmbed | Any | None`
+    `embed: airbyte_agent_sdk.connectors.notion.models.BlockEmbed | None`
     :   The type of the None singleton.
 
-    `equation: airbyte_agent_sdk.connectors.notion.models.BlockEquation | Any | None`
+    `equation: airbyte_agent_sdk.connectors.notion.models.BlockEquation | None`
     :   The type of the None singleton.
 
-    `file: dict[str, typing.Any] | Any | None`
+    `file: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `has_children: bool | Any | None`
+    `has_children: bool | None`
     :   The type of the None singleton.
 
-    `heading_1: airbyte_agent_sdk.connectors.notion.models.BlockHeading1 | Any | None`
+    `heading_1: airbyte_agent_sdk.connectors.notion.models.BlockHeading1 | None`
     :   The type of the None singleton.
 
-    `heading_2: airbyte_agent_sdk.connectors.notion.models.BlockHeading2 | Any | None`
+    `heading_2: airbyte_agent_sdk.connectors.notion.models.BlockHeading2 | None`
     :   The type of the None singleton.
 
-    `heading_3: airbyte_agent_sdk.connectors.notion.models.BlockHeading3 | Any | None`
+    `heading_3: airbyte_agent_sdk.connectors.notion.models.BlockHeading3 | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `image: dict[str, typing.Any] | Any | None`
+    `image: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `in_trash: bool | Any | None`
+    `in_trash: bool | None`
     :   The type of the None singleton.
 
-    `last_edited_by: airbyte_agent_sdk.connectors.notion.models.BlockLastEditedBy | Any | None`
+    `last_edited_by: airbyte_agent_sdk.connectors.notion.models.BlockLastEditedBy | None`
     :   The type of the None singleton.
 
-    `last_edited_time: str | Any | None`
+    `last_edited_time: str | None`
     :   The type of the None singleton.
 
-    `link_preview: airbyte_agent_sdk.connectors.notion.models.BlockLinkPreview | Any | None`
+    `link_preview: airbyte_agent_sdk.connectors.notion.models.BlockLinkPreview | None`
     :   The type of the None singleton.
 
-    `link_to_page: dict[str, typing.Any] | Any | None`
+    `link_to_page: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `numbered_list_item: airbyte_agent_sdk.connectors.notion.models.BlockNumberedListItem | Any | None`
+    `numbered_list_item: airbyte_agent_sdk.connectors.notion.models.BlockNumberedListItem | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `paragraph: airbyte_agent_sdk.connectors.notion.models.BlockParagraph | Any | None`
+    `paragraph: airbyte_agent_sdk.connectors.notion.models.BlockParagraph | None`
     :   The type of the None singleton.
 
-    `parent: Any`
+    `parent: typing.Any | None`
     :   The type of the None singleton.
 
-    `pdf: dict[str, typing.Any] | Any | None`
+    `pdf: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `quote: airbyte_agent_sdk.connectors.notion.models.BlockQuote | Any | None`
+    `quote: airbyte_agent_sdk.connectors.notion.models.BlockQuote | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `synced_block: dict[str, typing.Any] | Any | None`
+    `synced_block: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `table: airbyte_agent_sdk.connectors.notion.models.BlockTable | Any | None`
+    `table: airbyte_agent_sdk.connectors.notion.models.BlockTable | None`
     :   The type of the None singleton.
 
-    `table_of_contents: airbyte_agent_sdk.connectors.notion.models.BlockTableOfContents | Any | None`
+    `table_of_contents: airbyte_agent_sdk.connectors.notion.models.BlockTableOfContents | None`
     :   The type of the None singleton.
 
-    `table_row: airbyte_agent_sdk.connectors.notion.models.BlockTableRow | Any | None`
+    `table_row: airbyte_agent_sdk.connectors.notion.models.BlockTableRow | None`
     :   The type of the None singleton.
 
-    `template: dict[str, typing.Any] | Any | None`
+    `template: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `to_do: airbyte_agent_sdk.connectors.notion.models.BlockToDo | Any | None`
+    `to_do: airbyte_agent_sdk.connectors.notion.models.BlockToDo | None`
     :   The type of the None singleton.
 
-    `toggle: airbyte_agent_sdk.connectors.notion.models.BlockToggle | Any | None`
+    `toggle: airbyte_agent_sdk.connectors.notion.models.BlockToggle | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `unsupported: dict[str, typing.Any] | Any | None`
+    `unsupported: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `video: dict[str, typing.Any] | Any | None`
+    `video: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="BlockBookmark"></a>
@@ -405,13 +405,13 @@ Classes
 
     ### Class variables
 
-    `caption: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `caption: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="BlockBulletedListItem"></a>
@@ -432,13 +432,13 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockCallout"></a>
@@ -459,16 +459,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `icon: dict[str, typing.Any] | Any | None`
+    `icon: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockChildDatabase"></a>
@@ -492,7 +492,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="BlockChildPage"></a>
@@ -516,7 +516,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="BlockCode"></a>
@@ -537,16 +537,16 @@ Classes
 
     ### Class variables
 
-    `caption: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `caption: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
-    `language: str | Any | None`
+    `language: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockColumn"></a>
@@ -570,7 +570,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `width_ratio: float | Any | None`
+    `width_ratio: float | None`
     :   The type of the None singleton.
 
 <a id="BlockCreatedBy"></a>
@@ -591,13 +591,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="BlockEmbed"></a>
@@ -621,7 +621,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="BlockEquation"></a>
@@ -642,7 +642,7 @@ Classes
 
     ### Class variables
 
-    `expression: str | Any | None`
+    `expression: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -666,16 +666,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `is_toggleable: bool | Any | None`
+    `is_toggleable: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockHeading2"></a>
@@ -696,16 +696,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `is_toggleable: bool | Any | None`
+    `is_toggleable: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockHeading3"></a>
@@ -726,16 +726,16 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `is_toggleable: bool | Any | None`
+    `is_toggleable: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockLastEditedBy"></a>
@@ -756,13 +756,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="BlockLinkPreview"></a>
@@ -786,7 +786,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="BlockNumberedListItem"></a>
@@ -807,13 +807,13 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockParagraph"></a>
@@ -834,13 +834,13 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockQuote"></a>
@@ -861,13 +861,13 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockTable"></a>
@@ -888,16 +888,16 @@ Classes
 
     ### Class variables
 
-    `has_column_header: bool | Any | None`
+    `has_column_header: bool | None`
     :   The type of the None singleton.
 
-    `has_row_header: bool | Any | None`
+    `has_row_header: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `table_width: int | Any | None`
+    `table_width: int | None`
     :   The type of the None singleton.
 
 <a id="BlockTableOfContents"></a>
@@ -918,7 +918,7 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -942,7 +942,7 @@ Classes
 
     ### Class variables
 
-    `cells: list[typing.Any] | Any | None`
+    `cells: list[typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -966,16 +966,16 @@ Classes
 
     ### Class variables
 
-    `checked: bool | Any | None`
+    `checked: bool | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlockToggle"></a>
@@ -996,13 +996,13 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="BlocksListResponse"></a>
@@ -1023,28 +1023,28 @@ Classes
 
     ### Class variables
 
-    `block: dict[str, typing.Any] | Any | None`
+    `block: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.notion.models.Block] | Any`
+    `results: list[airbyte_agent_sdk.connectors.notion.models.Block] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="BlocksListResultMeta"></a>
@@ -1065,13 +1065,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="BlocksSearchData"></a>
@@ -1239,31 +1239,31 @@ Classes
 
     ### Class variables
 
-    `created_by: airbyte_agent_sdk.connectors.notion.models.CommentCreatedBy | Any | None`
+    `created_by: airbyte_agent_sdk.connectors.notion.models.CommentCreatedBy | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `discussion_id: str | Any | None`
+    `discussion_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `last_edited_time: str | Any | None`
+    `last_edited_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `parent: Any`
+    `parent: typing.Any | None`
     :   The type of the None singleton.
 
-    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `rich_text: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
 <a id="CommentCreatedBy"></a>
@@ -1284,13 +1284,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="CommentsListResponse"></a>
@@ -1311,28 +1311,28 @@ Classes
 
     ### Class variables
 
-    `comment: dict[str, typing.Any] | Any | None`
+    `comment: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.notion.models.Comment] | Any`
+    `results: list[airbyte_agent_sdk.connectors.notion.models.Comment] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CommentsListResultMeta"></a>
@@ -1353,13 +1353,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="DataSource"></a>
@@ -1380,70 +1380,70 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `cover: dict[str, typing.Any] | Any | None`
+    `cover: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_by: airbyte_agent_sdk.connectors.notion.models.DataSourceCreatedBy | Any | None`
+    `created_by: airbyte_agent_sdk.connectors.notion.models.DataSourceCreatedBy | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `database_parent: Any`
+    `database_parent: typing.Any | None`
     :   The type of the None singleton.
 
-    `description: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `description: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
-    `icon: dict[str, typing.Any] | Any | None`
+    `icon: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `in_trash: bool | Any | None`
+    `in_trash: bool | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
-    `is_inline: bool | Any | None`
+    `is_inline: bool | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `last_edited_by: airbyte_agent_sdk.connectors.notion.models.DataSourceLastEditedBy | Any | None`
+    `last_edited_by: airbyte_agent_sdk.connectors.notion.models.DataSourceLastEditedBy | None`
     :   The type of the None singleton.
 
-    `last_edited_time: str | Any | None`
+    `last_edited_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `parent: Any`
+    `parent: typing.Any | None`
     :   The type of the None singleton.
 
-    `properties: dict[str, typing.Any] | Any | None`
+    `properties: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `public_url: str | Any | None`
+    `public_url: str | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `title: list[airbyte_agent_sdk.connectors.notion.models.RichText] | Any | None`
+    `title: list[airbyte_agent_sdk.connectors.notion.models.RichText] | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="DataSourceCreatedBy"></a>
@@ -1464,13 +1464,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="DataSourceLastEditedBy"></a>
@@ -1491,13 +1491,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="DataSourcesListResponse"></a>
@@ -1518,28 +1518,28 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `page_or_data_source: dict[str, typing.Any] | Any | None`
+    `page_or_data_source: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.notion.models.DataSource] | Any`
+    `results: list[airbyte_agent_sdk.connectors.notion.models.DataSource] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="DataSourcesListResultMeta"></a>
@@ -1560,13 +1560,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="DataSourcesSearchData"></a>
@@ -2064,58 +2064,58 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `cover: dict[str, typing.Any] | Any | None`
+    `cover: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_by: airbyte_agent_sdk.connectors.notion.models.PageCreatedBy | Any | None`
+    `created_by: airbyte_agent_sdk.connectors.notion.models.PageCreatedBy | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `icon: dict[str, typing.Any] | Any | None`
+    `icon: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `in_trash: bool | Any | None`
+    `in_trash: bool | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `last_edited_by: airbyte_agent_sdk.connectors.notion.models.PageLastEditedBy | Any | None`
+    `last_edited_by: airbyte_agent_sdk.connectors.notion.models.PageLastEditedBy | None`
     :   The type of the None singleton.
 
-    `last_edited_time: str | Any | None`
+    `last_edited_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `parent: Any`
+    `parent: typing.Any | None`
     :   The type of the None singleton.
 
-    `properties: dict[str, typing.Any] | Any | None`
+    `properties: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `public_url: str | Any | None`
+    `public_url: str | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="PageCreatedBy"></a>
@@ -2136,13 +2136,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="PageLastEditedBy"></a>
@@ -2163,13 +2163,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="PagesListResponse"></a>
@@ -2190,28 +2190,28 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `page_or_data_source: dict[str, typing.Any] | Any | None`
+    `page_or_data_source: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.notion.models.Page] | Any`
+    `results: list[airbyte_agent_sdk.connectors.notion.models.Page] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="PagesListResultMeta"></a>
@@ -2232,13 +2232,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="PagesSearchData"></a>
@@ -2322,25 +2322,25 @@ Classes
 
     ### Class variables
 
-    `block_id: str | Any | None`
+    `block_id: str | None`
     :   The type of the None singleton.
 
-    `data_source_id: str | Any | None`
+    `data_source_id: str | None`
     :   The type of the None singleton.
 
-    `database_id: str | Any | None`
+    `database_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page_id: str | Any | None`
+    `page_id: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `workspace: bool | Any | None`
+    `workspace: bool | None`
     :   The type of the None singleton.
 
 <a id="RichText"></a>
@@ -2361,22 +2361,22 @@ Classes
 
     ### Class variables
 
-    `annotations: airbyte_agent_sdk.connectors.notion.models.RichTextAnnotations | Any | None`
+    `annotations: airbyte_agent_sdk.connectors.notion.models.RichTextAnnotations | None`
     :   The type of the None singleton.
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `plain_text: str | Any | None`
+    `plain_text: str | None`
     :   The type of the None singleton.
 
-    `text: airbyte_agent_sdk.connectors.notion.models.RichTextText | Any | None`
+    `text: airbyte_agent_sdk.connectors.notion.models.RichTextText | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="RichTextAnnotations"></a>
@@ -2397,25 +2397,25 @@ Classes
 
     ### Class variables
 
-    `bold: bool | Any | None`
+    `bold: bool | None`
     :   The type of the None singleton.
 
-    `code: bool | Any | None`
+    `code: bool | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `italic: bool | Any | None`
+    `italic: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `strikethrough: bool | Any | None`
+    `strikethrough: bool | None`
     :   The type of the None singleton.
 
-    `underline: bool | Any | None`
+    `underline: bool | None`
     :   The type of the None singleton.
 
 <a id="RichTextText"></a>
@@ -2436,10 +2436,10 @@ Classes
 
     ### Class variables
 
-    `content: str | Any | None`
+    `content: str | None`
     :   Plain text content
 
-    `link: dict[str, typing.Any] | Any | None`
+    `link: dict[str, typing.Any] | None`
     :   Link object
 
     `model_config`
@@ -2463,31 +2463,31 @@ Classes
 
     ### Class variables
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `bot: airbyte_agent_sdk.connectors.notion.models.UserBot | Any | None`
+    `bot: airbyte_agent_sdk.connectors.notion.models.UserBot | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `person: airbyte_agent_sdk.connectors.notion.models.UserPerson | Any | None`
+    `person: airbyte_agent_sdk.connectors.notion.models.UserPerson | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="UserBot"></a>
@@ -2511,10 +2511,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `owner: dict[str, typing.Any] | Any | None`
+    `owner: dict[str, typing.Any] | None`
     :   Bot owner information
 
-    `workspace_name: str | Any | None`
+    `workspace_name: str | None`
     :   Name of the workspace the bot belongs to
 
 <a id="UserPerson"></a>
@@ -2535,7 +2535,7 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   Person's email address
 
     `model_config`
@@ -2559,28 +2559,28 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any | None`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.notion.models.User] | Any`
+    `results: list[airbyte_agent_sdk.connectors.notion.models.User] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `user: dict[str, typing.Any] | Any | None`
+    `user: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -2601,13 +2601,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>

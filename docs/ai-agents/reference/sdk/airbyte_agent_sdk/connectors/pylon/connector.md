@@ -19,6 +19,36 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: AccountsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[AccountsSearchData]`
+    :   Search accounts records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AccountsSearchFilter):
+        - id: Unique identifier for the account
+        - name: Name of the account (customer organization)
+        - domain: Primary domain associated with the account
+        - primary_domain: Canonical primary domain for the account
+        - type_: Classification of the account (e.g. customer, prospect)
+        - is_disabled: Whether the account has been disabled
+        - created_at: Timestamp when the account was created, in ISO 8601 format
+        - latest_customer_activity_time: Timestamp of the most recent activity from this account, in ISO 8601 format
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AccountsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `create(self, name: str, domains: list[str] | None = None, primary_domain: str | None = None, owner_id: str | None = None, logo_url: str | None = None, tags: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.AccountResponse`
     :   Create a new account
         
@@ -139,6 +169,33 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[ContactsSearchData]`
+    :   Search contacts records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ContactsSearchFilter):
+        - id: Unique identifier for the contact
+        - name: Full name of the contact
+        - email: Primary email address of the contact
+        - primary_phone_number: Primary phone number of the contact
+        - portal_role: Role the contact has in the customer portal
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ContactsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `create(self, name: str, email: str | None = None, account_id: str | None = None, avatar_url: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.ContactResponse`
     :   Create a new contact
         
@@ -194,6 +251,35 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: CustomFieldsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[CustomFieldsSearchData]`
+    :   Search custom_fields records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CustomFieldsSearchFilter):
+        - id: Unique identifier for the custom field
+        - label: Display label of the custom field
+        - slug: URL-safe identifier for the custom field
+        - type_: Data type of the custom field (e.g. text, select)
+        - object_type: Type of object this custom field applies to (e.g. issue, account)
+        - is_read_only: Whether the custom field is read-only
+        - created_at: Timestamp when the custom field was created, in ISO 8601 format
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CustomFieldsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.CustomField`
     :   Get a custom field by its ID
         
@@ -214,6 +300,27 @@ Classes
         
         Returns:
             CustomFieldsListResult
+
+<a id="IssueAssignmentsQuery"></a>
+
+`IssueAssignmentsQuery(connector: PylonConnector)`
+:   Query class for IssueAssignments entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `update(self, assignee_id: str | None = None, team_id: str | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.IssueResponse`
+    :   Assign an issue to a user or team, or remove the current assignment.
+        
+        Args:
+            assignee_id: The ID of the user to assign the issue to. Pass an empty string to unassign.
+            team_id: The ID of the team to assign the issue to. Pass an empty string to remove team assignment.
+            id: The ID of the issue to assign
+            **kwargs: Additional parameters
+        
+        Returns:
+            IssueResponse
 
 <a id="IssueNotesQuery"></a>
 
@@ -236,6 +343,50 @@ Classes
         
         Returns:
             IssueNoteResponse
+
+<a id="IssueRepliesQuery"></a>
+
+`IssueRepliesQuery(connector: PylonConnector)`
+:   Query class for IssueReplies entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, body_html: str, message_id: str, user_id: str | None = None, contact_id: str | None = None, attachment_urls: list[str] | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.IssueReplyResponse`
+    :   Sends a customer-facing reply on an issue, visible to the requester.
+        
+        Args:
+            body_html: The body of the reply message in HTML
+            message_id: The ID of the message to reply to
+            user_id: Optional user ID to post the message as. Only one of user_id or contact_id can be provided.
+            contact_id: Optional contact ID to post the message as. Only one of user_id or contact_id can be provided.
+            attachment_urls: An array of attachment URLs to attach to this reply
+            id: The ID of the issue to reply to
+            **kwargs: Additional parameters
+        
+        Returns:
+            IssueReplyResponse
+
+<a id="IssueStatusesQuery"></a>
+
+`IssueStatusesQuery(connector: PylonConnector)`
+:   Query class for IssueStatuses entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `update(self, state: str, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.IssueResponse`
+    :   Transition an issue to a new status (new, waiting_on_you, waiting_on_customer, on_hold, closed, or a custom status slug).
+        
+        Args:
+            state: The target state for the issue (new, waiting_on_you, waiting_on_customer, on_hold, closed, or a custom status slug)
+            id: The ID of the issue to update status for
+            **kwargs: Additional parameters
+        
+        Returns:
+            IssueResponse
 
 <a id="IssueThreadsQuery"></a>
 
@@ -266,6 +417,39 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: IssuesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[IssuesSearchData]`
+    :   Search issues records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (IssuesSearchFilter):
+        - id: Unique identifier for the issue
+        - title: Title of the issue
+        - state: Current state of the issue (e.g. new, in_progress, closed)
+        - source: Channel the issue originated from (e.g. email, slack)
+        - type_: Type classification of the issue
+        - number: Human-readable issue number within the workspace
+        - created_at: Timestamp when the issue was created, in ISO 8601 format
+        - latest_message_time: Timestamp of the most recent message on the issue, in ISO 8601 format
+        - resolution_time: Timestamp when the issue was resolved, in ISO 8601 format
+        - snoozed_until_time: Timestamp the issue is snoozed until, in ISO 8601 format
+        - customer_portal_visible: Whether the issue is visible in the customer portal
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            IssuesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `create(self, title: str, body_html: str, priority: str | None = None, requester_email: str | None = None, requester_name: str | None = None, account_id: str | None = None, assignee_id: str | None = None, team_id: str | None = None, tags: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.IssueResponse`
     :   Create a new issue
         
@@ -283,6 +467,16 @@ Classes
         
         Returns:
             IssueResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.DeleteIssueResponse`
+    :   Permanently deletes an issue by ID. This action cannot be undone.
+        
+        Args:
+            id: The ID of the issue to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            DeleteIssueResponse
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.Issue`
     :   Get a single issue by ID
@@ -344,6 +538,33 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: MessagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[MessagesSearchData]`
+    :   Search messages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MessagesSearchFilter):
+        - id: Unique identifier for the message
+        - timestamp: Timestamp the message was posted, in ISO 8601 format
+        - is_private: Whether the message is an internal note (not visible to the customer)
+        - source: Channel the message was sent through (e.g. email, slack)
+        - thread_id: Identifier of the thread this message belongs to
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MessagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, id: str | None = None, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.PylonExecuteResultWithMeta[list[Message], MessagesListResultMeta]`
     :   Returns all messages on an issue (customer-facing replies and internal notes)
@@ -513,8 +734,13 @@ Classes
             # Use the connector
             result = await connector.execute("entity", "list", \{\})
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -527,9 +753,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @PylonConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -578,7 +824,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -623,6 +869,31 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: TagsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TagsSearchData]`
+    :   Search tags records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TagsSearchFilter):
+        - id: Unique identifier for the tag
+        - value: Display value of the tag
+        - object_type: Type of object this tag applies to (e.g. issue, account)
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TagsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `create(self, value: str, object_type: str, hex_color: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.TagResponse`
     :   Create a new tag
@@ -716,6 +987,30 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: TeamsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TeamsSearchData]`
+    :   Search teams records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TeamsSearchFilter):
+        - id: Unique identifier for the team
+        - name: Name of the team
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TeamsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `create(self, name: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.TeamResponse`
     :   Create a new team
         
@@ -766,6 +1061,32 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: TicketFormsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]`
+    :   Search ticket_forms records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TicketFormsSearchFilter):
+        - id: Unique identifier for the ticket form
+        - name: Display name of the ticket form
+        - slug: URL-safe identifier for the ticket form
+        - is_public: Whether the ticket form is publicly accessible
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TicketFormsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.PylonExecuteResultWithMeta[list[TicketForm], TicketFormsListResultMeta]`
     :   Get a list of ticket forms
         
@@ -785,6 +1106,31 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: UserRolesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UserRolesSearchData]`
+    :   Search user_roles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (UserRolesSearchFilter):
+        - id: Unique identifier for the user role
+        - name: Display name of the user role
+        - slug: URL-safe identifier for the user role
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            UserRolesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.PylonExecuteResultWithMeta[list[UserRole], UserRolesListResultMeta]`
     :   Get a list of all user roles
         
@@ -803,6 +1149,33 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: UsersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UsersSearchData]`
+    :   Search users records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (UsersSearchFilter):
+        - id: Unique identifier for the user
+        - name: Full name of the user
+        - email: Primary email address of the user
+        - role_id: Identifier of the user's role
+        - status: Current status of the user (e.g. active, disabled)
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            UsersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.User`
     :   Get a single user by ID

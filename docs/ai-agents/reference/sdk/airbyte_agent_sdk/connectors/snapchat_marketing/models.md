@@ -31,43 +31,43 @@ Classes
 
     ### Class variables
 
-    `ad_squad_id: str | Any`
+    `ad_squad_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creative_id: str | Any`
+    `creative_id: str | None`
     :   The type of the None singleton.
 
-    `delivery_status: list[str] | Any`
+    `delivery_status: list[str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `render_type: str | Any`
+    `render_type: str | None`
     :   The type of the None singleton.
 
-    `review_status: str | Any`
+    `review_status: str | None`
     :   The type of the None singleton.
 
-    `review_status_reasons: list[str] | Any`
+    `review_status_reasons: list[str] | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="AdAccount"></a>
@@ -88,55 +88,55 @@ Classes
 
     ### Class variables
 
-    `advertiser_organization_id: str | Any`
+    `advertiser_organization_id: str | None`
     :   The type of the None singleton.
 
-    `agency_representing_client: bool | Any`
+    `agency_representing_client: bool | None`
     :   The type of the None singleton.
 
-    `billing_center_id: str | Any`
+    `billing_center_id: str | None`
     :   The type of the None singleton.
 
-    `billing_type: str | Any`
+    `billing_type: str | None`
     :   The type of the None singleton.
 
-    `client_paying_invoices: bool | Any`
+    `client_paying_invoices: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `funding_source_ids: list[str] | Any`
+    `funding_source_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `organization_id: str | Any`
+    `organization_id: str | None`
     :   The type of the None singleton.
 
-    `regulations: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdAccountRegulations | Any`
+    `regulations: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdAccountRegulations | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any`
+    `timezone: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="AdAccountRegulations"></a>
@@ -160,7 +160,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `restricted_delivery_signals: bool | Any`
+    `restricted_delivery_signals: bool | None`
     :   Whether restricted delivery signals are enabled
 
 <a id="AdSquad"></a>
@@ -181,91 +181,91 @@ Classes
 
     ### Class variables
 
-    `auto_bid: bool | Any`
+    `auto_bid: bool | None`
     :   The type of the None singleton.
 
-    `bid_strategy: str | Any`
+    `bid_strategy: str | None`
     :   The type of the None singleton.
 
-    `billing_event: str | Any`
+    `billing_event: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: str | Any`
+    `campaign_id: str | None`
     :   The type of the None singleton.
 
-    `child_ad_type: str | Any`
+    `child_ad_type: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creation_state: str | Any`
+    `creation_state: str | None`
     :   The type of the None singleton.
 
-    `daily_budget_micro: int | Any`
+    `daily_budget_micro: int | None`
     :   The type of the None singleton.
 
-    `delivery_constraint: str | Any`
+    `delivery_constraint: str | None`
     :   The type of the None singleton.
 
-    `delivery_properties_version: int | Any`
+    `delivery_properties_version: int | None`
     :   The type of the None singleton.
 
-    `delivery_status: list[str] | Any`
+    `delivery_status: list[str] | None`
     :   The type of the None singleton.
 
-    `end_time: str | Any`
+    `end_time: str | None`
     :   The type of the None singleton.
 
-    `event_sources: dict[str, typing.Any] | Any`
+    `event_sources: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `forced_view_setting: str | Any`
+    `forced_view_setting: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `lifetime_budget_micro: int | Any`
+    `lifetime_budget_micro: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `optimization_goal: str | Any`
+    `optimization_goal: str | None`
     :   The type of the None singleton.
 
-    `pacing_type: str | Any`
+    `pacing_type: str | None`
     :   The type of the None singleton.
 
-    `placement: str | Any`
+    `placement: str | None`
     :   The type of the None singleton.
 
-    `skadnetwork_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadSkadnetworkProperties | Any`
+    `skadnetwork_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadSkadnetworkProperties | None`
     :   The type of the None singleton.
 
-    `start_time: str | Any`
+    `start_time: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `target_bid: bool | Any`
+    `target_bid: bool | None`
     :   The type of the None singleton.
 
-    `targeting: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargeting | Any`
+    `targeting: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargeting | None`
     :   The type of the None singleton.
 
-    `targeting_reach_status: str | Any`
+    `targeting_reach_status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="AdSquadSkadnetworkProperties"></a>
@@ -286,16 +286,16 @@ Classes
 
     ### Class variables
 
-    `ecid_enrollment_status: str | Any`
+    `ecid_enrollment_status: str | None`
     :   The type of the None singleton.
 
-    `enable_skoverlay: bool | Any`
+    `enable_skoverlay: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="AdSquadTargeting"></a>
@@ -316,28 +316,28 @@ Classes
 
     ### Class variables
 
-    `auto_expansion_options: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargetingAutoExpansionOptions | Any`
+    `auto_expansion_options: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargetingAutoExpansionOptions | None`
     :   The type of the None singleton.
 
-    `demographics: list[dict[str, typing.Any]] | Any`
+    `demographics: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `enable_targeting_expansion: bool | Any`
+    `enable_targeting_expansion: bool | None`
     :   The type of the None singleton.
 
-    `geos: list[airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargetingGeosItem] | Any`
+    `geos: list[airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargetingGeosItem] | None`
     :   The type of the None singleton.
 
-    `interests: list[dict[str, typing.Any]] | Any`
+    `interests: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `locations: list[dict[str, typing.Any]] | Any`
+    `locations: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `regulated_content: bool | Any`
+    `regulated_content: bool | None`
     :   The type of the None singleton.
 
 <a id="AdSquadTargetingAutoExpansionOptions"></a>
@@ -358,7 +358,7 @@ Classes
 
     ### Class variables
 
-    `interest_expansion_option: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargetingAutoExpansionOptionsInterestExpansionOption | Any`
+    `interest_expansion_option: airbyte_agent_sdk.connectors.snapchat_marketing.models.AdSquadTargetingAutoExpansionOptionsInterestExpansionOption | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -382,7 +382,7 @@ Classes
 
     ### Class variables
 
-    `enabled: bool | Any`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -406,13 +406,13 @@ Classes
 
     ### Class variables
 
-    `country_code: str | Any`
+    `country_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `operation: str | Any`
+    `operation: str | None`
     :   The type of the None singleton.
 
 <a id="AdaccountsListResultMeta"></a>
@@ -436,7 +436,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="AdaccountsSearchData"></a>
@@ -529,7 +529,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="AdsSearchData"></a>
@@ -610,7 +610,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="AdsquadsSearchData"></a>
@@ -1117,46 +1117,46 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `buy_model: str | Any`
+    `buy_model: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creation_state: str | Any`
+    `creation_state: str | None`
     :   The type of the None singleton.
 
-    `delivery_status: list[str] | Any`
+    `delivery_status: list[str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `objective: str | Any`
+    `objective: str | None`
     :   The type of the None singleton.
 
-    `objective_v2_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CampaignObjectiveV2Properties | Any`
+    `objective_v2_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CampaignObjectiveV2Properties | None`
     :   The type of the None singleton.
 
-    `pacing_properties_version: int | Any`
+    `pacing_properties_version: int | None`
     :   The type of the None singleton.
 
-    `start_time: str | Any`
+    `start_time: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignObjectiveV2Properties"></a>
@@ -1177,13 +1177,13 @@ Classes
 
     ### Class variables
 
-    `is_auto_generated: bool | Any`
+    `is_auto_generated: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `objective_v2_type: str | Any`
+    `objective_v2_type: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListResultMeta"></a>
@@ -1207,7 +1207,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchData"></a>
@@ -1282,67 +1282,67 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `ad_product: str | Any`
+    `ad_product: str | None`
     :   The type of the None singleton.
 
-    `ad_to_place_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CreativeAdToPlaceProperties | Any`
+    `ad_to_place_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CreativeAdToPlaceProperties | None`
     :   The type of the None singleton.
 
-    `brand_name: str | Any`
+    `brand_name: str | None`
     :   The type of the None singleton.
 
-    `call_to_action: str | Any`
+    `call_to_action: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `forced_view_eligibility: str | Any`
+    `forced_view_eligibility: str | None`
     :   The type of the None singleton.
 
-    `headline: str | Any`
+    `headline: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `packaging_status: str | Any`
+    `packaging_status: str | None`
     :   The type of the None singleton.
 
-    `render_type: str | Any`
+    `render_type: str | None`
     :   The type of the None singleton.
 
-    `review_status: str | Any`
+    `review_status: str | None`
     :   The type of the None singleton.
 
-    `review_status_details: str | Any`
+    `review_status_details: str | None`
     :   The type of the None singleton.
 
-    `shareable: bool | Any`
+    `shareable: bool | None`
     :   The type of the None singleton.
 
-    `top_snap_crop_position: str | Any`
+    `top_snap_crop_position: str | None`
     :   The type of the None singleton.
 
-    `top_snap_media_id: str | Any`
+    `top_snap_media_id: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `web_view_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CreativeWebViewProperties | Any`
+    `web_view_properties: airbyte_agent_sdk.connectors.snapchat_marketing.models.CreativeWebViewProperties | None`
     :   The type of the None singleton.
 
 <a id="CreativeAdToPlaceProperties"></a>
@@ -1366,7 +1366,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `place_id: str | Any`
+    `place_id: str | None`
     :   The type of the None singleton.
 
 <a id="CreativeWebViewProperties"></a>
@@ -1387,22 +1387,22 @@ Classes
 
     ### Class variables
 
-    `allow_snap_javascript_sdk: bool | Any`
+    `allow_snap_javascript_sdk: bool | None`
     :   The type of the None singleton.
 
-    `block_preload: bool | Any`
+    `block_preload: bool | None`
     :   The type of the None singleton.
 
-    `deep_link_urls: list[str] | Any`
+    `deep_link_urls: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `use_immersive_mode: bool | Any`
+    `use_immersive_mode: bool | None`
     :   The type of the None singleton.
 
 <a id="CreativesListResultMeta"></a>
@@ -1426,7 +1426,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="CreativesSearchData"></a>
@@ -1528,58 +1528,58 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `download_link: str | Any`
+    `download_link: str | None`
     :   The type of the None singleton.
 
-    `duration_in_seconds: float | Any`
+    `duration_in_seconds: float | None`
     :   The type of the None singleton.
 
-    `file_name: str | Any`
+    `file_name: str | None`
     :   The type of the None singleton.
 
-    `file_size_in_bytes: int | Any`
+    `file_size_in_bytes: int | None`
     :   The type of the None singleton.
 
-    `hash: str | Any`
+    `hash: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `image_metadata: airbyte_agent_sdk.connectors.snapchat_marketing.models.MediaImageMetadata | Any`
+    `image_metadata: airbyte_agent_sdk.connectors.snapchat_marketing.models.MediaImageMetadata | None`
     :   The type of the None singleton.
 
-    `is_demo_media: bool | Any`
+    `is_demo_media: bool | None`
     :   The type of the None singleton.
 
-    `media_status: str | Any`
+    `media_status: str | None`
     :   The type of the None singleton.
 
-    `media_usages: list[str] | Any`
+    `media_usages: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `video_metadata: dict[str, typing.Any] | Any`
+    `video_metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any`
+    `visibility: str | None`
     :   The type of the None singleton.
 
 <a id="MediaImageMetadata"></a>
@@ -1600,16 +1600,16 @@ Classes
 
     ### Class variables
 
-    `height_px: int | Any`
+    `height_px: int | None`
     :   The type of the None singleton.
 
-    `image_format: str | Any`
+    `image_format: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `width_px: int | Any`
+    `width_px: int | None`
     :   The type of the None singleton.
 
 <a id="MediaListResultMeta"></a>
@@ -1633,7 +1633,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="MediaSearchData"></a>
@@ -1726,82 +1726,82 @@ Classes
 
     ### Class variables
 
-    `accepted_term_version: str | Any`
+    `accepted_term_version: str | None`
     :   The type of the None singleton.
 
-    `address_line_1: str | Any`
+    `address_line_1: str | None`
     :   The type of the None singleton.
 
-    `administrative_district_level_1: str | Any`
+    `administrative_district_level_1: str | None`
     :   The type of the None singleton.
 
-    `configuration_settings: airbyte_agent_sdk.connectors.snapchat_marketing.models.OrganizationConfigurationSettings | Any`
+    `configuration_settings: airbyte_agent_sdk.connectors.snapchat_marketing.models.OrganizationConfigurationSettings | None`
     :   The type of the None singleton.
 
-    `contact_email: str | Any`
+    `contact_email: str | None`
     :   The type of the None singleton.
 
-    `contact_name: str | Any`
+    `contact_name: str | None`
     :   The type of the None singleton.
 
-    `contact_phone: str | Any`
+    `contact_phone: str | None`
     :   The type of the None singleton.
 
-    `contact_phone_optin: bool | Any`
+    `contact_phone_optin: bool | None`
     :   The type of the None singleton.
 
-    `country: str | Any`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_by_caller: bool | Any`
+    `created_by_caller: bool | None`
     :   The type of the None singleton.
 
-    `demand_source: str | Any`
+    `demand_source: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_agency: bool | Any`
+    `is_agency: bool | None`
     :   The type of the None singleton.
 
-    `locality: str | Any`
+    `locality: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `my_display_name: str | Any`
+    `my_display_name: str | None`
     :   The type of the None singleton.
 
-    `my_invited_email: str | Any`
+    `my_invited_email: str | None`
     :   The type of the None singleton.
 
-    `my_member_id: str | Any`
+    `my_member_id: str | None`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `postal_code: str | Any`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
-    `roles: list[str] | Any`
+    `roles: list[str] | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `verification_request_id: str | Any`
+    `verification_request_id: str | None`
     :   The type of the None singleton.
 
 <a id="OrganizationConfigurationSettings"></a>
@@ -1825,7 +1825,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `notifications_enabled: bool | Any`
+    `notifications_enabled: bool | None`
     :   Whether notifications are enabled
 
 <a id="OrganizationsListResultMeta"></a>
@@ -1849,7 +1849,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="OrganizationsSearchData"></a>
@@ -1957,52 +1957,52 @@ Classes
 
     ### Class variables
 
-    `ad_account_id: str | Any`
+    `ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `approximate_number_users: int | Any`
+    `approximate_number_users: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `organization_id: str | Any`
+    `organization_id: str | None`
     :   The type of the None singleton.
 
-    `retention_in_days: int | Any`
+    `retention_in_days: int | None`
     :   The type of the None singleton.
 
-    `source_ad_account_id: str | Any`
+    `source_ad_account_id: str | None`
     :   The type of the None singleton.
 
-    `source_type: str | Any`
+    `source_type: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `targetable_status: str | Any`
+    `targetable_status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `upload_status: str | Any`
+    `upload_status: str | None`
     :   The type of the None singleton.
 
-    `visible_to: list[str] | Any`
+    `visible_to: list[str] | None`
     :   The type of the None singleton.
 
 <a id="SegmentsListResultMeta"></a>
@@ -2026,7 +2026,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="SegmentsSearchData"></a>

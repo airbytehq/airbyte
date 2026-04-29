@@ -31,25 +31,25 @@ Classes
 
     ### Class variables
 
-    `from_date_time: str | Any`
+    `from_date_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
-    `to_date_time: str | Any`
+    `to_date_time: str | None`
     :   The type of the None singleton.
 
-    `users_aggregate_activity_stats: list[airbyte_agent_sdk.connectors.gong.models.UserAggregateActivity] | Any`
+    `users_aggregate_activity_stats: list[airbyte_agent_sdk.connectors.gong.models.UserAggregateActivity] | None`
     :   The type of the None singleton.
 
 <a id="ActivityDayByDayResponse"></a>
@@ -73,13 +73,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `users_detailed_activities: list[airbyte_agent_sdk.connectors.gong.models.UserDetailedActivity] | Any`
+    `users_detailed_activities: list[airbyte_agent_sdk.connectors.gong.models.UserDetailedActivity] | None`
     :   The type of the None singleton.
 
 <a id="AirbyteSearchMeta"></a>
@@ -361,52 +361,52 @@ Classes
 
     ### Class variables
 
-    `answered_date_time: str | Any`
+    `answered_date_time: str | None`
     :   The type of the None singleton.
 
-    `answered_scorecard_id: str | Any`
+    `answered_scorecard_id: str | None`
     :   The type of the None singleton.
 
-    `answers: list[airbyte_agent_sdk.connectors.gong.models.AnsweredScorecardAnswer] | Any`
+    `answers: list[airbyte_agent_sdk.connectors.gong.models.AnsweredScorecardAnswer] | None`
     :   The type of the None singleton.
 
-    `call_id: str | Any`
+    `call_id: str | None`
     :   The type of the None singleton.
 
-    `call_start_time: str | Any`
+    `call_start_time: str | None`
     :   The type of the None singleton.
 
-    `editor_user_id: str | Any | None`
+    `editor_user_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `overall_score: float | Any`
+    `overall_score: float | None`
     :   The type of the None singleton.
 
-    `review_method: str | Any`
+    `review_method: str | None`
     :   The type of the None singleton.
 
-    `review_time: str | Any`
+    `review_time: str | None`
     :   The type of the None singleton.
 
-    `reviewed_user_id: str | Any`
+    `reviewed_user_id: str | None`
     :   The type of the None singleton.
 
-    `reviewer_user_id: str | Any`
+    `reviewer_user_id: str | None`
     :   The type of the None singleton.
 
-    `scorecard_id: str | Any`
+    `scorecard_id: str | None`
     :   The type of the None singleton.
 
-    `scorecard_name: str | Any`
+    `scorecard_name: str | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any`
+    `visibility: str | None`
     :   The type of the None singleton.
 
-    `visibility_type: str | Any`
+    `visibility_type: str | None`
     :   The type of the None singleton.
 
 <a id="AnsweredScorecardAnswer"></a>
@@ -427,31 +427,31 @@ Classes
 
     ### Class variables
 
-    `answer: str | Any`
+    `answer: str | None`
     :   The type of the None singleton.
 
-    `answer_text: str | Any | None`
+    `answer_text: str | None`
     :   The type of the None singleton.
 
-    `is_overall: bool | Any`
+    `is_overall: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `not_applicable: bool | Any`
+    `not_applicable: bool | None`
     :   The type of the None singleton.
 
-    `question_id: str | Any`
+    `question_id: str | None`
     :   The type of the None singleton.
 
-    `question_revision_id: str | Any`
+    `question_revision_id: str | None`
     :   The type of the None singleton.
 
-    `score: float | Any`
+    `score: float | None`
     :   The type of the None singleton.
 
-    `selected_options: list[str] | Any | None`
+    `selected_options: list[str] | None`
     :   The type of the None singleton.
 
 <a id="AnsweredScorecardsResponse"></a>
@@ -472,16 +472,16 @@ Classes
 
     ### Class variables
 
-    `answered_scorecards: list[airbyte_agent_sdk.connectors.gong.models.AnsweredScorecard] | Any`
+    `answered_scorecards: list[airbyte_agent_sdk.connectors.gong.models.AnsweredScorecard] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="Call"></a>
@@ -502,67 +502,67 @@ Classes
 
     ### Class variables
 
-    `calendar_event_id: str | Any | None`
+    `calendar_event_id: str | None`
     :   The type of the None singleton.
 
-    `client_unique_id: str | Any | None`
+    `client_unique_id: str | None`
     :   The type of the None singleton.
 
-    `custom_data: str | Any | None`
+    `custom_data: str | None`
     :   The type of the None singleton.
 
-    `direction: str | Any`
+    `direction: str | None`
     :   The type of the None singleton.
 
-    `duration: int | Any`
+    `duration: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
-    `language: str | Any`
+    `language: str | None`
     :   The type of the None singleton.
 
-    `media: str | Any`
+    `media: str | None`
     :   The type of the None singleton.
 
-    `meeting_url: str | Any`
+    `meeting_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `primary_user_id: str | Any`
+    `primary_user_id: str | None`
     :   The type of the None singleton.
 
-    `purpose: str | Any | None`
+    `purpose: str | None`
     :   The type of the None singleton.
 
-    `scheduled: str | Any`
+    `scheduled: str | None`
     :   The type of the None singleton.
 
-    `scope: str | Any`
+    `scope: str | None`
     :   The type of the None singleton.
 
-    `sdr_disposition: str | Any | None`
+    `sdr_disposition: str | None`
     :   The type of the None singleton.
 
-    `started: str | Any`
+    `started: str | None`
     :   The type of the None singleton.
 
-    `system: str | Any`
+    `system: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `workspace_id: str | Any`
+    `workspace_id: str | None`
     :   The type of the None singleton.
 
 <a id="CallResponse"></a>
@@ -583,13 +583,13 @@ Classes
 
     ### Class variables
 
-    `call: airbyte_agent_sdk.connectors.gong.models.Call | Any`
+    `call: airbyte_agent_sdk.connectors.gong.models.Call | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="CallTranscript"></a>
@@ -610,13 +610,13 @@ Classes
 
     ### Class variables
 
-    `call_id: str | Any`
+    `call_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `transcript: list[airbyte_agent_sdk.connectors.gong.models.CallTranscriptTranscriptItem] | Any`
+    `transcript: list[airbyte_agent_sdk.connectors.gong.models.CallTranscriptTranscriptItem] | None`
     :   The type of the None singleton.
 
 <a id="CallTranscriptTranscriptItem"></a>
@@ -640,13 +640,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `sentences: list[airbyte_agent_sdk.connectors.gong.models.CallTranscriptTranscriptItemSentencesItem] | Any`
+    `sentences: list[airbyte_agent_sdk.connectors.gong.models.CallTranscriptTranscriptItemSentencesItem] | None`
     :   The type of the None singleton.
 
-    `speaker_id: str | Any`
+    `speaker_id: str | None`
     :   Speaker identifier
 
-    `topic: str | Any | None`
+    `topic: str | None`
     :   Topic
 
 <a id="CallTranscriptTranscriptItemSentencesItem"></a>
@@ -667,16 +667,16 @@ Classes
 
     ### Class variables
 
-    `end: int | Any`
+    `end: int | None`
     :   End time in seconds
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   Start time in seconds
 
-    `text: str | Any`
+    `text: str | None`
     :   Sentence text
 
 <a id="CallTranscriptsListResultMeta"></a>
@@ -697,16 +697,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveListResultMeta"></a>
@@ -727,16 +727,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveSearchData"></a>
@@ -805,16 +805,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="CallsResponse"></a>
@@ -835,16 +835,16 @@ Classes
 
     ### Class variables
 
-    `calls: list[airbyte_agent_sdk.connectors.gong.models.Call] | Any`
+    `calls: list[airbyte_agent_sdk.connectors.gong.models.Call] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="CallsSearchData"></a>
@@ -946,22 +946,22 @@ Classes
 
     ### Class variables
 
-    `coaching_metrics: airbyte_agent_sdk.connectors.gong.models.CoachingMetrics | Any`
+    `coaching_metrics: airbyte_agent_sdk.connectors.gong.models.CoachingMetrics | None`
     :   The type of the None singleton.
 
-    `is_manager: bool | Any`
+    `is_manager: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `user_email_address: str | Any`
+    `user_email_address: str | None`
     :   The type of the None singleton.
 
-    `user_id: str | Any`
+    `user_id: str | None`
     :   The type of the None singleton.
 
-    `user_name: str | Any`
+    `user_name: str | None`
     :   The type of the None singleton.
 
 <a id="CoachingMetrics"></a>
@@ -982,22 +982,22 @@ Classes
 
     ### Class variables
 
-    `calls_attended: int | Any`
+    `calls_attended: int | None`
     :   The type of the None singleton.
 
-    `calls_listened: int | Any`
+    `calls_listened: int | None`
     :   The type of the None singleton.
 
-    `calls_with_comments: int | Any`
+    `calls_with_comments: int | None`
     :   The type of the None singleton.
 
-    `calls_with_feedback: int | Any`
+    `calls_with_feedback: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `scorecards_filled: int | Any`
+    `scorecards_filled: int | None`
     :   The type of the None singleton.
 
 <a id="CoachingResponse"></a>
@@ -1018,19 +1018,19 @@ Classes
 
     ### Class variables
 
-    `coaching_data: list[airbyte_agent_sdk.connectors.gong.models.CoachingData] | Any`
+    `coaching_data: list[airbyte_agent_sdk.connectors.gong.models.CoachingData] | None`
     :   The type of the None singleton.
 
-    `from_date_time: str | Any`
+    `from_date_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `to_date_time: str | Any`
+    `to_date_time: str | None`
     :   The type of the None singleton.
 
 <a id="DailyActivityStats"></a>
@@ -1051,58 +1051,58 @@ Classes
 
     ### Class variables
 
-    `calls_as_host: list[str] | Any`
+    `calls_as_host: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_attended: list[str] | Any`
+    `calls_attended: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_comments_given: list[str] | Any`
+    `calls_comments_given: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_comments_received: list[str] | Any`
+    `calls_comments_received: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_gave_feedback: list[str] | Any`
+    `calls_gave_feedback: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_marked_as_feedback_given: list[str] | Any`
+    `calls_marked_as_feedback_given: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_marked_as_feedback_received: list[str] | Any`
+    `calls_marked_as_feedback_received: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_received_feedback: list[str] | Any`
+    `calls_received_feedback: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_requested_feedback: list[str] | Any`
+    `calls_requested_feedback: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_scorecards_filled: list[str] | Any`
+    `calls_scorecards_filled: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_scorecards_received: list[str] | Any`
+    `calls_scorecards_received: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_shared_externally: list[str] | Any`
+    `calls_shared_externally: list[str] | None`
     :   The type of the None singleton.
 
-    `calls_shared_internally: list[str] | Any`
+    `calls_shared_internally: list[str] | None`
     :   The type of the None singleton.
 
-    `from_date: str | Any`
+    `from_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `others_calls_listened_to: list[str] | Any`
+    `others_calls_listened_to: list[str] | None`
     :   The type of the None singleton.
 
-    `own_calls_listened_to: list[str] | Any`
+    `own_calls_listened_to: list[str] | None`
     :   The type of the None singleton.
 
-    `to_date: str | Any`
+    `to_date: str | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCall"></a>
@@ -1123,25 +1123,25 @@ Classes
 
     ### Class variables
 
-    `collaboration: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallCollaboration | Any`
+    `collaboration: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallCollaboration | None`
     :   The type of the None singleton.
 
-    `content: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContent | Any`
+    `content: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContent | None`
     :   The type of the None singleton.
 
-    `interaction: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteraction | Any`
+    `interaction: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteraction | None`
     :   The type of the None singleton.
 
-    `media: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallMedia | Any`
+    `media: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallMedia | None`
     :   The type of the None singleton.
 
-    `meta_data: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallMetadata | Any`
+    `meta_data: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `parties: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItem] | Any`
+    `parties: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItem] | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallCollaboration"></a>
@@ -1165,7 +1165,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `public_comments: list[dict[str, typing.Any]] | Any`
+    `public_comments: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallContent"></a>
@@ -1189,13 +1189,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `points_of_interest: dict[str, typing.Any] | Any`
+    `points_of_interest: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `topics: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContentTopicsItem] | Any`
+    `topics: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContentTopicsItem] | None`
     :   The type of the None singleton.
 
-    `trackers: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContentTrackersItem] | Any`
+    `trackers: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallContentTrackersItem] | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallContentTopicsItem"></a>
@@ -1216,13 +1216,13 @@ Classes
 
     ### Class variables
 
-    `duration: float | Any`
+    `duration: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallContentTrackersItem"></a>
@@ -1243,22 +1243,22 @@ Classes
 
     ### Class variables
 
-    `count: int | Any`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `occurrences: list[dict[str, typing.Any]] | Any`
+    `occurrences: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallInteraction"></a>
@@ -1279,13 +1279,13 @@ Classes
 
     ### Class variables
 
-    `interaction_stats: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteractionInteractionstatsItem] | Any`
+    `interaction_stats: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteractionInteractionstatsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `questions: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteractionQuestions | Any`
+    `questions: airbyte_agent_sdk.connectors.gong.models.ExtensiveCallInteractionQuestions | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallInteractionInteractionstatsItem"></a>
@@ -1309,10 +1309,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Stat name
 
-    `value: float | Any`
+    `value: float | None`
     :   Stat value
 
 <a id="ExtensiveCallInteractionQuestions"></a>
@@ -1333,13 +1333,13 @@ Classes
 
     ### Class variables
 
-    `company_count: int | Any`
+    `company_count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `non_company_count: int | Any`
+    `non_company_count: int | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallMedia"></a>
@@ -1360,13 +1360,13 @@ Classes
 
     ### Class variables
 
-    `audio_url: str | Any`
+    `audio_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `video_url: str | Any`
+    `video_url: str | None`
     :   The type of the None singleton.
 
 <a id="ExtensiveCallMetadata"></a>
@@ -1387,67 +1387,67 @@ Classes
 
     ### Class variables
 
-    `calendar_event_id: str | Any | None`
+    `calendar_event_id: str | None`
     :   Calendar event ID
 
-    `client_unique_id: str | Any | None`
+    `client_unique_id: str | None`
     :   Client unique identifier
 
-    `custom_data: str | Any | None`
+    `custom_data: str | None`
     :   Custom data
 
-    `direction: str | Any`
+    `direction: str | None`
     :   Call direction
 
-    `duration: int | Any`
+    `duration: int | None`
     :   Call duration in seconds
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique call identifier
 
-    `is_private: bool | Any`
+    `is_private: bool | None`
     :   Whether call is private
 
-    `language: str | Any`
+    `language: str | None`
     :   Call language
 
-    `media: str | Any`
+    `media: str | None`
     :   Media type (Audio/Video)
 
-    `meeting_url: str | Any`
+    `meeting_url: str | None`
     :   Meeting URL
 
     `model_config`
     :   The type of the None singleton.
 
-    `primary_user_id: str | Any`
+    `primary_user_id: str | None`
     :   Primary user ID
 
-    `purpose: str | Any | None`
+    `purpose: str | None`
     :   Call purpose
 
-    `scheduled: str | Any`
+    `scheduled: str | None`
     :   Scheduled time
 
-    `scope: str | Any`
+    `scope: str | None`
     :   Call scope
 
-    `sdr_disposition: str | Any | None`
+    `sdr_disposition: str | None`
     :   SDR disposition
 
-    `started: str | Any`
+    `started: str | None`
     :   Call start time
 
-    `system: str | Any`
+    `system: str | None`
     :   System type
 
-    `title: str | Any`
+    `title: str | None`
     :   Call title
 
-    `url: str | Any`
+    `url: str | None`
     :   URL to call in Gong
 
-    `workspace_id: str | Any`
+    `workspace_id: str | None`
     :   Workspace ID
 
 <a id="ExtensiveCallPartiesItem"></a>
@@ -1468,37 +1468,37 @@ Classes
 
     ### Class variables
 
-    `affiliation: str | Any`
+    `affiliation: str | None`
     :   Internal or External
 
-    `context: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItemContextItem] | Any`
+    `context: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItemContextItem] | None`
     :   CRM context data linked to this participant
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   Email address
 
-    `id: str | Any`
+    `id: str | None`
     :   Party ID
 
-    `methods: list[str] | Any`
+    `methods: list[str] | None`
     :   Contact methods
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Full name
 
-    `phone_number: str | Any`
+    `phone_number: str | None`
     :   Phone number
 
-    `speaker_id: str | Any | None`
+    `speaker_id: str | None`
     :   Speaker ID for transcript matching
 
-    `title: str | Any`
+    `title: str | None`
     :   Job title
 
-    `user_id: str | Any`
+    `user_id: str | None`
     :   Gong user ID if internal
 
 <a id="ExtensiveCallPartiesItemContextItem"></a>
@@ -1522,10 +1522,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `objects: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItemContextItemObjectsItem] | Any`
+    `objects: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItemContextItemObjectsItem] | None`
     :   CRM objects linked to this participant
 
-    `system: str | Any`
+    `system: str | None`
     :   CRM system name (e.g., Salesforce, HubSpot)
 
 <a id="ExtensiveCallPartiesItemContextItemObjectsItem"></a>
@@ -1546,16 +1546,16 @@ Classes
 
     ### Class variables
 
-    `fields: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItemContextItemObjectsItemFieldsItem] | Any`
+    `fields: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCallPartiesItemContextItemObjectsItemFieldsItem] | None`
     :   CRM field values
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_id: str | Any`
+    `object_id: str | None`
     :   CRM record ID
 
-    `object_type: str | Any`
+    `object_type: str | None`
     :   CRM object type (Account, Contact, Opportunity, Lead)
 
 <a id="ExtensiveCallPartiesItemContextItemObjectsItemFieldsItem"></a>
@@ -1579,10 +1579,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Field name
 
-    `value: Any`
+    `value: typing.Any | None`
     :   Field value
 
 <a id="ExtensiveCallsResponse"></a>
@@ -1603,16 +1603,16 @@ Classes
 
     ### Class variables
 
-    `calls: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCall] | Any`
+    `calls: list[airbyte_agent_sdk.connectors.gong.models.ExtensiveCall] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="FolderCall"></a>
@@ -1633,25 +1633,25 @@ Classes
 
     ### Class variables
 
-    `call_id: str | Any`
+    `call_id: str | None`
     :   The type of the None singleton.
 
-    `duration: int | Any`
+    `duration: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `primary_user_id: str | Any`
+    `primary_user_id: str | None`
     :   The type of the None singleton.
 
-    `started: str | Any`
+    `started: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="FolderContentResponse"></a>
@@ -1672,28 +1672,28 @@ Classes
 
     ### Class variables
 
-    `calls: list[airbyte_agent_sdk.connectors.gong.models.FolderCall] | Any`
+    `calls: list[airbyte_agent_sdk.connectors.gong.models.FolderCall] | None`
     :   The type of the None singleton.
 
-    `created_by: str | Any | None`
+    `created_by: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
 <a id="GongAccessKeyAuthenticationAuthConfig"></a>
@@ -2502,25 +2502,25 @@ Classes
 
     ### Class variables
 
-    `from_date_time: str | Any`
+    `from_date_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `people_interaction_stats: list[airbyte_agent_sdk.connectors.gong.models.UserInteractionStats] | Any`
+    `people_interaction_stats: list[airbyte_agent_sdk.connectors.gong.models.UserInteractionStats] | None`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
-    `to_date_time: str | Any`
+    `to_date_time: str | None`
     :   The type of the None singleton.
 
 <a id="LibraryFolder"></a>
@@ -2541,22 +2541,22 @@ Classes
 
     ### Class variables
 
-    `created_by: str | Any | None`
+    `created_by: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_folder_id: str | Any | None`
+    `parent_folder_id: str | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
 <a id="LibraryFolderContentListResultMeta"></a>
@@ -2577,16 +2577,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="LibraryFoldersResponse"></a>
@@ -2607,13 +2607,13 @@ Classes
 
     ### Class variables
 
-    `folders: list[airbyte_agent_sdk.connectors.gong.models.LibraryFolder] | Any`
+    `folders: list[airbyte_agent_sdk.connectors.gong.models.LibraryFolder] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="PaginationRecords"></a>
@@ -2634,19 +2634,19 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `current_page_size: int | Any`
+    `current_page_size: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="PersonInteractionStat"></a>
@@ -2670,10 +2670,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `value: float | Any`
+    `value: float | None`
     :   The type of the None singleton.
 
 <a id="Scorecard"></a>
@@ -2694,34 +2694,34 @@ Classes
 
     ### Class variables
 
-    `created: str | Any`
+    `created: str | None`
     :   The type of the None singleton.
 
-    `enabled: bool | Any`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `questions: list[airbyte_agent_sdk.connectors.gong.models.ScorecardQuestion] | Any`
+    `questions: list[airbyte_agent_sdk.connectors.gong.models.ScorecardQuestion] | None`
     :   The type of the None singleton.
 
-    `review_method: str | Any`
+    `review_method: str | None`
     :   The type of the None singleton.
 
-    `scorecard_id: str | Any`
+    `scorecard_id: str | None`
     :   The type of the None singleton.
 
-    `scorecard_name: str | Any`
+    `scorecard_name: str | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
-    `updater_user_id: str | Any`
+    `updater_user_id: str | None`
     :   The type of the None singleton.
 
-    `workspace_id: str | Any | None`
+    `workspace_id: str | None`
     :   The type of the None singleton.
 
 <a id="ScorecardQuestion"></a>
@@ -2742,46 +2742,46 @@ Classes
 
     ### Class variables
 
-    `answer_guide: str | Any | None`
+    `answer_guide: str | None`
     :   The type of the None singleton.
 
-    `answer_options: list[airbyte_agent_sdk.connectors.gong.models.ScorecardQuestionAnsweroptionsItem] | Any`
+    `answer_options: list[airbyte_agent_sdk.connectors.gong.models.ScorecardQuestionAnsweroptionsItem] | None`
     :   The type of the None singleton.
 
-    `created: str | Any`
+    `created: str | None`
     :   The type of the None singleton.
 
-    `is_overall: bool | Any`
+    `is_overall: bool | None`
     :   The type of the None singleton.
 
-    `is_required: bool | Any`
+    `is_required: bool | None`
     :   The type of the None singleton.
 
-    `max_range: str | Any | None`
+    `max_range: str | None`
     :   The type of the None singleton.
 
-    `min_range: str | Any | None`
+    `min_range: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `question_id: str | Any`
+    `question_id: str | None`
     :   The type of the None singleton.
 
-    `question_revision_id: str | Any`
+    `question_revision_id: str | None`
     :   The type of the None singleton.
 
-    `question_text: str | Any`
+    `question_text: str | None`
     :   The type of the None singleton.
 
-    `question_type: str | Any`
+    `question_type: str | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
-    `updater_user_id: str | Any`
+    `updater_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="ScorecardQuestionAnsweroptionsItem"></a>
@@ -2805,13 +2805,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `option_id: str | Any`
+    `option_id: str | None`
     :   The type of the None singleton.
 
-    `option_text: str | Any`
+    `option_text: str | None`
     :   The type of the None singleton.
 
-    `score: float | Any`
+    `score: float | None`
     :   The type of the None singleton.
 
 <a id="ScorecardsResponse"></a>
@@ -2835,10 +2835,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `scorecards: list[airbyte_agent_sdk.connectors.gong.models.Scorecard] | Any`
+    `scorecards: list[airbyte_agent_sdk.connectors.gong.models.Scorecard] | None`
     :   The type of the None singleton.
 
 <a id="SettingsScorecardsSearchData"></a>
@@ -2904,16 +2904,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="StatsActivityDayByDayListResultMeta"></a>
@@ -2934,16 +2934,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsListResultMeta"></a>
@@ -2964,16 +2964,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsSearchData"></a>
@@ -3045,16 +3045,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="Tracker"></a>
@@ -3075,52 +3075,52 @@ Classes
 
     ### Class variables
 
-    `affiliation: str | Any`
+    `affiliation: str | None`
     :   The type of the None singleton.
 
-    `created: str | Any`
+    `created: str | None`
     :   The type of the None singleton.
 
-    `creator_user_id: str | Any | None`
+    `creator_user_id: str | None`
     :   The type of the None singleton.
 
-    `filter_query: str | Any`
+    `filter_query: str | None`
     :   The type of the None singleton.
 
-    `language_keywords: list[airbyte_agent_sdk.connectors.gong.models.TrackerLanguagekeywordsItem] | Any`
+    `language_keywords: list[airbyte_agent_sdk.connectors.gong.models.TrackerLanguagekeywordsItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `part_of_question: bool | Any`
+    `part_of_question: bool | None`
     :   The type of the None singleton.
 
-    `said_at: str | Any`
+    `said_at: str | None`
     :   The type of the None singleton.
 
-    `said_at_interval: str | Any | None`
+    `said_at_interval: str | None`
     :   The type of the None singleton.
 
-    `said_at_unit: str | Any | None`
+    `said_at_unit: str | None`
     :   The type of the None singleton.
 
-    `said_in_topics: list[str] | Any`
+    `said_in_topics: list[str] | None`
     :   The type of the None singleton.
 
-    `tracker_id: str | Any`
+    `tracker_id: str | None`
     :   The type of the None singleton.
 
-    `tracker_name: str | Any`
+    `tracker_name: str | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
-    `updater_user_id: str | Any | None`
+    `updater_user_id: str | None`
     :   The type of the None singleton.
 
-    `workspace_id: str | Any | None`
+    `workspace_id: str | None`
     :   The type of the None singleton.
 
 <a id="TrackerLanguagekeywordsItem"></a>
@@ -3141,13 +3141,13 @@ Classes
 
     ### Class variables
 
-    `include_related_forms: bool | Any`
+    `include_related_forms: bool | None`
     :   Whether to include related word forms
 
-    `keywords: list[str] | Any`
+    `keywords: list[str] | None`
     :   List of keywords for this language
 
-    `language: str | Any`
+    `language: str | None`
     :   Language code
 
     `model_config`
@@ -3171,13 +3171,13 @@ Classes
 
     ### Class variables
 
-    `keyword_trackers: list[airbyte_agent_sdk.connectors.gong.models.Tracker] | Any`
+    `keyword_trackers: list[airbyte_agent_sdk.connectors.gong.models.Tracker] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="TranscriptsResponse"></a>
@@ -3198,16 +3198,16 @@ Classes
 
     ### Class variables
 
-    `call_transcripts: list[airbyte_agent_sdk.connectors.gong.models.CallTranscript] | Any`
+    `call_transcripts: list[airbyte_agent_sdk.connectors.gong.models.CallTranscript] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="User"></a>
@@ -3228,55 +3228,55 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `created: str | Any`
+    `created: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
-    `email_aliases: list[str] | Any`
+    `email_aliases: list[str] | None`
     :   The type of the None singleton.
 
-    `extension: str | Any | None`
+    `extension: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `manager_id: str | Any | None`
+    `manager_id: str | None`
     :   The type of the None singleton.
 
-    `meeting_consent_page_url: str | Any | None`
+    `meeting_consent_page_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `personal_meeting_urls: list[str] | Any`
+    `personal_meeting_urls: list[str] | None`
     :   The type of the None singleton.
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   The type of the None singleton.
 
-    `settings: airbyte_agent_sdk.connectors.gong.models.UserSettings | Any`
+    `settings: airbyte_agent_sdk.connectors.gong.models.UserSettings | None`
     :   The type of the None singleton.
 
-    `spoken_languages: list[airbyte_agent_sdk.connectors.gong.models.UserSpokenlanguagesItem] | Any`
+    `spoken_languages: list[airbyte_agent_sdk.connectors.gong.models.UserSpokenlanguagesItem] | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `trusted_email_address: str | Any | None`
+    `trusted_email_address: str | None`
     :   The type of the None singleton.
 
 <a id="UserAggregateActivity"></a>
@@ -3300,13 +3300,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `user_aggregate_activity_stats: airbyte_agent_sdk.connectors.gong.models.UserAggregateActivityStats | Any`
+    `user_aggregate_activity_stats: airbyte_agent_sdk.connectors.gong.models.UserAggregateActivityStats | None`
     :   The type of the None singleton.
 
-    `user_email_address: str | Any`
+    `user_email_address: str | None`
     :   The type of the None singleton.
 
-    `user_id: str | Any`
+    `user_id: str | None`
     :   The type of the None singleton.
 
 <a id="UserAggregateActivityStats"></a>
@@ -3327,52 +3327,52 @@ Classes
 
     ### Class variables
 
-    `calls_as_host: int | Any`
+    `calls_as_host: int | None`
     :   The type of the None singleton.
 
-    `calls_attended: int | Any`
+    `calls_attended: int | None`
     :   The type of the None singleton.
 
-    `calls_comments_given: int | Any`
+    `calls_comments_given: int | None`
     :   The type of the None singleton.
 
-    `calls_comments_received: int | Any`
+    `calls_comments_received: int | None`
     :   The type of the None singleton.
 
-    `calls_gave_feedback: int | Any`
+    `calls_gave_feedback: int | None`
     :   The type of the None singleton.
 
-    `calls_marked_as_feedback_given: int | Any`
+    `calls_marked_as_feedback_given: int | None`
     :   The type of the None singleton.
 
-    `calls_marked_as_feedback_received: int | Any`
+    `calls_marked_as_feedback_received: int | None`
     :   The type of the None singleton.
 
-    `calls_received_feedback: int | Any`
+    `calls_received_feedback: int | None`
     :   The type of the None singleton.
 
-    `calls_requested_feedback: int | Any`
+    `calls_requested_feedback: int | None`
     :   The type of the None singleton.
 
-    `calls_scorecards_filled: int | Any`
+    `calls_scorecards_filled: int | None`
     :   The type of the None singleton.
 
-    `calls_scorecards_received: int | Any`
+    `calls_scorecards_received: int | None`
     :   The type of the None singleton.
 
-    `calls_shared_externally: int | Any`
+    `calls_shared_externally: int | None`
     :   The type of the None singleton.
 
-    `calls_shared_internally: int | Any`
+    `calls_shared_internally: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `others_calls_listened_to: int | Any`
+    `others_calls_listened_to: int | None`
     :   The type of the None singleton.
 
-    `own_calls_listened_to: int | Any`
+    `own_calls_listened_to: int | None`
     :   The type of the None singleton.
 
 <a id="UserDetailedActivity"></a>
@@ -3396,13 +3396,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `user_daily_activity_stats: list[airbyte_agent_sdk.connectors.gong.models.DailyActivityStats] | Any`
+    `user_daily_activity_stats: list[airbyte_agent_sdk.connectors.gong.models.DailyActivityStats] | None`
     :   The type of the None singleton.
 
-    `user_email_address: str | Any`
+    `user_email_address: str | None`
     :   The type of the None singleton.
 
-    `user_id: str | Any`
+    `user_id: str | None`
     :   The type of the None singleton.
 
 <a id="UserInteractionStats"></a>
@@ -3426,13 +3426,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `person_interaction_stats: list[airbyte_agent_sdk.connectors.gong.models.PersonInteractionStat] | Any`
+    `person_interaction_stats: list[airbyte_agent_sdk.connectors.gong.models.PersonInteractionStat] | None`
     :   The type of the None singleton.
 
-    `user_email_address: str | Any`
+    `user_email_address: str | None`
     :   The type of the None singleton.
 
-    `user_id: str | Any`
+    `user_id: str | None`
     :   The type of the None singleton.
 
 <a id="UserResponse"></a>
@@ -3456,10 +3456,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.gong.models.User | Any`
+    `user: airbyte_agent_sdk.connectors.gong.models.User | None`
     :   The type of the None singleton.
 
 <a id="UserSettings"></a>
@@ -3480,28 +3480,28 @@ Classes
 
     ### Class variables
 
-    `emails_imported: bool | Any`
+    `emails_imported: bool | None`
     :   The type of the None singleton.
 
-    `gong_connect_enabled: bool | Any`
+    `gong_connect_enabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `non_recorded_meetings_imported: bool | Any`
+    `non_recorded_meetings_imported: bool | None`
     :   The type of the None singleton.
 
-    `prevent_email_import: bool | Any`
+    `prevent_email_import: bool | None`
     :   The type of the None singleton.
 
-    `prevent_web_conference_recording: bool | Any`
+    `prevent_web_conference_recording: bool | None`
     :   The type of the None singleton.
 
-    `telephony_calls_imported: bool | Any`
+    `telephony_calls_imported: bool | None`
     :   The type of the None singleton.
 
-    `web_conferences_recorded: bool | Any`
+    `web_conferences_recorded: bool | None`
     :   The type of the None singleton.
 
 <a id="UserSpokenlanguagesItem"></a>
@@ -3522,13 +3522,13 @@ Classes
 
     ### Class variables
 
-    `language: str | Any`
+    `language: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `primary: bool | Any`
+    `primary: bool | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -3549,16 +3549,16 @@ Classes
 
     ### Class variables
 
-    `current_page_number: int | Any`
+    `current_page_number: int | None`
     :   The type of the None singleton.
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_records: int | Any`
+    `total_records: int | None`
     :   The type of the None singleton.
 
 <a id="UsersResponse"></a>
@@ -3582,13 +3582,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | Any`
+    `records: airbyte_agent_sdk.connectors.gong.models.PaginationRecords | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `users: list[airbyte_agent_sdk.connectors.gong.models.User] | Any`
+    `users: list[airbyte_agent_sdk.connectors.gong.models.User] | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>
@@ -3678,19 +3678,19 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `workspace_id: str | Any`
+    `workspace_id: str | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesResponse"></a>
@@ -3714,8 +3714,8 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
-    `workspaces: list[airbyte_agent_sdk.connectors.gong.models.Workspace] | Any`
+    `workspaces: list[airbyte_agent_sdk.connectors.gong.models.Workspace] | None`
     :   The type of the None singleton.

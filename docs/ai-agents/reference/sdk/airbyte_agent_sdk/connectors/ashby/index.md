@@ -263,8 +263,23 @@ Classes
 
     ### Class variables
 
+    `archive_reason: str | None`
+    :   Reason the application was archived, if applicable
+
+    `created_at: str | None`
+    :   Timestamp when the application was created, in ISO 8601 format
+
+    `id: str | None`
+    :   Unique identifier for the application
+
     `model_config`
     :   The type of the None singleton.
+
+    `status: str | None`
+    :   Current application status (e.g. active, archived, hired)
+
+    `updated_at: str | None`
+    :   Timestamp when the application was last updated, in ISO 8601 format
 
 <a id="AshbyAuthConfig"></a>
 
@@ -390,8 +405,13 @@ Classes
             # Use the connector
             result = await connector.execute("entity", "list", \{\})
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -404,9 +424,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @AshbyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -534,8 +574,23 @@ Classes
 
     ### Class variables
 
+    `company: str | None`
+    :   Candidate's current company
+
+    `id: str | None`
+    :   Unique identifier for the candidate
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the candidate
+
+    `position: str | None`
+    :   Candidate's current position or title
+
+    `school: str | None`
+    :   School associated with the candidate's education
 
 <a id="JobPostingsSearchData"></a>
 
@@ -555,8 +610,23 @@ Classes
 
     ### Class variables
 
+    `id: str | None`
+    :   Unique identifier for the job posting
+
+    `is_listed: bool | None`
+    :   Whether the job posting is currently published/listed
+
+    `job_id: str | None`
+    :   Identifier of the job this posting belongs to
+
+    `location_name: str | None`
+    :   Name of the location associated with the posting
+
     `model_config`
     :   The type of the None singleton.
+
+    `title: str | None`
+    :   Title of the job posting
 
 <a id="JobsSearchData"></a>
 
@@ -576,8 +646,23 @@ Classes
 
     ### Class variables
 
+    `department_id: str | None`
+    :   Identifier of the department the job belongs to
+
+    `id: str | None`
+    :   Unique identifier for the job
+
+    `location_id: str | None`
+    :   Identifier of the primary location of the job
+
     `model_config`
     :   The type of the None singleton.
+
+    `status: str | None`
+    :   Current status of the job (e.g. open, closed, draft)
+
+    `title: str | None`
+    :   Title of the job
 
 <a id="UsersSearchData"></a>
 
@@ -596,6 +681,18 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the user
+
+    `first_name: str | None`
+    :   First name of the user
+
+    `id: str | None`
+    :   Unique identifier for the user
+
+    `last_name: str | None`
+    :   Last name of the user
 
     `model_config`
     :   The type of the None singleton.

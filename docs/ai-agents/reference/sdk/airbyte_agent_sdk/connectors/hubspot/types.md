@@ -1820,6 +1820,82 @@ Classes
     `archived: bool`
     :   The type of the None singleton.
 
+<a id="TicketsAndCondition"></a>
+
+`TicketsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="TicketsAnyCondition"></a>
+
+`TicketsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsAnyValueFilter"></a>
+
+`TicketsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `archived: Any`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: Any`
+    :   Collection of company records associated with the ticket
+
+    `contacts: Any`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: Any`
+    :   Timestamp when the ticket record was originally created
+
+    `id: Any`
+    :   Unique identifier for the ticket record
+
+    `properties: Any`
+    :   Key-value object containing all ticket properties and custom fields
+
+    `updated_at: Any`
+    :   Timestamp when the ticket record was last modified
+
 <a id="TicketsApiSearchParams"></a>
 
 `TicketsApiSearchParams(*args, **kwargs)`
@@ -1905,6 +1981,48 @@ Classes
     `propertyName: str`
     :   The type of the None singleton.
 
+<a id="TicketsContainsCondition"></a>
+
+`TicketsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsEqCondition"></a>
+
+`TicketsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsFuzzyCondition"></a>
+
+`TicketsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketsGetParams"></a>
 
 `TicketsGetParams(*args, **kwargs)`
@@ -1932,6 +2050,116 @@ Classes
     :   The type of the None singleton.
 
     `ticket_id: str`
+    :   The type of the None singleton.
+
+<a id="TicketsGtCondition"></a>
+
+`TicketsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsGteCondition"></a>
+
+`TicketsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsInCondition"></a>
+
+`TicketsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.hubspot.types.TicketsInFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsInFilter"></a>
+
+`TicketsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `archived: list[bool]`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: list[list[typing.Any]]`
+    :   Collection of company records associated with the ticket
+
+    `contacts: list[list[typing.Any]]`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: list[str]`
+    :   Timestamp when the ticket record was originally created
+
+    `id: list[str]`
+    :   Unique identifier for the ticket record
+
+    `properties: list[dict[str, typing.Any]]`
+    :   Key-value object containing all ticket properties and custom fields
+
+    `updated_at: list[str]`
+    :   Timestamp when the ticket record was last modified
+
+<a id="TicketsKeywordCondition"></a>
+
+`TicketsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsLikeCondition"></a>
+
+`TicketsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.hubspot.types.TicketsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketsListParams"></a>
@@ -1962,3 +2190,202 @@ Classes
 
     `properties_with_history: str`
     :   The type of the None singleton.
+
+<a id="TicketsLtCondition"></a>
+
+`TicketsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsLteCondition"></a>
+
+`TicketsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsNeqCondition"></a>
+
+`TicketsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.hubspot.types.TicketsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsNotCondition"></a>
+
+`TicketsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="TicketsOrCondition"></a>
+
+`TicketsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="TicketsSearchFilter"></a>
+
+`TicketsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering tickets search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: list[typing.Any] | None`
+    :   Collection of company records associated with the ticket
+
+    `contacts: list[typing.Any] | None`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: str | None`
+    :   Timestamp when the ticket record was originally created
+
+    `id: str | None`
+    :   Unique identifier for the ticket record
+
+    `properties: dict[str, typing.Any]`
+    :   Key-value object containing all ticket properties and custom fields
+
+    `updated_at: str | None`
+    :   Timestamp when the ticket record was last modified
+
+<a id="TicketsSearchQuery"></a>
+
+`TicketsSearchQuery(*args, **kwargs)`
+:   Search query for tickets entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.hubspot.types.TicketsEqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsGteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLtCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLteCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsInCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsNotCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAndCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsOrCondition | airbyte_agent_sdk.connectors.hubspot.types.TicketsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.hubspot.types.TicketsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="TicketsSortFilter"></a>
+
+`TicketsSortFilter(*args, **kwargs)`
+:   Available fields for sorting tickets search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `archived: Literal['asc', 'desc']`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: Literal['asc', 'desc']`
+    :   Collection of company records associated with the ticket
+
+    `contacts: Literal['asc', 'desc']`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: Literal['asc', 'desc']`
+    :   Timestamp when the ticket record was originally created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the ticket record
+
+    `properties: Literal['asc', 'desc']`
+    :   Key-value object containing all ticket properties and custom fields
+
+    `updated_at: Literal['asc', 'desc']`
+    :   Timestamp when the ticket record was last modified
+
+<a id="TicketsStringFilter"></a>
+
+`TicketsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `archived: str`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: str`
+    :   Collection of company records associated with the ticket
+
+    `contacts: str`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: str`
+    :   Timestamp when the ticket record was originally created
+
+    `id: str`
+    :   Unique identifier for the ticket record
+
+    `properties: str`
+    :   Key-value object containing all ticket properties and custom fields
+
+    `updated_at: str`
+    :   Timestamp when the ticket record was last modified

@@ -41,7 +41,7 @@ Two places surface the context the agent has.
 
 ### Add new context
 
-To give the agent more to work with, connect another source. Open the **Credentials** page from the sidebar, connect the new source, and authenticate it. The new connector is immediately available in any chat you open afterward.
+To give the agent more to work with, connect another source. Open the **Connectors** page from the sidebar, connect the new source, and authenticate it. The new connector is immediately available in any chat you open afterward.
 
 If you're in the middle of a chat and realize the agent needs a connector it doesn't have, connect the source in another tab, then return to the chat and ask the agent to try again. The agent picks up the new connector automatically on its next message.
 
