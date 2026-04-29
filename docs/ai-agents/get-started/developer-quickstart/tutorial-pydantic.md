@@ -139,6 +139,7 @@ One line does four things for you:
 
 - Reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment.
 - Defaults to the `"default"` workspace, which is where the web app stores credentials unless you change it.
+<what's a workspace? do users need to know about this in a quickstart?>
 - Returns a typed `GithubConnector` bound to the authenticated GitHub connector you added earlier.
 - Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub OAuth tokens and refreshes them for you.
 
