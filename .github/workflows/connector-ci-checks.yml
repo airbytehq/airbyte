@@ -307,7 +307,6 @@ jobs:
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
-        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
