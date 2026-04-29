@@ -3062,12 +3062,11 @@ spec:
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
+  default_concurrency: 5
   max_concurrency: 16
 
-# Original single-policy api_budget (pre-tuning). Commented out during the
-# concurrency tuning rollout so proactive throttling does not skew the signal;
-# replaced at GA by the tier-aware block below.
+# Original single-policy api_budget (pre-tuning). Superseded by the tier-aware
+# block below; kept commented for audit only.
 # api_budget:
 #   type: HTTPAPIBudget
 #   policies:
@@ -3079,17 +3078,17 @@ concurrency_level:
 #         - method: POST
 #           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
 
-# Tier-aware api_budget (Path B). Kept commented during tuning; uncomment at the
-# GA step 22.5 RC to activate. The `subscription_tier` spec field selects the
-# per-property Core rate limit applied locally (Standard 10 req/s, Analytics 360
-# 50 req/s). See https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: "{{ {'Standard Property': 10, 'Analytics 360 Property': 50}[config.get('subscription_tier', 'Standard Property')] }}"
-#           interval: PT1S
-#       matchers:
-#         - method: POST
-#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+# Tier-aware api_budget (Path B). Active during tuning and onward. The
+# `subscription_tier` spec field selects the per-property Core rate limit
+# applied locally (Standard 10 req/s, Analytics 360 50 req/s). See
+# https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ {'Standard Property': 10, 'Analytics 360 Property': 50}[config.get('subscription_tier', 'Standard Property')] }}"
+          interval: PT1S
+      matchers:
+        - method: POST
+          url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"

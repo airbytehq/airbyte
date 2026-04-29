@@ -244,6 +244,8 @@ If your agent fails to retrieve GitHub data, check the following:
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The system prompt in this tutorial nudges the model to do that by default.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
 
+See the [Github agent connector page](https://docs.airbyte.com/ai-agents/connectors/github/) for more details.
+
 ## Summary
 
 In this tutorial, you learned how to:

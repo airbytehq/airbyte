@@ -15,7 +15,7 @@ Classes
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
-    Provides workspace-level methods: `ask`, list/create/delete connectors,
+    Provides workspace-level methods: list/create/delete connectors,
     get a connector executor, and workflow/automation CRUD. Use `Workspace`
     when you want to operate against a whole workspace (many connectors,
     workflows, automations); use [`connect()`](index.md#connect) when you already
@@ -32,9 +32,8 @@ Classes
                 client_secret="your_client_secret",
                 workspace_name="my-workspace",
             ) as ws:
-                result = await ws.ask("list my recent customers")
                 connectors = await ws.list_connectors()
-                print(result.outcome, len(connectors))
+                print(len(connectors))
     
         asyncio.run(main())
         ```
@@ -53,8 +52,6 @@ Classes
 
     ### Methods
 
-    `ask(self, prompt: str) ‑> airbyte_agent_sdk.executor.models.AskResult`
-    :   Ask a natural-language question across all connectors.
 
     `close(self)`
     :   Close the cloud client.
