@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Web app
+# Web app (Research Preview)
 
 The Airbyte Agents web app at [app.airbyte.ai](https://app.airbyte.ai) is the fastest way to use Airbyte Agents without writing code. Describe what you want in natural language, and Airbyte picks the right connectors, makes the necessary tool calls, and replies with an answer grounded in your data.
 
