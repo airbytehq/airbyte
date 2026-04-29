@@ -1,6 +1,6 @@
 ---
 sidebar_label: "Pydantic AI"
-sidebar_position: 1
+sidebar_position: 3
 ---
 
 # Agent connector tutorial: Pydantic AI

@@ -44,7 +44,7 @@ asyncio.run(main())
 
 ### Explicit keyword arguments
 
-Pass credentials directly to `Workspace`, `connect()`, `ask()`, or `ask_sync()`. Useful when you rotate credentials per request or run against multiple Airbyte organizations from the same process.
+Pass credentials directly to `Workspace` or `connect()`. Useful when you rotate credentials per request or run against multiple Airbyte organizations from the same process.
 
 ```python title="agent.py"
 import asyncio
@@ -68,7 +68,7 @@ asyncio.run(main())
 
 ### Global `configure()` call
 
-Call `configure()` once at startup to set process-wide defaults. This is helpful in notebooks where `connect()` and `ask()` are called repeatedly and you don't want to repeat credentials.
+Call `configure()` once at startup to set process-wide defaults. This is helpful in notebooks where `connect()` is called repeatedly and you don't want to repeat credentials.
 
 ```python title="notebook.ipynb"
 from airbyte_agent_sdk import configure, connect
@@ -88,7 +88,7 @@ github = connect("github")
 | `client_id`       | `str`         | —           | Airbyte `client_id`. Required.                                               |
 | `client_secret`   | `str`         | —           | Airbyte `client_secret`. Required.                                           |
 | `organization_id` | `str \| None` | `None`      | Organization to target when your account belongs to multiple organizations.  |
-| `workspace_name`  | `str`         | `"default"` | Default workspace for `connect()`, `ask()`, and `Workspace()` calls.         |
+| `workspace_name`  | `str`         | `"default"` | Default workspace for `connect()` and `Workspace()` calls.                   |
 
 Explicit keyword arguments always override `configure()`, and `configure()` always overrides environment variables.
 

@@ -15,6 +15,7 @@ No prerequisites are required to use this connector. DataGen generates data loca
 5. Configure the data generation settings:
    - **Data Generation Type**: Choose **Incremental**, **All Types**, or **Wide**.
    - **Max Record**: Specify the total number of records to generate (minimum 1, maximum 100 billion). Default is 100.
+   - **Column Count** (Wide mode only): Set the number of columns to generate, from 1 to 1000. Default is 50.
    - **Max Concurrency** (optional): Set the maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance automatically.
 6. Click **Set up source**.
 
@@ -29,7 +30,7 @@ The DataGen source connector supports the following sync mode:
 
 ## Supported data generation types
 
-The connector supports two data generation patterns:
+The connector supports three data generation patterns:
 
 ### Incremental
 
@@ -43,6 +44,15 @@ Generates a stream named `all types` with columns for various Airbyte data types
 
 Generates a stream named `wide` with a configurable number of columns (1–1000, default 50). Column 0 is always `id` (integer primary key). The remaining columns cycle through all 12 Airbyte data types: integer, string, boolean, number, big integer, big decimal, date, time with timezone, time without timezone, timestamp with timezone, timestamp without timezone, and JSON. Column names follow the pattern `col_1_integer`, `col_2_string`, etc. This mode is useful for testing wide schema handling and destination performance with many columns.
 
+## Configuration
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **Data Generation Type** | enum | Incremental | The data generation pattern to use. Choose **Incremental**, **All Types**, or **Wide**. |
+| **Max Record** | integer | 100 | The total number of records to generate. Minimum 1, maximum 100 billion. |
+| **Max Concurrency** | integer | _(auto)_ | Maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance automatically. |
+| **Column Count** | integer | 50 | Wide mode only. The number of columns to generate, including the `id` column. Minimum 1, maximum 1000. |
+
 ## Changelog
 
 <details>
@@ -50,7 +60,7 @@ Generates a stream named `wide` with a configurable number of columns (1–1000,
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
-| 0.2.0   | 2026-03-31 | [75542](https://github.com/airbytehq/airbyte/pull/75542) | Add wide schema flavor with configurable column count; fix null safety in partition reader; cache codec references; bump CDK to 1.1.6 |
+| 0.2.0   | 2026-04-28 | [75542](https://github.com/airbytehq/airbyte/pull/75542) | Add wide schema flavor with configurable column count; fix null safety in partition reader; cache codec references; bump CDK to 1.1.6 |
 | 0.1.6   | 2025-10-23 | [68611](https://github.com/airbytehq/airbyte/pull/68611) | Update cdk version                 |
 | 0.1.5   | 2025-10-21 | [68581](https://github.com/airbytehq/airbyte/pull/68581) | Update dataChannel version         |
 | 0.1.4   | 2025-10-16 | [68131](https://github.com/airbytehq/airbyte/pull/68131) | Increment naming fix               |

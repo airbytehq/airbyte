@@ -27,7 +27,9 @@ All timestamps are UTC on the backend, and every interface that reads or writes 
 - **SDK**: The Python SDK returns the same UTC ISO 8601 strings through its response models.
 - **MCP server**: Tools that return timestamps return them in UTC. The `current_datetime` tool, which an agent calls to resolve relative dates like "today" or "last week," returns the current UTC time.
 
+:::warning
 If you pass a timestamp into a connector action—for example, as a date filter on a list query—use UTC. The agent doing the calling is responsible for any time zone conversion before it hands the value to the platform.
+:::
 
 ## Scheduling Automations
 

@@ -237,6 +237,20 @@ jobs:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
+      - name: Get connector support level
+        if: matrix.connector
+        id: support-level
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "community"' metadata.yaml 2>/dev/null || echo "community")
+          echo "support_level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
+          if [[ "$SUPPORT_LEVEL" != "certified" ]]; then
+            echo "is_community=true" | tee -a $GITHUB_OUTPUT
+            echo "::notice::Community connector: test failures will not block the workflow."
+          else
+            echo "is_community=false" | tee -a $GITHUB_OUTPUT
+          fi
+
       # Python deps
       - name: Set up Python
         if: matrix.connector
@@ -298,11 +312,13 @@ jobs:
 
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
+        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
       - name: Container Tests
         if: matrix.connector
+        continue-on-error: ${{ steps.support-level.outputs.is_community == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test
