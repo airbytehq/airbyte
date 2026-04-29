@@ -9,6 +9,7 @@ backoff behaviour end-to-end.
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
