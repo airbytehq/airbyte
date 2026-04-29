@@ -65,6 +65,7 @@ class RedshiftTableSchemaMapper(
                 TimeTypeWithoutTimezone -> RedshiftDataType.TIME.typeName
                 TimestampTypeWithTimezone -> RedshiftDataType.TIMESTAMPTZ.typeName
                 TimestampTypeWithoutTimezone -> RedshiftDataType.TIMESTAMP.typeName
+                is UnionType -> RedshiftDataType.VARCHAR.typeName
 
                 // Semi-structured types (all map to Redshift SUPER)
                 is ArrayType,
@@ -72,7 +73,6 @@ class RedshiftTableSchemaMapper(
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
-                is UnionType,
                 is UnknownType -> RedshiftDataType.SUPER.typeName
             }
 
