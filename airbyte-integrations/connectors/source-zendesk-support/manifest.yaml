@@ -7,11 +7,10 @@ check:
   stream_names:
     - tags
 
-# HTTPAPIBudget is intentionally COMMENTED OUT during the connector concurrency
-# tuning rollout (Phase 1-3). Active proactive throttling skews the concurrency
-# signal we are measuring. The full tier-aware policy below will be uncommented
-# at GA step 22.5, at which point users on any documented Zendesk plan will get
-# proactive throttling scoped to their account's actual per-minute limit.
+# Tier-aware HTTPAPIBudget. The per-minute limit is interpolated from the
+# user-selectable `subscription_tier` spec field so the connector throttles
+# at the rate that actually applies to the account's Zendesk plan, defaulting
+# to the lowest documented tier for unconfigured accounts.
 #
 # Tier -> per-minute limit (Zendesk Support / Suite, see
 # https://developer.zendesk.com/api-reference/introduction/rate-limits/):
@@ -21,20 +20,23 @@ check:
 #   enterprise              -> 700  req/min (Support Enterprise, Suite Enterprise)
 #   high_volume_api_add_on  -> 2500 req/min (any plan with the High Volume API add-on, or Suite Enterprise Plus)
 #
-# The endpoint-specific policies (incremental, search/export, deleted_tickets)
-# preserve the previous behavior of this connector. They are tier-independent
-# per the Zendesk endpoint rate-limit docs and are also commented out during
-# tuning so the budget cannot interfere with the concurrency signal.
-#
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: "{{ ({'essential': 10, 'team': 200, 'professional': 400, 'enterprise': 700, 'high_volume_api_add_on': 2500}).get(config.get('subscription_tier') or 'essential', 10) | int }}"
-#           interval: PT1M
-#       matchers: []
-#
+# The previous endpoint-specific policies (incremental 10/min, search/export
+# 100/min, deleted_tickets 10/min) are kept here as commented YAML for
+# reference. They are tier-independent per the Zendesk endpoint rate-limit
+# docs but are intentionally not enforced because the tier-level budget above
+# already covers all endpoints at the lowest tier (every endpoint cap is
+# bounded by the account's tier cap).
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ ({'essential': 10, 'team': 200, 'professional': 400, 'enterprise': 700, 'high_volume_api_add_on': 2500}).get(config.get('subscription_tier') or 'essential', 10) | int }}"
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit: [429]
+
+# Endpoint-specific policies (kept for reference, not enforced):
 #     - type: MovingWindowCallRatePolicy
 #       rates:
 #         - limit: 10
@@ -55,7 +57,6 @@ check:
 #           interval: PT1M
 #       matchers:
 #         - url_path_pattern: "^/api/v2/deleted_tickets$"
-#   status_codes_for_ratelimit_hit: [429]
 
 definitions:
   bearer_authenticator:
@@ -1410,13 +1411,15 @@ streams:
 # - High Volume API add-on: 2500 req/min (41.7 req/sec)
 #
 # Default concurrency is tuned to be safe for the LOWEST documented tier
-# (Path B, scope #3 of the connector concurrency tuning playbook):
-#   floor(0.17 / 4) = 0  -> low-rate-limit special case ->
-#   starting_concurrency = 4, step = 1
+# (Path B, scope #3 of the connector concurrency tuning playbook). The
+# low-rate-limit special case (floor(0.17 / 4) = 0) sets starting_concurrency
+# = 4, step = 1; the live tier-aware HTTPAPIBudget above caps the actual
+# request rate per the account's plan. Phase 1 at c=4 was clean (0 failures,
+# wall-time matched or beat the 5.2.6 baseline) so this RC steps to c=5.
 # Customers on higher tiers can raise `num_workers` to fully exploit their plan.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 40
 
 spec:
@@ -1609,14 +1612,14 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 4
+        default: 5
         examples:
           - 1
           - 2
-          - 4
+          - 5
           - 10
         description: >-
-          The number of worker threads to use for the sync. The default of 4
+          The number of worker threads to use for the sync. The default of 5
           is tuned to be safe for the lowest documented Zendesk plan; users on
           higher plans (Team 200 req/min, Professional 400 req/min, Enterprise
           700 req/min, High Volume API add-on 2500 req/min) can raise this

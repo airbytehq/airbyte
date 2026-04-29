@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Execute operations
 
-Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers three execution paths and patterns for exposing a connector as a tool to an AI agent framework.
+Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers direct execution and patterns for exposing a connector as a tool to an AI agent framework.
 
 ## Direct execution
 
@@ -58,58 +58,6 @@ instead steer readers to pass connector_id up front.
 -->
 
 For patterns that look up a connector ID without hard-coding it, see [Get a connector](./add-connector#get-a-connector).
-
-## Natural-language queries
-
-`ask()` and `ask_sync()` dispatch a natural-language prompt across every connector in a workspace. Airbyte routes the prompt to the right connector, runs the right operations, and returns a structured result.
-
-```python title="agent.py"
-import asyncio
-from airbyte_agent_sdk import ask
-
-async def main():
-    result = await ask("list my 5 most recent Stripe customers")
-    print(result.outcome, result.answer)
-    for call in result.results:
-        print(call.entity, call.action, call.status)
-
-asyncio.run(main())
-```
-
-Check `result.outcome == "success"` before trusting `result.answer`. The `result.results` list contains one entry per tool call the dispatcher made. Each entry is an `AskToolCallResult` with the fields the dispatcher saw end-to-end:
-
-```python title="Example result.results[0] for a routed list call"
-AskToolCallResult(
-    source_id="58caf5e9-7a6b-4d1e-9f3c-d4a2e81b9f70",
-    entity="customers",
-    action="list",
-    params={"limit": 5},
-    status="success",
-    data=[{"id": "cus_…", "email": "…"}, ...],
-    connector_metadata={"has_next_page": True, "end_cursor": "…"},
-    execution_time_ms=2635,
-)
-```
-
-When the dispatcher routes to a connector-native read (`action="list"` or `"get"`), `data` is a flat list or a single record, and pagination lives in `connector_metadata`.
-
-<!--
-AGENTIC-1138 problem 1: context_store_search routing nests records and
-pagination together under data.{data,meta}, and leaves connector_metadata
-null. Don't document this in the public narrative; once the backend
-normalizes to the connector-native envelope this paragraph can go.
--->
-
-Use `ask_sync()` in scripts and notebooks where you don't want to manage an event loop:
-
-```python title="notebook.ipynb"
-from airbyte_agent_sdk import ask_sync
-
-result = ask_sync("list my 5 most recent Stripe customers")
-print(result.answer)
-```
-
-Prefer `connect()` plus `execute()` when you know exactly which entity and action to call. Prefer `ask()` when you want the platform to pick the right operation based on a natural-language request.
 
 ## Expose a connector as an agent tool
 

@@ -21,8 +21,7 @@ Supply your Airbyte Cloud credentials in one of three ways:
    automatically when their `client_id`/`client_secret` kwargs are
    omitted.
 2. **Explicit kwargs**: pass `client_id=` and `client_secret=` directly
-   to [`connect()`](#connect), [`Workspace`](#Workspace),
-   [`ask()`](#ask), or [`ask_sync()`](#ask_sync).
+   to [`connect()`](#connect) or [`Workspace`](#Workspace).
 3. **Programmatic**: call [`configure()`](#configure) once at startup to
    set process-wide defaults (useful in notebooks).
 
@@ -46,8 +45,8 @@ async def main():
 asyncio.run(main())
 ```
 
-Use [`ask_sync`](#ask_sync) and direct [`connect()`](#connect) for scripts
-and notebooks; use [`ask`](#ask) and [`Workspace`](#Workspace) for async
+Use direct [`connect()`](#connect) for scripts
+and notebooks; use [`Workspace`](#Workspace) for async
 applications.
 
 ## Entry points
@@ -56,8 +55,6 @@ applications.
   or a [`HostedExecutor`](#HostedExecutor).
 - [`list_connectors`](#list_connectors) — enumerate connectors bundled
   with this SDK.
-- [`ask`](#ask) / [`ask_sync`](#ask_sync) — natural-language query across
-  an entire workspace.
 
 ## Workspace operations
 
@@ -68,7 +65,7 @@ applications.
 
 ## Results & info
 
-- [`AskResult`](#AskResult), [`ConnectorInfo`](#ConnectorInfo),
+- [`ConnectorInfo`](#ConnectorInfo),
   [`WorkflowInfo`](#WorkflowInfo), [`AutomationInfo`](#AutomationInfo),
   [`ExecutionConfig`](#ExecutionConfig),
   [`ExecutionResult`](#ExecutionResult),
@@ -132,100 +129,13 @@ Sub-modules
 Functions
 ---------
 
-<a id="ask"></a>
-
-`ask(prompt: str, *, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None) ‑> airbyte_agent_sdk.executor.models.AskResult`
-:   Ask a natural-language question across all connectors in a workspace.
-    
-    Simplest entry point — no [`Workspace`](#Workspace) or
-    [`connect()`](#connect) needed. Credentials are read from
-    `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` if not supplied.
-    
-    Example:
-        ```python
-        import os
-        import asyncio
-        from airbyte_agent_sdk import ask
-    
-        os.environ["AIRBYTE_CLIENT_ID"] = "your_client_id"
-        os.environ["AIRBYTE_CLIENT_SECRET"] = "your_client_secret"
-    
-        async def main():
-            result = await ask("list my 5 most recent Stripe customers")
-            print(result.outcome, result.answer)
-            for call in result.results:
-                print(call.entity, call.action, call.status)
-    
-        asyncio.run(main())
-        ```
-    
-    Args:
-        prompt: Natural-language question to dispatch across the workspace.
-        client_id: Airbyte OAuth client ID (falls back to `AIRBYTE_CLIENT_ID`).
-        client_secret: Airbyte OAuth client secret (falls back to
-            `AIRBYTE_CLIENT_SECRET`).
-        workspace_name: Workspace to query. Defaults to `"default"`.
-        organization_id: Optional organization ID for multi-org routing.
-    
-    Returns:
-        An [`AskResult`](#AskResult) with `outcome`, optional `answer`, and a
-        `results` list of per-tool-call records. Check `outcome == "success"`
-        before trusting `answer`.
-    
-    Raises:
-        ValueError: If no credentials are supplied and no env vars are set.
-        httpx.HTTPStatusError: If the backend returns a 4xx/5xx response.
-    
-    See also:
-        [`ask_sync`](#ask_sync) — blocking wrapper for scripts and notebooks.
-
-<a id="ask_sync"></a>
-
-`ask_sync(prompt: str, *, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None) ‑> airbyte_agent_sdk.executor.models.AskResult`
-:   Blocking variant of [`ask`](#ask). Works in scripts and notebooks.
-    
-    In a plain script (no running event loop) this uses `asyncio.run()`.
-    Inside a Jupyter notebook or other environment that already has a running
-    loop, it dispatches the coroutine to a background thread so it does not
-    block the existing loop.
-    
-    Example:
-        ```python
-        from airbyte_agent_sdk import ask_sync
-    
-        result = ask_sync(
-            "list my 5 most recent Stripe customers",
-            client_id="your_client_id",
-            client_secret="your_client_secret",
-        )
-        print(result.outcome, result.answer)
-        ```
-    
-    Args:
-        prompt: Natural-language question to dispatch across the workspace.
-        client_id: Airbyte OAuth client ID (falls back to `AIRBYTE_CLIENT_ID`).
-        client_secret: Airbyte OAuth client secret (falls back to
-            `AIRBYTE_CLIENT_SECRET`).
-        workspace_name: Workspace to query. Defaults to `"default"`.
-        organization_id: Optional organization ID for multi-org routing.
-    
-    Returns:
-        An [`AskResult`](#AskResult) — same shape as [`ask`](#ask).
-    
-    Raises:
-        ValueError: If no credentials are supplied and no env vars are set.
-        httpx.HTTPStatusError: If the backend returns a 4xx/5xx response.
-    
-    See also:
-        [`ask`](#ask) — the async version for use in async applications.
-
 <a id="configure"></a>
 
 `configure(*, client_id: str, client_secret: str, organization_id: str | None = None, workspace_name: str = 'default') ‑> None`
-:   Set global SDK credentials. These are used as defaults by connect(), Workspace, and ask().
+:   Set global SDK credentials. These are used as defaults by connect() and Workspace.
     
     Calling configure() again overwrites the previous configuration.
-    Explicit kwargs passed to connect()/Workspace()/ask() always take priority.
+    Explicit kwargs passed to connect()/Workspace() always take priority.
 
 <a id="connect"></a>
 
@@ -429,7 +339,7 @@ Classes
     Not caught by ``AirbyteError``:
     
     * ``ValueError`` from argument validation at ``connect()``,
-      ``Workspace(...)``, ``ask()``/``ask_sync()`` (via
+      ``Workspace(...)`` (via
       ``resolve_credentials()``), and ``HostedExecutor(...)``.
     * ``httpx.HTTPStatusError`` / ``httpx.RequestError`` propagated
       unwrapped from the hosted path (``HostedExecutor.execute()`` and
@@ -450,40 +360,6 @@ Classes
 
     * airbyte_agent_sdk.executor.models.ExecutorError
     * airbyte_agent_sdk.http.exceptions.HTTPClientError
-
-<a id="AskResult"></a>
-
-`AskResult(outcome: str, outcome_reason: str | None = None, answer: str | None = None, results: list[AskToolCallResult] = <factory>, query_id: str | None = None, execution_metadata: dict[str, Any] = <factory>)`
-:   Result of a workspace-level natural language query.
-    
-    Fields match backend StructuredQueryResponse (customer_query/schemas.py:53-59).
-    Note: execution_metadata is required in backend but made optional here for
-    forward-compatibility -- the SDK should not break if the backend omits it.
-
-    ### Static methods
-
-    `from_response(response: dict[str, Any]) ‑> airbyte_agent_sdk.executor.models.AskResult`
-    :   Parse a raw structured query API response into AskResult.
-
-    ### Instance variables
-
-    `answer: str | None`
-    :   The type of the None singleton.
-
-    `execution_metadata: dict[str, typing.Any]`
-    :   The type of the None singleton.
-
-    `outcome: str`
-    :   The type of the None singleton.
-
-    `outcome_reason: str | None`
-    :   The type of the None singleton.
-
-    `query_id: str | None`
-    :   The type of the None singleton.
-
-    `results: list[airbyte_agent_sdk.executor.models.AskToolCallResult]`
-    :   The type of the None singleton.
 
 <a id="AuthenticationError"></a>
 
@@ -1018,7 +894,7 @@ Classes
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
-    Provides workspace-level methods: `ask`, list/create/delete connectors,
+    Provides workspace-level methods: list/create/delete connectors,
     get a connector executor, and workflow/automation CRUD. Use `Workspace`
     when you want to operate against a whole workspace (many connectors,
     workflows, automations); use [`connect()`](#connect) when you already
@@ -1035,9 +911,8 @@ Classes
                 client_secret="your_client_secret",
                 workspace_name="my-workspace",
             ) as ws:
-                result = await ws.ask("list my recent customers")
                 connectors = await ws.list_connectors()
-                print(result.outcome, len(connectors))
+                print(len(connectors))
     
         asyncio.run(main())
         ```
@@ -1055,9 +930,6 @@ Classes
             `AIRBYTE_CLIENT_ID`/`AIRBYTE_CLIENT_SECRET` env vars are set.
 
     ### Methods
-
-    `ask(self, prompt: str) ‑> airbyte_agent_sdk.executor.models.AskResult`
-    :   Ask a natural-language question across all connectors.
 
     `close(self)`
     :   Close the cloud client.
