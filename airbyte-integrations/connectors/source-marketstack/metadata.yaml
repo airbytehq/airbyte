@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-marketstack
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.2@sha256:1bfcca53335b2669b02414180fe9ad96b0abd9c95d6cbf50089c1d881fc07801
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 0caeba13-0807-46aa-a6c0-7e8d25d168be
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-marketstack
   githubIssueLabel: source-marketstack
   icon: icon.svg
