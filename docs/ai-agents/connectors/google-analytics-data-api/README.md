@@ -51,7 +51,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
 from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
 
@@ -63,10 +65,62 @@ connector = GoogleAnalyticsDataApiConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GoogleAnalyticsDataApiConnector.tool_utils
 async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+@tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+@mcp.tool()
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -78,21 +132,66 @@ This example assumes you've already authenticated your connector with Airbyte. S
 
 The `connect()` factory returns a fully typed `GoogleAnalyticsDataApiConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
 
 connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GoogleAnalyticsDataApiConnector.tool_utils
 async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+@tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+@mcp.tool()
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -105,10 +204,64 @@ connector = GoogleAnalyticsDataApiConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GoogleAnalyticsDataApiConnector.tool_utils
 async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+@mcp.tool()
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation

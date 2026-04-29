@@ -36,7 +36,7 @@ The platform manages the hard parts of connecting to third-party systems:
 
 - **Multi-tenancy.** [Workspaces](../interfaces/sdk/workspaces) isolate connectors and credentials across tenants, teams, or environments within an organization.
 
-- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui), the [Python SDK](../interfaces/sdk), the [API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
+- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui) in chats and automations, the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
 
 Connecting a new data source takes minutes. You don't build or maintain API wrappers, manage credential storage, or handle token lifecycle.
 
@@ -44,7 +44,7 @@ Connecting a new data source takes minutes. You don't build or maintain API wrap
 
 Once your agents are connected, the [Context Store](context-store) indexes and normalizes data from every source into one searchable layer.
 
-Without the Context Store, an agent that needs to answer a question like "find all open deals over $10,000" has to page through API results, manage rate limits, and accumulate records in its context window. This is slow, expensive, and unreliable. The Context Store solves this.
+Without the Context Store, an agent that needs to answer a question like "find all open deals over $10,000" has to page through API results, manage rate limits, and accumulate records in its context window. This is slow, expensive, and unreliable. For benchmark data on how the Context Store compares to live API retrieval, see the [airbyte-agents-benchmarks](https://github.com/airbytehq/airbyte-agents-benchmarks) repository.
 
 - **Curated replication.** Airbyte selects a useful subset of entities from each connector and replicates them into managed storage.
 

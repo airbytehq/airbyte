@@ -27,7 +27,7 @@ Every workspace has two identifiers:
 - **UUID** (`id`) — An Airbyte-assigned identifier that never changes. Persist this in your backend and use it for any operation that accepts a `workspace_id`.
 - **Name** (`workspace_name`) — A human-readable label you choose when the workspace is created. Routing endpoints like scoped-token minting and connector creation accept the name as a lookup key.
 
-The UUID is the durable identifier. The name is a convenience for routing.
+The UUID is the durable identifier. The name is a convenience for routing, but it must still be unique within an organization.
 
 ## Create a workspace
 

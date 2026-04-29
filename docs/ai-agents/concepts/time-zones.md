@@ -24,7 +24,7 @@ This applies to both absolute times (for example, `Mar 18, 09:32`) and relative 
 All timestamps are UTC on the backend, and every interface that reads or writes timestamps uses UTC on the wire:
 
 - **API**: Request and response bodies use ISO 8601 UTC strings (for example, `2026-03-18T13:32:00Z`).
-- **SDK**: The Python SDK returns the same UTC ISO 8601 strings through its response models.
+- **SDK**: The Python SDK returns the same ISO 8601 UTC strings through its response models.
 - **MCP server**: Tools that return timestamps return them in UTC. The `current_datetime` tool, which an agent calls to resolve relative dates like "today" or "last week," returns the current UTC time.
 
 :::warning
@@ -33,7 +33,7 @@ If you pass a timestamp into a connector action—for example, as a date filter 
 
 ## Scheduling Automations
 
-Every scheduled [Automation](../interfaces/ui/automations) has its own time zone, stored as an IANA identifier alongside its cron expression. When the schedule fires, Airbyte evaluates the cron in that time zone, so `0 9 * * MON-FRI` means 9 AM local time for the chosen zone, whether that's `America/Los_Angeles` or `Asia/Tokyo`.
+Every scheduled [Automation](../interfaces/ui/automations) has its own time zone, stored as an [IANA identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) alongside its cron expression. When the schedule fires, Airbyte evaluates the cron in that time zone, so `0 9 * * MON-FRI` means 9 AM local time for the chosen zone, whether that's `America/Los_Angeles` or `Asia/Tokyo`.
 
 The default time zone depends on how you create the Automation:
 
@@ -43,7 +43,7 @@ The default time zone depends on how you create the Automation:
   2. Your browser's local time zone, which the web app sends with every message.
   3. UTC, if neither is available.
 
-  The agent only ever passes IANA identifiers. If you say "EST" or "Eastern Time," it translates to `America/New_York` before calling the tool.
+  The agent only ever passes [IANA identifiers](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). If you say "EST" or "Eastern Time," it translates to `America/New_York` before calling the tool.
 
 ### Interpreting times in an Automation's prompt
 

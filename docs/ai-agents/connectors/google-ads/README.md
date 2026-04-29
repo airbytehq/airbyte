@@ -49,7 +49,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
 from airbyte_agent_sdk.connectors.google_ads.models import GoogleAdsAuthConfig
 
@@ -62,10 +64,64 @@ connector = GoogleAdsConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GoogleAdsConnector.tool_utils
 async def google_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.connectors.google_ads.models import GoogleAdsAuthConfig
+
+connector = GoogleAdsConnector(
+    auth_config=GoogleAdsAuthConfig(
+        client_id="<OAuth2 client ID from Google Cloud Console>",
+        client_secret="<OAuth2 client secret from Google Cloud Console>",
+        refresh_token="<OAuth2 refresh token>",
+        developer_token="<Google Ads API developer token>"
+    )
+)
+
+@tool
+@GoogleAdsConnector.tool_utils
+async def google_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.connectors.google_ads.models import GoogleAdsAuthConfig
+
+connector = GoogleAdsConnector(
+    auth_config=GoogleAdsAuthConfig(
+        client_id="<OAuth2 client ID from Google Cloud Console>",
+        client_secret="<OAuth2 client secret from Google Cloud Console>",
+        refresh_token="<OAuth2 refresh token>",
+        developer_token="<Google Ads API developer token>"
+    )
+)
+
+mcp = FastMCP("Google-Ads Agent")
+
+@mcp.tool()
+@GoogleAdsConnector.tool_utils
+async def google_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -77,21 +133,66 @@ This example assumes you've already authenticated your connector with Airbyte. S
 
 The `connect()` factory returns a fully typed `GoogleAdsConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
 
 connector = connect("google-ads", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GoogleAdsConnector.tool_utils
 async def google_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+
+connector = connect("google-ads", workspace_name="<your_workspace_name>")
+
+@tool
+@GoogleAdsConnector.tool_utils
+async def google_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+
+connector = connect("google-ads", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Google-Ads Agent")
+
+@mcp.tool()
+@GoogleAdsConnector.tool_utils
+async def google_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -104,10 +205,64 @@ connector = GoogleAdsConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GoogleAdsConnector.tool_utils
 async def google_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAdsConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@GoogleAdsConnector.tool_utils
+async def google_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAdsConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Google-Ads Agent")
+
+@mcp.tool()
+@GoogleAdsConnector.tool_utils
+async def google_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Google-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation
