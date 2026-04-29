@@ -266,10 +266,7 @@ def test_source_streams(config, activity, requests_mock):
     # 1 python stream (leads)
     # 1 dynamically created (activities_send_email)
     assert len(streams) == 9
-    assert all(
-        isinstance(stream, (MarketoStream, DeclarativeStream, DefaultStream, AbstractStream))
-        for stream in streams
-    )
+    assert all(isinstance(stream, (MarketoStream, DeclarativeStream, DefaultStream, AbstractStream)) for stream in streams)
 
 
 @pytest.mark.skip(
@@ -364,7 +361,7 @@ def test_parse_response_with_unicode_line_separator(send_email_stream):
     do not cause CSV column misalignment. This was the root cause of
     https://github.com/airbytehq/oncall/issues/11468.
     """
-    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n" "1,\u2028test,true,10,15\n" "2,3,false,11,16"
+    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n1,\u2028test,true,10,15\n2,3,false,11,16"
 
     def iter_lines(*args, **kwargs):
         yield from response_text.split("\n")
@@ -622,7 +619,5 @@ def test_source_streams_handles_activity_types_failure(config, requests_mock, ca
 
     # Should still have 8 streams (7 declarative + 1 leads), but no activities_*
     assert len(streams) == 8
-    assert not any(
-        getattr(s, "name", "").startswith("activities_") for s in streams
-    )
+    assert not any(getattr(s, "name", "").startswith("activities_") for s in streams)
     assert "An error occurred while creating activity streams" in caplog.text

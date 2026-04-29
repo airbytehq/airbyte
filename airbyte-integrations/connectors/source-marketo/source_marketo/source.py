@@ -671,9 +671,7 @@ class SourceMarketo(YamlDeclarativeSource):
             else:
                 legacy_streams[stream.name] = stream
 
-        selected_concurrent = self._select_streams(
-            streams=concurrent_streams, configured_catalog=catalog
-        )
+        selected_concurrent = self._select_streams(streams=concurrent_streams, configured_catalog=catalog)
         if selected_concurrent:
             yield from self._concurrent_source.read(selected_concurrent)
 
@@ -699,24 +697,24 @@ class SourceMarketo(YamlDeclarativeSource):
             logger.info(f"Syncing stream: {configured_stream.stream.name}")
             yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
 
-            stream_state = state_manager.get_stream_state(
-                configured_stream.stream.name, stream_instance.namespace
-            )
+            stream_state = state_manager.get_stream_state(configured_stream.stream.name, stream_instance.namespace)
             if hasattr(stream_instance, "state"):
                 stream_instance.state = stream_state  # type: ignore[union-attr]
 
             record_counter = 0
             try:
                 for record_data_or_message in stream_instance.read(
-                    configured_stream, logger, slice_logger, stream_state,
-                    state_manager, internal_config,
+                    configured_stream,
+                    logger,
+                    slice_logger,
+                    stream_state,
+                    state_manager,
+                    internal_config,
                 ):
                     if isinstance(record_data_or_message, Mapping):
                         record_counter += 1
                         if record_counter == 1:
-                            yield as_airbyte_message(
-                                configured_stream.stream, AirbyteStreamStatus.RUNNING
-                            )
+                            yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.RUNNING)
                         yield stream_data_to_airbyte_message(
                             stream_instance.name,
                             record_data_or_message,
@@ -729,15 +727,11 @@ class SourceMarketo(YamlDeclarativeSource):
                 yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
             except AirbyteTracedException as e:
                 logger.exception(f"Error reading stream {configured_stream.stream.name}")
-                yield as_airbyte_message(
-                    configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
-                )
+                yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                 yield e.as_sanitized_airbyte_message()
             except Exception as e:
                 logger.exception(f"Error reading stream {configured_stream.stream.name}")
-                yield as_airbyte_message(
-                    configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
-                )
+                yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                 yield AirbyteTracedException.from_exception(e).as_sanitized_airbyte_message()
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream | AbstractStream]:  # type: ignore[override]
