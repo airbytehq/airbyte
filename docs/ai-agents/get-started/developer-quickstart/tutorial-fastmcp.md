@@ -30,7 +30,7 @@ Before you begin this tutorial, ensure you have the following.
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or [OAuth app](https://github.com/settings/developers) credentials (`client_id`, `client_secret`, and a `refresh_token`).
+- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or a GitHub [OAuth access token](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
 - An agent that supports MCP servers, such as [Claude Desktop](https://claude.ai/download), [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview), or [Cursor](https://www.cursor.com/).
 
 ## Part 1: Create a new Python project
@@ -113,9 +113,7 @@ This command installs:
     ```text title=".env"
     AIRBYTE_CLIENT_ID=your-airbyte-client-id
     AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
-    GITHUB_CLIENT_ID=your-github-oauth-client-id
-    GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
-    GITHUB_REFRESH_TOKEN=your-github-oauth-refresh-token
+    GITHUB_ACCESS_TOKEN=your-github-oauth-access-token
     ```
 
     </TabItem>
@@ -163,8 +161,10 @@ async def main():
             definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
             name="GitHub",
             credentials={
-                "option_title": "PAT Credentials",
-                "personal_access_token": os.environ["GITHUB_PAT"],
+                "token": os.environ["GITHUB_PAT"],
+            },
+            replication_config={
+                "repositories": ["airbytehq/airbyte"],
             },
         )
     print("GitHub connector created.")
@@ -191,10 +191,10 @@ async def main():
             definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
             name="GitHub",
             credentials={
-                "option_title": "OAuth Credentials",
-                "client_id": os.environ["GITHUB_CLIENT_ID"],
-                "client_secret": os.environ["GITHUB_CLIENT_SECRET"],
-                "refresh_token": os.environ["GITHUB_REFRESH_TOKEN"],
+                "access_token": os.environ["GITHUB_ACCESS_TOKEN"],
+            },
+            replication_config={
+                "repositories": ["airbytehq/airbyte"],
             },
         )
     print("GitHub connector created.")

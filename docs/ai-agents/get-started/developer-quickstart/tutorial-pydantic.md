@@ -30,7 +30,7 @@ Before you begin this tutorial, ensure you have the following.
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or [OAuth app](https://github.com/settings/developers) credentials (`client_id`, `client_secret`, and a `refresh_token`).
+- GitHub credentials. Either a [personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient) or a GitHub [OAuth access token](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
 - An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but [Pydantic AI](https://pydantic.dev/docs/ai/models/overview) supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
@@ -119,9 +119,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     ```text title=".env"
     AIRBYTE_CLIENT_ID=your-airbyte-client-id
     AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
-    GITHUB_CLIENT_ID=your-github-oauth-client-id
-    GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
-    GITHUB_REFRESH_TOKEN=your-github-oauth-refresh-token
+    GITHUB_ACCESS_TOKEN=your-github-oauth-access-token
     OPENAI_API_KEY=your-openai-api-key
     ```
 
@@ -146,54 +144,86 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
-Add the following to `agent.py`:
+1. Create a `setup.py` file:
+
+    ```bash
+    touch setup.py
+    ```
+
+2. Add the following to `setup.py`:
 
 <Tabs>
 <TabItem value="pat" label="Personal access token" default>
 
-```python title="agent.py"
+```python title="setup.py"
+import asyncio
 import os
+
+from dotenv import load_dotenv
 from airbyte_agent_sdk import Workspace
 
-async def setup():
+load_dotenv()
+
+async def main():
     async with Workspace() as ws:
         await ws.create_connector(
             definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
             name="GitHub",
             credentials={
-                "option_title": "PAT Credentials",
-                "personal_access_token": os.environ["GITHUB_PAT"],
+                "token": os.environ["GITHUB_PAT"],
+            },
+            replication_config={
+                "repositories": ["airbytehq/airbyte"],
             },
         )
+    print("GitHub connector created.")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </TabItem>
 <TabItem value="oauth" label="OAuth">
 
-```python title="agent.py"
+```python title="setup.py"
+import asyncio
 import os
+
+from dotenv import load_dotenv
 from airbyte_agent_sdk import Workspace
 
-async def setup():
+load_dotenv()
+
+async def main():
     async with Workspace() as ws:
         await ws.create_connector(
             definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
             name="GitHub",
             credentials={
-                "option_title": "OAuth Credentials",
-                "client_id": os.environ["GITHUB_CLIENT_ID"],
-                "client_secret": os.environ["GITHUB_CLIENT_SECRET"],
-                "refresh_token": os.environ["GITHUB_REFRESH_TOKEN"],
+                "access_token": os.environ["GITHUB_ACCESS_TOKEN"],
+            },
+            replication_config={
+                "repositories": ["airbytehq/airbyte"],
             },
         )
+    print("GitHub connector created.")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 </TabItem>
 </Tabs>
 
+3. Run the setup script:
+
+    ```bash
+    uv run setup.py
+    ```
+
 `Workspace()` reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment. `create_connector` stores the GitHub credentials in Airbyte so you never paste them into agent code or handle token refresh yourself. The `definition_id` is the fixed UUID for the GitHub connector type.
 
-You only need to run `setup()` once. After the connector exists in your workspace, you can skip this step on subsequent runs. You call `setup()` from `main.py` in a later step.
+You only need to run `setup.py` once. After the connector exists in your workspace, you can skip this step on subsequent runs.
 
 See [Add a connector](../../interfaces/sdk/add-connector) for more details, including how to find the `definition_id` for other connector types.
 
@@ -257,14 +287,13 @@ Each `execute` call returns a structured result with `data` (the records) and `m
 
 Now that your agent is configured with a tool, update `main.py` and run your project.
 
-1. Update `main.py`. This code adds the GitHub connector to your workspace on the first run, then creates a simple chat interface that lets your agent remember your conversation history between prompts.
+1. Update `main.py`. This creates a simple chat interface that lets your agent remember your conversation history between prompts.
 
     ```python title="main.py"
     import asyncio
-    from agent import agent, setup
+    from agent import agent
 
     async def main():
-        await setup()
         print("GitHub Agent Ready! Ask questions about GitHub repositories.")
         print("Type 'quit' to exit.\n")
 
@@ -281,8 +310,6 @@ Now that your agent is configured with a tool, update `main.py` and run your pro
     if __name__ == "__main__":
         asyncio.run(main())
     ```
-
-    On the first run, `setup()` creates the GitHub connector in your Airbyte Agents workspace. If you run the project again and the connector already exists, you can remove the `await setup()` line or guard it with a try/except.
 
 2. Run the project.
 
@@ -305,7 +332,7 @@ The agent has basic message history within each session, and you can ask followu
 If your agent fails to retrieve GitHub data, check the following:
 
 - **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your [Profile page](https://app.airbyte.ai/profile).
-- **"No connector found" or "connector not configured"**: Make sure `setup()` ran successfully before calling `connect("github")`. `connect("github")` defaults to the `"default"` workspace; if you created the connector in a different workspace, pass `workspace_name="your-workspace-name"` to both `Workspace()` and `connect()`.
+- **"No connector found" or "connector not configured"**: Make sure `setup.py` ran successfully before running `main.py`. `connect("github")` defaults to the `"default"` workspace; if you created the connector in a different workspace, pass `workspace_name="your-workspace-name"` to both `Workspace()` and `connect()`.
 - **HTTP 401/403 errors from GitHub**: The GitHub token stored in your connector is invalid or missing required scopes. Verify that `GITHUB_PAT` in your `.env` file is a valid token with `repo` scope.
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The system prompt in this tutorial nudges the model to do that by default.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
