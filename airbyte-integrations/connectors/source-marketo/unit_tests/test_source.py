@@ -225,7 +225,9 @@ def test_next_page_token(config, next_page_token):
     assert token == (next_page_token or None)
 
 
-@pytest.mark.skip(reason="CDK 7.x returns DefaultStream objects that do not expose the legacy stream_slices/read_records interface. Incremental filtering for declarative streams is tested by the CDK.")
+@pytest.mark.skip(
+    reason="CDK 7.x returns DefaultStream objects that do not expose the legacy stream_slices/read_records interface. Incremental filtering for declarative streams is tested by the CDK."
+)
 def test_parse_response_incremental(config, requests_mock):
     created_at_record_1 = START_DATE.add(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
     created_at_record_2 = START_DATE.add(days=3).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -254,7 +256,9 @@ def test_source_streams(config, activity, requests_mock):
     assert all(isinstance(stream, (MarketoStream, DeclarativeStream, DefaultStream)) for stream in streams)
 
 
-@pytest.mark.skip(reason="CDK 7.x returns DefaultStream objects that do not expose the legacy stream_slices/read_records interface. Declarative stream transformations are tested by the CDK.")
+@pytest.mark.skip(
+    reason="CDK 7.x returns DefaultStream objects that do not expose the legacy stream_slices/read_records interface. Declarative stream transformations are tested by the CDK."
+)
 def test_programs_normalize_datetime(config, requests_mock):
     created_at = START_DATE.add(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
     updated_at = START_DATE.add(days=2).strftime("%Y-%m-%dT%H:%M:%SZ")
