@@ -70,7 +70,7 @@ This command installs:
 - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
 ## Part 3: Import FastMCP and the GitHub agent connector
-
+<can we merge with step 2?>
 1. Create a `server.py` file for your MCP server definition:
 
    ```bash
@@ -134,6 +134,7 @@ github = connect("github")
 `connect("github")` does four things for you:
 
 - Reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment.
+<what's a workspace? should most users care about it in the tutorial?>
 - Defaults to the `"default"` workspace, which is where the web app stores credentials unless you change it.
 - Returns a typed `GithubConnector` bound to the authenticated GitHub connector you added earlier.
 - Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub OAuth tokens and refreshes them for you.
@@ -145,6 +146,9 @@ If you want to connect to a different workspace or pass credentials explicitly, 
 ### Register the tool
 
 Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `@GithubConnector.tool_utils` decorator fills in the entity and action catalog as part of the tool description, so the agent knows what's available without you writing a schema.
+<We should explain why our one tool per connector model is great because it's context-efficient. Open to explaining it or somewhere else>
+
+<the decorator also automatically enables falling back on the list action if the context store isn't ready. maybe worth mentioning>
 
 ```python title="server.py"
 @mcp.tool()
