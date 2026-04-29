@@ -157,6 +157,7 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.7 | 2026-04-28 | [77465](https://github.com/airbytehq/airbyte/pull/77465) | Update dependencies |
 | 5.0.6 | 2026-04-21 | [76807](https://github.com/airbytehq/airbyte/pull/76807) | Update dependencies |
 | 5.0.5 | 2026-03-31 | [75063](https://github.com/airbytehq/airbyte/pull/75063) | Update dependencies |
 | 5.0.4 | 2026-03-24 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
