@@ -8,7 +8,7 @@ AI agents need real-time access to business data spread across dozens of systems
 
 ## Connect
 
-Airbyte provides a growing library of open source, type-safe [agent connectors](../connectors) that plug AI agents into SaaS APIs. Each connector is a standalone Python package with strongly typed methods, validation, and error handling.
+Airbyte provides a growing library of open source, type-safe [agent connectors](../connectors) that plug AI agents into SaaS APIs. The SDK is a single Python package that includes every connector, with strongly typed methods, validation, and error handling.
 
 The platform manages the hard parts of connecting to third-party systems:
 

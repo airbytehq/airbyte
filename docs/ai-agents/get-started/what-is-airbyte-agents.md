@@ -49,7 +49,7 @@ The platform handles the hard parts:
 
 - **Authentication.** OAuth flows, API keys, and token refresh are managed for you. Store credentials once and use them from any interface.
 - **Multi-tenancy.** Workspaces isolate connectors and credentials across tenants, teams, or environments.
-- **Open source.** Every connector is a standalone Python package you can inspect, extend, or run locally.
+- **Open source.** The SDK is a single open source Python package that includes every connector. You can inspect, extend, or run it locally.
 
 ### Unify
 

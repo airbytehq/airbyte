@@ -26,7 +26,7 @@ Airbyte stores your credentials securely in the cloud and manages token refresh.
 
 ### Open source mode
 
-Each agent connector is also an open source Python package you can install and run independently. In open source mode, you provide API credentials directly to the connector in your code. No Airbyte account is required. Use this mode when you want to manage credentials yourself or run connectors in an air-gapped environment.
+The SDK is a single open source Python package that includes every connector. In open source mode, you install the SDK and provide API credentials directly to the connector in your code. No Airbyte account is required. Use this mode when you want to manage credentials yourself or run connectors in an air-gapped environment.
 
 For installation and usage in open source mode, see each connector's page in [Agent connectors](../../connectors).
 
