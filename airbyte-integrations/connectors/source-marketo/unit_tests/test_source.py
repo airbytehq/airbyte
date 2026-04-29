@@ -11,12 +11,22 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 import pendulum
 import pytest
 import requests
-from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
+from source_marketo.source import (
+    Activities,
+    IncrementalMarketoStream,
+    Leads,
+    MarketoAuthenticator,
+    MarketoExportCreate,
+    MarketoStream,
+    SourceMarketo,
+)
 
 from airbyte_cdk.legacy.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 from .conftest import START_DATE, get_stream_by_name
 
@@ -246,14 +256,20 @@ def test_parse_response_incremental(config, requests_mock):
 
 def test_source_streams(config, activity, requests_mock):
     source = SourceMarketo(config=config)
-    requests_mock.get("https://602-euo-598.mktorest.com/rest/v1/activities/types.json", json={"result": [activity]})
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json",
+        json={"result": [activity]},
+    )
     streams = source.streams(config)
 
     # 7 declarative streams (activity_types, segmentations, campaigns, lists, programs, emails, program_tokens),
     # 1 python stream (leads)
     # 1 dynamically created (activities_send_email)
     assert len(streams) == 9
-    assert all(isinstance(stream, (MarketoStream, DeclarativeStream, DefaultStream)) for stream in streams)
+    assert all(
+        isinstance(stream, (MarketoStream, DeclarativeStream, DefaultStream, AbstractStream))
+        for stream in streams
+    )
 
 
 @pytest.mark.skip(
@@ -558,3 +574,55 @@ def test_leads_dynamic_schema_includes_custom_fields(config, requests_mock):
 
     # Standard fields from static schema should still be present
     assert "email" in schema["properties"]
+
+
+def test_filter_by_state_filters_records_below_cursor(config):
+    """P1-3: Direct test of IncrementalMarketoStream.filter_by_state."""
+    stream = IncrementalMarketoStream(config)
+    cutoff = "2023-01-15T00:00:00Z"
+    state = {"createdAt": cutoff}
+
+    old_record = {"id": 1, "createdAt": "2023-01-10T00:00:00Z"}
+    assert list(stream.filter_by_state(stream_state=state, record=old_record)) == []
+
+    new_record = {"id": 2, "createdAt": "2023-01-20T00:00:00Z"}
+    assert list(stream.filter_by_state(stream_state=state, record=new_record)) == [new_record]
+
+    exact_record = {"id": 3, "createdAt": cutoff}
+    assert list(stream.filter_by_state(stream_state=state, record=exact_record)) == [exact_record]
+
+    no_state_record = {"id": 4, "createdAt": "2020-01-01T00:00:00Z"}
+    assert list(stream.filter_by_state(stream_state=None, record=no_state_record)) == []
+
+    after_start_record = {"id": 5, "createdAt": config["start_date"]}
+    assert list(stream.filter_by_state(stream_state=None, record=after_start_record)) == [after_start_record]
+
+
+def test_refresh_access_token_returns_airbyte_datetime(config, requests_mock):
+    """P1-4: Verify refresh_access_token returns (str, AirbyteDateTime) tuple."""
+    requests_mock.get(
+        "https://602-euo-598.mktorest.com/identity/oauth/token",
+        json={"access_token": "new_token", "expires_in": 3600},
+    )
+    auth = MarketoAuthenticator(config)
+    token, expiry = auth.refresh_access_token()
+    assert token == "new_token"
+    assert isinstance(expiry, AirbyteDateTime)
+
+
+def test_source_streams_handles_activity_types_failure(config, requests_mock, caplog):
+    """P2-2: Verify that a failed activity types fetch logs a warning and returns base streams."""
+    source = SourceMarketo(config=config)
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json",
+        status_code=500,
+    )
+    caplog.set_level("WARNING")
+    streams = source.streams(config)
+
+    # Should still have 8 streams (7 declarative + 1 leads), but no activities_*
+    assert len(streams) == 8
+    assert not any(
+        getattr(s, "name", "").startswith("activities_") for s in streams
+    )
+    assert "An error occurred while creating activity streams" in caplog.text

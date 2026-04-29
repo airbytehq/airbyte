@@ -4,23 +4,30 @@
 
 import csv
 import json
+import logging
 import re
 from abc import ABC
 from time import sleep
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message
 
 from .utils import STRING_TYPES, clean_string, format_value, to_datetime_str
 
@@ -420,8 +427,7 @@ class Leads(MarketoExportBase):
         if self._available_fields is None:
             try:
                 url = f"{self._url_base}rest/v1/leads/describe.json"
-                headers = {"Authorization": f"Bearer {self.config['authenticator'].get_access_token()}"}
-                resp = requests.get(url, headers=headers)
+                resp = requests.get(url, auth=self.config["authenticator"], timeout=30)
                 resp.raise_for_status()
                 fields = {}
                 for record in resp.json().get("result", []):
@@ -644,15 +650,100 @@ class SourceMarketo(YamlDeclarativeSource):
     def _fetch_activity_types(self, config: Mapping[str, Any]) -> List[Mapping[str, Any]]:
         """Fetch activity types directly from the Marketo API."""
         url = f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json"
-        headers = {"Authorization": f"Bearer {config['authenticator'].get_access_token()}"}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, auth=config["authenticator"], timeout=30)
         response.raise_for_status()
         return response.json().get("result", [])
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[List[AirbyteStateMessage]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        all_streams = self.streams(config=self._config)
+
+        concurrent_streams: list[AbstractStream] = []
+        legacy_streams: dict[str, Stream] = {}
+        for stream in all_streams:
+            if isinstance(stream, AbstractStream):
+                concurrent_streams.append(stream)
+            else:
+                legacy_streams[stream.name] = stream
+
+        selected_concurrent = self._select_streams(
+            streams=concurrent_streams, configured_catalog=catalog
+        )
+        if selected_concurrent:
+            yield from self._concurrent_source.read(selected_concurrent)
+
+        if legacy_streams:
+            yield from self._read_legacy_streams(logger, catalog, state, legacy_streams)
+
+    def _read_legacy_streams(
+        self,
+        logger: logging.Logger,
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[List[AirbyteStateMessage]],
+        legacy_streams: dict[str, Stream],
+    ) -> Iterator[AirbyteMessage]:
+        state_manager = ConnectorStateManager(state=state)
+        slice_logger = DebugSliceLogger()
+        internal_config = InternalConfig()
+
+        for configured_stream in catalog.streams:
+            stream_instance = legacy_streams.get(configured_stream.stream.name)
+            if not stream_instance:
+                continue
+
+            logger.info(f"Syncing stream: {configured_stream.stream.name}")
+            yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
+
+            stream_state = state_manager.get_stream_state(
+                configured_stream.stream.name, stream_instance.namespace
+            )
+            if hasattr(stream_instance, "state"):
+                stream_instance.state = stream_state  # type: ignore[union-attr]
+
+            record_counter = 0
+            try:
+                for record_data_or_message in stream_instance.read(
+                    configured_stream, logger, slice_logger, stream_state,
+                    state_manager, internal_config,
+                ):
+                    if isinstance(record_data_or_message, Mapping):
+                        record_counter += 1
+                        if record_counter == 1:
+                            yield as_airbyte_message(
+                                configured_stream.stream, AirbyteStreamStatus.RUNNING
+                            )
+                        yield stream_data_to_airbyte_message(
+                            stream_instance.name,
+                            record_data_or_message,
+                            stream_instance.transformer,
+                            stream_instance.get_json_schema(),
+                        )
+                    else:
+                        yield record_data_or_message
+
+                yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
+            except AirbyteTracedException as e:
+                logger.exception(f"Error reading stream {configured_stream.stream.name}")
+                yield as_airbyte_message(
+                    configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
+                )
+                yield e.as_sanitized_airbyte_message()
+            except Exception as e:
+                logger.exception(f"Error reading stream {configured_stream.stream.name}")
+                yield as_airbyte_message(
+                    configured_stream.stream, AirbyteStreamStatus.INCOMPLETE
+                )
+                yield AirbyteTracedException.from_exception(e).as_sanitized_airbyte_message()
+
+    def streams(self, config: Mapping[str, Any]) -> list[Stream | AbstractStream]:  # type: ignore[override]
         config["authenticator"] = MarketoAuthenticator(config)
 
-        streams = self._get_declarative_streams(config)
+        streams: list[Stream | AbstractStream] = self._get_declarative_streams(config)
         streams.append(Leads(config))
 
         # dynamically create activities by activity type id
@@ -662,10 +753,9 @@ class SourceMarketo(YamlDeclarativeSource):
                 stream_name = f"activities_{clean_string(activity['name'])}"
                 stream_class = type(stream_name, (Activities,), {"activity": activity})
 
-                # instantiate a stream with config
                 stream_instance = stream_class(config)
                 streams.append(stream_instance)
-        except Exception as e:
+        except (requests.RequestException, KeyError, ValueError) as e:
             self.logger.warning(f"An error occurred while creating activity streams: {repr(e)}")
 
         return streams
