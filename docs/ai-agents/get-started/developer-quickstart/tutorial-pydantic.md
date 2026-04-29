@@ -103,6 +103,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     ```text title=".env"
     AIRBYTE_CLIENT_ID=your-airbyte-client-id
     AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
+    GITHUB_PAT=your-github-personal-access-token
     OPENAI_API_KEY=your-openai-api-key
     ```
 
@@ -122,39 +123,31 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
 ## Part 5: Add the GitHub connector to your workspace
 
-Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace using the API. You only need to do this once.
+Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
-First, get an application token by exchanging your Airbyte credentials:
+Add the following to `agent.py`:
 
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "client_id": "<your_airbyte_client_id>",
-    "client_secret": "<your_airbyte_client_secret>"
-  }'
+```python title="agent.py"
+import os
+from airbyte_agent_sdk import Workspace
+
+async def setup():
+    async with Workspace() as ws:
+        await ws.create_connector(
+            definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
+            name="GitHub",
+            credentials={
+                "option_title": "PAT Credentials",
+                "personal_access_token": os.environ["GITHUB_PAT"],
+            },
+        )
 ```
 
-The response contains an `access_token`. Use it to create the GitHub connector:
+`Workspace()` reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment. `create_connector` stores the GitHub token in Airbyte so you never paste it into agent code or handle token refresh yourself. The `definition_id` is the fixed UUID for the GitHub connector type.
 
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
-  -H 'Authorization: Bearer <access_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace_name": "default",
-    "connector_type": "Github",
-    "name": "GitHub",
-    "credentials": {
-      "option_title": "PAT Credentials",
-      "personal_access_token": "<your_github_pat>"
-    }
-  }'
-```
+You only need to run `setup()` once. After the connector exists in your workspace, you can skip this step on subsequent runs. You call `setup()` from `main.py` in a later step.
 
-This stores your GitHub token in Airbyte so your agent code never handles it directly. Airbyte refreshes the credentials for you at execution time.
-
-See [Add a connector](../../interfaces/api/add-connector) for more details.
+See [Add a connector](../../interfaces/sdk/add-connector) for more details, including how to find the `definition_id` for other connector types.
 
 ## Part 6: Configure your connector and agent
 
@@ -172,7 +165,7 @@ One line does four things for you:
 
 - Reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment.
 - Defaults to the `"default"` workspace, which is where the web app stores credentials unless you change it.
-- Returns a typed `GithubConnector` bound to the GitHub connector you created with the API.
+- Returns a typed `GithubConnector` bound to the GitHub connector you added in the previous step.
 - Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub tokens and refreshes them for you.
 
 If you want to connect to a different workspace or pass credentials explicitly, use `connect("github", workspace_name="my-workspace", client_id=..., client_secret=...)` or pass an `AirbyteAuthConfig`. See the [SDK reference](https://github.com/airbytehq/airbyte-agent-sdk) for details.
@@ -216,13 +209,14 @@ Each `execute` call returns a structured result with `data` (the records) and `m
 
 Now that your agent is configured with a tool, update `main.py` and run your project.
 
-1. Update `main.py`. This code creates a simple chat interface in your command line tool and allows your agent to remember your conversation history between prompts.
+1. Update `main.py`. This code adds the GitHub connector to your workspace on the first run, then creates a simple chat interface that lets your agent remember your conversation history between prompts.
 
     ```python title="main.py"
     import asyncio
-    from agent import agent
+    from agent import agent, setup
 
     async def main():
+        await setup()
         print("GitHub Agent Ready! Ask questions about GitHub repositories.")
         print("Type 'quit' to exit.\n")
 
@@ -239,6 +233,8 @@ Now that your agent is configured with a tool, update `main.py` and run your pro
     if __name__ == "__main__":
         asyncio.run(main())
     ```
+
+    On the first run, `setup()` creates the GitHub connector in your Airbyte Agents workspace. If you run the project again and the connector already exists, you can remove the `await setup()` line or guard it with a try/except.
 
 2. Run the project.
 
@@ -261,8 +257,8 @@ The agent has basic message history within each session, and you can ask followu
 If your agent fails to retrieve GitHub data, check the following:
 
 - **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your [Profile page](https://app.airbyte.ai/profile).
-- **"No connector found" or "connector not configured"**: Make sure you created the GitHub connector in Part 5 before running the agent. `connect("github")` defaults to the `"default"` workspace; if you created the connector in a different workspace, pass `workspace_name="your-workspace-name"` to `connect()`.
-- **HTTP 401/403 errors from GitHub**: The GitHub token stored in your connector is invalid or missing required scopes. Re-create the connector with a valid token that has `repo` scope.
+- **"No connector found" or "connector not configured"**: Make sure `setup()` ran successfully before calling `connect("github")`. `connect("github")` defaults to the `"default"` workspace; if you created the connector in a different workspace, pass `workspace_name="your-workspace-name"` to both `Workspace()` and `connect()`.
+- **HTTP 401/403 errors from GitHub**: The GitHub token stored in your connector is invalid or missing required scopes. Verify that `GITHUB_PAT` in your `.env` file is a valid token with `repo` scope.
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The system prompt in this tutorial nudges the model to do that by default.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
 
@@ -280,7 +276,7 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- **Add another connector.** The same pattern covers the full [Airbyte agent connectors catalog](../../connectors). Create a Slack, Stripe, Salesforce, or any other connector with the API, then call `slack = connect("slack")` in your agent and register a second tool with another `@agent.tool_plain` / `@SlackConnector.tool_utils` stack. Your agent now reads GitHub and posts to Slack with no additional OAuth setup.
+- **Add another connector.** The same `Workspace.create_connector(...)` + `connect(...)` + `execute(...)` pattern covers the full [Airbyte agent connectors catalog](../../connectors). Add Slack, Stripe, Salesforce, or any other connector with `create_connector`, then call `slack = connect("slack")` in your agent and register a second tool with another `@agent.tool_plain` / `@SlackConnector.tool_utils` stack. Your agent now reads GitHub and posts to Slack with no additional OAuth setup.
 - **Use write actions.** Connectors expose create, update, and post actions alongside the read ones. Ask the agent to file an issue, comment on a PR, or send a Slack message, and `execute` carries the write through with the stored OAuth token.
 - **Let your AI assistant scaffold the next agent.** The Airbyte agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new agent without retyping them. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
 - **Reach the same connectors from any MCP client.** Airbyte Agents exposes the same connectors through a hosted MCP endpoint that works with Claude Code, Cursor, and ChatGPT. See the [FastMCP tutorial](./tutorial-fastmcp) for a local-server variant you can run yourself.
