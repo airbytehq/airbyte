@@ -67,8 +67,9 @@ def test_streams_full_refresh(mock_get_auth, mock_request):
     assert streams[0].name == "test"
 
 
+@mock.patch("source_microsoft_dataverse.source.get_datetime_behaviors")
 @mock.patch("source_microsoft_dataverse.source.do_request")
-def test_discover_incremental(mock_request):
+def test_discover_incremental(mock_request, mock_behaviors):
     result_json = json.loads(
         """
         {
@@ -98,6 +99,7 @@ def test_discover_incremental(mock_request):
 
     mock_request.return_value.status.return_value = 200
     mock_request.return_value.json.return_value = result_json
+    mock_behaviors.return_value = {"modifiedon": "UserLocal"}
 
     source = SourceMicrosoftDataverse()
     logger_mock, config_mock = MagicMock(), MagicMock()
@@ -108,10 +110,12 @@ def test_discover_incremental(mock_request):
     assert not {SyncMode.full_refresh, SyncMode.incremental} ^ set(catalog.streams[0].supported_sync_modes)
     assert not {"primary"} ^ set(catalog.streams[0].source_defined_primary_key[0])
     assert catalog.streams[0].json_schema["properties"]["test"] == AirbyteType.String.value
+    assert catalog.streams[0].json_schema["properties"]["modifiedon"] == AirbyteType.Timestamp.value
 
 
+@mock.patch("source_microsoft_dataverse.source.get_datetime_behaviors")
 @mock.patch("source_microsoft_dataverse.source.do_request")
-def test_discover_full_refresh(mock_request):
+def test_discover_full_refresh(mock_request, mock_behaviors):
     result_json = json.loads(
         """
         {
@@ -137,6 +141,7 @@ def test_discover_full_refresh(mock_request):
 
     mock_request.return_value.status.return_value = 200
     mock_request.return_value.json.return_value = result_json
+    mock_behaviors.return_value = {}
 
     source = SourceMicrosoftDataverse()
     logger_mock, config_mock = MagicMock(), MagicMock()
@@ -146,4 +151,53 @@ def test_discover_full_refresh(mock_request):
     assert catalog.streams[0].default_cursor_field is None or len(catalog.streams[0].default_cursor_field) == 0
     assert not {SyncMode.full_refresh} ^ set(catalog.streams[0].supported_sync_modes)
     assert not {"primary"} ^ set(catalog.streams[0].source_defined_primary_key[0])
-    assert catalog.streams[0].json_schema["properties"]["test"] == AirbyteType.String.value
+    mock_behaviors.assert_not_called()
+
+
+@mock.patch("source_microsoft_dataverse.source.get_datetime_behaviors")
+@mock.patch("source_microsoft_dataverse.source.do_request")
+def test_discover_dateonly_field(mock_request, mock_behaviors):
+    result_json = json.loads(
+        """
+        {
+            "value": [
+                {
+                    "LogicalName": "stream",
+                    "PrimaryIdAttribute": "primary",
+                    "ChangeTrackingEnabled": true,
+                    "CanChangeTrackingBeEnabled": {
+                        "Value": true
+                    },
+                    "Attributes": [
+                        {
+                            "LogicalName": "title",
+                            "AttributeType": "String"
+                        },
+                        {
+                            "LogicalName": "modifiedon",
+                            "AttributeType": "DateTime"
+                        },
+                        {
+                            "LogicalName": "birthday",
+                            "AttributeType": "DateTime"
+                        }
+                    ]
+                }
+            ]
+        }
+    """
+    )
+
+    mock_request.return_value.status.return_value = 200
+    mock_request.return_value.json.return_value = result_json
+    mock_behaviors.return_value = {"modifiedon": "UserLocal", "birthday": "DateOnly"}
+
+    source = SourceMicrosoftDataverse()
+    logger_mock, config_mock = MagicMock(), MagicMock()
+
+    catalog = source.discover(logger_mock, config_mock)
+
+    assert catalog.streams[0].json_schema["properties"]["modifiedon"] == AirbyteType.Timestamp.value
+    assert catalog.streams[0].json_schema["properties"]["birthday"] == AirbyteType.Date.value
+    assert catalog.streams[0].json_schema["properties"]["title"] == AirbyteType.String.value
+    mock_behaviors.assert_called_once()

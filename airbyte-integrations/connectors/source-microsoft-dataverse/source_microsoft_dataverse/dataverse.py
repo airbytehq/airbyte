@@ -29,6 +29,7 @@ class AirbyteType(Enum):
     String = {"type": ["null", "string"]}
     Boolean = {"type": ["null", "boolean"]}
     Timestamp = {"type": ["null", "string"], "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+    Date = {"type": ["null", "string"], "format": "date"}
     Integer = {"type": ["null", "integer"]}
     Number = {"type": ["null", "number"]}
 
@@ -70,10 +71,30 @@ def do_request(config: Mapping[str, Any], path: str):
     )
 
 
-def convert_dataverse_type(dataverse_type: str) -> Optional[dict]:
+def convert_dataverse_type(dataverse_type: str, datetime_behavior: Optional[str] = None) -> Optional[dict]:
+    if dataverse_type == "DateTime" and datetime_behavior == "DateOnly":
+        return AirbyteType.Date.value
+
     if dataverse_type in DataverseType.__members__:
         enum_type = DataverseType[dataverse_type]
         if enum_type:
             return enum_type.value if enum_type.value is None else enum_type.value.value
 
     return AirbyteType.String.value
+
+
+def get_datetime_behaviors(config: Mapping[str, Any], entity_name: str) -> Mapping[str, str]:
+    """Query DateTimeAttributeMetadata to get DateTimeBehavior for each DateTime attribute."""
+    path = (
+        f"EntityDefinitions(LogicalName='{entity_name}')"
+        f"/Attributes/Microsoft.Dynamics.CRM.DateTimeAttributeMetadata"
+        f"?$select=LogicalName,DateTimeBehavior"
+    )
+    response = do_request(config, path)
+    behaviors: dict[str, str] = {}
+    for attr in response.json().get("value", []):
+        logical_name = attr.get("LogicalName", "")
+        behavior_obj = attr.get("DateTimeBehavior")
+        if behavior_obj and logical_name:
+            behaviors[logical_name] = behavior_obj.get("Value", "")
+    return behaviors

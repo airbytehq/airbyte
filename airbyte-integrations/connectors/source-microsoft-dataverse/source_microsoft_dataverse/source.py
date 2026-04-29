@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessa
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .dataverse import convert_dataverse_type, do_request, get_auth
+from .dataverse import convert_dataverse_type, do_request, get_auth, get_datetime_behaviors
 from .streams import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStream
 
 
@@ -23,11 +23,18 @@ class SourceMicrosoftDataverse(AbstractSource):
         streams = []
         for entity in response_json["value"]:
             schema = {"properties": {}}
+
+            has_datetime = any(attr["AttributeType"] == "DateTime" for attr in entity["Attributes"])
+            datetime_behaviors: Mapping[str, str] = {}
+            if has_datetime:
+                datetime_behaviors = get_datetime_behaviors(config, entity["LogicalName"])
+
             for attribute in entity["Attributes"]:
                 dataverse_type = attribute["AttributeType"]
                 if dataverse_type == "Lookup":
                     attribute["LogicalName"] = "_" + attribute["LogicalName"] + "_value"
-                attribute_type = convert_dataverse_type(dataverse_type)
+                behavior = datetime_behaviors.get(attribute["LogicalName"])
+                attribute_type = convert_dataverse_type(dataverse_type, datetime_behavior=behavior)
 
                 if not attribute_type:
                     continue
