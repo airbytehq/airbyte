@@ -134,7 +134,7 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 1.7.0 | 2026-04-29 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade airbyte-cdk from 2.3.0 to 7.x with concurrent stream support |
+| 1.7.0 | 2026-04-29 | [77583](https://github.com/airbytehq/airbyte/pull/77583) | Upgrade airbyte-cdk from 2.3.0 to 7.x with concurrent stream support |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
 | 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
 | 1.6.0 | 2026-03-19 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |
