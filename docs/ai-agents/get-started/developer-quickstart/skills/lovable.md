@@ -288,3 +288,4 @@ await supabase.functions.invoke("airbyte-execute", {
 ## Source
 
 Airbyte keeps the canonical version of this skill in the [airbytehq/sonar](https://github.com/airbytehq/sonar) repository at [`docs/airbyte-for-lovable.md`](https://github.com/airbytehq/sonar/blob/main/docs/airbyte-for-lovable.md). Check there for the latest version.
+<wrong repo. let's point to https://github.com/airbytehq/airbyte-agent-sdk>
