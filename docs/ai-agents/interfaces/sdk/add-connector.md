@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+description: "Create, list, get, and delete connectors — stored credentials for third-party services."
 ---
 
 # Add a connector
