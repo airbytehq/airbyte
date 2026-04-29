@@ -70,13 +70,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
     - `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.
     - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
-2. Create an `agent.py` file for your agent definition:
-
-    ```bash
-    touch agent.py
-    ```
-
-3. Add the following imports to `agent.py`:
+2. Create an `agent.py` file with the following imports:
 
     ```python title="agent.py"
     import json

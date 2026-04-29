@@ -67,13 +67,7 @@ my-mcp-agent/
     - `fastmcp`: A Python framework for building MCP servers with minimal boilerplate.
     - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
-2. Create a `server.py` file for your MCP server definition:
-
-   ```bash
-   touch server.py
-   ```
-
-3. Add the following imports to `server.py`:
+2. Create a `server.py` file with the following imports:
 
     ```python title="server.py"
     import json

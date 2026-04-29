@@ -72,13 +72,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
     If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
     :::
 
-2. Create an `agent.py` file for your agent definition:
-
-    ```bash
-    touch agent.py
-    ```
-
-3. Add the following imports to `agent.py`:
+2. Create an `agent.py` file with the following imports:
 
     ```python title="agent.py"
     from dotenv import load_dotenv
