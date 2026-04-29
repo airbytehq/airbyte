@@ -1,12 +1,21 @@
 ---
 sidebar_position: 1
+title: Airbyte Agents
+hide_title: true
 ---
 
-# Airbyte Agents
+<HeroBanner
+  tagline="Give your AI agents real-time business data"
+  subtitle="Open-source connectors, managed credentials, and low-latency search. Use the cloud platform or import connectors directly into your own agents."
+  primaryCta={{ label: "Sign up free", href: "https://app.airbyte.ai" }}
+  secondaryCta={{ label: "Developer quickstart", href: "/ai-agents/get-started/developer-quickstart/" }}
+/>
 
-Airbyte Agents is a data and context layer for AI agents. It gives your agents real-time access to business data through open-source, type-safe connectors, managed credentials, and low-latency search. Use it as a cloud platform or import connectors directly into your own agents.
+<QuickInstall />
 
-[Sign up free at app.airbyte.ai](https://app.airbyte.ai) or [get started with the docs](/ai-agents/get-started/).
+<FrameworkGrid />
+
+## Explore the docs
 
 <Grid columns="2">
 

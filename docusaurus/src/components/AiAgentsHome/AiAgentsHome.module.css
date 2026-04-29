@@ -1,0 +1,228 @@
+/* ── Hero Banner ─────────────────────────────────────────── */
+
+.heroBanner {
+  padding: 40px 0 32px;
+  text-align: center;
+}
+
+.heroTagline {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 auto 12px;
+  max-width: 640px;
+  color: var(--ifm-heading-color);
+}
+
+.heroSubtitle {
+  font-size: 1.1rem;
+  color: var(--color-grey-500);
+  margin: 0 auto 28px;
+  max-width: 560px;
+  line-height: 1.6;
+}
+
+.heroCtas {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.heroPrimaryCta,
+.heroSecondaryCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.heroPrimaryCta {
+  background-color: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.heroPrimaryCta:hover {
+  background-color: var(--ifm-color-primary-dark);
+  color: #fff;
+  text-decoration: none;
+}
+
+.heroSecondaryCta {
+  border: 1px solid var(--color-grey-100);
+  color: var(--ifm-heading-color);
+  background: transparent;
+}
+
+.heroSecondaryCta:hover {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+/* ── Section headings ────────────────────────────────────── */
+
+.sectionHeading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.sectionSubheading {
+  color: var(--color-grey-500);
+  margin-bottom: 20px;
+}
+
+/* ── Quick Install ───────────────────────────────────────── */
+
+.quickInstall {
+  margin: 32px 0;
+  padding: 24px 28px;
+  border-radius: 12px;
+  background-color: var(--color-ae-bg);
+  border: 1px solid var(--color-ae-card-border);
+}
+
+.quickInstallTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-ae-card-border);
+  margin-bottom: 20px;
+}
+
+.quickInstallTab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-grey-500);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.quickInstallTab:hover {
+  color: var(--ifm-color-primary);
+}
+
+.quickInstallTabActive {
+  color: var(--ifm-color-primary);
+  border-bottom-color: var(--ifm-color-primary);
+}
+
+.quickInstallBody {
+  min-height: 100px;
+}
+
+.quickInstallCode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: var(--color-grey-40);
+  border: 1px solid var(--color-grey-100);
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.quickInstallCode code {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  color: var(--ifm-code-color);
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.quickInstallCopy {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--color-grey-100);
+  background: var(--color-white);
+  color: var(--ifm-heading-color);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.quickInstallCopy:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+.quickInstallDescription {
+  color: var(--color-grey-500);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.quickInstallLink {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.quickInstallLink:hover {
+  text-decoration: underline;
+}
+
+/* ── Framework Grid ──────────────────────────────────────── */
+
+.frameworkSection {
+  margin: 40px 0;
+}
+
+.frameworkGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .frameworkGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.frameworkCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-grey-100);
+  background: var(--color-white);
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.frameworkCard:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 2px 12px rgba(97, 94, 255, 0.1);
+  text-decoration: none;
+}
+
+.frameworkIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+.frameworkName {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ifm-heading-color);
+}
