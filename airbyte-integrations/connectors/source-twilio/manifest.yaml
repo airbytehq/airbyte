@@ -690,6 +690,11 @@ definitions:
       - end_date
     retriever:
       $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/base_stream/retriever/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('account_sid') is not none and record.get('category') is not none and record.get('start_date') is not none and record.get('end_date') is not none }}"
       requester:
         $ref: "#/definitions/base_requester"
         url: "https://api.twilio.com/2010-04-01/Accounts/{{ stream_partition['account_sid'] }}/Usage/Records/Daily.json"
