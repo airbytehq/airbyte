@@ -42,26 +42,26 @@ Follow [Google's OAuth 2.0 for Web Server Applications guide](https://developers
 
 <FieldAnchor field="start_date">
 
-2. Optionally, set a **Start date** to limit replication to messages, threads, and drafts received on or after that date. If left blank, the connector replicates the full history.
+1. Optionally, set a **Start date** to limit replication to messages, threads, and drafts received on or after that date. If left blank, the connector replicates the full history.
 
 </FieldAnchor>
 
 <FieldAnchor field="num_workers">
 
-3. Optionally, adjust the **Number of concurrent workers** to control sync speed. The default of 5 works well for most accounts. If you encounter frequent rate-limit errors, reduce this value. Valid range: 2--10.
+1. Optionally, adjust the **Number of concurrent workers** to control sync speed. The default of 5 works well for most accounts. If you encounter frequent rate-limit errors, reduce this value. Valid range: 2--10.
 
 </FieldAnchor>
 
 <FieldAnchor field="include_spam_and_trash">
 
-4. Optionally, enable **Include Spam & Trash** to include messages and drafts from the SPAM and TRASH folders.
+1. Optionally, enable **Include Spam & Trash** to include messages and drafts from the SPAM and TRASH folders.
 
 </FieldAnchor>
 
 ## Supported streams
 
 | Stream | Primary key | Pagination | Full Refresh | Incremental |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | [profile](https://developers.google.com/gmail/api/reference/rest/v1/users/getProfile) | | No pagination | Yes | No |
 | [drafts](https://developers.google.com/gmail/api/reference/rest/v1/users.drafts/list) | `id` | Yes | Yes | No |
 | [labels](https://developers.google.com/gmail/api/reference/rest/v1/users.labels/list) | `id` | No pagination | Yes | No |
@@ -97,7 +97,7 @@ When you select a details stream, Airbyte automatically syncs the corresponding 
 The Gmail API enforces two simultaneous quota limits:
 
 | Limit | Quota |
-|---|---|
+| --- | --- |
 | Per-project | 1,200,000 quota units per minute |
 | Per-user | 15,000 quota units per minute |
 
@@ -116,8 +116,8 @@ The connector handles rate limiting automatically by retrying when Gmail returns
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
 | 0.1.0 | 2026-04-29 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add `messages_details` incremental sync, optional `start_date` server-side filtering on `messages`/`drafts`/`threads`, configurable concurrency via `num_workers`, and Gmail-aware rate-limit handling (429 + 403 quota-saturation) |
 | 0.0.52 | 2026-04-28 | [77264](https://github.com/airbytehq/airbyte/pull/77264) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76616](https://github.com/airbytehq/airbyte/pull/76616) | Update dependencies |
