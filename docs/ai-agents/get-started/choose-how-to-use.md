@@ -23,7 +23,10 @@ flowchart TD
     click API "#http-api"
 ```
 
-## Web app
+## Web app (Research Preview)
+<Should we call this chats? Chats and automations? Web app feels ok.>
+<I think we should reorder MCP > SDK > Web app>
+
 
 **Best for:** Non-developers, operations teams, and anyone who wants to explore Airbyte Agents without writing code.
 
