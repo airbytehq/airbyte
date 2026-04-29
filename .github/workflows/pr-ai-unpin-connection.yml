@@ -16,21 +16,21 @@ permissions:
   discussions: write
 
 jobs:
-  check-permissions:
-    name: Resolve Input Variables
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Gather event metadata
-        id: gather-metadata
-        run: |
-          echo "author=${{github.event.sender.login}}" >> $GITHUB_OUTPUT
-          if [[ "${{ github.event_name }}" == "issues" ]]; then
-            echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
-            echo "event-type=issue" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "discussion" ]]; then
-            echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
-            echo "event-type=discussion" >> $GITHUB_OUTPUT
-          fi
+  # check-permissions:
+  #   name: Resolve Input Variables
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #     - name: Gather event metadata
+  #       id: gather-metadata
+  #       run: |
+  #         echo "author=${{github.event.sender.login}}" >> $GITHUB_OUTPUT
+  #         if [[ "${{ github.event_name }}" == "issues" ]]; then
+  #           echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
+  #           echo "event-type=issue" >> $GITHUB_OUTPUT
+  #         elif [[ "${{ github.event_name }}" == "discussion" ]]; then
+  #           echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
+  #           echo "event-type=discussion" >> $GITHUB_OUTPUT
+  #         fi
 
   ai-unpin:
     runs-on: ubuntu-latest
