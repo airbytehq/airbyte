@@ -1180,100 +1180,100 @@ Classes
 
     ### Class variables
 
-    `addon_constraint: str | Any`
+    `addon_constraint: str | None`
     :   The type of the None singleton.
 
-    `apply_discount_on: str | Any`
+    `apply_discount_on: str | None`
     :   The type of the None singleton.
 
-    `apply_on: str | Any`
+    `apply_on: str | None`
     :   The type of the None singleton.
 
-    `archived_at: int | Any`
+    `archived_at: int | None`
     :   The type of the None singleton.
 
-    `coupon_constraints: list[dict[str, typing.Any]] | Any`
+    `coupon_constraints: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `discount_amount: int | Any`
+    `discount_amount: int | None`
     :   The type of the None singleton.
 
-    `discount_percentage: float | Any`
+    `discount_percentage: float | None`
     :   The type of the None singleton.
 
-    `discount_quantity: int | Any`
+    `discount_quantity: int | None`
     :   The type of the None singleton.
 
-    `discount_type: str | Any`
+    `discount_type: str | None`
     :   The type of the None singleton.
 
-    `duration_month: int | Any`
+    `duration_month: int | None`
     :   The type of the None singleton.
 
-    `duration_type: str | Any`
+    `duration_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `invoice_name: str | Any`
+    `invoice_name: str | None`
     :   The type of the None singleton.
 
-    `invoice_notes: str | Any`
+    `invoice_notes: str | None`
     :   The type of the None singleton.
 
-    `item_constraint_criteria: list[dict[str, typing.Any]] | Any`
+    `item_constraint_criteria: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `item_constraints: list[dict[str, typing.Any]] | Any`
+    `item_constraints: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `max_redemptions: int | Any`
+    `max_redemptions: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `period: int | Any`
+    `period: int | None`
     :   The type of the None singleton.
 
-    `period_unit: str | Any`
+    `period_unit: str | None`
     :   The type of the None singleton.
 
-    `plan_constraint: str | Any`
+    `plan_constraint: str | None`
     :   The type of the None singleton.
 
-    `redemptions: int | Any`
+    `redemptions: int | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `valid_till: int | Any`
+    `valid_till: int | None`
     :   The type of the None singleton.
 
 <a id="CouponList"></a>
@@ -1294,13 +1294,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.CouponListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.CouponListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="CouponListListItem"></a>
@@ -1321,7 +1321,7 @@ Classes
 
     ### Class variables
 
-    `coupon: airbyte_agent_sdk.connectors.chargebee.models.Coupon | Any`
+    `coupon: airbyte_agent_sdk.connectors.chargebee.models.Coupon | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1348,7 +1348,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="CouponSearchData"></a>
@@ -1474,7 +1474,7 @@ Classes
 
     ### Class variables
 
-    `coupon: airbyte_agent_sdk.connectors.chargebee.models.Coupon | Any`
+    `coupon: airbyte_agent_sdk.connectors.chargebee.models.Coupon | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1498,142 +1498,142 @@ Classes
 
     ### Class variables
 
-    `allocations: list[dict[str, typing.Any]] | Any`
+    `allocations: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `amount_allocated: int | Any`
+    `amount_allocated: int | None`
     :   The type of the None singleton.
 
-    `amount_available: int | Any`
+    `amount_available: int | None`
     :   The type of the None singleton.
 
-    `amount_refunded: int | Any`
+    `amount_refunded: int | None`
     :   The type of the None singleton.
 
-    `base_currency_code: str | Any`
+    `base_currency_code: str | None`
     :   The type of the None singleton.
 
-    `billing_address: dict[str, typing.Any] | Any`
+    `billing_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `channel: str | Any`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `create_reason_code: str | Any`
+    `create_reason_code: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_id: str | Any`
+    `customer_id: str | None`
     :   The type of the None singleton.
 
-    `date: int | Any`
+    `date: int | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `discounts: list[dict[str, typing.Any]] | Any`
+    `discounts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `exchange_rate: float | Any`
+    `exchange_rate: float | None`
     :   The type of the None singleton.
 
-    `fractional_correction: int | Any`
+    `fractional_correction: int | None`
     :   The type of the None singleton.
 
-    `generated_at: int | Any`
+    `generated_at: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `line_item_discounts: list[dict[str, typing.Any]] | Any`
+    `line_item_discounts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_item_taxes: list[dict[str, typing.Any]] | Any`
+    `line_item_taxes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_item_tiers: list[dict[str, typing.Any]] | Any`
+    `line_item_tiers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_items: list[dict[str, typing.Any]] | Any`
+    `line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_refunds: list[dict[str, typing.Any]] | Any`
+    `linked_refunds: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_tax_withheld_refunds: list[dict[str, typing.Any]] | Any`
+    `linked_tax_withheld_refunds: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `price_type: str | Any`
+    `price_type: str | None`
     :   The type of the None singleton.
 
-    `reason_code: str | Any`
+    `reason_code: str | None`
     :   The type of the None singleton.
 
-    `reference_invoice_id: str | Any`
+    `reference_invoice_id: str | None`
     :   The type of the None singleton.
 
-    `refunded_at: int | Any`
+    `refunded_at: int | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `round_off_amount: int | Any`
+    `round_off_amount: int | None`
     :   The type of the None singleton.
 
-    `shipping_address: dict[str, typing.Any] | Any`
+    `shipping_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `sub_total: int | Any`
+    `sub_total: int | None`
     :   The type of the None singleton.
 
-    `sub_total_in_local_currency: int | Any`
+    `sub_total_in_local_currency: int | None`
     :   The type of the None singleton.
 
-    `subscription_id: str | Any`
+    `subscription_id: str | None`
     :   The type of the None singleton.
 
-    `taxes: list[dict[str, typing.Any]] | Any`
+    `taxes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `total_in_local_currency: int | Any`
+    `total_in_local_currency: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `void_reason_code: str | Any`
+    `void_reason_code: str | None`
     :   The type of the None singleton.
 
-    `voided_at: int | Any`
+    `voided_at: int | None`
     :   The type of the None singleton.
 
 <a id="CreditNoteList"></a>
@@ -1654,13 +1654,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.CreditNoteListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.CreditNoteListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="CreditNoteListListItem"></a>
@@ -1681,7 +1681,7 @@ Classes
 
     ### Class variables
 
-    `credit_note: airbyte_agent_sdk.connectors.chargebee.models.CreditNote | Any`
+    `credit_note: airbyte_agent_sdk.connectors.chargebee.models.CreditNote | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1708,7 +1708,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="CreditNoteSearchData"></a>
@@ -1897,7 +1897,7 @@ Classes
 
     ### Class variables
 
-    `credit_note: airbyte_agent_sdk.connectors.chargebee.models.CreditNote | Any`
+    `credit_note: airbyte_agent_sdk.connectors.chargebee.models.CreditNote | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1921,196 +1921,196 @@ Classes
 
     ### Class variables
 
-    `allow_direct_debit: bool | Any`
+    `allow_direct_debit: bool | None`
     :   The type of the None singleton.
 
-    `auto_close_invoices: bool | Any`
+    `auto_close_invoices: bool | None`
     :   The type of the None singleton.
 
-    `auto_collection: str | Any`
+    `auto_collection: str | None`
     :   The type of the None singleton.
 
-    `backup_payment_source_id: str | Any`
+    `backup_payment_source_id: str | None`
     :   The type of the None singleton.
 
-    `balances: list[dict[str, typing.Any]] | Any`
+    `balances: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `billing_address: dict[str, typing.Any] | Any`
+    `billing_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `billing_date: int | Any`
+    `billing_date: int | None`
     :   The type of the None singleton.
 
-    `billing_date_mode: str | Any`
+    `billing_date_mode: str | None`
     :   The type of the None singleton.
 
-    `billing_day_of_week: str | Any`
+    `billing_day_of_week: str | None`
     :   The type of the None singleton.
 
-    `billing_day_of_week_mode: str | Any`
+    `billing_day_of_week_mode: str | None`
     :   The type of the None singleton.
 
-    `billing_month: int | Any`
+    `billing_month: int | None`
     :   The type of the None singleton.
 
-    `business_customer_without_vat_number: bool | Any`
+    `business_customer_without_vat_number: bool | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `card_status: str | Any`
+    `card_status: str | None`
     :   The type of the None singleton.
 
-    `channel: str | Any`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `child_account_access: dict[str, typing.Any] | Any`
+    `child_account_access: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `client_profile_id: str | Any`
+    `client_profile_id: str | None`
     :   The type of the None singleton.
 
-    `company: str | Any`
+    `company: str | None`
     :   The type of the None singleton.
 
-    `consolidated_invoicing: bool | Any`
+    `consolidated_invoicing: bool | None`
     :   The type of the None singleton.
 
-    `contacts: list[dict[str, typing.Any]] | Any`
+    `contacts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `created_from_ip: str | Any`
+    `created_from_ip: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_type: str | Any`
+    `customer_type: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `entity_code: str | Any`
+    `entity_code: str | None`
     :   The type of the None singleton.
 
-    `excess_payments: int | Any`
+    `excess_payments: int | None`
     :   The type of the None singleton.
 
-    `exempt_number: str | Any`
+    `exempt_number: str | None`
     :   The type of the None singleton.
 
-    `exemption_details: list[dict[str, typing.Any]] | Any`
+    `exemption_details: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `fraud_flag: str | Any`
+    `fraud_flag: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `invoice_notes: str | Any`
+    `invoice_notes: str | None`
     :   The type of the None singleton.
 
-    `is_location_valid: bool | Any`
+    `is_location_valid: bool | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `locale: str | Any`
+    `locale: str | None`
     :   The type of the None singleton.
 
-    `meta_data: dict[str, typing.Any] | Any`
+    `meta_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `mrr: int | Any`
+    `mrr: int | None`
     :   The type of the None singleton.
 
-    `net_term_days: int | Any`
+    `net_term_days: int | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `offline_payment_method: str | Any`
+    `offline_payment_method: str | None`
     :   The type of the None singleton.
 
-    `parent_account_access: dict[str, typing.Any] | Any`
+    `parent_account_access: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `payment_method: dict[str, typing.Any] | Any`
+    `payment_method: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `phone: str | Any`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `pii_cleared: str | Any`
+    `pii_cleared: str | None`
     :   The type of the None singleton.
 
-    `preferred_currency_code: str | Any`
+    `preferred_currency_code: str | None`
     :   The type of the None singleton.
 
-    `primary_payment_source_id: str | Any`
+    `primary_payment_source_id: str | None`
     :   The type of the None singleton.
 
-    `promotional_credits: int | Any`
+    `promotional_credits: int | None`
     :   The type of the None singleton.
 
-    `referral_urls: list[dict[str, typing.Any]] | Any`
+    `referral_urls: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `refundable_credits: int | Any`
+    `refundable_credits: int | None`
     :   The type of the None singleton.
 
-    `registered_for_gst: bool | Any`
+    `registered_for_gst: bool | None`
     :   The type of the None singleton.
 
-    `relationship: dict[str, typing.Any] | Any`
+    `relationship: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `tax_providers_fields: list[dict[str, typing.Any]] | Any`
+    `tax_providers_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `taxability: str | Any`
+    `taxability: str | None`
     :   The type of the None singleton.
 
-    `unbilled_charges: int | Any`
+    `unbilled_charges: int | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `use_default_hierarchy_settings: bool | Any`
+    `use_default_hierarchy_settings: bool | None`
     :   The type of the None singleton.
 
-    `vat_number: str | Any`
+    `vat_number: str | None`
     :   The type of the None singleton.
 
-    `vat_number_prefix: str | Any`
+    `vat_number_prefix: str | None`
     :   The type of the None singleton.
 
-    `vat_number_status: str | Any`
+    `vat_number_status: str | None`
     :   The type of the None singleton.
 
-    `vat_number_validated_time: int | Any`
+    `vat_number_validated_time: int | None`
     :   The type of the None singleton.
 
 <a id="CustomerList"></a>
@@ -2131,13 +2131,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.CustomerListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.CustomerListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerListListItem"></a>
@@ -2158,7 +2158,7 @@ Classes
 
     ### Class variables
 
-    `customer: airbyte_agent_sdk.connectors.chargebee.models.Customer | Any`
+    `customer: airbyte_agent_sdk.connectors.chargebee.models.Customer | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2185,7 +2185,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerSearchData"></a>
@@ -2416,7 +2416,7 @@ Classes
 
     ### Class variables
 
-    `customer: airbyte_agent_sdk.connectors.chargebee.models.Customer | Any`
+    `customer: airbyte_agent_sdk.connectors.chargebee.models.Customer | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2440,40 +2440,40 @@ Classes
 
     ### Class variables
 
-    `api_version: str | Any`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `content: dict[str, typing.Any] | Any`
+    `content: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `event_type: str | Any`
+    `event_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `occurred_at: int | Any`
+    `occurred_at: int | None`
     :   The type of the None singleton.
 
-    `source: str | Any`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any`
+    `user: str | None`
     :   The type of the None singleton.
 
-    `webhook_status: str | Any`
+    `webhook_status: str | None`
     :   The type of the None singleton.
 
-    `webhooks: list[dict[str, typing.Any]] | Any`
+    `webhooks: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="EventList"></a>
@@ -2494,13 +2494,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.EventListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.EventListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="EventListListItem"></a>
@@ -2521,7 +2521,7 @@ Classes
 
     ### Class variables
 
-    `event: airbyte_agent_sdk.connectors.chargebee.models.Event | Any`
+    `event: airbyte_agent_sdk.connectors.chargebee.models.Event | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2548,7 +2548,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="EventSearchData"></a>
@@ -2623,7 +2623,7 @@ Classes
 
     ### Class variables
 
-    `event: airbyte_agent_sdk.connectors.chargebee.models.Event | Any`
+    `event: airbyte_agent_sdk.connectors.chargebee.models.Event | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2647,181 +2647,181 @@ Classes
 
     ### Class variables
 
-    `adjustment_credit_notes: list[dict[str, typing.Any]] | Any`
+    `adjustment_credit_notes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `amount_adjusted: int | Any`
+    `amount_adjusted: int | None`
     :   The type of the None singleton.
 
-    `amount_due: int | Any`
+    `amount_due: int | None`
     :   The type of the None singleton.
 
-    `amount_paid: int | Any`
+    `amount_paid: int | None`
     :   The type of the None singleton.
 
-    `amount_to_collect: int | Any`
+    `amount_to_collect: int | None`
     :   The type of the None singleton.
 
-    `applied_credits: list[dict[str, typing.Any]] | Any`
+    `applied_credits: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `base_currency_code: str | Any`
+    `base_currency_code: str | None`
     :   The type of the None singleton.
 
-    `billing_address: dict[str, typing.Any] | Any`
+    `billing_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `channel: str | Any`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `credits_applied: int | Any`
+    `credits_applied: int | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_id: str | Any`
+    `customer_id: str | None`
     :   The type of the None singleton.
 
-    `date: int | Any`
+    `date: int | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `discounts: list[dict[str, typing.Any]] | Any`
+    `discounts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `due_date: int | Any`
+    `due_date: int | None`
     :   The type of the None singleton.
 
-    `dunning_attempts: list[dict[str, typing.Any]] | Any`
+    `dunning_attempts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `dunning_status: str | Any`
+    `dunning_status: str | None`
     :   The type of the None singleton.
 
-    `exchange_rate: float | Any`
+    `exchange_rate: float | None`
     :   The type of the None singleton.
 
-    `expected_payment_date: int | Any`
+    `expected_payment_date: int | None`
     :   The type of the None singleton.
 
-    `first_invoice: bool | Any`
+    `first_invoice: bool | None`
     :   The type of the None singleton.
 
-    `generated_at: int | Any`
+    `generated_at: int | None`
     :   The type of the None singleton.
 
-    `has_advance_charges: bool | Any`
+    `has_advance_charges: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_gifted: bool | Any`
+    `is_gifted: bool | None`
     :   The type of the None singleton.
 
-    `issued_credit_notes: list[dict[str, typing.Any]] | Any`
+    `issued_credit_notes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_item_discounts: list[dict[str, typing.Any]] | Any`
+    `line_item_discounts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_item_taxes: list[dict[str, typing.Any]] | Any`
+    `line_item_taxes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_item_tiers: list[dict[str, typing.Any]] | Any`
+    `line_item_tiers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_items: list[dict[str, typing.Any]] | Any`
+    `line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_orders: list[dict[str, typing.Any]] | Any`
+    `linked_orders: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_payments: list[dict[str, typing.Any]] | Any`
+    `linked_payments: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_taxes_withheld: list[dict[str, typing.Any]] | Any`
+    `linked_taxes_withheld: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `net_term_days: int | Any`
+    `net_term_days: int | None`
     :   The type of the None singleton.
 
-    `new_sales_amount: int | Any`
+    `new_sales_amount: int | None`
     :   The type of the None singleton.
 
-    `notes: list[dict[str, typing.Any]] | Any`
+    `notes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `paid_at: int | Any`
+    `paid_at: int | None`
     :   The type of the None singleton.
 
-    `price_type: str | Any`
+    `price_type: str | None`
     :   The type of the None singleton.
 
-    `recurring: bool | Any`
+    `recurring: bool | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `round_off_amount: int | Any`
+    `round_off_amount: int | None`
     :   The type of the None singleton.
 
-    `shipping_address: dict[str, typing.Any] | Any`
+    `shipping_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `sub_total: int | Any`
+    `sub_total: int | None`
     :   The type of the None singleton.
 
-    `sub_total_in_local_currency: int | Any`
+    `sub_total_in_local_currency: int | None`
     :   The type of the None singleton.
 
-    `subscription_id: str | Any`
+    `subscription_id: str | None`
     :   The type of the None singleton.
 
-    `tax: int | Any`
+    `tax: int | None`
     :   The type of the None singleton.
 
-    `taxes: list[dict[str, typing.Any]] | Any`
+    `taxes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `total_in_local_currency: int | Any`
+    `total_in_local_currency: int | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `void_reason_code: str | Any`
+    `void_reason_code: str | None`
     :   The type of the None singleton.
 
-    `voided_at: int | Any`
+    `voided_at: int | None`
     :   The type of the None singleton.
 
-    `write_off_amount: int | Any`
+    `write_off_amount: int | None`
     :   The type of the None singleton.
 
 <a id="InvoiceList"></a>
@@ -2842,13 +2842,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.InvoiceListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.InvoiceListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceListListItem"></a>
@@ -2869,7 +2869,7 @@ Classes
 
     ### Class variables
 
-    `invoice: airbyte_agent_sdk.connectors.chargebee.models.Invoice | Any`
+    `invoice: airbyte_agent_sdk.connectors.chargebee.models.Invoice | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2896,7 +2896,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceSearchData"></a>
@@ -3145,7 +3145,7 @@ Classes
 
     ### Class variables
 
-    `invoice: airbyte_agent_sdk.connectors.chargebee.models.Invoice | Any`
+    `invoice: airbyte_agent_sdk.connectors.chargebee.models.Invoice | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3169,97 +3169,97 @@ Classes
 
     ### Class variables
 
-    `applicable_items: list[dict[str, typing.Any]] | Any`
+    `applicable_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `archived_at: int | Any`
+    `archived_at: int | None`
     :   The type of the None singleton.
 
-    `bundle_configuration: dict[str, typing.Any] | Any`
+    `bundle_configuration: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `bundle_items: list[dict[str, typing.Any]] | Any`
+    `bundle_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `channel: str | Any`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `enabled_for_checkout: bool | Any`
+    `enabled_for_checkout: bool | None`
     :   The type of the None singleton.
 
-    `enabled_in_portal: bool | Any`
+    `enabled_in_portal: bool | None`
     :   The type of the None singleton.
 
-    `external_name: str | Any`
+    `external_name: str | None`
     :   The type of the None singleton.
 
-    `gift_claim_redirect_url: str | Any`
+    `gift_claim_redirect_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `included_in_mrr: bool | Any`
+    `included_in_mrr: bool | None`
     :   The type of the None singleton.
 
-    `is_giftable: bool | Any`
+    `is_giftable: bool | None`
     :   The type of the None singleton.
 
-    `is_percentage_pricing: bool | Any`
+    `is_percentage_pricing: bool | None`
     :   The type of the None singleton.
 
-    `is_shippable: bool | Any`
+    `is_shippable: bool | None`
     :   The type of the None singleton.
 
-    `item_applicability: str | Any`
+    `item_applicability: str | None`
     :   The type of the None singleton.
 
-    `item_family_id: str | Any`
+    `item_family_id: str | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, typing.Any] | Any`
+    `metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `metered: bool | Any`
+    `metered: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `redirect_url: str | Any`
+    `redirect_url: str | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `unit: str | Any`
+    `unit: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `usage_calculation: str | Any`
+    `usage_calculation: str | None`
     :   The type of the None singleton.
 
 <a id="ItemList"></a>
@@ -3280,13 +3280,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.ItemListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.ItemListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="ItemListListItem"></a>
@@ -3307,7 +3307,7 @@ Classes
 
     ### Class variables
 
-    `item: airbyte_agent_sdk.connectors.chargebee.models.Item | Any`
+    `item: airbyte_agent_sdk.connectors.chargebee.models.Item | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3334,7 +3334,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="ItemPrice"></a>
@@ -3355,124 +3355,124 @@ Classes
 
     ### Class variables
 
-    `accounting_detail: dict[str, typing.Any] | Any`
+    `accounting_detail: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `archived_at: int | Any`
+    `archived_at: int | None`
     :   The type of the None singleton.
 
-    `billing_cycles: int | Any`
+    `billing_cycles: int | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `channel: str | Any`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `external_name: str | Any`
+    `external_name: str | None`
     :   The type of the None singleton.
 
-    `free_quantity: int | Any`
+    `free_quantity: int | None`
     :   The type of the None singleton.
 
-    `free_quantity_in_decimal: str | Any`
+    `free_quantity_in_decimal: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `invoice_notes: str | Any`
+    `invoice_notes: str | None`
     :   The type of the None singleton.
 
-    `is_taxable: bool | Any`
+    `is_taxable: bool | None`
     :   The type of the None singleton.
 
-    `item_family_id: str | Any`
+    `item_family_id: str | None`
     :   The type of the None singleton.
 
-    `item_id: str | Any`
+    `item_id: str | None`
     :   The type of the None singleton.
 
-    `item_type: str | Any`
+    `item_type: str | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, typing.Any] | Any`
+    `metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `period: int | Any`
+    `period: int | None`
     :   The type of the None singleton.
 
-    `period_unit: str | Any`
+    `period_unit: str | None`
     :   The type of the None singleton.
 
-    `price: int | Any`
+    `price: int | None`
     :   The type of the None singleton.
 
-    `price_in_decimal: str | Any`
+    `price_in_decimal: str | None`
     :   The type of the None singleton.
 
-    `pricing_model: str | Any`
+    `pricing_model: str | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `shipping_period: int | Any`
+    `shipping_period: int | None`
     :   The type of the None singleton.
 
-    `shipping_period_unit: str | Any`
+    `shipping_period_unit: str | None`
     :   The type of the None singleton.
 
-    `show_description_in_invoices: bool | Any`
+    `show_description_in_invoices: bool | None`
     :   The type of the None singleton.
 
-    `show_description_in_quotes: bool | Any`
+    `show_description_in_quotes: bool | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `tax_detail: dict[str, typing.Any] | Any`
+    `tax_detail: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `tax_providers_fields: list[dict[str, typing.Any]] | Any`
+    `tax_providers_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `tiers: list[dict[str, typing.Any]] | Any`
+    `tiers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `trial_end_action: str | Any`
+    `trial_end_action: str | None`
     :   The type of the None singleton.
 
-    `trial_period: int | Any`
+    `trial_period: int | None`
     :   The type of the None singleton.
 
-    `trial_period_unit: str | Any`
+    `trial_period_unit: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="ItemPriceList"></a>
@@ -3493,13 +3493,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.ItemPriceListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.ItemPriceListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="ItemPriceListListItem"></a>
@@ -3520,7 +3520,7 @@ Classes
 
     ### Class variables
 
-    `item_price: airbyte_agent_sdk.connectors.chargebee.models.ItemPrice | Any`
+    `item_price: airbyte_agent_sdk.connectors.chargebee.models.ItemPrice | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3547,7 +3547,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="ItemPriceSearchData"></a>
@@ -3700,7 +3700,7 @@ Classes
 
     ### Class variables
 
-    `item_price: airbyte_agent_sdk.connectors.chargebee.models.ItemPrice | Any`
+    `item_price: airbyte_agent_sdk.connectors.chargebee.models.ItemPrice | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3823,7 +3823,7 @@ Classes
 
     ### Class variables
 
-    `item: airbyte_agent_sdk.connectors.chargebee.models.Item | Any`
+    `item: airbyte_agent_sdk.connectors.chargebee.models.Item | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3847,181 +3847,181 @@ Classes
 
     ### Class variables
 
-    `amount_adjusted: int | Any`
+    `amount_adjusted: int | None`
     :   The type of the None singleton.
 
-    `amount_paid: int | Any`
+    `amount_paid: int | None`
     :   The type of the None singleton.
 
-    `batch_id: str | Any`
+    `batch_id: str | None`
     :   The type of the None singleton.
 
-    `billing_address: dict[str, typing.Any] | Any`
+    `billing_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `cancellation_reason: str | Any`
+    `cancellation_reason: str | None`
     :   The type of the None singleton.
 
-    `cancelled_at: int | Any`
+    `cancelled_at: int | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `created_by: str | Any`
+    `created_by: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_id: str | Any`
+    `customer_id: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `delivered_at: int | Any`
+    `delivered_at: int | None`
     :   The type of the None singleton.
 
-    `discount: int | Any`
+    `discount: int | None`
     :   The type of the None singleton.
 
-    `document_number: str | Any`
+    `document_number: str | None`
     :   The type of the None singleton.
 
-    `fulfillment_status: str | Any`
+    `fulfillment_status: str | None`
     :   The type of the None singleton.
 
-    `gift_id: str | Any`
+    `gift_id: str | None`
     :   The type of the None singleton.
 
-    `gift_note: str | Any`
+    `gift_note: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `invoice_id: str | Any`
+    `invoice_id: str | None`
     :   The type of the None singleton.
 
-    `invoice_round_off_amount: int | Any`
+    `invoice_round_off_amount: int | None`
     :   The type of the None singleton.
 
-    `is_gifted: bool | Any`
+    `is_gifted: bool | None`
     :   The type of the None singleton.
 
-    `is_resent: bool | Any`
+    `is_resent: bool | None`
     :   The type of the None singleton.
 
-    `line_item_discounts: list[dict[str, typing.Any]] | Any`
+    `line_item_discounts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `line_item_taxes: list[dict[str, typing.Any]] | Any`
+    `line_item_taxes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_credit_notes: list[dict[str, typing.Any]] | Any`
+    `linked_credit_notes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `note: str | Any`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `order_date: int | Any`
+    `order_date: int | None`
     :   The type of the None singleton.
 
-    `order_line_items: list[dict[str, typing.Any]] | Any`
+    `order_line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `order_type: str | Any`
+    `order_type: str | None`
     :   The type of the None singleton.
 
-    `original_order_id: str | Any`
+    `original_order_id: str | None`
     :   The type of the None singleton.
 
-    `paid_on: int | Any`
+    `paid_on: int | None`
     :   The type of the None singleton.
 
-    `payment_status: str | Any`
+    `payment_status: str | None`
     :   The type of the None singleton.
 
-    `price_type: str | Any`
+    `price_type: str | None`
     :   The type of the None singleton.
 
-    `reference_id: str | Any`
+    `reference_id: str | None`
     :   The type of the None singleton.
 
-    `refundable_credits: int | Any`
+    `refundable_credits: int | None`
     :   The type of the None singleton.
 
-    `refundable_credits_issued: int | Any`
+    `refundable_credits_issued: int | None`
     :   The type of the None singleton.
 
-    `resend_reason: str | Any`
+    `resend_reason: str | None`
     :   The type of the None singleton.
 
-    `resent_orders: list[dict[str, typing.Any]] | Any`
+    `resent_orders: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `resent_status: str | Any`
+    `resent_status: str | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `rounding_adjustement: int | Any`
+    `rounding_adjustement: int | None`
     :   The type of the None singleton.
 
-    `shipment_carrier: str | Any`
+    `shipment_carrier: str | None`
     :   The type of the None singleton.
 
-    `shipped_at: int | Any`
+    `shipped_at: int | None`
     :   The type of the None singleton.
 
-    `shipping_address: dict[str, typing.Any] | Any`
+    `shipping_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `shipping_cut_off_date: int | Any`
+    `shipping_cut_off_date: int | None`
     :   The type of the None singleton.
 
-    `shipping_date: int | Any`
+    `shipping_date: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `status_update_at: int | Any`
+    `status_update_at: int | None`
     :   The type of the None singleton.
 
-    `sub_total: int | Any`
+    `sub_total: int | None`
     :   The type of the None singleton.
 
-    `subscription_id: str | Any`
+    `subscription_id: str | None`
     :   The type of the None singleton.
 
-    `tax: int | Any`
+    `tax: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `tracking_id: str | Any`
+    `tracking_id: str | None`
     :   The type of the None singleton.
 
-    `tracking_url: str | Any`
+    `tracking_url: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="OrderList"></a>
@@ -4042,13 +4042,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.OrderListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.OrderListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="OrderListListItem"></a>
@@ -4072,7 +4072,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `order: airbyte_agent_sdk.connectors.chargebee.models.Order | Any`
+    `order: airbyte_agent_sdk.connectors.chargebee.models.Order | None`
     :   The type of the None singleton.
 
 <a id="OrderListResultMeta"></a>
@@ -4096,7 +4096,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="OrderSearchData"></a>
@@ -4321,7 +4321,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `order: airbyte_agent_sdk.connectors.chargebee.models.Order | Any`
+    `order: airbyte_agent_sdk.connectors.chargebee.models.Order | None`
     :   The type of the None singleton.
 
 <a id="PaymentSource"></a>
@@ -4342,73 +4342,73 @@ Classes
 
     ### Class variables
 
-    `amazon_payment: dict[str, typing.Any] | Any`
+    `amazon_payment: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `bank_account: dict[str, typing.Any] | Any`
+    `bank_account: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `card: dict[str, typing.Any] | Any`
+    `card: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_id: str | Any`
+    `customer_id: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `gateway: str | Any`
+    `gateway: str | None`
     :   The type of the None singleton.
 
-    `gateway_account_id: str | Any`
+    `gateway_account_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `ip_address: str | Any`
+    `ip_address: str | None`
     :   The type of the None singleton.
 
-    `issuing_country: str | Any`
+    `issuing_country: str | None`
     :   The type of the None singleton.
 
-    `mandates: dict[str, typing.Any] | Any`
+    `mandates: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `paypal: dict[str, typing.Any] | Any`
+    `paypal: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `reference_id: str | Any`
+    `reference_id: str | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `upi: dict[str, typing.Any] | Any`
+    `upi: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="PaymentSourceList"></a>
@@ -4429,13 +4429,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.PaymentSourceListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.PaymentSourceListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentSourceListListItem"></a>
@@ -4459,7 +4459,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payment_source: airbyte_agent_sdk.connectors.chargebee.models.PaymentSource | Any`
+    `payment_source: airbyte_agent_sdk.connectors.chargebee.models.PaymentSource | None`
     :   The type of the None singleton.
 
 <a id="PaymentSourceListResultMeta"></a>
@@ -4483,7 +4483,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentSourceSearchData"></a>
@@ -4594,7 +4594,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payment_source: airbyte_agent_sdk.connectors.chargebee.models.PaymentSource | Any`
+    `payment_source: airbyte_agent_sdk.connectors.chargebee.models.PaymentSource | None`
     :   The type of the None singleton.
 
 <a id="Subscription"></a>
@@ -4615,205 +4615,205 @@ Classes
 
     ### Class variables
 
-    `activated_at: int | Any`
+    `activated_at: int | None`
     :   The type of the None singleton.
 
-    `addons: list[dict[str, typing.Any]] | Any`
+    `addons: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `auto_close_invoices: bool | Any`
+    `auto_close_invoices: bool | None`
     :   The type of the None singleton.
 
-    `auto_collection: str | Any`
+    `auto_collection: str | None`
     :   The type of the None singleton.
 
-    `base_currency_code: str | Any`
+    `base_currency_code: str | None`
     :   The type of the None singleton.
 
-    `billing_period: int | Any`
+    `billing_period: int | None`
     :   The type of the None singleton.
 
-    `billing_period_unit: str | Any`
+    `billing_period_unit: str | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `cancel_reason: str | Any`
+    `cancel_reason: str | None`
     :   The type of the None singleton.
 
-    `cancelled_at: int | Any`
+    `cancelled_at: int | None`
     :   The type of the None singleton.
 
-    `cancelled_at_term_end: bool | Any`
+    `cancelled_at_term_end: bool | None`
     :   The type of the None singleton.
 
-    `cf_mandate_id: str | Any`
+    `cf_mandate_id: str | None`
     :   The type of the None singleton.
 
-    `changes_scheduled_at: int | Any`
+    `changes_scheduled_at: int | None`
     :   The type of the None singleton.
 
-    `channel: str | Any`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `charged_items: list[dict[str, typing.Any]] | Any`
+    `charged_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `contract_term: dict[str, typing.Any] | Any`
+    `contract_term: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `coupons: list[dict[str, typing.Any]] | Any`
+    `coupons: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `created_from_ip: str | Any`
+    `created_from_ip: str | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `current_term_end: int | Any`
+    `current_term_end: int | None`
     :   The type of the None singleton.
 
-    `current_term_start: int | Any`
+    `current_term_start: int | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_id: str | Any`
+    `customer_id: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `discounts: list[dict[str, typing.Any]] | Any`
+    `discounts: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `due_invoices_count: int | Any`
+    `due_invoices_count: int | None`
     :   The type of the None singleton.
 
-    `due_since: int | Any`
+    `due_since: int | None`
     :   The type of the None singleton.
 
-    `exchange_rate: float | Any`
+    `exchange_rate: float | None`
     :   The type of the None singleton.
 
-    `free_period: int | Any`
+    `free_period: int | None`
     :   The type of the None singleton.
 
-    `free_period_unit: str | Any`
+    `free_period_unit: str | None`
     :   The type of the None singleton.
 
-    `has_scheduled_advance_invoices: bool | Any`
+    `has_scheduled_advance_invoices: bool | None`
     :   The type of the None singleton.
 
-    `has_scheduled_changes: bool | Any`
+    `has_scheduled_changes: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `invoice_notes: str | Any`
+    `invoice_notes: str | None`
     :   The type of the None singleton.
 
-    `item_tiers: list[dict[str, typing.Any]] | Any`
+    `item_tiers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `meta_data: dict[str, typing.Any] | Any`
+    `meta_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `mrr: int | Any`
+    `mrr: int | None`
     :   The type of the None singleton.
 
-    `next_billing_at: int | Any`
+    `next_billing_at: int | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `offline_payment_method: str | Any`
+    `offline_payment_method: str | None`
     :   The type of the None singleton.
 
-    `override_relationship: bool | Any`
+    `override_relationship: bool | None`
     :   The type of the None singleton.
 
-    `pause_date: int | Any`
+    `pause_date: int | None`
     :   The type of the None singleton.
 
-    `payment_source_id: str | Any`
+    `payment_source_id: str | None`
     :   The type of the None singleton.
 
-    `plan_amount: int | Any`
+    `plan_amount: int | None`
     :   The type of the None singleton.
 
-    `plan_amount_in_decimal: str | Any`
+    `plan_amount_in_decimal: str | None`
     :   The type of the None singleton.
 
-    `plan_free_quantity: int | Any`
+    `plan_free_quantity: int | None`
     :   The type of the None singleton.
 
-    `plan_free_quantity_in_decimal: str | Any`
+    `plan_free_quantity_in_decimal: str | None`
     :   The type of the None singleton.
 
-    `plan_id: str | Any`
+    `plan_id: str | None`
     :   The type of the None singleton.
 
-    `plan_quantity: int | Any`
+    `plan_quantity: int | None`
     :   The type of the None singleton.
 
-    `plan_quantity_in_decimal: str | Any`
+    `plan_quantity_in_decimal: str | None`
     :   The type of the None singleton.
 
-    `plan_unit_price: int | Any`
+    `plan_unit_price: int | None`
     :   The type of the None singleton.
 
-    `plan_unit_price_in_decimal: str | Any`
+    `plan_unit_price_in_decimal: str | None`
     :   The type of the None singleton.
 
-    `po_number: str | Any`
+    `po_number: str | None`
     :   The type of the None singleton.
 
-    `remaining_billing_cycles: int | Any`
+    `remaining_billing_cycles: int | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `resume_date: int | Any`
+    `resume_date: int | None`
     :   The type of the None singleton.
 
-    `shipping_address: dict[str, typing.Any] | Any`
+    `shipping_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `started_at: int | Any`
+    `started_at: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subscription_items: list[dict[str, typing.Any]] | Any`
+    `subscription_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `total_dues: int | Any`
+    `total_dues: int | None`
     :   The type of the None singleton.
 
-    `trial_end: int | Any`
+    `trial_end: int | None`
     :   The type of the None singleton.
 
-    `trial_end_action: str | Any`
+    `trial_end_action: str | None`
     :   The type of the None singleton.
 
-    `trial_start: int | Any`
+    `trial_start: int | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionList"></a>
@@ -4834,13 +4834,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.SubscriptionListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.SubscriptionListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionListListItem"></a>
@@ -4864,7 +4864,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `subscription: airbyte_agent_sdk.connectors.chargebee.models.Subscription | Any`
+    `subscription: airbyte_agent_sdk.connectors.chargebee.models.Subscription | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionListResultMeta"></a>
@@ -4888,7 +4888,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionSearchData"></a>
@@ -5161,7 +5161,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `subscription: airbyte_agent_sdk.connectors.chargebee.models.Subscription | Any`
+    `subscription: airbyte_agent_sdk.connectors.chargebee.models.Subscription | None`
     :   The type of the None singleton.
 
 <a id="Transaction"></a>
@@ -5182,148 +5182,148 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `amount_capturable: int | Any`
+    `amount_capturable: int | None`
     :   The type of the None singleton.
 
-    `amount_unused: int | Any`
+    `amount_unused: int | None`
     :   The type of the None singleton.
 
-    `authorization_reason: str | Any`
+    `authorization_reason: str | None`
     :   The type of the None singleton.
 
-    `base_currency_code: str | Any`
+    `base_currency_code: str | None`
     :   The type of the None singleton.
 
-    `business_entity_id: str | Any`
+    `business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `currency_code: str | Any`
+    `currency_code: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[dict[str, typing.Any]] | Any`
+    `custom_fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `customer_id: str | Any`
+    `customer_id: str | None`
     :   The type of the None singleton.
 
-    `date: int | Any`
+    `date: int | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `error_code: str | Any`
+    `error_code: str | None`
     :   The type of the None singleton.
 
-    `error_text: str | Any`
+    `error_text: str | None`
     :   The type of the None singleton.
 
-    `exchange_rate: float | Any`
+    `exchange_rate: float | None`
     :   The type of the None singleton.
 
-    `fraud_flag: str | Any`
+    `fraud_flag: str | None`
     :   The type of the None singleton.
 
-    `fraud_reason: str | Any`
+    `fraud_reason: str | None`
     :   The type of the None singleton.
 
-    `gateway: str | Any`
+    `gateway: str | None`
     :   The type of the None singleton.
 
-    `gateway_account_id: str | Any`
+    `gateway_account_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `id_at_gateway: str | Any`
+    `id_at_gateway: str | None`
     :   The type of the None singleton.
 
-    `iin: str | Any`
+    `iin: str | None`
     :   The type of the None singleton.
 
-    `initiator_type: str | Any`
+    `initiator_type: str | None`
     :   The type of the None singleton.
 
-    `last4: str | Any`
+    `last4: str | None`
     :   The type of the None singleton.
 
-    `linked_credit_notes: list[dict[str, typing.Any]] | Any`
+    `linked_credit_notes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_invoices: list[dict[str, typing.Any]] | Any`
+    `linked_invoices: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_payments: list[dict[str, typing.Any]] | Any`
+    `linked_payments: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `linked_refunds: list[dict[str, typing.Any]] | Any`
+    `linked_refunds: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `masked_card_number: str | Any`
+    `masked_card_number: str | None`
     :   The type of the None singleton.
 
-    `merchant_reference_id: str | Any`
+    `merchant_reference_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `payment_method: str | Any`
+    `payment_method: str | None`
     :   The type of the None singleton.
 
-    `payment_method_details: Any`
+    `payment_method_details: typing.Any | None`
     :   The type of the None singleton.
 
-    `payment_source_id: str | Any`
+    `payment_source_id: str | None`
     :   The type of the None singleton.
 
-    `reference_authorization_id: str | Any`
+    `reference_authorization_id: str | None`
     :   The type of the None singleton.
 
-    `reference_number: str | Any`
+    `reference_number: str | None`
     :   The type of the None singleton.
 
-    `reference_transaction_id: str | Any`
+    `reference_transaction_id: str | None`
     :   The type of the None singleton.
 
-    `refunded_txn_id: str | Any`
+    `refunded_txn_id: str | None`
     :   The type of the None singleton.
 
-    `resource_version: int | Any`
+    `resource_version: int | None`
     :   The type of the None singleton.
 
-    `reversal_transaction_id: str | Any`
+    `reversal_transaction_id: str | None`
     :   The type of the None singleton.
 
-    `settled_at: int | Any`
+    `settled_at: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subscription_id: str | Any`
+    `subscription_id: str | None`
     :   The type of the None singleton.
 
-    `three_d_secure: bool | Any`
+    `three_d_secure: bool | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: int | Any`
+    `updated_at: int | None`
     :   The type of the None singleton.
 
-    `voided_at: int | Any`
+    `voided_at: int | None`
     :   The type of the None singleton.
 
 <a id="TransactionList"></a>
@@ -5344,13 +5344,13 @@ Classes
 
     ### Class variables
 
-    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.TransactionListListItem] | Any`
+    `list_: list[airbyte_agent_sdk.connectors.chargebee.models.TransactionListListItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="TransactionListListItem"></a>
@@ -5374,7 +5374,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `transaction: airbyte_agent_sdk.connectors.chargebee.models.Transaction | Any`
+    `transaction: airbyte_agent_sdk.connectors.chargebee.models.Transaction | None`
     :   The type of the None singleton.
 
 <a id="TransactionListResultMeta"></a>
@@ -5398,7 +5398,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: str | Any`
+    `next_offset: str | None`
     :   The type of the None singleton.
 
 <a id="TransactionSearchData"></a>
@@ -5608,5 +5608,5 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `transaction: airbyte_agent_sdk.connectors.chargebee.models.Transaction | Any`
+    `transaction: airbyte_agent_sdk.connectors.chargebee.models.Transaction | None`
     :   The type of the None singleton.

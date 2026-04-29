@@ -141,6 +141,7 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[CompaniesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[DealsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
 
     ### Class variables
 
@@ -192,6 +193,24 @@ Classes
 <a id="DealsSearchResult"></a>
 
 `DealsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TicketsSearchResult"></a>
+
+`TicketsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -506,8 +525,13 @@ Classes
             # Redirect user to: consent_url
             # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -520,9 +544,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @HubspotConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -634,3 +678,45 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TicketsSearchData"></a>
+
+`TicketsSearchData(**data: Any)`
+:   Search result data for tickets entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool | None`
+    :   Indicates whether the ticket has been deleted and moved to the recycling bin
+
+    `companies: list[typing.Any] | None`
+    :   Collection of company records associated with the ticket
+
+    `contacts: list[typing.Any] | None`
+    :   Collection of contact records associated with the ticket
+
+    `created_at: str | None`
+    :   Timestamp when the ticket record was originally created
+
+    `id: str | None`
+    :   Unique identifier for the ticket record
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: dict[str, typing.Any]`
+    :   Key-value object containing all ticket properties and custom fields
+
+    `updated_at: str | None`
+    :   Timestamp when the ticket record was last modified

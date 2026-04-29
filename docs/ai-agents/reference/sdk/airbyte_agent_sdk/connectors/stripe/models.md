@@ -292,31 +292,31 @@ Classes
 
     ### Class variables
 
-    `available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceAvailableItem] | Any`
+    `available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceAvailableItem] | None`
     :   The type of the None singleton.
 
-    `connect_reserved: list[airbyte_agent_sdk.connectors.stripe.models.BalanceConnectReservedItem] | Any | None`
+    `connect_reserved: list[airbyte_agent_sdk.connectors.stripe.models.BalanceConnectReservedItem] | None`
     :   The type of the None singleton.
 
-    `instant_available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItem] | Any | None`
+    `instant_available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItem] | None`
     :   The type of the None singleton.
 
-    `issuing: airbyte_agent_sdk.connectors.stripe.models.BalanceIssuing | Any | None`
+    `issuing: airbyte_agent_sdk.connectors.stripe.models.BalanceIssuing | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `pending: list[airbyte_agent_sdk.connectors.stripe.models.BalancePendingItem] | Any`
+    `pending: list[airbyte_agent_sdk.connectors.stripe.models.BalancePendingItem] | None`
     :   The type of the None singleton.
 
-    `refund_and_dispute_prefunding: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefunding | Any | None`
+    `refund_and_dispute_prefunding: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefunding | None`
     :   The type of the None singleton.
 
 <a id="BalanceAvailableItem"></a>
@@ -337,16 +337,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount in the smallest currency unit (e.g., cents)
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code, in lowercase
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceAvailableItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceAvailableItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceAvailableItemSourceTypes"></a>
@@ -367,13 +367,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -397,16 +397,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount in the smallest currency unit
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code, in lowercase
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceConnectReservedItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceConnectReservedItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceConnectReservedItemSourceTypes"></a>
@@ -427,13 +427,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -457,19 +457,19 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount in the smallest currency unit
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code, in lowercase
 
     `model_config`
     :   The type of the None singleton.
 
-    `net_available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemNetAvailableItem] | Any | None`
+    `net_available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemNetAvailableItem] | None`
     :   Net balance amount available after deducting fees
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceInstantAvailableItemNetAvailableItem"></a>
@@ -490,16 +490,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Net balance amount
 
-    `destination: str | Any`
+    `destination: str | None`
     :   ID of the external account
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemNetAvailableItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceInstantAvailableItemNetAvailableItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceInstantAvailableItemNetAvailableItemSourceTypes"></a>
@@ -520,13 +520,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -550,13 +550,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -580,7 +580,7 @@ Classes
 
     ### Class variables
 
-    `available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceIssuingAvailableItem] | Any`
+    `available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceIssuingAvailableItem] | None`
     :   Funds available for issuing
 
     `model_config`
@@ -604,16 +604,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceIssuingAvailableItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceIssuingAvailableItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceIssuingAvailableItemSourceTypes"></a>
@@ -634,13 +634,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -664,16 +664,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount in the smallest currency unit
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code, in lowercase
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalancePendingItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalancePendingItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalancePendingItemSourceTypes"></a>
@@ -694,13 +694,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -724,13 +724,13 @@ Classes
 
     ### Class variables
 
-    `available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingAvailableItem] | Any`
+    `available: list[airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingAvailableItem] | None`
     :   Available funds for refunds and disputes
 
     `model_config`
     :   The type of the None singleton.
 
-    `pending: list[airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingPendingItem] | Any`
+    `pending: list[airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingPendingItem] | None`
     :   Pending funds for refunds and disputes
 
 <a id="BalanceRefundAndDisputePrefundingAvailableItem"></a>
@@ -751,16 +751,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingAvailableItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingAvailableItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceRefundAndDisputePrefundingAvailableItemSourceTypes"></a>
@@ -781,13 +781,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -811,16 +811,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Balance amount
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code
 
     `model_config`
     :   The type of the None singleton.
 
-    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingPendingItemSourceTypes | Any | None`
+    `source_types: airbyte_agent_sdk.connectors.stripe.models.BalanceRefundAndDisputePrefundingPendingItemSourceTypes | None`
     :   Breakdown of balance by source types
 
 <a id="BalanceRefundAndDisputePrefundingPendingItemSourceTypes"></a>
@@ -841,13 +841,13 @@ Classes
 
     ### Class variables
 
-    `bank_account: int | Any | None`
+    `bank_account: int | None`
     :   Amount for bank_account
 
-    `card: int | Any | None`
+    `card: int | None`
     :   Amount for card
 
-    `fpx: int | Any | None`
+    `fpx: int | None`
     :   Amount for fpx
 
     `model_config`
@@ -871,55 +871,55 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `available_on: int | Any`
+    `available_on: int | None`
     :   The type of the None singleton.
 
-    `balance_type: str | Any`
+    `balance_type: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `exchange_rate: float | Any | None`
+    `exchange_rate: float | None`
     :   The type of the None singleton.
 
-    `fee: int | Any`
+    `fee: int | None`
     :   The type of the None singleton.
 
-    `fee_details: list[airbyte_agent_sdk.connectors.stripe.models.BalanceTransactionFeeDetailsItem] | Any`
+    `fee_details: list[airbyte_agent_sdk.connectors.stripe.models.BalanceTransactionFeeDetailsItem] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `net: int | Any`
+    `net: int | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `reporting_category: str | Any`
+    `reporting_category: str | None`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="BalanceTransactionFeeDetailsItem"></a>
@@ -940,22 +940,22 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Amount of the fee, in cents
 
-    `application: str | Any | None`
+    `application: str | None`
     :   ID of the Connect application that earned the fee
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code, in lowercase
 
-    `description: str | Any | None`
+    `description: str | None`
     :   An arbitrary string attached to the object
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the fee
 
 <a id="BalanceTransactionList"></a>
@@ -976,19 +976,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.BalanceTransaction] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.BalanceTransaction] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="BalanceTransactionsListResultMeta"></a>
@@ -1009,7 +1009,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1033,157 +1033,157 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `amount_captured: int | Any`
+    `amount_captured: int | None`
     :   The type of the None singleton.
 
-    `amount_refunded: int | Any`
+    `amount_refunded: int | None`
     :   The type of the None singleton.
 
-    `amount_updates: list[dict[str, typing.Any]] | Any | None`
+    `amount_updates: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `application: str | Any | None`
+    `application: str | None`
     :   The type of the None singleton.
 
-    `application_fee: str | Any | None`
+    `application_fee: str | None`
     :   The type of the None singleton.
 
-    `application_fee_amount: int | Any | None`
+    `application_fee_amount: int | None`
     :   The type of the None singleton.
 
-    `balance_transaction: str | Any | None`
+    `balance_transaction: str | None`
     :   The type of the None singleton.
 
-    `billing_details: airbyte_agent_sdk.connectors.stripe.models.ChargeBillingDetails | Any`
+    `billing_details: airbyte_agent_sdk.connectors.stripe.models.ChargeBillingDetails | None`
     :   The type of the None singleton.
 
-    `calculated_statement_descriptor: str | Any | None`
+    `calculated_statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `captured: bool | Any`
+    `captured: bool | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `customer: str | Any | None`
+    `customer: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `destination: str | Any | None`
+    `destination: str | None`
     :   The type of the None singleton.
 
-    `dispute: str | Any | None`
+    `dispute: str | None`
     :   The type of the None singleton.
 
-    `disputed: bool | Any`
+    `disputed: bool | None`
     :   The type of the None singleton.
 
-    `failure_balance_transaction: str | Any | None`
+    `failure_balance_transaction: str | None`
     :   The type of the None singleton.
 
-    `failure_code: str | Any | None`
+    `failure_code: str | None`
     :   The type of the None singleton.
 
-    `failure_message: str | Any | None`
+    `failure_message: str | None`
     :   The type of the None singleton.
 
-    `fraud_details: airbyte_agent_sdk.connectors.stripe.models.ChargeFraudDetails | Any | None`
+    `fraud_details: airbyte_agent_sdk.connectors.stripe.models.ChargeFraudDetails | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `invoice: str | Any | None`
+    `invoice: str | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `on_behalf_of: str | Any | None`
+    `on_behalf_of: str | None`
     :   The type of the None singleton.
 
-    `order: str | Any | None`
+    `order: str | None`
     :   The type of the None singleton.
 
-    `outcome: airbyte_agent_sdk.connectors.stripe.models.ChargeOutcome | Any | None`
+    `outcome: airbyte_agent_sdk.connectors.stripe.models.ChargeOutcome | None`
     :   The type of the None singleton.
 
-    `paid: bool | Any`
+    `paid: bool | None`
     :   The type of the None singleton.
 
-    `payment_intent: str | Any | None`
+    `payment_intent: str | None`
     :   The type of the None singleton.
 
-    `payment_method: str | Any | None`
+    `payment_method: str | None`
     :   The type of the None singleton.
 
-    `payment_method_details: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetails | Any | None`
+    `payment_method_details: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetails | None`
     :   The type of the None singleton.
 
-    `presentment_details: airbyte_agent_sdk.connectors.stripe.models.ChargePresentmentDetails | Any | None`
+    `presentment_details: airbyte_agent_sdk.connectors.stripe.models.ChargePresentmentDetails | None`
     :   The type of the None singleton.
 
-    `radar_options: dict[str, typing.Any] | Any | None`
+    `radar_options: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `receipt_email: str | Any | None`
+    `receipt_email: str | None`
     :   The type of the None singleton.
 
-    `receipt_number: str | Any | None`
+    `receipt_number: str | None`
     :   The type of the None singleton.
 
-    `receipt_url: str | Any | None`
+    `receipt_url: str | None`
     :   The type of the None singleton.
 
-    `refunded: bool | Any`
+    `refunded: bool | None`
     :   The type of the None singleton.
 
-    `refunds: airbyte_agent_sdk.connectors.stripe.models.ChargeRefunds | Any | None`
+    `refunds: airbyte_agent_sdk.connectors.stripe.models.ChargeRefunds | None`
     :   The type of the None singleton.
 
-    `review: str | Any | None`
+    `review: str | None`
     :   The type of the None singleton.
 
-    `shipping: dict[str, typing.Any] | Any | None`
+    `shipping: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `source: dict[str, typing.Any] | Any | None`
+    `source: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `source_transfer: str | Any | None`
+    `source_transfer: str | None`
     :   The type of the None singleton.
 
-    `statement_descriptor: str | Any | None`
+    `statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `statement_descriptor_suffix: str | Any | None`
+    `statement_descriptor_suffix: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `transfer_data: dict[str, typing.Any] | Any | None`
+    `transfer_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `transfer_group: str | Any | None`
+    `transfer_group: str | None`
     :   The type of the None singleton.
 
 <a id="ChargeBillingDetails"></a>
@@ -1204,22 +1204,22 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.ChargeBillingDetailsAddress | Any | None`
+    `address: airbyte_agent_sdk.connectors.stripe.models.ChargeBillingDetailsAddress | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `tax_id: str | Any | None`
+    `tax_id: str | None`
     :   The type of the None singleton.
 
 <a id="ChargeBillingDetailsAddress"></a>
@@ -1240,25 +1240,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `line1: str | Any | None`
+    `line1: str | None`
     :   The type of the None singleton.
 
-    `line2: str | Any | None`
+    `line2: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="ChargeFraudDetails"></a>
@@ -1282,10 +1282,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `stripe_report: str | Any | None`
+    `stripe_report: str | None`
     :   Assessments from Stripe. If set, the value is `fraudulent`.
 
-    `user_report: str | Any | None`
+    `user_report: str | None`
     :   Assessments from you or your users. Possible values are `fraudulent` and `safe`
 
 <a id="ChargeList"></a>
@@ -1306,19 +1306,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Charge] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Charge] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ChargeOutcome"></a>
@@ -1339,34 +1339,34 @@ Classes
 
     ### Class variables
 
-    `advice_code: str | Any | None`
+    `advice_code: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `network_advice_code: str | Any | None`
+    `network_advice_code: str | None`
     :   The type of the None singleton.
 
-    `network_decline_code: str | Any | None`
+    `network_decline_code: str | None`
     :   The type of the None singleton.
 
-    `network_status: str | Any`
+    `network_status: str | None`
     :   The type of the None singleton.
 
-    `reason: str | Any | None`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `risk_level: str | Any`
+    `risk_level: str | None`
     :   The type of the None singleton.
 
-    `risk_score: int | Any`
+    `risk_score: int | None`
     :   The type of the None singleton.
 
-    `seller_message: str | Any`
+    `seller_message: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ChargePaymentMethodDetails"></a>
@@ -1387,13 +1387,13 @@ Classes
 
     ### Class variables
 
-    `card: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCard | Any | None`
+    `card: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCard | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ChargePaymentMethodDetailsCard"></a>
@@ -1414,73 +1414,73 @@ Classes
 
     ### Class variables
 
-    `amount_authorized: int | Any | None`
+    `amount_authorized: int | None`
     :   Amount authorized on the card
 
-    `authorization_code: str | Any | None`
+    `authorization_code: str | None`
     :   Authorization code on the charge
 
-    `brand: str | Any`
+    `brand: str | None`
     :   Card brand
 
-    `checks: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardChecks | Any | None`
+    `checks: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardChecks | None`
     :   Check results by Card networks on Card address and CVC
 
-    `country: str | Any`
+    `country: str | None`
     :   Two-letter ISO code representing the country of the card
 
-    `exp_month: int | Any`
+    `exp_month: int | None`
     :   Two-digit number representing the card's expiration month
 
-    `exp_year: int | Any`
+    `exp_year: int | None`
     :   Four-digit number representing the card's expiration year
 
-    `extended_authorization: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardExtendedAuthorization | Any | None`
+    `extended_authorization: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardExtendedAuthorization | None`
     :   Extended authorization details
 
-    `fingerprint: str | Any`
+    `fingerprint: str | None`
     :   Uniquely identifies this particular card number
 
-    `funding: str | Any`
+    `funding: str | None`
     :   Card funding type
 
-    `incremental_authorization: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardIncrementalAuthorization | Any | None`
+    `incremental_authorization: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardIncrementalAuthorization | None`
     :   Incremental authorization details
 
-    `installments: dict[str, typing.Any] | Any | None`
+    `installments: dict[str, typing.Any] | None`
     :   Installment details
 
-    `last4: str | Any`
+    `last4: str | None`
     :   The last four digits of the card
 
-    `mandate: str | Any | None`
+    `mandate: str | None`
     :   ID of the mandate used to make this payment
 
     `model_config`
     :   The type of the None singleton.
 
-    `multicapture: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardMulticapture | Any | None`
+    `multicapture: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardMulticapture | None`
     :   Multicapture details
 
-    `network: str | Any`
+    `network: str | None`
     :   Card network
 
-    `network_token: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardNetworkToken | Any | None`
+    `network_token: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardNetworkToken | None`
     :   Network token details
 
-    `network_transaction_id: str | Any | None`
+    `network_transaction_id: str | None`
     :   Network transaction identifier
 
-    `overcapture: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardOvercapture | Any | None`
+    `overcapture: airbyte_agent_sdk.connectors.stripe.models.ChargePaymentMethodDetailsCardOvercapture | None`
     :   Overcapture details
 
-    `regulated_status: str | Any | None`
+    `regulated_status: str | None`
     :   Regulated status of the card
 
-    `three_d_secure: dict[str, typing.Any] | Any | None`
+    `three_d_secure: dict[str, typing.Any] | None`
     :   3D Secure details
 
-    `wallet: dict[str, typing.Any] | Any | None`
+    `wallet: dict[str, typing.Any] | None`
     :   Digital wallet details if used
 
 <a id="ChargePaymentMethodDetailsCardChecks"></a>
@@ -1501,13 +1501,13 @@ Classes
 
     ### Class variables
 
-    `address_line1_check: str | Any | None`
+    `address_line1_check: str | None`
     :   The type of the None singleton.
 
-    `address_postal_code_check: str | Any | None`
+    `address_postal_code_check: str | None`
     :   The type of the None singleton.
 
-    `cvc_check: str | Any | None`
+    `cvc_check: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1534,7 +1534,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="ChargePaymentMethodDetailsCardIncrementalAuthorization"></a>
@@ -1558,7 +1558,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="ChargePaymentMethodDetailsCardMulticapture"></a>
@@ -1582,7 +1582,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="ChargePaymentMethodDetailsCardNetworkToken"></a>
@@ -1606,7 +1606,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `used: bool | Any`
+    `used: bool | None`
     :   The type of the None singleton.
 
 <a id="ChargePaymentMethodDetailsCardOvercapture"></a>
@@ -1627,13 +1627,13 @@ Classes
 
     ### Class variables
 
-    `maximum_amount_capturable: int | Any`
+    `maximum_amount_capturable: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="ChargePresentmentDetails"></a>
@@ -1654,13 +1654,13 @@ Classes
 
     ### Class variables
 
-    `amount_authorized: int | Any | None`
+    `amount_authorized: int | None`
     :   Amount authorized in the presentment currency
 
-    `amount_charged: int | Any | None`
+    `amount_charged: int | None`
     :   Amount charged in the presentment currency
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   Three-letter ISO currency code for presentment
 
     `model_config`
@@ -1684,22 +1684,22 @@ Classes
 
     ### Class variables
 
-    `data: list[dict[str, typing.Any]] | Any`
+    `data: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `total_count: int | Any`
+    `total_count: int | None`
     :   Total number of refunds
 
-    `url: str | Any`
+    `url: str | None`
     :   URL to access the refunds list
 
 <a id="ChargeSearchResult"></a>
@@ -1720,22 +1720,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Charge] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Charge] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ChargesListResultMeta"></a>
@@ -1756,7 +1756,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1936,6 +1936,147 @@ Classes
     `updated: int | None`
     :   Timestamp of the last update to this charge object.
 
+<a id="CheckoutSession"></a>
+
+`CheckoutSession(**data: Any)`
+:   CheckoutSession type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancel_url: str | None`
+    :   The type of the None singleton.
+
+    `client_reference_id: str | None`
+    :   The type of the None singleton.
+
+    `created: int | None`
+    :   The type of the None singleton.
+
+    `currency: str | None`
+    :   The type of the None singleton.
+
+    `customer: str | None`
+    :   The type of the None singleton.
+
+    `customer_email: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `livemode: bool | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `mode: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   The type of the None singleton.
+
+    `payment_intent: str | None`
+    :   The type of the None singleton.
+
+    `payment_status: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+    `success_url: str | None`
+    :   The type of the None singleton.
+
+    `url: str | None`
+    :   The type of the None singleton.
+
+<a id="CheckoutSessionCreateParams"></a>
+
+`CheckoutSessionCreateParams(**data: Any)`
+:   CheckoutSessionCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancel_url: str | None`
+    :   The type of the None singleton.
+
+    `client_reference_id: str | None`
+    :   The type of the None singleton.
+
+    `customer: str | None`
+    :   The type of the None singleton.
+
+    `customer_email: str | None`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.stripe.models.CheckoutSessionCreateParamsLineItemsItem] | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `mode: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `success_url: str | None`
+    :   The type of the None singleton.
+
+<a id="CheckoutSessionCreateParamsLineItemsItem"></a>
+
+`CheckoutSessionCreateParamsLineItemsItem(**data: Any)`
+:   Nested schema for CheckoutSessionCreateParams.line_items_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `price: str | None`
+    :   The ID of the Price or Plan object
+
+    `quantity: int | None`
+    :   The quantity of the line item
+
 <a id="Customer"></a>
 
 `Customer(**data: Any)`
@@ -1954,97 +2095,97 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerAddress | Any | None`
+    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerAddress | None`
     :   The type of the None singleton.
 
-    `balance: int | Any`
+    `balance: int | None`
     :   The type of the None singleton.
 
-    `business_name: str | Any | None`
+    `business_name: str | None`
     :   The type of the None singleton.
 
-    `cash_balance: airbyte_agent_sdk.connectors.stripe.models.CustomerCashBalance | Any | None`
+    `cash_balance: airbyte_agent_sdk.connectors.stripe.models.CustomerCashBalance | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `customer_account: str | Any | None`
+    `customer_account: str | None`
     :   The type of the None singleton.
 
-    `default_currency: str | Any | None`
+    `default_currency: str | None`
     :   The type of the None singleton.
 
-    `default_source: str | Any | None`
+    `default_source: str | None`
     :   The type of the None singleton.
 
-    `delinquent: bool | Any | None`
+    `delinquent: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `discount: airbyte_agent_sdk.connectors.stripe.models.CustomerDiscount | Any | None`
+    `discount: airbyte_agent_sdk.connectors.stripe.models.CustomerDiscount | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `individual_name: str | Any | None`
+    `individual_name: str | None`
     :   The type of the None singleton.
 
-    `invoice_credit_balance: dict[str, typing.Any] | Any`
+    `invoice_credit_balance: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `invoice_prefix: str | Any | None`
+    `invoice_prefix: str | None`
     :   The type of the None singleton.
 
-    `invoice_settings: airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettings | Any`
+    `invoice_settings: airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettings | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `next_invoice_sequence: int | Any | None`
+    `next_invoice_sequence: int | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `preferred_locales: list[str] | Any | None`
+    `preferred_locales: list[str] | None`
     :   The type of the None singleton.
 
-    `shipping: airbyte_agent_sdk.connectors.stripe.models.CustomerShipping | Any | None`
+    `shipping: airbyte_agent_sdk.connectors.stripe.models.CustomerShipping | None`
     :   The type of the None singleton.
 
-    `sources: airbyte_agent_sdk.connectors.stripe.models.CustomerSources | Any | None`
+    `sources: airbyte_agent_sdk.connectors.stripe.models.CustomerSources | None`
     :   The type of the None singleton.
 
-    `subscriptions: airbyte_agent_sdk.connectors.stripe.models.CustomerSubscriptions | Any | None`
+    `subscriptions: airbyte_agent_sdk.connectors.stripe.models.CustomerSubscriptions | None`
     :   The type of the None singleton.
 
-    `tax_exempt: str | Any | None`
+    `tax_exempt: str | None`
     :   The type of the None singleton.
 
-    `test_clock: str | Any | None`
+    `test_clock: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerAddress"></a>
@@ -2065,25 +2206,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any | None`
+    `line1: str | None`
     :   Address line 1, such as the street, PO Box, or company name
 
-    `line2: str | Any | None`
+    `line2: str | None`
     :   Address line 2, such as the apartment, suite, unit, or building
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any | None`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="CustomerCashBalance"></a>
@@ -2104,25 +2245,25 @@ Classes
 
     ### Class variables
 
-    `available: dict[str, typing.Any] | Any | None`
+    `available: dict[str, typing.Any] | None`
     :   A hash of all cash balances available to this customer
 
-    `customer: str | Any`
+    `customer: str | None`
     :   The ID of the customer whose cash balance this object represents
 
-    `customer_account: str | Any | None`
+    `customer_account: str | None`
     :   The ID of the account whose cash balance this object represents
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   Has the value true if the object exists in live mode or false if in test mode
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `settings: airbyte_agent_sdk.connectors.stripe.models.CustomerCashBalanceSettings | Any`
+    `settings: airbyte_agent_sdk.connectors.stripe.models.CustomerCashBalanceSettings | None`
     :   A hash of settings for this cash balance
 
 <a id="CustomerCashBalanceSettings"></a>
@@ -2146,10 +2287,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reconciliation_mode: str | Any`
+    `reconciliation_mode: str | None`
     :   The configuration for how funds that land in the customer cash balance are reconciled
 
-    `using_merchant_default: bool | Any`
+    `using_merchant_default: bool | None`
     :   A flag to indicate if reconciliation mode returned is the user's default or is specific to this customer cash balance
 
 <a id="CustomerCreateParams"></a>
@@ -2170,25 +2311,25 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerCreateParamsAddress | Any`
+    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerCreateParamsAddress | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any`
+    `phone: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerCreateParamsAddress"></a>
@@ -2209,25 +2350,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any`
+    `line1: str | None`
     :   Address line 1
 
-    `line2: str | Any`
+    `line2: str | None`
     :   Address line 2
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="CustomerDeletedResponse"></a>
@@ -2248,16 +2389,16 @@ Classes
 
     ### Class variables
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerDiscount"></a>
@@ -2278,46 +2419,46 @@ Classes
 
     ### Class variables
 
-    `checkout_session: str | Any | None`
+    `checkout_session: str | None`
     :   The Checkout session that this coupon is applied to, if applicable
 
-    `customer: str | Any | None`
+    `customer: str | None`
     :   The ID of the customer associated with this discount
 
-    `customer_account: str | Any | None`
+    `customer_account: str | None`
     :   The ID of the account associated with this discount
 
-    `end: int | Any | None`
+    `end: int | None`
     :   If the coupon has a duration of repeating, the date that this discount will end
 
-    `id: str | Any`
+    `id: str | None`
     :   The ID of the discount object
 
-    `invoice: str | Any | None`
+    `invoice: str | None`
     :   The invoice that the discount's coupon was applied to
 
-    `invoice_item: str | Any | None`
+    `invoice_item: str | None`
     :   The invoice item that the discount's coupon was applied to
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `promotion_code: str | Any | None`
+    `promotion_code: str | None`
     :   The promotion code applied to create this discount
 
-    `source: airbyte_agent_sdk.connectors.stripe.models.CustomerDiscountSource | Any`
+    `source: airbyte_agent_sdk.connectors.stripe.models.CustomerDiscountSource | None`
     :   The source of the discount
 
-    `start: int | Any`
+    `start: int | None`
     :   Date that the coupon was applied
 
-    `subscription: str | Any | None`
+    `subscription: str | None`
     :   The subscription that this coupon is applied to
 
-    `subscription_item: str | Any | None`
+    `subscription_item: str | None`
     :   The subscription item that this coupon is applied to
 
 <a id="CustomerDiscountSource"></a>
@@ -2338,13 +2479,13 @@ Classes
 
     ### Class variables
 
-    `coupon: str | Any | None`
+    `coupon: str | None`
     :   The coupon that was redeemed to create this discount
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The source type of the discount
 
 <a id="CustomerInvoiceSettings"></a>
@@ -2365,19 +2506,19 @@ Classes
 
     ### Class variables
 
-    `custom_fields: list[airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettingsCustomFieldsItem] | Any | None`
+    `custom_fields: list[airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettingsCustomFieldsItem] | None`
     :   Default custom fields to be displayed on invoices for this customer
 
-    `default_payment_method: str | Any | None`
+    `default_payment_method: str | None`
     :   ID of a payment method that's attached to the customer
 
-    `footer: str | Any | None`
+    `footer: str | None`
     :   Default footer to be displayed on invoices for this customer
 
     `model_config`
     :   The type of the None singleton.
 
-    `rendering_options: airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettingsRenderingOptions | Any | None`
+    `rendering_options: airbyte_agent_sdk.connectors.stripe.models.CustomerInvoiceSettingsRenderingOptions | None`
     :   Default options for invoice PDF rendering for this customer
 
 <a id="CustomerInvoiceSettingsCustomFieldsItem"></a>
@@ -2401,10 +2542,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The name of the custom field
 
-    `value: str | Any`
+    `value: str | None`
     :   The value of the custom field
 
 <a id="CustomerInvoiceSettingsRenderingOptions"></a>
@@ -2425,13 +2566,13 @@ Classes
 
     ### Class variables
 
-    `amount_tax_display: str | Any | None`
+    `amount_tax_display: str | None`
     :   How line-item prices and amounts will be displayed with respect to tax on invoice PDFs
 
     `model_config`
     :   The type of the None singleton.
 
-    `template: str | Any | None`
+    `template: str | None`
     :   ID of the invoice rendering template to be used for this customer's invoices
 
 <a id="CustomerList"></a>
@@ -2452,19 +2593,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Customer] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Customer] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerSearchResult"></a>
@@ -2485,22 +2626,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Customer] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Customer] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerShipping"></a>
@@ -2521,16 +2662,16 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerShippingAddress | Any`
+    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerShippingAddress | None`
     :   Customer shipping address
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Customer name
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   Customer phone (including extension)
 
 <a id="CustomerShippingAddress"></a>
@@ -2551,25 +2692,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any | None`
+    `line1: str | None`
     :   Address line 1, such as the street, PO Box, or company name
 
-    `line2: str | Any | None`
+    `line2: str | None`
     :   Address line 2, such as the apartment, suite, unit, or building
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any | None`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="CustomerSources"></a>
@@ -2590,19 +2731,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.CustomerSourcesDataItem] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.CustomerSourcesDataItem] | None`
     :   Details about each object
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   True if this list has another page of items after this one
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `url: str | Any`
+    `url: str | None`
     :   The URL where this list can be accessed
 
 <a id="CustomerSourcesDataItem"></a>
@@ -2623,55 +2764,55 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The account this bank account belongs to
 
-    `account_holder_name: str | Any | None`
+    `account_holder_name: str | None`
     :   The name of the person or business that owns the bank account
 
-    `account_holder_type: str | Any | None`
+    `account_holder_type: str | None`
     :   The type of entity that holds the account
 
-    `account_type: str | Any | None`
+    `account_type: str | None`
     :   The bank account type
 
-    `available_payout_methods: list[str] | Any | None`
+    `available_payout_methods: list[str] | None`
     :   A set of available payout methods for this bank account
 
-    `bank_name: str | Any | None`
+    `bank_name: str | None`
     :   Name of the bank associated with the routing number
 
-    `country: str | Any`
+    `country: str | None`
     :   Two-letter ISO code representing the country the bank account is located in
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO code for the currency paid out to the bank account
 
-    `customer: str | Any | None`
+    `customer: str | None`
     :   The ID of the customer that the bank account is associated with
 
-    `fingerprint: str | Any | None`
+    `fingerprint: str | None`
     :   Uniquely identifies this particular bank account
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique identifier for the object
 
-    `last4: str | Any`
+    `last4: str | None`
     :   The last four digits of the bank account number
 
-    `metadata: dict[str, str] | Any | None`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs that you can attach to an object
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `routing_number: str | Any | None`
+    `routing_number: str | None`
     :   The routing transit number for the bank account
 
-    `status: str | Any`
+    `status: str | None`
     :   The status of the bank account
 
 <a id="CustomerSubscriptions"></a>
@@ -2692,19 +2833,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Subscription] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Subscription] | None`
     :   Details about each subscription
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   True if this list has another page of items after this one
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `url: str | Any`
+    `url: str | None`
     :   The URL where this list can be accessed
 
 <a id="CustomerUpdateParams"></a>
@@ -2725,25 +2866,25 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerUpdateParamsAddress | Any`
+    `address: airbyte_agent_sdk.connectors.stripe.models.CustomerUpdateParamsAddress | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any`
+    `phone: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerUpdateParamsAddress"></a>
@@ -2764,25 +2905,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any`
+    `line1: str | None`
     :   Address line 1
 
-    `line2: str | Any`
+    `line2: str | None`
     :   Address line 2
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="CustomersApiSearchResultMeta"></a>
@@ -2803,7 +2944,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2827,7 +2968,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2965,58 +3106,58 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `balance_transactions: list[dict[str, typing.Any]] | Any`
+    `balance_transactions: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `charge: str | Any`
+    `charge: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `enhanced_eligibility_types: list[str] | Any`
+    `enhanced_eligibility_types: list[str] | None`
     :   The type of the None singleton.
 
-    `evidence: dict[str, typing.Any] | Any`
+    `evidence: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `evidence_details: airbyte_agent_sdk.connectors.stripe.models.DisputeEvidenceDetails | Any`
+    `evidence_details: airbyte_agent_sdk.connectors.stripe.models.DisputeEvidenceDetails | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_charge_refundable: bool | Any`
+    `is_charge_refundable: bool | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `payment_intent: str | Any | None`
+    `payment_intent: str | None`
     :   The type of the None singleton.
 
-    `payment_method_details: dict[str, typing.Any] | Any | None`
+    `payment_method_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `reason: str | Any`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="DisputeEvidenceDetails"></a>
@@ -3037,19 +3178,19 @@ Classes
 
     ### Class variables
 
-    `due_by: int | Any | None`
+    `due_by: int | None`
     :   Date by which evidence must be submitted, measured in seconds since the Unix epoch
 
-    `has_evidence: bool | Any`
+    `has_evidence: bool | None`
     :   Whether evidence has been staged for this dispute
 
     `model_config`
     :   The type of the None singleton.
 
-    `past_due: bool | Any`
+    `past_due: bool | None`
     :   Whether the last evidence submission was submitted past the due date
 
-    `submission_count: int | Any`
+    `submission_count: int | None`
     :   The number of times evidence has been submitted
 
 <a id="DisputeList"></a>
@@ -3070,19 +3211,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Dispute] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Dispute] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="DisputesListResultMeta"></a>
@@ -3103,7 +3244,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3127,277 +3268,277 @@ Classes
 
     ### Class variables
 
-    `account_country: str | Any | None`
+    `account_country: str | None`
     :   The type of the None singleton.
 
-    `account_name: str | Any | None`
+    `account_name: str | None`
     :   The type of the None singleton.
 
-    `account_tax_ids: list[str] | Any | None`
+    `account_tax_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `amount_due: int | Any`
+    `amount_due: int | None`
     :   The type of the None singleton.
 
-    `amount_overpaid: int | Any`
+    `amount_overpaid: int | None`
     :   The type of the None singleton.
 
-    `amount_paid: int | Any`
+    `amount_paid: int | None`
     :   The type of the None singleton.
 
-    `amount_remaining: int | Any`
+    `amount_remaining: int | None`
     :   The type of the None singleton.
 
-    `amount_shipping: int | Any`
+    `amount_shipping: int | None`
     :   The type of the None singleton.
 
-    `application: str | Any | None`
+    `application: str | None`
     :   The type of the None singleton.
 
-    `application_fee_amount: int | Any | None`
+    `application_fee_amount: int | None`
     :   The type of the None singleton.
 
-    `attempt_count: int | Any`
+    `attempt_count: int | None`
     :   The type of the None singleton.
 
-    `attempted: bool | Any`
+    `attempted: bool | None`
     :   The type of the None singleton.
 
-    `auto_advance: bool | Any`
+    `auto_advance: bool | None`
     :   The type of the None singleton.
 
-    `automatic_tax: airbyte_agent_sdk.connectors.stripe.models.InvoiceAutomaticTax | Any`
+    `automatic_tax: airbyte_agent_sdk.connectors.stripe.models.InvoiceAutomaticTax | None`
     :   The type of the None singleton.
 
-    `automatically_finalizes_at: int | Any | None`
+    `automatically_finalizes_at: int | None`
     :   The type of the None singleton.
 
-    `billing_reason: str | Any | None`
+    `billing_reason: str | None`
     :   The type of the None singleton.
 
-    `charge: str | Any | None`
+    `charge: str | None`
     :   The type of the None singleton.
 
-    `collection_method: str | Any`
+    `collection_method: str | None`
     :   The type of the None singleton.
 
-    `confirmation_secret: airbyte_agent_sdk.connectors.stripe.models.InvoiceConfirmationSecret | Any | None`
+    `confirmation_secret: airbyte_agent_sdk.connectors.stripe.models.InvoiceConfirmationSecret | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomFieldsItem] | Any | None`
+    `custom_fields: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomFieldsItem] | None`
     :   The type of the None singleton.
 
-    `customer: str | Any`
+    `customer: str | None`
     :   The type of the None singleton.
 
-    `customer_account: str | Any | None`
+    `customer_account: str | None`
     :   The type of the None singleton.
 
-    `customer_address: airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerAddress | Any | None`
+    `customer_address: airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerAddress | None`
     :   The type of the None singleton.
 
-    `customer_email: str | Any | None`
+    `customer_email: str | None`
     :   The type of the None singleton.
 
-    `customer_name: str | Any | None`
+    `customer_name: str | None`
     :   The type of the None singleton.
 
-    `customer_phone: str | Any | None`
+    `customer_phone: str | None`
     :   The type of the None singleton.
 
-    `customer_shipping: airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerShipping | Any | None`
+    `customer_shipping: airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerShipping | None`
     :   The type of the None singleton.
 
-    `customer_tax_exempt: str | Any | None`
+    `customer_tax_exempt: str | None`
     :   The type of the None singleton.
 
-    `customer_tax_ids: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerTaxIdsItem] | Any | None`
+    `customer_tax_ids: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerTaxIdsItem] | None`
     :   The type of the None singleton.
 
-    `default_payment_method: str | Any | None`
+    `default_payment_method: str | None`
     :   The type of the None singleton.
 
-    `default_source: str | Any | None`
+    `default_source: str | None`
     :   The type of the None singleton.
 
-    `default_tax_rates: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceDefaultTaxRatesItem] | Any`
+    `default_tax_rates: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceDefaultTaxRatesItem] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `discount: airbyte_agent_sdk.connectors.stripe.models.InvoiceDiscount | Any | None`
+    `discount: airbyte_agent_sdk.connectors.stripe.models.InvoiceDiscount | None`
     :   The type of the None singleton.
 
-    `discounts: list[str] | Any`
+    `discounts: list[str] | None`
     :   The type of the None singleton.
 
-    `due_date: int | Any | None`
+    `due_date: int | None`
     :   The type of the None singleton.
 
-    `effective_at: int | Any | None`
+    `effective_at: int | None`
     :   The type of the None singleton.
 
-    `ending_balance: int | Any | None`
+    `ending_balance: int | None`
     :   The type of the None singleton.
 
-    `footer: str | Any | None`
+    `footer: str | None`
     :   The type of the None singleton.
 
-    `from_invoice: airbyte_agent_sdk.connectors.stripe.models.InvoiceFromInvoice | Any | None`
+    `from_invoice: airbyte_agent_sdk.connectors.stripe.models.InvoiceFromInvoice | None`
     :   The type of the None singleton.
 
-    `hosted_invoice_url: str | Any | None`
+    `hosted_invoice_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `invoice_pdf: str | Any | None`
+    `invoice_pdf: str | None`
     :   The type of the None singleton.
 
-    `issuer: airbyte_agent_sdk.connectors.stripe.models.InvoiceIssuer | Any`
+    `issuer: airbyte_agent_sdk.connectors.stripe.models.InvoiceIssuer | None`
     :   The type of the None singleton.
 
-    `last_finalization_error: airbyte_agent_sdk.connectors.stripe.models.InvoiceLastFinalizationError | Any | None`
+    `last_finalization_error: airbyte_agent_sdk.connectors.stripe.models.InvoiceLastFinalizationError | None`
     :   The type of the None singleton.
 
-    `latest_revision: str | Any | None`
+    `latest_revision: str | None`
     :   The type of the None singleton.
 
-    `lines: airbyte_agent_sdk.connectors.stripe.models.InvoiceLines | Any`
+    `lines: airbyte_agent_sdk.connectors.stripe.models.InvoiceLines | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_payment_attempt: int | Any | None`
+    `next_payment_attempt: int | None`
     :   The type of the None singleton.
 
-    `number: str | Any | None`
+    `number: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `on_behalf_of: str | Any | None`
+    `on_behalf_of: str | None`
     :   The type of the None singleton.
 
-    `paid: bool | Any | None`
+    `paid: bool | None`
     :   The type of the None singleton.
 
-    `paid_out_of_band: bool | Any | None`
+    `paid_out_of_band: bool | None`
     :   The type of the None singleton.
 
-    `parent: airbyte_agent_sdk.connectors.stripe.models.InvoiceParent | Any | None`
+    `parent: airbyte_agent_sdk.connectors.stripe.models.InvoiceParent | None`
     :   The type of the None singleton.
 
-    `payment_intent: str | Any | None`
+    `payment_intent: str | None`
     :   The type of the None singleton.
 
-    `payment_settings: airbyte_agent_sdk.connectors.stripe.models.InvoicePaymentSettings | Any`
+    `payment_settings: airbyte_agent_sdk.connectors.stripe.models.InvoicePaymentSettings | None`
     :   The type of the None singleton.
 
-    `payments: airbyte_agent_sdk.connectors.stripe.models.InvoicePayments | Any`
+    `payments: airbyte_agent_sdk.connectors.stripe.models.InvoicePayments | None`
     :   The type of the None singleton.
 
-    `period_end: int | Any`
+    `period_end: int | None`
     :   The type of the None singleton.
 
-    `period_start: int | Any`
+    `period_start: int | None`
     :   The type of the None singleton.
 
-    `post_payment_credit_notes_amount: int | Any`
+    `post_payment_credit_notes_amount: int | None`
     :   The type of the None singleton.
 
-    `pre_payment_credit_notes_amount: int | Any`
+    `pre_payment_credit_notes_amount: int | None`
     :   The type of the None singleton.
 
-    `quote: str | Any | None`
+    `quote: str | None`
     :   The type of the None singleton.
 
-    `receipt_number: str | Any | None`
+    `receipt_number: str | None`
     :   The type of the None singleton.
 
-    `rendering: airbyte_agent_sdk.connectors.stripe.models.InvoiceRendering | Any | None`
+    `rendering: airbyte_agent_sdk.connectors.stripe.models.InvoiceRendering | None`
     :   The type of the None singleton.
 
-    `rendering_options: dict[str, typing.Any] | Any | None`
+    `rendering_options: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `shipping_cost: airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingCost | Any | None`
+    `shipping_cost: airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingCost | None`
     :   The type of the None singleton.
 
-    `shipping_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingDetails | Any | None`
+    `shipping_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingDetails | None`
     :   The type of the None singleton.
 
-    `starting_balance: int | Any`
+    `starting_balance: int | None`
     :   The type of the None singleton.
 
-    `statement_descriptor: str | Any | None`
+    `statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `status_transitions: airbyte_agent_sdk.connectors.stripe.models.InvoiceStatusTransitions | Any`
+    `status_transitions: airbyte_agent_sdk.connectors.stripe.models.InvoiceStatusTransitions | None`
     :   The type of the None singleton.
 
-    `subscription: str | Any | None`
+    `subscription: str | None`
     :   The type of the None singleton.
 
-    `subscription_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceSubscriptionDetails | Any | None`
+    `subscription_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceSubscriptionDetails | None`
     :   The type of the None singleton.
 
-    `subtotal: int | Any`
+    `subtotal: int | None`
     :   The type of the None singleton.
 
-    `subtotal_excluding_tax: int | Any | None`
+    `subtotal_excluding_tax: int | None`
     :   The type of the None singleton.
 
-    `tax: int | Any | None`
+    `tax: int | None`
     :   The type of the None singleton.
 
-    `test_clock: str | Any | None`
+    `test_clock: str | None`
     :   The type of the None singleton.
 
-    `threshold_reason: airbyte_agent_sdk.connectors.stripe.models.InvoiceThresholdReason | Any | None`
+    `threshold_reason: airbyte_agent_sdk.connectors.stripe.models.InvoiceThresholdReason | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `total_discount_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalDiscountAmountsItem] | Any | None`
+    `total_discount_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalDiscountAmountsItem] | None`
     :   The type of the None singleton.
 
-    `total_excluding_tax: int | Any | None`
+    `total_excluding_tax: int | None`
     :   The type of the None singleton.
 
-    `total_pretax_credit_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalPretaxCreditAmountsItem] | Any | None`
+    `total_pretax_credit_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalPretaxCreditAmountsItem] | None`
     :   The type of the None singleton.
 
-    `total_tax_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalTaxAmountsItem] | Any | None`
+    `total_tax_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalTaxAmountsItem] | None`
     :   The type of the None singleton.
 
-    `total_taxes: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalTaxesItem] | Any | None`
+    `total_taxes: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceTotalTaxesItem] | None`
     :   The type of the None singleton.
 
-    `transfer_data: dict[str, typing.Any] | Any | None`
+    `transfer_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `webhooks_delivered_at: int | Any | None`
+    `webhooks_delivered_at: int | None`
     :   The type of the None singleton.
 
 <a id="InvoiceAutomaticTax"></a>
@@ -3418,22 +3559,22 @@ Classes
 
     ### Class variables
 
-    `disabled_reason: str | Any | None`
+    `disabled_reason: str | None`
     :   If Stripe disabled automatic tax, this enum describes why
 
-    `enabled: bool | Any`
+    `enabled: bool | None`
     :   Whether Stripe automatically computes tax on this invoice
 
-    `liability: airbyte_agent_sdk.connectors.stripe.models.InvoiceAutomaticTaxLiability | Any | None`
+    `liability: airbyte_agent_sdk.connectors.stripe.models.InvoiceAutomaticTaxLiability | None`
     :   The account that's liable for tax
 
     `model_config`
     :   The type of the None singleton.
 
-    `provider: str | Any | None`
+    `provider: str | None`
     :   The tax provider powering automatic tax
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The status of the most recent automated tax calculation for this invoice
 
 <a id="InvoiceAutomaticTaxLiability"></a>
@@ -3454,13 +3595,13 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The connected account being referenced when type is account
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the account referenced
 
 <a id="InvoiceConfirmationSecret"></a>
@@ -3481,14 +3622,62 @@ Classes
 
     ### Class variables
 
-    `client_secret: str | Any`
+    `client_secret: str | None`
     :   The client_secret of the payment that Stripe creates for the invoice after finalization
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of client_secret
+
+<a id="InvoiceCreateParams"></a>
+
+`InvoiceCreateParams(**data: Any)`
+:   InvoiceCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auto_advance: bool | None`
+    :   The type of the None singleton.
+
+    `collection_method: str | None`
+    :   The type of the None singleton.
+
+    `customer: str`
+    :   The type of the None singleton.
+
+    `days_until_due: int | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `due_date: int | None`
+    :   The type of the None singleton.
+
+    `footer: str | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `pending_invoice_items_behavior: str | None`
+    :   The type of the None singleton.
 
 <a id="InvoiceCustomFieldsItem"></a>
 
@@ -3511,10 +3700,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The name of the custom field
 
-    `value: str | Any`
+    `value: str | None`
     :   The value of the custom field
 
 <a id="InvoiceCustomerAddress"></a>
@@ -3535,25 +3724,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any | None`
+    `line1: str | None`
     :   Address line 1
 
-    `line2: str | Any | None`
+    `line2: str | None`
     :   Address line 2
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any | None`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="InvoiceCustomerShipping"></a>
@@ -3574,16 +3763,16 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerShippingAddress | Any`
+    `address: airbyte_agent_sdk.connectors.stripe.models.InvoiceCustomerShippingAddress | None`
     :   Customer shipping address
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Customer name
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   Customer phone (including extension)
 
 <a id="InvoiceCustomerShippingAddress"></a>
@@ -3604,25 +3793,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any | None`
+    `line1: str | None`
     :   Address line 1
 
-    `line2: str | Any | None`
+    `line2: str | None`
     :   Address line 2
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any | None`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="InvoiceCustomerTaxIdsItem"></a>
@@ -3646,10 +3835,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the tax ID
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The value of the tax ID
 
 <a id="InvoiceDefaultTaxRatesItem"></a>
@@ -3670,61 +3859,61 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   Defaults to true
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `created: int | Any`
+    `created: int | None`
     :   Time at which the object was created
 
-    `description: str | Any | None`
+    `description: str | None`
     :   An arbitrary string attached to the tax rate for your internal use only
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The display name of the tax rate
 
-    `effective_percentage: float | Any | None`
+    `effective_percentage: float | None`
     :   Actual/effective tax rate percentage out of 100
 
-    `flat_amount: airbyte_agent_sdk.connectors.stripe.models.InvoiceDefaultTaxRatesItemFlatAmount | Any | None`
+    `flat_amount: airbyte_agent_sdk.connectors.stripe.models.InvoiceDefaultTaxRatesItemFlatAmount | None`
     :   The amount of the tax rate when the rate_type is flat_amount
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique identifier for the object
 
-    `inclusive: bool | Any`
+    `inclusive: bool | None`
     :   This specifies if the tax rate is inclusive or exclusive
 
-    `jurisdiction: str | Any | None`
+    `jurisdiction: str | None`
     :   The jurisdiction for the tax rate
 
-    `jurisdiction_level: str | Any | None`
+    `jurisdiction_level: str | None`
     :   The level of the jurisdiction that imposes this tax rate
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   Has the value true if the object exists in live mode
 
-    `metadata: dict[str, str] | Any | None`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `percentage: float | Any`
+    `percentage: float | None`
     :   Tax rate percentage out of 100
 
-    `rate_type: str | Any | None`
+    `rate_type: str | None`
     :   Indicates the type of tax rate applied to the taxable amount
 
-    `state: str | Any | None`
+    `state: str | None`
     :   ISO 3166-2 subdivision code
 
-    `tax_type: str | Any | None`
+    `tax_type: str | None`
     :   The high-level tax type
 
 <a id="InvoiceDefaultTaxRatesItemFlatAmount"></a>
@@ -3745,10 +3934,10 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Amount of the tax when the rate_type is flat_amount
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code
 
     `model_config`
@@ -3772,46 +3961,46 @@ Classes
 
     ### Class variables
 
-    `checkout_session: str | Any | None`
+    `checkout_session: str | None`
     :   The type of the None singleton.
 
-    `coupon: airbyte_agent_sdk.connectors.stripe.models.InvoiceDiscountCoupon | Any | None`
+    `coupon: airbyte_agent_sdk.connectors.stripe.models.InvoiceDiscountCoupon | None`
     :   The type of the None singleton.
 
-    `customer: str | Any`
+    `customer: str | None`
     :   The type of the None singleton.
 
-    `customer_account: str | Any | None`
+    `customer_account: str | None`
     :   The type of the None singleton.
 
-    `end: int | Any | None`
+    `end: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `invoice: str | Any | None`
+    `invoice: str | None`
     :   The type of the None singleton.
 
-    `invoice_item: str | Any | None`
+    `invoice_item: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `promotion_code: str | Any | None`
+    `promotion_code: str | None`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
-    `subscription: str | Any | None`
+    `subscription: str | None`
     :   The type of the None singleton.
 
-    `subscription_item: str | Any | None`
+    `subscription_item: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceDiscountCoupon"></a>
@@ -3832,52 +4021,76 @@ Classes
 
     ### Class variables
 
-    `amount_off: int | Any | None`
+    `amount_off: int | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `duration: str | Any`
+    `duration: str | None`
     :   The type of the None singleton.
 
-    `duration_in_months: int | Any | None`
+    `duration_in_months: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `max_redemptions: int | Any | None`
+    `max_redemptions: int | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `percent_off: float | Any | None`
+    `percent_off: float | None`
     :   The type of the None singleton.
 
-    `redeem_by: int | Any | None`
+    `redeem_by: int | None`
     :   The type of the None singleton.
 
-    `times_redeemed: int | Any`
+    `times_redeemed: int | None`
     :   The type of the None singleton.
 
-    `valid: bool | Any`
+    `valid: bool | None`
+    :   The type of the None singleton.
+
+<a id="InvoiceFinalizeParams"></a>
+
+`InvoiceFinalizeParams(**data: Any)`
+:   InvoiceFinalizeParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `auto_advance: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
     :   The type of the None singleton.
 
 <a id="InvoiceFromInvoice"></a>
@@ -3898,10 +4111,10 @@ Classes
 
     ### Class variables
 
-    `action: str | Any`
+    `action: str | None`
     :   The type of the None singleton.
 
-    `invoice: str | Any`
+    `invoice: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3925,13 +4138,13 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The connected account being referenced when type is account
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the account referenced
 
 <a id="InvoiceLastFinalizationError"></a>
@@ -3952,34 +4165,34 @@ Classes
 
     ### Class variables
 
-    `advice_code: str | Any | None`
+    `advice_code: str | None`
     :   For card errors resulting from a card issuer decline
 
-    `code: str | Any | None`
+    `code: str | None`
     :   For some errors that could be handled programmatically, a short string indicating the error code
 
-    `doc_url: str | Any | None`
+    `doc_url: str | None`
     :   A URL to more information about the error code reported
 
-    `message: str | Any | None`
+    `message: str | None`
     :   A human-readable message providing more details about the error
 
     `model_config`
     :   The type of the None singleton.
 
-    `network_advice_code: str | Any | None`
+    `network_advice_code: str | None`
     :   For card errors resulting from a card issuer decline
 
-    `network_decline_code: str | Any | None`
+    `network_decline_code: str | None`
     :   For payments declined by the network
 
-    `param: str | Any | None`
+    `param: str | None`
     :   If the error is parameter-specific, the parameter related to the error
 
-    `payment_method_type: str | Any | None`
+    `payment_method_type: str | None`
     :   If the error is specific to the type of payment method
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of error returned
 
 <a id="InvoiceLines"></a>
@@ -4000,22 +4213,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceLinesDataItem] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceLinesDataItem] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `total_count: int | Any | None`
+    `total_count: int | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceLinesDataItem"></a>
@@ -4036,49 +4249,49 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The amount in cents
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code
 
-    `description: str | Any | None`
+    `description: str | None`
     :   An arbitrary string attached to the object
 
-    `discount_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceLinesDataItemDiscountAmountsItem] | Any | None`
+    `discount_amounts: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceLinesDataItemDiscountAmountsItem] | None`
     :   The amount of discount calculated per discount for this line item
 
-    `discountable: bool | Any`
+    `discountable: bool | None`
     :   If true, discounts will apply to this line item
 
-    `discounts: list[str] | Any`
+    `discounts: list[str] | None`
     :   The discounts applied to the invoice line item
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique identifier for the object
 
-    `invoice: str | Any | None`
+    `invoice: str | None`
     :   The ID of the invoice that contains this line item
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   Has the value true if the object exists in live mode
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `period: airbyte_agent_sdk.connectors.stripe.models.InvoiceLinesDataItemPeriod | Any`
+    `period: airbyte_agent_sdk.connectors.stripe.models.InvoiceLinesDataItemPeriod | None`
     :   The period this line_item covers
 
-    `proration: bool | Any`
+    `proration: bool | None`
     :   Whether this is a proration
 
-    `quantity: int | Any | None`
+    `quantity: int | None`
     :   The quantity of the subscription
 
 <a id="InvoiceLinesDataItemDiscountAmountsItem"></a>
@@ -4099,10 +4312,10 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The amount of the discount
 
-    `discount: str | Any`
+    `discount: str | None`
     :   The discount that was applied
 
     `model_config`
@@ -4126,13 +4339,13 @@ Classes
 
     ### Class variables
 
-    `end: int | Any`
+    `end: int | None`
     :   The end of the period
 
     `model_config`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The start of the period
 
 <a id="InvoiceList"></a>
@@ -4153,19 +4366,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Invoice] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Invoice] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceParent"></a>
@@ -4189,13 +4402,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `quote_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceParentQuoteDetails | Any | None`
+    `quote_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceParentQuoteDetails | None`
     :   Details about the quote that generated this invoice
 
-    `subscription_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceParentSubscriptionDetails | Any | None`
+    `subscription_details: airbyte_agent_sdk.connectors.stripe.models.InvoiceParentSubscriptionDetails | None`
     :   Details about the subscription that generated this invoice
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of parent that generated this invoice
 
 <a id="InvoiceParentQuoteDetails"></a>
@@ -4219,7 +4432,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `quote: str | Any`
+    `quote: str | None`
     :   The quote that generated this invoice
 
 <a id="InvoiceParentSubscriptionDetails"></a>
@@ -4240,16 +4453,16 @@ Classes
 
     ### Class variables
 
-    `metadata: dict[str, str] | Any | None`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs defined as subscription metadata
 
     `model_config`
     :   The type of the None singleton.
 
-    `subscription: str | Any`
+    `subscription: str | None`
     :   The subscription that generated this invoice
 
-    `subscription_proration_date: int | Any | None`
+    `subscription_proration_date: int | None`
     :   Only set for upcoming invoices that preview prorations
 
 <a id="InvoicePaymentSettings"></a>
@@ -4270,16 +4483,16 @@ Classes
 
     ### Class variables
 
-    `default_mandate: str | Any | None`
+    `default_mandate: str | None`
     :   ID of the mandate to be used for this invoice
 
     `model_config`
     :   The type of the None singleton.
 
-    `payment_method_options: dict[str, typing.Any] | Any | None`
+    `payment_method_options: dict[str, typing.Any] | None`
     :   Payment-method-specific configuration to provide to the invoice's PaymentIntent
 
-    `payment_method_types: list[str] | Any | None`
+    `payment_method_types: list[str] | None`
     :   The list of payment method types to provide to the invoice's PaymentIntent
 
 <a id="InvoicePayments"></a>
@@ -4300,19 +4513,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.InvoicePaymentsDataItem] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.InvoicePaymentsDataItem] | None`
     :   Details about each payment
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   True if this list has another page of items
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `url: str | Any`
+    `url: str | None`
     :   The URL where this list can be accessed
 
 <a id="InvoicePaymentsDataItem"></a>
@@ -4333,37 +4546,37 @@ Classes
 
     ### Class variables
 
-    `amount_paid: int | Any | None`
+    `amount_paid: int | None`
     :   Amount that was actually paid for this invoice
 
-    `amount_requested: int | Any`
+    `amount_requested: int | None`
     :   Amount intended to be paid toward this invoice
 
-    `created: int | Any`
+    `created: int | None`
     :   Time at which the object was created
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique identifier for the object
 
-    `invoice: str | Any`
+    `invoice: str | None`
     :   The invoice that was paid
 
-    `is_default: bool | Any`
+    `is_default: bool | None`
     :   Whether this is the default payment created when the invoice was finalized
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   Has the value true if the object exists in live mode
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `status: str | Any`
+    `status: str | None`
     :   The status of the payment
 
 <a id="InvoiceRendering"></a>
@@ -4384,19 +4597,19 @@ Classes
 
     ### Class variables
 
-    `amount_tax_display: str | Any | None`
+    `amount_tax_display: str | None`
     :   How line-item prices and amounts will be displayed with respect to tax
 
     `model_config`
     :   The type of the None singleton.
 
-    `pdf: airbyte_agent_sdk.connectors.stripe.models.InvoiceRenderingPdf | Any | None`
+    `pdf: airbyte_agent_sdk.connectors.stripe.models.InvoiceRenderingPdf | None`
     :   Invoice pdf rendering options
 
-    `template: str | Any | None`
+    `template: str | None`
     :   ID of the rendering template that the invoice is formatted by
 
-    `template_version: int | Any | None`
+    `template_version: int | None`
     :   Version of the rendering template that the invoice is using
 
 <a id="InvoiceRenderingPdf"></a>
@@ -4420,7 +4633,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_size: str | Any | None`
+    `page_size: str | None`
     :   Page size of invoice pdf
 
 <a id="InvoiceSearchResult"></a>
@@ -4441,22 +4654,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Invoice] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Invoice] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceShippingCost"></a>
@@ -4477,22 +4690,22 @@ Classes
 
     ### Class variables
 
-    `amount_subtotal: int | Any`
+    `amount_subtotal: int | None`
     :   Total shipping cost before any taxes are applied
 
-    `amount_tax: int | Any`
+    `amount_tax: int | None`
     :   Total tax amount applied due to shipping costs
 
-    `amount_total: int | Any`
+    `amount_total: int | None`
     :   Total shipping cost after taxes are applied
 
     `model_config`
     :   The type of the None singleton.
 
-    `shipping_rate: str | Any | None`
+    `shipping_rate: str | None`
     :   The ID of the ShippingRate for this invoice
 
-    `taxes: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingCostTaxesItem] | Any | None`
+    `taxes: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingCostTaxesItem] | None`
     :   The taxes applied to the shipping rate
 
 <a id="InvoiceShippingCostTaxesItem"></a>
@@ -4513,16 +4726,16 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Amount of tax applied for this rate
 
     `model_config`
     :   The type of the None singleton.
 
-    `taxability_reason: str | Any | None`
+    `taxability_reason: str | None`
     :   The reasoning behind this tax
 
-    `taxable_amount: int | Any | None`
+    `taxable_amount: int | None`
     :   The amount on which tax is calculated
 
 <a id="InvoiceShippingDetails"></a>
@@ -4543,16 +4756,16 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingDetailsAddress | Any`
+    `address: airbyte_agent_sdk.connectors.stripe.models.InvoiceShippingDetailsAddress | None`
     :   Shipping address
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Recipient name
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   Recipient phone
 
 <a id="InvoiceShippingDetailsAddress"></a>
@@ -4573,25 +4786,25 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   City, district, suburb, town, or village
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `line1: str | Any | None`
+    `line1: str | None`
     :   Address line 1
 
-    `line2: str | Any | None`
+    `line2: str | None`
     :   Address line 2
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   ZIP or postal code
 
-    `state: str | Any | None`
+    `state: str | None`
     :   State, county, province, or region
 
 <a id="InvoiceStatusTransitions"></a>
@@ -4612,19 +4825,19 @@ Classes
 
     ### Class variables
 
-    `finalized_at: int | Any | None`
+    `finalized_at: int | None`
     :   The time that the invoice draft was finalized
 
-    `marked_uncollectible_at: int | Any | None`
+    `marked_uncollectible_at: int | None`
     :   The time that the invoice was marked uncollectible
 
     `model_config`
     :   The type of the None singleton.
 
-    `paid_at: int | Any | None`
+    `paid_at: int | None`
     :   The time that the invoice was paid
 
-    `voided_at: int | Any | None`
+    `voided_at: int | None`
     :   The time that the invoice was voided
 
 <a id="InvoiceSubscriptionDetails"></a>
@@ -4645,7 +4858,7 @@ Classes
 
     ### Class variables
 
-    `metadata: dict[str, str] | Any | None`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs defined as subscription metadata when the invoice is created
 
     `model_config`
@@ -4669,10 +4882,10 @@ Classes
 
     ### Class variables
 
-    `amount_gte: int | Any | None`
+    `amount_gte: int | None`
     :   The total invoice amount threshold boundary if it triggered the threshold invoice
 
-    `item_reasons: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceThresholdReasonItemReasonsItem] | Any`
+    `item_reasons: list[airbyte_agent_sdk.connectors.stripe.models.InvoiceThresholdReasonItemReasonsItem] | None`
     :   Indicates which line items triggered a threshold invoice
 
     `model_config`
@@ -4696,13 +4909,13 @@ Classes
 
     ### Class variables
 
-    `line_item_ids: list[str] | Any`
+    `line_item_ids: list[str] | None`
     :   The IDs of the line items that triggered the threshold invoice
 
     `model_config`
     :   The type of the None singleton.
 
-    `usage_gte: int | Any`
+    `usage_gte: int | None`
     :   The quantity threshold boundary that applied to the given line item
 
 <a id="InvoiceTotalDiscountAmountsItem"></a>
@@ -4723,10 +4936,10 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The amount of the discount
 
-    `discount: str | Any`
+    `discount: str | None`
     :   The discount that was applied
 
     `model_config`
@@ -4750,19 +4963,19 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The amount of the pretax credit amount
 
-    `credit_balance_transaction: str | Any | None`
+    `credit_balance_transaction: str | None`
     :   The credit balance transaction that was applied
 
-    `discount: str | Any | None`
+    `discount: str | None`
     :   The discount that was applied
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the pretax credit amount referenced
 
 <a id="InvoiceTotalTaxAmountsItem"></a>
@@ -4783,22 +4996,22 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The amount of the tax
 
-    `inclusive: bool | Any`
+    `inclusive: bool | None`
     :   Whether the tax amount is included in the line item amount
 
     `model_config`
     :   The type of the None singleton.
 
-    `tax_rate: str | Any`
+    `tax_rate: str | None`
     :   The tax rate applied
 
-    `taxability_reason: str | Any | None`
+    `taxability_reason: str | None`
     :   The reasoning behind the tax
 
-    `taxable_amount: int | Any`
+    `taxable_amount: int | None`
     :   The amount on which tax is calculated
 
 <a id="InvoiceTotalTaxesItem"></a>
@@ -4819,25 +5032,25 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The amount of the tax
 
     `model_config`
     :   The type of the None singleton.
 
-    `tax_behavior: str | Any`
+    `tax_behavior: str | None`
     :   Whether this tax is inclusive or exclusive
 
-    `tax_rate_details: dict[str, typing.Any] | Any | None`
+    `tax_rate_details: dict[str, typing.Any] | None`
     :   Additional details about the tax rate
 
-    `taxability_reason: str | Any`
+    `taxability_reason: str | None`
     :   The reasoning behind this tax
 
-    `taxable_amount: int | Any | None`
+    `taxable_amount: int | None`
     :   The amount on which tax is calculated
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of tax information
 
 <a id="InvoicesListResultMeta"></a>
@@ -4858,7 +5071,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -5173,64 +5386,199 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `amount_capturable: int | Any`
+    `amount_capturable: int | None`
     :   The type of the None singleton.
 
-    `amount_received: int | Any`
+    `amount_received: int | None`
     :   The type of the None singleton.
 
-    `application: str | Any | None`
+    `application: str | None`
     :   The type of the None singleton.
 
-    `application_fee_amount: int | Any | None`
+    `application_fee_amount: int | None`
     :   The type of the None singleton.
 
-    `capture_method: str | Any`
+    `capture_method: str | None`
     :   The type of the None singleton.
 
-    `client_secret: str | Any | None`
+    `client_secret: str | None`
     :   The type of the None singleton.
 
-    `confirmation_method: str | Any`
+    `confirmation_method: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `customer: str | Any | None`
+    `customer: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `payment_method: str | Any | None`
+    `payment_method: str | None`
     :   The type of the None singleton.
 
-    `payment_method_types: list[str] | Any`
+    `payment_method_types: list[str] | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentCancelParams"></a>
+
+`PaymentIntentCancelParams(**data: Any)`
+:   PaymentIntentCancelParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancellation_reason: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentConfirmParams"></a>
+
+`PaymentIntentConfirmParams(**data: Any)`
+:   PaymentIntentConfirmParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `payment_method: str | None`
+    :   The type of the None singleton.
+
+    `receipt_email: str | None`
+    :   The type of the None singleton.
+
+    `return_url: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentCreateParams"></a>
+
+`PaymentIntentCreateParams(**data: Any)`
+:   PaymentIntentCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: int`
+    :   The type of the None singleton.
+
+    `automatic_payment_methods: airbyte_agent_sdk.connectors.stripe.models.PaymentIntentCreateParamsAutomaticPaymentMethods | None`
+    :   The type of the None singleton.
+
+    `confirm: bool | None`
+    :   The type of the None singleton.
+
+    `currency: str`
+    :   The type of the None singleton.
+
+    `customer: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `payment_method: str | None`
+    :   The type of the None singleton.
+
+    `receipt_email: str | None`
+    :   The type of the None singleton.
+
+    `statement_descriptor: str | None`
+    :   The type of the None singleton.
+
+    `statement_descriptor_suffix: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentCreateParamsAutomaticPaymentMethods"></a>
+
+`PaymentIntentCreateParamsAutomaticPaymentMethods(**data: Any)`
+:   When you enable this parameter, this PaymentIntent accepts payment methods that you enable in the Dashboard and that are compatible with this PaymentIntent's other parameters
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `allow_redirects: str | None`
+    :   Controls whether this PaymentIntent can accept redirect-based payment methods
+
+    `enabled: bool | None`
+    :   Whether this feature is enabled
+
+    `model_config`
     :   The type of the None singleton.
 
 <a id="PaymentIntentList"></a>
@@ -5251,19 +5599,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.PaymentIntent] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.PaymentIntent] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentIntentSearchResult"></a>
@@ -5284,22 +5632,70 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.PaymentIntent] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.PaymentIntent] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentUpdateParams"></a>
+
+`PaymentIntentUpdateParams(**data: Any)`
+:   PaymentIntentUpdateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: int | None`
+    :   The type of the None singleton.
+
+    `currency: str | None`
+    :   The type of the None singleton.
+
+    `customer: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `payment_method: str | None`
+    :   The type of the None singleton.
+
+    `receipt_email: str | None`
+    :   The type of the None singleton.
+
+    `statement_descriptor: str | None`
+    :   The type of the None singleton.
+
+    `statement_descriptor_suffix: str | None`
     :   The type of the None singleton.
 
 <a id="PaymentIntentsApiSearchResultMeta"></a>
@@ -5320,7 +5716,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -5344,8 +5740,194 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="PaymentMethod"></a>
+
+`PaymentMethod(**data: Any)`
+:   PaymentMethod type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `billing_details: airbyte_agent_sdk.connectors.stripe.models.PaymentMethodBillingDetails | None`
+    :   The type of the None singleton.
+
+    `card: airbyte_agent_sdk.connectors.stripe.models.PaymentMethodCard | None`
+    :   The type of the None singleton.
+
+    `created: int | None`
+    :   The type of the None singleton.
+
+    `customer: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `livemode: bool | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentMethodAttachParams"></a>
+
+`PaymentMethodAttachParams(**data: Any)`
+:   PaymentMethodAttachParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `customer: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="PaymentMethodBillingDetails"></a>
+
+`PaymentMethodBillingDetails(**data: Any)`
+:   Billing information associated with the PaymentMethod
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `address: airbyte_agent_sdk.connectors.stripe.models.PaymentMethodBillingDetailsAddress | None`
+    :   Billing address
+
+    `email: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentMethodBillingDetailsAddress"></a>
+
+`PaymentMethodBillingDetailsAddress(**data: Any)`
+:   Billing address
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `city: str | None`
+    :   The type of the None singleton.
+
+    `country: str | None`
+    :   The type of the None singleton.
+
+    `line1: str | None`
+    :   The type of the None singleton.
+
+    `line2: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `postal_code: str | None`
+    :   The type of the None singleton.
+
+    `state: str | None`
+    :   The type of the None singleton.
+
+<a id="PaymentMethodCard"></a>
+
+`PaymentMethodCard(**data: Any)`
+:   If this is a card PaymentMethod, this hash contains the card details
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `brand: str | None`
+    :   Card brand
+
+    `country: str | None`
+    :   Two-letter ISO code representing the country of the card
+
+    `exp_month: int | None`
+    :   Two-digit number representing the card's expiration month
+
+    `exp_year: int | None`
+    :   Four-digit number representing the card's expiration year
+
+    `fingerprint: str | None`
+    :   Uniquely identifies this particular card number
+
+    `funding: str | None`
+    :   Card funding type
+
+    `last4: str | None`
+    :   The last four digits of the card
 
     `model_config`
     :   The type of the None singleton.
@@ -5368,91 +5950,91 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `application_fee: str | Any | None`
+    `application_fee: str | None`
     :   The type of the None singleton.
 
-    `application_fee_amount: int | Any | None`
+    `application_fee_amount: int | None`
     :   The type of the None singleton.
 
-    `arrival_date: int | Any`
+    `arrival_date: int | None`
     :   The type of the None singleton.
 
-    `automatic: bool | Any`
+    `automatic: bool | None`
     :   The type of the None singleton.
 
-    `balance_transaction: str | Any | None`
+    `balance_transaction: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `destination: str | Any | None`
+    `destination: str | None`
     :   The type of the None singleton.
 
-    `failure_balance_transaction: str | Any | None`
+    `failure_balance_transaction: str | None`
     :   The type of the None singleton.
 
-    `failure_code: str | Any | None`
+    `failure_code: str | None`
     :   The type of the None singleton.
 
-    `failure_message: str | Any | None`
+    `failure_message: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `method: str | Any`
+    `method: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `original_payout: str | Any | None`
+    `original_payout: str | None`
     :   The type of the None singleton.
 
-    `payout_method: str | Any | None`
+    `payout_method: str | None`
     :   The type of the None singleton.
 
-    `reconciliation_status: str | Any`
+    `reconciliation_status: str | None`
     :   The type of the None singleton.
 
-    `reversed_by: str | Any | None`
+    `reversed_by: str | None`
     :   The type of the None singleton.
 
-    `source_balance: str | Any | None`
+    `source_balance: str | None`
     :   The type of the None singleton.
 
-    `source_type: str | Any`
+    `source_type: str | None`
     :   The type of the None singleton.
 
-    `statement_descriptor: str | Any | None`
+    `statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `trace_id: airbyte_agent_sdk.connectors.stripe.models.PayoutTraceId | Any | None`
+    `trace_id: airbyte_agent_sdk.connectors.stripe.models.PayoutTraceId | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="PayoutList"></a>
@@ -5473,19 +6055,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Payout] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Payout] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="PayoutTraceId"></a>
@@ -5509,10 +6091,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The status of the trace ID
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The trace ID value
 
 <a id="PayoutsListResultMeta"></a>
@@ -5533,11 +6115,224 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="Price"></a>
+
+`Price(**data: Any)`
+:   Price type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `active: bool | None`
+    :   The type of the None singleton.
+
+    `billing_scheme: str | None`
+    :   The type of the None singleton.
+
+    `created: int | None`
+    :   The type of the None singleton.
+
+    `currency: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `livemode: bool | None`
+    :   The type of the None singleton.
+
+    `lookup_key: str | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `nickname: str | None`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   The type of the None singleton.
+
+    `product: str | None`
+    :   The type of the None singleton.
+
+    `recurring: airbyte_agent_sdk.connectors.stripe.models.PriceRecurring | None`
+    :   The type of the None singleton.
+
+    `tax_behavior: str | None`
+    :   The type of the None singleton.
+
+    `tiers_mode: str | None`
+    :   The type of the None singleton.
+
+    `transform_quantity: airbyte_agent_sdk.connectors.stripe.models.PriceTransformQuantity | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `unit_amount: int | None`
+    :   The type of the None singleton.
+
+    `unit_amount_decimal: str | None`
+    :   The type of the None singleton.
+
+<a id="PriceCreateParams"></a>
+
+`PriceCreateParams(**data: Any)`
+:   PriceCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `active: bool | None`
+    :   The type of the None singleton.
+
+    `billing_scheme: str | None`
+    :   The type of the None singleton.
+
+    `currency: str`
+    :   The type of the None singleton.
+
+    `lookup_key: str | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `nickname: str | None`
+    :   The type of the None singleton.
+
+    `product: str`
+    :   The type of the None singleton.
+
+    `recurring: airbyte_agent_sdk.connectors.stripe.models.PriceCreateParamsRecurring | None`
+    :   The type of the None singleton.
+
+    `tax_behavior: str | None`
+    :   The type of the None singleton.
+
+    `unit_amount: int`
+    :   The type of the None singleton.
+
+<a id="PriceCreateParamsRecurring"></a>
+
+`PriceCreateParamsRecurring(**data: Any)`
+:   The recurring components of a price
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `interval: str | None`
+    :   Specifies billing frequency
+
+    `interval_count: int | None`
+    :   The number of intervals between subscription billings (e.g., interval=month and interval_count=3 bills every 3 months)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `usage_type: str | None`
+    :   Configures how the quantity per period should be determined
+
+<a id="PriceRecurring"></a>
+
+`PriceRecurring(**data: Any)`
+:   The recurring components of a price such as interval and usage_type
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `interval: str | None`
+    :   The frequency at which a subscription is billed
+
+    `interval_count: int | None`
+    :   The number of intervals between subscription billings
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `usage_type: str | None`
+    :   Configures how the quantity per period should be determined
+
+<a id="PriceTransformQuantity"></a>
+
+`PriceTransformQuantity(**data: Any)`
+:   Apply a transformation to the reported usage or set quantity before computing the amount billed
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `divide_by: int | None`
+    :   Divide usage by this number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `round: str | None`
+    :   After division, either round the result up or down
 
 <a id="Product"></a>
 
@@ -5557,70 +6352,70 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `attributes: list[str] | Any`
+    `attributes: list[str] | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `default_price: str | Any | None`
+    `default_price: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `features: list[airbyte_agent_sdk.connectors.stripe.models.ProductFeaturesItem] | Any`
+    `features: list[airbyte_agent_sdk.connectors.stripe.models.ProductFeaturesItem] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `images: list[str] | Any`
+    `images: list[str] | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `marketing_features: list[airbyte_agent_sdk.connectors.stripe.models.ProductMarketingFeaturesItem] | Any`
+    `marketing_features: list[airbyte_agent_sdk.connectors.stripe.models.ProductMarketingFeaturesItem] | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `package_dimensions: airbyte_agent_sdk.connectors.stripe.models.ProductPackageDimensions | Any | None`
+    `package_dimensions: airbyte_agent_sdk.connectors.stripe.models.ProductPackageDimensions | None`
     :   The type of the None singleton.
 
-    `shippable: bool | Any | None`
+    `shippable: bool | None`
     :   The type of the None singleton.
 
-    `statement_descriptor: str | Any | None`
+    `statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `tax_code: str | Any | None`
+    `tax_code: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `unit_label: str | Any | None`
+    `unit_label: str | None`
     :   The type of the None singleton.
 
-    `updated: int | Any`
+    `updated: int | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductCreateParams"></a>
@@ -5641,46 +6436,46 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `images: list[str] | Any`
+    `images: list[str] | None`
     :   The type of the None singleton.
 
-    `marketing_features: list[airbyte_agent_sdk.connectors.stripe.models.ProductCreateParamsMarketingFeaturesItem] | Any`
+    `marketing_features: list[airbyte_agent_sdk.connectors.stripe.models.ProductCreateParamsMarketingFeaturesItem] | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `package_dimensions: airbyte_agent_sdk.connectors.stripe.models.ProductCreateParamsPackageDimensions | Any`
+    `package_dimensions: airbyte_agent_sdk.connectors.stripe.models.ProductCreateParamsPackageDimensions | None`
     :   The type of the None singleton.
 
-    `shippable: bool | Any`
+    `shippable: bool | None`
     :   The type of the None singleton.
 
-    `statement_descriptor: str | Any`
+    `statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `tax_code: str | Any`
+    `tax_code: str | None`
     :   The type of the None singleton.
 
-    `unit_label: str | Any`
+    `unit_label: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductCreateParamsMarketingFeaturesItem"></a>
@@ -5704,7 +6499,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The marketing feature name. Up to 80 characters long
 
 <a id="ProductCreateParamsPackageDimensions"></a>
@@ -5725,19 +6520,19 @@ Classes
 
     ### Class variables
 
-    `height: float | Any`
+    `height: float | None`
     :   Height, in inches
 
-    `length: float | Any`
+    `length: float | None`
     :   Length, in inches
 
     `model_config`
     :   The type of the None singleton.
 
-    `weight: float | Any`
+    `weight: float | None`
     :   Weight, in ounces
 
-    `width: float | Any`
+    `width: float | None`
     :   Width, in inches
 
 <a id="ProductDeletedResponse"></a>
@@ -5758,16 +6553,16 @@ Classes
 
     ### Class variables
 
-    `deleted: bool | Any`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="ProductFeaturesItem"></a>
@@ -5791,7 +6586,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The feature name
 
 <a id="ProductList"></a>
@@ -5812,19 +6607,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Product] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Product] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductMarketingFeaturesItem"></a>
@@ -5848,7 +6643,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The marketing feature name. Up to 80 characters long
 
 <a id="ProductPackageDimensions"></a>
@@ -5869,19 +6664,19 @@ Classes
 
     ### Class variables
 
-    `height: float | Any`
+    `height: float | None`
     :   Height, in inches
 
-    `length: float | Any`
+    `length: float | None`
     :   Length, in inches
 
     `model_config`
     :   The type of the None singleton.
 
-    `weight: float | Any`
+    `weight: float | None`
     :   Weight, in ounces
 
-    `width: float | Any`
+    `width: float | None`
     :   Width, in inches
 
 <a id="ProductSearchResult"></a>
@@ -5902,22 +6697,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Product] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Product] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductUpdateParams"></a>
@@ -5938,46 +6733,46 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `default_price: str | Any`
+    `default_price: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `images: list[str] | Any`
+    `images: list[str] | None`
     :   The type of the None singleton.
 
-    `marketing_features: list[airbyte_agent_sdk.connectors.stripe.models.ProductUpdateParamsMarketingFeaturesItem] | Any`
+    `marketing_features: list[airbyte_agent_sdk.connectors.stripe.models.ProductUpdateParamsMarketingFeaturesItem] | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `package_dimensions: airbyte_agent_sdk.connectors.stripe.models.ProductUpdateParamsPackageDimensions | Any`
+    `package_dimensions: airbyte_agent_sdk.connectors.stripe.models.ProductUpdateParamsPackageDimensions | None`
     :   The type of the None singleton.
 
-    `shippable: bool | Any`
+    `shippable: bool | None`
     :   The type of the None singleton.
 
-    `statement_descriptor: str | Any`
+    `statement_descriptor: str | None`
     :   The type of the None singleton.
 
-    `tax_code: str | Any`
+    `tax_code: str | None`
     :   The type of the None singleton.
 
-    `unit_label: str | Any`
+    `unit_label: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductUpdateParamsMarketingFeaturesItem"></a>
@@ -6001,7 +6796,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The marketing feature name. Up to 80 characters long
 
 <a id="ProductUpdateParamsPackageDimensions"></a>
@@ -6022,19 +6817,19 @@ Classes
 
     ### Class variables
 
-    `height: float | Any`
+    `height: float | None`
     :   Height, in inches
 
-    `length: float | Any`
+    `length: float | None`
     :   Length, in inches
 
     `model_config`
     :   The type of the None singleton.
 
-    `weight: float | Any`
+    `weight: float | None`
     :   Weight, in ounces
 
-    `width: float | Any`
+    `width: float | None`
     :   Width, in inches
 
 <a id="ProductsApiSearchResultMeta"></a>
@@ -6055,7 +6850,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -6079,7 +6874,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -6103,70 +6898,70 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `balance_transaction: str | Any | None`
+    `balance_transaction: str | None`
     :   The type of the None singleton.
 
-    `charge: str | Any | None`
+    `charge: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `destination_details: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetails | Any | None`
+    `destination_details: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetails | None`
     :   The type of the None singleton.
 
-    `failure_balance_transaction: str | Any | None`
+    `failure_balance_transaction: str | None`
     :   The type of the None singleton.
 
-    `failure_reason: str | Any | None`
+    `failure_reason: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `instructions_email: str | Any | None`
+    `instructions_email: str | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any | None`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_action: airbyte_agent_sdk.connectors.stripe.models.RefundNextAction | Any | None`
+    `next_action: airbyte_agent_sdk.connectors.stripe.models.RefundNextAction | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `payment_intent: str | Any | None`
+    `payment_intent: str | None`
     :   The type of the None singleton.
 
-    `pending_reason: str | Any | None`
+    `pending_reason: str | None`
     :   The type of the None singleton.
 
-    `reason: str | Any | None`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `receipt_number: str | Any | None`
+    `receipt_number: str | None`
     :   The type of the None singleton.
 
-    `source_transfer_reversal: str | Any | None`
+    `source_transfer_reversal: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `transfer_reversal: str | Any | None`
+    `transfer_reversal: str | None`
     :   The type of the None singleton.
 
 <a id="RefundCreateParams"></a>
@@ -6187,28 +6982,28 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   The type of the None singleton.
 
-    `charge: str | Any`
+    `charge: str | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `payment_intent: str | Any`
+    `payment_intent: str | None`
     :   The type of the None singleton.
 
-    `reason: str | Any`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `refund_application_fee: bool | Any`
+    `refund_application_fee: bool | None`
     :   The type of the None singleton.
 
-    `reverse_transfer: bool | Any`
+    `reverse_transfer: bool | None`
     :   The type of the None singleton.
 
 <a id="RefundDestinationDetails"></a>
@@ -6229,115 +7024,115 @@ Classes
 
     ### Class variables
 
-    `affirm: dict[str, typing.Any] | Any | None`
+    `affirm: dict[str, typing.Any] | None`
     :   If this is a affirm refund, this hash contains the transaction specific details
 
-    `afterpay_clearpay: dict[str, typing.Any] | Any | None`
+    `afterpay_clearpay: dict[str, typing.Any] | None`
     :   If this is a afterpay_clearpay refund, this hash contains the transaction specific details
 
-    `alipay: dict[str, typing.Any] | Any | None`
+    `alipay: dict[str, typing.Any] | None`
     :   If this is a alipay refund, this hash contains the transaction specific details
 
-    `alma: dict[str, typing.Any] | Any | None`
+    `alma: dict[str, typing.Any] | None`
     :   If this is a alma refund, this hash contains the transaction specific details
 
-    `amazon_pay: dict[str, typing.Any] | Any | None`
+    `amazon_pay: dict[str, typing.Any] | None`
     :   If this is a amazon_pay refund, this hash contains the transaction specific details
 
-    `au_bank_transfer: dict[str, typing.Any] | Any | None`
+    `au_bank_transfer: dict[str, typing.Any] | None`
     :   If this is a au_bank_transfer refund, this hash contains the transaction specific details
 
-    `blik: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsBlik | Any | None`
+    `blik: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsBlik | None`
     :   If this is a blik refund, this hash contains the transaction specific details
 
-    `br_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsBrBankTransfer | Any | None`
+    `br_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsBrBankTransfer | None`
     :   If this is a br_bank_transfer refund, this hash contains the transaction specific details
 
-    `card: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsCard | Any | None`
+    `card: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsCard | None`
     :   If this is a card refund, this hash contains the transaction specific details
 
-    `cashapp: dict[str, typing.Any] | Any | None`
+    `cashapp: dict[str, typing.Any] | None`
     :   If this is a cashapp refund, this hash contains the transaction specific details
 
-    `crypto: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsCrypto | Any | None`
+    `crypto: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsCrypto | None`
     :   If this is a crypto refund, this hash contains the transaction specific details
 
-    `customer_cash_balance: dict[str, typing.Any] | Any | None`
+    `customer_cash_balance: dict[str, typing.Any] | None`
     :   If this is a customer_cash_balance refund, this hash contains the transaction specific details
 
-    `eps: dict[str, typing.Any] | Any | None`
+    `eps: dict[str, typing.Any] | None`
     :   If this is a eps refund, this hash contains the transaction specific details
 
-    `eu_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsEuBankTransfer | Any | None`
+    `eu_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsEuBankTransfer | None`
     :   If this is a eu_bank_transfer refund, this hash contains the transaction specific details
 
-    `gb_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsGbBankTransfer | Any | None`
+    `gb_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsGbBankTransfer | None`
     :   If this is a gb_bank_transfer refund, this hash contains the transaction specific details
 
-    `giropay: dict[str, typing.Any] | Any | None`
+    `giropay: dict[str, typing.Any] | None`
     :   If this is a giropay refund, this hash contains the transaction specific details
 
-    `grabpay: dict[str, typing.Any] | Any | None`
+    `grabpay: dict[str, typing.Any] | None`
     :   If this is a grabpay refund, this hash contains the transaction specific details
 
-    `jp_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsJpBankTransfer | Any | None`
+    `jp_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsJpBankTransfer | None`
     :   If this is a jp_bank_transfer refund, this hash contains the transaction specific details
 
-    `klarna: dict[str, typing.Any] | Any | None`
+    `klarna: dict[str, typing.Any] | None`
     :   If this is a klarna refund, this hash contains the transaction specific details
 
-    `mb_way: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsMbWay | Any | None`
+    `mb_way: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsMbWay | None`
     :   If this is a mb_way refund, this hash contains the transaction specific details
 
     `model_config`
     :   The type of the None singleton.
 
-    `multibanco: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsMultibanco | Any | None`
+    `multibanco: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsMultibanco | None`
     :   If this is a multibanco refund, this hash contains the transaction specific details
 
-    `mx_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsMxBankTransfer | Any | None`
+    `mx_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsMxBankTransfer | None`
     :   If this is a mx_bank_transfer refund, this hash contains the transaction specific details
 
-    `nz_bank_transfer: dict[str, typing.Any] | Any | None`
+    `nz_bank_transfer: dict[str, typing.Any] | None`
     :   If this is a nz_bank_transfer refund, this hash contains the transaction specific details
 
-    `p24: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsP24 | Any | None`
+    `p24: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsP24 | None`
     :   If this is a p24 refund, this hash contains the transaction specific details
 
-    `paynow: dict[str, typing.Any] | Any | None`
+    `paynow: dict[str, typing.Any] | None`
     :   If this is a paynow refund, this hash contains the transaction specific details
 
-    `paypal: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsPaypal | Any | None`
+    `paypal: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsPaypal | None`
     :   If this is a paypal refund, this hash contains the transaction specific details
 
-    `pix: dict[str, typing.Any] | Any | None`
+    `pix: dict[str, typing.Any] | None`
     :   If this is a pix refund, this hash contains the transaction specific details
 
-    `revolut: dict[str, typing.Any] | Any | None`
+    `revolut: dict[str, typing.Any] | None`
     :   If this is a revolut refund, this hash contains the transaction specific details
 
-    `sofort: dict[str, typing.Any] | Any | None`
+    `sofort: dict[str, typing.Any] | None`
     :   If this is a sofort refund, this hash contains the transaction specific details
 
-    `swish: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsSwish | Any | None`
+    `swish: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsSwish | None`
     :   If this is a swish refund, this hash contains the transaction specific details
 
-    `th_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsThBankTransfer | Any | None`
+    `th_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsThBankTransfer | None`
     :   If this is a th_bank_transfer refund, this hash contains the transaction specific details
 
-    `twint: dict[str, typing.Any] | Any | None`
+    `twint: dict[str, typing.Any] | None`
     :   If this is a twint refund, this hash contains the transaction specific details
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of transaction-specific details of the payment method used in the refund
 
-    `us_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsUsBankTransfer | Any | None`
+    `us_bank_transfer: airbyte_agent_sdk.connectors.stripe.models.RefundDestinationDetailsUsBankTransfer | None`
     :   If this is a us_bank_transfer refund, this hash contains the transaction specific details
 
-    `wechat_pay: dict[str, typing.Any] | Any | None`
+    `wechat_pay: dict[str, typing.Any] | None`
     :   If this is a wechat_pay refund, this hash contains the transaction specific details
 
-    `zip: dict[str, typing.Any] | Any | None`
+    `zip: dict[str, typing.Any] | None`
     :   If this is a zip refund, this hash contains the transaction specific details
 
 <a id="RefundDestinationDetailsBlik"></a>
@@ -6361,13 +7156,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `network_decline_code: str | Any | None`
+    `network_decline_code: str | None`
     :   For refunds declined by the network, a decline code provided by the network
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsBrBankTransfer"></a>
@@ -6391,10 +7186,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsCard"></a>
@@ -6418,16 +7213,16 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   Value of the reference number assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference number on the refund
 
-    `reference_type: str | Any | None`
+    `reference_type: str | None`
     :   Type of the reference number assigned to the refund
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of refund
 
 <a id="RefundDestinationDetailsCrypto"></a>
@@ -6451,7 +7246,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The transaction hash of the refund
 
 <a id="RefundDestinationDetailsEuBankTransfer"></a>
@@ -6475,10 +7270,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsGbBankTransfer"></a>
@@ -6502,10 +7297,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsJpBankTransfer"></a>
@@ -6529,10 +7324,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsMbWay"></a>
@@ -6556,10 +7351,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsMultibanco"></a>
@@ -6583,10 +7378,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsMxBankTransfer"></a>
@@ -6610,10 +7405,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsP24"></a>
@@ -6637,10 +7432,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsPaypal"></a>
@@ -6664,7 +7459,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `network_decline_code: str | Any | None`
+    `network_decline_code: str | None`
     :   For refunds declined by the network, a decline code provided by the network
 
 <a id="RefundDestinationDetailsSwish"></a>
@@ -6688,13 +7483,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `network_decline_code: str | Any | None`
+    `network_decline_code: str | None`
     :   For refunds declined by the network, a decline code provided by the network
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsThBankTransfer"></a>
@@ -6718,10 +7513,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundDestinationDetailsUsBankTransfer"></a>
@@ -6745,10 +7540,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The reference assigned to the refund
 
-    `reference_status: str | Any | None`
+    `reference_status: str | None`
     :   Status of the reference on the refund
 
 <a id="RefundList"></a>
@@ -6769,22 +7564,22 @@ Classes
 
     ### Class variables
 
-    `count: int | Any`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Refund] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Refund] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="RefundNextAction"></a>
@@ -6805,13 +7600,13 @@ Classes
 
     ### Class variables
 
-    `display_details: airbyte_agent_sdk.connectors.stripe.models.RefundNextActionDisplayDetails | Any | None`
+    `display_details: airbyte_agent_sdk.connectors.stripe.models.RefundNextActionDisplayDetails | None`
     :   Contains the refund details
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the next action to perform
 
 <a id="RefundNextActionDisplayDetails"></a>
@@ -6832,10 +7627,10 @@ Classes
 
     ### Class variables
 
-    `email_sent: airbyte_agent_sdk.connectors.stripe.models.RefundNextActionDisplayDetailsEmailSent | Any`
+    `email_sent: airbyte_agent_sdk.connectors.stripe.models.RefundNextActionDisplayDetailsEmailSent | None`
     :   Contains information about the email sent to the customer
 
-    `expires_at: int | Any`
+    `expires_at: int | None`
     :   The expiry timestamp
 
     `model_config`
@@ -6859,10 +7654,10 @@ Classes
 
     ### Class variables
 
-    `email_sent_at: int | Any`
+    `email_sent_at: int | None`
     :   The timestamp when the email was sent
 
-    `email_sent_to: str | Any`
+    `email_sent_to: str | None`
     :   The recipient's email address
 
     `model_config`
@@ -6886,7 +7681,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -7851,157 +8646,157 @@ Classes
 
     ### Class variables
 
-    `application: str | Any | None`
+    `application: str | None`
     :   The type of the None singleton.
 
-    `application_fee_percent: float | Any | None`
+    `application_fee_percent: float | None`
     :   The type of the None singleton.
 
-    `automatic_tax: airbyte_agent_sdk.connectors.stripe.models.SubscriptionAutomaticTax | Any`
+    `automatic_tax: airbyte_agent_sdk.connectors.stripe.models.SubscriptionAutomaticTax | None`
     :   The type of the None singleton.
 
-    `billing_cycle_anchor: int | Any`
+    `billing_cycle_anchor: int | None`
     :   The type of the None singleton.
 
-    `billing_cycle_anchor_config: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingCycleAnchorConfig | Any | None`
+    `billing_cycle_anchor_config: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingCycleAnchorConfig | None`
     :   The type of the None singleton.
 
-    `billing_mode: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingMode | Any`
+    `billing_mode: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingMode | None`
     :   The type of the None singleton.
 
-    `billing_thresholds: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingThresholds | Any | None`
+    `billing_thresholds: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingThresholds | None`
     :   The type of the None singleton.
 
-    `cancel_at: int | Any | None`
+    `cancel_at: int | None`
     :   The type of the None singleton.
 
-    `cancel_at_period_end: bool | Any`
+    `cancel_at_period_end: bool | None`
     :   The type of the None singleton.
 
-    `canceled_at: int | Any | None`
+    `canceled_at: int | None`
     :   The type of the None singleton.
 
-    `cancellation_details: airbyte_agent_sdk.connectors.stripe.models.SubscriptionCancellationDetails | Any | None`
+    `cancellation_details: airbyte_agent_sdk.connectors.stripe.models.SubscriptionCancellationDetails | None`
     :   The type of the None singleton.
 
-    `collection_method: str | Any`
+    `collection_method: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `current_period_end: int | Any`
+    `current_period_end: int | None`
     :   The type of the None singleton.
 
-    `current_period_start: int | Any`
+    `current_period_start: int | None`
     :   The type of the None singleton.
 
-    `customer: str | Any`
+    `customer: str | None`
     :   The type of the None singleton.
 
-    `customer_account: str | Any | None`
+    `customer_account: str | None`
     :   The type of the None singleton.
 
-    `days_until_due: int | Any | None`
+    `days_until_due: int | None`
     :   The type of the None singleton.
 
-    `default_payment_method: str | Any | None`
+    `default_payment_method: str | None`
     :   The type of the None singleton.
 
-    `default_source: str | Any | None`
+    `default_source: str | None`
     :   The type of the None singleton.
 
-    `default_tax_rates: list[airbyte_agent_sdk.connectors.stripe.models.SubscriptionDefaultTaxRatesItem] | Any | None`
+    `default_tax_rates: list[airbyte_agent_sdk.connectors.stripe.models.SubscriptionDefaultTaxRatesItem] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `discount: dict[str, typing.Any] | Any | None`
+    `discount: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `discounts: list[str] | Any`
+    `discounts: list[str] | None`
     :   The type of the None singleton.
 
-    `ended_at: int | Any | None`
+    `ended_at: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `invoice_settings: airbyte_agent_sdk.connectors.stripe.models.SubscriptionInvoiceSettings | Any`
+    `invoice_settings: airbyte_agent_sdk.connectors.stripe.models.SubscriptionInvoiceSettings | None`
     :   The type of the None singleton.
 
-    `items: airbyte_agent_sdk.connectors.stripe.models.SubscriptionItems | Any`
+    `items: airbyte_agent_sdk.connectors.stripe.models.SubscriptionItems | None`
     :   The type of the None singleton.
 
-    `latest_invoice: str | Any | None`
+    `latest_invoice: str | None`
     :   The type of the None singleton.
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   The type of the None singleton.
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_pending_invoice_item_invoice: int | Any | None`
+    `next_pending_invoice_item_invoice: int | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `on_behalf_of: str | Any | None`
+    `on_behalf_of: str | None`
     :   The type of the None singleton.
 
-    `pause_collection: airbyte_agent_sdk.connectors.stripe.models.SubscriptionPauseCollection | Any | None`
+    `pause_collection: airbyte_agent_sdk.connectors.stripe.models.SubscriptionPauseCollection | None`
     :   The type of the None singleton.
 
-    `payment_settings: airbyte_agent_sdk.connectors.stripe.models.SubscriptionPaymentSettings | Any | None`
+    `payment_settings: airbyte_agent_sdk.connectors.stripe.models.SubscriptionPaymentSettings | None`
     :   The type of the None singleton.
 
-    `pending_invoice_item_interval: dict[str, typing.Any] | Any | None`
+    `pending_invoice_item_interval: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `pending_setup_intent: str | Any | None`
+    `pending_setup_intent: str | None`
     :   The type of the None singleton.
 
-    `pending_update: dict[str, typing.Any] | Any | None`
+    `pending_update: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `plan: dict[str, typing.Any] | Any | None`
+    `plan: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `quantity: int | Any | None`
+    `quantity: int | None`
     :   The type of the None singleton.
 
-    `schedule: str | Any | None`
+    `schedule: str | None`
     :   The type of the None singleton.
 
-    `start_date: int | Any`
+    `start_date: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `test_clock: str | Any | None`
+    `test_clock: str | None`
     :   The type of the None singleton.
 
-    `transfer_data: dict[str, typing.Any] | Any | None`
+    `transfer_data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `trial_end: int | Any | None`
+    `trial_end: int | None`
     :   The type of the None singleton.
 
-    `trial_settings: airbyte_agent_sdk.connectors.stripe.models.SubscriptionTrialSettings | Any | None`
+    `trial_settings: airbyte_agent_sdk.connectors.stripe.models.SubscriptionTrialSettings | None`
     :   The type of the None singleton.
 
-    `trial_start: int | Any | None`
+    `trial_start: int | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionAutomaticTax"></a>
@@ -8022,13 +8817,13 @@ Classes
 
     ### Class variables
 
-    `disabled_reason: str | Any | None`
+    `disabled_reason: str | None`
     :   If Stripe disabled automatic tax, this enum describes why
 
-    `enabled: bool | Any`
+    `enabled: bool | None`
     :   Whether Stripe automatically computes tax on this subscription
 
-    `liability: airbyte_agent_sdk.connectors.stripe.models.SubscriptionAutomaticTaxLiability | Any | None`
+    `liability: airbyte_agent_sdk.connectors.stripe.models.SubscriptionAutomaticTaxLiability | None`
     :   The account that's liable for tax
 
     `model_config`
@@ -8052,13 +8847,13 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The connected account being referenced when type is account
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the account referenced
 
 <a id="SubscriptionBillingCycleAnchorConfig"></a>
@@ -8079,22 +8874,22 @@ Classes
 
     ### Class variables
 
-    `day_of_month: int | Any`
+    `day_of_month: int | None`
     :   The day of the month of the billing_cycle_anchor
 
-    `hour: int | Any | None`
+    `hour: int | None`
     :   The hour of the day of the billing_cycle_anchor
 
-    `minute: int | Any | None`
+    `minute: int | None`
     :   The minute of the hour of the billing_cycle_anchor
 
     `model_config`
     :   The type of the None singleton.
 
-    `month: int | Any | None`
+    `month: int | None`
     :   The month to start full cycle billing periods
 
-    `second: int | Any | None`
+    `second: int | None`
     :   The second of the minute of the billing_cycle_anchor
 
 <a id="SubscriptionBillingMode"></a>
@@ -8115,16 +8910,16 @@ Classes
 
     ### Class variables
 
-    `flexible: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingModeFlexible | Any | None`
+    `flexible: airbyte_agent_sdk.connectors.stripe.models.SubscriptionBillingModeFlexible | None`
     :   Configure behavior for flexible billing mode
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Controls how prorations and invoices for subscriptions are calculated and orchestrated
 
-    `updated_at: int | Any | None`
+    `updated_at: int | None`
     :   Details on when the current billing_mode was adopted
 
 <a id="SubscriptionBillingModeFlexible"></a>
@@ -8148,7 +8943,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `proration_discounts: str | Any`
+    `proration_discounts: str | None`
     :   Controls how invoices and invoice items display proration amounts and discount amounts
 
 <a id="SubscriptionBillingThresholds"></a>
@@ -8169,13 +8964,13 @@ Classes
 
     ### Class variables
 
-    `amount_gte: int | Any | None`
+    `amount_gte: int | None`
     :   Monetary threshold that triggers the subscription to create an invoice
 
     `model_config`
     :   The type of the None singleton.
 
-    `reset_billing_cycle_anchor: bool | Any | None`
+    `reset_billing_cycle_anchor: bool | None`
     :   Indicates if the billing_cycle_anchor should be reset when a threshold is reached
 
 <a id="SubscriptionCancellationDetails"></a>
@@ -8196,17 +8991,95 @@ Classes
 
     ### Class variables
 
-    `comment: str | Any | None`
+    `comment: str | None`
     :   Additional comments about why the user canceled the subscription
 
-    `feedback: str | Any | None`
+    `feedback: str | None`
     :   The customer submitted reason for why they canceled
 
     `model_config`
     :   The type of the None singleton.
 
-    `reason: str | Any | None`
+    `reason: str | None`
     :   Why this subscription was canceled
+
+<a id="SubscriptionCreateParams"></a>
+
+`SubscriptionCreateParams(**data: Any)`
+:   SubscriptionCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancel_at_period_end: bool | None`
+    :   The type of the None singleton.
+
+    `collection_method: str | None`
+    :   The type of the None singleton.
+
+    `currency: str | None`
+    :   The type of the None singleton.
+
+    `customer: str`
+    :   The type of the None singleton.
+
+    `days_until_due: int | None`
+    :   The type of the None singleton.
+
+    `default_payment_method: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `items: list[airbyte_agent_sdk.connectors.stripe.models.SubscriptionCreateParamsItemsItem] | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `trial_period_days: int | None`
+    :   The type of the None singleton.
+
+<a id="SubscriptionCreateParamsItemsItem"></a>
+
+`SubscriptionCreateParamsItemsItem(**data: Any)`
+:   Nested schema for SubscriptionCreateParams.items_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `price: str | None`
+    :   The ID of the price object
+
+    `quantity: int | None`
+    :   The quantity you'd like to apply to the subscription item
 
 <a id="SubscriptionDefaultTaxRatesItem"></a>
 
@@ -8226,61 +9099,61 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   Defaults to true
 
-    `country: str | Any | None`
+    `country: str | None`
     :   Two-letter country code (ISO 3166-1 alpha-2)
 
-    `created: int | Any`
+    `created: int | None`
     :   Time at which the object was created
 
-    `description: str | Any | None`
+    `description: str | None`
     :   An arbitrary string attached to the tax rate for your internal use only
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The display name of the tax rates
 
-    `effective_percentage: float | Any | None`
+    `effective_percentage: float | None`
     :   Actual/effective tax rate percentage out of 100
 
-    `flat_amount: airbyte_agent_sdk.connectors.stripe.models.SubscriptionDefaultTaxRatesItemFlatAmount | Any | None`
+    `flat_amount: airbyte_agent_sdk.connectors.stripe.models.SubscriptionDefaultTaxRatesItemFlatAmount | None`
     :   The amount of the tax rate when the rate_type is flat_amount
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique identifier for the object
 
-    `inclusive: bool | Any`
+    `inclusive: bool | None`
     :   This specifies if the tax rate is inclusive or exclusive
 
-    `jurisdiction: str | Any | None`
+    `jurisdiction: str | None`
     :   The jurisdiction for the tax rate
 
-    `jurisdiction_level: str | Any | None`
+    `jurisdiction_level: str | None`
     :   The level of the jurisdiction that imposes this tax rate
 
-    `livemode: bool | Any`
+    `livemode: bool | None`
     :   Has the value true if the object exists in live mode or false if in test mode
 
-    `metadata: dict[str, str] | Any | None`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `percentage: float | Any`
+    `percentage: float | None`
     :   Tax rate percentage out of 100
 
-    `rate_type: str | Any | None`
+    `rate_type: str | None`
     :   Indicates the type of tax rate applied to the taxable amount
 
-    `state: str | Any | None`
+    `state: str | None`
     :   ISO 3166-2 subdivision code, without country prefix
 
-    `tax_type: str | Any | None`
+    `tax_type: str | None`
     :   The high-level tax type
 
 <a id="SubscriptionDefaultTaxRatesItemFlatAmount"></a>
@@ -8301,10 +9174,10 @@ Classes
 
     ### Class variables
 
-    `amount: int | Any`
+    `amount: int | None`
     :   Amount of the tax when the rate_type is flat_amount
 
-    `currency: str | Any`
+    `currency: str | None`
     :   Three-letter ISO currency code, in lowercase
 
     `model_config`
@@ -8328,10 +9201,10 @@ Classes
 
     ### Class variables
 
-    `account_tax_ids: list[str] | Any | None`
+    `account_tax_ids: list[str] | None`
     :   The account tax IDs associated with the subscription
 
-    `issuer: airbyte_agent_sdk.connectors.stripe.models.SubscriptionInvoiceSettingsIssuer | Any`
+    `issuer: airbyte_agent_sdk.connectors.stripe.models.SubscriptionInvoiceSettingsIssuer | None`
     :   The connected account that issues the invoice
 
     `model_config`
@@ -8355,13 +9228,13 @@ Classes
 
     ### Class variables
 
-    `account: str | Any | None`
+    `account: str | None`
     :   The connected account being referenced when type is account
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Type of the account referenced
 
 <a id="SubscriptionItems"></a>
@@ -8382,22 +9255,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.SubscriptionItemsDataItem] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.SubscriptionItemsDataItem] | None`
     :   Details about each object
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   True if this list has another page of items after this one
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `total_count: int | Any`
+    `total_count: int | None`
     :   The total count of items in the list
 
-    `url: str | Any`
+    `url: str | None`
     :   The URL where this list can be accessed
 
 <a id="SubscriptionItemsDataItem"></a>
@@ -8418,46 +9291,46 @@ Classes
 
     ### Class variables
 
-    `billing_thresholds: airbyte_agent_sdk.connectors.stripe.models.SubscriptionItemsDataItemBillingThresholds | Any | None`
+    `billing_thresholds: airbyte_agent_sdk.connectors.stripe.models.SubscriptionItemsDataItemBillingThresholds | None`
     :   Define thresholds at which an invoice will be sent
 
-    `created: int | Any`
+    `created: int | None`
     :   Time at which the object was created
 
-    `current_period_end: int | Any`
+    `current_period_end: int | None`
     :   The end time of this subscription item's current billing period
 
-    `current_period_start: int | Any`
+    `current_period_start: int | None`
     :   The start time of this subscription item's current billing period
 
-    `discounts: list[str] | Any`
+    `discounts: list[str] | None`
     :   The discounts applied to the subscription item
 
-    `id: str | Any`
+    `id: str | None`
     :   Unique identifier for the object
 
-    `metadata: dict[str, str] | Any`
+    `metadata: dict[str, str] | None`
     :   Set of key-value pairs
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   String representing the object's type
 
-    `plan: dict[str, typing.Any] | Any | None`
+    `plan: dict[str, typing.Any] | None`
     :   The plan the customer is subscribed to (deprecated, use price instead)
 
-    `price: dict[str, typing.Any] | Any`
+    `price: dict[str, typing.Any] | None`
     :   The price the customer is subscribed to
 
-    `quantity: int | Any | None`
+    `quantity: int | None`
     :   The quantity of the plan to which the customer should be subscribed
 
-    `subscription: str | Any`
+    `subscription: str | None`
     :   The subscription this subscription_item belongs to
 
-    `tax_rates: list[dict[str, typing.Any]] | Any | None`
+    `tax_rates: list[dict[str, typing.Any]] | None`
     :   The tax rates which apply to this subscription_item
 
 <a id="SubscriptionItemsDataItemBillingThresholds"></a>
@@ -8481,7 +9354,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `usage_gte: int | Any | None`
+    `usage_gte: int | None`
     :   Usage threshold that triggers the subscription to create an invoice
 
 <a id="SubscriptionList"></a>
@@ -8502,19 +9375,19 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Subscription] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Subscription] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionPauseCollection"></a>
@@ -8535,13 +9408,13 @@ Classes
 
     ### Class variables
 
-    `behavior: str | Any`
+    `behavior: str | None`
     :   The payment collection behavior for this subscription while paused
 
     `model_config`
     :   The type of the None singleton.
 
-    `resumes_at: int | Any | None`
+    `resumes_at: int | None`
     :   The time after which the subscription will resume collecting payments
 
 <a id="SubscriptionPaymentSettings"></a>
@@ -8565,10 +9438,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `payment_method_options: dict[str, typing.Any] | Any | None`
+    `payment_method_options: dict[str, typing.Any] | None`
     :   Payment-method-specific configuration to provide to invoices
 
-    `payment_method_types: list[str] | Any | None`
+    `payment_method_types: list[str] | None`
     :   The list of payment method types to provide to every invoice
 
 <a id="SubscriptionSearchResult"></a>
@@ -8589,22 +9462,22 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.stripe.models.Subscription] | Any`
+    `data: list[airbyte_agent_sdk.connectors.stripe.models.Subscription] | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="SubscriptionTrialSettings"></a>
@@ -8625,7 +9498,7 @@ Classes
 
     ### Class variables
 
-    `end_behavior: airbyte_agent_sdk.connectors.stripe.models.SubscriptionTrialSettingsEndBehavior | Any`
+    `end_behavior: airbyte_agent_sdk.connectors.stripe.models.SubscriptionTrialSettingsEndBehavior | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -8649,11 +9522,89 @@ Classes
 
     ### Class variables
 
-    `missing_payment_method: str | Any`
+    `missing_payment_method: str | None`
     :   Behavior when the trial ends and payment method is missing
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="SubscriptionUpdateParams"></a>
+
+`SubscriptionUpdateParams(**data: Any)`
+:   SubscriptionUpdateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancel_at_period_end: bool | None`
+    :   The type of the None singleton.
+
+    `collection_method: str | None`
+    :   The type of the None singleton.
+
+    `days_until_due: int | None`
+    :   The type of the None singleton.
+
+    `default_payment_method: str | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `items: list[airbyte_agent_sdk.connectors.stripe.models.SubscriptionUpdateParamsItemsItem] | None`
+    :   The type of the None singleton.
+
+    `metadata: dict[str, str] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `proration_behavior: str | None`
+    :   The type of the None singleton.
+
+<a id="SubscriptionUpdateParamsItemsItem"></a>
+
+`SubscriptionUpdateParamsItemsItem(**data: Any)`
+:   Nested schema for SubscriptionUpdateParams.items_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `deleted: bool | None`
+    :   A flag that, if set to true, will delete the specified item
+
+    `id: str | None`
+    :   Subscription item to update
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `price: str | None`
+    :   The ID of the price object
+
+    `quantity: int | None`
+    :   The quantity you'd like to apply to the subscription item
 
 <a id="SubscriptionsListResultMeta"></a>
 
@@ -8673,7 +9624,7 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`

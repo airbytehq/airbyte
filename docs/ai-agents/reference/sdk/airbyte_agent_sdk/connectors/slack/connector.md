@@ -10,6 +10,48 @@ Slack connector.
 Classes
 -------
 
+<a id="BookmarksQuery"></a>
+
+`BookmarksQuery(connector: SlackConnector)`
+:   Query class for Bookmarks entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel_id: str, title: str, type: str, link: str | None = None, emoji: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.Bookmark`
+    :   Adds a bookmark (link) to a channel. Bookmarks appear in the channel header for easy access.
+        
+        Args:
+            channel_id: Channel ID to add the bookmark to
+            title: Title for the bookmark
+            type: Type of the bookmark (e.g., "link")
+            link: URL to bookmark (required for link type). Must begin with http:// or https://.
+            emoji: Emoji tag to apply to the bookmark (e.g., ":rocket:")
+            **kwargs: Additional parameters
+        
+        Returns:
+            Bookmark
+
+<a id="ChannelArchivesQuery"></a>
+
+`ChannelArchivesQuery(connector: SlackConnector)`
+:   Query class for ChannelArchives entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ChannelArchiveResponse`
+    :   Archives a conversation. Not all types of conversations can be archived.
+        
+        Args:
+            channel: ID of the channel to archive
+            **kwargs: Additional parameters
+        
+        Returns:
+            ChannelArchiveResponse
+
 <a id="ChannelInvitesQuery"></a>
 
 `ChannelInvitesQuery(connector: SlackConnector)`
@@ -30,6 +72,26 @@ Classes
         
         Returns:
             Channel
+
+<a id="ChannelKicksQuery"></a>
+
+`ChannelKicksQuery(connector: SlackConnector)`
+:   Query class for ChannelKicks entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, user: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ChannelKickResponse`
+    :   Removes a user from a public or private channel
+        
+        Args:
+            channel: ID of the channel to remove the user from
+            user: User ID to be removed from the channel
+            **kwargs: Additional parameters
+        
+        Returns:
+            ChannelKickResponse
 
 <a id="ChannelMessagesQuery"></a>
 
@@ -242,6 +304,29 @@ Classes
         Returns:
             Channel
 
+<a id="EphemeralMessagesQuery"></a>
+
+`EphemeralMessagesQuery(connector: SlackConnector)`
+:   Query class for EphemeralMessages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, user: str, text: str, thread_ts: str | None = None, blocks: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.EphemeralMessageCreateResponse`
+    :   Sends an ephemeral message to a user in a channel. Ephemeral messages are visible only to the target user and do not persist across sessions.
+        
+        Args:
+            channel: Channel, private group, or IM channel to send the ephemeral message to. Can be an encoded ID or a name.
+            user: ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument.
+            text: Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided.
+            thread_ts: Provide another message's ts value to post this ephemeral message in a thread. The thread must already be active.
+            blocks: A JSON-based array of structured blocks, presented as a URL-encoded string.
+            **kwargs: Additional parameters
+        
+        Returns:
+            EphemeralMessageCreateResponse
+
 <a id="MessagesQuery"></a>
 
 `MessagesQuery(connector: SlackConnector)`
@@ -266,6 +351,17 @@ Classes
         Returns:
             CreatedMessage
 
+    `delete(self, channel: str, ts: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.MessageDeleteResponse`
+    :   Deletes a message from a channel. When used with a bot token, may only delete messages posted by that bot.
+        
+        Args:
+            channel: Channel ID containing the message to be deleted
+            ts: Timestamp of the message to be deleted
+            **kwargs: Additional parameters
+        
+        Returns:
+            MessageDeleteResponse
+
     `update(self, channel: str, ts: str, text: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.CreatedMessage`
     :   Updates an existing message in a channel
         
@@ -277,6 +373,26 @@ Classes
         
         Returns:
             CreatedMessage
+
+<a id="PinsQuery"></a>
+
+`PinsQuery(connector: SlackConnector)`
+:   Query class for Pins entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, timestamp: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.PinAddResponse`
+    :   Pins a message to a particular channel. Both channel and timestamp are required.
+        
+        Args:
+            channel: Channel ID to pin the message to
+            timestamp: Timestamp of the message to pin
+            **kwargs: Additional parameters
+        
+        Returns:
+            PinAddResponse
 
 <a id="ReactionsQuery"></a>
 
@@ -298,6 +414,43 @@ Classes
         
         Returns:
             ReactionAddResponse
+
+    `delete(self, channel: str, timestamp: str, name: str, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ReactionRemoveResponse`
+    :   Removes a reaction (emoji) from a message
+        
+        Args:
+            channel: Channel ID containing the message
+            timestamp: Timestamp of the message to remove reaction from
+            name: Reaction emoji name to remove (without colons, e.g., "thumbsup")
+            **kwargs: Additional parameters
+        
+        Returns:
+            ReactionRemoveResponse
+
+<a id="ScheduledMessagesQuery"></a>
+
+`ScheduledMessagesQuery(connector: SlackConnector)`
+:   Query class for ScheduledMessages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, channel: str, text: str, post_at: int, thread_ts: str | None = None, reply_broadcast: bool | None = None, unfurl_links: bool | None = None, unfurl_media: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.slack.models.ScheduledMessageCreateResponse`
+    :   Schedules a message for delivery to a channel at a specified time in the future. Messages can be scheduled up to 120 days in advance.
+        
+        Args:
+            channel: Channel, private group, or DM channel to send the scheduled message to. Can be an encoded ID or a name.
+            text: Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided.
+            post_at: Unix timestamp representing the future time the message should post to Slack. Must be within 120 days.
+            thread_ts: Provide another message's ts value to make this message a reply. Avoid using a reply's ts value; use its parent instead.
+            reply_broadcast: Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel. Defaults to false.
+            unfurl_links: Pass true to enable unfurling of primarily text-based content.
+            unfurl_media: Pass false to disable unfurling of media content.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ScheduledMessageCreateResponse
 
 <a id="SlackConnector"></a>
 
@@ -455,8 +608,13 @@ Classes
             # Redirect user to: consent_url
             # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -469,9 +627,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @SlackConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -520,7 +698,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

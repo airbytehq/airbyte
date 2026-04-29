@@ -31,154 +31,154 @@ Classes
 
     ### Class variables
 
-    `ad_format: str | Any | None`
+    `ad_format: str | None`
     :   The type of the None singleton.
 
-    `ad_id: str | Any`
+    `ad_id: str | None`
     :   The type of the None singleton.
 
-    `ad_name: str | Any`
+    `ad_name: str | None`
     :   The type of the None singleton.
 
-    `ad_text: str | Any | None`
+    `ad_text: str | None`
     :   The type of the None singleton.
 
-    `ad_texts: list[typing.Any] | Any | None`
+    `ad_texts: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `adgroup_id: str | Any`
+    `adgroup_id: str | None`
     :   The type of the None singleton.
 
-    `adgroup_name: str | Any`
+    `adgroup_name: str | None`
     :   The type of the None singleton.
 
-    `advertiser_id: str | Any`
+    `advertiser_id: str | None`
     :   The type of the None singleton.
 
-    `app_name: str | Any | None`
+    `app_name: str | None`
     :   The type of the None singleton.
 
-    `avatar_icon_web_uri: str | Any | None`
+    `avatar_icon_web_uri: str | None`
     :   The type of the None singleton.
 
-    `brand_safety_postbid_partner: str | Any | None`
+    `brand_safety_postbid_partner: str | None`
     :   The type of the None singleton.
 
-    `brand_safety_vast_url: str | Any | None`
+    `brand_safety_vast_url: str | None`
     :   The type of the None singleton.
 
-    `call_to_action: str | Any | None`
+    `call_to_action: str | None`
     :   The type of the None singleton.
 
-    `call_to_action_id: str | Any | None`
+    `call_to_action_id: str | None`
     :   The type of the None singleton.
 
-    `campaign_automation_type: str | Any | None`
+    `campaign_automation_type: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: str | Any`
+    `campaign_id: str | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `card_id: str | Any | None`
+    `card_id: str | None`
     :   The type of the None singleton.
 
-    `carousel_image_labels: list[typing.Any] | Any | None`
+    `carousel_image_labels: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `click_tracking_url: str | Any | None`
+    `click_tracking_url: str | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `creative_authorized: bool | Any | None`
+    `creative_authorized: bool | None`
     :   The type of the None singleton.
 
-    `creative_type: str | Any | None`
+    `creative_type: str | None`
     :   The type of the None singleton.
 
-    `deeplink: str | Any | None`
+    `deeplink: str | None`
     :   The type of the None singleton.
 
-    `deeplink_type: str | Any | None`
+    `deeplink_type: str | None`
     :   The type of the None singleton.
 
-    `display_name: str | Any | None`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `fallback_type: str | Any | None`
+    `fallback_type: str | None`
     :   The type of the None singleton.
 
-    `identity_id: str | Any | None`
+    `identity_id: str | None`
     :   The type of the None singleton.
 
-    `identity_type: str | Any | None`
+    `identity_type: str | None`
     :   The type of the None singleton.
 
-    `image_ids: list[str] | Any | None`
+    `image_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `image_mode: str | Any | None`
+    `image_mode: str | None`
     :   The type of the None singleton.
 
-    `impression_tracking_url: str | Any | None`
+    `impression_tracking_url: str | None`
     :   The type of the None singleton.
 
-    `is_aco: bool | Any | None`
+    `is_aco: bool | None`
     :   The type of the None singleton.
 
-    `is_new_structure: bool | Any | None`
+    `is_new_structure: bool | None`
     :   The type of the None singleton.
 
-    `landing_page_url: str | Any | None`
+    `landing_page_url: str | None`
     :   The type of the None singleton.
 
-    `landing_page_urls: list[typing.Any] | Any | None`
+    `landing_page_urls: list[typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modify_time: str | Any`
+    `modify_time: str | None`
     :   The type of the None singleton.
 
-    `music_id: str | Any | None`
+    `music_id: str | None`
     :   The type of the None singleton.
 
-    `operation_status: str | Any | None`
+    `operation_status: str | None`
     :   The type of the None singleton.
 
-    `optimization_event: str | Any | None`
+    `optimization_event: str | None`
     :   The type of the None singleton.
 
-    `page_id: str | Any | None`
+    `page_id: str | None`
     :   The type of the None singleton.
 
-    `playable_url: str | Any | None`
+    `playable_url: str | None`
     :   The type of the None singleton.
 
-    `profile_image_url: str | Any | None`
+    `profile_image_url: str | None`
     :   The type of the None singleton.
 
-    `secondary_status: str | Any`
+    `secondary_status: str | None`
     :   The type of the None singleton.
 
-    `tracking_pixel_id: int | Any | None`
+    `tracking_pixel_id: int | None`
     :   The type of the None singleton.
 
-    `vast_moat_enabled: bool | Any | None`
+    `vast_moat_enabled: bool | None`
     :   The type of the None singleton.
 
-    `video_id: str | Any | None`
+    `video_id: str | None`
     :   The type of the None singleton.
 
-    `viewability_postbid_partner: str | Any | None`
+    `viewability_postbid_partner: str | None`
     :   The type of the None singleton.
 
-    `viewability_vast_url: str | Any | None`
+    `viewability_vast_url: str | None`
     :   The type of the None singleton.
 
 <a id="AdGroup"></a>
@@ -199,295 +199,295 @@ Classes
 
     ### Class variables
 
-    `actions: list[typing.Any] | Any | None`
+    `actions: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `adgroup_app_profile_page_state: str | Any | None`
+    `adgroup_app_profile_page_state: str | None`
     :   The type of the None singleton.
 
-    `adgroup_id: str | Any`
+    `adgroup_id: str | None`
     :   The type of the None singleton.
 
-    `adgroup_name: str | Any`
+    `adgroup_name: str | None`
     :   The type of the None singleton.
 
-    `advertiser_id: str | Any`
+    `advertiser_id: str | None`
     :   The type of the None singleton.
 
-    `age_groups: list[str] | Any | None`
+    `age_groups: list[str] | None`
     :   The type of the None singleton.
 
-    `app_config: dict[str, typing.Any] | Any | None`
+    `app_config: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `app_download_url: str | Any | None`
+    `app_download_url: str | None`
     :   The type of the None singleton.
 
-    `app_id: str | Any | None`
+    `app_id: str | None`
     :   The type of the None singleton.
 
-    `app_type: str | Any | None`
+    `app_type: str | None`
     :   The type of the None singleton.
 
-    `audience_ids: list[typing.Any] | Any | None`
+    `audience_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `auto_targeting_enabled: bool | Any | None`
+    `auto_targeting_enabled: bool | None`
     :   The type of the None singleton.
 
-    `automated_keywords_enabled: bool | Any | None`
+    `automated_keywords_enabled: bool | None`
     :   The type of the None singleton.
 
-    `bid_display_mode: str | Any | None`
+    `bid_display_mode: str | None`
     :   The type of the None singleton.
 
-    `bid_price: float | Any`
+    `bid_price: float | None`
     :   The type of the None singleton.
 
-    `bid_type: str | Any | None`
+    `bid_type: str | None`
     :   The type of the None singleton.
 
-    `billing_event: str | Any | None`
+    `billing_event: str | None`
     :   The type of the None singleton.
 
-    `brand_safety_partner: str | Any | None`
+    `brand_safety_partner: str | None`
     :   The type of the None singleton.
 
-    `brand_safety_type: str | Any | None`
+    `brand_safety_type: str | None`
     :   The type of the None singleton.
 
-    `budget: float | Any`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `budget_mode: str | Any`
+    `budget_mode: str | None`
     :   The type of the None singleton.
 
-    `campaign_automation_type: str | Any | None`
+    `campaign_automation_type: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: str | Any`
+    `campaign_id: str | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any | None`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `category_exclusion_ids: list[typing.Any] | Any | None`
+    `category_exclusion_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `category_id: str | Any | None`
+    `category_id: str | None`
     :   The type of the None singleton.
 
-    `comment_disabled: bool | Any | None`
+    `comment_disabled: bool | None`
     :   The type of the None singleton.
 
-    `contextual_tag_ids: list[typing.Any] | Any | None`
+    `contextual_tag_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `conversion_bid_price: float | Any`
+    `conversion_bid_price: float | None`
     :   The type of the None singleton.
 
-    `conversion_window: str | Any | None`
+    `conversion_window: str | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `creative_material_mode: str | Any`
+    `creative_material_mode: str | None`
     :   The type of the None singleton.
 
-    `custom_conversion_id: str | Any | None`
+    `custom_conversion_id: str | None`
     :   The type of the None singleton.
 
-    `dayparting: str | Any | None`
+    `dayparting: str | None`
     :   The type of the None singleton.
 
-    `deep_bid_type: str | Any | None`
+    `deep_bid_type: str | None`
     :   The type of the None singleton.
 
-    `deep_cpa_bid: float | Any`
+    `deep_cpa_bid: float | None`
     :   The type of the None singleton.
 
-    `deep_funnel_event_source: str | Any | None`
+    `deep_funnel_event_source: str | None`
     :   The type of the None singleton.
 
-    `deep_funnel_event_source_id: str | Any | None`
+    `deep_funnel_event_source_id: str | None`
     :   The type of the None singleton.
 
-    `deep_funnel_optimization_event: str | Any | None`
+    `deep_funnel_optimization_event: str | None`
     :   The type of the None singleton.
 
-    `deep_funnel_optimization_status: str | Any | None`
+    `deep_funnel_optimization_status: str | None`
     :   The type of the None singleton.
 
-    `delivery_mode: str | Any | None`
+    `delivery_mode: str | None`
     :   The type of the None singleton.
 
-    `device_model_ids: list[typing.Any] | Any | None`
+    `device_model_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `device_price_ranges: list[typing.Any] | Any | None`
+    `device_price_ranges: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `excluded_audience_ids: list[typing.Any] | Any | None`
+    `excluded_audience_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `excluded_custom_actions: list[typing.Any] | Any | None`
+    `excluded_custom_actions: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `feed_type: str | Any | None`
+    `feed_type: str | None`
     :   The type of the None singleton.
 
-    `frequency: int | Any | None`
+    `frequency: int | None`
     :   The type of the None singleton.
 
-    `frequency_schedule: int | Any | None`
+    `frequency_schedule: int | None`
     :   The type of the None singleton.
 
-    `gender: str | Any | None`
+    `gender: str | None`
     :   The type of the None singleton.
 
-    `household_income: list[typing.Any] | Any | None`
+    `household_income: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `included_custom_actions: list[typing.Any] | Any | None`
+    `included_custom_actions: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `interest_category_ids: list[str] | Any | None`
+    `interest_category_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `interest_keyword_ids: list[typing.Any] | Any | None`
+    `interest_keyword_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `inventory_filter_enabled: bool | Any | None`
+    `inventory_filter_enabled: bool | None`
     :   The type of the None singleton.
 
-    `ios14_quota_type: str | Any | None`
+    `ios14_quota_type: str | None`
     :   The type of the None singleton.
 
-    `is_hfss: bool | Any | None`
+    `is_hfss: bool | None`
     :   The type of the None singleton.
 
-    `is_new_structure: bool | Any`
+    `is_new_structure: bool | None`
     :   The type of the None singleton.
 
-    `is_smart_performance_campaign: bool | Any | None`
+    `is_smart_performance_campaign: bool | None`
     :   The type of the None singleton.
 
-    `isp_ids: list[typing.Any] | Any | None`
+    `isp_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `keywords: str | Any | None`
+    `keywords: str | None`
     :   The type of the None singleton.
 
-    `languages: list[str] | Any | None`
+    `languages: list[str] | None`
     :   The type of the None singleton.
 
-    `location_ids: list[str] | Any | None`
+    `location_ids: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modify_time: str | Any`
+    `modify_time: str | None`
     :   The type of the None singleton.
 
-    `network_types: list[typing.Any] | Any | None`
+    `network_types: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `next_day_retention: float | Any | None`
+    `next_day_retention: float | None`
     :   The type of the None singleton.
 
-    `operating_systems: list[typing.Any] | Any | None`
+    `operating_systems: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `operation_status: str | Any`
+    `operation_status: str | None`
     :   The type of the None singleton.
 
-    `optimization_event: str | Any | None`
+    `optimization_event: str | None`
     :   The type of the None singleton.
 
-    `optimization_goal: str | Any`
+    `optimization_goal: str | None`
     :   The type of the None singleton.
 
-    `pacing: str | Any | None`
+    `pacing: str | None`
     :   The type of the None singleton.
 
-    `pixel_id: str | Any | None`
+    `pixel_id: str | None`
     :   The type of the None singleton.
 
-    `placement_type: str | Any`
+    `placement_type: str | None`
     :   The type of the None singleton.
 
-    `placements: list[str] | Any | None`
+    `placements: list[str] | None`
     :   The type of the None singleton.
 
-    `promotion_type: str | Any`
+    `promotion_type: str | None`
     :   The type of the None singleton.
 
-    `purchased_impression: float | Any | None`
+    `purchased_impression: float | None`
     :   The type of the None singleton.
 
-    `purchased_reach: float | Any | None`
+    `purchased_reach: float | None`
     :   The type of the None singleton.
 
-    `rf_estimated_cpr: float | Any | None`
+    `rf_estimated_cpr: float | None`
     :   The type of the None singleton.
 
-    `rf_estimated_frequency: float | Any | None`
+    `rf_estimated_frequency: float | None`
     :   The type of the None singleton.
 
-    `rf_purchased_type: str | Any | None`
+    `rf_purchased_type: str | None`
     :   The type of the None singleton.
 
-    `schedule_end_time: str | Any`
+    `schedule_end_time: str | None`
     :   The type of the None singleton.
 
-    `schedule_infos: list[typing.Any] | Any | None`
+    `schedule_infos: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `schedule_start_time: str | Any`
+    `schedule_start_time: str | None`
     :   The type of the None singleton.
 
-    `schedule_type: str | Any`
+    `schedule_type: str | None`
     :   The type of the None singleton.
 
-    `scheduled_budget: float | Any | None`
+    `scheduled_budget: float | None`
     :   The type of the None singleton.
 
-    `search_result_enabled: bool | Any | None`
+    `search_result_enabled: bool | None`
     :   The type of the None singleton.
 
-    `secondary_optimization_event: str | Any | None`
+    `secondary_optimization_event: str | None`
     :   The type of the None singleton.
 
-    `secondary_status: str | Any`
+    `secondary_status: str | None`
     :   The type of the None singleton.
 
-    `share_disabled: bool | Any | None`
+    `share_disabled: bool | None`
     :   The type of the None singleton.
 
-    `skip_learning_phase: bool | Any | None`
+    `skip_learning_phase: bool | None`
     :   The type of the None singleton.
 
-    `smart_audience_enabled: bool | Any | None`
+    `smart_audience_enabled: bool | None`
     :   The type of the None singleton.
 
-    `smart_interest_behavior_enabled: bool | Any | None`
+    `smart_interest_behavior_enabled: bool | None`
     :   The type of the None singleton.
 
-    `spending_power: str | Any | None`
+    `spending_power: str | None`
     :   The type of the None singleton.
 
-    `statistic_type: str | Any | None`
+    `statistic_type: str | None`
     :   The type of the None singleton.
 
-    `vbo_window: str | Any | None`
+    `vbo_window: str | None`
     :   The type of the None singleton.
 
-    `video_download_disabled: bool | Any | None`
+    `video_download_disabled: bool | None`
     :   The type of the None singleton.
 
-    `zipcode_ids: list[typing.Any] | Any | None`
+    `zipcode_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdGroupsListResultMeta"></a>
@@ -511,7 +511,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportDaily"></a>
@@ -532,151 +532,151 @@ Classes
 
     ### Class variables
 
-    `adgroup_id: int | Any | None`
+    `adgroup_id: int | None`
     :   The type of the None singleton.
 
-    `adgroup_name: str | Any | None`
+    `adgroup_name: str | None`
     :   The type of the None singleton.
 
-    `app_install: float | Any | None`
+    `app_install: float | None`
     :   The type of the None singleton.
 
-    `average_video_play: float | Any | None`
+    `average_video_play: float | None`
     :   The type of the None singleton.
 
-    `average_video_play_per_user: float | Any | None`
+    `average_video_play_per_user: float | None`
     :   The type of the None singleton.
 
-    `campaign_id: int | Any | None`
+    `campaign_id: int | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any | None`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `clicks: str | Any | None`
+    `clicks: str | None`
     :   The type of the None singleton.
 
-    `clicks_on_music_disc: float | Any | None`
+    `clicks_on_music_disc: float | None`
     :   The type of the None singleton.
 
-    `comments: float | Any | None`
+    `comments: float | None`
     :   The type of the None singleton.
 
-    `conversion: str | Any | None`
+    `conversion: str | None`
     :   The type of the None singleton.
 
-    `conversion_rate: str | Any | None`
+    `conversion_rate: str | None`
     :   The type of the None singleton.
 
-    `cost_per_1000_reached: str | Any | None`
+    `cost_per_1000_reached: str | None`
     :   The type of the None singleton.
 
-    `cost_per_conversion: str | Any | None`
+    `cost_per_conversion: str | None`
     :   The type of the None singleton.
 
-    `cost_per_result: str | Any | None`
+    `cost_per_result: str | None`
     :   The type of the None singleton.
 
-    `cost_per_secondary_goal_result: str | Any | None`
+    `cost_per_secondary_goal_result: str | None`
     :   The type of the None singleton.
 
-    `cpc: str | Any | None`
+    `cpc: str | None`
     :   The type of the None singleton.
 
-    `cpm: str | Any | None`
+    `cpm: str | None`
     :   The type of the None singleton.
 
-    `ctr: str | Any | None`
+    `ctr: str | None`
     :   The type of the None singleton.
 
-    `follows: float | Any | None`
+    `follows: float | None`
     :   The type of the None singleton.
 
-    `frequency: str | Any | None`
+    `frequency: str | None`
     :   The type of the None singleton.
 
-    `impressions: str | Any | None`
+    `impressions: str | None`
     :   The type of the None singleton.
 
-    `likes: float | Any | None`
+    `likes: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `placement_type: str | Any | None`
+    `placement_type: str | None`
     :   The type of the None singleton.
 
-    `profile_visits: float | Any | None`
+    `profile_visits: float | None`
     :   The type of the None singleton.
 
-    `reach: str | Any | None`
+    `reach: str | None`
     :   The type of the None singleton.
 
-    `real_time_app_install: float | Any | None`
+    `real_time_app_install: float | None`
     :   The type of the None singleton.
 
-    `real_time_app_install_cost: float | Any | None`
+    `real_time_app_install_cost: float | None`
     :   The type of the None singleton.
 
-    `real_time_conversion: str | Any | None`
+    `real_time_conversion: str | None`
     :   The type of the None singleton.
 
-    `real_time_conversion_rate: str | Any | None`
+    `real_time_conversion_rate: str | None`
     :   The type of the None singleton.
 
-    `real_time_cost_per_conversion: str | Any | None`
+    `real_time_cost_per_conversion: str | None`
     :   The type of the None singleton.
 
-    `real_time_cost_per_result: str | Any | None`
+    `real_time_cost_per_result: str | None`
     :   The type of the None singleton.
 
-    `real_time_result: str | Any | None`
+    `real_time_result: str | None`
     :   The type of the None singleton.
 
-    `real_time_result_rate: str | Any | None`
+    `real_time_result_rate: str | None`
     :   The type of the None singleton.
 
-    `result: str | Any | None`
+    `result: str | None`
     :   The type of the None singleton.
 
-    `result_rate: str | Any | None`
+    `result_rate: str | None`
     :   The type of the None singleton.
 
-    `secondary_goal_result: str | Any | None`
+    `secondary_goal_result: str | None`
     :   The type of the None singleton.
 
-    `secondary_goal_result_rate: str | Any | None`
+    `secondary_goal_result_rate: str | None`
     :   The type of the None singleton.
 
-    `shares: float | Any | None`
+    `shares: float | None`
     :   The type of the None singleton.
 
-    `spend: str | Any | None`
+    `spend: str | None`
     :   The type of the None singleton.
 
-    `stat_time_day: str | Any | None`
+    `stat_time_day: str | None`
     :   The type of the None singleton.
 
-    `video_play_actions: float | Any | None`
+    `video_play_actions: float | None`
     :   The type of the None singleton.
 
-    `video_views_p100: float | Any | None`
+    `video_views_p100: float | None`
     :   The type of the None singleton.
 
-    `video_views_p25: float | Any | None`
+    `video_views_p25: float | None`
     :   The type of the None singleton.
 
-    `video_views_p50: float | Any | None`
+    `video_views_p50: float | None`
     :   The type of the None singleton.
 
-    `video_views_p75: float | Any | None`
+    `video_views_p75: float | None`
     :   The type of the None singleton.
 
-    `video_watched_2s: float | Any | None`
+    `video_watched_2s: float | None`
     :   The type of the None singleton.
 
-    `video_watched_6s: float | Any | None`
+    `video_watched_6s: float | None`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailyListResultMeta"></a>
@@ -700,7 +700,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailySearchData"></a>
@@ -949,7 +949,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdsReportDaily"></a>
@@ -970,160 +970,160 @@ Classes
 
     ### Class variables
 
-    `ad_id: int | Any | None`
+    `ad_id: int | None`
     :   The type of the None singleton.
 
-    `ad_name: str | Any | None`
+    `ad_name: str | None`
     :   The type of the None singleton.
 
-    `ad_text: str | Any | None`
+    `ad_text: str | None`
     :   The type of the None singleton.
 
-    `adgroup_id: int | Any | None`
+    `adgroup_id: int | None`
     :   The type of the None singleton.
 
-    `adgroup_name: str | Any | None`
+    `adgroup_name: str | None`
     :   The type of the None singleton.
 
-    `app_install: float | Any | None`
+    `app_install: float | None`
     :   The type of the None singleton.
 
-    `average_video_play: float | Any | None`
+    `average_video_play: float | None`
     :   The type of the None singleton.
 
-    `average_video_play_per_user: float | Any | None`
+    `average_video_play_per_user: float | None`
     :   The type of the None singleton.
 
-    `campaign_id: int | Any | None`
+    `campaign_id: int | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any | None`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `clicks: str | Any | None`
+    `clicks: str | None`
     :   The type of the None singleton.
 
-    `clicks_on_music_disc: float | Any | None`
+    `clicks_on_music_disc: float | None`
     :   The type of the None singleton.
 
-    `comments: float | Any | None`
+    `comments: float | None`
     :   The type of the None singleton.
 
-    `conversion: str | Any | None`
+    `conversion: str | None`
     :   The type of the None singleton.
 
-    `conversion_rate: str | Any | None`
+    `conversion_rate: str | None`
     :   The type of the None singleton.
 
-    `cost_per_1000_reached: str | Any | None`
+    `cost_per_1000_reached: str | None`
     :   The type of the None singleton.
 
-    `cost_per_conversion: str | Any | None`
+    `cost_per_conversion: str | None`
     :   The type of the None singleton.
 
-    `cost_per_result: str | Any | None`
+    `cost_per_result: str | None`
     :   The type of the None singleton.
 
-    `cost_per_secondary_goal_result: str | Any | None`
+    `cost_per_secondary_goal_result: str | None`
     :   The type of the None singleton.
 
-    `cpc: str | Any | None`
+    `cpc: str | None`
     :   The type of the None singleton.
 
-    `cpm: str | Any | None`
+    `cpm: str | None`
     :   The type of the None singleton.
 
-    `ctr: str | Any | None`
+    `ctr: str | None`
     :   The type of the None singleton.
 
-    `follows: float | Any | None`
+    `follows: float | None`
     :   The type of the None singleton.
 
-    `frequency: str | Any | None`
+    `frequency: str | None`
     :   The type of the None singleton.
 
-    `impressions: str | Any | None`
+    `impressions: str | None`
     :   The type of the None singleton.
 
-    `likes: float | Any | None`
+    `likes: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `placement_type: str | Any | None`
+    `placement_type: str | None`
     :   The type of the None singleton.
 
-    `profile_visits: float | Any | None`
+    `profile_visits: float | None`
     :   The type of the None singleton.
 
-    `reach: str | Any | None`
+    `reach: str | None`
     :   The type of the None singleton.
 
-    `real_time_app_install: float | Any | None`
+    `real_time_app_install: float | None`
     :   The type of the None singleton.
 
-    `real_time_app_install_cost: float | Any | None`
+    `real_time_app_install_cost: float | None`
     :   The type of the None singleton.
 
-    `real_time_conversion: str | Any | None`
+    `real_time_conversion: str | None`
     :   The type of the None singleton.
 
-    `real_time_conversion_rate: str | Any | None`
+    `real_time_conversion_rate: str | None`
     :   The type of the None singleton.
 
-    `real_time_cost_per_conversion: str | Any | None`
+    `real_time_cost_per_conversion: str | None`
     :   The type of the None singleton.
 
-    `real_time_cost_per_result: str | Any | None`
+    `real_time_cost_per_result: str | None`
     :   The type of the None singleton.
 
-    `real_time_result: str | Any | None`
+    `real_time_result: str | None`
     :   The type of the None singleton.
 
-    `real_time_result_rate: str | Any | None`
+    `real_time_result_rate: str | None`
     :   The type of the None singleton.
 
-    `result: str | Any | None`
+    `result: str | None`
     :   The type of the None singleton.
 
-    `result_rate: str | Any | None`
+    `result_rate: str | None`
     :   The type of the None singleton.
 
-    `secondary_goal_result: str | Any | None`
+    `secondary_goal_result: str | None`
     :   The type of the None singleton.
 
-    `secondary_goal_result_rate: str | Any | None`
+    `secondary_goal_result_rate: str | None`
     :   The type of the None singleton.
 
-    `shares: float | Any | None`
+    `shares: float | None`
     :   The type of the None singleton.
 
-    `spend: str | Any | None`
+    `spend: str | None`
     :   The type of the None singleton.
 
-    `stat_time_day: str | Any | None`
+    `stat_time_day: str | None`
     :   The type of the None singleton.
 
-    `video_play_actions: float | Any | None`
+    `video_play_actions: float | None`
     :   The type of the None singleton.
 
-    `video_views_p100: float | Any | None`
+    `video_views_p100: float | None`
     :   The type of the None singleton.
 
-    `video_views_p25: float | Any | None`
+    `video_views_p25: float | None`
     :   The type of the None singleton.
 
-    `video_views_p50: float | Any | None`
+    `video_views_p50: float | None`
     :   The type of the None singleton.
 
-    `video_views_p75: float | Any | None`
+    `video_views_p75: float | None`
     :   The type of the None singleton.
 
-    `video_watched_2s: float | Any | None`
+    `video_watched_2s: float | None`
     :   The type of the None singleton.
 
-    `video_watched_6s: float | Any | None`
+    `video_watched_6s: float | None`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailyListResultMeta"></a>
@@ -1147,7 +1147,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailySearchData"></a>
@@ -1408,94 +1408,94 @@ Classes
 
     ### Class variables
 
-    `address: str | Any | None`
+    `address: str | None`
     :   The type of the None singleton.
 
-    `advertiser_account_type: str | Any | None`
+    `advertiser_account_type: str | None`
     :   The type of the None singleton.
 
-    `advertiser_id: str | Any`
+    `advertiser_id: str | None`
     :   The type of the None singleton.
 
-    `balance: float | Any`
+    `balance: float | None`
     :   The type of the None singleton.
 
-    `brand: str | Any | None`
+    `brand: str | None`
     :   The type of the None singleton.
 
-    `cellphone_number: str | Any | None`
+    `cellphone_number: str | None`
     :   The type of the None singleton.
 
-    `company: str | Any | None`
+    `company: str | None`
     :   The type of the None singleton.
 
-    `contacter: str | Any | None`
+    `contacter: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `create_time: int | Any`
+    `create_time: int | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `display_timezone: str | Any | None`
+    `display_timezone: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `industry: str | Any | None`
+    `industry: str | None`
     :   The type of the None singleton.
 
-    `language: str | Any | None`
+    `language: str | None`
     :   The type of the None singleton.
 
-    `license_city: str | Any | None`
+    `license_city: str | None`
     :   The type of the None singleton.
 
-    `license_no: str | Any | None`
+    `license_no: str | None`
     :   The type of the None singleton.
 
-    `license_province: str | Any | None`
+    `license_province: str | None`
     :   The type of the None singleton.
 
-    `license_url: str | Any | None`
+    `license_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `promotion_area: str | Any | None`
+    `promotion_area: str | None`
     :   The type of the None singleton.
 
-    `promotion_center_city: str | Any | None`
+    `promotion_center_city: str | None`
     :   The type of the None singleton.
 
-    `promotion_center_province: str | Any | None`
+    `promotion_center_province: str | None`
     :   The type of the None singleton.
 
-    `rejection_reason: str | Any | None`
+    `rejection_reason: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `telephone_number: str | Any | None`
+    `telephone_number: str | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
 <a id="AdvertisersListResultMeta"></a>
@@ -1519,7 +1519,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportDaily"></a>
@@ -1540,100 +1540,100 @@ Classes
 
     ### Class variables
 
-    `advertiser_id: int | Any | None`
+    `advertiser_id: int | None`
     :   The type of the None singleton.
 
-    `app_install: float | Any | None`
+    `app_install: float | None`
     :   The type of the None singleton.
 
-    `average_video_play: float | Any | None`
+    `average_video_play: float | None`
     :   The type of the None singleton.
 
-    `average_video_play_per_user: float | Any | None`
+    `average_video_play_per_user: float | None`
     :   The type of the None singleton.
 
-    `cash_spend: str | Any | None`
+    `cash_spend: str | None`
     :   The type of the None singleton.
 
-    `clicks: str | Any | None`
+    `clicks: str | None`
     :   The type of the None singleton.
 
-    `clicks_on_music_disc: float | Any | None`
+    `clicks_on_music_disc: float | None`
     :   The type of the None singleton.
 
-    `comments: float | Any | None`
+    `comments: float | None`
     :   The type of the None singleton.
 
-    `cost_per_1000_reached: str | Any | None`
+    `cost_per_1000_reached: str | None`
     :   The type of the None singleton.
 
-    `cpc: str | Any | None`
+    `cpc: str | None`
     :   The type of the None singleton.
 
-    `cpm: str | Any | None`
+    `cpm: str | None`
     :   The type of the None singleton.
 
-    `ctr: str | Any | None`
+    `ctr: str | None`
     :   The type of the None singleton.
 
-    `follows: float | Any | None`
+    `follows: float | None`
     :   The type of the None singleton.
 
-    `frequency: str | Any | None`
+    `frequency: str | None`
     :   The type of the None singleton.
 
-    `impressions: str | Any | None`
+    `impressions: str | None`
     :   The type of the None singleton.
 
-    `likes: float | Any | None`
+    `likes: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `profile_visits: float | Any | None`
+    `profile_visits: float | None`
     :   The type of the None singleton.
 
-    `reach: str | Any | None`
+    `reach: str | None`
     :   The type of the None singleton.
 
-    `real_time_app_install: float | Any | None`
+    `real_time_app_install: float | None`
     :   The type of the None singleton.
 
-    `real_time_app_install_cost: float | Any | None`
+    `real_time_app_install_cost: float | None`
     :   The type of the None singleton.
 
-    `shares: float | Any | None`
+    `shares: float | None`
     :   The type of the None singleton.
 
-    `spend: str | Any | None`
+    `spend: str | None`
     :   The type of the None singleton.
 
-    `stat_time_day: str | Any | None`
+    `stat_time_day: str | None`
     :   The type of the None singleton.
 
-    `video_play_actions: float | Any | None`
+    `video_play_actions: float | None`
     :   The type of the None singleton.
 
-    `video_views_p100: float | Any | None`
+    `video_views_p100: float | None`
     :   The type of the None singleton.
 
-    `video_views_p25: float | Any | None`
+    `video_views_p25: float | None`
     :   The type of the None singleton.
 
-    `video_views_p50: float | Any | None`
+    `video_views_p50: float | None`
     :   The type of the None singleton.
 
-    `video_views_p75: float | Any | None`
+    `video_views_p75: float | None`
     :   The type of the None singleton.
 
-    `video_watched_2s: float | Any | None`
+    `video_watched_2s: float | None`
     :   The type of the None singleton.
 
-    `video_watched_6s: float | Any | None`
+    `video_watched_6s: float | None`
     :   The type of the None singleton.
 
-    `voucher_spend: str | Any | None`
+    `voucher_spend: str | None`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailyListResultMeta"></a>
@@ -1657,7 +1657,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailySearchData"></a>
@@ -2401,40 +2401,40 @@ Classes
 
     ### Class variables
 
-    `audience_id: str | Any | None`
+    `audience_id: str | None`
     :   The type of the None singleton.
 
-    `audience_type: str | Any | None`
+    `audience_type: str | None`
     :   The type of the None singleton.
 
-    `calculate_type: str | Any | None`
+    `calculate_type: str | None`
     :   The type of the None singleton.
 
-    `cover_num: int | Any | None`
+    `cover_num: int | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any | None`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `expired_time: str | Any | None`
+    `expired_time: str | None`
     :   The type of the None singleton.
 
-    `is_creator: bool | Any | None`
+    `is_creator: bool | None`
     :   The type of the None singleton.
 
-    `is_expiring: bool | Any | None`
+    `is_expiring: bool | None`
     :   The type of the None singleton.
 
-    `is_valid: bool | Any | None`
+    `is_valid: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `shared: bool | Any | None`
+    `shared: bool | None`
     :   The type of the None singleton.
 
 <a id="AudiencesListResultMeta"></a>
@@ -2458,7 +2458,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="AudiencesSearchData"></a>
@@ -2521,94 +2521,94 @@ Classes
 
     ### Class variables
 
-    `advertiser_id: str | Any`
+    `advertiser_id: str | None`
     :   The type of the None singleton.
 
-    `app_promotion_type: str | Any | None`
+    `app_promotion_type: str | None`
     :   The type of the None singleton.
 
-    `bid_type: str | Any | None`
+    `bid_type: str | None`
     :   The type of the None singleton.
 
-    `budget: float | Any`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `budget_mode: str | Any`
+    `budget_mode: str | None`
     :   The type of the None singleton.
 
-    `budget_optimize_on: bool | Any | None`
+    `budget_optimize_on: bool | None`
     :   The type of the None singleton.
 
-    `campaign_automation_type: str | Any | None`
+    `campaign_automation_type: str | None`
     :   The type of the None singleton.
 
-    `campaign_id: str | Any`
+    `campaign_id: str | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `campaign_type: str | Any`
+    `campaign_type: str | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `deep_bid_type: str | Any | None`
+    `deep_bid_type: str | None`
     :   The type of the None singleton.
 
-    `disable_skan_campaign: bool | Any | None`
+    `disable_skan_campaign: bool | None`
     :   The type of the None singleton.
 
-    `is_advanced_dedicated_campaign: bool | Any | None`
+    `is_advanced_dedicated_campaign: bool | None`
     :   The type of the None singleton.
 
-    `is_new_structure: bool | Any`
+    `is_new_structure: bool | None`
     :   The type of the None singleton.
 
-    `is_search_campaign: bool | Any | None`
+    `is_search_campaign: bool | None`
     :   The type of the None singleton.
 
-    `is_smart_performance_campaign: bool | Any | None`
+    `is_smart_performance_campaign: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modify_time: str | Any`
+    `modify_time: str | None`
     :   The type of the None singleton.
 
-    `objective: str | Any | None`
+    `objective: str | None`
     :   The type of the None singleton.
 
-    `objective_type: str | Any | None`
+    `objective_type: str | None`
     :   The type of the None singleton.
 
-    `operation_status: str | Any | None`
+    `operation_status: str | None`
     :   The type of the None singleton.
 
-    `optimization_goal: str | Any | None`
+    `optimization_goal: str | None`
     :   The type of the None singleton.
 
-    `rf_campaign_type: str | Any | None`
+    `rf_campaign_type: str | None`
     :   The type of the None singleton.
 
-    `roas_bid: float | Any | None`
+    `roas_bid: float | None`
     :   The type of the None singleton.
 
-    `rta_bid_enabled: bool | Any | None`
+    `rta_bid_enabled: bool | None`
     :   The type of the None singleton.
 
-    `rta_id: str | Any | None`
+    `rta_id: str | None`
     :   The type of the None singleton.
 
-    `rta_product_selection_enabled: bool | Any | None`
+    `rta_product_selection_enabled: bool | None`
     :   The type of the None singleton.
 
-    `secondary_status: str | Any`
+    `secondary_status: str | None`
     :   The type of the None singleton.
 
-    `split_test_variable: str | Any | None`
+    `split_test_variable: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListResultMeta"></a>
@@ -2632,7 +2632,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="CampaignsReportDaily"></a>
@@ -2653,97 +2653,97 @@ Classes
 
     ### Class variables
 
-    `app_install: float | Any | None`
+    `app_install: float | None`
     :   The type of the None singleton.
 
-    `average_video_play: float | Any | None`
+    `average_video_play: float | None`
     :   The type of the None singleton.
 
-    `average_video_play_per_user: float | Any | None`
+    `average_video_play_per_user: float | None`
     :   The type of the None singleton.
 
-    `campaign_id: int | Any | None`
+    `campaign_id: int | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any | None`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `clicks: str | Any | None`
+    `clicks: str | None`
     :   The type of the None singleton.
 
-    `clicks_on_music_disc: float | Any | None`
+    `clicks_on_music_disc: float | None`
     :   The type of the None singleton.
 
-    `comments: float | Any | None`
+    `comments: float | None`
     :   The type of the None singleton.
 
-    `cost_per_1000_reached: str | Any | None`
+    `cost_per_1000_reached: str | None`
     :   The type of the None singleton.
 
-    `cpc: str | Any | None`
+    `cpc: str | None`
     :   The type of the None singleton.
 
-    `cpm: str | Any | None`
+    `cpm: str | None`
     :   The type of the None singleton.
 
-    `ctr: str | Any | None`
+    `ctr: str | None`
     :   The type of the None singleton.
 
-    `follows: float | Any | None`
+    `follows: float | None`
     :   The type of the None singleton.
 
-    `frequency: str | Any | None`
+    `frequency: str | None`
     :   The type of the None singleton.
 
-    `impressions: str | Any | None`
+    `impressions: str | None`
     :   The type of the None singleton.
 
-    `likes: float | Any | None`
+    `likes: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `profile_visits: float | Any | None`
+    `profile_visits: float | None`
     :   The type of the None singleton.
 
-    `reach: str | Any | None`
+    `reach: str | None`
     :   The type of the None singleton.
 
-    `real_time_app_install: float | Any | None`
+    `real_time_app_install: float | None`
     :   The type of the None singleton.
 
-    `real_time_app_install_cost: float | Any | None`
+    `real_time_app_install_cost: float | None`
     :   The type of the None singleton.
 
-    `shares: float | Any | None`
+    `shares: float | None`
     :   The type of the None singleton.
 
-    `spend: str | Any | None`
+    `spend: str | None`
     :   The type of the None singleton.
 
-    `stat_time_day: str | Any | None`
+    `stat_time_day: str | None`
     :   The type of the None singleton.
 
-    `video_play_actions: float | Any | None`
+    `video_play_actions: float | None`
     :   The type of the None singleton.
 
-    `video_views_p100: float | Any | None`
+    `video_views_p100: float | None`
     :   The type of the None singleton.
 
-    `video_views_p25: float | Any | None`
+    `video_views_p25: float | None`
     :   The type of the None singleton.
 
-    `video_views_p50: float | Any | None`
+    `video_views_p50: float | None`
     :   The type of the None singleton.
 
-    `video_views_p75: float | Any | None`
+    `video_views_p75: float | None`
     :   The type of the None singleton.
 
-    `video_watched_2s: float | Any | None`
+    `video_watched_2s: float | None`
     :   The type of the None singleton.
 
-    `video_watched_6s: float | Any | None`
+    `video_watched_6s: float | None`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailyListResultMeta"></a>
@@ -2767,7 +2767,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailySearchData"></a>
@@ -2989,46 +2989,46 @@ Classes
 
     ### Class variables
 
-    `create_time: str | Any | None`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `displayable: bool | Any | None`
+    `displayable: bool | None`
     :   The type of the None singleton.
 
-    `file_name: str | Any | None`
+    `file_name: str | None`
     :   The type of the None singleton.
 
-    `format: str | Any | None`
+    `format: str | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
-    `image_id: str | Any | None`
+    `image_id: str | None`
     :   The type of the None singleton.
 
-    `image_url: str | Any | None`
+    `image_url: str | None`
     :   The type of the None singleton.
 
-    `is_carousel_usable: bool | Any | None`
+    `is_carousel_usable: bool | None`
     :   The type of the None singleton.
 
-    `material_id: str | Any | None`
+    `material_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modify_time: str | Any | None`
+    `modify_time: str | None`
     :   The type of the None singleton.
 
-    `signature: str | Any | None`
+    `signature: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="CreativeAssetVideo"></a>
@@ -3049,67 +3049,67 @@ Classes
 
     ### Class variables
 
-    `allow_download: bool | Any | None`
+    `allow_download: bool | None`
     :   The type of the None singleton.
 
-    `allowed_placements: list[str | None] | Any | None`
+    `allowed_placements: list[str | None] | None`
     :   The type of the None singleton.
 
-    `bit_rate: float | Any | None`
+    `bit_rate: float | None`
     :   The type of the None singleton.
 
-    `create_time: str | Any | None`
+    `create_time: str | None`
     :   The type of the None singleton.
 
-    `displayable: bool | Any | None`
+    `displayable: bool | None`
     :   The type of the None singleton.
 
-    `duration: float | Any | None`
+    `duration: float | None`
     :   The type of the None singleton.
 
-    `file_name: str | Any | None`
+    `file_name: str | None`
     :   The type of the None singleton.
 
-    `fix_task_id: str | Any | None`
+    `fix_task_id: str | None`
     :   The type of the None singleton.
 
-    `flaw_types: list[typing.Any] | Any | None`
+    `flaw_types: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `format: str | Any | None`
+    `format: str | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
-    `material_id: str | Any | None`
+    `material_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modify_time: str | Any | None`
+    `modify_time: str | None`
     :   The type of the None singleton.
 
-    `preview_url: str | Any | None`
+    `preview_url: str | None`
     :   The type of the None singleton.
 
-    `preview_url_expire_time: str | Any | None`
+    `preview_url_expire_time: str | None`
     :   The type of the None singleton.
 
-    `signature: str | Any | None`
+    `signature: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `video_cover_url: str | Any | None`
+    `video_cover_url: str | None`
     :   The type of the None singleton.
 
-    `video_id: str | Any | None`
+    `video_id: str | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsImagesListResultMeta"></a>
@@ -3133,7 +3133,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsImagesSearchData"></a>
@@ -3205,7 +3205,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_info: dict[str, typing.Any] | Any`
+    `page_info: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsVideosSearchData"></a>

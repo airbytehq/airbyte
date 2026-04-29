@@ -132,13 +132,13 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="CalendarEvent"></a>
@@ -159,25 +159,25 @@ Classes
 
     ### Class variables
 
-    `calendar_event_id: str | Any | None`
+    `calendar_event_id: str | None`
     :   The type of the None singleton.
 
-    `event_title: str | Any | None`
+    `event_title: str | None`
     :   The type of the None singleton.
 
-    `invitees: list[airbyte_agent_sdk.connectors.granola.models.CalendarEventInvitee] | Any | None`
+    `invitees: list[airbyte_agent_sdk.connectors.granola.models.CalendarEventInvitee] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `organiser: str | Any | None`
+    `organiser: str | None`
     :   The type of the None singleton.
 
-    `scheduled_end_time: str | Any | None`
+    `scheduled_end_time: str | None`
     :   The type of the None singleton.
 
-    `scheduled_start_time: str | Any | None`
+    `scheduled_start_time: str | None`
     :   The type of the None singleton.
 
 <a id="CalendarEventInvitee"></a>
@@ -198,7 +198,7 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -222,16 +222,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
 <a id="GranolaAuthConfig"></a>
@@ -416,43 +416,43 @@ Classes
 
     ### Class variables
 
-    `attendees: list[airbyte_agent_sdk.connectors.granola.models.Attendee] | Any | None`
+    `attendees: list[airbyte_agent_sdk.connectors.granola.models.Attendee] | None`
     :   The type of the None singleton.
 
-    `calendar_event: Any`
+    `calendar_event: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `folder_membership: list[airbyte_agent_sdk.connectors.granola.models.FolderMembership] | Any | None`
+    `folder_membership: list[airbyte_agent_sdk.connectors.granola.models.FolderMembership] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_: str | Any | None`
+    `object_: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `summary_markdown: str | Any | None`
+    `summary_markdown: str | None`
     :   The type of the None singleton.
 
-    `summary_text: str | Any | None`
+    `summary_text: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `transcript: list[airbyte_agent_sdk.connectors.granola.models.TranscriptEntry] | Any | None`
+    `transcript: list[airbyte_agent_sdk.connectors.granola.models.TranscriptEntry] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="NotesList"></a>
@@ -473,16 +473,16 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `notes: list[airbyte_agent_sdk.connectors.granola.models.Note] | Any`
+    `notes: list[airbyte_agent_sdk.connectors.granola.models.Note] | None`
     :   The type of the None singleton.
 
 <a id="NotesListResultMeta"></a>
@@ -503,10 +503,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_more: bool | Any`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -587,13 +587,13 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="TranscriptEntry"></a>
@@ -614,19 +614,19 @@ Classes
 
     ### Class variables
 
-    `end_time: str | Any | None`
+    `end_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `speaker: Any`
+    `speaker: typing.Any | None`
     :   The type of the None singleton.
 
-    `start_time: str | Any | None`
+    `start_time: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
 <a id="TranscriptSpeaker"></a>
@@ -650,5 +650,5 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.

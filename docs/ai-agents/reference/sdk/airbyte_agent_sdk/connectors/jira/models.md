@@ -332,16 +332,16 @@ Classes
 
     ### Class variables
 
-    `body: airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsBody | Any`
+    `body: airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsBody`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `properties: list[dict[str, typing.Any]] | Any`
+    `properties: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `visibility: airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsVisibility | Any`
+    `visibility: airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsVisibility | None`
     :   The type of the None singleton.
 
 <a id="CommentCreateParamsBody"></a>
@@ -362,16 +362,16 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsBodyContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsBodyContentItem]`
     :   Array of content blocks
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str`
     :   Document type (always 'doc')
 
-    `version: int | Any`
+    `version: int`
     :   ADF version
 
 <a id="CommentCreateParamsBodyContentItem"></a>
@@ -392,13 +392,13 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsBodyContentItemContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentCreateParamsBodyContentItemContentItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Block type (e.g., 'paragraph')
 
 <a id="CommentCreateParamsBodyContentItemContentItem"></a>
@@ -422,10 +422,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   Text content
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Content type (e.g., 'text')
 
 <a id="CommentCreateParamsVisibility"></a>
@@ -446,16 +446,16 @@ Classes
 
     ### Class variables
 
-    `identifier: str | Any`
+    `identifier: str | None`
     :   The ID of the group or role
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of visibility restriction
 
-    `value: str | Any`
+    `value: str | None`
     :   The name of the group or role
 
 <a id="CommentUpdateParams"></a>
@@ -476,13 +476,13 @@ Classes
 
     ### Class variables
 
-    `body: airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsBody | Any`
+    `body: airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsBody`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `visibility: airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsVisibility | Any`
+    `visibility: airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsVisibility | None`
     :   The type of the None singleton.
 
 <a id="CommentUpdateParamsBody"></a>
@@ -503,16 +503,16 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsBodyContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsBodyContentItem]`
     :   Array of content blocks
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str`
     :   Document type (always 'doc')
 
-    `version: int | Any`
+    `version: int`
     :   ADF version
 
 <a id="CommentUpdateParamsBodyContentItem"></a>
@@ -533,13 +533,13 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsBodyContentItemContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.CommentUpdateParamsBodyContentItemContentItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Block type (e.g., 'paragraph')
 
 <a id="CommentUpdateParamsBodyContentItemContentItem"></a>
@@ -563,10 +563,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   Text content
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Content type (e.g., 'text')
 
 <a id="CommentUpdateParamsVisibility"></a>
@@ -587,16 +587,16 @@ Classes
 
     ### Class variables
 
-    `identifier: str | Any`
+    `identifier: str | None`
     :   The ID of the group or role
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of visibility restriction
 
-    `value: str | Any`
+    `value: str | None`
     :   The name of the group or role
 
 <a id="EmptyResponse"></a>
@@ -638,22 +638,22 @@ Classes
 
     ### Class variables
 
-    `expand: str | Any | None`
+    `expand: str | None`
     :   The type of the None singleton.
 
-    `fields: airbyte_agent_sdk.connectors.jira.models.IssueFields | Any`
+    `fields: airbyte_agent_sdk.connectors.jira.models.IssueFields | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="IssueAssigneeParams"></a>
@@ -674,7 +674,7 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -698,40 +698,40 @@ Classes
 
     ### Class variables
 
-    `author: airbyte_agent_sdk.connectors.jira.models.IssueCommentAuthor | Any`
+    `author: airbyte_agent_sdk.connectors.jira.models.IssueCommentAuthor | None`
     :   The type of the None singleton.
 
-    `body: airbyte_agent_sdk.connectors.jira.models.IssueCommentBody | Any`
+    `body: airbyte_agent_sdk.connectors.jira.models.IssueCommentBody | None`
     :   The type of the None singleton.
 
-    `created: str | Any`
+    `created: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `jsd_public: bool | Any`
+    `jsd_public: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `properties: list[dict[str, typing.Any]] | Any | None`
+    `properties: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `rendered_body: str | Any | None`
+    `rendered_body: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `update_author: airbyte_agent_sdk.connectors.jira.models.IssueCommentUpdateauthor | Any`
+    `update_author: airbyte_agent_sdk.connectors.jira.models.IssueCommentUpdateauthor | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
-    `visibility: airbyte_agent_sdk.connectors.jira.models.IssueCommentVisibility | Any | None`
+    `visibility: airbyte_agent_sdk.connectors.jira.models.IssueCommentVisibility | None`
     :   The type of the None singleton.
 
 <a id="IssueCommentAuthor"></a>
@@ -752,31 +752,31 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueCommentAuthorAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueCommentAuthorAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="IssueCommentAuthorAvatarurls"></a>
@@ -797,16 +797,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -830,16 +830,16 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCommentBodyContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCommentBodyContentItem] | None`
     :   Array of content blocks
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Document type (always 'doc')
 
-    `version: int | Any`
+    `version: int | None`
     :   ADF version
 
 <a id="IssueCommentBodyContentItem"></a>
@@ -860,13 +860,13 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCommentBodyContentItemContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCommentBodyContentItemContentItem] | None`
     :   Nested content items
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Block type (e.g., 'paragraph')
 
 <a id="IssueCommentBodyContentItemContentItem"></a>
@@ -890,10 +890,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   Text content
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Content type (e.g., 'text')
 
 <a id="IssueCommentUpdateauthor"></a>
@@ -914,31 +914,31 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueCommentUpdateauthorAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueCommentUpdateauthorAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="IssueCommentUpdateauthorAvatarurls"></a>
@@ -959,16 +959,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -992,16 +992,16 @@ Classes
 
     ### Class variables
 
-    `identifier: str | Any | None`
+    `identifier: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="IssueCommentsList"></a>
@@ -1022,19 +1022,19 @@ Classes
 
     ### Class variables
 
-    `comments: list[airbyte_agent_sdk.connectors.jira.models.IssueComment] | Any`
+    `comments: list[airbyte_agent_sdk.connectors.jira.models.IssueComment] | None`
     :   The type of the None singleton.
 
-    `max_results: int | Any`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_at: int | Any`
+    `start_at: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="IssueCommentsListResultMeta"></a>
@@ -1055,16 +1055,16 @@ Classes
 
     ### Class variables
 
-    `max_results: int | Any`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: int | Any`
+    `next_offset: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="IssueCommentsSearchData"></a>
@@ -1142,13 +1142,13 @@ Classes
 
     ### Class variables
 
-    `fields: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFields | Any`
+    `fields: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFields`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `update: dict[str, typing.Any] | Any`
+    `update: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="IssueCreateParamsFields"></a>
@@ -1169,31 +1169,31 @@ Classes
 
     ### Class variables
 
-    `assignee: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsAssignee | Any`
+    `assignee: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsAssignee | None`
     :   The user to assign the issue to
 
-    `description: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsDescription | Any`
+    `description: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsDescription | None`
     :   Issue description in Atlassian Document Format (ADF)
 
-    `issuetype: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsIssuetype | Any`
+    `issuetype: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsIssuetype`
     :   The type of issue (e.g., Bug, Task, Story)
 
-    `labels: list[str] | Any`
+    `labels: list[str] | None`
     :   Labels to add to the issue
 
     `model_config`
     :   The type of the None singleton.
 
-    `parent: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsParent | Any`
+    `parent: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsParent | None`
     :   Parent issue for subtasks
 
-    `priority: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsPriority | Any`
+    `priority: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsPriority | None`
     :   Issue priority
 
-    `project: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsProject | Any`
+    `project: airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsProject`
     :   The project to create the issue in
 
-    `summary: str | Any`
+    `summary: str`
     :   A brief summary of the issue (title)
 
 <a id="IssueCreateParamsFieldsAssignee"></a>
@@ -1214,7 +1214,7 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The account ID of the user
 
     `model_config`
@@ -1238,16 +1238,16 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsDescriptionContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsDescriptionContentItem] | None`
     :   Array of content blocks
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Document type (always 'doc')
 
-    `version: int | Any`
+    `version: int | None`
     :   ADF version
 
 <a id="IssueCreateParamsFieldsDescriptionContentItem"></a>
@@ -1268,13 +1268,13 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsDescriptionContentItemContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueCreateParamsFieldsDescriptionContentItemContentItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Block type (e.g., 'paragraph')
 
 <a id="IssueCreateParamsFieldsDescriptionContentItemContentItem"></a>
@@ -1298,10 +1298,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   Text content
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Content type (e.g., 'text')
 
 <a id="IssueCreateParamsFieldsIssuetype"></a>
@@ -1322,13 +1322,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   Issue type ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Issue type name (e.g., 'Bug', 'Task', 'Story')
 
 <a id="IssueCreateParamsFieldsParent"></a>
@@ -1349,7 +1349,7 @@ Classes
 
     ### Class variables
 
-    `key: str | Any`
+    `key: str | None`
     :   Parent issue key
 
     `model_config`
@@ -1373,13 +1373,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   Priority ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Priority name (e.g., 'Highest', 'High', 'Medium', 'Low', 'Lowest')
 
 <a id="IssueCreateParamsFieldsProject"></a>
@@ -1400,10 +1400,10 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   Project ID
 
-    `key: str | Any`
+    `key: str | None`
     :   Project key (e.g., 'PROJ')
 
     `model_config`
@@ -1427,16 +1427,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="IssueField"></a>
@@ -1457,58 +1457,58 @@ Classes
 
     ### Class variables
 
-    `clause_names: list[str] | Any | None`
+    `clause_names: list[str] | None`
     :   The type of the None singleton.
 
-    `contexts_count: int | Any | None`
+    `contexts_count: int | None`
     :   The type of the None singleton.
 
-    `custom: bool | Any | None`
+    `custom: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `key: str | Any | None`
+    `key: str | None`
     :   The type of the None singleton.
 
-    `last_used: str | Any | None`
+    `last_used: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `navigable: bool | Any | None`
+    `navigable: bool | None`
     :   The type of the None singleton.
 
-    `orderable: bool | Any | None`
+    `orderable: bool | None`
     :   The type of the None singleton.
 
-    `schema_: airbyte_agent_sdk.connectors.jira.models.IssueFieldSchema | Any | None`
+    `schema_: airbyte_agent_sdk.connectors.jira.models.IssueFieldSchema | None`
     :   The type of the None singleton.
 
-    `screens_count: int | Any | None`
+    `screens_count: int | None`
     :   The type of the None singleton.
 
-    `searchable: bool | Any | None`
+    `searchable: bool | None`
     :   The type of the None singleton.
 
-    `searcher_key: str | Any | None`
+    `searcher_key: str | None`
     :   The type of the None singleton.
 
-    `type_display_name: str | Any | None`
+    `type_display_name: str | None`
     :   The type of the None singleton.
 
-    `untranslated_name: str | Any | None`
+    `untranslated_name: str | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldSchema"></a>
@@ -1529,25 +1529,25 @@ Classes
 
     ### Class variables
 
-    `configuration: dict[str, typing.Any] | Any | None`
+    `configuration: dict[str, typing.Any] | None`
     :   Field configuration
 
-    `custom: str | Any | None`
+    `custom: str | None`
     :   Custom field type identifier
 
-    `custom_id: int | Any | None`
+    `custom_id: int | None`
     :   Custom field ID
 
-    `items: str | Any | None`
+    `items: str | None`
     :   Type of items in array fields
 
     `model_config`
     :   The type of the None singleton.
 
-    `system: str | Any | None`
+    `system: str | None`
     :   System field identifier
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Field type (e.g., string, number, array)
 
 <a id="IssueFieldSearchResults"></a>
@@ -1568,22 +1568,22 @@ Classes
 
     ### Class variables
 
-    `is_last: bool | Any`
+    `is_last: bool | None`
     :   The type of the None singleton.
 
-    `max_results: int | Any`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_at: int | Any`
+    `start_at: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `values: list[airbyte_agent_sdk.connectors.jira.models.IssueField] | Any`
+    `values: list[airbyte_agent_sdk.connectors.jira.models.IssueField] | None`
     :   The type of the None singleton.
 
 <a id="IssueFields"></a>
@@ -1604,34 +1604,34 @@ Classes
 
     ### Class variables
 
-    `assignee: airbyte_agent_sdk.connectors.jira.models.IssueFieldsAssignee | Any | None`
+    `assignee: airbyte_agent_sdk.connectors.jira.models.IssueFieldsAssignee | None`
     :   Issue assignee user information (null if unassigned)
 
-    `created: str | Any`
+    `created: str | None`
     :   Issue creation timestamp
 
-    `issuetype: airbyte_agent_sdk.connectors.jira.models.IssueFieldsIssuetype | Any`
+    `issuetype: airbyte_agent_sdk.connectors.jira.models.IssueFieldsIssuetype | None`
     :   Issue type information
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: airbyte_agent_sdk.connectors.jira.models.IssueFieldsPriority | Any | None`
+    `priority: airbyte_agent_sdk.connectors.jira.models.IssueFieldsPriority | None`
     :   Issue priority information
 
-    `project: airbyte_agent_sdk.connectors.jira.models.IssueFieldsProject | Any`
+    `project: airbyte_agent_sdk.connectors.jira.models.IssueFieldsProject | None`
     :   Project information
 
-    `reporter: airbyte_agent_sdk.connectors.jira.models.IssueFieldsReporter | Any | None`
+    `reporter: airbyte_agent_sdk.connectors.jira.models.IssueFieldsReporter | None`
     :   Issue reporter user information
 
-    `status: airbyte_agent_sdk.connectors.jira.models.IssueFieldsStatus | Any`
+    `status: airbyte_agent_sdk.connectors.jira.models.IssueFieldsStatus | None`
     :   Issue status information
 
-    `summary: str | Any`
+    `summary: str | None`
     :   Issue summary/title
 
-    `updated: str | Any`
+    `updated: str | None`
     :   Issue last update timestamp
 
 <a id="IssueFieldsAssignee"></a>
@@ -1652,31 +1652,31 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueFieldsAssigneeAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueFieldsAssigneeAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsAssigneeAvatarurls"></a>
@@ -1697,16 +1697,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1730,31 +1730,31 @@ Classes
 
     ### Class variables
 
-    `avatar_id: int | Any | None`
+    `avatar_id: int | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `hierarchy_level: int | Any | None`
+    `hierarchy_level: int | None`
     :   The type of the None singleton.
 
-    `icon_url: str | Any`
+    `icon_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `subtask: bool | Any`
+    `subtask: bool | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsPriority"></a>
@@ -1775,19 +1775,19 @@ Classes
 
     ### Class variables
 
-    `icon_url: str | Any`
+    `icon_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsProject"></a>
@@ -1808,31 +1808,31 @@ Classes
 
     ### Class variables
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueFieldsProjectAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueFieldsProjectAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `project_category: airbyte_agent_sdk.connectors.jira.models.IssueFieldsProjectProjectcategory | Any | None`
+    `project_category: airbyte_agent_sdk.connectors.jira.models.IssueFieldsProjectProjectcategory | None`
     :   The type of the None singleton.
 
-    `project_type_key: str | Any`
+    `project_type_key: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `simplified: bool | Any`
+    `simplified: bool | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsProjectAvatarurls"></a>
@@ -1853,16 +1853,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1886,19 +1886,19 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsReporter"></a>
@@ -1919,31 +1919,31 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueFieldsReporterAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.IssueFieldsReporterAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsReporterAvatarurls"></a>
@@ -1964,16 +1964,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2051,25 +2051,25 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `icon_url: str | Any`
+    `icon_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `status_category: airbyte_agent_sdk.connectors.jira.models.IssueFieldsStatusStatuscategory | Any`
+    `status_category: airbyte_agent_sdk.connectors.jira.models.IssueFieldsStatusStatuscategory | None`
     :   The type of the None singleton.
 
 <a id="IssueFieldsStatusStatuscategory"></a>
@@ -2090,22 +2090,454 @@ Classes
 
     ### Class variables
 
-    `color_name: str | Any`
+    `color_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParams"></a>
+
+`IssueLinkCreateParams(**data: Any)`
+:   Parameters for creating a link between two issues
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `comment: airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsComment | None`
+    :   The type of the None singleton.
+
+    `inward_issue: airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsInwardissue`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `outward_issue: airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsOutwardissue`
+    :   The type of the None singleton.
+
+    `type_: airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsType`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsComment"></a>
+
+`IssueLinkCreateParamsComment(**data: Any)`
+:   A comment about the link in Atlassian Document Format (ADF)
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsCommentBody | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsCommentBody"></a>
+
+`IssueLinkCreateParamsCommentBody(**data: Any)`
+:   Nested schema for IssueLinkCreateParamsComment.body
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsCommentBodyContentItem] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `version: int | None`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsCommentBodyContentItem"></a>
+
+`IssueLinkCreateParamsCommentBodyContentItem(**data: Any)`
+:   Nested schema for IssueLinkCreateParamsCommentBody.content_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueLinkCreateParamsCommentBodyContentItemContentItem] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsCommentBodyContentItemContentItem"></a>
+
+`IssueLinkCreateParamsCommentBodyContentItemContentItem(**data: Any)`
+:   Nested schema for IssueLinkCreateParamsCommentBodyContentItem.content_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `text: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsInwardissue"></a>
+
+`IssueLinkCreateParamsInwardissue(**data: Any)`
+:   The inward issue (the issue that is affected by the link)
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   The issue ID
+
+    `key: str`
+    :   The issue key (e.g., PROJ-123)
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsOutwardissue"></a>
+
+`IssueLinkCreateParamsOutwardissue(**data: Any)`
+:   The outward issue (the issue that causes the link)
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   The issue ID
+
+    `key: str`
+    :   The issue key (e.g., PROJ-456)
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueLinkCreateParamsType"></a>
+
+`IssueLinkCreateParamsType(**data: Any)`
+:   The type of link (e.g., Blocks, Duplicate, Relates)
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   The ID of the link type
+
+    `inward: str | None`
+    :   The inward description (e.g., is blocked by)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The name of the link type (e.g., Blocks, Duplicate, Relates, Cloners)
+
+    `outward: str | None`
+    :   The outward description (e.g., blocks)
+
+<a id="IssueTransition"></a>
+
+`IssueTransition(**data: Any)`
+:   A workflow transition that can be performed on an issue
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `has_screen: bool | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `is_conditional: bool | None`
+    :   The type of the None singleton.
+
+    `is_global: bool | None`
+    :   The type of the None singleton.
+
+    `is_initial: bool | None`
+    :   The type of the None singleton.
+
+    `is_looped: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `to: airbyte_agent_sdk.connectors.jira.models.IssueTransitionTo | None`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionParams"></a>
+
+`IssueTransitionParams(**data: Any)`
+:   Parameters for transitioning an issue to a new status
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `fields: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `history_metadata: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `transition: airbyte_agent_sdk.connectors.jira.models.IssueTransitionParamsTransition`
+    :   The type of the None singleton.
+
+    `update: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionParamsTransition"></a>
+
+`IssueTransitionParamsTransition(**data: Any)`
+:   The transition to perform
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   The ID of the transition to perform. Get available transition IDs from the GET transitions endpoint.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionTo"></a>
+
+`IssueTransitionTo(**data: Any)`
+:   The target status after performing this transition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `icon_url: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The name of the target status
+
+    `self: str | None`
+    :   The type of the None singleton.
+
+    `status_category: airbyte_agent_sdk.connectors.jira.models.IssueTransitionToStatuscategory | None`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionToStatuscategory"></a>
+
+`IssueTransitionToStatuscategory(**data: Any)`
+:   Nested schema for IssueTransitionTo.statusCategory
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `color_name: str | None`
+    :   The type of the None singleton.
+
+    `id: int | None`
+    :   The type of the None singleton.
+
+    `key: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `self: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionsList"></a>
+
+`IssueTransitionsList(**data: Any)`
+:   List of available transitions for an issue
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `expand: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `transitions: list[airbyte_agent_sdk.connectors.jira.models.IssueTransition] | None`
     :   The type of the None singleton.
 
 <a id="IssueUpdateParams"></a>
@@ -2126,16 +2558,16 @@ Classes
 
     ### Class variables
 
-    `fields: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFields | Any`
+    `fields: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFields | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `transition: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsTransition | Any`
+    `transition: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsTransition | None`
     :   The type of the None singleton.
 
-    `update: dict[str, typing.Any] | Any`
+    `update: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="IssueUpdateParamsFields"></a>
@@ -2156,22 +2588,22 @@ Classes
 
     ### Class variables
 
-    `assignee: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsAssignee | Any`
+    `assignee: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsAssignee | None`
     :   The user to assign the issue to
 
-    `description: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsDescription | Any`
+    `description: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsDescription | None`
     :   Issue description in Atlassian Document Format (ADF)
 
-    `labels: list[str] | Any`
+    `labels: list[str] | None`
     :   Labels for the issue
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsPriority | Any`
+    `priority: airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsPriority | None`
     :   Issue priority
 
-    `summary: str | Any`
+    `summary: str | None`
     :   A brief summary of the issue (title)
 
 <a id="IssueUpdateParamsFieldsAssignee"></a>
@@ -2192,7 +2624,7 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The account ID of the user (use null to unassign)
 
     `model_config`
@@ -2216,16 +2648,16 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsDescriptionContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsDescriptionContentItem] | None`
     :   Array of content blocks
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Document type (always 'doc')
 
-    `version: int | Any`
+    `version: int | None`
     :   ADF version
 
 <a id="IssueUpdateParamsFieldsDescriptionContentItem"></a>
@@ -2246,13 +2678,13 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsDescriptionContentItemContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.IssueUpdateParamsFieldsDescriptionContentItemContentItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Block type (e.g., 'paragraph')
 
 <a id="IssueUpdateParamsFieldsDescriptionContentItemContentItem"></a>
@@ -2276,10 +2708,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   Text content
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Content type (e.g., 'text')
 
 <a id="IssueUpdateParamsFieldsPriority"></a>
@@ -2300,13 +2732,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   Priority ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Priority name (e.g., 'Highest', 'High', 'Medium', 'Low', 'Lowest')
 
 <a id="IssueUpdateParamsTransition"></a>
@@ -2327,7 +2759,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The ID of the transition to perform
 
     `model_config`
@@ -2351,16 +2783,16 @@ Classes
 
     ### Class variables
 
-    `max_results: int | Any`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_offset: int | Any`
+    `next_offset: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsSearchData"></a>
@@ -2441,16 +2873,16 @@ Classes
 
     ### Class variables
 
-    `is_last: bool | Any | None`
+    `is_last: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="IssuesList"></a>
@@ -2471,25 +2903,25 @@ Classes
 
     ### Class variables
 
-    `is_last: bool | Any | None`
+    `is_last: bool | None`
     :   The type of the None singleton.
 
-    `issues: list[airbyte_agent_sdk.connectors.jira.models.Issue] | Any`
+    `issues: list[airbyte_agent_sdk.connectors.jira.models.Issue] | None`
     :   The type of the None singleton.
 
-    `max_results: int | Any | None`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
-    `start_at: int | Any | None`
+    `start_at: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="IssuesSearchData"></a>
@@ -2656,6 +3088,7 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResultWithMeta
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult[IssueFieldSearchResults]
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult[list[IssueField]]
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult[list[IssueTransition]]
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult[list[User]]
 
     ### Class variables
@@ -2964,6 +3397,49 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`JiraExecuteResult[list[IssueTransition]](**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueTransitionsListResult"></a>
+
+`IssueTransitionsListResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `JiraExecuteResult[list[User]](**data: Any)`
 :   Response envelope with data only.
     
@@ -3050,73 +3526,73 @@ Classes
 
     ### Class variables
 
-    `assignee_type: str | Any | None`
+    `assignee_type: str | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.ProjectAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.ProjectAvatarurls | None`
     :   The type of the None singleton.
 
-    `components: list[airbyte_agent_sdk.connectors.jira.models.ProjectComponentsItem] | Any | None`
+    `components: list[airbyte_agent_sdk.connectors.jira.models.ProjectComponentsItem] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `entity_id: str | Any | None`
+    `entity_id: str | None`
     :   The type of the None singleton.
 
-    `expand: str | Any | None`
+    `expand: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
-    `issue_types: list[airbyte_agent_sdk.connectors.jira.models.ProjectIssuetypesItem] | Any | None`
+    `issue_types: list[airbyte_agent_sdk.connectors.jira.models.ProjectIssuetypesItem] | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
-    `lead: airbyte_agent_sdk.connectors.jira.models.ProjectLead | Any | None`
+    `lead: airbyte_agent_sdk.connectors.jira.models.ProjectLead | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `project_category: airbyte_agent_sdk.connectors.jira.models.ProjectProjectcategory | Any | None`
+    `project_category: airbyte_agent_sdk.connectors.jira.models.ProjectProjectcategory | None`
     :   The type of the None singleton.
 
-    `project_type_key: str | Any`
+    `project_type_key: str | None`
     :   The type of the None singleton.
 
-    `properties: dict[str, typing.Any] | Any`
+    `properties: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `roles: dict[str, str] | Any | None`
+    `roles: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `simplified: bool | Any`
+    `simplified: bool | None`
     :   The type of the None singleton.
 
-    `style: str | Any`
+    `style: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `uuid: str | Any | None`
+    `uuid: str | None`
     :   The type of the None singleton.
 
-    `versions: list[airbyte_agent_sdk.connectors.jira.models.ProjectVersionsItem] | Any | None`
+    `versions: list[airbyte_agent_sdk.connectors.jira.models.ProjectVersionsItem] | None`
     :   The type of the None singleton.
 
 <a id="ProjectAvatarurls"></a>
@@ -3137,16 +3613,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3170,22 +3646,22 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_assignee_type_valid: bool | Any`
+    `is_assignee_type_valid: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectIssuetypesItem"></a>
@@ -3206,31 +3682,31 @@ Classes
 
     ### Class variables
 
-    `avatar_id: int | Any | None`
+    `avatar_id: int | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `hierarchy_level: int | Any | None`
+    `hierarchy_level: int | None`
     :   The type of the None singleton.
 
-    `icon_url: str | Any`
+    `icon_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `subtask: bool | Any`
+    `subtask: bool | None`
     :   The type of the None singleton.
 
 <a id="ProjectLead"></a>
@@ -3251,25 +3727,25 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.ProjectLeadAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.ProjectLeadAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectLeadAvatarurls"></a>
@@ -3290,16 +3766,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3323,19 +3799,19 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectVersionsItem"></a>
@@ -3356,43 +3832,43 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `overdue: bool | Any | None`
+    `overdue: bool | None`
     :   The type of the None singleton.
 
-    `project_id: int | Any`
+    `project_id: int | None`
     :   The type of the None singleton.
 
-    `release_date: str | Any | None`
+    `release_date: str | None`
     :   The type of the None singleton.
 
-    `released: bool | Any`
+    `released: bool | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `user_release_date: str | Any | None`
+    `user_release_date: str | None`
     :   The type of the None singleton.
 
-    `user_start_date: str | Any | None`
+    `user_start_date: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsApiSearchResultMeta"></a>
@@ -3416,10 +3892,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
 <a id="ProjectsList"></a>
@@ -3440,28 +3916,28 @@ Classes
 
     ### Class variables
 
-    `is_last: bool | Any`
+    `is_last: bool | None`
     :   The type of the None singleton.
 
-    `max_results: int | Any`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `start_at: int | Any`
+    `start_at: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `values: list[airbyte_agent_sdk.connectors.jira.models.Project] | Any`
+    `values: list[airbyte_agent_sdk.connectors.jira.models.Project] | None`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchData"></a>
@@ -3605,43 +4081,43 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `application_roles: airbyte_agent_sdk.connectors.jira.models.UserApplicationroles | Any | None`
+    `application_roles: airbyte_agent_sdk.connectors.jira.models.UserApplicationroles | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.UserAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.UserAvatarurls | None`
     :   The type of the None singleton.
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any | None`
+    `email_address: str | None`
     :   The type of the None singleton.
 
-    `expand: str | Any | None`
+    `expand: str | None`
     :   The type of the None singleton.
 
-    `groups: airbyte_agent_sdk.connectors.jira.models.UserGroups | Any | None`
+    `groups: airbyte_agent_sdk.connectors.jira.models.UserGroups | None`
     :   The type of the None singleton.
 
-    `locale: str | Any | None`
+    `locale: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any | None`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="UserApplicationroles"></a>
@@ -3662,13 +4138,13 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.jira.models.UserApplicationrolesItemsItem] | Any`
+    `items: list[airbyte_agent_sdk.connectors.jira.models.UserApplicationrolesItemsItem] | None`
     :   Array of application role objects
 
     `model_config`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   Number of application roles
 
 <a id="UserApplicationrolesItemsItem"></a>
@@ -3689,49 +4165,49 @@ Classes
 
     ### Class variables
 
-    `default_groups: list[str] | Any`
+    `default_groups: list[str] | None`
     :   The type of the None singleton.
 
-    `default_groups_details: list[airbyte_agent_sdk.connectors.jira.models.UserApplicationrolesItemsItemDefaultgroupsdetailsItem] | Any`
+    `default_groups_details: list[airbyte_agent_sdk.connectors.jira.models.UserApplicationrolesItemsItemDefaultgroupsdetailsItem] | None`
     :   The type of the None singleton.
 
-    `defined: bool | Any`
+    `defined: bool | None`
     :   The type of the None singleton.
 
-    `group_details: list[airbyte_agent_sdk.connectors.jira.models.UserApplicationrolesItemsItemGroupdetailsItem] | Any`
+    `group_details: list[airbyte_agent_sdk.connectors.jira.models.UserApplicationrolesItemsItemGroupdetailsItem] | None`
     :   The type of the None singleton.
 
-    `groups: list[str] | Any`
+    `groups: list[str] | None`
     :   The type of the None singleton.
 
-    `has_unlimited_seats: bool | Any`
+    `has_unlimited_seats: bool | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `number_of_seats: int | Any`
+    `number_of_seats: int | None`
     :   The type of the None singleton.
 
-    `platform: bool | Any`
+    `platform: bool | None`
     :   The type of the None singleton.
 
-    `remaining_seats: int | Any`
+    `remaining_seats: int | None`
     :   The type of the None singleton.
 
-    `selected_by_default: bool | Any`
+    `selected_by_default: bool | None`
     :   The type of the None singleton.
 
-    `user_count: int | Any`
+    `user_count: int | None`
     :   The type of the None singleton.
 
-    `user_count_description: str | Any`
+    `user_count_description: str | None`
     :   The type of the None singleton.
 
 <a id="UserApplicationrolesItemsItemDefaultgroupsdetailsItem"></a>
@@ -3752,16 +4228,16 @@ Classes
 
     ### Class variables
 
-    `group_id: str | Any`
+    `group_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="UserApplicationrolesItemsItemGroupdetailsItem"></a>
@@ -3782,16 +4258,16 @@ Classes
 
     ### Class variables
 
-    `group_id: str | Any`
+    `group_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="UserAvatarurls"></a>
@@ -3812,16 +4288,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3845,13 +4321,13 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.jira.models.UserGroupsItemsItem] | Any`
+    `items: list[airbyte_agent_sdk.connectors.jira.models.UserGroupsItemsItem] | None`
     :   Array of group objects
 
     `model_config`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   Number of groups
 
 <a id="UserGroupsItemsItem"></a>
@@ -3872,16 +4348,16 @@ Classes
 
     ### Class variables
 
-    `group_id: str | Any`
+    `group_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>
@@ -3965,46 +4441,46 @@ Classes
 
     ### Class variables
 
-    `author: airbyte_agent_sdk.connectors.jira.models.WorklogAuthor | Any`
+    `author: airbyte_agent_sdk.connectors.jira.models.WorklogAuthor | None`
     :   The type of the None singleton.
 
-    `comment: airbyte_agent_sdk.connectors.jira.models.WorklogComment | Any`
+    `comment: airbyte_agent_sdk.connectors.jira.models.WorklogComment | None`
     :   The type of the None singleton.
 
-    `created: str | Any`
+    `created: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `issue_id: str | Any`
+    `issue_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `properties: list[dict[str, typing.Any]] | Any | None`
+    `properties: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `started: str | Any`
+    `started: str | None`
     :   The type of the None singleton.
 
-    `time_spent: str | Any`
+    `time_spent: str | None`
     :   The type of the None singleton.
 
-    `time_spent_seconds: int | Any`
+    `time_spent_seconds: int | None`
     :   The type of the None singleton.
 
-    `update_author: airbyte_agent_sdk.connectors.jira.models.WorklogUpdateauthor | Any`
+    `update_author: airbyte_agent_sdk.connectors.jira.models.WorklogUpdateauthor | None`
     :   The type of the None singleton.
 
-    `updated: str | Any`
+    `updated: str | None`
     :   The type of the None singleton.
 
-    `visibility: airbyte_agent_sdk.connectors.jira.models.WorklogVisibility | Any | None`
+    `visibility: airbyte_agent_sdk.connectors.jira.models.WorklogVisibility | None`
     :   The type of the None singleton.
 
 <a id="WorklogAuthor"></a>
@@ -4025,31 +4501,31 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.WorklogAuthorAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.WorklogAuthorAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="WorklogAuthorAvatarurls"></a>
@@ -4070,16 +4546,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -4103,16 +4579,16 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.WorklogCommentContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.WorklogCommentContentItem] | None`
     :   Array of content blocks
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Document type (always 'doc')
 
-    `version: int | Any`
+    `version: int | None`
     :   ADF version
 
 <a id="WorklogCommentContentItem"></a>
@@ -4133,13 +4609,13 @@ Classes
 
     ### Class variables
 
-    `content: list[airbyte_agent_sdk.connectors.jira.models.WorklogCommentContentItemContentItem] | Any`
+    `content: list[airbyte_agent_sdk.connectors.jira.models.WorklogCommentContentItemContentItem] | None`
     :   Nested content items
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Block type (e.g., 'paragraph')
 
 <a id="WorklogCommentContentItemContentItem"></a>
@@ -4163,11 +4639,161 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str | None`
     :   Text content
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Content type (e.g., 'text')
+
+<a id="WorklogCreateParams"></a>
+
+`WorklogCreateParams(**data: Any)`
+:   Parameters for adding a worklog entry to an issue. Either timeSpentSeconds or timeSpent must be provided.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `comment: airbyte_agent_sdk.connectors.jira.models.WorklogCreateParamsComment | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `started: str | None`
+    :   The type of the None singleton.
+
+    `time_spent: str | None`
+    :   The type of the None singleton.
+
+    `time_spent_seconds: int | None`
+    :   The type of the None singleton.
+
+    `visibility: airbyte_agent_sdk.connectors.jira.models.WorklogCreateParamsVisibility | None`
+    :   The type of the None singleton.
+
+<a id="WorklogCreateParamsComment"></a>
+
+`WorklogCreateParamsComment(**data: Any)`
+:   A comment about the work done in Atlassian Document Format (ADF)
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.models.WorklogCreateParamsCommentContentItem] | None`
+    :   Array of content blocks
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   Document type (always 'doc')
+
+    `version: int | None`
+    :   ADF version
+
+<a id="WorklogCreateParamsCommentContentItem"></a>
+
+`WorklogCreateParamsCommentContentItem(**data: Any)`
+:   Nested schema for WorklogCreateParamsComment.content_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: list[airbyte_agent_sdk.connectors.jira.models.WorklogCreateParamsCommentContentItemContentItem] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   Block type (e.g., 'paragraph')
+
+<a id="WorklogCreateParamsCommentContentItemContentItem"></a>
+
+`WorklogCreateParamsCommentContentItemContentItem(**data: Any)`
+:   Nested schema for WorklogCreateParamsCommentContentItem.content_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `text: str | None`
+    :   Text content
+
+    `type_: str | None`
+    :   Content type (e.g., 'text')
+
+<a id="WorklogCreateParamsVisibility"></a>
+
+`WorklogCreateParamsVisibility(**data: Any)`
+:   Restrict worklog visibility to a group or role
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `identifier: str | None`
+    :   The ID of the group or role
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of visibility restriction
+
+    `value: str | None`
+    :   The name of the group or role
 
 <a id="WorklogUpdateauthor"></a>
 
@@ -4187,31 +4813,31 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.WorklogUpdateauthorAvatarurls | Any`
+    `avatar_urls: airbyte_agent_sdk.connectors.jira.models.WorklogUpdateauthorAvatarurls | None`
     :   URLs for user avatars in different sizes
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any`
+    `email_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
-    `time_zone: str | Any`
+    `time_zone: str | None`
     :   The type of the None singleton.
 
 <a id="WorklogUpdateauthorAvatarurls"></a>
@@ -4232,16 +4858,16 @@ Classes
 
     ### Class variables
 
-    `field_16x16: str | Any`
+    `field_16x16: str | None`
     :   The type of the None singleton.
 
-    `field_24x24: str | Any`
+    `field_24x24: str | None`
     :   The type of the None singleton.
 
-    `field_32x32: str | Any`
+    `field_32x32: str | None`
     :   The type of the None singleton.
 
-    `field_48x48: str | Any`
+    `field_48x48: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -4265,16 +4891,16 @@ Classes
 
     ### Class variables
 
-    `identifier: str | Any | None`
+    `identifier: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="WorklogsList"></a>
@@ -4295,17 +4921,17 @@ Classes
 
     ### Class variables
 
-    `max_results: int | Any`
+    `max_results: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_at: int | Any`
+    `start_at: int | None`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   The type of the None singleton.
 
-    `worklogs: list[airbyte_agent_sdk.connectors.jira.models.Worklog] | Any`
+    `worklogs: list[airbyte_agent_sdk.connectors.jira.models.Worklog] | None`
     :   The type of the None singleton.

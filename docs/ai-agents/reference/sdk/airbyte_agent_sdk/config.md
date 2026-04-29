@@ -13,10 +13,10 @@ Functions
 <a id="configure"></a>
 
 `configure(*, client_id: str, client_secret: str, organization_id: str | None = None, workspace_name: str = 'default') ‑> None`
-:   Set global SDK credentials. These are used as defaults by connect(), Workspace, and ask().
+:   Set global SDK credentials. These are used as defaults by connect() and Workspace.
     
     Calling configure() again overwrites the previous configuration.
-    Explicit kwargs passed to connect()/Workspace()/ask() always take priority.
+    Explicit kwargs passed to connect()/Workspace() always take priority.
 
 <a id="get_config"></a>
 

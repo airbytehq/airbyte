@@ -652,34 +652,34 @@ Classes
 
     ### Class variables
 
-    `can_push: bool | Any`
+    `can_push: bool | None`
     :   The type of the None singleton.
 
-    `commit: dict[str, typing.Any] | Any | None`
+    `commit: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `default: bool | Any`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `developers_can_merge: bool | Any`
+    `developers_can_merge: bool | None`
     :   The type of the None singleton.
 
-    `developers_can_push: bool | Any`
+    `developers_can_push: bool | None`
     :   The type of the None singleton.
 
-    `merged: bool | Any`
+    `merged: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `protected: bool | Any`
+    `protected: bool | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
 <a id="BranchesListResultMeta"></a>
@@ -703,7 +703,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="BranchesSearchData"></a>
@@ -778,55 +778,55 @@ Classes
 
     ### Class variables
 
-    `author_email: str | Any`
+    `author_email: str | None`
     :   The type of the None singleton.
 
-    `author_name: str | Any`
+    `author_name: str | None`
     :   The type of the None singleton.
 
-    `authored_date: str | Any`
+    `authored_date: str | None`
     :   The type of the None singleton.
 
-    `committed_date: str | Any`
+    `committed_date: str | None`
     :   The type of the None singleton.
 
-    `committer_email: str | Any`
+    `committer_email: str | None`
     :   The type of the None singleton.
 
-    `committer_name: str | Any`
+    `committer_name: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `extended_trailers: dict[str, typing.Any] | Any | None`
+    `extended_trailers: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `message: str | Any`
+    `message: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `parent_ids: list[str] | Any`
+    `parent_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `short_id: str | Any`
+    `short_id: str | None`
     :   The type of the None singleton.
 
-    `stats: airbyte_agent_sdk.connectors.gitlab.models.CommitStats | Any | None`
+    `stats: airbyte_agent_sdk.connectors.gitlab.models.CommitStats | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `trailers: dict[str, typing.Any] | Any | None`
+    `trailers: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
 <a id="CommitStats"></a>
@@ -847,16 +847,16 @@ Classes
 
     ### Class variables
 
-    `additions: int | Any`
+    `additions: int | None`
     :   Lines added
 
-    `deletions: int | Any`
+    `deletions: int | None`
     :   Lines deleted
 
     `model_config`
     :   The type of the None singleton.
 
-    `total: int | Any`
+    `total: int | None`
     :   Total changes
 
 <a id="CommitsListResultMeta"></a>
@@ -880,7 +880,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="CommitsSearchData"></a>
@@ -1789,157 +1789,157 @@ Classes
 
     ### Class variables
 
-    `archived: bool | Any | None`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `auto_devops_enabled: bool | Any | None`
+    `auto_devops_enabled: bool | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default_branch: str | Any | None`
+    `default_branch: str | None`
     :   The type of the None singleton.
 
-    `default_branch_protection: int | Any | None`
+    `default_branch_protection: int | None`
     :   The type of the None singleton.
 
-    `default_branch_protection_defaults: dict[str, typing.Any] | Any | None`
+    `default_branch_protection_defaults: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `duo_namespace_access_rules: list[typing.Any] | Any | None`
+    `duo_namespace_access_rules: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `emails_disabled: bool | Any | None`
+    `emails_disabled: bool | None`
     :   The type of the None singleton.
 
-    `emails_enabled: bool | Any | None`
+    `emails_enabled: bool | None`
     :   The type of the None singleton.
 
-    `enabled_git_access_protocol: str | Any | None`
+    `enabled_git_access_protocol: str | None`
     :   The type of the None singleton.
 
-    `extra_shared_runners_minutes_limit: int | Any | None`
+    `extra_shared_runners_minutes_limit: int | None`
     :   The type of the None singleton.
 
-    `full_name: str | Any`
+    `full_name: str | None`
     :   The type of the None singleton.
 
-    `full_path: str | Any`
+    `full_path: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `ip_restriction_ranges: str | Any | None`
+    `ip_restriction_ranges: str | None`
     :   The type of the None singleton.
 
-    `ldap_access: str | Any | None`
+    `ldap_access: str | None`
     :   The type of the None singleton.
 
-    `ldap_cn: str | Any | None`
+    `ldap_cn: str | None`
     :   The type of the None singleton.
 
-    `lfs_enabled: bool | Any | None`
+    `lfs_enabled: bool | None`
     :   The type of the None singleton.
 
-    `lock_math_rendering_limits_enabled: bool | Any | None`
+    `lock_math_rendering_limits_enabled: bool | None`
     :   The type of the None singleton.
 
-    `marked_for_deletion_on: str | Any | None`
+    `marked_for_deletion_on: str | None`
     :   The type of the None singleton.
 
-    `math_rendering_limits_enabled: bool | Any | None`
+    `math_rendering_limits_enabled: bool | None`
     :   The type of the None singleton.
 
-    `max_artifacts_size: int | Any | None`
+    `max_artifacts_size: int | None`
     :   The type of the None singleton.
 
-    `membership_lock: bool | Any | None`
+    `membership_lock: bool | None`
     :   The type of the None singleton.
 
-    `mentions_disabled: bool | Any | None`
+    `mentions_disabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `organization_id: int | Any | None`
+    `organization_id: int | None`
     :   The type of the None singleton.
 
-    `parent_id: int | Any | None`
+    `parent_id: int | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `prevent_forking_outside_group: bool | Any | None`
+    `prevent_forking_outside_group: bool | None`
     :   The type of the None singleton.
 
-    `prevent_sharing_groups_outside_hierarchy: bool | Any | None`
+    `prevent_sharing_groups_outside_hierarchy: bool | None`
     :   The type of the None singleton.
 
-    `project_creation_level: str | Any | None`
+    `project_creation_level: str | None`
     :   The type of the None singleton.
 
-    `projects: list[typing.Any] | Any | None`
+    `projects: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `request_access_enabled: bool | Any | None`
+    `request_access_enabled: bool | None`
     :   The type of the None singleton.
 
-    `require_two_factor_authentication: bool | Any | None`
+    `require_two_factor_authentication: bool | None`
     :   The type of the None singleton.
 
-    `runners_token: str | Any | None`
+    `runners_token: str | None`
     :   The type of the None singleton.
 
-    `service_access_tokens_expiration_enforced: bool | Any | None`
+    `service_access_tokens_expiration_enforced: bool | None`
     :   The type of the None singleton.
 
-    `share_with_group_lock: bool | Any | None`
+    `share_with_group_lock: bool | None`
     :   The type of the None singleton.
 
-    `shared_projects: list[typing.Any] | Any | None`
+    `shared_projects: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `shared_runners_minutes_limit: int | Any | None`
+    `shared_runners_minutes_limit: int | None`
     :   The type of the None singleton.
 
-    `shared_runners_setting: str | Any | None`
+    `shared_runners_setting: str | None`
     :   The type of the None singleton.
 
-    `shared_with_groups: list[typing.Any] | Any | None`
+    `shared_with_groups: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `show_diff_preview_in_email: bool | Any | None`
+    `show_diff_preview_in_email: bool | None`
     :   The type of the None singleton.
 
-    `subgroup_creation_level: str | Any | None`
+    `subgroup_creation_level: str | None`
     :   The type of the None singleton.
 
-    `two_factor_grace_period: int | Any | None`
+    `two_factor_grace_period: int | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any`
+    `visibility: str | None`
     :   The type of the None singleton.
 
-    `web_based_commit_signing_enabled: bool | Any | None`
+    `web_based_commit_signing_enabled: bool | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
-    `wiki_access_level: str | Any | None`
+    `wiki_access_level: str | None`
     :   The type of the None singleton.
 
 <a id="GroupMembersListResultMeta"></a>
@@ -1963,7 +1963,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="GroupMembersSearchData"></a>
@@ -2047,7 +2047,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="GroupMilestonesSearchData"></a>
@@ -2128,7 +2128,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="GroupsSearchData"></a>
@@ -2245,139 +2245,139 @@ Classes
 
     ### Class variables
 
-    `assignee: dict[str, typing.Any] | Any | None`
+    `assignee: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `assignees: list[dict[str, typing.Any]] | Any`
+    `assignees: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `author: dict[str, typing.Any] | Any`
+    `author: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `blocking_issues_count: int | Any | None`
+    `blocking_issues_count: int | None`
     :   The type of the None singleton.
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `closed_by: dict[str, typing.Any] | Any | None`
+    `closed_by: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `confidential: bool | Any`
+    `confidential: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `discussion_locked: bool | Any | None`
+    `discussion_locked: bool | None`
     :   The type of the None singleton.
 
-    `downvotes: int | Any`
+    `downvotes: int | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `epic: dict[str, typing.Any] | Any | None`
+    `epic: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `epic_iid: int | Any | None`
+    `epic_iid: int | None`
     :   The type of the None singleton.
 
-    `has_tasks: bool | Any | None`
+    `has_tasks: bool | None`
     :   The type of the None singleton.
 
-    `health_status: str | Any | None`
+    `health_status: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `iid: int | Any`
+    `iid: int | None`
     :   The type of the None singleton.
 
-    `imported: bool | Any | None`
+    `imported: bool | None`
     :   The type of the None singleton.
 
-    `imported_from: str | Any | None`
+    `imported_from: str | None`
     :   The type of the None singleton.
 
-    `issue_type: str | Any | None`
+    `issue_type: str | None`
     :   The type of the None singleton.
 
-    `iteration: dict[str, typing.Any] | Any | None`
+    `iteration: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `labels: list[str] | Any`
+    `labels: list[str] | None`
     :   The type of the None singleton.
 
-    `links: dict[str, typing.Any] | Any | None`
+    `links: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `merge_requests_count: int | Any | None`
+    `merge_requests_count: int | None`
     :   The type of the None singleton.
 
-    `milestone: dict[str, typing.Any] | Any | None`
+    `milestone: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `moved_to_id: int | Any | None`
+    `moved_to_id: int | None`
     :   The type of the None singleton.
 
-    `project_id: int | Any`
+    `project_id: int | None`
     :   The type of the None singleton.
 
-    `references: dict[str, typing.Any] | Any | None`
+    `references: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `service_desk_reply_to: str | Any | None`
+    `service_desk_reply_to: str | None`
     :   The type of the None singleton.
 
-    `severity: str | Any | None`
+    `severity: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `subscribed: bool | Any | None`
+    `subscribed: bool | None`
     :   The type of the None singleton.
 
-    `task_completion_status: dict[str, typing.Any] | Any | None`
+    `task_completion_status: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `task_status: str | Any | None`
+    `task_status: str | None`
     :   The type of the None singleton.
 
-    `time_stats: dict[str, typing.Any] | Any | None`
+    `time_stats: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `upvotes: int | Any`
+    `upvotes: int | None`
     :   The type of the None singleton.
 
-    `user_notes_count: int | Any`
+    `user_notes_count: int | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
-    `weight: int | Any | None`
+    `weight: int | None`
     :   The type of the None singleton.
 
 <a id="IssuesListResultMeta"></a>
@@ -2401,7 +2401,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="IssuesSearchData"></a>
@@ -2554,46 +2554,46 @@ Classes
 
     ### Class variables
 
-    `access_level: int | Any`
+    `access_level: int | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_by: dict[str, typing.Any] | Any | None`
+    `created_by: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `expires_at: str | Any | None`
+    `expires_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `locked: bool | Any | None`
+    `locked: bool | None`
     :   The type of the None singleton.
 
-    `membership_state: str | Any | None`
+    `membership_state: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `public_email: str | Any | None`
+    `public_email: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `username: str | Any`
+    `username: str | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
 <a id="MergeRequest"></a>
@@ -2614,193 +2614,193 @@ Classes
 
     ### Class variables
 
-    `approvals_before_merge: int | Any | None`
+    `approvals_before_merge: int | None`
     :   The type of the None singleton.
 
-    `assignee: dict[str, typing.Any] | Any | None`
+    `assignee: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `assignees: list[dict[str, typing.Any]] | Any`
+    `assignees: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `author: dict[str, typing.Any] | Any`
+    `author: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `blocking_discussions_resolved: bool | Any | None`
+    `blocking_discussions_resolved: bool | None`
     :   The type of the None singleton.
 
-    `changes_count: str | Any | None`
+    `changes_count: str | None`
     :   The type of the None singleton.
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `closed_by: dict[str, typing.Any] | Any | None`
+    `closed_by: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `detailed_merge_status: str | Any | None`
+    `detailed_merge_status: str | None`
     :   The type of the None singleton.
 
-    `diff_refs: dict[str, typing.Any] | Any | None`
+    `diff_refs: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `discussion_locked: bool | Any | None`
+    `discussion_locked: bool | None`
     :   The type of the None singleton.
 
-    `downvotes: int | Any`
+    `downvotes: int | None`
     :   The type of the None singleton.
 
-    `draft: bool | Any | None`
+    `draft: bool | None`
     :   The type of the None singleton.
 
-    `first_contribution: bool | Any | None`
+    `first_contribution: bool | None`
     :   The type of the None singleton.
 
-    `first_deployed_to_production_at: str | Any | None`
+    `first_deployed_to_production_at: str | None`
     :   The type of the None singleton.
 
-    `force_remove_source_branch: bool | Any | None`
+    `force_remove_source_branch: bool | None`
     :   The type of the None singleton.
 
-    `has_conflicts: bool | Any | None`
+    `has_conflicts: bool | None`
     :   The type of the None singleton.
 
-    `head_pipeline: dict[str, typing.Any] | Any | None`
+    `head_pipeline: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `iid: int | Any`
+    `iid: int | None`
     :   The type of the None singleton.
 
-    `imported: bool | Any | None`
+    `imported: bool | None`
     :   The type of the None singleton.
 
-    `imported_from: str | Any | None`
+    `imported_from: str | None`
     :   The type of the None singleton.
 
-    `labels: list[str] | Any`
+    `labels: list[str] | None`
     :   The type of the None singleton.
 
-    `latest_build_finished_at: str | Any | None`
+    `latest_build_finished_at: str | None`
     :   The type of the None singleton.
 
-    `latest_build_started_at: str | Any | None`
+    `latest_build_started_at: str | None`
     :   The type of the None singleton.
 
-    `merge_after: str | Any | None`
+    `merge_after: str | None`
     :   The type of the None singleton.
 
-    `merge_commit_sha: str | Any | None`
+    `merge_commit_sha: str | None`
     :   The type of the None singleton.
 
-    `merge_error: str | Any | None`
+    `merge_error: str | None`
     :   The type of the None singleton.
 
-    `merge_status: str | Any`
+    `merge_status: str | None`
     :   The type of the None singleton.
 
-    `merge_user: dict[str, typing.Any] | Any | None`
+    `merge_user: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `merge_when_pipeline_succeeds: bool | Any | None`
+    `merge_when_pipeline_succeeds: bool | None`
     :   The type of the None singleton.
 
-    `merged_at: str | Any | None`
+    `merged_at: str | None`
     :   The type of the None singleton.
 
-    `merged_by: dict[str, typing.Any] | Any | None`
+    `merged_by: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `milestone: dict[str, typing.Any] | Any | None`
+    `milestone: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pipeline: dict[str, typing.Any] | Any | None`
+    `pipeline: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prepared_at: str | Any | None`
+    `prepared_at: str | None`
     :   The type of the None singleton.
 
-    `project_id: int | Any`
+    `project_id: int | None`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The type of the None singleton.
 
-    `references: dict[str, typing.Any] | Any | None`
+    `references: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `reviewers: list[typing.Any] | Any | None`
+    `reviewers: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `sha: str | Any | None`
+    `sha: str | None`
     :   The type of the None singleton.
 
-    `should_remove_source_branch: bool | Any | None`
+    `should_remove_source_branch: bool | None`
     :   The type of the None singleton.
 
-    `source_branch: str | Any`
+    `source_branch: str | None`
     :   The type of the None singleton.
 
-    `source_project_id: int | Any | None`
+    `source_project_id: int | None`
     :   The type of the None singleton.
 
-    `squash: bool | Any | None`
+    `squash: bool | None`
     :   The type of the None singleton.
 
-    `squash_commit_sha: str | Any | None`
+    `squash_commit_sha: str | None`
     :   The type of the None singleton.
 
-    `squash_on_merge: bool | Any | None`
+    `squash_on_merge: bool | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `subscribed: bool | Any | None`
+    `subscribed: bool | None`
     :   The type of the None singleton.
 
-    `target_branch: str | Any`
+    `target_branch: str | None`
     :   The type of the None singleton.
 
-    `target_project_id: int | Any | None`
+    `target_project_id: int | None`
     :   The type of the None singleton.
 
-    `task_completion_status: dict[str, typing.Any] | Any | None`
+    `task_completion_status: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `time_stats: dict[str, typing.Any] | Any | None`
+    `time_stats: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `upvotes: int | Any`
+    `upvotes: int | None`
     :   The type of the None singleton.
 
-    `user: dict[str, typing.Any] | Any | None`
+    `user: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `user_notes_count: int | Any`
+    `user_notes_count: int | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
-    `work_in_progress: bool | Any | None`
+    `work_in_progress: bool | None`
     :   The type of the None singleton.
 
 <a id="MergeRequestsListResultMeta"></a>
@@ -2824,7 +2824,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="MergeRequestsSearchData"></a>
@@ -3016,46 +3016,46 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `expired: bool | Any | None`
+    `expired: bool | None`
     :   The type of the None singleton.
 
-    `group_id: int | Any | None`
+    `group_id: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `iid: int | Any`
+    `iid: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `project_id: int | Any | None`
+    `project_id: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
 <a id="Pipeline"></a>
@@ -3076,40 +3076,40 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `iid: int | Any`
+    `iid: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `project_id: int | Any`
+    `project_id: int | None`
     :   The type of the None singleton.
 
-    `ref: str | Any`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `sha: str | Any`
+    `sha: str | None`
     :   The type of the None singleton.
 
-    `source: str | Any`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
 <a id="PipelinesListResultMeta"></a>
@@ -3133,7 +3133,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="PipelinesSearchData"></a>
@@ -3208,370 +3208,370 @@ Classes
 
     ### Class variables
 
-    `allow_merge_on_skipped_pipeline: bool | Any | None`
+    `allow_merge_on_skipped_pipeline: bool | None`
     :   The type of the None singleton.
 
-    `analytics_access_level: str | Any | None`
+    `analytics_access_level: str | None`
     :   The type of the None singleton.
 
-    `archived: bool | Any`
+    `archived: bool | None`
     :   The type of the None singleton.
 
-    `auto_cancel_pending_pipelines: str | Any | None`
+    `auto_cancel_pending_pipelines: str | None`
     :   The type of the None singleton.
 
-    `auto_devops_deploy_strategy: str | Any | None`
+    `auto_devops_deploy_strategy: str | None`
     :   The type of the None singleton.
 
-    `auto_devops_enabled: bool | Any | None`
+    `auto_devops_enabled: bool | None`
     :   The type of the None singleton.
 
-    `autoclose_referenced_issues: bool | Any | None`
+    `autoclose_referenced_issues: bool | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `build_git_strategy: str | Any | None`
+    `build_git_strategy: str | None`
     :   The type of the None singleton.
 
-    `build_timeout: int | Any | None`
+    `build_timeout: int | None`
     :   The type of the None singleton.
 
-    `builds_access_level: str | Any | None`
+    `builds_access_level: str | None`
     :   The type of the None singleton.
 
-    `can_create_merge_request_in: bool | Any | None`
+    `can_create_merge_request_in: bool | None`
     :   The type of the None singleton.
 
-    `ci_allow_fork_pipelines_to_run_in_parent_project: bool | Any | None`
+    `ci_allow_fork_pipelines_to_run_in_parent_project: bool | None`
     :   The type of the None singleton.
 
-    `ci_config_path: str | Any | None`
+    `ci_config_path: str | None`
     :   The type of the None singleton.
 
-    `ci_default_git_depth: int | Any | None`
+    `ci_default_git_depth: int | None`
     :   The type of the None singleton.
 
-    `ci_delete_pipelines_in_seconds: int | Any | None`
+    `ci_delete_pipelines_in_seconds: int | None`
     :   The type of the None singleton.
 
-    `ci_display_pipeline_variables: bool | Any | None`
+    `ci_display_pipeline_variables: bool | None`
     :   The type of the None singleton.
 
-    `ci_forward_deployment_enabled: bool | Any | None`
+    `ci_forward_deployment_enabled: bool | None`
     :   The type of the None singleton.
 
-    `ci_forward_deployment_rollback_allowed: bool | Any | None`
+    `ci_forward_deployment_rollback_allowed: bool | None`
     :   The type of the None singleton.
 
-    `ci_id_token_sub_claim_components: list[typing.Any] | Any | None`
+    `ci_id_token_sub_claim_components: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `ci_job_token_scope_enabled: bool | Any | None`
+    `ci_job_token_scope_enabled: bool | None`
     :   The type of the None singleton.
 
-    `ci_pipeline_variables_minimum_override_role: str | Any | None`
+    `ci_pipeline_variables_minimum_override_role: str | None`
     :   The type of the None singleton.
 
-    `ci_push_repository_for_job_token_allowed: bool | Any | None`
+    `ci_push_repository_for_job_token_allowed: bool | None`
     :   The type of the None singleton.
 
-    `ci_separated_caches: bool | Any | None`
+    `ci_separated_caches: bool | None`
     :   The type of the None singleton.
 
-    `compliance_frameworks: list[typing.Any] | Any | None`
+    `compliance_frameworks: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `container_expiration_policy: dict[str, typing.Any] | Any | None`
+    `container_expiration_policy: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `container_registry_access_level: str | Any | None`
+    `container_registry_access_level: str | None`
     :   The type of the None singleton.
 
-    `container_registry_enabled: bool | Any | None`
+    `container_registry_enabled: bool | None`
     :   The type of the None singleton.
 
-    `container_registry_image_prefix: str | Any | None`
+    `container_registry_image_prefix: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator_id: int | Any | None`
+    `creator_id: int | None`
     :   The type of the None singleton.
 
-    `default_branch: str | Any | None`
+    `default_branch: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `description_html: str | Any | None`
+    `description_html: str | None`
     :   The type of the None singleton.
 
-    `emails_disabled: bool | Any | None`
+    `emails_disabled: bool | None`
     :   The type of the None singleton.
 
-    `emails_enabled: bool | Any | None`
+    `emails_enabled: bool | None`
     :   The type of the None singleton.
 
-    `empty_repo: bool | Any | None`
+    `empty_repo: bool | None`
     :   The type of the None singleton.
 
-    `enforce_auth_checks_on_uploads: bool | Any | None`
+    `enforce_auth_checks_on_uploads: bool | None`
     :   The type of the None singleton.
 
-    `environments_access_level: str | Any | None`
+    `environments_access_level: str | None`
     :   The type of the None singleton.
 
-    `external_authorization_classification_label: str | Any | None`
+    `external_authorization_classification_label: str | None`
     :   The type of the None singleton.
 
-    `feature_flags_access_level: str | Any | None`
+    `feature_flags_access_level: str | None`
     :   The type of the None singleton.
 
-    `forking_access_level: str | Any | None`
+    `forking_access_level: str | None`
     :   The type of the None singleton.
 
-    `forks_count: int | Any`
+    `forks_count: int | None`
     :   The type of the None singleton.
 
-    `group_runners_enabled: bool | Any | None`
+    `group_runners_enabled: bool | None`
     :   The type of the None singleton.
 
-    `http_url_to_repo: str | Any`
+    `http_url_to_repo: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `import_error: str | Any | None`
+    `import_error: str | None`
     :   The type of the None singleton.
 
-    `import_status: str | Any | None`
+    `import_status: str | None`
     :   The type of the None singleton.
 
-    `import_type: str | Any | None`
+    `import_type: str | None`
     :   The type of the None singleton.
 
-    `import_url: str | Any | None`
+    `import_url: str | None`
     :   The type of the None singleton.
 
-    `infrastructure_access_level: str | Any | None`
+    `infrastructure_access_level: str | None`
     :   The type of the None singleton.
 
-    `issue_branch_template: str | Any | None`
+    `issue_branch_template: str | None`
     :   The type of the None singleton.
 
-    `issues_access_level: str | Any | None`
+    `issues_access_level: str | None`
     :   The type of the None singleton.
 
-    `issues_enabled: bool | Any | None`
+    `issues_enabled: bool | None`
     :   The type of the None singleton.
 
-    `jobs_enabled: bool | Any | None`
+    `jobs_enabled: bool | None`
     :   The type of the None singleton.
 
-    `keep_latest_artifact: bool | Any | None`
+    `keep_latest_artifact: bool | None`
     :   The type of the None singleton.
 
-    `last_activity_at: str | Any`
+    `last_activity_at: str | None`
     :   The type of the None singleton.
 
-    `lfs_enabled: bool | Any | None`
+    `lfs_enabled: bool | None`
     :   The type of the None singleton.
 
-    `links: dict[str, typing.Any] | Any | None`
+    `links: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `marked_for_deletion_at: str | Any | None`
+    `marked_for_deletion_at: str | None`
     :   The type of the None singleton.
 
-    `marked_for_deletion_on: str | Any | None`
+    `marked_for_deletion_on: str | None`
     :   The type of the None singleton.
 
-    `max_artifacts_size: int | Any | None`
+    `max_artifacts_size: int | None`
     :   The type of the None singleton.
 
-    `merge_commit_template: str | Any | None`
+    `merge_commit_template: str | None`
     :   The type of the None singleton.
 
-    `merge_method: str | Any | None`
+    `merge_method: str | None`
     :   The type of the None singleton.
 
-    `merge_request_title_regex: str | Any | None`
+    `merge_request_title_regex: str | None`
     :   The type of the None singleton.
 
-    `merge_request_title_regex_description: str | Any | None`
+    `merge_request_title_regex_description: str | None`
     :   The type of the None singleton.
 
-    `merge_requests_access_level: str | Any | None`
+    `merge_requests_access_level: str | None`
     :   The type of the None singleton.
 
-    `merge_requests_enabled: bool | Any | None`
+    `merge_requests_enabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `model_experiments_access_level: str | Any | None`
+    `model_experiments_access_level: str | None`
     :   The type of the None singleton.
 
-    `model_registry_access_level: str | Any | None`
+    `model_registry_access_level: str | None`
     :   The type of the None singleton.
 
-    `monitor_access_level: str | Any | None`
+    `monitor_access_level: str | None`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `name_with_namespace: str | Any`
+    `name_with_namespace: str | None`
     :   The type of the None singleton.
 
-    `namespace: dict[str, typing.Any] | Any`
+    `namespace: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `only_allow_merge_if_all_discussions_are_resolved: bool | Any | None`
+    `only_allow_merge_if_all_discussions_are_resolved: bool | None`
     :   The type of the None singleton.
 
-    `only_allow_merge_if_pipeline_succeeds: bool | Any | None`
+    `only_allow_merge_if_pipeline_succeeds: bool | None`
     :   The type of the None singleton.
 
-    `open_issues_count: int | Any`
+    `open_issues_count: int | None`
     :   The type of the None singleton.
 
-    `package_registry_access_level: str | Any | None`
+    `package_registry_access_level: str | None`
     :   The type of the None singleton.
 
-    `packages_enabled: bool | Any | None`
+    `packages_enabled: bool | None`
     :   The type of the None singleton.
 
-    `pages_access_level: str | Any | None`
+    `pages_access_level: str | None`
     :   The type of the None singleton.
 
-    `path: str | Any`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `path_with_namespace: str | Any`
+    `path_with_namespace: str | None`
     :   The type of the None singleton.
 
-    `permissions: dict[str, typing.Any] | Any | None`
+    `permissions: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `printing_merge_request_link_enabled: bool | Any | None`
+    `printing_merge_request_link_enabled: bool | None`
     :   The type of the None singleton.
 
-    `protect_merge_request_pipelines: bool | Any | None`
+    `protect_merge_request_pipelines: bool | None`
     :   The type of the None singleton.
 
-    `public_jobs: bool | Any | None`
+    `public_jobs: bool | None`
     :   The type of the None singleton.
 
-    `readme_url: str | Any | None`
+    `readme_url: str | None`
     :   The type of the None singleton.
 
-    `releases_access_level: str | Any | None`
+    `releases_access_level: str | None`
     :   The type of the None singleton.
 
-    `remove_source_branch_after_merge: bool | Any | None`
+    `remove_source_branch_after_merge: bool | None`
     :   The type of the None singleton.
 
-    `repository_access_level: str | Any | None`
+    `repository_access_level: str | None`
     :   The type of the None singleton.
 
-    `repository_object_format: str | Any | None`
+    `repository_object_format: str | None`
     :   The type of the None singleton.
 
-    `request_access_enabled: bool | Any | None`
+    `request_access_enabled: bool | None`
     :   The type of the None singleton.
 
-    `requirements_access_level: str | Any | None`
+    `requirements_access_level: str | None`
     :   The type of the None singleton.
 
-    `requirements_enabled: bool | Any | None`
+    `requirements_enabled: bool | None`
     :   The type of the None singleton.
 
-    `resolve_outdated_diff_discussions: bool | Any | None`
+    `resolve_outdated_diff_discussions: bool | None`
     :   The type of the None singleton.
 
-    `resource_group_default_process_mode: str | Any | None`
+    `resource_group_default_process_mode: str | None`
     :   The type of the None singleton.
 
-    `restrict_user_defined_variables: bool | Any | None`
+    `restrict_user_defined_variables: bool | None`
     :   The type of the None singleton.
 
-    `runner_token_expiration_interval: str | Any | None`
+    `runner_token_expiration_interval: str | None`
     :   The type of the None singleton.
 
-    `security_and_compliance_access_level: str | Any | None`
+    `security_and_compliance_access_level: str | None`
     :   The type of the None singleton.
 
-    `security_and_compliance_enabled: bool | Any | None`
+    `security_and_compliance_enabled: bool | None`
     :   The type of the None singleton.
 
-    `service_desk_address: str | Any | None`
+    `service_desk_address: str | None`
     :   The type of the None singleton.
 
-    `service_desk_enabled: bool | Any | None`
+    `service_desk_enabled: bool | None`
     :   The type of the None singleton.
 
-    `shared_runners_enabled: bool | Any | None`
+    `shared_runners_enabled: bool | None`
     :   The type of the None singleton.
 
-    `shared_with_groups: list[typing.Any] | Any | None`
+    `shared_with_groups: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `show_diff_preview_in_email: bool | Any | None`
+    `show_diff_preview_in_email: bool | None`
     :   The type of the None singleton.
 
-    `snippets_access_level: str | Any | None`
+    `snippets_access_level: str | None`
     :   The type of the None singleton.
 
-    `snippets_enabled: bool | Any | None`
+    `snippets_enabled: bool | None`
     :   The type of the None singleton.
 
-    `squash_commit_template: str | Any | None`
+    `squash_commit_template: str | None`
     :   The type of the None singleton.
 
-    `squash_option: str | Any | None`
+    `squash_option: str | None`
     :   The type of the None singleton.
 
-    `ssh_url_to_repo: str | Any`
+    `ssh_url_to_repo: str | None`
     :   The type of the None singleton.
 
-    `star_count: int | Any`
+    `star_count: int | None`
     :   The type of the None singleton.
 
-    `suggestion_commit_message: str | Any | None`
+    `suggestion_commit_message: str | None`
     :   The type of the None singleton.
 
-    `tag_list: list[typing.Any] | Any | None`
+    `tag_list: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `topics: list[str] | Any`
+    `topics: list[str] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any`
+    `visibility: str | None`
     :   The type of the None singleton.
 
-    `warn_about_potentially_unwanted_characters: bool | Any | None`
+    `warn_about_potentially_unwanted_characters: bool | None`
     :   The type of the None singleton.
 
-    `web_based_commit_signing_enabled: bool | Any | None`
+    `web_based_commit_signing_enabled: bool | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
-    `wiki_access_level: str | Any | None`
+    `wiki_access_level: str | None`
     :   The type of the None singleton.
 
-    `wiki_enabled: bool | Any | None`
+    `wiki_enabled: bool | None`
     :   The type of the None singleton.
 
 <a id="ProjectMembersListResultMeta"></a>
@@ -3595,7 +3595,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectMembersSearchData"></a>
@@ -3679,7 +3679,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectMilestonesSearchData"></a>
@@ -3760,7 +3760,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchData"></a>
@@ -4039,49 +4039,49 @@ Classes
 
     ### Class variables
 
-    `assets: dict[str, typing.Any] | Any | None`
+    `assets: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `author: dict[str, typing.Any] | Any`
+    `author: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `commit: dict[str, typing.Any] | Any`
+    `commit: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `commit_path: str | Any | None`
+    `commit_path: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `evidences: list[typing.Any] | Any | None`
+    `evidences: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `links: dict[str, typing.Any] | Any`
+    `links: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `milestones: list[typing.Any] | Any | None`
+    `milestones: list[typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `released_at: str | Any`
+    `released_at: str | None`
     :   The type of the None singleton.
 
-    `tag_name: str | Any`
+    `tag_name: str | None`
     :   The type of the None singleton.
 
-    `tag_path: str | Any | None`
+    `tag_path: str | None`
     :   The type of the None singleton.
 
-    `upcoming_release: bool | Any`
+    `upcoming_release: bool | None`
     :   The type of the None singleton.
 
 <a id="ReleasesListResultMeta"></a>
@@ -4105,7 +4105,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ReleasesSearchData"></a>
@@ -4198,28 +4198,28 @@ Classes
 
     ### Class variables
 
-    `commit: dict[str, typing.Any] | Any`
+    `commit: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `message: str | Any | None`
+    `message: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `protected: bool | Any`
+    `protected: bool | None`
     :   The type of the None singleton.
 
-    `release: dict[str, typing.Any] | Any | None`
+    `release: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `target: str | Any`
+    `target: str | None`
     :   The type of the None singleton.
 
 <a id="TagsListResultMeta"></a>
@@ -4243,7 +4243,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="TagsSearchData"></a>
@@ -4309,31 +4309,31 @@ Classes
 
     ### Class variables
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `locked: bool | Any | None`
+    `locked: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `public_email: str | Any | None`
+    `public_email: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `username: str | Any`
+    `username: str | None`
     :   The type of the None singleton.
 
-    `web_url: str | Any`
+    `web_url: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -4357,7 +4357,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>

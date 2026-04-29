@@ -31,46 +31,46 @@ Classes
 
     ### Class variables
 
-    `app_installed: bool | Any | None`
+    `app_installed: bool | None`
     :   The type of the None singleton.
 
-    `can_create_drives: bool | Any | None`
+    `can_create_drives: bool | None`
     :   The type of the None singleton.
 
-    `can_create_team_drives: bool | Any | None`
+    `can_create_team_drives: bool | None`
     :   The type of the None singleton.
 
-    `drive_themes: list[airbyte_agent_sdk.connectors.google_drive.models.AboutDrivethemesItem] | Any | None`
+    `drive_themes: list[airbyte_agent_sdk.connectors.google_drive.models.AboutDrivethemesItem] | None`
     :   The type of the None singleton.
 
-    `export_formats: dict[str, list[str]] | Any | None`
+    `export_formats: dict[str, list[str]] | None`
     :   The type of the None singleton.
 
-    `folder_color_palette: list[str] | Any | None`
+    `folder_color_palette: list[str] | None`
     :   The type of the None singleton.
 
-    `import_formats: dict[str, list[str]] | Any | None`
+    `import_formats: dict[str, list[str]] | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `max_import_sizes: dict[str, str] | Any | None`
+    `max_import_sizes: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `max_upload_size: str | Any | None`
+    `max_upload_size: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `storage_quota: airbyte_agent_sdk.connectors.google_drive.models.AboutStoragequota | Any | None`
+    `storage_quota: airbyte_agent_sdk.connectors.google_drive.models.AboutStoragequota | None`
     :   The type of the None singleton.
 
-    `team_drive_themes: list[airbyte_agent_sdk.connectors.google_drive.models.AboutTeamdrivethemesItem] | Any | None`
+    `team_drive_themes: list[airbyte_agent_sdk.connectors.google_drive.models.AboutTeamdrivethemesItem] | None`
     :   The type of the None singleton.
 
-    `user: Any`
+    `user: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="AboutDrivethemesItem"></a>
@@ -91,13 +91,13 @@ Classes
 
     ### Class variables
 
-    `background_image_link: str | Any | None`
+    `background_image_link: str | None`
     :   The type of the None singleton.
 
-    `color_rgb: str | Any | None`
+    `color_rgb: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -121,19 +121,19 @@ Classes
 
     ### Class variables
 
-    `limit: str | Any | None`
+    `limit: str | None`
     :   The usage limit, if applicable
 
     `model_config`
     :   The type of the None singleton.
 
-    `usage: str | Any | None`
+    `usage: str | None`
     :   The total usage across all services
 
-    `usage_in_drive: str | Any | None`
+    `usage_in_drive: str | None`
     :   The usage by all files in Google Drive
 
-    `usage_in_drive_trash: str | Any | None`
+    `usage_in_drive_trash: str | None`
     :   The usage by trashed files in Google Drive
 
 <a id="AboutTeamdrivethemesItem"></a>
@@ -154,13 +154,13 @@ Classes
 
     ### Class variables
 
-    `background_image_link: str | Any | None`
+    `background_image_link: str | None`
     :   The type of the None singleton.
 
-    `color_rgb: str | Any | None`
+    `color_rgb: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -184,34 +184,34 @@ Classes
 
     ### Class variables
 
-    `change_type: str | Any | None`
+    `change_type: str | None`
     :   The type of the None singleton.
 
-    `drive: Any`
+    `drive: typing.Any | None`
     :   The type of the None singleton.
 
-    `drive_id: str | Any | None`
+    `drive_id: str | None`
     :   The type of the None singleton.
 
-    `file: Any`
+    `file: typing.Any | None`
     :   The type of the None singleton.
 
-    `file_id: str | Any | None`
+    `file_id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `removed: bool | Any | None`
+    `removed: bool | None`
     :   The type of the None singleton.
 
-    `time: str | Any | None`
+    `time: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ChangesListResponse"></a>
@@ -232,19 +232,19 @@ Classes
 
     ### Class variables
 
-    `changes: list[airbyte_agent_sdk.connectors.google_drive.models.Change] | Any`
+    `changes: list[airbyte_agent_sdk.connectors.google_drive.models.Change] | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `new_start_page_token: str | Any | None`
+    `new_start_page_token: str | None`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="ChangesListResultMeta"></a>
@@ -268,10 +268,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `new_start_page_token: str | Any | None`
+    `new_start_page_token: str | None`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="Comment"></a>
@@ -292,49 +292,49 @@ Classes
 
     ### Class variables
 
-    `anchor: str | Any | None`
+    `anchor: str | None`
     :   The type of the None singleton.
 
-    `assignee_email_address: str | Any | None`
+    `assignee_email_address: str | None`
     :   The type of the None singleton.
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `content: str | Any | None`
+    `content: str | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `html_content: str | Any | None`
+    `html_content: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `mentioned_email_addresses: list[str] | Any | None`
+    `mentioned_email_addresses: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `quoted_file_content: airbyte_agent_sdk.connectors.google_drive.models.CommentQuotedfilecontent | Any | None`
+    `quoted_file_content: airbyte_agent_sdk.connectors.google_drive.models.CommentQuotedfilecontent | None`
     :   The type of the None singleton.
 
-    `replies: list[airbyte_agent_sdk.connectors.google_drive.models.Reply] | Any | None`
+    `replies: list[airbyte_agent_sdk.connectors.google_drive.models.Reply] | None`
     :   The type of the None singleton.
 
-    `resolved: bool | Any | None`
+    `resolved: bool | None`
     :   The type of the None singleton.
 
 <a id="CommentQuotedfilecontent"></a>
@@ -355,13 +355,13 @@ Classes
 
     ### Class variables
 
-    `mime_type: str | Any | None`
+    `mime_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="CommentsListResponse"></a>
@@ -382,16 +382,16 @@ Classes
 
     ### Class variables
 
-    `comments: list[airbyte_agent_sdk.connectors.google_drive.models.Comment] | Any`
+    `comments: list[airbyte_agent_sdk.connectors.google_drive.models.Comment] | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="CommentsListResultMeta"></a>
@@ -415,7 +415,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="Drive"></a>
@@ -436,43 +436,43 @@ Classes
 
     ### Class variables
 
-    `background_image_file: airbyte_agent_sdk.connectors.google_drive.models.DriveBackgroundimagefile | Any | None`
+    `background_image_file: airbyte_agent_sdk.connectors.google_drive.models.DriveBackgroundimagefile | None`
     :   The type of the None singleton.
 
-    `background_image_link: str | Any | None`
+    `background_image_link: str | None`
     :   The type of the None singleton.
 
-    `capabilities: airbyte_agent_sdk.connectors.google_drive.models.DriveCapabilities | Any | None`
+    `capabilities: airbyte_agent_sdk.connectors.google_drive.models.DriveCapabilities | None`
     :   The type of the None singleton.
 
-    `color_rgb: str | Any | None`
+    `color_rgb: str | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `hidden: bool | Any | None`
+    `hidden: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `org_unit_id: str | Any | None`
+    `org_unit_id: str | None`
     :   The type of the None singleton.
 
-    `restrictions: airbyte_agent_sdk.connectors.google_drive.models.DriveRestrictions | Any | None`
+    `restrictions: airbyte_agent_sdk.connectors.google_drive.models.DriveRestrictions | None`
     :   The type of the None singleton.
 
-    `theme_id: str | Any | None`
+    `theme_id: str | None`
     :   The type of the None singleton.
 
 <a id="DriveBackgroundimagefile"></a>
@@ -493,19 +493,19 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `width: float | Any | None`
+    `width: float | None`
     :   The type of the None singleton.
 
-    `x_coordinate: float | Any | None`
+    `x_coordinate: float | None`
     :   The type of the None singleton.
 
-    `y_coordinate: float | Any | None`
+    `y_coordinate: float | None`
     :   The type of the None singleton.
 
 <a id="DriveCapabilities"></a>
@@ -526,64 +526,64 @@ Classes
 
     ### Class variables
 
-    `can_add_children: bool | Any | None`
+    `can_add_children: bool | None`
     :   The type of the None singleton.
 
-    `can_change_copy_requires_writer_permission_restriction: bool | Any | None`
+    `can_change_copy_requires_writer_permission_restriction: bool | None`
     :   The type of the None singleton.
 
-    `can_change_domain_users_only_restriction: bool | Any | None`
+    `can_change_domain_users_only_restriction: bool | None`
     :   The type of the None singleton.
 
-    `can_change_drive_background: bool | Any | None`
+    `can_change_drive_background: bool | None`
     :   The type of the None singleton.
 
-    `can_change_drive_members_only_restriction: bool | Any | None`
+    `can_change_drive_members_only_restriction: bool | None`
     :   The type of the None singleton.
 
-    `can_change_sharing_folders_requires_organizer_permission_restriction: bool | Any | None`
+    `can_change_sharing_folders_requires_organizer_permission_restriction: bool | None`
     :   The type of the None singleton.
 
-    `can_comment: bool | Any | None`
+    `can_comment: bool | None`
     :   The type of the None singleton.
 
-    `can_copy: bool | Any | None`
+    `can_copy: bool | None`
     :   The type of the None singleton.
 
-    `can_delete_children: bool | Any | None`
+    `can_delete_children: bool | None`
     :   The type of the None singleton.
 
-    `can_delete_drive: bool | Any | None`
+    `can_delete_drive: bool | None`
     :   The type of the None singleton.
 
-    `can_download: bool | Any | None`
+    `can_download: bool | None`
     :   The type of the None singleton.
 
-    `can_edit: bool | Any | None`
+    `can_edit: bool | None`
     :   The type of the None singleton.
 
-    `can_list_children: bool | Any | None`
+    `can_list_children: bool | None`
     :   The type of the None singleton.
 
-    `can_manage_members: bool | Any | None`
+    `can_manage_members: bool | None`
     :   The type of the None singleton.
 
-    `can_read_revisions: bool | Any | None`
+    `can_read_revisions: bool | None`
     :   The type of the None singleton.
 
-    `can_rename: bool | Any | None`
+    `can_rename: bool | None`
     :   The type of the None singleton.
 
-    `can_rename_drive: bool | Any | None`
+    `can_rename_drive: bool | None`
     :   The type of the None singleton.
 
-    `can_reset_drive_restrictions: bool | Any | None`
+    `can_reset_drive_restrictions: bool | None`
     :   The type of the None singleton.
 
-    `can_share: bool | Any | None`
+    `can_share: bool | None`
     :   The type of the None singleton.
 
-    `can_trash_children: bool | Any | None`
+    `can_trash_children: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -607,22 +607,22 @@ Classes
 
     ### Class variables
 
-    `admin_managed_restrictions: bool | Any | None`
+    `admin_managed_restrictions: bool | None`
     :   The type of the None singleton.
 
-    `copy_requires_writer_permission: bool | Any | None`
+    `copy_requires_writer_permission: bool | None`
     :   The type of the None singleton.
 
-    `domain_users_only: bool | Any | None`
+    `domain_users_only: bool | None`
     :   The type of the None singleton.
 
-    `drive_members_only: bool | Any | None`
+    `drive_members_only: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `sharing_folders_requires_organizer_permission: bool | Any | None`
+    `sharing_folders_requires_organizer_permission: bool | None`
     :   The type of the None singleton.
 
 <a id="DrivesListResponse"></a>
@@ -643,16 +643,16 @@ Classes
 
     ### Class variables
 
-    `drives: list[airbyte_agent_sdk.connectors.google_drive.models.Drive] | Any`
+    `drives: list[airbyte_agent_sdk.connectors.google_drive.models.Drive] | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="DrivesListResultMeta"></a>
@@ -676,7 +676,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="File"></a>
@@ -697,181 +697,181 @@ Classes
 
     ### Class variables
 
-    `app_properties: dict[str, str] | Any | None`
+    `app_properties: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `capabilities: airbyte_agent_sdk.connectors.google_drive.models.FileCapabilities | Any | None`
+    `capabilities: airbyte_agent_sdk.connectors.google_drive.models.FileCapabilities | None`
     :   The type of the None singleton.
 
-    `content_restrictions: list[airbyte_agent_sdk.connectors.google_drive.models.FileContentrestrictionsItem] | Any | None`
+    `content_restrictions: list[airbyte_agent_sdk.connectors.google_drive.models.FileContentrestrictionsItem] | None`
     :   The type of the None singleton.
 
-    `copy_requires_writer_permission: bool | Any | None`
+    `copy_requires_writer_permission: bool | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `drive_id: str | Any | None`
+    `drive_id: str | None`
     :   The type of the None singleton.
 
-    `explicitly_trashed: bool | Any | None`
+    `explicitly_trashed: bool | None`
     :   The type of the None singleton.
 
-    `export_links: dict[str, str] | Any | None`
+    `export_links: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `file_extension: str | Any | None`
+    `file_extension: str | None`
     :   The type of the None singleton.
 
-    `folder_color_rgb: str | Any | None`
+    `folder_color_rgb: str | None`
     :   The type of the None singleton.
 
-    `full_file_extension: str | Any | None`
+    `full_file_extension: str | None`
     :   The type of the None singleton.
 
-    `has_thumbnail: bool | Any | None`
+    `has_thumbnail: bool | None`
     :   The type of the None singleton.
 
-    `head_revision_id: str | Any | None`
+    `head_revision_id: str | None`
     :   The type of the None singleton.
 
-    `icon_link: str | Any | None`
+    `icon_link: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `image_media_metadata: airbyte_agent_sdk.connectors.google_drive.models.FileImagemediametadata | Any | None`
+    `image_media_metadata: airbyte_agent_sdk.connectors.google_drive.models.FileImagemediametadata | None`
     :   The type of the None singleton.
 
-    `is_app_authorized: bool | Any | None`
+    `is_app_authorized: bool | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `label_info: airbyte_agent_sdk.connectors.google_drive.models.FileLabelinfo | Any | None`
+    `label_info: airbyte_agent_sdk.connectors.google_drive.models.FileLabelinfo | None`
     :   The type of the None singleton.
 
-    `last_modifying_user: Any`
+    `last_modifying_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `link_share_metadata: airbyte_agent_sdk.connectors.google_drive.models.FileLinksharemetadata | Any | None`
+    `link_share_metadata: airbyte_agent_sdk.connectors.google_drive.models.FileLinksharemetadata | None`
     :   The type of the None singleton.
 
-    `md5_checksum: str | Any | None`
+    `md5_checksum: str | None`
     :   The type of the None singleton.
 
-    `mime_type: str | Any | None`
+    `mime_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by_me: bool | Any | None`
+    `modified_by_me: bool | None`
     :   The type of the None singleton.
 
-    `modified_by_me_time: str | Any | None`
+    `modified_by_me_time: str | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `original_filename: str | Any | None`
+    `original_filename: str | None`
     :   The type of the None singleton.
 
-    `owned_by_me: bool | Any | None`
+    `owned_by_me: bool | None`
     :   The type of the None singleton.
 
-    `owners: list[airbyte_agent_sdk.connectors.google_drive.models.User] | Any | None`
+    `owners: list[airbyte_agent_sdk.connectors.google_drive.models.User] | None`
     :   The type of the None singleton.
 
-    `parents: list[str] | Any | None`
+    `parents: list[str] | None`
     :   The type of the None singleton.
 
-    `permission_ids: list[str] | Any | None`
+    `permission_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `properties: dict[str, str] | Any | None`
+    `properties: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `quota_bytes_used: str | Any | None`
+    `quota_bytes_used: str | None`
     :   The type of the None singleton.
 
-    `resource_key: str | Any | None`
+    `resource_key: str | None`
     :   The type of the None singleton.
 
-    `sha1_checksum: str | Any | None`
+    `sha1_checksum: str | None`
     :   The type of the None singleton.
 
-    `sha256_checksum: str | Any | None`
+    `sha256_checksum: str | None`
     :   The type of the None singleton.
 
-    `shared: bool | Any | None`
+    `shared: bool | None`
     :   The type of the None singleton.
 
-    `shared_with_me_time: str | Any | None`
+    `shared_with_me_time: str | None`
     :   The type of the None singleton.
 
-    `sharing_user: Any`
+    `sharing_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `shortcut_details: airbyte_agent_sdk.connectors.google_drive.models.FileShortcutdetails | Any | None`
+    `shortcut_details: airbyte_agent_sdk.connectors.google_drive.models.FileShortcutdetails | None`
     :   The type of the None singleton.
 
-    `size: str | Any | None`
+    `size: str | None`
     :   The type of the None singleton.
 
-    `spaces: list[str] | Any | None`
+    `spaces: list[str] | None`
     :   The type of the None singleton.
 
-    `starred: bool | Any | None`
+    `starred: bool | None`
     :   The type of the None singleton.
 
-    `thumbnail_link: str | Any | None`
+    `thumbnail_link: str | None`
     :   The type of the None singleton.
 
-    `thumbnail_version: str | Any | None`
+    `thumbnail_version: str | None`
     :   The type of the None singleton.
 
-    `trashed: bool | Any | None`
+    `trashed: bool | None`
     :   The type of the None singleton.
 
-    `trashed_time: str | Any | None`
+    `trashed_time: str | None`
     :   The type of the None singleton.
 
-    `trashing_user: Any`
+    `trashing_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `version: str | Any | None`
+    `version: str | None`
     :   The type of the None singleton.
 
-    `video_media_metadata: airbyte_agent_sdk.connectors.google_drive.models.FileVideomediametadata | Any | None`
+    `video_media_metadata: airbyte_agent_sdk.connectors.google_drive.models.FileVideomediametadata | None`
     :   The type of the None singleton.
 
-    `viewed_by_me: bool | Any | None`
+    `viewed_by_me: bool | None`
     :   The type of the None singleton.
 
-    `viewed_by_me_time: str | Any | None`
+    `viewed_by_me_time: str | None`
     :   The type of the None singleton.
 
-    `viewers_can_copy_content: bool | Any | None`
+    `viewers_can_copy_content: bool | None`
     :   The type of the None singleton.
 
-    `web_content_link: str | Any | None`
+    `web_content_link: str | None`
     :   The type of the None singleton.
 
-    `web_view_link: str | Any | None`
+    `web_view_link: str | None`
     :   The type of the None singleton.
 
-    `writers_can_share: bool | Any | None`
+    `writers_can_share: bool | None`
     :   The type of the None singleton.
 
 <a id="FileCapabilities"></a>
@@ -892,40 +892,40 @@ Classes
 
     ### Class variables
 
-    `can_add_children: bool | Any | None`
+    `can_add_children: bool | None`
     :   The type of the None singleton.
 
-    `can_comment: bool | Any | None`
+    `can_comment: bool | None`
     :   The type of the None singleton.
 
-    `can_copy: bool | Any | None`
+    `can_copy: bool | None`
     :   The type of the None singleton.
 
-    `can_delete: bool | Any | None`
+    `can_delete: bool | None`
     :   The type of the None singleton.
 
-    `can_download: bool | Any | None`
+    `can_download: bool | None`
     :   The type of the None singleton.
 
-    `can_edit: bool | Any | None`
+    `can_edit: bool | None`
     :   The type of the None singleton.
 
-    `can_list_children: bool | Any | None`
+    `can_list_children: bool | None`
     :   The type of the None singleton.
 
-    `can_read_revisions: bool | Any | None`
+    `can_read_revisions: bool | None`
     :   The type of the None singleton.
 
-    `can_remove_children: bool | Any | None`
+    `can_remove_children: bool | None`
     :   The type of the None singleton.
 
-    `can_rename: bool | Any | None`
+    `can_rename: bool | None`
     :   The type of the None singleton.
 
-    `can_share: bool | Any | None`
+    `can_share: bool | None`
     :   The type of the None singleton.
 
-    `can_trash: bool | Any | None`
+    `can_trash: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -952,19 +952,19 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `read_only: bool | Any | None`
+    `read_only: bool | None`
     :   The type of the None singleton.
 
-    `reason: str | Any | None`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `restricting_user: Any`
+    `restricting_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `restriction_time: str | Any | None`
+    `restriction_time: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FileCreateParams"></a>
@@ -985,19 +985,19 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `mime_type: str | Any`
+    `mime_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `parents: list[str] | Any`
+    `parents: list[str] | None`
     :   The type of the None singleton.
 
 <a id="FileImagemediametadata"></a>
@@ -1018,70 +1018,70 @@ Classes
 
     ### Class variables
 
-    `aperture: float | Any | None`
+    `aperture: float | None`
     :   The type of the None singleton.
 
-    `camera_make: str | Any | None`
+    `camera_make: str | None`
     :   The type of the None singleton.
 
-    `camera_model: str | Any | None`
+    `camera_model: str | None`
     :   The type of the None singleton.
 
-    `color_space: str | Any | None`
+    `color_space: str | None`
     :   The type of the None singleton.
 
-    `exposure_bias: float | Any | None`
+    `exposure_bias: float | None`
     :   The type of the None singleton.
 
-    `exposure_mode: str | Any | None`
+    `exposure_mode: str | None`
     :   The type of the None singleton.
 
-    `exposure_time: float | Any | None`
+    `exposure_time: float | None`
     :   The type of the None singleton.
 
-    `flash_used: bool | Any | None`
+    `flash_used: bool | None`
     :   The type of the None singleton.
 
-    `focal_length: float | Any | None`
+    `focal_length: float | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
-    `iso_speed: int | Any | None`
+    `iso_speed: int | None`
     :   The type of the None singleton.
 
-    `lens: str | Any | None`
+    `lens: str | None`
     :   The type of the None singleton.
 
-    `location: airbyte_agent_sdk.connectors.google_drive.models.FileImagemediametadataLocation | Any | None`
+    `location: airbyte_agent_sdk.connectors.google_drive.models.FileImagemediametadataLocation | None`
     :   The type of the None singleton.
 
-    `max_aperture_value: float | Any | None`
+    `max_aperture_value: float | None`
     :   The type of the None singleton.
 
-    `metering_mode: str | Any | None`
+    `metering_mode: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rotation: int | Any | None`
+    `rotation: int | None`
     :   The type of the None singleton.
 
-    `sensor: str | Any | None`
+    `sensor: str | None`
     :   The type of the None singleton.
 
-    `subject_distance: int | Any | None`
+    `subject_distance: int | None`
     :   The type of the None singleton.
 
-    `time: str | Any | None`
+    `time: str | None`
     :   The type of the None singleton.
 
-    `white_balance: str | Any | None`
+    `white_balance: str | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="FileImagemediametadataLocation"></a>
@@ -1102,13 +1102,13 @@ Classes
 
     ### Class variables
 
-    `altitude: float | Any | None`
+    `altitude: float | None`
     :   The type of the None singleton.
 
-    `latitude: float | Any | None`
+    `latitude: float | None`
     :   The type of the None singleton.
 
-    `longitude: float | Any | None`
+    `longitude: float | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1132,7 +1132,7 @@ Classes
 
     ### Class variables
 
-    `labels: list[dict[str, typing.Any]] | Any | None`
+    `labels: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1159,10 +1159,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `security_update_eligible: bool | Any | None`
+    `security_update_eligible: bool | None`
     :   The type of the None singleton.
 
-    `security_update_enabled: bool | Any | None`
+    `security_update_enabled: bool | None`
     :   The type of the None singleton.
 
 <a id="FileShortcutdetails"></a>
@@ -1186,13 +1186,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `target_id: str | Any | None`
+    `target_id: str | None`
     :   The type of the None singleton.
 
-    `target_mime_type: str | Any | None`
+    `target_mime_type: str | None`
     :   The type of the None singleton.
 
-    `target_resource_key: str | Any | None`
+    `target_resource_key: str | None`
     :   The type of the None singleton.
 
 <a id="FileUpdateParams"></a>
@@ -1213,16 +1213,16 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `mime_type: str | Any`
+    `mime_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="FileUploadParams"></a>
@@ -1243,25 +1243,25 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `file_content: str | Any`
+    `file_content: str`
     :   The type of the None singleton.
 
-    `file_mime_type: str | Any`
+    `file_mime_type: str | None`
     :   The type of the None singleton.
 
-    `mime_type: str | Any`
+    `mime_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `parents: list[str] | Any`
+    `parents: list[str] | None`
     :   The type of the None singleton.
 
 <a id="FileVideomediametadata"></a>
@@ -1282,16 +1282,16 @@ Classes
 
     ### Class variables
 
-    `duration_millis: str | Any | None`
+    `duration_millis: str | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="FilesListResponse"></a>
@@ -1312,19 +1312,19 @@ Classes
 
     ### Class variables
 
-    `files: list[airbyte_agent_sdk.connectors.google_drive.models.File] | Any`
+    `files: list[airbyte_agent_sdk.connectors.google_drive.models.File] | None`
     :   The type of the None singleton.
 
-    `incomplete_search: bool | Any | None`
+    `incomplete_search: bool | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="FilesListResultMeta"></a>
@@ -1345,13 +1345,13 @@ Classes
 
     ### Class variables
 
-    `incomplete_search: bool | Any | None`
+    `incomplete_search: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="GoogleDriveAuthConfig"></a>
@@ -1848,52 +1848,52 @@ Classes
 
     ### Class variables
 
-    `allow_file_discovery: bool | Any | None`
+    `allow_file_discovery: bool | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `display_name: str | Any | None`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `domain: str | Any | None`
+    `domain: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any | None`
+    `email_address: str | None`
     :   The type of the None singleton.
 
-    `expiration_time: str | Any | None`
+    `expiration_time: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pending_owner: bool | Any | None`
+    `pending_owner: bool | None`
     :   The type of the None singleton.
 
-    `permission_details: list[airbyte_agent_sdk.connectors.google_drive.models.PermissionPermissiondetailsItem] | Any | None`
+    `permission_details: list[airbyte_agent_sdk.connectors.google_drive.models.PermissionPermissiondetailsItem] | None`
     :   The type of the None singleton.
 
-    `photo_link: str | Any | None`
+    `photo_link: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `team_drive_permission_details: list[airbyte_agent_sdk.connectors.google_drive.models.PermissionTeamdrivepermissiondetailsItem] | Any | None`
+    `team_drive_permission_details: list[airbyte_agent_sdk.connectors.google_drive.models.PermissionTeamdrivepermissiondetailsItem] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `view: str | Any | None`
+    `view: str | None`
     :   The type of the None singleton.
 
 <a id="PermissionPermissiondetailsItem"></a>
@@ -1914,19 +1914,19 @@ Classes
 
     ### Class variables
 
-    `inherited: bool | Any | None`
+    `inherited: bool | None`
     :   The type of the None singleton.
 
-    `inherited_from: str | Any | None`
+    `inherited_from: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `permission_type: str | Any | None`
+    `permission_type: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
 <a id="PermissionTeamdrivepermissiondetailsItem"></a>
@@ -1947,19 +1947,19 @@ Classes
 
     ### Class variables
 
-    `inherited: bool | Any | None`
+    `inherited: bool | None`
     :   The type of the None singleton.
 
-    `inherited_from: str | Any | None`
+    `inherited_from: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `team_drive_permission_type: str | Any | None`
+    `team_drive_permission_type: str | None`
     :   The type of the None singleton.
 
 <a id="PermissionsListResponse"></a>
@@ -1980,16 +1980,16 @@ Classes
 
     ### Class variables
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
-    `permissions: list[airbyte_agent_sdk.connectors.google_drive.models.Permission] | Any`
+    `permissions: list[airbyte_agent_sdk.connectors.google_drive.models.Permission] | None`
     :   The type of the None singleton.
 
 <a id="PermissionsListResultMeta"></a>
@@ -2013,7 +2013,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="RepliesListResponse"></a>
@@ -2034,16 +2034,16 @@ Classes
 
     ### Class variables
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
-    `replies: list[airbyte_agent_sdk.connectors.google_drive.models.Reply] | Any`
+    `replies: list[airbyte_agent_sdk.connectors.google_drive.models.Reply] | None`
     :   The type of the None singleton.
 
 <a id="RepliesListResultMeta"></a>
@@ -2067,7 +2067,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="Reply"></a>
@@ -2088,34 +2088,34 @@ Classes
 
     ### Class variables
 
-    `action: str | Any | None`
+    `action: str | None`
     :   The type of the None singleton.
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `content: str | Any | None`
+    `content: str | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `html_content: str | Any | None`
+    `html_content: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
 <a id="Revision"></a>
@@ -2136,49 +2136,49 @@ Classes
 
     ### Class variables
 
-    `export_links: dict[str, str] | Any | None`
+    `export_links: dict[str, str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `keep_forever: bool | Any | None`
+    `keep_forever: bool | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `last_modifying_user: Any`
+    `last_modifying_user: typing.Any | None`
     :   The type of the None singleton.
 
-    `md5_checksum: str | Any | None`
+    `md5_checksum: str | None`
     :   The type of the None singleton.
 
-    `mime_type: str | Any | None`
+    `mime_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `original_filename: str | Any | None`
+    `original_filename: str | None`
     :   The type of the None singleton.
 
-    `publish_auto: bool | Any | None`
+    `publish_auto: bool | None`
     :   The type of the None singleton.
 
-    `published: bool | Any | None`
+    `published: bool | None`
     :   The type of the None singleton.
 
-    `published_link: str | Any | None`
+    `published_link: str | None`
     :   The type of the None singleton.
 
-    `published_outside_domain: bool | Any | None`
+    `published_outside_domain: bool | None`
     :   The type of the None singleton.
 
-    `size: str | Any | None`
+    `size: str | None`
     :   The type of the None singleton.
 
 <a id="RevisionsListResponse"></a>
@@ -2199,16 +2199,16 @@ Classes
 
     ### Class variables
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
-    `revisions: list[airbyte_agent_sdk.connectors.google_drive.models.Revision] | Any`
+    `revisions: list[airbyte_agent_sdk.connectors.google_drive.models.Revision] | None`
     :   The type of the None singleton.
 
 <a id="RevisionsListResultMeta"></a>
@@ -2232,7 +2232,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_token: str | Any | None`
+    `next_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="StartPageToken"></a>
@@ -2253,13 +2253,13 @@ Classes
 
     ### Class variables
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `start_page_token: str | Any`
+    `start_page_token: str | None`
     :   The type of the None singleton.
 
 <a id="User"></a>
@@ -2280,23 +2280,23 @@ Classes
 
     ### Class variables
 
-    `display_name: str | Any | None`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `email_address: str | Any | None`
+    `email_address: str | None`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `me: bool | Any | None`
+    `me: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `permission_id: str | Any | None`
+    `permission_id: str | None`
     :   The type of the None singleton.
 
-    `photo_link: str | Any | None`
+    `photo_link: str | None`
     :   The type of the None singleton.

@@ -455,7 +455,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
+  default_concurrency: 5
 
 spec:
   type: Spec

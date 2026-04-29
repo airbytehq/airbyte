@@ -3785,6 +3785,55 @@ Classes
     `via: str`
     :   Describes how the audit was created, providing context about the creation source
 
+<a id="TicketBulkUpdatesCreateParams"></a>
+
+`TicketBulkUpdatesCreateParams(*args, **kwargs)`
+:   Parameters for ticket_bulk_updates.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ids: str`
+    :   The type of the None singleton.
+
+    `ticket: airbyte_agent_sdk.connectors.zendesk_support.types.TicketBulkUpdatesCreateParamsTicket`
+    :   The type of the None singleton.
+
+<a id="TicketBulkUpdatesCreateParamsTicket"></a>
+
+`TicketBulkUpdatesCreateParamsTicket(*args, **kwargs)`
+:   The ticket fields to apply to all specified tickets
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `additional_tags: list[str]`
+    :   The type of the None singleton.
+
+    `assignee_id: int`
+    :   The type of the None singleton.
+
+    `group_id: int`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `remove_tags: list[str]`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
 <a id="TicketCommentsAndCondition"></a>
 
 `TicketCommentsAndCondition(*args, **kwargs)`
@@ -3903,6 +3952,60 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketCommentsCreateParams"></a>
+
+`TicketCommentsCreateParams(*args, **kwargs)`
+:   Parameters for ticket_comments.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ticket: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsCreateParamsTicket`
+    :   The type of the None singleton.
+
+    `ticket_id: str`
+    :   The type of the None singleton.
+
+<a id="TicketCommentsCreateParamsTicket"></a>
+
+`TicketCommentsCreateParamsTicket(*args, **kwargs)`
+:   The ticket update containing the comment
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `comment: airbyte_agent_sdk.connectors.zendesk_support.types.TicketCommentsCreateParamsTicketComment`
+    :   The type of the None singleton.
+
+<a id="TicketCommentsCreateParamsTicketComment"></a>
+
+`TicketCommentsCreateParamsTicketComment(*args, **kwargs)`
+:   The comment to add to the ticket
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author_id: int`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `html_body: str`
+    :   The type of the None singleton.
+
+    `public: bool`
     :   The type of the None singleton.
 
 <a id="TicketCommentsEqCondition"></a>
@@ -6744,6 +6847,113 @@ Classes
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="TicketsCreateParams"></a>
+
+`TicketsCreateParams(*args, **kwargs)`
+:   Parameters for tickets.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ticket: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsCreateParamsTicket`
+    :   The type of the None singleton.
+
+<a id="TicketsCreateParamsTicket"></a>
+
+`TicketsCreateParamsTicket(*args, **kwargs)`
+:   The ticket object to create
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `assignee_id: int`
+    :   The type of the None singleton.
+
+    `collaborator_ids: list[int]`
+    :   The type of the None singleton.
+
+    `comment: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsCreateParamsTicketComment`
+    :   The type of the None singleton.
+
+    `custom_fields: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsCreateParamsTicketCustomFieldsItem]`
+    :   The type of the None singleton.
+
+    `description: str`
+    :   The type of the None singleton.
+
+    `due_at: str`
+    :   The type of the None singleton.
+
+    `external_id: str`
+    :   The type of the None singleton.
+
+    `group_id: int`
+    :   The type of the None singleton.
+
+    `organization_id: int`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `requester_id: int`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="TicketsCreateParamsTicketComment"></a>
+
+`TicketsCreateParamsTicketComment(*args, **kwargs)`
+:   An object that defines the initial comment on the ticket
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `html_body: str`
+    :   The type of the None singleton.
+
+    `public: bool`
+    :   The type of the None singleton.
+
+<a id="TicketsCreateParamsTicketCustomFieldsItem"></a>
+
+`TicketsCreateParamsTicketCustomFieldsItem(*args, **kwargs)`
+:   Nested schema for TicketsCreateParamsTicket.custom_fields_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: int`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
 <a id="TicketsEqCondition"></a>
 
 `TicketsEqCondition(*args, **kwargs)`
@@ -7529,6 +7739,110 @@ Classes
     `via: str`
     :   Object describing the channel and method through which the ticket was created
 
+<a id="TicketsUpdateParams"></a>
+
+`TicketsUpdateParams(*args, **kwargs)`
+:   Parameters for tickets.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ticket: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsUpdateParamsTicket`
+    :   The type of the None singleton.
+
+    `ticket_id: str`
+    :   The type of the None singleton.
+
+<a id="TicketsUpdateParamsTicket"></a>
+
+`TicketsUpdateParamsTicket(*args, **kwargs)`
+:   The ticket fields to update
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `assignee_id: int`
+    :   The type of the None singleton.
+
+    `collaborator_ids: list[int]`
+    :   The type of the None singleton.
+
+    `comment: airbyte_agent_sdk.connectors.zendesk_support.types.TicketsUpdateParamsTicketComment`
+    :   The type of the None singleton.
+
+    `custom_fields: list[airbyte_agent_sdk.connectors.zendesk_support.types.TicketsUpdateParamsTicketCustomFieldsItem]`
+    :   The type of the None singleton.
+
+    `due_at: str`
+    :   The type of the None singleton.
+
+    `external_id: str`
+    :   The type of the None singleton.
+
+    `group_id: int`
+    :   The type of the None singleton.
+
+    `priority: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `subject: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="TicketsUpdateParamsTicketComment"></a>
+
+`TicketsUpdateParamsTicketComment(*args, **kwargs)`
+:   A comment to add to the ticket
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author_id: int`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `html_body: str`
+    :   The type of the None singleton.
+
+    `public: bool`
+    :   The type of the None singleton.
+
+<a id="TicketsUpdateParamsTicketCustomFieldsItem"></a>
+
+`TicketsUpdateParamsTicketCustomFieldsItem(*args, **kwargs)`
+:   Nested schema for TicketsUpdateParamsTicket.custom_fields_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: int`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
 <a id="TriggersGetParams"></a>
 
 `TriggersGetParams(*args, **kwargs)`
@@ -7756,6 +8070,67 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zendesk_support.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersCreateParams"></a>
+
+`UsersCreateParams(*args, **kwargs)`
+:   Parameters for users.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `user: airbyte_agent_sdk.connectors.zendesk_support.types.UsersCreateParamsUser`
+    :   The type of the None singleton.
+
+<a id="UsersCreateParamsUser"></a>
+
+`UsersCreateParamsUser(*args, **kwargs)`
+:   The user object to create
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `alias: str`
+    :   The type of the None singleton.
+
+    `details: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `external_id: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `notes: str`
+    :   The type of the None singleton.
+
+    `organization_id: int`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `role: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `user_fields: dict[str, typing.Any]`
+    :   The type of the None singleton.
+
+    `verified: bool`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -8515,6 +8890,70 @@ Classes
 
     `verified: str`
     :   Indicates if the user's identity has been verified
+
+<a id="UsersUpdateParams"></a>
+
+`UsersUpdateParams(*args, **kwargs)`
+:   Parameters for users.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `user: airbyte_agent_sdk.connectors.zendesk_support.types.UsersUpdateParamsUser`
+    :   The type of the None singleton.
+
+    `user_id: str`
+    :   The type of the None singleton.
+
+<a id="UsersUpdateParamsUser"></a>
+
+`UsersUpdateParamsUser(*args, **kwargs)`
+:   The user fields to update
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `alias: str`
+    :   The type of the None singleton.
+
+    `details: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `external_id: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `notes: str`
+    :   The type of the None singleton.
+
+    `organization_id: int`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `role: str`
+    :   The type of the None singleton.
+
+    `suspended: bool`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `user_fields: dict[str, typing.Any]`
+    :   The type of the None singleton.
 
 <a id="ViewsGetParams"></a>
 

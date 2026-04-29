@@ -426,16 +426,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `permission_level: str | Any | None`
+    `permission_level: str | None`
     :   The type of the None singleton.
 
 <a id="BasesList"></a>
@@ -456,13 +456,13 @@ Classes
 
     ### Class variables
 
-    `bases: list[airbyte_agent_sdk.connectors.airtable.models.Base] | Any`
+    `bases: list[airbyte_agent_sdk.connectors.airtable.models.Base] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any | None`
+    `offset: str | None`
     :   The type of the None singleton.
 
 <a id="BasesListResultMeta"></a>
@@ -486,7 +486,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any | None`
+    `offset: str | None`
     :   The type of the None singleton.
 
 <a id="BasesSearchData"></a>
@@ -537,13 +537,13 @@ Classes
 
     ### Class variables
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `fields: dict[str, typing.Any] | Any | None`
+    `fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
@@ -570,10 +570,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any | None`
+    `offset: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.airtable.models.Record] | Any`
+    `records: list[airbyte_agent_sdk.connectors.airtable.models.Record] | None`
     :   The type of the None singleton.
 
 <a id="RecordsListResultMeta"></a>
@@ -597,7 +597,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `offset: str | Any | None`
+    `offset: str | None`
     :   The type of the None singleton.
 
 <a id="Table"></a>
@@ -618,22 +618,22 @@ Classes
 
     ### Class variables
 
-    `fields: list[airbyte_agent_sdk.connectors.airtable.models.TableField] | Any | None`
+    `fields: list[airbyte_agent_sdk.connectors.airtable.models.TableField] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `primary_field_id: str | Any | None`
+    `primary_field_id: str | None`
     :   The type of the None singleton.
 
-    `views: list[airbyte_agent_sdk.connectors.airtable.models.View] | Any | None`
+    `views: list[airbyte_agent_sdk.connectors.airtable.models.View] | None`
     :   The type of the None singleton.
 
 <a id="TableField"></a>
@@ -654,19 +654,19 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `options: dict[str, typing.Any] | Any | None`
+    `options: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="TablesList"></a>
@@ -690,7 +690,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tables: list[airbyte_agent_sdk.connectors.airtable.models.Table] | Any`
+    `tables: list[airbyte_agent_sdk.connectors.airtable.models.Table] | None`
     :   The type of the None singleton.
 
 <a id="TablesSearchData"></a>
@@ -747,14 +747,14 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.

@@ -252,91 +252,91 @@ Classes
 
     ### Class variables
 
-    `context: dict[str, typing.Any] | Any | None`
+    `context: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `contexts: dict[str, typing.Any] | Any | None`
+    `contexts: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `crash_file: str | Any | None`
+    `crash_file: str | None`
     :   The type of the None singleton.
 
-    `culprit: str | Any | None`
+    `culprit: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_received: str | Any | None`
+    `date_received: str | None`
     :   The type of the None singleton.
 
-    `dist: str | Any | None`
+    `dist: str | None`
     :   The type of the None singleton.
 
-    `entries: list[dict[str, typing.Any] | None] | Any | None`
+    `entries: list[dict[str, typing.Any] | None] | None`
     :   The type of the None singleton.
 
-    `errors: list[str | None] | Any | None`
+    `errors: list[str | None] | None`
     :   The type of the None singleton.
 
-    `event_id: str | Any | None`
+    `event_id: str | None`
     :   The type of the None singleton.
 
-    `event_type: str | Any | None`
+    `event_type: str | None`
     :   The type of the None singleton.
 
-    `fingerprints: list[str | None] | Any | None`
+    `fingerprints: list[str | None] | None`
     :   The type of the None singleton.
 
-    `group_id: str | Any | None`
+    `group_id: str | None`
     :   The type of the None singleton.
 
-    `grouping_config: airbyte_agent_sdk.connectors.sentry.models.EventGroupingconfig | Any | None`
+    `grouping_config: airbyte_agent_sdk.connectors.sentry.models.EventGroupingconfig | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `location: str | Any | None`
+    `location: str | None`
     :   The type of the None singleton.
 
-    `message: str | Any | None`
+    `message: str | None`
     :   The type of the None singleton.
 
-    `meta: dict[str, typing.Any] | Any | None`
+    `meta: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.sentry.models.EventMetadata | Any | None`
+    `metadata: airbyte_agent_sdk.connectors.sentry.models.EventMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `packages: dict[str, typing.Any] | Any | None`
+    `packages: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `platform: str | Any | None`
+    `platform: str | None`
     :   The type of the None singleton.
 
-    `project_id: str | Any | None`
+    `project_id: str | None`
     :   The type of the None singleton.
 
-    `sdk: str | Any | None`
+    `sdk: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `tags: list[airbyte_agent_sdk.connectors.sentry.models.EventTagsItem | None] | Any | None`
+    `tags: list[airbyte_agent_sdk.connectors.sentry.models.EventTagsItem | None] | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.sentry.models.EventUser | Any | None`
+    `user: airbyte_agent_sdk.connectors.sentry.models.EventUser | None`
     :   The type of the None singleton.
 
 <a id="EventGroupingconfig"></a>
@@ -357,10 +357,10 @@ Classes
 
     ### Class variables
 
-    `enhancements: str | Any | None`
+    `enhancements: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -387,7 +387,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="EventTagsItem"></a>
@@ -408,13 +408,13 @@ Classes
 
     ### Class variables
 
-    `key: str | Any | None`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="EventUser"></a>
@@ -435,22 +435,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `ip_address: str | Any | None`
+    `ip_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `username: str | Any | None`
+    `username: str | None`
     :   The type of the None singleton.
 
 <a id="EventsListResultMeta"></a>
@@ -474,7 +474,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="EventsSearchData"></a>
@@ -603,100 +603,100 @@ Classes
 
     ### Class variables
 
-    `annotations: list[str | None] | Any | None`
+    `annotations: list[str | None] | None`
     :   The type of the None singleton.
 
-    `assigned_to: dict[str, typing.Any] | Any | None`
+    `assigned_to: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `count: str | Any | None`
+    `count: str | None`
     :   The type of the None singleton.
 
-    `culprit: str | Any | None`
+    `culprit: str | None`
     :   The type of the None singleton.
 
-    `first_seen: str | Any | None`
+    `first_seen: str | None`
     :   The type of the None singleton.
 
-    `has_seen: bool | Any | None`
+    `has_seen: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_bookmarked: bool | Any | None`
+    `is_bookmarked: bool | None`
     :   The type of the None singleton.
 
-    `is_public: bool | Any | None`
+    `is_public: bool | None`
     :   The type of the None singleton.
 
-    `is_subscribed: bool | Any | None`
+    `is_subscribed: bool | None`
     :   The type of the None singleton.
 
-    `is_unhandled: bool | Any | None`
+    `is_unhandled: bool | None`
     :   The type of the None singleton.
 
-    `issue_category: str | Any | None`
+    `issue_category: str | None`
     :   The type of the None singleton.
 
-    `issue_type: str | Any | None`
+    `issue_type: str | None`
     :   The type of the None singleton.
 
-    `last_seen: str | Any | None`
+    `last_seen: str | None`
     :   The type of the None singleton.
 
-    `level: str | Any | None`
+    `level: str | None`
     :   The type of the None singleton.
 
-    `logger: str | Any | None`
+    `logger: str | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.sentry.models.IssueMetadata | Any | None`
+    `metadata: airbyte_agent_sdk.connectors.sentry.models.IssueMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `num_comments: int | Any | None`
+    `num_comments: int | None`
     :   The type of the None singleton.
 
-    `permalink: str | Any | None`
+    `permalink: str | None`
     :   The type of the None singleton.
 
-    `platform: str | Any | None`
+    `platform: str | None`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.sentry.models.IssueProject | Any | None`
+    `project: airbyte_agent_sdk.connectors.sentry.models.IssueProject | None`
     :   The type of the None singleton.
 
-    `share_id: str | Any | None`
+    `share_id: str | None`
     :   The type of the None singleton.
 
-    `short_id: str | Any | None`
+    `short_id: str | None`
     :   The type of the None singleton.
 
-    `stats: dict[str, typing.Any] | Any | None`
+    `stats: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `status_details: dict[str, typing.Any] | Any | None`
+    `status_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `subscription_details: dict[str, typing.Any] | Any | None`
+    `subscription_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `substatus: str | Any | None`
+    `substatus: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `user_count: int | Any | None`
+    `user_count: int | None`
     :   The type of the None singleton.
 
 <a id="IssueMetadata"></a>
@@ -717,19 +717,19 @@ Classes
 
     ### Class variables
 
-    `filename: str | Any | None`
+    `filename: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="IssueProject"></a>
@@ -750,16 +750,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="IssuesListResultMeta"></a>
@@ -783,7 +783,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="IssuesSearchData"></a>
@@ -918,121 +918,121 @@ Classes
 
     ### Class variables
 
-    `access: list[str | None] | Any | None`
+    `access: list[str | None] | None`
     :   The type of the None singleton.
 
-    `avatar: airbyte_agent_sdk.connectors.sentry.models.ProjectAvatar | Any | None`
+    `avatar: airbyte_agent_sdk.connectors.sentry.models.ProjectAvatar | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `features: list[str | None] | Any | None`
+    `features: list[str | None] | None`
     :   The type of the None singleton.
 
-    `first_event: str | Any | None`
+    `first_event: str | None`
     :   The type of the None singleton.
 
-    `first_transaction_event: bool | Any | None`
+    `first_transaction_event: bool | None`
     :   The type of the None singleton.
 
-    `has_access: bool | Any | None`
+    `has_access: bool | None`
     :   The type of the None singleton.
 
-    `has_feedbacks: bool | Any | None`
+    `has_feedbacks: bool | None`
     :   The type of the None singleton.
 
-    `has_flags: bool | Any | None`
+    `has_flags: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_agent_monitoring: bool | Any | None`
+    `has_insights_agent_monitoring: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_app_start: bool | Any | None`
+    `has_insights_app_start: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_assets: bool | Any | None`
+    `has_insights_assets: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_caches: bool | Any | None`
+    `has_insights_caches: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_db: bool | Any | None`
+    `has_insights_db: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_http: bool | Any | None`
+    `has_insights_http: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_mcp: bool | Any | None`
+    `has_insights_mcp: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_queues: bool | Any | None`
+    `has_insights_queues: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_screen_load: bool | Any | None`
+    `has_insights_screen_load: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_vitals: bool | Any | None`
+    `has_insights_vitals: bool | None`
     :   The type of the None singleton.
 
-    `has_logs: bool | Any | None`
+    `has_logs: bool | None`
     :   The type of the None singleton.
 
-    `has_minified_stack_trace: bool | Any | None`
+    `has_minified_stack_trace: bool | None`
     :   The type of the None singleton.
 
-    `has_monitors: bool | Any | None`
+    `has_monitors: bool | None`
     :   The type of the None singleton.
 
-    `has_new_feedbacks: bool | Any | None`
+    `has_new_feedbacks: bool | None`
     :   The type of the None singleton.
 
-    `has_profiles: bool | Any | None`
+    `has_profiles: bool | None`
     :   The type of the None singleton.
 
-    `has_replays: bool | Any | None`
+    `has_replays: bool | None`
     :   The type of the None singleton.
 
-    `has_sessions: bool | Any | None`
+    `has_sessions: bool | None`
     :   The type of the None singleton.
 
-    `has_trace_metrics: bool | Any | None`
+    `has_trace_metrics: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_bookmarked: bool | Any | None`
+    `is_bookmarked: bool | None`
     :   The type of the None singleton.
 
-    `is_internal: bool | Any | None`
+    `is_internal: bool | None`
     :   The type of the None singleton.
 
-    `is_member: bool | Any | None`
+    `is_member: bool | None`
     :   The type of the None singleton.
 
-    `is_public: bool | Any | None`
+    `is_public: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `organization: airbyte_agent_sdk.connectors.sentry.models.ProjectOrganization | Any | None`
+    `organization: airbyte_agent_sdk.connectors.sentry.models.ProjectOrganization | None`
     :   The type of the None singleton.
 
-    `platform: str | Any | None`
+    `platform: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectAvatar"></a>
@@ -1053,13 +1053,13 @@ Classes
 
     ### Class variables
 
-    `avatar_type: str | Any | None`
+    `avatar_type: str | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `avatar_uuid: str | Any | None`
+    `avatar_uuid: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1083,244 +1083,244 @@ Classes
 
     ### Class variables
 
-    `access: list[str | None] | Any | None`
+    `access: list[str | None] | None`
     :   The type of the None singleton.
 
-    `allowed_domains: list[str | None] | Any | None`
+    `allowed_domains: list[str | None] | None`
     :   The type of the None singleton.
 
-    `autofix_automation_tuning: str | Any | None`
+    `autofix_automation_tuning: str | None`
     :   The type of the None singleton.
 
-    `avatar: airbyte_agent_sdk.connectors.sentry.models.ProjectDetailAvatar | Any | None`
+    `avatar: airbyte_agent_sdk.connectors.sentry.models.ProjectDetailAvatar | None`
     :   The type of the None singleton.
 
-    `builtin_symbol_sources: list[str | None] | Any | None`
+    `builtin_symbol_sources: list[str | None] | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `data_scrubber: bool | Any | None`
+    `data_scrubber: bool | None`
     :   The type of the None singleton.
 
-    `data_scrubber_defaults: bool | Any | None`
+    `data_scrubber_defaults: bool | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `debug_files_role: str | Any | None`
+    `debug_files_role: str | None`
     :   The type of the None singleton.
 
-    `default_environment: str | Any | None`
+    `default_environment: str | None`
     :   The type of the None singleton.
 
-    `derived_grouping_enhancements: str | Any | None`
+    `derived_grouping_enhancements: str | None`
     :   The type of the None singleton.
 
-    `digests_max_delay: int | Any | None`
+    `digests_max_delay: int | None`
     :   The type of the None singleton.
 
-    `digests_min_delay: int | Any | None`
+    `digests_min_delay: int | None`
     :   The type of the None singleton.
 
-    `dynamic_sampling_biases: list[typing.Any] | Any | None`
+    `dynamic_sampling_biases: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `features: list[str | None] | Any | None`
+    `features: list[str | None] | None`
     :   The type of the None singleton.
 
-    `fingerprinting_rules: str | Any | None`
+    `fingerprinting_rules: str | None`
     :   The type of the None singleton.
 
-    `first_event: str | Any | None`
+    `first_event: str | None`
     :   The type of the None singleton.
 
-    `first_transaction_event: bool | Any | None`
+    `first_transaction_event: bool | None`
     :   The type of the None singleton.
 
-    `grouping_config: str | Any | None`
+    `grouping_config: str | None`
     :   The type of the None singleton.
 
-    `grouping_enhancements: str | Any | None`
+    `grouping_enhancements: str | None`
     :   The type of the None singleton.
 
-    `has_access: bool | Any | None`
+    `has_access: bool | None`
     :   The type of the None singleton.
 
-    `has_feedbacks: bool | Any | None`
+    `has_feedbacks: bool | None`
     :   The type of the None singleton.
 
-    `has_flags: bool | Any | None`
+    `has_flags: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_agent_monitoring: bool | Any | None`
+    `has_insights_agent_monitoring: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_app_start: bool | Any | None`
+    `has_insights_app_start: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_assets: bool | Any | None`
+    `has_insights_assets: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_caches: bool | Any | None`
+    `has_insights_caches: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_db: bool | Any | None`
+    `has_insights_db: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_http: bool | Any | None`
+    `has_insights_http: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_mcp: bool | Any | None`
+    `has_insights_mcp: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_queues: bool | Any | None`
+    `has_insights_queues: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_screen_load: bool | Any | None`
+    `has_insights_screen_load: bool | None`
     :   The type of the None singleton.
 
-    `has_insights_vitals: bool | Any | None`
+    `has_insights_vitals: bool | None`
     :   The type of the None singleton.
 
-    `has_logs: bool | Any | None`
+    `has_logs: bool | None`
     :   The type of the None singleton.
 
-    `has_minified_stack_trace: bool | Any | None`
+    `has_minified_stack_trace: bool | None`
     :   The type of the None singleton.
 
-    `has_monitors: bool | Any | None`
+    `has_monitors: bool | None`
     :   The type of the None singleton.
 
-    `has_new_feedbacks: bool | Any | None`
+    `has_new_feedbacks: bool | None`
     :   The type of the None singleton.
 
-    `has_profiles: bool | Any | None`
+    `has_profiles: bool | None`
     :   The type of the None singleton.
 
-    `has_replays: bool | Any | None`
+    `has_replays: bool | None`
     :   The type of the None singleton.
 
-    `has_sessions: bool | Any | None`
+    `has_sessions: bool | None`
     :   The type of the None singleton.
 
-    `has_trace_metrics: bool | Any | None`
+    `has_trace_metrics: bool | None`
     :   The type of the None singleton.
 
-    `highlight_context: dict[str, typing.Any] | Any | None`
+    `highlight_context: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `highlight_preset: dict[str, typing.Any] | Any | None`
+    `highlight_preset: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `highlight_tags: list[typing.Any] | Any | None`
+    `highlight_tags: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_bookmarked: bool | Any | None`
+    `is_bookmarked: bool | None`
     :   The type of the None singleton.
 
-    `is_dynamically_sampled: bool | Any | None`
+    `is_dynamically_sampled: bool | None`
     :   The type of the None singleton.
 
-    `is_internal: bool | Any | None`
+    `is_internal: bool | None`
     :   The type of the None singleton.
 
-    `is_member: bool | Any | None`
+    `is_member: bool | None`
     :   The type of the None singleton.
 
-    `is_public: bool | Any | None`
+    `is_public: bool | None`
     :   The type of the None singleton.
 
-    `latest_release: dict[str, typing.Any] | Any | None`
+    `latest_release: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `options: dict[str, typing.Any] | Any | None`
+    `options: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `organization: airbyte_agent_sdk.connectors.sentry.models.ProjectDetailOrganization | Any | None`
+    `organization: airbyte_agent_sdk.connectors.sentry.models.ProjectDetailOrganization | None`
     :   The type of the None singleton.
 
-    `platform: str | Any | None`
+    `platform: str | None`
     :   The type of the None singleton.
 
-    `platforms: list[str | None] | Any | None`
+    `platforms: list[str | None] | None`
     :   The type of the None singleton.
 
-    `plugins: list[typing.Any] | Any | None`
+    `plugins: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `processing_issues: int | Any | None`
+    `processing_issues: int | None`
     :   The type of the None singleton.
 
-    `relay_pii_config: str | Any | None`
+    `relay_pii_config: str | None`
     :   The type of the None singleton.
 
-    `resolve_age: int | Any | None`
+    `resolve_age: int | None`
     :   The type of the None singleton.
 
-    `safe_fields: list[str | None] | Any | None`
+    `safe_fields: list[str | None] | None`
     :   The type of the None singleton.
 
-    `scrape_java_script: bool | Any | None`
+    `scrape_java_script: bool | None`
     :   The type of the None singleton.
 
-    `scrub_ip_addresses: bool | Any | None`
+    `scrub_ip_addresses: bool | None`
     :   The type of the None singleton.
 
-    `secondary_grouping_config: str | Any | None`
+    `secondary_grouping_config: str | None`
     :   The type of the None singleton.
 
-    `secondary_grouping_expiry: int | Any | None`
+    `secondary_grouping_expiry: int | None`
     :   The type of the None singleton.
 
-    `security_token: str | Any | None`
+    `security_token: str | None`
     :   The type of the None singleton.
 
-    `security_token_header: str | Any | None`
+    `security_token_header: str | None`
     :   The type of the None singleton.
 
-    `seer_scanner_automation: bool | Any | None`
+    `seer_scanner_automation: bool | None`
     :   The type of the None singleton.
 
-    `sensitive_fields: list[str | None] | Any | None`
+    `sensitive_fields: list[str | None] | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `store_crash_reports: Any`
+    `store_crash_reports: typing.Any | None`
     :   The type of the None singleton.
 
-    `subject_prefix: str | Any | None`
+    `subject_prefix: str | None`
     :   The type of the None singleton.
 
-    `subject_template: str | Any | None`
+    `subject_template: str | None`
     :   The type of the None singleton.
 
-    `symbol_sources: str | Any | None`
+    `symbol_sources: str | None`
     :   The type of the None singleton.
 
-    `team: airbyte_agent_sdk.connectors.sentry.models.ProjectDetailTeam | Any | None`
+    `team: airbyte_agent_sdk.connectors.sentry.models.ProjectDetailTeam | None`
     :   The type of the None singleton.
 
-    `teams: list[airbyte_agent_sdk.connectors.sentry.models.ProjectDetailTeamsItem | None] | Any | None`
+    `teams: list[airbyte_agent_sdk.connectors.sentry.models.ProjectDetailTeamsItem | None] | None`
     :   The type of the None singleton.
 
-    `verify_ssl: bool | Any | None`
+    `verify_ssl: bool | None`
     :   The type of the None singleton.
 
 <a id="ProjectDetailAvatar"></a>
@@ -1341,13 +1341,13 @@ Classes
 
     ### Class variables
 
-    `avatar_type: str | Any | None`
+    `avatar_type: str | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `avatar_uuid: str | Any | None`
+    `avatar_uuid: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1371,16 +1371,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectDetailTeam"></a>
@@ -1401,16 +1401,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectDetailTeamsItem"></a>
@@ -1431,16 +1431,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectOrganization"></a>
@@ -1461,16 +1461,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsListResultMeta"></a>
@@ -1494,7 +1494,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchData"></a>
@@ -1614,73 +1614,73 @@ Classes
 
     ### Class variables
 
-    `authors: list[airbyte_agent_sdk.connectors.sentry.models.ReleaseAuthorsItem | None] | Any | None`
+    `authors: list[airbyte_agent_sdk.connectors.sentry.models.ReleaseAuthorsItem | None] | None`
     :   The type of the None singleton.
 
-    `commit_count: int | Any | None`
+    `commit_count: int | None`
     :   The type of the None singleton.
 
-    `current_project_meta: dict[str, typing.Any] | Any | None`
+    `current_project_meta: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `data: dict[str, typing.Any] | Any | None`
+    `data: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_released: str | Any | None`
+    `date_released: str | None`
     :   The type of the None singleton.
 
-    `deploy_count: int | Any | None`
+    `deploy_count: int | None`
     :   The type of the None singleton.
 
-    `first_event: str | Any | None`
+    `first_event: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `last_commit: dict[str, typing.Any] | Any | None`
+    `last_commit: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `last_deploy: dict[str, typing.Any] | Any | None`
+    `last_deploy: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `last_event: str | Any | None`
+    `last_event: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `new_groups: int | Any | None`
+    `new_groups: int | None`
     :   The type of the None singleton.
 
-    `owner: str | Any | None`
+    `owner: str | None`
     :   The type of the None singleton.
 
-    `projects: list[airbyte_agent_sdk.connectors.sentry.models.ReleaseProjectsItem | None] | Any | None`
+    `projects: list[airbyte_agent_sdk.connectors.sentry.models.ReleaseProjectsItem | None] | None`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `short_version: str | Any | None`
+    `short_version: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `user_agent: str | Any | None`
+    `user_agent: str | None`
     :   The type of the None singleton.
 
-    `version: str | Any | None`
+    `version: str | None`
     :   The type of the None singleton.
 
-    `version_info: airbyte_agent_sdk.connectors.sentry.models.ReleaseVersioninfo | Any | None`
+    `version_info: airbyte_agent_sdk.connectors.sentry.models.ReleaseVersioninfo | None`
     :   The type of the None singleton.
 
 <a id="ReleaseAuthorsItem"></a>
@@ -1701,13 +1701,13 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ReleaseProjectsItem"></a>
@@ -1728,25 +1728,25 @@ Classes
 
     ### Class variables
 
-    `has_health_data: bool | Any | None`
+    `has_health_data: bool | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `new_groups: int | Any | None`
+    `new_groups: int | None`
     :   The type of the None singleton.
 
-    `platform: str | Any | None`
+    `platform: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="ReleaseVersioninfo"></a>
@@ -1767,19 +1767,19 @@ Classes
 
     ### Class variables
 
-    `build_hash: str | Any | None`
+    `build_hash: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `package: str | Any | None`
+    `package: str | None`
     :   The type of the None singleton.
 
-    `version: airbyte_agent_sdk.connectors.sentry.models.ReleaseVersioninfoVersion | Any | None`
+    `version: airbyte_agent_sdk.connectors.sentry.models.ReleaseVersioninfoVersion | None`
     :   The type of the None singleton.
 
 <a id="ReleaseVersioninfoVersion"></a>
@@ -1800,28 +1800,28 @@ Classes
 
     ### Class variables
 
-    `build_code: str | Any | None`
+    `build_code: str | None`
     :   The type of the None singleton.
 
-    `components: int | Any | None`
+    `components: int | None`
     :   The type of the None singleton.
 
-    `major: int | Any | None`
+    `major: int | None`
     :   The type of the None singleton.
 
-    `minor: int | Any | None`
+    `minor: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `patch: int | Any | None`
+    `patch: int | None`
     :   The type of the None singleton.
 
-    `pre: str | Any | None`
+    `pre: str | None`
     :   The type of the None singleton.
 
-    `raw: str | Any | None`
+    `raw: str | None`
     :   The type of the None singleton.
 
 <a id="ReleasesListResultMeta"></a>
@@ -1845,7 +1845,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ReleasesSearchData"></a>

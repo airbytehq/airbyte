@@ -26,6 +26,8 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (BranchesSearchFilter):
+        - name: Branch name (e.g. `main`, `feature/foo`)
+        - prefix: Git ref prefix for the branch (typically `refs/heads/`)
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -84,6 +86,13 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (CommentsSearchFilter):
+        - id: GraphQL node ID of the comment
+        - database_id: REST API numeric identifier for the comment
+        - body: Markdown body of the comment
+        - created_at: ISO 8601 timestamp when the comment was created
+        - updated_at: ISO 8601 timestamp when the comment was last updated
+        - url: Permalink to the comment on GitHub
+        - is_minimized: Whether the comment has been hidden/collapsed
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -155,6 +164,38 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: CommitsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[CommitsSearchData]`
+    :   Search commits records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CommitsSearchFilter):
+        - oid: Full Git commit SHA
+        - abbreviated_oid: Abbreviated Git commit SHA (typically 7 characters)
+        - message_headline: First line of the commit message
+        - message: Full commit message
+        - committed_date: ISO 8601 timestamp when the commit was applied to its tree
+        - authored_date: ISO 8601 timestamp when the commit was originally authored
+        - additions: Number of lines added across all files in the commit
+        - deletions: Number of lines deleted across all files in the commit
+        - changed_files: Number of files changed in the commit
+        - url: Permalink to the commit on GitHub
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CommitsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, owner: str, repo: str, sha: str, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific commit by SHA using GraphQL
         
@@ -191,6 +232,28 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: DirectoryContentSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[DirectoryContentSearchData]`
+    :   Search directory_content records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (DirectoryContentSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            DirectoryContentSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, owner: str, repo: str, path: str, ref: str | None = None, fields: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.github.models.GithubExecuteResult[list[dict[str, Any]]]`
     :   Returns a list of files and subdirectories at a specific path in the repository.
@@ -231,6 +294,28 @@ Classes
         Returns:
             DiscussionsApiSearchResult
 
+    `context_store_search(self, query: DiscussionsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[DiscussionsSearchData]`
+    :   Search discussions records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (DiscussionsSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            DiscussionsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, owner: str, repo: str, number: int, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific discussion by number using GraphQL
         
@@ -268,6 +353,28 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: FileContentSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[FileContentSearchData]`
+    :   Search file_content records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (FileContentSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            FileContentSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, owner: str, repo: str, path: str, ref: str | None = None, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns the text content of a file at a specific path and git ref (branch, tag, or commit SHA).
@@ -441,8 +548,13 @@ Classes
             # Redirect user to: consent_url
             # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -455,9 +567,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @GithubConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -572,6 +704,17 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (IssuesSearchFilter):
+        - id: GraphQL node ID of the issue
+        - database_id: REST API numeric identifier for the issue
+        - number: Repository-scoped issue number
+        - title: Issue title
+        - state: Issue state: `OPEN` or `CLOSED`
+        - state_reason: Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+        - created_at: ISO 8601 timestamp when the issue was created
+        - updated_at: ISO 8601 timestamp when the issue was last updated
+        - closed_at: ISO 8601 timestamp when the issue was closed, if applicable
+        - locked: Whether the conversation on the issue is locked
+        - url: Permalink to the issue on GitHub
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -665,6 +808,34 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: LabelsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[LabelsSearchData]`
+    :   Search labels records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (LabelsSearchFilter):
+        - id: GraphQL node ID of the label
+        - name: Label name
+        - color: Label color as a 6-character hex string without a leading `#`
+        - description: Short description of what the label is used for
+        - created_at: ISO 8601 timestamp when the label was created
+        - url: Permalink to the label on GitHub
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            LabelsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, owner: str, repo: str, name: str, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific label by name using GraphQL
         
@@ -700,6 +871,38 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: MilestonesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[MilestonesSearchData]`
+    :   Search milestones records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MilestonesSearchFilter):
+        - id: GraphQL node ID of the milestone
+        - number: Repository-scoped milestone number
+        - title: Milestone title
+        - description: Milestone description
+        - state: Milestone state: `OPEN` or `CLOSED`
+        - due_on: ISO 8601 timestamp for the milestone's due date, if set
+        - closed_at: ISO 8601 timestamp when the milestone was closed, if applicable
+        - created_at: ISO 8601 timestamp when the milestone was created
+        - updated_at: ISO 8601 timestamp when the milestone was last updated
+        - progress_percentage: Percentage of associated issues/PRs that are closed
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MilestonesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, owner: str, repo: str, number: int, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific milestone by number using GraphQL
@@ -738,6 +941,28 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: OrgRepositoriesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[OrgRepositoriesSearchData]`
+    :   Search org_repositories records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (OrgRepositoriesSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            OrgRepositoriesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, org: str, per_page: int | None = None, after: str | None = None, fields: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], OrgRepositoriesListResultMeta]`
     :   Returns a list of repositories for the specified organization using GraphQL
         
@@ -767,6 +992,15 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (OrganizationsSearchFilter):
+        - id: GraphQL node ID of the organization
+        - database_id: REST API numeric identifier for the organization
+        - login: Organization login/handle (unique URL slug)
+        - name: Display name of the organization
+        - description: Short public description of the organization
+        - email: Public contact email for the organization, if set
+        - location: Public location of the organization, if set
+        - is_verified: Whether the organization has a verified domain
+        - created_at: ISO 8601 timestamp when the organization was created
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -815,6 +1049,28 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: PrCommentsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[PrCommentsSearchData]`
+    :   Search pr_comments records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (PrCommentsSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            PrCommentsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, id: str | None = None, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific pull request comment by its GraphQL node ID.
         
@@ -855,6 +1111,28 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: ProjectItemsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ProjectItemsSearchData]`
+    :   Search project_items records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ProjectItemsSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ProjectItemsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, org: str, project_number: int, per_page: int | None = None, after: str | None = None, fields: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ProjectItemsListResultMeta]`
     :   Returns a list of items (issues, pull requests, draft issues) in a GitHub Project V2.
         Each item includes its field values like Status, Priority, etc.
@@ -879,6 +1157,37 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ProjectsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ProjectsSearchData]`
+    :   Search projects records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ProjectsSearchFilter):
+        - id: GraphQL node ID of the project
+        - number: Organization- or user-scoped project number
+        - title: Project title
+        - short_description: Short description displayed on the project summary
+        - url: Permalink to the project on GitHub
+        - closed: Whether the project has been closed
+        - public: Whether the project is publicly visible
+        - created_at: ISO 8601 timestamp when the project was created
+        - updated_at: ISO 8601 timestamp when the project was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ProjectsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, org: str, project_number: int, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific GitHub Project V2 by number
@@ -936,6 +1245,20 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (PullRequestsSearchFilter):
+        - id: GraphQL node ID of the pull request
+        - database_id: REST API numeric identifier for the pull request
+        - number: Repository-scoped pull request number
+        - title: Pull request title
+        - state: Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+        - is_draft: Whether the pull request is still a draft
+        - merged: Whether the pull request has been merged
+        - created_at: ISO 8601 timestamp when the pull request was created
+        - updated_at: ISO 8601 timestamp when the pull request was last updated
+        - closed_at: ISO 8601 timestamp when the pull request was closed, if applicable
+        - merged_at: ISO 8601 timestamp when the pull request was merged, if applicable
+        - base_ref_name: Name of the branch being merged into
+        - head_ref_name: Name of the branch with the proposed changes
+        - url: Permalink to the pull request on GitHub
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1007,6 +1330,38 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: ReleasesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ReleasesSearchData]`
+    :   Search releases records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ReleasesSearchFilter):
+        - id: GraphQL node ID of the release
+        - database_id: REST API numeric identifier for the release
+        - name: Display name of the release
+        - tag_name: Git tag the release points at (e.g. `v1.2.3`)
+        - description: Markdown body / release notes
+        - published_at: ISO 8601 timestamp when the release was published
+        - created_at: ISO 8601 timestamp when the release was created
+        - is_prerelease: Whether the release is marked as a pre-release
+        - is_draft: Whether the release is still a draft and not published
+        - url: Permalink to the release on GitHub
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ReleasesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, owner: str, repo: str, tag: str, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about a specific release by tag name using GraphQL
         
@@ -1067,6 +1422,19 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (RepositoriesSearchFilter):
+        - id: GraphQL node ID of the repository
+        - name: Short repository name (without owner)
+        - name_with_owner: Fully-qualified `owner/name` identifier for the repository
+        - description: Short description of the repository
+        - url: Canonical GitHub URL for the repository
+        - created_at: ISO 8601 timestamp when the repository was created
+        - updated_at: ISO 8601 timestamp when the repository was last updated
+        - pushed_at: ISO 8601 timestamp of the most recent push to the repository
+        - fork_count: Number of forks of the repository
+        - stargazer_count: Number of users who have starred the repository
+        - is_private: Whether the repository is private
+        - is_fork: Whether the repository is a fork of another repository
+        - is_archived: Whether the repository has been archived
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1120,6 +1488,36 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: ReviewsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ReviewsSearchData]`
+    :   Search reviews records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ReviewsSearchFilter):
+        - id: GraphQL node ID of the review
+        - database_id: REST API numeric identifier for the review
+        - state: Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+        - body: Review body text
+        - submitted_at: ISO 8601 timestamp when the review was submitted
+        - created_at: ISO 8601 timestamp when the review was created
+        - updated_at: ISO 8601 timestamp when the review was last updated
+        - url: Permalink to the review on GitHub
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ReviewsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, owner: str, repo: str, number: int, per_page: int | None = None, after: str | None = None, fields: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ReviewsListResultMeta]`
     :   Returns a list of reviews for the specified pull request using GraphQL
         
@@ -1151,6 +1549,7 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (StargazersSearchFilter):
+        - starred_at: ISO 8601 timestamp when the user starred the repository
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1196,6 +1595,8 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (TagsSearchFilter):
+        - name: Tag name (e.g. `v1.2.3`)
+        - prefix: Git ref prefix for the tag (typically `refs/tags/`)
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1254,6 +1655,15 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (TeamsSearchFilter):
+        - id: GraphQL node ID of the team
+        - database_id: REST API numeric identifier for the team
+        - slug: URL-friendly slug for the team within its organization
+        - name: Display name of the team
+        - description: Short description of the team
+        - privacy: Team visibility: `SECRET` or `VISIBLE`
+        - url: Permalink to the team on GitHub
+        - created_at: ISO 8601 timestamp when the team was created
+        - updated_at: ISO 8601 timestamp when the team was last updated
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1323,6 +1733,17 @@ Classes
         Only available in hosted execution mode.
         
         Available filter fields (UsersSearchFilter):
+        - id: GraphQL node ID of the user
+        - database_id: REST API numeric identifier for the user
+        - login: User login/handle
+        - name: Public display name of the user, if set
+        - email: Public email address of the user, if set
+        - company: Public company affiliation of the user, if set
+        - location: Public location of the user, if set
+        - twitter_username: Public Twitter/X username of the user, if set
+        - url: Permalink to the user's profile on GitHub
+        - created_at: ISO 8601 timestamp when the user account was created
+        - is_hireable: Whether the user has marked themselves as available for hire
         
         Args:
             query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
@@ -1371,6 +1792,28 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: ViewerSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerSearchData]`
+    :   Search viewer records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ViewerSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ViewerSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, fields: list[str] | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Gets information about the currently authenticated user.
         This is useful when you don't know the username but need to access
@@ -1392,6 +1835,28 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ViewerRepositoriesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.github.models.AirbyteSearchResult[ViewerRepositoriesSearchData]`
+    :   Search viewer_repositories records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ViewerRepositoriesSearchFilter):
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ViewerRepositoriesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, per_page: int | None = None, after: str | None = None, fields: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.github.models.GithubExecuteResultWithMeta[list[dict[str, Any]], ViewerRepositoriesListResultMeta]`
     :   Returns a list of repositories owned by the authenticated user.

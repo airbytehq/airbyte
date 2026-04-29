@@ -130,6 +130,94 @@ Classes
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.AccountsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="AccountsCreateParams"></a>
+
+`AccountsCreateParams(*args, **kwargs)`
+:   Parameters for accounts.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.AccountsCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+<a id="AccountsCreateParamsDataItem"></a>
+
+`AccountsCreateParamsDataItem(*args, **kwargs)`
+:   Nested schema for AccountsCreateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Account_Name: str`
+    :   The type of the None singleton.
+
+    `Account_Number: str`
+    :   The type of the None singleton.
+
+    `Account_Type: str`
+    :   The type of the None singleton.
+
+    `Annual_Revenue: float`
+    :   The type of the None singleton.
+
+    `Billing_City: str`
+    :   The type of the None singleton.
+
+    `Billing_Code: str`
+    :   The type of the None singleton.
+
+    `Billing_Country: str`
+    :   The type of the None singleton.
+
+    `Billing_State: str`
+    :   The type of the None singleton.
+
+    `Billing_Street: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Employees: int`
+    :   The type of the None singleton.
+
+    `Industry: str`
+    :   The type of the None singleton.
+
+    `Ownership: str`
+    :   The type of the None singleton.
+
+    `Phone: str`
+    :   The type of the None singleton.
+
+    `Rating: str`
+    :   The type of the None singleton.
+
+    `Shipping_City: str`
+    :   The type of the None singleton.
+
+    `Shipping_Code: str`
+    :   The type of the None singleton.
+
+    `Shipping_Country: str`
+    :   The type of the None singleton.
+
+    `Shipping_State: str`
+    :   The type of the None singleton.
+
+    `Shipping_Street: str`
+    :   The type of the None singleton.
+
+    `Website: str`
+    :   The type of the None singleton.
+
 <a id="AccountsEqCondition"></a>
 
 `AccountsEqCondition(*args, **kwargs)`
@@ -626,6 +714,97 @@ Classes
 
     `website: str`
     :   Account website URL
+
+<a id="AccountsUpdateParams"></a>
+
+`AccountsUpdateParams(*args, **kwargs)`
+:   Parameters for accounts.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.AccountsUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="AccountsUpdateParamsDataItem"></a>
+
+`AccountsUpdateParamsDataItem(*args, **kwargs)`
+:   Nested schema for AccountsUpdateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Account_Name: str`
+    :   The type of the None singleton.
+
+    `Account_Number: str`
+    :   The type of the None singleton.
+
+    `Account_Type: str`
+    :   The type of the None singleton.
+
+    `Annual_Revenue: float`
+    :   The type of the None singleton.
+
+    `Billing_City: str`
+    :   The type of the None singleton.
+
+    `Billing_Code: str`
+    :   The type of the None singleton.
+
+    `Billing_Country: str`
+    :   The type of the None singleton.
+
+    `Billing_State: str`
+    :   The type of the None singleton.
+
+    `Billing_Street: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Employees: int`
+    :   The type of the None singleton.
+
+    `Industry: str`
+    :   The type of the None singleton.
+
+    `Ownership: str`
+    :   The type of the None singleton.
+
+    `Phone: str`
+    :   The type of the None singleton.
+
+    `Rating: str`
+    :   The type of the None singleton.
+
+    `Shipping_City: str`
+    :   The type of the None singleton.
+
+    `Shipping_Code: str`
+    :   The type of the None singleton.
+
+    `Shipping_Country: str`
+    :   The type of the None singleton.
+
+    `Shipping_State: str`
+    :   The type of the None singleton.
+
+    `Shipping_Street: str`
+    :   The type of the None singleton.
+
+    `Website: str`
+    :   The type of the None singleton.
 
 <a id="AirbyteSearchParams"></a>
 
@@ -1899,6 +2078,76 @@ Classes
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.ContactsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ContactsCreateParams"></a>
+
+`ContactsCreateParams(*args, **kwargs)`
+:   Parameters for contacts.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.ContactsCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+<a id="ContactsCreateParamsDataItem"></a>
+
+`ContactsCreateParamsDataItem(*args, **kwargs)`
+:   Nested schema for ContactsCreateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Date_of_Birth: str`
+    :   The type of the None singleton.
+
+    `Department: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Email: str`
+    :   The type of the None singleton.
+
+    `First_Name: str`
+    :   The type of the None singleton.
+
+    `Last_Name: str`
+    :   The type of the None singleton.
+
+    `Lead_Source: str`
+    :   The type of the None singleton.
+
+    `Mailing_City: str`
+    :   The type of the None singleton.
+
+    `Mailing_Country: str`
+    :   The type of the None singleton.
+
+    `Mailing_State: str`
+    :   The type of the None singleton.
+
+    `Mailing_Street: str`
+    :   The type of the None singleton.
+
+    `Mailing_Zip: str`
+    :   The type of the None singleton.
+
+    `Mobile: str`
+    :   The type of the None singleton.
+
+    `Phone: str`
+    :   The type of the None singleton.
+
+    `Title: str`
+    :   The type of the None singleton.
+
 <a id="ContactsEqCondition"></a>
 
 `ContactsEqCondition(*args, **kwargs)`
@@ -2396,6 +2645,79 @@ Classes
     `title: str`
     :   Contact's job title
 
+<a id="ContactsUpdateParams"></a>
+
+`ContactsUpdateParams(*args, **kwargs)`
+:   Parameters for contacts.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.ContactsUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="ContactsUpdateParamsDataItem"></a>
+
+`ContactsUpdateParamsDataItem(*args, **kwargs)`
+:   Nested schema for ContactsUpdateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Date_of_Birth: str`
+    :   The type of the None singleton.
+
+    `Department: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Email: str`
+    :   The type of the None singleton.
+
+    `First_Name: str`
+    :   The type of the None singleton.
+
+    `Last_Name: str`
+    :   The type of the None singleton.
+
+    `Lead_Source: str`
+    :   The type of the None singleton.
+
+    `Mailing_City: str`
+    :   The type of the None singleton.
+
+    `Mailing_Country: str`
+    :   The type of the None singleton.
+
+    `Mailing_State: str`
+    :   The type of the None singleton.
+
+    `Mailing_Street: str`
+    :   The type of the None singleton.
+
+    `Mailing_Zip: str`
+    :   The type of the None singleton.
+
+    `Mobile: str`
+    :   The type of the None singleton.
+
+    `Phone: str`
+    :   The type of the None singleton.
+
+    `Title: str`
+    :   The type of the None singleton.
+
 <a id="DealsAndCondition"></a>
 
 `DealsAndCondition(*args, **kwargs)`
@@ -2499,6 +2821,58 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.DealsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DealsCreateParams"></a>
+
+`DealsCreateParams(*args, **kwargs)`
+:   Parameters for deals.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.DealsCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+<a id="DealsCreateParamsDataItem"></a>
+
+`DealsCreateParamsDataItem(*args, **kwargs)`
+:   Nested schema for DealsCreateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Amount: float`
+    :   The type of the None singleton.
+
+    `Closing_Date: str`
+    :   The type of the None singleton.
+
+    `Deal_Name: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Lead_Source: str`
+    :   The type of the None singleton.
+
+    `Next_Step: str`
+    :   The type of the None singleton.
+
+    `Probability: int`
+    :   The type of the None singleton.
+
+    `Stage: str`
+    :   The type of the None singleton.
+
+    `Type: str`
     :   The type of the None singleton.
 
 <a id="DealsEqCondition"></a>
@@ -2937,6 +3311,61 @@ Classes
 
     `type_: str`
     :   Type of deal (e.g., New Business, Existing Business)
+
+<a id="DealsUpdateParams"></a>
+
+`DealsUpdateParams(*args, **kwargs)`
+:   Parameters for deals.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.DealsUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="DealsUpdateParamsDataItem"></a>
+
+`DealsUpdateParamsDataItem(*args, **kwargs)`
+:   Nested schema for DealsUpdateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Amount: float`
+    :   The type of the None singleton.
+
+    `Closing_Date: str`
+    :   The type of the None singleton.
+
+    `Deal_Name: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Lead_Source: str`
+    :   The type of the None singleton.
+
+    `Next_Step: str`
+    :   The type of the None singleton.
+
+    `Probability: int`
+    :   The type of the None singleton.
+
+    `Stage: str`
+    :   The type of the None singleton.
+
+    `Type: str`
+    :   The type of the None singleton.
 
 <a id="EventsAndCondition"></a>
 
@@ -4187,6 +4616,91 @@ Classes
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.LeadsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="LeadsCreateParams"></a>
+
+`LeadsCreateParams(*args, **kwargs)`
+:   Parameters for leads.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.LeadsCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+<a id="LeadsCreateParamsDataItem"></a>
+
+`LeadsCreateParamsDataItem(*args, **kwargs)`
+:   Nested schema for LeadsCreateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Annual_Revenue: float`
+    :   The type of the None singleton.
+
+    `City: str`
+    :   The type of the None singleton.
+
+    `Company: str`
+    :   The type of the None singleton.
+
+    `Country: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Email: str`
+    :   The type of the None singleton.
+
+    `First_Name: str`
+    :   The type of the None singleton.
+
+    `Industry: str`
+    :   The type of the None singleton.
+
+    `Last_Name: str`
+    :   The type of the None singleton.
+
+    `Lead_Source: str`
+    :   The type of the None singleton.
+
+    `Lead_Status: str`
+    :   The type of the None singleton.
+
+    `Mobile: str`
+    :   The type of the None singleton.
+
+    `No_of_Employees: int`
+    :   The type of the None singleton.
+
+    `Phone: str`
+    :   The type of the None singleton.
+
+    `Rating: str`
+    :   The type of the None singleton.
+
+    `State: str`
+    :   The type of the None singleton.
+
+    `Street: str`
+    :   The type of the None singleton.
+
+    `Title: str`
+    :   The type of the None singleton.
+
+    `Website: str`
+    :   The type of the None singleton.
+
+    `Zip_Code: str`
+    :   The type of the None singleton.
+
 <a id="LeadsEqCondition"></a>
 
 `LeadsEqCondition(*args, **kwargs)`
@@ -4743,6 +5257,94 @@ Classes
 
     `website: str`
     :   Lead's website URL
+
+<a id="LeadsUpdateParams"></a>
+
+`LeadsUpdateParams(*args, **kwargs)`
+:   Parameters for leads.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.LeadsUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="LeadsUpdateParamsDataItem"></a>
+
+`LeadsUpdateParamsDataItem(*args, **kwargs)`
+:   Nested schema for LeadsUpdateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Annual_Revenue: float`
+    :   The type of the None singleton.
+
+    `City: str`
+    :   The type of the None singleton.
+
+    `Company: str`
+    :   The type of the None singleton.
+
+    `Country: str`
+    :   The type of the None singleton.
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Email: str`
+    :   The type of the None singleton.
+
+    `First_Name: str`
+    :   The type of the None singleton.
+
+    `Industry: str`
+    :   The type of the None singleton.
+
+    `Last_Name: str`
+    :   The type of the None singleton.
+
+    `Lead_Source: str`
+    :   The type of the None singleton.
+
+    `Lead_Status: str`
+    :   The type of the None singleton.
+
+    `Mobile: str`
+    :   The type of the None singleton.
+
+    `No_of_Employees: int`
+    :   The type of the None singleton.
+
+    `Phone: str`
+    :   The type of the None singleton.
+
+    `Rating: str`
+    :   The type of the None singleton.
+
+    `State: str`
+    :   The type of the None singleton.
+
+    `Street: str`
+    :   The type of the None singleton.
+
+    `Title: str`
+    :   The type of the None singleton.
+
+    `Website: str`
+    :   The type of the None singleton.
+
+    `Zip_Code: str`
+    :   The type of the None singleton.
 
 <a id="ProductsAndCondition"></a>
 
@@ -6017,6 +6619,49 @@ Classes
     `contains: airbyte_agent_sdk.connectors.zoho_crm.types.TasksAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="TasksCreateParams"></a>
+
+`TasksCreateParams(*args, **kwargs)`
+:   Parameters for tasks.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.TasksCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+<a id="TasksCreateParamsDataItem"></a>
+
+`TasksCreateParamsDataItem(*args, **kwargs)`
+:   Nested schema for TasksCreateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Due_Date: str`
+    :   The type of the None singleton.
+
+    `Priority: str`
+    :   The type of the None singleton.
+
+    `Send_Notification_Email: bool`
+    :   The type of the None singleton.
+
+    `Status: str`
+    :   The type of the None singleton.
+
+    `Subject: str`
+    :   The type of the None singleton.
+
 <a id="TasksEqCondition"></a>
 
 `TasksEqCondition(*args, **kwargs)`
@@ -6429,3 +7074,49 @@ Classes
 
     `subject: str`
     :   Subject or title of the task
+
+<a id="TasksUpdateParams"></a>
+
+`TasksUpdateParams(*args, **kwargs)`
+:   Parameters for tasks.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.types.TasksUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="TasksUpdateParamsDataItem"></a>
+
+`TasksUpdateParamsDataItem(*args, **kwargs)`
+:   Nested schema for TasksUpdateParams.data_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `Description: str`
+    :   The type of the None singleton.
+
+    `Due_Date: str`
+    :   The type of the None singleton.
+
+    `Priority: str`
+    :   The type of the None singleton.
+
+    `Send_Notification_Email: bool`
+    :   The type of the None singleton.
+
+    `Status: str`
+    :   The type of the None singleton.
+
+    `Subject: str`
+    :   The type of the None singleton.

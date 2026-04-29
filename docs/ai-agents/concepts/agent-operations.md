@@ -17,14 +17,14 @@ Simple tasks typically make fewer tool calls and use fewer tokens, so they consu
 
 Any interaction with an agent consumes AOs. The source of the interaction determines how Airbyte tracks it.
 
-| Source | Description | Tracked as a session? |
-| --- | --- | --- |
-| **Chat** | A conversation with an agent in the web app. | Yes |
-| **Automation** | A single run of a scheduled, webhook-triggered, or manually triggered automation. | Yes |
-| **Automation Builder Chat** | A conversation inside the Automation Builder while designing an automation. | Yes |
-| **MCP** | Tool calls from agents connected through the Model Context Protocol. | No |
-| **API** | Direct calls to the Airbyte Agents API. | No |
-| **SDK** | Calls from an agent built with the Airbyte Agents SDK. | No |
+| Source | Description | Tracked as a session? | Tool calls visible? |
+| --- | --- | --- | --- |
+| **Chat** | A conversation with an agent in the web app. | Yes | Yes |
+| **Automation** | A single run of a scheduled, webhook-triggered, or manually triggered automation. | Yes | Yes |
+| **Automation Builder Chat** | A conversation inside the Automation Builder while designing an automation. | Yes | Yes |
+| **MCP** | Tool calls from agents connected through the Model Context Protocol. | No | Yes |
+| **API** | Direct calls to the Airbyte Agents API. | No | Yes |
+| **SDK** | Calls from an agent built with the Airbyte Agents SDK. | No | Yes |
 
 Sources tracked as sessions appear on the [Sessions](../admin/sessions.md) page, where you can review the full conversation and tool calls. Sources that aren't tracked as sessions still consume AOs and appear in the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page.
 

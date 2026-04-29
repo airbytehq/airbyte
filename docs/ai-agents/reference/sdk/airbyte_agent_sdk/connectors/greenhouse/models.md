@@ -452,70 +452,70 @@ Classes
 
     ### Class variables
 
-    `answers: list[dict[str, typing.Any]] | Any`
+    `answers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `applied_at: str | Any`
+    `applied_at: str | None`
     :   The type of the None singleton.
 
-    `attachments: list[airbyte_agent_sdk.connectors.greenhouse.models.Attachment] | Any`
+    `attachments: list[airbyte_agent_sdk.connectors.greenhouse.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `candidate_id: int | Any`
+    `candidate_id: int | None`
     :   The type of the None singleton.
 
-    `credited_to: dict[str, typing.Any] | Any`
+    `credited_to: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `current_stage: dict[str, typing.Any] | Any | None`
+    `current_stage: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `job_post_id: int | Any | None`
+    `job_post_id: int | None`
     :   The type of the None singleton.
 
-    `jobs: list[dict[str, typing.Any]] | Any`
+    `jobs: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `last_activity_at: str | Any`
+    `last_activity_at: str | None`
     :   The type of the None singleton.
 
-    `location: dict[str, typing.Any] | Any | None`
+    `location: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `prospect: bool | Any`
+    `prospect: bool | None`
     :   The type of the None singleton.
 
-    `prospect_detail: dict[str, typing.Any] | Any`
+    `prospect_detail: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prospective_department: dict[str, typing.Any] | Any | None`
+    `prospective_department: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prospective_office: dict[str, typing.Any] | Any | None`
+    `prospective_office: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `rejected_at: str | Any | None`
+    `rejected_at: str | None`
     :   The type of the None singleton.
 
-    `rejection_details: dict[str, typing.Any] | Any | None`
+    `rejection_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `rejection_reason: dict[str, typing.Any] | Any | None`
+    `rejection_reason: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `source: dict[str, typing.Any] | Any`
+    `source: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="ApplicationsListResultMeta"></a>
@@ -539,7 +539,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ApplicationsSearchData"></a>
@@ -641,19 +641,19 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `filename: str | Any`
+    `filename: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="Candidate"></a>
@@ -674,73 +674,73 @@ Classes
 
     ### Class variables
 
-    `addresses: list[dict[str, typing.Any]] | Any`
+    `addresses: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `application_ids: list[int] | Any`
+    `application_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `attachments: list[airbyte_agent_sdk.connectors.greenhouse.models.Attachment] | Any`
+    `attachments: list[airbyte_agent_sdk.connectors.greenhouse.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `can_email: bool | Any`
+    `can_email: bool | None`
     :   The type of the None singleton.
 
-    `company: str | Any | None`
+    `company: str | None`
     :   The type of the None singleton.
 
-    `coordinator: dict[str, typing.Any] | Any | None`
+    `coordinator: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email_addresses: list[dict[str, typing.Any]] | Any`
+    `email_addresses: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
-    `last_activity: str | Any`
+    `last_activity: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `phone_numbers: list[dict[str, typing.Any]] | Any`
+    `phone_numbers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `photo_url: str | Any | None`
+    `photo_url: str | None`
     :   The type of the None singleton.
 
-    `recruiter: dict[str, typing.Any] | Any | None`
+    `recruiter: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `social_media_addresses: list[dict[str, typing.Any]] | Any`
+    `social_media_addresses: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `website_addresses: list[dict[str, typing.Any]] | Any`
+    `website_addresses: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
 <a id="CandidatesListResultMeta"></a>
@@ -764,7 +764,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="CandidatesSearchData"></a>
@@ -884,28 +884,28 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: list[str] | Any`
+    `child_department_external_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `child_ids: list[int] | Any`
+    `child_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `external_id: str | Any | None`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_department_external_id: str | Any | None`
+    `parent_department_external_id: str | None`
     :   The type of the None singleton.
 
-    `parent_id: int | Any | None`
+    `parent_id: int | None`
     :   The type of the None singleton.
 
 <a id="DepartmentsListResultMeta"></a>
@@ -929,7 +929,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="DepartmentsSearchData"></a>
@@ -1570,52 +1570,52 @@ Classes
 
     ### Class variables
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `confidential: bool | Any`
+    `confidential: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `departments: list[dict[str, typing.Any] | None] | Any`
+    `departments: list[dict[str, typing.Any] | None] | None`
     :   The type of the None singleton.
 
-    `hiring_team: dict[str, typing.Any] | Any`
+    `hiring_team: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `notes: str | Any | None`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `offices: list[dict[str, typing.Any]] | Any`
+    `offices: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `opened_at: str | Any`
+    `opened_at: str | None`
     :   The type of the None singleton.
 
-    `openings: list[dict[str, typing.Any]] | Any`
+    `openings: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `requisition_id: str | Any | None`
+    `requisition_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="JobPost"></a>
@@ -1636,52 +1636,52 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `content: str | Any | None`
+    `content: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `demographic_question_set_id: int | Any | None`
+    `demographic_question_set_id: int | None`
     :   The type of the None singleton.
 
-    `external: bool | Any`
+    `external: bool | None`
     :   The type of the None singleton.
 
-    `first_published_at: str | Any | None`
+    `first_published_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `internal: bool | Any`
+    `internal: bool | None`
     :   The type of the None singleton.
 
-    `internal_content: str | Any | None`
+    `internal_content: str | None`
     :   The type of the None singleton.
 
-    `job_id: int | Any`
+    `job_id: int | None`
     :   The type of the None singleton.
 
-    `live: bool | Any`
+    `live: bool | None`
     :   The type of the None singleton.
 
-    `location: dict[str, typing.Any] | Any | None`
+    `location: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `questions: list[dict[str, typing.Any]] | Any`
+    `questions: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="JobPostsListResultMeta"></a>
@@ -1705,7 +1705,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="JobPostsSearchData"></a>
@@ -1795,7 +1795,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="JobsSearchData"></a>
@@ -1891,46 +1891,46 @@ Classes
 
     ### Class variables
 
-    `application_id: int | Any`
+    `application_id: int | None`
     :   The type of the None singleton.
 
-    `candidate_id: int | Any`
+    `candidate_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `job_id: int | Any`
+    `job_id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `opening: dict[str, typing.Any] | Any | None`
+    `opening: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `resolved_at: str | Any | None`
+    `resolved_at: str | None`
     :   The type of the None singleton.
 
-    `sent_at: str | Any | None`
+    `sent_at: str | None`
     :   The type of the None singleton.
 
-    `starts_at: str | Any | None`
+    `starts_at: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `version: int | Any`
+    `version: int | None`
     :   The type of the None singleton.
 
 <a id="OffersListResultMeta"></a>
@@ -1954,7 +1954,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="OffersSearchData"></a>
@@ -2038,34 +2038,34 @@ Classes
 
     ### Class variables
 
-    `child_ids: list[int] | Any`
+    `child_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `child_office_external_ids: list[str] | Any`
+    `child_office_external_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `external_id: str | Any | None`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `location: dict[str, typing.Any] | Any | None`
+    `location: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_id: int | Any | None`
+    `parent_id: int | None`
     :   The type of the None singleton.
 
-    `parent_office_external_id: str | Any | None`
+    `parent_office_external_id: str | None`
     :   The type of the None singleton.
 
-    `primary_contact_user_id: int | Any | None`
+    `primary_contact_user_id: int | None`
     :   The type of the None singleton.
 
 <a id="OfficesListResultMeta"></a>
@@ -2089,7 +2089,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="OfficesSearchData"></a>
@@ -2158,46 +2158,46 @@ Classes
 
     ### Class variables
 
-    `application_id: int | Any`
+    `application_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `end: dict[str, typing.Any] | Any | None`
+    `end: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `external_event_id: str | Any | None`
+    `external_event_id: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `interview: dict[str, typing.Any] | Any | None`
+    `interview: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `interviewers: list[dict[str, typing.Any]] | Any`
+    `interviewers: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `location: str | Any | None`
+    `location: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `organizer: dict[str, typing.Any] | Any | None`
+    `organizer: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `start: dict[str, typing.Any] | Any | None`
+    `start: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `video_conferencing_url: str | Any | None`
+    `video_conferencing_url: str | None`
     :   The type of the None singleton.
 
 <a id="ScheduledInterviewsListResultMeta"></a>
@@ -2221,7 +2221,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="Source"></a>
@@ -2242,16 +2242,16 @@ Classes
 
     ### Class variables
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: dict[str, typing.Any] | Any | None`
+    `type_: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="SourcesListResultMeta"></a>
@@ -2275,7 +2275,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SourcesSearchData"></a>
@@ -2326,49 +2326,49 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `departments: list[dict[str, typing.Any]] | Any`
+    `departments: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `disabled: bool | Any`
+    `disabled: bool | None`
     :   The type of the None singleton.
 
-    `emails: list[str] | Any`
+    `emails: list[str] | None`
     :   The type of the None singleton.
 
-    `employee_id: str | Any | None`
+    `employee_id: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `linked_candidate_ids: list[int] | Any`
+    `linked_candidate_ids: list[int] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `offices: list[dict[str, typing.Any]] | Any`
+    `offices: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `primary_email_address: str | Any`
+    `primary_email_address: str | None`
     :   The type of the None singleton.
 
-    `site_admin: bool | Any`
+    `site_admin: bool | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -2392,7 +2392,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>

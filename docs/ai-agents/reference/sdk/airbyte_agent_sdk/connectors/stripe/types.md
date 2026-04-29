@@ -1287,6 +1287,15 @@ Classes
     `updated: str`
     :   Timestamp of the last update to this charge object.
 
+<a id="CheckoutSessionsCreateParams"></a>
+
+`CheckoutSessionsCreateParams(*args, **kwargs)`
+:   Parameters for checkout_sessions.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
 <a id="CustomersAndCondition"></a>
 
 `CustomersAndCondition(*args, **kwargs)`
@@ -2260,6 +2269,34 @@ Classes
     `lte: int`
     :   The type of the None singleton.
 
+<a id="InvoiceFinalizationsCreateParams"></a>
+
+`InvoiceFinalizationsCreateParams(*args, **kwargs)`
+:   Parameters for invoice_finalizations.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="InvoiceSendsCreateParams"></a>
+
+`InvoiceSendsCreateParams(*args, **kwargs)`
+:   Parameters for invoice_sends.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="InvoicesAndCondition"></a>
 
 `InvoicesAndCondition(*args, **kwargs)`
@@ -2618,6 +2655,15 @@ Classes
 
     `contains: airbyte_agent_sdk.connectors.stripe.types.InvoicesAnyValueFilter`
     :   The type of the None singleton.
+
+<a id="InvoicesCreateParams"></a>
+
+`InvoicesCreateParams(*args, **kwargs)`
+:   Parameters for invoices.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
 
 <a id="InvoicesEqCondition"></a>
 
@@ -4027,6 +4073,34 @@ Classes
     `webhooks_delivered_at: str`
     :   Timestamp indicating when webhooks for this invoice were successfully delivered.
 
+<a id="PaymentIntentCancellationsCreateParams"></a>
+
+`PaymentIntentCancellationsCreateParams(*args, **kwargs)`
+:   Parameters for payment_intent_cancellations.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentConfirmationsCreateParams"></a>
+
+`PaymentIntentConfirmationsCreateParams(*args, **kwargs)`
+:   Parameters for payment_intent_confirmations.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="PaymentIntentsApiSearchParams"></a>
 
 `PaymentIntentsApiSearchParams(*args, **kwargs)`
@@ -4046,6 +4120,15 @@ Classes
 
     `query: str`
     :   The type of the None singleton.
+
+<a id="PaymentIntentsCreateParams"></a>
+
+`PaymentIntentsCreateParams(*args, **kwargs)`
+:   Parameters for payment_intents.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
 
 <a id="PaymentIntentsGetParams"></a>
 
@@ -4111,6 +4194,34 @@ Classes
     :   The type of the None singleton.
 
     `lte: int`
+    :   The type of the None singleton.
+
+<a id="PaymentIntentsUpdateParams"></a>
+
+`PaymentIntentsUpdateParams(*args, **kwargs)`
+:   Parameters for payment_intents.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="PaymentMethodAttachmentsCreateParams"></a>
+
+`PaymentMethodAttachmentsCreateParams(*args, **kwargs)`
+:   Parameters for payment_method_attachments.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="PayoutsGetParams"></a>
@@ -4204,6 +4315,15 @@ Classes
 
     `lte: int`
     :   The type of the None singleton.
+
+<a id="PricesCreateParams"></a>
+
+`PricesCreateParams(*args, **kwargs)`
+:   Parameters for prices.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
 
 <a id="ProductsApiSearchParams"></a>
 
@@ -5213,6 +5333,29 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.stripe.types.SubscriptionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SubscriptionsCreateParams"></a>
+
+`SubscriptionsCreateParams(*args, **kwargs)`
+:   Parameters for subscriptions.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+<a id="SubscriptionsDeleteParams"></a>
+
+`SubscriptionsDeleteParams(*args, **kwargs)`
+:   Parameters for subscriptions.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="SubscriptionsEqCondition"></a>
@@ -6231,3 +6374,17 @@ Classes
 
     `items(self, /) ‑> str`
     :   Return a set-like object providing a view on the dict's items.
+
+<a id="SubscriptionsUpdateParams"></a>
+
+`SubscriptionsUpdateParams(*args, **kwargs)`
+:   Parameters for subscriptions.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.

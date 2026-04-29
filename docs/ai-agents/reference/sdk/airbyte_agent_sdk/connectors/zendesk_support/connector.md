@@ -690,6 +690,26 @@ Classes
         Returns:
             TicketAuditsListResult
 
+<a id="TicketBulkUpdatesQuery"></a>
+
+`TicketBulkUpdatesQuery(connector: ZendeskSupportConnector)`
+:   Query class for TicketBulkUpdates entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, ticket: TicketBulkUpdatesCreateParamsTicket, ids: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.JobStatus`
+    :   Updates multiple tickets at once. Accepts a comma-separated list of ticket IDs and applies the same changes to all of them.
+        
+        Args:
+            ticket: The ticket fields to apply to all specified tickets
+            ids: Comma-separated list of ticket IDs to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            JobStatus
+
 <a id="TicketCommentsQuery"></a>
 
 `TicketCommentsQuery(connector: ZendeskSupportConnector)`
@@ -737,6 +757,17 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, ticket: TicketCommentsCreateParamsTicket, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
+    :   Adds a public reply or internal note to an existing ticket by updating it with a comment object.
+        
+        Args:
+            ticket: The ticket update containing the comment
+            ticket_id: The ID of the ticket to comment on
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
 
     `list(self, ticket_id: str, page: int | None = None, include_inline_images: bool | None = None, sort_order: str | None = None, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.ZendeskSupportExecuteResultWithMeta[list[TicketComment], TicketCommentsListResultMeta]`
     :   Returns a list of comments for a specific ticket
@@ -1047,6 +1078,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, ticket: TicketsCreateParamsTicket, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
+    :   Creates a new ticket in Zendesk Support
+        
+        Args:
+            ticket: The ticket object to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
+
     `get(self, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
     :   Returns a ticket by its ID
         
@@ -1070,6 +1111,17 @@ Classes
         
         Returns:
             TicketsListResult
+
+    `update(self, ticket: TicketsUpdateParamsTicket, ticket_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.Ticket`
+    :   Updates an existing ticket. Can update status, priority, assignee, add comments, and more.
+        
+        Args:
+            ticket: The ticket fields to update
+            ticket_id: The ID of the ticket to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            Ticket
 
 <a id="TriggersQuery"></a>
 
@@ -1175,6 +1227,16 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `create(self, user: UsersCreateParamsUser, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
+    :   Creates a new end-user, agent, or admin in Zendesk Support
+        
+        Args:
+            user: The user object to create
+            **kwargs: Additional parameters
+        
+        Returns:
+            User
+
     `get(self, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
     :   Returns a user by their ID
         
@@ -1197,6 +1259,17 @@ Classes
         
         Returns:
             UsersListResult
+
+    `update(self, user: UsersUpdateParamsUser, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.zendesk_support.models.User`
+    :   Updates an existing user in Zendesk Support
+        
+        Args:
+            user: The user fields to update
+            user_id: The ID of the user to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            User
 
 <a id="ViewsQuery"></a>
 
@@ -1375,8 +1448,13 @@ Classes
             # Redirect user to: consent_url
             # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -1389,9 +1467,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @ZendeskSupportConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1440,7 +1538,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

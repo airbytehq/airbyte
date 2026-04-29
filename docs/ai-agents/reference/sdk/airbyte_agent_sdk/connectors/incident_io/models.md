@@ -572,40 +572,40 @@ Classes
 
     ### Class variables
 
-    `alert_source_id: str | Any | None`
+    `alert_source_id: str | None`
     :   The type of the None singleton.
 
-    `attributes: list[airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItem] | Any | None`
+    `attributes: list[airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItem] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `deduplication_key: str | Any | None`
+    `deduplication_key: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resolved_at: str | Any | None`
+    `resolved_at: str | None`
     :   The type of the None singleton.
 
-    `source_url: str | Any | None`
+    `source_url: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="AlertAttributesItem"></a>
@@ -626,13 +626,13 @@ Classes
 
     ### Class variables
 
-    `attribute: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemAttribute | Any | None`
+    `attribute: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemAttribute | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemValue | Any | None`
+    `value: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemValue | None`
     :   The type of the None singleton.
 
 <a id="AlertAttributesItemAttribute"></a>
@@ -653,19 +653,19 @@ Classes
 
     ### Class variables
 
-    `array: bool | Any | None`
+    `array: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="AlertAttributesItemValue"></a>
@@ -686,13 +686,13 @@ Classes
 
     ### Class variables
 
-    `catalog_entry: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemValueCatalogEntry | Any | None`
+    `catalog_entry: airbyte_agent_sdk.connectors.incident_io.models.AlertAttributesItemValueCatalogEntry | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
-    `literal: str | Any | None`
+    `literal: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -716,16 +716,16 @@ Classes
 
     ### Class variables
 
-    `catalog_type_id: str | Any | None`
+    `catalog_type_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="AlertsListResultMeta"></a>
@@ -749,7 +749,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="AlertsSearchData"></a>
@@ -824,58 +824,58 @@ Classes
 
     ### Class variables
 
-    `annotations: dict[str, typing.Any] | Any | None`
+    `annotations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `categories: list[str] | Any | None`
+    `categories: list[str] | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `icon: str | Any | None`
+    `icon: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `is_editable: bool | Any | None`
+    `is_editable: bool | None`
     :   The type of the None singleton.
 
-    `last_synced_at: str | Any | None`
+    `last_synced_at: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `ranked: bool | Any | None`
+    `ranked: bool | None`
     :   The type of the None singleton.
 
-    `registry_type: str | Any | None`
+    `registry_type: str | None`
     :   The type of the None singleton.
 
-    `required_integrations: list[str] | Any | None`
+    `required_integrations: list[str] | None`
     :   The type of the None singleton.
 
-    `schema_: airbyte_agent_sdk.connectors.incident_io.models.CatalogTypeSchema | Any | None`
+    `schema_: airbyte_agent_sdk.connectors.incident_io.models.CatalogTypeSchema | None`
     :   The type of the None singleton.
 
-    `semantic_type: str | Any | None`
+    `semantic_type: str | None`
     :   The type of the None singleton.
 
-    `type_name: str | Any | None`
+    `type_name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CatalogTypeSchema"></a>
@@ -896,13 +896,13 @@ Classes
 
     ### Class variables
 
-    `attributes: list[airbyte_agent_sdk.connectors.incident_io.models.CatalogTypeSchemaAttributesItem] | Any | None`
+    `attributes: list[airbyte_agent_sdk.connectors.incident_io.models.CatalogTypeSchemaAttributesItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `version: float | Any | None`
+    `version: float | None`
     :   The type of the None singleton.
 
 <a id="CatalogTypeSchemaAttributesItem"></a>
@@ -923,22 +923,22 @@ Classes
 
     ### Class variables
 
-    `array: bool | Any | None`
+    `array: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `mode: str | Any | None`
+    `mode: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CatalogTypesSearchData"></a>
@@ -1031,28 +1031,28 @@ Classes
 
     ### Class variables
 
-    `catalog_type_id: str | Any | None`
+    `catalog_type_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `field_type: str | Any | None`
+    `field_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CustomFieldsSearchData"></a>
@@ -1112,40 +1112,40 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreator | Any | None`
+    `creator: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreator | None`
     :   The type of the None singleton.
 
-    `escalation_path_id: str | Any | None`
+    `escalation_path_id: str | None`
     :   The type of the None singleton.
 
-    `events: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItem] | Any | None`
+    `events: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItem] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: airbyte_agent_sdk.connectors.incident_io.models.EscalationPriority | Any | None`
+    `priority: airbyte_agent_sdk.connectors.incident_io.models.EscalationPriority | None`
     :   The type of the None singleton.
 
-    `related_alerts: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationRelatedAlertsItem] | Any | None`
+    `related_alerts: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationRelatedAlertsItem] | None`
     :   The type of the None singleton.
 
-    `related_incidents: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationRelatedIncidentsItem] | Any | None`
+    `related_incidents: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationRelatedIncidentsItem] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationCreator"></a>
@@ -1166,16 +1166,16 @@ Classes
 
     ### Class variables
 
-    `alert: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorAlert | Any | None`
+    `alert: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorAlert | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorUser | Any | None`
+    `user: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorUser | None`
     :   The type of the None singleton.
 
-    `workflow: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorWorkflow | Any | None`
+    `workflow: airbyte_agent_sdk.connectors.incident_io.models.EscalationCreatorWorkflow | None`
     :   The type of the None singleton.
 
 <a id="EscalationCreatorAlert"></a>
@@ -1196,13 +1196,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationCreatorUser"></a>
@@ -1223,22 +1223,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `slack_user_id: str | Any | None`
+    `slack_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationCreatorWorkflow"></a>
@@ -1259,13 +1259,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationEventsItem"></a>
@@ -1286,25 +1286,25 @@ Classes
 
     ### Class variables
 
-    `channels: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItemChannelsItem] | Any | None`
+    `channels: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItemChannelsItem] | None`
     :   The type of the None singleton.
 
-    `event: str | Any | None`
+    `event: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `occurred_at: str | Any | None`
+    `occurred_at: str | None`
     :   The type of the None singleton.
 
-    `urgency: str | Any | None`
+    `urgency: str | None`
     :   The type of the None singleton.
 
-    `users: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItemUsersItem] | Any | None`
+    `users: list[airbyte_agent_sdk.connectors.incident_io.models.EscalationEventsItemUsersItem] | None`
     :   The type of the None singleton.
 
 <a id="EscalationEventsItemChannelsItem"></a>
@@ -1325,19 +1325,19 @@ Classes
 
     ### Class variables
 
-    `microsoft_teams_channel_id: str | Any | None`
+    `microsoft_teams_channel_id: str | None`
     :   The type of the None singleton.
 
-    `microsoft_teams_team_id: str | Any | None`
+    `microsoft_teams_team_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `slack_channel_id: str | Any | None`
+    `slack_channel_id: str | None`
     :   The type of the None singleton.
 
-    `slack_team_id: str | Any | None`
+    `slack_team_id: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationEventsItemUsersItem"></a>
@@ -1358,22 +1358,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `slack_user_id: str | Any | None`
+    `slack_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationPriority"></a>
@@ -1397,7 +1397,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationRelatedAlertsItem"></a>
@@ -1418,37 +1418,37 @@ Classes
 
     ### Class variables
 
-    `alert_source_id: str | Any | None`
+    `alert_source_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `deduplication_key: str | Any | None`
+    `deduplication_key: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `resolved_at: str | Any | None`
+    `resolved_at: str | None`
     :   The type of the None singleton.
 
-    `source_url: str | Any | None`
+    `source_url: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationRelatedIncidentsItem"></a>
@@ -1469,28 +1469,28 @@ Classes
 
     ### Class variables
 
-    `external_id: int | Any | None`
+    `external_id: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The type of the None singleton.
 
-    `status_category: str | Any | None`
+    `status_category: str | None`
     :   The type of the None singleton.
 
-    `summary: str | Any | None`
+    `summary: str | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any | None`
+    `visibility: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationsListResultMeta"></a>
@@ -1514,7 +1514,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="EscalationsSearchData"></a>
@@ -1589,85 +1589,85 @@ Classes
 
     ### Class variables
 
-    `call_url: str | Any | None`
+    `call_url: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator: airbyte_agent_sdk.connectors.incident_io.models.IncidentCreator | Any | None`
+    `creator: airbyte_agent_sdk.connectors.incident_io.models.IncidentCreator | None`
     :   The type of the None singleton.
 
-    `custom_field_entries: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentCustomFieldEntriesItem] | Any | None`
+    `custom_field_entries: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentCustomFieldEntriesItem] | None`
     :   The type of the None singleton.
 
-    `duration_metrics: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentDurationMetricsItem] | Any | None`
+    `duration_metrics: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentDurationMetricsItem] | None`
     :   The type of the None singleton.
 
-    `has_debrief: bool | Any | None`
+    `has_debrief: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `incident_role_assignments: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItem] | Any | None`
+    `incident_role_assignments: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItem] | None`
     :   The type of the None singleton.
 
-    `incident_status: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentStatus | Any | None`
+    `incident_status: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentStatus | None`
     :   The type of the None singleton.
 
-    `incident_timestamp_values: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItem] | Any | None`
+    `incident_timestamp_values: list[airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItem] | None`
     :   The type of the None singleton.
 
-    `incident_type: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentType | Any | None`
+    `incident_type: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentType | None`
     :   The type of the None singleton.
 
-    `mode: str | Any | None`
+    `mode: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `permalink: str | Any | None`
+    `permalink: str | None`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The type of the None singleton.
 
-    `severity: airbyte_agent_sdk.connectors.incident_io.models.IncidentSeverity | Any | None`
+    `severity: airbyte_agent_sdk.connectors.incident_io.models.IncidentSeverity | None`
     :   The type of the None singleton.
 
-    `slack_channel_id: str | Any | None`
+    `slack_channel_id: str | None`
     :   The type of the None singleton.
 
-    `slack_channel_name: str | Any | None`
+    `slack_channel_name: str | None`
     :   The type of the None singleton.
 
-    `slack_team_id: str | Any | None`
+    `slack_team_id: str | None`
     :   The type of the None singleton.
 
-    `summary: str | Any | None`
+    `summary: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any | None`
+    `visibility: str | None`
     :   The type of the None singleton.
 
-    `workload_minutes_late: float | Any | None`
+    `workload_minutes_late: float | None`
     :   The type of the None singleton.
 
-    `workload_minutes_sleeping: float | Any | None`
+    `workload_minutes_sleeping: float | None`
     :   The type of the None singleton.
 
-    `workload_minutes_total: float | Any | None`
+    `workload_minutes_total: float | None`
     :   The type of the None singleton.
 
-    `workload_minutes_working: float | Any | None`
+    `workload_minutes_working: float | None`
     :   The type of the None singleton.
 
 <a id="IncidentCreator"></a>
@@ -1691,7 +1691,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.incident_io.models.IncidentCreatorUser | Any | None`
+    `user: airbyte_agent_sdk.connectors.incident_io.models.IncidentCreatorUser | None`
     :   The type of the None singleton.
 
 <a id="IncidentCreatorUser"></a>
@@ -1712,22 +1712,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `slack_user_id: str | Any | None`
+    `slack_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentCustomFieldEntriesItem"></a>
@@ -1748,13 +1748,13 @@ Classes
 
     ### Class variables
 
-    `custom_field: airbyte_agent_sdk.connectors.incident_io.models.IncidentCustomFieldEntriesItemCustomField | Any | None`
+    `custom_field: airbyte_agent_sdk.connectors.incident_io.models.IncidentCustomFieldEntriesItemCustomField | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `values: list[typing.Any] | Any | None`
+    `values: list[typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="IncidentCustomFieldEntriesItemCustomField"></a>
@@ -1775,22 +1775,22 @@ Classes
 
     ### Class variables
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `field_type: str | Any | None`
+    `field_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `options: list[typing.Any] | Any | None`
+    `options: list[typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="IncidentDurationMetricsItem"></a>
@@ -1811,7 +1811,7 @@ Classes
 
     ### Class variables
 
-    `duration_metric: airbyte_agent_sdk.connectors.incident_io.models.IncidentDurationMetricsItemDurationMetric | Any | None`
+    `duration_metric: airbyte_agent_sdk.connectors.incident_io.models.IncidentDurationMetricsItemDurationMetric | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1835,13 +1835,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentRoleAssignmentsItem"></a>
@@ -1862,13 +1862,13 @@ Classes
 
     ### Class variables
 
-    `assignee: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItemAssignee | Any | None`
+    `assignee: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItemAssignee | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `role: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItemRole | Any | None`
+    `role: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentRoleAssignmentsItemRole | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentRoleAssignmentsItemAssignee"></a>
@@ -1889,22 +1889,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `slack_user_id: str | Any | None`
+    `slack_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentRoleAssignmentsItemRole"></a>
@@ -1925,34 +1925,34 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `instructions: str | Any | None`
+    `instructions: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `required: bool | Any | None`
+    `required: bool | None`
     :   The type of the None singleton.
 
-    `role_type: str | Any | None`
+    `role_type: str | None`
     :   The type of the None singleton.
 
-    `shortform: str | Any | None`
+    `shortform: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentStatus"></a>
@@ -1973,28 +1973,28 @@ Classes
 
     ### Class variables
 
-    `category: str | Any | None`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentTimestampValuesItem"></a>
@@ -2015,13 +2015,13 @@ Classes
 
     ### Class variables
 
-    `incident_timestamp: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItemIncidentTimestamp | Any | None`
+    `incident_timestamp: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItemIncidentTimestamp | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItemValue | Any | None`
+    `value: airbyte_agent_sdk.connectors.incident_io.models.IncidentIncidentTimestampValuesItemValue | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentTimestampValuesItemIncidentTimestamp"></a>
@@ -2042,16 +2042,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentTimestampValuesItemValue"></a>
@@ -2075,7 +2075,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentIncidentType"></a>
@@ -2096,31 +2096,31 @@ Classes
 
     ### Class variables
 
-    `create_in_triage: str | Any | None`
+    `create_in_triage: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_default: bool | Any | None`
+    `is_default: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `private_incidents_only: bool | Any | None`
+    `private_incidents_only: bool | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentIoAuthConfig"></a>
@@ -2799,34 +2799,34 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `instructions: str | Any | None`
+    `instructions: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `required: bool | Any | None`
+    `required: bool | None`
     :   The type of the None singleton.
 
-    `role_type: str | Any | None`
+    `role_type: str | None`
     :   The type of the None singleton.
 
-    `shortform: str | Any | None`
+    `shortform: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentRolesSearchData"></a>
@@ -2895,25 +2895,25 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentStatus"></a>
@@ -2934,28 +2934,28 @@ Classes
 
     ### Class variables
 
-    `category: str | Any | None`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentStatusesSearchData"></a>
@@ -3018,16 +3018,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
 <a id="IncidentTimestampsSearchData"></a>
@@ -3078,28 +3078,28 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `incident_id: str | Any | None`
+    `incident_id: str | None`
     :   The type of the None singleton.
 
-    `message: str | Any | None`
+    `message: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `new_incident_status: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateNewIncidentStatus | Any | None`
+    `new_incident_status: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateNewIncidentStatus | None`
     :   The type of the None singleton.
 
-    `new_severity: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateNewSeverity | Any | None`
+    `new_severity: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateNewSeverity | None`
     :   The type of the None singleton.
 
-    `updater: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateUpdater | Any | None`
+    `updater: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateUpdater | None`
     :   The type of the None singleton.
 
 <a id="IncidentUpdateNewIncidentStatus"></a>
@@ -3120,28 +3120,28 @@ Classes
 
     ### Class variables
 
-    `category: str | Any | None`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentUpdateNewSeverity"></a>
@@ -3162,25 +3162,25 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentUpdateUpdater"></a>
@@ -3204,7 +3204,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateUpdaterUser | Any | None`
+    `user: airbyte_agent_sdk.connectors.incident_io.models.IncidentUpdateUpdaterUser | None`
     :   The type of the None singleton.
 
 <a id="IncidentUpdateUpdaterUser"></a>
@@ -3225,22 +3225,22 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `slack_user_id: str | Any | None`
+    `slack_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentUpdatesListResultMeta"></a>
@@ -3264,7 +3264,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentUpdatesSearchData"></a>
@@ -3330,7 +3330,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="IncidentsSearchData"></a>
@@ -3447,13 +3447,13 @@ Classes
 
     ### Class variables
 
-    `after: str | Any | None`
+    `after: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="Schedule"></a>
@@ -3474,37 +3474,37 @@ Classes
 
     ### Class variables
 
-    `annotations: dict[str, typing.Any] | Any | None`
+    `annotations: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `config: airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfig | Any | None`
+    `config: airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfig | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `current_shifts: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleCurrentShiftsItem] | Any | None`
+    `current_shifts: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleCurrentShiftsItem] | None`
     :   The type of the None singleton.
 
-    `holidays_public_config: dict[str, typing.Any] | Any | None`
+    `holidays_public_config: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `team_ids: list[str] | Any | None`
+    `team_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ScheduleConfig"></a>
@@ -3528,7 +3528,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `rotations: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItem] | Any | None`
+    `rotations: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItem] | None`
     :   The type of the None singleton.
 
 <a id="ScheduleConfigRotationsItem"></a>
@@ -3549,22 +3549,22 @@ Classes
 
     ### Class variables
 
-    `handover_start_at: str | Any | None`
+    `handover_start_at: str | None`
     :   The type of the None singleton.
 
-    `handovers: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItemHandoversItem] | Any | None`
+    `handovers: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItemHandoversItem] | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `layers: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItemLayersItem] | Any | None`
+    `layers: list[airbyte_agent_sdk.connectors.incident_io.models.ScheduleConfigRotationsItemLayersItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ScheduleConfigRotationsItemHandoversItem"></a>
@@ -3585,10 +3585,10 @@ Classes
 
     ### Class variables
 
-    `interval: float | Any | None`
+    `interval: float | None`
     :   The type of the None singleton.
 
-    `interval_type: str | Any | None`
+    `interval_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3612,13 +3612,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ScheduleCurrentShiftsItem"></a>
@@ -3639,19 +3639,19 @@ Classes
 
     ### Class variables
 
-    `end_at: str | Any | None`
+    `end_at: str | None`
     :   The type of the None singleton.
 
-    `fingerprint: str | Any | None`
+    `fingerprint: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `rotation_id: str | Any | None`
+    `rotation_id: str | None`
     :   The type of the None singleton.
 
-    `start_at: str | Any | None`
+    `start_at: str | None`
     :   The type of the None singleton.
 
 <a id="SchedulesListResultMeta"></a>
@@ -3675,7 +3675,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="SchedulesSearchData"></a>
@@ -3780,25 +3780,25 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rank: float | Any | None`
+    `rank: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="User"></a>
@@ -3819,28 +3819,28 @@ Classes
 
     ### Class variables
 
-    `base_role: airbyte_agent_sdk.connectors.incident_io.models.UserBaseRole | Any | None`
+    `base_role: airbyte_agent_sdk.connectors.incident_io.models.UserBaseRole | None`
     :   The type of the None singleton.
 
-    `custom_roles: list[typing.Any] | Any | None`
+    `custom_roles: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role: str | Any | None`
+    `role: str | None`
     :   The type of the None singleton.
 
-    `slack_user_id: str | Any | None`
+    `slack_user_id: str | None`
     :   The type of the None singleton.
 
 <a id="UserBaseRole"></a>
@@ -3861,19 +3861,19 @@ Classes
 
     ### Class variables
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -3897,7 +3897,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>

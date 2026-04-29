@@ -31,76 +31,76 @@ Classes
 
     ### Class variables
 
-    `average_call_duration: int | Any | None`
+    `average_call_duration: int | None`
     :   The type of the None singleton.
 
-    `average_callback_wait_time: int | Any | None`
+    `average_callback_wait_time: int | None`
     :   The type of the None singleton.
 
-    `average_hold_time: int | Any | None`
+    `average_hold_time: int | None`
     :   The type of the None singleton.
 
-    `average_queue_wait_time: int | Any | None`
+    `average_queue_wait_time: int | None`
     :   The type of the None singleton.
 
-    `average_time_to_answer: int | Any | None`
+    `average_time_to_answer: int | None`
     :   The type of the None singleton.
 
-    `average_wrap_up_time: int | Any | None`
+    `average_wrap_up_time: int | None`
     :   The type of the None singleton.
 
-    `current_timestamp: int | Any | None`
+    `current_timestamp: int | None`
     :   The type of the None singleton.
 
-    `max_calls_waiting: int | Any | None`
+    `max_calls_waiting: int | None`
     :   The type of the None singleton.
 
-    `max_queue_wait_time: int | Any | None`
+    `max_queue_wait_time: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_call_duration: int | Any | None`
+    `total_call_duration: int | None`
     :   The type of the None singleton.
 
-    `total_callback_calls: int | Any | None`
+    `total_callback_calls: int | None`
     :   The type of the None singleton.
 
-    `total_calls: int | Any | None`
+    `total_calls: int | None`
     :   The type of the None singleton.
 
-    `total_calls_abandoned_in_queue: int | Any | None`
+    `total_calls_abandoned_in_queue: int | None`
     :   The type of the None singleton.
 
-    `total_calls_outside_business_hours: int | Any | None`
+    `total_calls_outside_business_hours: int | None`
     :   The type of the None singleton.
 
-    `total_calls_with_exceeded_queue_wait_time: int | Any | None`
+    `total_calls_with_exceeded_queue_wait_time: int | None`
     :   The type of the None singleton.
 
-    `total_calls_with_requested_voicemail: int | Any | None`
+    `total_calls_with_requested_voicemail: int | None`
     :   The type of the None singleton.
 
-    `total_embeddable_callback_calls: int | Any | None`
+    `total_embeddable_callback_calls: int | None`
     :   The type of the None singleton.
 
-    `total_hold_time: int | Any | None`
+    `total_hold_time: int | None`
     :   The type of the None singleton.
 
-    `total_inbound_calls: int | Any | None`
+    `total_inbound_calls: int | None`
     :   The type of the None singleton.
 
-    `total_outbound_calls: int | Any | None`
+    `total_outbound_calls: int | None`
     :   The type of the None singleton.
 
-    `total_textback_requests: int | Any | None`
+    `total_textback_requests: int | None`
     :   The type of the None singleton.
 
-    `total_voicemails: int | Any | None`
+    `total_voicemails: int | None`
     :   The type of the None singleton.
 
-    `total_wrap_up_time: int | Any | None`
+    `total_wrap_up_time: int | None`
     :   The type of the None singleton.
 
 <a id="AccountOverviewResponse"></a>
@@ -121,7 +121,7 @@ Classes
 
     ### Class variables
 
-    `account_overview: airbyte_agent_sdk.connectors.zendesk_talk.models.AccountOverview | Any`
+    `account_overview: airbyte_agent_sdk.connectors.zendesk_talk.models.AccountOverview | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -235,34 +235,34 @@ Classes
 
     ### Class variables
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `provider_reference: str | Any | None`
+    `provider_reference: str | None`
     :   The type of the None singleton.
 
-    `province: str | Any | None`
+    `province: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `street: str | Any | None`
+    `street: str | None`
     :   The type of the None singleton.
 
-    `zip: str | Any | None`
+    `zip: str | None`
     :   The type of the None singleton.
 
 <a id="AddressWrapper"></a>
@@ -283,7 +283,7 @@ Classes
 
     ### Class variables
 
-    `address: airbyte_agent_sdk.connectors.zendesk_talk.models.Address | Any`
+    `address: airbyte_agent_sdk.connectors.zendesk_talk.models.Address | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -307,19 +307,19 @@ Classes
 
     ### Class variables
 
-    `addresses: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Address] | Any`
+    `addresses: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Address] | None`
     :   The type of the None singleton.
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `previous_page: str | Any | None`
+    `previous_page: str | None`
     :   The type of the None singleton.
 
 <a id="AddressesListResultMeta"></a>
@@ -343,7 +343,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="AddressesSearchData"></a>
@@ -412,85 +412,85 @@ Classes
 
     ### Class variables
 
-    `accepted_third_party_conferences: int | Any | None`
+    `accepted_third_party_conferences: int | None`
     :   The type of the None singleton.
 
-    `accepted_transfers: int | Any | None`
+    `accepted_transfers: int | None`
     :   The type of the None singleton.
 
-    `agent_id: int | Any | None`
+    `agent_id: int | None`
     :   The type of the None singleton.
 
-    `agent_state: str | Any | None`
+    `agent_state: str | None`
     :   The type of the None singleton.
 
-    `available_time: int | Any | None`
+    `available_time: int | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `average_hold_time: int | Any | None`
+    `average_hold_time: int | None`
     :   The type of the None singleton.
 
-    `average_talk_time: int | Any | None`
+    `average_talk_time: int | None`
     :   The type of the None singleton.
 
-    `average_wrap_up_time: int | Any | None`
+    `average_wrap_up_time: int | None`
     :   The type of the None singleton.
 
-    `away_time: int | Any | None`
+    `away_time: int | None`
     :   The type of the None singleton.
 
-    `call_status: str | Any | None`
+    `call_status: str | None`
     :   The type of the None singleton.
 
-    `calls_accepted: int | Any | None`
+    `calls_accepted: int | None`
     :   The type of the None singleton.
 
-    `calls_denied: int | Any | None`
+    `calls_denied: int | None`
     :   The type of the None singleton.
 
-    `calls_missed: int | Any | None`
+    `calls_missed: int | None`
     :   The type of the None singleton.
 
-    `calls_put_on_hold: int | Any | None`
+    `calls_put_on_hold: int | None`
     :   The type of the None singleton.
 
-    `forwarding_number: str | Any | None`
+    `forwarding_number: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `online_time: int | Any | None`
+    `online_time: int | None`
     :   The type of the None singleton.
 
-    `started_third_party_conferences: int | Any | None`
+    `started_third_party_conferences: int | None`
     :   The type of the None singleton.
 
-    `started_transfers: int | Any | None`
+    `started_transfers: int | None`
     :   The type of the None singleton.
 
-    `total_call_duration: int | Any | None`
+    `total_call_duration: int | None`
     :   The type of the None singleton.
 
-    `total_hold_time: int | Any | None`
+    `total_hold_time: int | None`
     :   The type of the None singleton.
 
-    `total_talk_time: int | Any | None`
+    `total_talk_time: int | None`
     :   The type of the None singleton.
 
-    `total_wrap_up_time: int | Any | None`
+    `total_wrap_up_time: int | None`
     :   The type of the None singleton.
 
-    `transfers_only_time: int | Any | None`
+    `transfers_only_time: int | None`
     :   The type of the None singleton.
 
-    `via: str | Any | None`
+    `via: str | None`
     :   The type of the None singleton.
 
 <a id="AgentsActivityList"></a>
@@ -511,19 +511,19 @@ Classes
 
     ### Class variables
 
-    `agents_activity: list[airbyte_agent_sdk.connectors.zendesk_talk.models.AgentActivity] | Any`
+    `agents_activity: list[airbyte_agent_sdk.connectors.zendesk_talk.models.AgentActivity] | None`
     :   The type of the None singleton.
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `previous_page: str | Any | None`
+    `previous_page: str | None`
     :   The type of the None singleton.
 
 <a id="AgentsActivityListResultMeta"></a>
@@ -547,7 +547,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="AgentsActivitySearchData"></a>
@@ -667,76 +667,76 @@ Classes
 
     ### Class variables
 
-    `average_accepted_transfers: int | Any | None`
+    `average_accepted_transfers: int | None`
     :   The type of the None singleton.
 
-    `average_available_time: int | Any | None`
+    `average_available_time: int | None`
     :   The type of the None singleton.
 
-    `average_away_time: int | Any | None`
+    `average_away_time: int | None`
     :   The type of the None singleton.
 
-    `average_calls_accepted: int | Any | None`
+    `average_calls_accepted: int | None`
     :   The type of the None singleton.
 
-    `average_calls_denied: int | Any | None`
+    `average_calls_denied: int | None`
     :   The type of the None singleton.
 
-    `average_calls_missed: int | Any | None`
+    `average_calls_missed: int | None`
     :   The type of the None singleton.
 
-    `average_calls_put_on_hold: int | Any | None`
+    `average_calls_put_on_hold: int | None`
     :   The type of the None singleton.
 
-    `average_hold_time: int | Any | None`
+    `average_hold_time: int | None`
     :   The type of the None singleton.
 
-    `average_online_time: int | Any | None`
+    `average_online_time: int | None`
     :   The type of the None singleton.
 
-    `average_started_transfers: int | Any | None`
+    `average_started_transfers: int | None`
     :   The type of the None singleton.
 
-    `average_talk_time: int | Any | None`
+    `average_talk_time: int | None`
     :   The type of the None singleton.
 
-    `average_transfers_only_time: int | Any | None`
+    `average_transfers_only_time: int | None`
     :   The type of the None singleton.
 
-    `average_wrap_up_time: int | Any | None`
+    `average_wrap_up_time: int | None`
     :   The type of the None singleton.
 
-    `current_timestamp: int | Any | None`
+    `current_timestamp: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `total_accepted_transfers: int | Any | None`
+    `total_accepted_transfers: int | None`
     :   The type of the None singleton.
 
-    `total_calls_accepted: int | Any | None`
+    `total_calls_accepted: int | None`
     :   The type of the None singleton.
 
-    `total_calls_denied: int | Any | None`
+    `total_calls_denied: int | None`
     :   The type of the None singleton.
 
-    `total_calls_missed: int | Any | None`
+    `total_calls_missed: int | None`
     :   The type of the None singleton.
 
-    `total_calls_put_on_hold: int | Any | None`
+    `total_calls_put_on_hold: int | None`
     :   The type of the None singleton.
 
-    `total_hold_time: int | Any | None`
+    `total_hold_time: int | None`
     :   The type of the None singleton.
 
-    `total_started_transfers: int | Any | None`
+    `total_started_transfers: int | None`
     :   The type of the None singleton.
 
-    `total_talk_time: int | Any | None`
+    `total_talk_time: int | None`
     :   The type of the None singleton.
 
-    `total_wrap_up_time: int | Any | None`
+    `total_wrap_up_time: int | None`
     :   The type of the None singleton.
 
 <a id="AgentsOverviewResponse"></a>
@@ -757,7 +757,7 @@ Classes
 
     ### Class variables
 
-    `agents_overview: airbyte_agent_sdk.connectors.zendesk_talk.models.AgentsOverview | Any`
+    `agents_overview: airbyte_agent_sdk.connectors.zendesk_talk.models.AgentsOverview | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1372,151 +1372,151 @@ Classes
 
     ### Class variables
 
-    `agent_id: int | Any | None`
+    `agent_id: int | None`
     :   The type of the None singleton.
 
-    `call_channel: str | Any | None`
+    `call_channel: str | None`
     :   The type of the None singleton.
 
-    `call_charge: str | Any | None`
+    `call_charge: str | None`
     :   The type of the None singleton.
 
-    `call_group_id: int | Any | None`
+    `call_group_id: int | None`
     :   The type of the None singleton.
 
-    `call_recording_consent: str | Any | None`
+    `call_recording_consent: str | None`
     :   The type of the None singleton.
 
-    `call_recording_consent_action: str | Any | None`
+    `call_recording_consent_action: str | None`
     :   The type of the None singleton.
 
-    `call_recording_consent_keypress: str | Any | None`
+    `call_recording_consent_keypress: str | None`
     :   The type of the None singleton.
 
-    `callback: bool | Any | None`
+    `callback: bool | None`
     :   The type of the None singleton.
 
-    `callback_source: str | Any | None`
+    `callback_source: str | None`
     :   The type of the None singleton.
 
-    `completion_status: str | Any | None`
+    `completion_status: str | None`
     :   The type of the None singleton.
 
-    `consultation_time: int | Any | None`
+    `consultation_time: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `customer_id: int | Any | None`
+    `customer_id: int | None`
     :   The type of the None singleton.
 
-    `customer_requested_voicemail: bool | Any | None`
+    `customer_requested_voicemail: bool | None`
     :   The type of the None singleton.
 
-    `default_group: bool | Any | None`
+    `default_group: bool | None`
     :   The type of the None singleton.
 
-    `direction: str | Any | None`
+    `direction: str | None`
     :   The type of the None singleton.
 
-    `duration: int | Any | None`
+    `duration: int | None`
     :   The type of the None singleton.
 
-    `exceeded_queue_time: bool | Any | None`
+    `exceeded_queue_time: bool | None`
     :   The type of the None singleton.
 
-    `exceeded_queue_wait_time: bool | Any | None`
+    `exceeded_queue_wait_time: bool | None`
     :   The type of the None singleton.
 
-    `hold_time: int | Any | None`
+    `hold_time: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `ivr_action: str | Any | None`
+    `ivr_action: str | None`
     :   The type of the None singleton.
 
-    `ivr_destination_group_name: str | Any | None`
+    `ivr_destination_group_name: str | None`
     :   The type of the None singleton.
 
-    `ivr_hops: int | Any | None`
+    `ivr_hops: int | None`
     :   The type of the None singleton.
 
-    `ivr_routed_to: str | Any | None`
+    `ivr_routed_to: str | None`
     :   The type of the None singleton.
 
-    `ivr_time_spent: int | Any | None`
+    `ivr_time_spent: int | None`
     :   The type of the None singleton.
 
-    `line: str | Any | None`
+    `line: str | None`
     :   The type of the None singleton.
 
-    `line_id: int | Any | None`
+    `line_id: int | None`
     :   The type of the None singleton.
 
-    `line_type: str | Any | None`
+    `line_type: str | None`
     :   The type of the None singleton.
 
-    `minutes_billed: int | Any | None`
+    `minutes_billed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `not_recording_time: int | Any | None`
+    `not_recording_time: int | None`
     :   The type of the None singleton.
 
-    `outside_business_hours: bool | Any | None`
+    `outside_business_hours: bool | None`
     :   The type of the None singleton.
 
-    `overflowed: bool | Any | None`
+    `overflowed: bool | None`
     :   The type of the None singleton.
 
-    `overflowed_to: str | Any | None`
+    `overflowed_to: str | None`
     :   The type of the None singleton.
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   The type of the None singleton.
 
-    `phone_number_id: int | Any | None`
+    `phone_number_id: int | None`
     :   The type of the None singleton.
 
-    `post_call_summary_created: bool | Any | None`
+    `post_call_summary_created: bool | None`
     :   The type of the None singleton.
 
-    `post_call_transcription_created: bool | Any | None`
+    `post_call_transcription_created: bool | None`
     :   The type of the None singleton.
 
-    `quality_issues: list[str] | Any | None`
+    `quality_issues: list[str] | None`
     :   The type of the None singleton.
 
-    `recording_control_interactions: int | Any | None`
+    `recording_control_interactions: int | None`
     :   The type of the None singleton.
 
-    `recording_time: int | Any | None`
+    `recording_time: int | None`
     :   The type of the None singleton.
 
-    `talk_time: int | Any | None`
+    `talk_time: int | None`
     :   The type of the None singleton.
 
-    `ticket_id: int | Any | None`
+    `ticket_id: int | None`
     :   The type of the None singleton.
 
-    `time_to_answer: int | Any | None`
+    `time_to_answer: int | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `voicemail: bool | Any | None`
+    `voicemail: bool | None`
     :   The type of the None singleton.
 
-    `wait_time: int | Any | None`
+    `wait_time: int | None`
     :   The type of the None singleton.
 
-    `wrap_up_time: int | Any | None`
+    `wrap_up_time: int | None`
     :   The type of the None singleton.
 
 <a id="CallLeg"></a>
@@ -1537,82 +1537,82 @@ Classes
 
     ### Class variables
 
-    `agent_id: int | Any | None`
+    `agent_id: int | None`
     :   The type of the None singleton.
 
-    `available_via: str | Any | None`
+    `available_via: str | None`
     :   The type of the None singleton.
 
-    `call_charge: str | Any | None`
+    `call_charge: str | None`
     :   The type of the None singleton.
 
-    `call_id: int | Any | None`
+    `call_id: int | None`
     :   The type of the None singleton.
 
-    `completion_status: str | Any | None`
+    `completion_status: str | None`
     :   The type of the None singleton.
 
-    `conference_from: int | Any | None`
+    `conference_from: int | None`
     :   The type of the None singleton.
 
-    `conference_time: int | Any | None`
+    `conference_time: int | None`
     :   The type of the None singleton.
 
-    `conference_to: int | Any | None`
+    `conference_to: int | None`
     :   The type of the None singleton.
 
-    `consultation_from: int | Any | None`
+    `consultation_from: int | None`
     :   The type of the None singleton.
 
-    `consultation_time: int | Any | None`
+    `consultation_time: int | None`
     :   The type of the None singleton.
 
-    `consultation_to: int | Any | None`
+    `consultation_to: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `duration: int | Any | None`
+    `duration: int | None`
     :   The type of the None singleton.
 
-    `forwarded_to: str | Any | None`
+    `forwarded_to: str | None`
     :   The type of the None singleton.
 
-    `hold_time: int | Any | None`
+    `hold_time: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `minutes_billed: int | Any | None`
+    `minutes_billed: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `quality_issues: list[str] | Any | None`
+    `quality_issues: list[str] | None`
     :   The type of the None singleton.
 
-    `talk_time: int | Any | None`
+    `talk_time: int | None`
     :   The type of the None singleton.
 
-    `transferred_from: int | Any | None`
+    `transferred_from: int | None`
     :   The type of the None singleton.
 
-    `transferred_to: int | Any | None`
+    `transferred_to: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
-    `wrap_up_time: int | Any | None`
+    `wrap_up_time: int | None`
     :   The type of the None singleton.
 
 <a id="CallLegsList"></a>
@@ -1633,19 +1633,19 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `end_time: int | Any | None`
+    `end_time: int | None`
     :   The type of the None singleton.
 
-    `legs: list[airbyte_agent_sdk.connectors.zendesk_talk.models.CallLeg] | Any`
+    `legs: list[airbyte_agent_sdk.connectors.zendesk_talk.models.CallLeg] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="CallLegsListResultMeta"></a>
@@ -1666,13 +1666,13 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="CallLegsSearchData"></a>
@@ -1789,19 +1789,19 @@ Classes
 
     ### Class variables
 
-    `calls: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Call] | Any`
+    `calls: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Call] | None`
     :   The type of the None singleton.
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `end_time: int | Any | None`
+    `end_time: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="CallsListResultMeta"></a>
@@ -1822,13 +1822,13 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="CallsSearchData"></a>
@@ -1993,28 +1993,28 @@ Classes
 
     ### Class variables
 
-    `agents_online: int | Any | None`
+    `agents_online: int | None`
     :   The type of the None singleton.
 
-    `ai_agent_calls: int | Any | None`
+    `ai_agent_calls: int | None`
     :   The type of the None singleton.
 
-    `average_wait_time: int | Any | None`
+    `average_wait_time: int | None`
     :   The type of the None singleton.
 
-    `callbacks_waiting: int | Any | None`
+    `callbacks_waiting: int | None`
     :   The type of the None singleton.
 
-    `calls_waiting: int | Any | None`
+    `calls_waiting: int | None`
     :   The type of the None singleton.
 
-    `current_timestamp: int | Any | None`
+    `current_timestamp: int | None`
     :   The type of the None singleton.
 
-    `embeddable_callbacks_waiting: int | Any | None`
+    `embeddable_callbacks_waiting: int | None`
     :   The type of the None singleton.
 
-    `longest_wait_time: int | Any | None`
+    `longest_wait_time: int | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2038,7 +2038,7 @@ Classes
 
     ### Class variables
 
-    `current_queue_activity: airbyte_agent_sdk.connectors.zendesk_talk.models.CurrentQueueActivity | Any`
+    `current_queue_activity: airbyte_agent_sdk.connectors.zendesk_talk.models.CurrentQueueActivity | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2104,46 +2104,46 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any | None`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `audio_name: str | Any | None`
+    `audio_name: str | None`
     :   The type of the None singleton.
 
-    `audio_url: str | Any | None`
+    `audio_url: str | None`
     :   The type of the None singleton.
 
-    `category_id: int | Any | None`
+    `category_id: int | None`
     :   The type of the None singleton.
 
-    `default: bool | Any | None`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `default_lang: bool | Any | None`
+    `default_lang: bool | None`
     :   The type of the None singleton.
 
-    `has_sub_settings: bool | Any | None`
+    `has_sub_settings: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `ivr_ids: list[typing.Any] | Any | None`
+    `ivr_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `pending: bool | Any | None`
+    `pending: bool | None`
     :   The type of the None singleton.
 
-    `phone_number_ids: list[typing.Any] | Any | None`
+    `phone_number_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `upload_id: int | Any | None`
+    `upload_id: int | None`
     :   The type of the None singleton.
 
 <a id="GreetingCategoriesList"></a>
@@ -2164,19 +2164,19 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `greeting_categories: list[airbyte_agent_sdk.connectors.zendesk_talk.models.GreetingCategory] | Any`
+    `greeting_categories: list[airbyte_agent_sdk.connectors.zendesk_talk.models.GreetingCategory] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `previous_page: str | Any | None`
+    `previous_page: str | None`
     :   The type of the None singleton.
 
 <a id="GreetingCategoriesListResultMeta"></a>
@@ -2200,7 +2200,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="GreetingCategoriesSearchData"></a>
@@ -2248,13 +2248,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="GreetingCategoryWrapper"></a>
@@ -2275,7 +2275,7 @@ Classes
 
     ### Class variables
 
-    `greeting_category: airbyte_agent_sdk.connectors.zendesk_talk.models.GreetingCategory | Any`
+    `greeting_category: airbyte_agent_sdk.connectors.zendesk_talk.models.GreetingCategory | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2299,7 +2299,7 @@ Classes
 
     ### Class variables
 
-    `greeting: airbyte_agent_sdk.connectors.zendesk_talk.models.Greeting | Any`
+    `greeting: airbyte_agent_sdk.connectors.zendesk_talk.models.Greeting | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2323,19 +2323,19 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `greetings: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Greeting] | Any`
+    `greetings: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Greeting] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `previous_page: str | Any | None`
+    `previous_page: str | None`
     :   The type of the None singleton.
 
 <a id="GreetingsListResultMeta"></a>
@@ -2359,7 +2359,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="GreetingsSearchData"></a>
@@ -2440,22 +2440,22 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `menus: list[airbyte_agent_sdk.connectors.zendesk_talk.models.IvrMenusItem] | Any | None`
+    `menus: list[airbyte_agent_sdk.connectors.zendesk_talk.models.IvrMenusItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone_number_ids: list[typing.Any] | Any | None`
+    `phone_number_ids: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `phone_number_names: list[typing.Any] | Any | None`
+    `phone_number_names: list[typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="IvrMenusItem"></a>
@@ -2476,22 +2476,22 @@ Classes
 
     ### Class variables
 
-    `default: bool | Any | None`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `greeting_id: int | Any | None`
+    `greeting_id: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `routes: list[airbyte_agent_sdk.connectors.zendesk_talk.models.IvrMenusItemRoutesItem] | Any | None`
+    `routes: list[airbyte_agent_sdk.connectors.zendesk_talk.models.IvrMenusItemRoutesItem] | None`
     :   The type of the None singleton.
 
 <a id="IvrMenusItemRoutesItem"></a>
@@ -2512,28 +2512,28 @@ Classes
 
     ### Class variables
 
-    `action: str | Any | None`
+    `action: str | None`
     :   The type of the None singleton.
 
-    `greeting: str | Any | None`
+    `greeting: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `keypress: str | Any | None`
+    `keypress: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `option_text: str | Any | None`
+    `option_text: str | None`
     :   The type of the None singleton.
 
-    `options: dict[str, typing.Any] | Any | None`
+    `options: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `overflow_options: list[typing.Any] | Any | None`
+    `overflow_options: list[typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="IvrWrapper"></a>
@@ -2554,7 +2554,7 @@ Classes
 
     ### Class variables
 
-    `ivr: airbyte_agent_sdk.connectors.zendesk_talk.models.Ivr | Any`
+    `ivr: airbyte_agent_sdk.connectors.zendesk_talk.models.Ivr | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2578,19 +2578,19 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
-    `ivrs: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Ivr] | Any`
+    `ivrs: list[airbyte_agent_sdk.connectors.zendesk_talk.models.Ivr] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `previous_page: str | Any | None`
+    `previous_page: str | None`
     :   The type of the None singleton.
 
 <a id="IvrsListResultMeta"></a>
@@ -2614,7 +2614,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="IvrsSearchData"></a>
@@ -2671,100 +2671,100 @@ Classes
 
     ### Class variables
 
-    `brand_id: int | Any | None`
+    `brand_id: int | None`
     :   The type of the None singleton.
 
-    `call_recording_consent: str | Any | None`
+    `call_recording_consent: str | None`
     :   The type of the None singleton.
 
-    `capabilities: airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumberCapabilities | Any | None`
+    `capabilities: airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumberCapabilities | None`
     :   The type of the None singleton.
 
-    `categorised_greetings: dict[str, typing.Any] | Any | None`
+    `categorised_greetings: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `categorised_greetings_with_sub_settings: dict[str, typing.Any] | Any | None`
+    `categorised_greetings_with_sub_settings: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default_greeting_ids: list[str] | Any | None`
+    `default_greeting_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `default_group_id: int | Any | None`
+    `default_group_id: int | None`
     :   The type of the None singleton.
 
-    `display_number: str | Any | None`
+    `display_number: str | None`
     :   The type of the None singleton.
 
-    `external: bool | Any | None`
+    `external: bool | None`
     :   The type of the None singleton.
 
-    `failover_number: str | Any | None`
+    `failover_number: str | None`
     :   The type of the None singleton.
 
-    `greeting_ids: list[int] | Any | None`
+    `greeting_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `group_ids: list[int] | Any | None`
+    `group_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `ivr_id: int | Any | None`
+    `ivr_id: int | None`
     :   The type of the None singleton.
 
-    `line_type: str | Any | None`
+    `line_type: str | None`
     :   The type of the None singleton.
 
-    `location: str | Any | None`
+    `location: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `nickname: str | Any | None`
+    `nickname: str | None`
     :   The type of the None singleton.
 
-    `number: str | Any | None`
+    `number: str | None`
     :   The type of the None singleton.
 
-    `outbound_enabled: bool | Any | None`
+    `outbound_enabled: bool | None`
     :   The type of the None singleton.
 
-    `priority: int | Any | None`
+    `priority: int | None`
     :   The type of the None singleton.
 
-    `recorded: bool | Any | None`
+    `recorded: bool | None`
     :   The type of the None singleton.
 
-    `schedule_id: int | Any | None`
+    `schedule_id: int | None`
     :   The type of the None singleton.
 
-    `sms_enabled: bool | Any | None`
+    `sms_enabled: bool | None`
     :   The type of the None singleton.
 
-    `sms_group_id: int | Any | None`
+    `sms_group_id: int | None`
     :   The type of the None singleton.
 
-    `token: str | Any | None`
+    `token: str | None`
     :   The type of the None singleton.
 
-    `toll_free: bool | Any | None`
+    `toll_free: bool | None`
     :   The type of the None singleton.
 
-    `transcription: bool | Any | None`
+    `transcription: bool | None`
     :   The type of the None singleton.
 
-    `voice_enabled: bool | Any | None`
+    `voice_enabled: bool | None`
     :   The type of the None singleton.
 
 <a id="PhoneNumberCapabilities"></a>
@@ -2785,19 +2785,19 @@ Classes
 
     ### Class variables
 
-    `emergency_address: bool | Any | None`
+    `emergency_address: bool | None`
     :   The type of the None singleton.
 
-    `mms: bool | Any | None`
+    `mms: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `sms: bool | Any | None`
+    `sms: bool | None`
     :   The type of the None singleton.
 
-    `voice: bool | Any | None`
+    `voice: bool | None`
     :   The type of the None singleton.
 
 <a id="PhoneNumberWrapper"></a>
@@ -2821,7 +2821,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `phone_number: airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumber | Any`
+    `phone_number: airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumber | None`
     :   The type of the None singleton.
 
 <a id="PhoneNumbersList"></a>
@@ -2842,19 +2842,19 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
-    `phone_numbers: list[airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumber] | Any`
+    `phone_numbers: list[airbyte_agent_sdk.connectors.zendesk_talk.models.PhoneNumber] | None`
     :   The type of the None singleton.
 
-    `previous_page: str | Any | None`
+    `previous_page: str | None`
     :   The type of the None singleton.
 
 <a id="PhoneNumbersListResultMeta"></a>
@@ -2878,7 +2878,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: str | Any | None`
+    `next_page: str | None`
     :   The type of the None singleton.
 
 <a id="PhoneNumbersSearchData"></a>

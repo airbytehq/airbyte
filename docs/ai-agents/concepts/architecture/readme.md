@@ -24,7 +24,7 @@ flowchart TB
     end
 
     subgraph platform["Airbyte Agents Platform"]
-        AUTH["Authentication\n& token management"]
+        AUTH["Authentication<br/>& token management"]
         EXEC["Execution engine"]
         CS["Context Store"]
     end

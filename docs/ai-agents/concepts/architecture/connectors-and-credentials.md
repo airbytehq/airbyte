@@ -26,7 +26,7 @@ Airbyte stores your credentials securely in the cloud and manages token refresh.
 
 ### Open source mode
 
-Each agent connector is also an open source Python package you can install and run independently. In open source mode, you provide API credentials directly to the connector in your code. No Airbyte account is required. Use this mode when you want to manage credentials yourself or run connectors in an air-gapped environment.
+The SDK is a single open source Python package that includes every connector. In open source mode, you install the SDK and provide API credentials directly to the connector in your code. No Airbyte account is required. Use this mode when you want to manage credentials yourself or run connectors in an air-gapped environment.
 
 For installation and usage in open source mode, see each connector's page in [Agent connectors](../../connectors).
 
@@ -36,7 +36,7 @@ A typical connector lifecycle looks like this:
 
 1. **Add credentials** — Provide the third-party service's credentials through the [web app](../../interfaces/ui/add-connector), [API](../../interfaces/api/add-connector), or [SDK](../../interfaces/sdk/add-connector). Airbyte stores the credentials and returns a connector ID.
 2. **Execute operations** — Make tool calls against the connector. Each call targets an entity and an action. See [Execute operations (API)](../../interfaces/api/execute) or [Execute operations (SDK)](../../interfaces/sdk/execute).
-3. **Use the Context Store** — The [Context Store](../context-store) is enabled by default and replicates and indexes a subset of your connector data. This powers fast search operations without hitting the upstream API.
+3. **Use the Context Store** — The [Context Store](../context-store) is always on and automatically replicates and indexes a subset of your connector data. This powers fast search operations without hitting the upstream API.
 
 ## Entities and actions {#entities-and-actions}
 

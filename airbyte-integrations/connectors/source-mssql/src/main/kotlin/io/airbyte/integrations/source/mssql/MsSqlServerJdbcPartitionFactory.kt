@@ -359,6 +359,18 @@ class MsSqlServerJdbcPartitionFactory(
                     return null
                 }
             }
+
+            // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
+            if (isView(stream) || orderedColumns == null) {
+                return MsSqlServerJdbcNonResumableCursorIncrementalPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    cursor,
+                    cursorLowerBound = cursorCheckpoint,
+                    isLowerBoundIncluded = false,
+                    cursorCutoffTime = getCursorCutoffTime(cursor)
+                )
+            }
             return MsSqlServerJdbcCursorIncrementalPartition(
                 selectQueryGenerator,
                 streamState,
@@ -449,6 +461,7 @@ class MsSqlServerJdbcPartitionFactory(
             is MsSqlServerJdbcCursorIncrementalPartition -> listOf(unsplitPartition)
             is MsSqlServerJdbcNonResumableSnapshotPartition -> listOf(unsplitPartition)
             is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+            is MsSqlServerJdbcNonResumableCursorIncrementalPartition -> listOf(unsplitPartition)
         }
     }
 

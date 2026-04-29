@@ -930,7 +930,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsAllFieldsRequest"></a>
@@ -951,31 +951,31 @@ Classes
 
     ### Class variables
 
-    `aggregation_type: str | Any`
+    `aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `data_state: str | Any`
+    `data_state: str | None`
     :   The type of the None singleton.
 
-    `dimensions: list[str] | Any`
+    `dimensions: list[str] | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `row_limit: int | Any`
+    `row_limit: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str`
     :   The type of the None singleton.
 
-    `start_row: int | Any`
+    `start_row: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsAllFieldsSearchData"></a>
@@ -1053,7 +1053,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByCountryRequest"></a>
@@ -1074,31 +1074,31 @@ Classes
 
     ### Class variables
 
-    `aggregation_type: str | Any`
+    `aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `data_state: str | Any`
+    `data_state: str | None`
     :   The type of the None singleton.
 
-    `dimensions: list[str] | Any`
+    `dimensions: list[str] | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `row_limit: int | Any`
+    `row_limit: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str`
     :   The type of the None singleton.
 
-    `start_row: int | Any`
+    `start_row: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByCountrySearchData"></a>
@@ -1167,7 +1167,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDateRequest"></a>
@@ -1188,31 +1188,31 @@ Classes
 
     ### Class variables
 
-    `aggregation_type: str | Any`
+    `aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `data_state: str | Any`
+    `data_state: str | None`
     :   The type of the None singleton.
 
-    `dimensions: list[str] | Any`
+    `dimensions: list[str] | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `row_limit: int | Any`
+    `row_limit: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str`
     :   The type of the None singleton.
 
-    `start_row: int | Any`
+    `start_row: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDateSearchData"></a>
@@ -1278,7 +1278,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDeviceRequest"></a>
@@ -1299,31 +1299,31 @@ Classes
 
     ### Class variables
 
-    `aggregation_type: str | Any`
+    `aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `data_state: str | Any`
+    `data_state: str | None`
     :   The type of the None singleton.
 
-    `dimensions: list[str] | Any`
+    `dimensions: list[str] | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `row_limit: int | Any`
+    `row_limit: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str`
     :   The type of the None singleton.
 
-    `start_row: int | Any`
+    `start_row: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDeviceSearchData"></a>
@@ -1392,7 +1392,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByPageRequest"></a>
@@ -1413,31 +1413,31 @@ Classes
 
     ### Class variables
 
-    `aggregation_type: str | Any`
+    `aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `data_state: str | Any`
+    `data_state: str | None`
     :   The type of the None singleton.
 
-    `dimensions: list[str] | Any`
+    `dimensions: list[str] | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `row_limit: int | Any`
+    `row_limit: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str`
     :   The type of the None singleton.
 
-    `start_row: int | Any`
+    `start_row: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByPageSearchData"></a>
@@ -1506,7 +1506,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByQueryRequest"></a>
@@ -1527,31 +1527,31 @@ Classes
 
     ### Class variables
 
-    `aggregation_type: str | Any`
+    `aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `data_state: str | Any`
+    `data_state: str | None`
     :   The type of the None singleton.
 
-    `dimensions: list[str] | Any`
+    `dimensions: list[str] | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `row_limit: int | Any`
+    `row_limit: int | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str`
     :   The type of the None singleton.
 
-    `start_row: int | Any`
+    `start_row: int | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByQuerySearchData"></a>
@@ -1620,10 +1620,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `response_aggregation_type: str | Any | None`
+    `response_aggregation_type: str | None`
     :   The type of the None singleton.
 
-    `rows: list[airbyte_agent_sdk.connectors.google_search_console.models.SearchAnalyticsRow] | Any`
+    `rows: list[airbyte_agent_sdk.connectors.google_search_console.models.SearchAnalyticsRow] | None`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsRow"></a>
@@ -1644,22 +1644,22 @@ Classes
 
     ### Class variables
 
-    `clicks: float | Any | None`
+    `clicks: float | None`
     :   The type of the None singleton.
 
-    `ctr: float | Any | None`
+    `ctr: float | None`
     :   The type of the None singleton.
 
-    `impressions: float | Any | None`
+    `impressions: float | None`
     :   The type of the None singleton.
 
-    `keys: list[str] | Any | None`
+    `keys: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `position: float | Any | None`
+    `position: float | None`
     :   The type of the None singleton.
 
 <a id="Site"></a>
@@ -1683,10 +1683,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `permission_level: str | Any | None`
+    `permission_level: str | None`
     :   The type of the None singleton.
 
-    `site_url: str | Any | None`
+    `site_url: str | None`
     :   The type of the None singleton.
 
 <a id="Sitemap"></a>
@@ -1707,34 +1707,34 @@ Classes
 
     ### Class variables
 
-    `contents: list[airbyte_agent_sdk.connectors.google_search_console.models.SitemapContent] | Any | None`
+    `contents: list[airbyte_agent_sdk.connectors.google_search_console.models.SitemapContent] | None`
     :   The type of the None singleton.
 
-    `errors: str | Any | None`
+    `errors: str | None`
     :   The type of the None singleton.
 
-    `is_pending: bool | Any | None`
+    `is_pending: bool | None`
     :   The type of the None singleton.
 
-    `is_sitemaps_index: bool | Any | None`
+    `is_sitemaps_index: bool | None`
     :   The type of the None singleton.
 
-    `last_downloaded: str | Any | None`
+    `last_downloaded: str | None`
     :   The type of the None singleton.
 
-    `last_submitted: str | Any | None`
+    `last_submitted: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `path: str | Any | None`
+    `path: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `warnings: str | Any | None`
+    `warnings: str | None`
     :   The type of the None singleton.
 
 <a id="SitemapContent"></a>
@@ -1755,16 +1755,16 @@ Classes
 
     ### Class variables
 
-    `indexed: str | Any | None`
+    `indexed: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `submitted: str | Any | None`
+    `submitted: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SitemapsList"></a>
@@ -1788,7 +1788,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `sitemap: list[airbyte_agent_sdk.connectors.google_search_console.models.Sitemap] | Any`
+    `sitemap: list[airbyte_agent_sdk.connectors.google_search_console.models.Sitemap] | None`
     :   The type of the None singleton.
 
 <a id="SitemapsSearchData"></a>
@@ -1860,7 +1860,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `site_entry: list[airbyte_agent_sdk.connectors.google_search_console.models.Site] | Any`
+    `site_entry: list[airbyte_agent_sdk.connectors.google_search_console.models.Site] | None`
     :   The type of the None singleton.
 
 <a id="SitesSearchData"></a>
