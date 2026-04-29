@@ -23,7 +23,7 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.13 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
