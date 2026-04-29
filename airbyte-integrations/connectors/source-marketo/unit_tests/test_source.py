@@ -13,8 +13,8 @@ import pytest
 import requests
 from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
 
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.legacy.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.utils import AirbyteTracedException
 

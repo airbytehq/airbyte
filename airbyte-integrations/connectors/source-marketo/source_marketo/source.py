@@ -13,7 +13,6 @@ import pendulum
 import requests
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -21,6 +20,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 from .utils import STRING_TYPES, clean_string, format_value, to_datetime_str
 
