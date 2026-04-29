@@ -47,7 +47,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
 from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
 
@@ -57,10 +59,58 @@ connector = FreshdeskConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @FreshdeskConnector.tool_utils
 async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    )
+)
+
+@tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.connectors.freshdesk.models import FreshdeskAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=FreshdeskAuthConfig(
+        api_key="<Your Freshdesk API key (found in Profile Settings)>"
+    )
+)
+
+mcp = FastMCP("Freshdesk Agent")
+
+@mcp.tool()
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -72,21 +122,66 @@ This example assumes you've already authenticated your connector with Airbyte. S
 
 The `connect()` factory returns a fully typed `FreshdeskConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
 
 connector = connect("freshdesk", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @FreshdeskConnector.tool_utils
 async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+@tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+
+connector = connect("freshdesk", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Freshdesk Agent")
+
+@mcp.tool()
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -99,10 +194,64 @@ connector = FreshdeskConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @FreshdeskConnector.tool_utils
 async def freshdesk_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.freshdesk import FreshdeskConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = FreshdeskConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Freshdesk Agent")
+
+@mcp.tool()
+@FreshdeskConnector.tool_utils
+async def freshdesk_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Freshdesk connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation

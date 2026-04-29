@@ -50,7 +50,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
 
@@ -62,10 +64,62 @@ connector = SalesforceConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @SalesforceConnector.tool_utils
 async def salesforce_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    )
+)
+
+@tool
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Salesforce connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=SalesforceAuthConfig(
+        refresh_token="<OAuth refresh token for automatic token renewal>",
+        client_id="<Connected App Consumer Key>",
+        client_secret="<Connected App Consumer Secret>"
+    )
+)
+
+mcp = FastMCP("Salesforce Agent")
+
+@mcp.tool()
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Salesforce connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -77,21 +131,66 @@ This example assumes you've already authenticated your connector with Airbyte. S
 
 The `connect()` factory returns a fully typed `SalesforceConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 
 connector = connect("salesforce", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @SalesforceConnector.tool_utils
 async def salesforce_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+@tool
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Salesforce connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+
+connector = connect("salesforce", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Salesforce Agent")
+
+@mcp.tool()
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Salesforce connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -104,10 +203,64 @@ connector = SalesforceConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @SalesforceConnector.tool_utils
 async def salesforce_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Salesforce connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SalesforceConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Salesforce Agent")
+
+@mcp.tool()
+@SalesforceConnector.tool_utils
+async def salesforce_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Salesforce connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation
