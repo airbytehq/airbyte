@@ -53,4 +53,8 @@ def run() -> None:
     source = _get_source(_args)
     if source:
         MigrateCredentialsToOAuth.migrate(_args, source)
+        # Re-create the source so self._config picks up the migrated config
+        # (discover() uses self._config, not the config passed by launch())
+        source = _get_source(_args)
+    if source:
         launch(source, _args)
