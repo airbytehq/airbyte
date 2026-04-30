@@ -50,11 +50,11 @@ Use the filters above the table to narrow the activity to a specific subset:
 Each row in the table includes the following information:
 
 - **Tool Type**: A badge that identifies the call as **Direct** or **Search**. Search calls that Airbyte served from the Context Store also show a **Context Store** badge.
-- **Entity**: The resource the agent acted on, such as `contacts` or `orders`. This matches the stream name exposed by the connector.
-- **Action**: The operation the agent performed, such as `list`, `get`, `context-store-search`, or `create`.
+- **Entity**: The resource the agent acted on, such as `contacts` or `orders`. This matches the stream name exposed by the connector's 3rd party API.
+- **Action**: The operation the agent performed, such as `list`, `get`, `context_store_search`, or `create`.
 - **Workspace**: The workspace the tool call belongs to. Click the workspace name to view that workspace's credentials.
 - **Connector**: The connector the agent used, such as HubSpot or Stripe.
-- **Timestamp**: The date and time Airbyte recorded the call.
+- **Timestamp**: The date and time Airbyte recorded the call, reflected in your browsers local time zone.
 - **Status**: A green check mark for successful calls, or a red X for failed calls. Use the Status filter to focus on failures when you're troubleshooting.
 
 If the table is empty, your agents haven't made any tool calls yet, or your filters exclude every call in the window. Clear your filters to confirm.
