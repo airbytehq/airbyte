@@ -171,9 +171,18 @@ def organizations_response(
     organization_id: str = ORGANIZATION_ID,
     has_next: bool = False,
     next_link: Optional[str] = None,
+    updated_at: Optional[str] = None,
 ) -> HttpResponse:
     """Create an organizations response using JSON template."""
-    return create_response_with_id("organizations", organization_id, has_next=has_next, next_link=next_link)
+    body = copy.deepcopy(find_template("organizations", __file__))
+    _set_nested_value(body, "id", organization_id)
+    if updated_at is not None:
+        _set_nested_value(body, "updated_at", updated_at)
+
+    if has_next and next_link:
+        body["paging"] = {"next_link": next_link}
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def adaccounts_response(
@@ -181,12 +190,15 @@ def adaccounts_response(
     organization_id: str = ORGANIZATION_ID,
     has_next: bool = False,
     next_link: Optional[str] = None,
+    updated_at: Optional[str] = None,
 ) -> HttpResponse:
     """Create an adaccounts response using JSON template."""
     body = copy.deepcopy(find_template("adaccounts", __file__))
     _set_nested_value(body, "id", ad_account_id)
     _set_nested_value(body, "organization_id", organization_id)
     _set_nested_value(body, "advertiser_organization_id", organization_id)
+    if updated_at is not None:
+        _set_nested_value(body, "updated_at", updated_at)
 
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}

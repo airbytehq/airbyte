@@ -122,6 +122,46 @@ class TestOrganizationsEmptyResults(TestCase):
         assert any("Finished syncing" in msg or "Read" in msg for msg in log_messages)
 
 
+class TestOrganizationsParentStreamNotFiltered(TestCase):
+    @HttpMocker()
+    def test_old_records_emitted_during_incremental_sync(self, http_mocker: HttpMocker) -> None:
+        """Test that parent stream records are emitted even when older than cursor minus lookback.
+
+        This is the core regression test for the bug where is_client_side_incremental: true
+        on parent streams caused ClientSideIncrementalRecordFilterDecorator to drop records
+        whose updated_at was older than cursor_value - lookback_window (P2D). Child streams
+        using SubstreamPartitionRouter only see emitted parent records, so filtered-out
+        parents made their child streams invisible.
+
+        Setup:
+        - State cursor = 2024-01-28 (far ahead)
+        - Lookback window = P2D, so cutoff = 2024-01-26
+        - Record updated_at = 2024-01-10 (well before cutoff)
+        - Before fix: record filtered out (Jan 10 < Jan 26)
+        - After fix: record emitted (no client-side filtering on parent)
+        """
+        old_updated_at = "2024-01-10T00:00:00.000Z"
+        advanced_state_date = "2024-01-28T00:00:00.000000Z"
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": advanced_state_date}).build()
+
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID, updated_at=old_updated_at),
+        )
+
+        output = _read(config_builder=config(), sync_mode=SyncMode.incremental, state=state)
+
+        assert len(output.records) == 1, (
+            "Expected old parent record to be emitted during incremental sync. "
+            "If this fails, is_client_side_incremental may still be filtering parent records."
+        )
+        assert output.records[0].record.data["id"] == ORGANIZATION_ID
+
+
 class TestOrganizationsIncremental(TestCase):
     @HttpMocker()
     def test_incremental_first_sync_emits_state(self, http_mocker: HttpMocker) -> None:

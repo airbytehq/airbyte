@@ -75,7 +75,6 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%d"
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -153,7 +152,6 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -293,7 +291,6 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -363,7 +360,6 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -573,7 +569,6 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:

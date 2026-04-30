@@ -246,3 +246,52 @@ class TestAdaccountsIncremental(TestCase):
         assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
             record_cursor_value[:10]
         ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+
+
+class TestAdaccountsParentStreamNotFiltered(TestCase):
+    @HttpMocker()
+    def test_old_parent_records_still_produce_child_partitions(self, http_mocker: HttpMocker) -> None:
+        """Test that adaccounts are fetched even when parent org has an old updated_at.
+
+        This is a regression test for the bug where is_client_side_incremental: true
+        on parent streams (organizations) caused the CDK to filter out parent records
+        whose updated_at was older than cursor_value - lookback_window. Since adaccounts
+        uses SubstreamPartitionRouter with organizations as parent, filtered-out orgs
+        meant adaccounts for those orgs were never fetched.
+
+        Setup:
+        - Parent org updated_at = 2024-01-10 (old)
+        - Adaccount updated_at = 2024-01-10 (old)
+        - Adaccounts state cursor = 2024-01-28 (far ahead)
+        - Before fix: parent org filtered out -> no adaccount partitions -> 0 records
+        - After fix: parent org emitted -> adaccounts fetched normally
+        """
+        old_updated_at = "2024-01-10T00:00:00.000Z"
+        advanced_state_date = "2024-01-28T00:00:00.000000Z"
+        state = StateBuilder().with_stream_state("adaccounts", {"updated_at": advanced_state_date}).build()
+
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID, updated_at=old_updated_at),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response(
+                ad_account_id=AD_ACCOUNT_ID,
+                organization_id=ORGANIZATION_ID,
+                updated_at=old_updated_at,
+            ),
+        )
+
+        output = _read(config_builder=config(), sync_mode=SyncMode.incremental, state=state)
+
+        assert len(output.records) >= 1, (
+            "Expected adaccounts to be fetched even when parent org has old updated_at. "
+            "If this fails, is_client_side_incremental on organizations may still be filtering parent records."
+        )
+        record_ids = [r.record.data.get("id") for r in output.records]
+        assert AD_ACCOUNT_ID in record_ids
