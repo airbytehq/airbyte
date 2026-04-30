@@ -3140,7 +3140,7 @@ definitions:
       # between computing the timestamp and the API receiving the request.
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89DT23H58M')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89DT23H58M')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         field_name: "createdSince"
@@ -12804,8 +12804,5 @@ schemas:
         description: Date and time filter for events posted before a specific date
         type:
         - 'null'
-        - string
-        format: date-time
-ll'
         - string
         format: date-time
