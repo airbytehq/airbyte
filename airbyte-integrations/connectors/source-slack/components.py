@@ -5,7 +5,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set
 
 import requests
 
@@ -43,6 +43,43 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 LOGGER = logging.getLogger("airbyte_logger")
 
+# Error-code buckets for Slack conversations.join responses.
+# Reference: https://docs.slack.dev/reference/methods/conversations.join
+_CONFIG_ERROR_CODES: Set[str] = {
+    "missing_scope",
+    "not_authed",
+    "invalid_auth",
+    "account_inactive",
+    "token_revoked",
+    "token_expired",
+    "no_permission",
+    "org_login_required",
+    "ekm_access_denied",
+    "not_allowed_token_type",
+    "enterprise_is_restricted",
+    "team_access_not_granted",
+    "access_denied",
+}
+
+_TRANSIENT_ERROR_CODES: Set[str] = {
+    "ratelimited",
+    "request_timeout",
+    "service_unavailable",
+    "fatal_error",
+    "internal_error",
+    "accesslimited",
+    "team_added_to_org",
+}
+
+_IGNORABLE_ERROR_CODES: Set[str] = {
+    "is_archived",
+    "channel_not_found",
+    "method_not_supported_for_channel_type",
+    "cant_invite_self",
+    "already_in_channel",
+    "missing_post_type",
+}
+
 
 class JoinChannelsStream(HttpStream):
     """
@@ -61,26 +98,68 @@ class JoinChannelsStream(HttpStream):
     def path(self, **kwargs) -> str:
         return "conversations.join"
 
+    @property
+    def max_retries(self) -> int:
+        return 5
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429:
+            return True
+        if response.status_code == 200:
+            body = response.json()
+            if not body.get("ok", False):
+                return body.get("error", "") in _TRANSIENT_ERROR_CODES
+        return False
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        retry_after = response.headers.get("Retry-After")
+        if retry_after:
+            try:
+                return float(retry_after)
+            except (ValueError, TypeError):
+                pass
+        return None
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable:
         """
-        Override to simply indicate that the specific channel was joined successfully.
-        This method should not return any data, but should return an empty iterable.
+        Handle conversations.join responses by categorising Slack error codes
+        into config-error, transient-error, ignorable, or system-error buckets.
         """
         response_json = response.json()
-        is_ok = response_json.get("ok", False)
-        if is_ok:
+        if response_json.get("ok", False):
             self.logger.info(f"Successfully joined channel: {stream_slice['channel_name']}")
-        else:
-            error_code = response_json.get("error", "")
+            return []
+
+        error_code = response_json.get("error", "")
+        channel_name = (stream_slice or {}).get("channel_name", "unknown")
+
+        if error_code in _CONFIG_ERROR_CODES:
+            detail = ""
             if error_code == "missing_scope":
                 needed = response_json.get("needed", "unknown")
-                raise AirbyteTracedException(
-                    message=f"OAuth scope '{needed}' is required but not granted.",
-                    internal_message=f"conversations.join for channel '{stream_slice['channel_name']}' returned missing_scope: needed={needed}, response={response_json}",
-                    failure_type=FailureType.config_error,
-                )
-            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response_json}")
-        return []
+                detail = f" OAuth scope '{needed}' is required but not granted."
+            raise AirbyteTracedException(
+                message=f"Slack conversations.join failed for channel '{channel_name}' with config error '{error_code}'.{detail}",
+                internal_message=f"conversations.join error_code={error_code}, channel={channel_name}, response={response_json}",
+                failure_type=FailureType.config_error,
+            )
+
+        if error_code in _TRANSIENT_ERROR_CODES:
+            raise AirbyteTracedException(
+                message=f"Slack conversations.join returned transient error '{error_code}' for channel '{channel_name}'.",
+                internal_message=f"conversations.join error_code={error_code}, channel={channel_name}, response={response_json}",
+                failure_type=FailureType.transient_error,
+            )
+
+        if error_code in _IGNORABLE_ERROR_CODES:
+            self.logger.info(f"Skipping channel '{channel_name}': conversations.join returned '{error_code}'.")
+            return []
+
+        raise AirbyteTracedException(
+            message=f"Slack conversations.join returned an unrecognized error: '{error_code}'.",
+            internal_message=f"conversations.join error_code={error_code}, channel={channel_name}, response={response_json}",
+            failure_type=FailureType.system_error,
+        )
 
     def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
         if stream_slice:

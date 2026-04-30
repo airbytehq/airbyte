@@ -106,7 +106,7 @@ def test_join_channel_read_missing_scope_raises_config_error(requests_mock, toke
     assert "channels:join" in exc_info.value.message
 
 
-def test_join_channel_read_other_error_logs_warning(requests_mock, token_config, joined_channel, caplog, components_module):
+def test_join_channel_read_ignorable_error_logs_and_skips(requests_mock, token_config, joined_channel, caplog, components_module):
     join_response = {"ok": False, "error": "channel_not_found"}
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
     requests_mock.get(
@@ -117,7 +117,133 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
     retriever = get_channels_retriever_instance(token_config, components_module)
     assert len(list(retriever.read_records(records_schema={}))) == 2
     assert mocked_request.called
-    assert "Unable to joined channel: test channel" in caplog.text
+    assert "Skipping channel 'test channel': conversations.join returned 'channel_not_found'." in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# Parametrized tests for JoinChannelsStream error-code buckets
+# ---------------------------------------------------------------------------
+
+
+def _make_join_stream(token_config, components_module):
+    token = token_config["credentials"]["api_token"]
+    authenticator = TokenAuthenticator(token)
+    return components_module.JoinChannelsStream(authenticator=authenticator, channel_filter=[])
+
+
+@pytest.mark.parametrize(
+    "error_code",
+    [
+        "not_authed",
+        "invalid_auth",
+        "account_inactive",
+        "token_revoked",
+        "token_expired",
+        "no_permission",
+        "org_login_required",
+        "ekm_access_denied",
+        "not_allowed_token_type",
+        "enterprise_is_restricted",
+        "team_access_not_granted",
+        "access_denied",
+        "missing_scope",
+    ],
+)
+def test_parse_response_config_error_codes(token_config, requests_mock, components_module, error_code):
+    body = {"ok": False, "error": error_code}
+    if error_code == "missing_scope":
+        body["needed"] = "channels:join"
+    requests_mock.post(url="https://slack.com/api/conversations.join", json=body)
+    stream = _make_join_stream(token_config, components_module)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"channel": "C1", "channel_name": "ch"}))
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert error_code in exc_info.value.internal_message
+
+
+@pytest.mark.parametrize(
+    "error_code",
+    [
+        "is_archived",
+        "channel_not_found",
+        "method_not_supported_for_channel_type",
+        "cant_invite_self",
+        "already_in_channel",
+        "missing_post_type",
+    ],
+)
+def test_parse_response_ignorable_error_codes(token_config, requests_mock, caplog, components_module, error_code):
+    requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": False, "error": error_code})
+    stream = _make_join_stream(token_config, components_module)
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"channel": "C1", "channel_name": "ch"}))
+    assert records == []
+    assert f"Skipping channel 'ch': conversations.join returned '{error_code}'." in caplog.text
+
+
+def test_parse_response_unrecognized_error_raises_system_error(token_config, requests_mock, components_module):
+    requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": False, "error": "some_new_unknown_error"})
+    stream = _make_join_stream(token_config, components_module)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"channel": "C1", "channel_name": "ch"}))
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert "some_new_unknown_error" in exc_info.value.message
+
+
+@pytest.mark.parametrize(
+    "error_code",
+    [
+        "ratelimited",
+        "request_timeout",
+        "service_unavailable",
+        "fatal_error",
+        "internal_error",
+        "accesslimited",
+        "team_added_to_org",
+    ],
+)
+def test_should_retry_returns_true_for_transient_errors(token_config, components_module, error_code):
+    stream = _make_join_stream(token_config, components_module)
+    response = MagicMock()
+    response.status_code = 200
+    response.json.return_value = {"ok": False, "error": error_code}
+    assert stream.should_retry(response) is True
+
+
+def test_should_retry_returns_false_for_ok_response(token_config, components_module):
+    stream = _make_join_stream(token_config, components_module)
+    response = MagicMock()
+    response.status_code = 200
+    response.json.return_value = {"ok": True}
+    assert stream.should_retry(response) is False
+
+
+def test_should_retry_returns_true_for_http_429(token_config, components_module):
+    stream = _make_join_stream(token_config, components_module)
+    response = MagicMock()
+    response.status_code = 429
+    assert stream.should_retry(response) is True
+
+
+def test_should_retry_returns_false_for_config_error(token_config, components_module):
+    stream = _make_join_stream(token_config, components_module)
+    response = MagicMock()
+    response.status_code = 200
+    response.json.return_value = {"ok": False, "error": "invalid_auth"}
+    assert stream.should_retry(response) is False
+
+
+def test_backoff_time_returns_retry_after_header(token_config, components_module):
+    stream = _make_join_stream(token_config, components_module)
+    response = MagicMock()
+    response.headers = {"Retry-After": "30"}
+    assert stream.backoff_time(response) == 30.0
+
+
+def test_backoff_time_returns_none_without_header(token_config, components_module):
+    stream = _make_join_stream(token_config, components_module)
+    response = MagicMock()
+    response.headers = {}
+    assert stream.backoff_time(response) is None
 
 
 @pytest.mark.parametrize(
