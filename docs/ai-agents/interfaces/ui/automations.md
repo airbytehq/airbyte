@@ -148,7 +148,7 @@ Result webhooks are currently persisted for scheduled Automations. If you leave 
 
 The Run History tab in the Automation Builder lists every run of the current Automation, most recent first. Each entry shows:
 
-- A **Test run** or **Live run** badge. Test runs come from the **Run** button in the Automation Builder; live runs come from a schedule trigger.
+- A **Test run** or **Live run** badge. Test runs come from the **Run** button in the Automation Builder; live runs come from a manual or schedule trigger.
 - The run's overall state: **Running**, **Succeeded**, or **Failed**.
 - When the run was created and how many jobs it produced.
 - A per-job breakdown with state (Pending, Created, Ready, Running, Retrying, Cancelled, Failed, or Completed) and the job's result.
