@@ -60,6 +60,6 @@ The MCP server doesn't currently expose tools for creating, updating, or running
 
 ## Related topics
 
-- [Automations](../interfaces/ui/automations). Pick a schedule and time zone.
-- [Sessions](../admin/sessions). Review when Automation runs and chat sessions happened.
-- [MCP server](../interfaces/mcp). Connect an external agent to Airbyte.
+- [Automations](../interfaces/ui/automations): Pick a schedule and time zone.
+- [Sessions](../admin/sessions): Review when Automation runs and chat sessions happened.
+- [MCP server](../interfaces/mcp): Connect an external agent to Airbyte.

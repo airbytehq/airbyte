@@ -84,7 +84,7 @@ Credentials you add through one interface are available to all of them. A connec
 
 ## Related topics
 
-- [Agent connectors](../../connectors). Browse the connector catalog.
-- [Authentication (API)](../../interfaces/api/authentication). Token types and the authentication flow.
-- [Authentication (SDK)](../../interfaces/sdk/authenticate). Credential configuration for Python apps.
-- [Context Store](../context-store). The searchable replica powered by your connectors.
+- [Agent connectors](../../connectors): Browse the connector catalog.
+- [Authentication (API)](../../interfaces/api/authentication): Token types and the authentication flow.
+- [Authentication (SDK)](../../interfaces/sdk/authenticate): Credential configuration for Python apps.
+- [Context Store](../context-store): The searchable replica powered by your connectors.

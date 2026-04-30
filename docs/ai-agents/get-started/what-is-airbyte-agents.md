@@ -84,10 +84,10 @@ The interface is the same across every connector and every access path. Whether 
 
 Airbyte Agents supports four interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
 
-- [**Web app**](../interfaces/ui). Chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
-- [**MCP server**](../interfaces/mcp). Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
-- [**Python SDK**](../interfaces/sdk). Build agents with typed connectors, automatic credential handling, and framework integrations.
-- [**HTTP API**](../interfaces/api). Manage connectors, tokens, and execution from any language or backend.
+- [**Web app**](../interfaces/ui): Chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
+- [**MCP server**](../interfaces/mcp): Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
+- [**Python SDK**](../interfaces/sdk): Build agents with typed connectors, automatic credential handling, and framework integrations.
+- [**HTTP API**](../interfaces/api): Manage connectors, tokens, and execution from any language or backend.
 
 For help choosing, see [Choose how to use Airbyte Agents](choose-how-to-use).
 
@@ -97,6 +97,6 @@ Airbyte Agents offers a free plan with no credit card required. Paid plans scale
 
 ## Next steps
 
-- [Choose how to use Airbyte Agents](choose-how-to-use). Find the right interface for your use case.
-- [Developer Quickstart](developer-quickstart). Explore tutorials and coding-agent skills to start building in minutes.
-- [Core concepts](../concepts). Dive deeper into platform architecture, the Context Store, and agent operations.
+- [Choose how to use Airbyte Agents](choose-how-to-use): Find the right interface for your use case.
+- [Developer Quickstart](developer-quickstart): Explore tutorials and coding-agent skills to start building in minutes.
+- [Core concepts](../concepts): Dive deeper into platform architecture, the Context Store, and agent operations.

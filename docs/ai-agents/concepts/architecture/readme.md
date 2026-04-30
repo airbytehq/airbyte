@@ -8,10 +8,10 @@ Airbyte Agents is a cloud platform that gives AI agents authenticated, structure
 
 You can interact with the platform through four interfaces. They all connect to the same service, so credentials you configure through one interface are available to all of them.
 
-- [**Web app**](../../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai). Talk to an Airbyte-hosted agent in Chats, or define Automations that run on a schedule or webhook.
-- [**API**](../../interfaces/api). HTTP endpoints for managing connectors, tokens, and executing operations from any language.
-- [**SDK**](../../interfaces/sdk). Python SDK for building agents that authenticate, connect, and execute operations in your own code.
-- [**MCP server**](../../interfaces/mcp). A remote Model Context Protocol server that connects MCP-capable agents like Claude, Cursor, and ChatGPT to your data.
+- [**Web app**](../../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai): Talk to an Airbyte-hosted agent in Chats, or define Automations that run on a schedule or webhook.
+- [**API**](../../interfaces/api): HTTP endpoints for managing connectors, tokens, and executing operations from any language.
+- [**SDK**](../../interfaces/sdk): Python SDK for building agents that authenticate, connect, and execute operations in your own code.
+- [**MCP server**](../../interfaces/mcp): A remote Model Context Protocol server that connects MCP-capable agents like Claude, Cursor, and ChatGPT to your data.
 
 ```mermaid
 flowchart TB
@@ -61,9 +61,9 @@ flowchart TB
     WS3 --> C5["Connector (Zendesk)"]
 ```
 
-- **[Organization](./organizations)**. The top-level container. Maps to a single billing account and a set of platform API credentials. All workspaces, users, and billing settings live here.
-- **[Workspace](./workspaces)**. An isolation boundary within an organization. Each workspace holds its own set of connectors and credentials. A token scoped to one workspace cannot access another.
-- **[Connector](./connectors-and-credentials)**. A stored credential and configuration for a third-party service. Connectors are the building blocks agents use to interact with external APIs.
+- **[Organization](./organizations)**: The top-level container. Maps to a single billing account and a set of platform API credentials. All workspaces, users, and billing settings live here.
+- **[Workspace](./workspaces)**: An isolation boundary within an organization. Each workspace holds its own set of connectors and credentials. A token scoped to one workspace cannot access another.
+- **[Connector](./connectors-and-credentials)**: A stored credential and configuration for a third-party service. Connectors are the building blocks agents use to interact with external APIs.
 
 ## Credential management
 
