@@ -325,8 +325,8 @@ public class MongoUtil {
 
   @VisibleForTesting
   static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection,
-                                                  final Integer sampleSize,
-                                                  final Integer discoverTimeout) {
+                                          final Integer sampleSize,
+                                          final Integer discoverTimeout) {
     final Map<String, Set<JsonSchemaType>> fieldTypesMap = new HashMap<>();
     final String collectionName = collection.getNamespace() != null ? collection.getNamespace().getFullName() : "unknown";
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),

@@ -188,7 +188,8 @@ public class MongoUtilTest {
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
-    // "total" appears as both "int" (NUMBER) and "string" (STRING) across sampled documents, so polymorphic field defaults to STRING
+    // "total" appears as both "int" (NUMBER) and "string" (STRING) across sampled documents, so
+    // polymorphic field defaults to STRING
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get("total").get(JSON_TYPE_PROPERTY_NAME).asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
@@ -241,7 +242,8 @@ public class MongoUtilTest {
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
-    // "total" appears as both "int" (NUMBER) and "string" (STRING) across sampled documents, so polymorphic field defaults to STRING
+    // "total" appears as both "int" (NUMBER) and "string" (STRING) across sampled documents, so
+    // polymorphic field defaults to STRING
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get("total").get(JSON_TYPE_PROPERTY_NAME).asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
