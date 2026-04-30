@@ -46,7 +46,7 @@ Pick the coding agent you use:
 
 - [**Codex**](skills/codex): install Airbyte skills into OpenAI Codex through skills.sh or a manual symlink.
 
-- [**Lovable**](skills/lovable): paste the Airbyte skill into a Lovable build prompt to generate full-stack apps with Airbyte connectors.
+- [**Lovable**](skills/lovable): paste the Airbyte skill into a Lovable build prompt to generate full-stack apps with Airbyte agent connectors.
 
 ## Before you start
 
