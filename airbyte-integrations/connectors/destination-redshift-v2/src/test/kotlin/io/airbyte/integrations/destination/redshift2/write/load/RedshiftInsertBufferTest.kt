@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.write.load
 
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.schema.model.TableName
@@ -72,7 +71,7 @@ internal class RedshiftInsertBufferTest {
 
     @BeforeEach
     fun setUp() {
-        coEvery { redshiftClient.uploadToS3(any(), any(), any(), any()) } just Runs
+        coEvery { redshiftClient.uploadToS3(any(), any(), any()) } just Runs
         coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } just Runs
         coEvery { redshiftClient.deleteFromS3(any(), any()) } just Runs
 
@@ -97,7 +96,7 @@ internal class RedshiftInsertBufferTest {
 
         // Verify the full pipeline: upload -> COPY -> cleanup
         coVerifyOrder {
-            redshiftClient.uploadToS3(eq("my-bucket"), any(), any(), any())
+            redshiftClient.uploadToS3(eq("my-bucket"), any(), any())
             redshiftClient.copyFromS3(
                 tableName = eq(tableName),
                 s3Path = match { it.startsWith("s3://my-bucket/staging/data/") },
@@ -116,7 +115,7 @@ internal class RedshiftInsertBufferTest {
     fun `flush with no data is a no-op`() = runTest {
         buffer.flush()
 
-        coVerify(exactly = 0) { redshiftClient.uploadToS3(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { redshiftClient.uploadToS3(any(), any(), any()) }
         coVerify(exactly = 0) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
     }
 
@@ -135,7 +134,7 @@ internal class RedshiftInsertBufferTest {
         buffer.flush()
 
         val dataSlot = slot<ByteArray>()
-        coVerify { redshiftClient.uploadToS3(any(), any(), capture(dataSlot), any()) }
+        coVerify { redshiftClient.uploadToS3(any(), any(), capture(dataSlot)) }
 
         // Decompress and verify CSV content
         val csvContent =
@@ -166,7 +165,7 @@ internal class RedshiftInsertBufferTest {
         buffer.flush()
 
         val keySlot = slot<String>()
-        coVerify { redshiftClient.uploadToS3(any(), capture(keySlot), any(), any()) }
+        coVerify { redshiftClient.uploadToS3(any(), capture(keySlot), any()) }
 
         val key = keySlot.captured
         assertTrue(key.startsWith("staging/data/"), "Key should start with bucket path")
@@ -188,7 +187,7 @@ internal class RedshiftInsertBufferTest {
         bufferNoPrefix.flush()
 
         val keySlot = slot<String>()
-        coVerify { redshiftClient.uploadToS3(any(), capture(keySlot), any(), any()) }
+        coVerify { redshiftClient.uploadToS3(any(), capture(keySlot), any()) }
 
         val key = keySlot.captured
         assertTrue(key.startsWith("test_schema/"), "Key without prefix should start with namespace")
@@ -206,7 +205,7 @@ internal class RedshiftInsertBufferTest {
         )
         noPurgeBuffer.flush()
 
-        coVerify(exactly = 1) { redshiftClient.uploadToS3(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { redshiftClient.uploadToS3(any(), any(), any()) }
         coVerify(exactly = 1) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
         coVerify(exactly = 0) { redshiftClient.deleteFromS3(any(), any()) }
     }
@@ -226,22 +225,10 @@ internal class RedshiftInsertBufferTest {
         buffer.flush()
 
         // Single upload + COPY for all 5 records
-        coVerify(exactly = 1) { redshiftClient.uploadToS3(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { redshiftClient.uploadToS3(any(), any(), any()) }
         coVerify(exactly = 1) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
 
         assertEquals(0, buffer.recordCount)
-    }
-
-    @Test
-    fun `upload metadata has correct content type and length`() = runTest {
-        buffer.accumulate(mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y")))
-        buffer.flush()
-
-        val metadataSlot = slot<ObjectMetadata>()
-        coVerify { redshiftClient.uploadToS3(any(), any(), any(), capture(metadataSlot)) }
-
-        assertEquals("application/gzip", metadataSlot.captured.contentType)
-        assertTrue(metadataSlot.captured.contentLength > 0)
     }
 
     @Test
@@ -252,7 +239,7 @@ internal class RedshiftInsertBufferTest {
         buffer.accumulate(mapOf("_airbyte_raw_id" to StringValue("batch2")))
         buffer.flush()
 
-        coVerify(exactly = 2) { redshiftClient.uploadToS3(any(), any(), any(), any()) }
+        coVerify(exactly = 2) { redshiftClient.uploadToS3(any(), any(), any()) }
         coVerify(exactly = 2) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
     }
 

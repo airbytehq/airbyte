@@ -29,9 +29,12 @@ import java.math.BigInteger
 internal val BIGINT_MAX = BigInteger("9223372036854775807")
 internal val BIGINT_MIN = BigInteger("-9223372036854775808")
 internal val BIGINT_RANGE = BIGINT_MIN..BIGINT_MAX
-internal val NUMERIC_MAX = BigDecimal("1E131072")
-internal val NUMERIC_MIN = BigDecimal("-1E131072")
+// Redshift automatically does RoundingMode.HALF_UP, so we ignore the scale check
+// For NUMERIC(38,9) => 38-9 = 29 (9's is the max)
+internal val NUMERIC_MAX = BigDecimal("99999999999999999999999999999")
+internal val NUMERIC_MIN = BigDecimal("-99999999999999999999999999999")
 internal const val SUPER_LIMIT_BYTES = 16 * 1024 * 1024
+internal const val VARCHAR_MAX_BYTES = 65_535
 
 /**
  * Validates and transforms values to conform to Redshift's data type constraints. The CDK calls
@@ -86,6 +89,26 @@ class RedshiftValueCoercer : ValueCoercer {
             is ArrayValue,
             is ObjectValue -> {
                 if (!isSuperValid(abValue.toCsvValue().toString())) {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            is StringValue -> {
+                val len = abValue.value.length
+                if (len > VARCHAR_MAX_BYTES) {
+                    // Fast fail: more chars than bytes allowed — can't fit even as pure ASCII.
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else if (
+                    // Worst case each char maybe 4 bytes
+                    // Compute exact byte size to confirm using toByteArray, which is expensive
+                    len * 4 > VARCHAR_MAX_BYTES &&
+                        abValue.value.toByteArray(Charsets.UTF_8).size > VARCHAR_MAX_BYTES
+                ) {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )

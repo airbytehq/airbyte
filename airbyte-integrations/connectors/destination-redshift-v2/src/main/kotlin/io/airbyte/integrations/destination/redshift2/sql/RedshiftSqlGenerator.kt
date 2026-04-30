@@ -549,7 +549,9 @@ class RedshiftSqlGenerator {
             |REGION '$region'
             |TIMEFORMAT 'auto'
             |STATUPDATE OFF
-            |IGNOREHEADER 1;
+            |ROUNDEC
+            |IGNOREHEADER 1
+            |EMPTYASNULL;
         """.trimMargin()
 
     // ================================================================
@@ -561,7 +563,7 @@ class RedshiftSqlGenerator {
         stream.tableSchema.columnSchema.finalSchema
 
     /** Builds the fully qualified table name as `"namespace"."name"`. */
-    private fun getFullyQualifiedName(tableName: TableName): String =
+    fun getFullyQualifiedName(tableName: TableName): String =
         "${getNamespace(tableName)}.${getName(tableName)}"
 
     private fun getNamespace(tableName: TableName): String = quoteIdentifier(tableName.namespace)

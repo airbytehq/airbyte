@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.write.load
 
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
@@ -115,12 +114,7 @@ class RedshiftInsertBuffer(
             }
 
             // Step 2: Upload to S3
-            val metadata =
-                ObjectMetadata().apply {
-                    contentLength = csvBytes.size.toLong()
-                    contentType = "application/gzip"
-                }
-            redshiftClient.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes, metadata)
+            redshiftClient.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes)
 
             // Step 3: Execute COPY
             redshiftClient.copyFromS3(
