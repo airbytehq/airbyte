@@ -495,12 +495,20 @@ def test_next_page_token(token_config):
         pytest.param(200, {"ok": False, "error": "not_in_channel"}, ResponseAction.IGNORE, id="ok_false_not_in_channel"),
         pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
         pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
+        pytest.param(200, {"ok": False, "error": "thread_not_found"}, ResponseAction.IGNORE, id="ok_false_thread_not_found"),
+        pytest.param(200, {"ok": False, "error": "method_not_supported_for_channel_type"}, ResponseAction.IGNORE, id="ok_false_method_not_supported"),
         pytest.param(200, {"ok": False, "error": "request_timeout"}, ResponseAction.RETRY, id="ok_false_request_timeout"),
         pytest.param(200, {"ok": False, "error": "service_unavailable"}, ResponseAction.RETRY, id="ok_false_service_unavailable"),
         pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
+        pytest.param(200, {"ok": False, "error": "accesslimited"}, ResponseAction.RETRY, id="ok_false_accesslimited"),
+        pytest.param(200, {"ok": False, "error": "team_added_to_org"}, ResponseAction.RETRY, id="ok_false_team_added_to_org"),
         pytest.param(200, {"ok": False, "error": "missing_scope"}, ResponseAction.FAIL, id="ok_false_auth_error"),
         pytest.param(200, {"ok": False, "error": "token_expired"}, ResponseAction.FAIL, id="ok_false_token_expired"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(200, {"ok": False, "error": "access_denied"}, ResponseAction.FAIL, id="ok_false_access_denied"),
+        pytest.param(200, {"ok": False, "error": "not_allowed_token_type"}, ResponseAction.FAIL, id="ok_false_not_allowed_token_type"),
+        pytest.param(200, {"ok": False, "error": "enterprise_is_restricted"}, ResponseAction.FAIL, id="ok_false_enterprise_is_restricted"),
+        pytest.param(200, {"ok": False, "error": "team_access_not_granted"}, ResponseAction.FAIL, id="ok_false_team_access_not_granted"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
     ),
 )
 def test_should_retry(token_config, status_code, response_json, expected):
@@ -722,6 +730,75 @@ def test_channel_messages_stream_ok_false_not_in_channel(requests_mock, token_co
     assert len(output.errors) == 0, f"Expected no errors for IGNORE action, but got: {[t.trace.error.message for t in output.errors]}"
 
 
+def test_channels_stream_ok_false_unrecognized_error_catch_all(requests_mock, token_config):
+    """
+    Verify that an unrecognized ok=false error code is caught by the catch-all
+    predicate and surfaces as a system_error FAIL instead of silently returning
+    zero records.
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel",
+        json={"ok": False, "error": "some_brand_new_error_code"},
+    )
+    state = StateBuilder().with_stream_state("channels", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channels", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = get_source(token_config, "channels", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert len(output.records) == 0
+    assert len(output.errors) > 0
+    error_messages = [trace.trace.error.message for trace in output.errors]
+    assert any(
+        "Slack API returned an unrecognized error: some_brand_new_error_code." in msg for msg in error_messages
+    ), f"Expected catch-all error message not found in: {error_messages}"
+    assert any(trace.trace.error.failure_type == FailureType.system_error for trace in output.errors)
+
+
+def test_threads_parent_stream_filters_channel_join_and_leave_subtypes(requests_mock, token_config):
+    """
+    Verify that messages with subtype channel_join or channel_leave are excluded
+    from the threads parent stream so conversations.replies is never called with
+    their ts values (which would return thread_not_found).
+    """
+    token_config["channel_filter"] = []
+    messages = [
+        {"ts": "1577866844.000100", "text": "real message", "reply_count": 1},
+        {"ts": "1577866845.000200", "subtype": "channel_join", "text": "joined"},
+        {"ts": "1577866846.000300", "subtype": "channel_leave", "text": "left"},
+        {"ts": "1577866847.000400", "text": "another real message", "reply_count": 2},
+    ]
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
+    )
+
+    stream = get_stream_by_name("threads", token_config)
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
+
+    # channel_join and channel_leave messages should be filtered out,
+    # so only the 2 real messages per channel should produce partitions (4 total)
+    ts_values = [s["float_ts"] for s in slices]
+    assert 1577866845.0002 not in ts_values, "channel_join message should be filtered out"
+    assert 1577866846.0003 not in ts_values, "channel_leave message should be filtered out"
+    assert len(slices) == 4, f"Expected 4 thread partitions (2 real messages x 2 channels), got {len(slices)}"
+
+
 def test_channels_stream_paginator_page_size_is_999(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
     assert get_retriever(stream).paginator.pagination_strategy.page_size == 999
@@ -779,8 +856,8 @@ def test_channels_stream_includes_archived_when_configured(token_config) -> None
     (
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(429, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="429_ok_false_ratelimited"),
-        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="429_ok_false_catch_all"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_empty_body"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
     ),
@@ -798,9 +875,9 @@ def test_users_stream_error_handler_response_action(token_config, status_code, r
 @pytest.mark.parametrize(
     "status_code, response_json, expected",
     (
-        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
+        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="429_ok_false_catch_all"),
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
     ),
 )
 def test_channel_members_error_handler_response_action(token_config, status_code, response_json, expected):
