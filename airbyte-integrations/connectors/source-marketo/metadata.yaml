@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 1.7.0
+  dockerImageTag: 1.7.0-rc.1
   dockerRepository: airbyte/source-marketo
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   githubIssueLabel: source-marketo
@@ -28,6 +28,9 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: community
   tags:
     - language:python
