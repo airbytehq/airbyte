@@ -89,7 +89,7 @@ jobs:
       - name: Run AI Triage
         uses: aaronsteers/devin-action@main
         with:
-          playbook-macro: "!oss_issue_triage"
+          playbook-macro: "!oss_issue_unpin"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           prompt-text: ${{ steps.prepare-prompt.outputs.prompt }}
