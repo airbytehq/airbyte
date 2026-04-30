@@ -215,7 +215,7 @@ prefix is dropped server-side.
 
 ### Paginate through results
 
-When `connector_metadata.has_next_page` is `true`, pass the `end_cursor` from the previous response as `params.cursor` to get the next page. `cursor` is the conventional request-side parameter name for pagination across Airbyte connectors. A small number of connectors use different request keys (for example, an offset-based pager might accept `offset` and `limit`); check the connector's reference page if `cursor` is rejected.
+When `connector_metadata.has_next_page` is `true`, pass the `end_cursor` from the previous response as `params.cursor` to get the next page. `cursor` is the conventional request-side parameter name for pagination across Airbyte connectors. A small number of connectors use different request keys (for example, an offset-based pagination might accept `offset` and `limit`); check the connector's reference page if `cursor` is rejected.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \

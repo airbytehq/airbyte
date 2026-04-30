@@ -12,15 +12,14 @@ To do the same thing from Python, see [Add a connector](../sdk/add-connector) in
 
 ## Create a connector
 
-Send a `POST` to `/api/v1/integrations/connectors`. Pass an identifier for the connector type and the credentials in the shape that connector expects. The response includes a connector ID. Store it somewhere you can retrieve it later.
+Send a `POST` to `/api/v1/integrations/connectors`. Pass an identifier for the connector type and the credentials in the shape that connector expects. The response includes a connector ID. Store your connector ID somewhere you can retrieve it from later.
 
-The request body accepts one of three connector-type identifiers:
+The request body accepts one of two connector-type identifiers:
 
 - `definition_id`: the connector definition UUID (returned as `sourceDefinitionId` from the definitions endpoint). Recommended.
 - `connector_type`: a human-readable slug such as `"linear"` or `"hubspot"`.
-- `source_template_id`: a template UUID. Useful when your organization has published custom source templates. See [Source templates](#source-templates) below.
 
-Exactly one of the three is required. If none is provided, the server responds with `422 "One of connector_type, definition_id, or source_template_id must be provided"`.
+Exactly one of the two is required. If none is provided, the server responds with `422 "One of connector_type, definition_id, or source_template_id must be provided"`.
 
 ### API token connectors
 
@@ -92,14 +91,6 @@ curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources?name=git
 :::note Naming
 The definitions endpoint returns the ID as `sourceDefinitionId`. The connector creation endpoint accepts it as `definition_id`. Both names refer to the same UUID.
 :::
-
-### Source templates
-
-A **source template** is the organization-level catalog entry a connector is provisioned from: a connector definition plus the default configuration, stream selection, and customizations your organization has agreed on for that connector. Every connector instance belongs to exactly one source template.
-
-That's why [list](#list-connectors) and [get](#get-a-connector) responses carry a nested `summarized_source_template` alongside the underlying `source_definition_id`. The template's UUID also appears as the `source_template_id` field when you [create](#create-a-connector) a connector from a specific template.
-
-Most apps won't set `source_template_id` explicitly — passing `definition_id` or `connector_type` picks the default template for that connector type. Use `source_template_id` when your organization has more than one template for the same connector type and you need to pin a specific one.
 
 ### About `workspace_name`
 
