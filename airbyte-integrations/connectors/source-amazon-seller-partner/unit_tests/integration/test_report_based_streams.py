@@ -345,6 +345,9 @@ class TestFullRefresh:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
         http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
 
         output = self._read(stream_name, config())
@@ -381,6 +384,9 @@ class TestFullRefresh:
     ) -> None:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -435,12 +441,15 @@ class TestFullRefresh:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
         http_mocker.post(
             _create_report_request(stream_name).build(),
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        message_on_backoff_exception = "Giving up _send(...) after 6 tries"
+        message_on_backoff_exception = "Max retry limit reached after"
 
         output = self._read(stream_name, config())
 
@@ -454,6 +463,10 @@ class TestFullRefresh:
     ):
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
         response_body = {
             "errors": [
                 {
@@ -914,6 +927,10 @@ class TestVendorSalesReportsFullRefresh:
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             response_with_status(status_code=HTTPStatus.FORBIDDEN),
@@ -956,6 +973,10 @@ class TestVendorSalesReportsFullRefresh:
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
@@ -980,12 +1001,16 @@ class TestVendorSalesReportsFullRefresh:
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
+
+        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        message_on_backoff_exception = "Giving up _send(...) after 6 tries"
+        message_on_backoff_exception = "Max retry limit reached after"
 
         output = self._read(stream_name, config())
 
