@@ -71,7 +71,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 3. Find and click **Slack**.
 4. Click **Authenticate your Slack account**. Log in and authorize Airbyte to access your Slack account.
 <FieldAnchor field="join_channels">
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages. This feature requires the `channels:join` OAuth scope.
 </FieldAnchor>
 <FieldAnchor field="start_date">
 6. **Start Date**: Any data before this date will not be extracted.
@@ -102,7 +102,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 2. Click **New source**.
 3. Find and click **Slack**.
 4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the Bot Token from Step 1.
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages. This feature requires the `channels:join` OAuth scope.
 6. **Start Date**: Any data before this date will not be extracted.
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
@@ -199,6 +199,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.5 | 2026-04-29 | [77601](https://github.com/airbytehq/airbyte/pull/77601) | Surface missing OAuth scope as config error instead of silently failing channel joins |
 | 3.2.4 | 2026-04-28 | [77531](https://github.com/airbytehq/airbyte/pull/77531) | Use RATE_LIMITED action for rate-limit filters, add failure_type classification, and remove generic ok=false catch-all in favor of default HTTP status handling |
 | 3.2.3 | 2026-04-28 | [77450](https://github.com/airbytehq/airbyte/pull/77450) | Update dependencies |
 | 3.2.2 | 2026-04-27 | [76985](https://github.com/airbytehq/airbyte/pull/76985) | Allow OAuth API budget to recover after transient 429 rate limits instead of permanently throttling the sync |
