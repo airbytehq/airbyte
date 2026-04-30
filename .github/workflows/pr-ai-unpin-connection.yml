@@ -18,12 +18,11 @@ permissions:
 jobs:
   check-permissions:
     name: Resolve Input Variables
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Gather event metadata
         id: gather-metadata
         run: |
-          echo "author=${{github.event.sender.login}}" >> $GITHUB_OUTPUT
           if [[ "${{ github.event_name }}" == "issues" ]]; then
             echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
             echo "event-type=issue" >> $GITHUB_OUTPUT
@@ -31,6 +30,45 @@ jobs:
             echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
             echo "event-type=discussion" >> $GITHUB_OUTPUT
           fi
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Check if user has write access
+        id: check-access
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          AUTHOR: ${{ steps.gather-metadata.outputs.author }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking permissions for user: $AUTHOR"
+
+          # Get the user's permission level for this repository
+          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/$AUTHOR/permission \
+            --jq '.permission' 2>/dev/null || echo "none")
+
+          echo "User permission level: $PERMISSION"
+
+          # Users with write, maintain, or admin access are NOT community members
+          # Users with read or no access ARE community members
+          if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "maintain" || "$PERMISSION" == "write" ]]; then
+            echo "User has write access - skipping AI triage"
+            echo "is-community-member=false" >> $GITHUB_OUTPUT
+          else
+            echo "User is a community member - triggering AI triage"
+            echo "is-community-member=true" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      is-community-member: ${{ steps.check-access.outputs.is-community-member }}
+      author: ${{ steps.gather-metadata.outputs.author }}
+      event-type: ${{ steps.gather-metadata.outputs.event-type }}
 
   ai-unpin:
     name: AI unpin connections with preview build
