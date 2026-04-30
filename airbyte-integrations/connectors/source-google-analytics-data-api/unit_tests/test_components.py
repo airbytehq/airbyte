@@ -7,6 +7,7 @@ from typing import Dict, List, Union
 
 import pytest
 import yaml
+
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
 
@@ -272,8 +273,7 @@ def test_config_normalization_infers_auth_type(credentials, expected_auth_type):
 
     for add_field_def in add_fields_defs:
         field_defs = [
-            AddedFieldDefinition(path=f["path"], value=f["value"], value_type=None, parameters={})
-            for f in add_field_def["fields"]
+            AddedFieldDefinition(path=f["path"], value=f["value"], value_type=None, parameters={}) for f in add_field_def["fields"]
         ]
         transformation = ConfigAddFields(fields=field_defs, condition=add_field_def.get("condition", ""))
         transformation.transform(config)
@@ -293,8 +293,7 @@ def test_config_normalization_no_credentials_does_not_add_auth_type():
 
     for add_field_def in add_fields_defs:
         field_defs = [
-            AddedFieldDefinition(path=f["path"], value=f["value"], value_type=None, parameters={})
-            for f in add_field_def["fields"]
+            AddedFieldDefinition(path=f["path"], value=f["value"], value_type=None, parameters={}) for f in add_field_def["fields"]
         ]
         transformation = ConfigAddFields(fields=field_defs, condition=add_field_def.get("condition", ""))
         transformation.transform(config)
