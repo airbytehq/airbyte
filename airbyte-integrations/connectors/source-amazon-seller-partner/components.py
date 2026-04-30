@@ -703,9 +703,7 @@ class ReportCreationRequester(HttpRequester):
         succeed; if still no data, the new report will also be CANCELLED and the CDK's
         SKIPPED status mapping will handle it silently.
         """
-        reports, get_response = self._fetch_reports(
-            stream_state, stream_slice, report_type, requested_marketplace_ids
-        )
+        reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type, requested_marketplace_ids)
         if not reports:
             return None
 
