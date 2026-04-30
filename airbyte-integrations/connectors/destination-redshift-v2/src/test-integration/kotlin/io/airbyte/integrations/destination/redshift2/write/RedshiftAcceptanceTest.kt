@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift2.write
 
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -24,7 +26,12 @@ import org.junit.jupiter.api.BeforeAll
  * Config is read from the `secrets/config_staging.json` secrets file, which must contain valid
  * Redshift cluster + S3 staging credentials.
  */
-class RedshiftAcceptanceTest :
+abstract class RedshiftBaseAcceptanceTest(
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of(CONFIG_PATH)),
         configSpecClass = RedshiftSpecification::class.java,
@@ -36,6 +43,8 @@ class RedshiftAcceptanceTest :
         destinationCleaner = RedshiftDataCleaner,
         recordMangler = RedshiftExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
         stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -53,8 +62,10 @@ class RedshiftAcceptanceTest :
                 numberIsFixedPointPrecision38Scale9 = true,
                 truncatedNumbersPopulateAirbyteMeta = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = true,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
     ) {
     companion object {
         @JvmStatic
@@ -70,3 +81,18 @@ class RedshiftAcceptanceTest :
         }
     }
 }
+
+/** Default acceptance test using JSONL over STDIO (standard data channel). */
+class RedshiftAcceptanceTest : RedshiftBaseAcceptanceTest()
+
+/**
+ * Acceptance test using Protobuf over Socket data channel. Protobuf cannot represent unknown types,
+ * so those are nullified instead of passed through.
+ */
+class RedshiftProtoAcceptanceTest :
+    RedshiftBaseAcceptanceTest(
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+    )
