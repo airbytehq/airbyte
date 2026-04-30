@@ -31,7 +31,7 @@ The Sessions table lists the most recent sessions first. Each row represents one
     - Click the **View** icon to open the session and see its messages and tool calls.
     - Click the **Chat** icon to jump to the chat or automation the session belongs to.
 
-Use the **Type**, **Status**, and **Tools** filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which may be resumed, or Deleted. The Tools filter scopes to sessions that used one or more specific connectors.
+Use the **Type**, **Status**, and **Tools** filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Tools filter scopes to sessions that used one or more specific connectors.
 
 ## Session types {#session-types}
 
