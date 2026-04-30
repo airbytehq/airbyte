@@ -527,6 +527,26 @@ definitions:
     request_headers:
       Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
 
+  # Deconstruct the reportOptions in the config and set them as request parameters.
+  creation_requester_with_report_options:
+    $ref: "#/definitions/basic_async_retriever/creation_requester"
+    request_body_json:
+      reportType: "{{ parameters.report_type }}"
+      marketplaceIds: '{{ [config["marketplace_id"]] }}'
+      dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+      dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      reportOptions: >-
+        {%- set rt = parameters.report_type -%}
+        {%- set opts = {} -%}
+        {%- for ro in config.get('report_options_list', []) -%}
+          {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+            {%- for item in ro.get('options_list', []) -%}
+              {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {{ opts if opts else {} }}
+
   orders_authenticator:
     type: CustomAuthenticator
     class_name: source_declarative_manifest.components.AmazonSPRdtAuthenticator
@@ -1448,12 +1468,9 @@ definitions:
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_LEDGER_DETAIL_VIEW_DATA
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+          $ref: "#/definitions/creation_requester_with_report_options"
+          parameters:
+            report_type: GET_LEDGER_DETAIL_VIEW_DATA
         record_selector:
           type: RecordSelector
           schema_normalization:
@@ -1498,12 +1515,9 @@ definitions:
       retriever:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
-          $ref: "#/definitions/basic_async_retriever/creation_requester"
-          request_body_json:
-            reportType: GET_LEDGER_SUMMARY_VIEW_DATA
-            marketplaceIds: '{{ [config["marketplace_id"]] }}'
-            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
-            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+          $ref: "#/definitions/creation_requester_with_report_options"
+          parameters:
+            report_type: GET_LEDGER_SUMMARY_VIEW_DATA
         record_selector:
           type: RecordSelector
           schema_normalization:
