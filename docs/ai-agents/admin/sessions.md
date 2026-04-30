@@ -72,6 +72,6 @@ To keep chatting with the agent from where a Chat session left off, click **Cont
 
 ## Access previous sessions
 
-To open the Sessions page, click **Settings** then **Sessions** in the left navigation of your workspace. The page lists sessions across every automation and chat in your workspace. Sessions never expire, so you can review work from any point in your workspace's history.
+To open the Sessions page, click **Settings** > **Sessions** in the left navigation of your workspace. The page lists sessions across every automation and chat in your workspace. Sessions never expire, so you can review work from any point in your workspace's history.
 
 If you want to see usage without opening individual sessions, the [Usage panel](./billing.md#monitor-usage) on the Billing page summarizes AOs and tool calls across sessions and non-session sources. Rows for Chat, Automation, and Automation Builder Chat link back to the originating session.
