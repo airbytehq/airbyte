@@ -1,18 +1,15 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Agent Engine API",
-    "summary": "Airbyte's Agent Engine API retrieves data on behalf of your workspaces and feeds it to your agentic workflows.",
-    "description": "\nThis is the public API documentation for Airbyte's Agent Engine. Use the API to manage authentication, connectors, and workspaces, and power their agentic workflows.\n\nIf you are a member of multiple Agent Engine organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Workspaces: manage workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
-    "version": "0.9.0",
-    "x-logo": {
-      "url": "https://cdn.prod.website-files.com/605e01bc25f7e19a82e74788/6335a39da8c96ba75520b156_Logo.svg"
-    }
+    "title": "Airbyte Agent API",
+    "summary": "Airbyte's Agent API retrieves data on behalf of your workspaces and feeds it to your agentic workflows.",
+    "description": "\nThis is the public API documentation for Airbyte's Agent API. Use the API to manage authentication, connectors, and workspaces, and power their agentic workflows.\n\nIf you are a member of multiple Airbyte Agent organizations, add the `X-Organization-Id: organization's UUID` header to your requests. It specifies which organization you are making requests to. If you only belong to one organization, you don't need to set this header.\n\nThe API contains several types of endpoints.\n\n- Authentication: Generate tokens to make other API requests.\n- Connectors: Create and manage end-user connectors, and execute operations with connectors.\n- Workspaces: manage workspaces and retrieve workspace statistics.\n- Data replication: configure connection templates and destination definitions for data replication use cases.\n\nSome endpoints are separated into Advanced categories. These endpoints are more specialized and should not be required for day-to-day use of the API.\n",
+    "version": "0.9.0"
   },
   "servers": [
     {
       "url": "https://api.airbyte.ai",
-      "description": "Agent Engine API"
+      "description": "Airbyte Agent API"
     }
   ],
   "paths": {
