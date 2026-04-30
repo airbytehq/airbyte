@@ -708,18 +708,18 @@ class ReportCreationRequester(HttpRequester):
             return None
 
         for report in reports:
+            if not self._date_ranges_match(requested_start, requested_end, report):
+                continue
+
+            if not self._is_report_fresh(report, report_type):
+                continue
+
             report_status = report.get("processingStatus", "")
             if report_status == "CANCELLED":
                 logger.info(
                     f"Skipping CANCELLED report {report.get('reportId', '')} for {report_type}. "
                     f"A new report will be created to retry in case data is now available."
                 )
-                continue
-
-            if not self._date_ranges_match(requested_start, requested_end, report):
-                continue
-
-            if not self._is_report_fresh(report, report_type):
                 continue
 
             # First matching report is the most recently created (API sorts by createdTime desc)
