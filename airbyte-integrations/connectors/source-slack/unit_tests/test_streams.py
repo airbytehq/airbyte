@@ -496,7 +496,9 @@ def test_next_page_token(token_config):
         pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
         pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
         pytest.param(200, {"ok": False, "error": "thread_not_found"}, ResponseAction.IGNORE, id="ok_false_thread_not_found"),
-        pytest.param(200, {"ok": False, "error": "method_not_supported_for_channel_type"}, ResponseAction.IGNORE, id="ok_false_method_not_supported"),
+        pytest.param(
+            200, {"ok": False, "error": "method_not_supported_for_channel_type"}, ResponseAction.IGNORE, id="ok_false_method_not_supported"
+        ),
         pytest.param(200, {"ok": False, "error": "request_timeout"}, ResponseAction.RETRY, id="ok_false_request_timeout"),
         pytest.param(200, {"ok": False, "error": "service_unavailable"}, ResponseAction.RETRY, id="ok_false_service_unavailable"),
         pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
