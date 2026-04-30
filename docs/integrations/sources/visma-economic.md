@@ -56,6 +56,7 @@ For more information, see the [e-conomic REST API documentation](https://restdoc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.56 | 2026-04-28 | [77477](https://github.com/airbytehq/airbyte/pull/77477) | Update dependencies |
 | 0.3.55 | 2026-04-21 | [76789](https://github.com/airbytehq/airbyte/pull/76789) | Update dependencies |
 | 0.3.54 | 2026-03-31 | [75738](https://github.com/airbytehq/airbyte/pull/75738) | Update dependencies |
 | 0.3.53 | 2026-03-17 | [75124](https://github.com/airbytehq/airbyte/pull/75124) | Increase check_connection memory from 2Gi to 4Gi to prevent OOM |

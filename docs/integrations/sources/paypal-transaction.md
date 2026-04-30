@@ -264,6 +264,7 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.33 | 2026-04-28 | [77335](https://github.com/airbytehq/airbyte/pull/77335) | Update dependencies |
 | 2.6.32 | 2026-04-21 | [76710](https://github.com/airbytehq/airbyte/pull/76710) | Update dependencies |
 | 2.6.31 | 2026-04-07 | [76135](https://github.com/airbytehq/airbyte/pull/76135) | Fix undefined `security_context` variable in payments generator utility script |
 | 2.6.30 | 2026-03-31 | [75850](https://github.com/airbytehq/airbyte/pull/75850) | Update dependencies |

@@ -35,6 +35,7 @@ Linkrunner is a Mobile Measurement Partner (MMP) that helps track user journeys 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2026-04-28 | [77294](https://github.com/airbytehq/airbyte/pull/77294) | Update dependencies |
 | 0.0.5 | 2026-04-21 | [76676](https://github.com/airbytehq/airbyte/pull/76676) | Update dependencies |
 | 0.0.4 | 2026-03-31 | [75709](https://github.com/airbytehq/airbyte/pull/75709) | Update dependencies |
 | 0.0.3 | 2026-03-17 | [74997](https://github.com/airbytehq/airbyte/pull/74997) | Update dependencies |

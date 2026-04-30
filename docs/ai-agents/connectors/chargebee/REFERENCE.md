@@ -8,17 +8,17 @@ The Chargebee connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customer | [List](#customer-list), [Get](#customer-get), [Search](#customer-search) |
-| Subscription | [List](#subscription-list), [Get](#subscription-get), [Search](#subscription-search) |
-| Invoice | [List](#invoice-list), [Get](#invoice-get), [Search](#invoice-search) |
-| Credit Note | [List](#credit-note-list), [Get](#credit-note-get), [Search](#credit-note-search) |
-| Coupon | [List](#coupon-list), [Get](#coupon-get), [Search](#coupon-search) |
-| Transaction | [List](#transaction-list), [Get](#transaction-get), [Search](#transaction-search) |
-| Event | [List](#event-list), [Get](#event-get), [Search](#event-search) |
-| Order | [List](#order-list), [Get](#order-get), [Search](#order-search) |
-| Item | [List](#item-list), [Get](#item-get), [Search](#item-search) |
-| Item Price | [List](#item-price-list), [Get](#item-price-get), [Search](#item-price-search) |
-| Payment Source | [List](#payment-source-list), [Get](#payment-source-get), [Search](#payment-source-search) |
+| Customer | [List](#customer-list), [Get](#customer-get), [Context Store Search](#customer-context-store-search) |
+| Subscription | [List](#subscription-list), [Get](#subscription-get), [Context Store Search](#subscription-context-store-search) |
+| Invoice | [List](#invoice-list), [Get](#invoice-get), [Context Store Search](#invoice-context-store-search) |
+| Credit Note | [List](#credit-note-list), [Get](#credit-note-get), [Context Store Search](#credit-note-context-store-search) |
+| Coupon | [List](#coupon-list), [Get](#coupon-get), [Context Store Search](#coupon-context-store-search) |
+| Transaction | [List](#transaction-list), [Get](#transaction-get), [Context Store Search](#transaction-context-store-search) |
+| Event | [List](#event-list), [Get](#event-get), [Context Store Search](#event-context-store-search) |
+| Order | [List](#order-list), [Get](#order-get), [Context Store Search](#order-context-store-search) |
+| Item | [List](#item-list), [Get](#item-get), [Context Store Search](#item-context-store-search) |
+| Item Price | [List](#item-price-list), [Get](#item-price-get), [Context Store Search](#item-price-context-store-search) |
+| Payment Source | [List](#payment-source-list), [Get](#payment-source-get), [Context Store Search](#payment-source-context-store-search) |
 
 ## Customer
 
@@ -242,14 +242,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Customer Search
+### Customer Context Store Search
 
 Search and filter customer records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.customer.search(
+await chargebee.customer.context_store_search(
     query={"filter": {"eq": {"allow_direct_debit": True}}}
 )
 ```
@@ -262,7 +262,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customer",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"allow_direct_debit": True}}}
     }
@@ -652,14 +652,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Subscription Search
+### Subscription Context Store Search
 
 Search and filter subscription records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.subscription.search(
+await chargebee.subscription.context_store_search(
     query={"filter": {"eq": {"activated_at": 0}}}
 )
 ```
@@ -672,7 +672,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscription",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"activated_at": 0}}}
     }
@@ -1072,14 +1072,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoice Search
+### Invoice Context Store Search
 
 Search and filter invoice records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.invoice.search(
+await chargebee.invoice.context_store_search(
     query={"filter": {"eq": {"adjustment_credit_notes": []}}}
 )
 ```
@@ -1092,7 +1092,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoice",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"adjustment_credit_notes": []}}}
     }
@@ -1452,14 +1452,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Credit Note Search
+### Credit Note Context Store Search
 
 Search and filter credit note records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.credit_note.search(
+await chargebee.credit_note.context_store_search(
     query={"filter": {"eq": {"allocations": []}}}
 )
 ```
@@ -1472,7 +1472,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "credit_note",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"allocations": []}}}
     }
@@ -1764,14 +1764,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Coupon Search
+### Coupon Context Store Search
 
 Search and filter coupon records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.coupon.search(
+await chargebee.coupon.context_store_search(
     query={"filter": {"eq": {"apply_discount_on": "<str>"}}}
 )
 ```
@@ -1784,7 +1784,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "coupon",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"apply_discount_on": "<str>"}}}
     }
@@ -2066,14 +2066,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Transaction Search
+### Transaction Context Store Search
 
 Search and filter transaction records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.transaction.search(
+await chargebee.transaction.context_store_search(
     query={"filter": {"eq": {"amount": 0}}}
 )
 ```
@@ -2086,7 +2086,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "transaction",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": 0}}}
     }
@@ -2350,14 +2350,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Event Search
+### Event Context Store Search
 
 Search and filter event records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.event.search(
+await chargebee.event.context_store_search(
     query={"filter": {"eq": {"api_version": "<str>"}}}
 )
 ```
@@ -2370,7 +2370,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "event",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"api_version": "<str>"}}}
     }
@@ -2640,14 +2640,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Order Search
+### Order Context Store Search
 
 Search and filter order records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.order.search(
+await chargebee.order.context_store_search(
     query={"filter": {"eq": {"amount_adjusted": 0}}}
 )
 ```
@@ -2660,7 +2660,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "order",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount_adjusted": 0}}}
     }
@@ -2972,14 +2972,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Item Search
+### Item Context Store Search
 
 Search and filter item records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.item.search(
+await chargebee.item.context_store_search(
     query={"filter": {"eq": {"applicable_items": []}}}
 )
 ```
@@ -2992,7 +2992,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "item",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"applicable_items": []}}}
     }
@@ -3254,14 +3254,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Item Price Search
+### Item Price Context Store Search
 
 Search and filter item price records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.item_price.search(
+await chargebee.item_price.context_store_search(
     query={"filter": {"eq": {"accounting_detail": {}}}}
 )
 ```
@@ -3274,7 +3274,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "item_price",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"accounting_detail": {}}}}
     }
@@ -3524,14 +3524,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Payment Source Search
+### Payment Source Context Store Search
 
 Search and filter payment source records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await chargebee.payment_source.search(
+await chargebee.payment_source.context_store_search(
     query={"filter": {"eq": {"amazon_payment": {}}}}
 )
 ```
@@ -3544,7 +3544,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "payment_source",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amazon_payment": {}}}}
     }
