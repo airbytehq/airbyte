@@ -1,3 +1,7 @@
+---
+plan: all
+---
+
 # Review tool calls
 
 Airbyte Agents logs every tool call your agents make. Review this log to understand what your agents are doing, troubleshoot failures, and investigate unexpected activity or cost spikes.

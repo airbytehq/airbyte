@@ -1,3 +1,7 @@
+---
+plan: all
+---
+
 # Review sessions
 
 The Sessions page shows a read-only history of every agent interaction in your workspace, along with token usage and the tools each interaction used. Use it to audit what your agents did, troubleshoot unexpected results, and understand what's driving your [agent operations (AOs)](../concepts/agent-operations.md).
