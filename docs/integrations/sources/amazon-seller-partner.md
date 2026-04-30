@@ -299,7 +299,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.5 | 2026-04-30 | [](https://github.com/airbytehq/airbyte/pull/) | Fix `report_options_list` config property not being passed to SP-API `createReport` endpoint |
+| 5.7.5 | 2026-04-30 | [77621](https://github.com/airbytehq/airbyte/pull/77621) | Fix `report_options_list` config property not being passed to SP-API `createReport` endpoint |
 | 5.7.4 | 2026-04-28 | [77521](https://github.com/airbytehq/airbyte/pull/77521) | Restore HTTPAPIBudget that was temporarily commented out in 5.7.4-rc.1; revert default_concurrency back to 2. Concurrency tuning rollout was canceled and is being deferred. |
 | 5.7.4-rc.1 | 2026-04-23 | [76955](https://github.com/airbytehq/airbyte/pull/76955) | Concurrency tuning iteration 1: bump default_concurrency from 2 to 4 and temporarily comment out HTTPAPIBudget to measure empirical concurrency ceiling. |
 | 5.7.3 | 2026-04-21 | [76494](https://github.com/airbytehq/airbyte/pull/76494) | Update dependencies |
