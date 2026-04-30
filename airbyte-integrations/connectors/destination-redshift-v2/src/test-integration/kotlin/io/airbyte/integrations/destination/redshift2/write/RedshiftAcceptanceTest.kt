@@ -17,23 +17,6 @@ import java.nio.file.Path
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 
-/**
- * Full end-to-end acceptance test for the Redshift destination in S3 staging mode.
- *
- * Runs the connector as a process via the CDK test harness and verifies typed final-table output.
- * Config is read from the `secrets/config_staging.json` secrets file, which must contain valid
- * Redshift cluster + S3 staging credentials.
- *
- * This test exercises ~25 inherited test methods from [BasicFunctionalityIntegrationTest] covering:
- * - Core writes (single record, no data, no columns, clear)
- * - Append mode (multi-sync, many-stream concurrency)
- * - Dedup/CDC (integer/string PKs, cursor changes, PK changes, hard-delete semantics)
- * - Truncate refresh (success, failure recovery, interrupted truncate)
- * - Schema evolution (column add/drop/type-change in append and overwrite modes)
- * - Data types (all basic types, container types, unions, unknown types)
- * - Edge cases (funky characters, multiple namespaces, SQL reserved words)
- * - Numeric precision (numeric(38,9) truncation/rounding)
- */
 class RedshiftAcceptanceTest :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of(CONFIG_PATH)),
