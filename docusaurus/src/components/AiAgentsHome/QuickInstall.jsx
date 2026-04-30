@@ -9,15 +9,48 @@ const TABS = [
     description: "Add the SDK to your Python project.",
     docsLink: "/ai-agents/get-started/developer-quickstart/",
     docsLabel: "Quickstart tutorials",
+    tools: [
+      {
+        name: "Pydantic AI",
+        href: "/ai-agents/get-started/developer-quickstart/tutorial-pydantic",
+        icon: "/img/ai-agents/pydantic.svg",
+      },
+      {
+        name: "LangChain",
+        href: "/ai-agents/get-started/developer-quickstart/tutorial-langchain",
+        icon: "/img/ai-agents/langchain.svg",
+      },
+    ],
   },
   {
     id: "mcp",
     label: "MCP",
-    command:
-      "https://api.airbyte.com/mcp/v1/sse?client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET",
-    description: "Paste this URL into your MCP client config.",
+    command: "https://mcp.airbyte.ai/mcp",
+    description: "Add this URL to your MCP client.",
     docsLink: "/ai-agents/interfaces/mcp/",
     docsLabel: "MCP setup guide",
+    tools: [
+      {
+        name: "Claude",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/anthropic.svg",
+      },
+      {
+        name: "Cursor",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/cursor.svg",
+      },
+      {
+        name: "Windsurf",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/windsurf.svg",
+      },
+      {
+        name: "VS Code",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/visualstudiocode.svg",
+      },
+    ],
   },
   {
     id: "webapp",
@@ -27,6 +60,7 @@ const TABS = [
       "Chat with an AI agent in your browser. No code, no install.",
     docsLink: "https://app.airbyte.ai",
     docsLabel: "Open the web app",
+    tools: [],
   },
 ];
 
@@ -79,6 +113,20 @@ export const QuickInstall = () => {
         <a className={styles.quickInstallLink} href={tab.docsLink}>
           {tab.docsLabel} &rarr;
         </a>
+        {tab.tools.length > 0 && (
+          <div className={styles.toolChips}>
+            {tab.tools.map((tool) => (
+              <a key={tool.name} className={styles.toolChip} href={tool.href}>
+                <img
+                  className={styles.toolChipIcon}
+                  src={tool.icon}
+                  alt={tool.name}
+                />
+                <span>{tool.name}</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

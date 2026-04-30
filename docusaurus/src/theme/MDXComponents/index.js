@@ -19,10 +19,7 @@ import { DocMetaTags } from "../../components/DocMetaTags";
 import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
 import { Grid } from "../../components/Grid/Grid";
 import { YoutubeEmbed } from "../../components/YoutubeEmbed";
-import {
-  QuickInstall,
-  FrameworkGrid,
-} from "../../components/AiAgentsHome";
+import { QuickInstall } from "../../components/AiAgentsHome";
 
 export default {
   // Re-use the default mapping
@@ -47,5 +44,4 @@ export default {
   DocMetaTags,
   CopyPageButton,
   QuickInstall,
-  FrameworkGrid,
 };

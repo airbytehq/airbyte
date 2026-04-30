@@ -110,52 +110,44 @@
   text-decoration: underline;
 }
 
-/* ── Framework Grid ──────────────────────────────────────── */
+/* ── Tool Chips (inside tabs) ────────────────────────────── */
 
-.frameworkSection {
-  margin: 40px 0;
-}
-
-.frameworkGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .frameworkGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.frameworkCard {
+.toolChips {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  padding: 20px 12px;
-  border-radius: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-ae-card-border);
+}
+
+.toolChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
   border: 1px solid var(--color-grey-100);
   background: var(--color-white);
   text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ifm-heading-color);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.frameworkCard:hover {
+.toolChip:hover {
   border-color: var(--ifm-color-primary);
-  box-shadow: 0 2px 12px rgba(97, 94, 255, 0.1);
+  box-shadow: 0 1px 6px rgba(97, 94, 255, 0.1);
   text-decoration: none;
 }
 
-.frameworkIcon {
-  width: 32px;
-  height: 32px;
+.toolChipIcon {
+  width: 18px;
+  height: 18px;
   object-fit: contain;
-  border-radius: 0;
 }
 
-.frameworkName {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--ifm-heading-color);
+[data-theme="dark"] .toolChipIcon {
+  filter: invert(1);
 }

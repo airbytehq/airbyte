@@ -10,7 +10,7 @@ Airbyte Agents is a data and context layer for AI agents. It gives your agents r
 
 <QuickInstall />
 
-<FrameworkGrid />
+## Dive into the docs
 
 <Grid columns="2">
 
