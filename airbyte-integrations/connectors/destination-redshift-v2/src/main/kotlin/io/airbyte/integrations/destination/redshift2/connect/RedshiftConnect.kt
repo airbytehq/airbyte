@@ -49,7 +49,6 @@ class RedshiftConnect(
                 connectionTimeout = 2.minutes.inWholeMilliseconds
                 minimumIdle = 0
                 initializationFailTimeout = -1
-                driverClassName = DRIVER_CLASS
                 this.jdbcUrl = jdbcUrl
                 username = configuration.username
                 password = configuration.password
@@ -67,7 +66,6 @@ class RedshiftConnect(
             (configuration.jdbcUrlParams?.takeIf { it.isNotBlank() }?.let { "?$it" } ?: "")
 
     companion object {
-        const val DRIVER_CLASS = "com.amazon.redshift.jdbc42.Driver"
         const val SSL_FACTORY = "com.amazon.redshift.ssl.NonValidatingFactory"
     }
 }

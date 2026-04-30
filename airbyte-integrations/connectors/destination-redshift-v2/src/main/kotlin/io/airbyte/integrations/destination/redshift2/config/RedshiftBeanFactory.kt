@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.config
 
-import com.amazonaws.services.s3.AmazonS3
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
@@ -16,6 +15,7 @@ import io.airbyte.integrations.destination.redshift2.connect.S3Connect
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import software.amazon.awssdk.services.s3.S3Client
 
 /** Micronaut Factory for creating and wiring Redshift destination beans. */
 @Factory
@@ -40,7 +40,7 @@ class RedshiftBeanFactory {
     /** Creates the S3 client for staging operations */
     @Singleton
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
-    fun s3Client(s3Connect: S3Connect): AmazonS3 {
+    fun s3Client(s3Connect: S3Connect): S3Client {
         return s3Connect.createS3Client()
     }
 

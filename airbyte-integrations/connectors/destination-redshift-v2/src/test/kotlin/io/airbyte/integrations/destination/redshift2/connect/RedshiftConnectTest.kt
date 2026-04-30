@@ -97,15 +97,6 @@ class RedshiftConnectTest {
     }
 
     @Test
-    fun `createDataSource sets driver class`() {
-        val connect = RedshiftConnect(config())
-
-        connect.createDataSource().use { ds ->
-            assertEquals(RedshiftConnect.DRIVER_CLASS, ds.driverClassName)
-        }
-    }
-
-    @Test
     fun `createDataSource sets HikariCP pool configuration`() {
         val connect = RedshiftConnect(config())
 
