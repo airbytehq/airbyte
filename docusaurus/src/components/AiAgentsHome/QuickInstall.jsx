@@ -20,6 +20,11 @@ const TABS = [
         href: "/ai-agents/get-started/developer-quickstart/tutorial-langchain",
         icon: "/img/ai-agents/langchain.svg",
       },
+      {
+        name: "FastMCP",
+        href: "/ai-agents/get-started/developer-quickstart/tutorial-fastmcp",
+        icon: "/img/ai-agents/fastmcp.svg",
+      },
     ],
   },
   {
@@ -61,6 +66,24 @@ const TABS = [
     docsLink: "https://app.airbyte.ai",
     docsLabel: "Open the web app",
     tools: [],
+  },
+];
+
+const SKILLS = [
+  {
+    name: "Claude Code",
+    href: "/ai-agents/get-started/developer-quickstart/skills/claude-code",
+    icon: "/img/ai-agents/anthropic.svg",
+  },
+  {
+    name: "Codex",
+    href: "/ai-agents/get-started/developer-quickstart/skills/codex",
+    icon: "/img/ai-agents/openai.svg",
+  },
+  {
+    name: "Lovable",
+    href: "/ai-agents/get-started/developer-quickstart/skills/lovable",
+    icon: "/img/ai-agents/lovable.svg",
   },
 ];
 
@@ -127,6 +150,21 @@ export const QuickInstall = () => {
             ))}
           </div>
         )}
+      </div>
+      <div className={styles.skillsSection}>
+        <span className={styles.skillsLabel}>Agent skills</span>
+        <div className={styles.skillsChips}>
+          {SKILLS.map((skill) => (
+            <a key={skill.name} className={styles.skillChip} href={skill.href}>
+              <img
+                className={styles.toolChipIcon}
+                src={skill.icon}
+                alt={skill.name}
+              />
+              <span>{skill.name}</span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -151,3 +151,51 @@
 [data-theme="dark"] .toolChipIcon {
   filter: invert(1);
 }
+
+/* ── Skills Section ──────────────────────────────────────── */
+
+.skillsSection {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-ae-card-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skillsLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-grey-500);
+  white-space: nowrap;
+}
+
+.skillsChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skillChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-grey-100);
+  background: transparent;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ifm-heading-color);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.skillChip:hover {
+  border-color: var(--ifm-color-primary);
+  background: var(--color-white);
+  text-decoration: none;
+}
