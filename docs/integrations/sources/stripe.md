@@ -251,6 +251,8 @@ The important difference is the source of truth for the emitted record:
 
 Both modes still depend on the Stripe Events API to discover which records changed, so both are subject to the same 30-day event retention limit.
 
+Hydrated mode also changes the API-call pattern: `events` emits directly from the event payload, while `hydrated_events` performs additional object-endpoint requests after event detection. Duplicate events for the same object in one sync window are deduplicated before hydration, so only one hydration request is made per unique object.
+
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 

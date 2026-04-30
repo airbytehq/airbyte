@@ -7,6 +7,8 @@ Most entity streams (customers, subscriptions, invoices, charges, refunds, trans
 - `events`: Read `/v1/events`, filter by the relevant event types, then use `DpathFlattenFields` to unwrap `data.object` and emit the object embedded in the Stripe event payload.
 - `hydrated_events`: Still read `/v1/events` to determine which records changed, but then reread each changed object from the stream's own resource endpoint before emitting it. Nested collection streams such as `invoice_line_items` reread the child collection for the changed parent object.
 
+In hydrated mode, partitioning is still manifest-only: a `GroupingPartitionRouter` wraps the events `SubstreamPartitionRouter` with `deduplicate: true`. This deduplicates duplicate object IDs before hydration, so multiple events for the same object in one sync window trigger one hydration request per unique object.
+
 Stripe's Events API only retains events for 30 days. If the connector's state falls behind by more than 30 days (e.g., after a long pause in syncing), it automatically reverts to a full refresh from the entity endpoint rather than trying to read events that no longer exist.
 
 **Why this matters:** What looks like a simple entity read is actually multiple data paths depending on whether state exists, how old it is, and which event-based mode is selected. Adding a new entity stream now means deciding whether its hydrated incremental variant should reread a detail endpoint or a child collection endpoint, in addition to defining the direct-read retriever and the event filters. If the event type strings or hydrated endpoint path are wrong, incremental syncs will silently miss updates or reread the wrong records.

@@ -236,7 +236,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
-        path: "{{ stream_partition.object_id }}"
+        path: "{{ stream_partition.object_id[0] }}"
         request_parameters: {}
       record_selector:
         type: RecordSelector
@@ -246,17 +246,21 @@ definitions:
         transform_before_filtering: true
         schema_normalization: Default
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: id
-            partition_field: object_id
-            stream:
-              $ref: "#/definitions/events_based_stream"
-            incremental_dependency: true
-            extra_fields:
-              - ["updated"]
-              - ["is_deleted"]
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: object_id
+              stream:
+                $ref: "#/definitions/events_based_stream"
+              incremental_dependency: true
+              extra_fields:
+                - ["updated"]
+                - ["is_deleted"]
     incremental_sync:
       $ref: "#/definitions/entity_single_slice_cursor"
       global_substream_cursor: true
@@ -265,14 +269,14 @@ definitions:
         fields:
           - path:
               - updated
-            value: "{{ stream_slice.extra_fields['updated'] | int }}"
+            value: "{{ stream_slice.extra_fields['updated'][0] | int }}"
             value_type: integer
       - type: AddFields
         fields:
           - path:
               - is_deleted
             value: "{{ True }}"
-        condition: "{{ stream_slice.extra_fields.get('is_deleted') }}"
+        condition: "{{ stream_slice.extra_fields['is_deleted'][0] }}"
 
   hydrated_events_based_collection_stream:
     $ref: "#/definitions/base_stream"
@@ -282,20 +286,24 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: "{{ stream_partition.object_id }}"
+        path: "{{ stream_partition.object_id[0] }}"
         request_parameters: {}
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: id
-            partition_field: object_id
-            stream:
-              $ref: "#/definitions/events_based_stream"
-            incremental_dependency: true
-            extra_fields:
-              - ["updated"]
-              - ["is_deleted"]
+        type: GroupingPartitionRouter
+        group_size: 1
+        deduplicate: true
+        underlying_partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: object_id
+              stream:
+                $ref: "#/definitions/events_based_stream"
+              incremental_dependency: true
+              extra_fields:
+                - ["updated"]
+                - ["is_deleted"]
     incremental_sync:
       $ref: "#/definitions/entity_single_slice_cursor"
       global_substream_cursor: true
@@ -304,14 +312,14 @@ definitions:
         fields:
           - path:
               - updated
-            value: "{{ stream_slice.extra_fields['updated'] | int }}"
+            value: "{{ stream_slice.extra_fields['updated'][0] | int }}"
             value_type: integer
       - type: AddFields
         fields:
           - path:
               - is_deleted
             value: "{{ True }}"
-        condition: "{{ stream_slice.extra_fields.get('is_deleted') }}"
+        condition: "{{ stream_slice.extra_fields['is_deleted'][0] }}"
 
   events_objects_retriever:
     type: SimpleRetriever
@@ -1939,7 +1947,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/application_fees/incremental_stream"
-            hydrated_path: 'application_fees/{{ stream_partition.object_id }}'
+            hydrated_path: 'application_fees/{{ stream_partition.object_id[0] }}'
           - name: authorizations
             stream:
               $ref: "#/definitions/streams/authorizations"
@@ -1947,7 +1955,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/authorizations/incremental_stream"
-            hydrated_path: 'issuing/authorizations/{{ stream_partition.object_id }}'
+            hydrated_path: 'issuing/authorizations/{{ stream_partition.object_id[0] }}'
           - name: cardholders
             stream:
               $ref: "#/definitions/streams/cardholders"
@@ -1955,7 +1963,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/cardholders/incremental_stream"
-            hydrated_path: 'issuing/cardholders/{{ stream_partition.object_id }}'
+            hydrated_path: 'issuing/cardholders/{{ stream_partition.object_id[0] }}'
           - name: cards
             stream:
               $ref: "#/definitions/streams/cards"
@@ -1963,7 +1971,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/cards/incremental_stream"
-            hydrated_path: 'issuing/cards/{{ stream_partition.object_id }}'
+            hydrated_path: 'issuing/cards/{{ stream_partition.object_id[0] }}'
           - name: charges
             stream:
               $ref: "#/definitions/streams/charges"
@@ -1977,7 +1985,7 @@ dynamic_streams:
                     expand[]: '{{["data.refunds"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/charges/incremental_stream"
-            hydrated_path: 'charges/{{ stream_partition.object_id }}'
+            hydrated_path: 'charges/{{ stream_partition.object_id[0] }}'
           - name: coupons
             stream:
               $ref: "#/definitions/streams/coupons"
@@ -1985,7 +1993,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/coupons/incremental_stream"
-            hydrated_path: 'coupons/{{ stream_partition.object_id }}'
+            hydrated_path: 'coupons/{{ stream_partition.object_id[0] }}'
           - name: customers
             stream:
               $ref: "#/definitions/streams/customers"
@@ -1993,7 +2001,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/customers/incremental_stream"
-            hydrated_path: 'customers/{{ stream_partition.object_id }}'
+            hydrated_path: 'customers/{{ stream_partition.object_id[0] }}'
           - name: disputes
             stream:
               $ref: "#/definitions/streams/disputes"
@@ -2001,7 +2009,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/disputes/incremental_stream"
-            hydrated_path: 'disputes/{{ stream_partition.object_id }}'
+            hydrated_path: 'disputes/{{ stream_partition.object_id[0] }}'
           - name: invoice_items
             stream:
               $ref: "#/definitions/streams/invoice_items"
@@ -2009,7 +2017,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/invoice_items/incremental_stream"
-            hydrated_path: 'invoiceitems/{{ stream_partition.object_id }}'
+            hydrated_path: 'invoiceitems/{{ stream_partition.object_id[0] }}'
           - name: invoices
             stream:
               $ref: "#/definitions/streams/invoices"
@@ -2023,7 +2031,7 @@ dynamic_streams:
                     expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/invoices/incremental_stream"
-            hydrated_path: 'invoices/{{ stream_partition.object_id }}'
+            hydrated_path: 'invoices/{{ stream_partition.object_id[0] }}'
           - name: payment_intents
             stream:
               $ref: "#/definitions/streams/payment_intents"
@@ -2031,7 +2039,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/payment_intents/incremental_stream"
-            hydrated_path: 'payment_intents/{{ stream_partition.object_id }}'
+            hydrated_path: 'payment_intents/{{ stream_partition.object_id[0] }}'
           - name: payouts
             stream:
               $ref: "#/definitions/streams/payouts"
@@ -2039,7 +2047,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/payouts/incremental_stream"
-            hydrated_path: 'payouts/{{ stream_partition.object_id }}'
+            hydrated_path: 'payouts/{{ stream_partition.object_id[0] }}'
           - name: plans
             stream:
               $ref: "#/definitions/streams/plans"
@@ -2053,7 +2061,7 @@ dynamic_streams:
                     expand[]: '{{["data.tiers"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/plans/incremental_stream"
-            hydrated_path: 'plans/{{ stream_partition.object_id }}'
+            hydrated_path: 'plans/{{ stream_partition.object_id[0] }}'
           - name: prices
             stream:
               $ref: "#/definitions/streams/prices"
@@ -2061,7 +2069,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/prices/incremental_stream"
-            hydrated_path: 'prices/{{ stream_partition.object_id }}'
+            hydrated_path: 'prices/{{ stream_partition.object_id[0] }}'
           - name: products
             stream:
               $ref: "#/definitions/streams/products"
@@ -2069,7 +2077,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/products/incremental_stream"
-            hydrated_path: 'products/{{ stream_partition.object_id }}'
+            hydrated_path: 'products/{{ stream_partition.object_id[0] }}'
           - name: promotion_codes
             stream:
               $ref: "#/definitions/streams/promotion_codes"
@@ -2077,7 +2085,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/promotion_codes/incremental_stream"
-            hydrated_path: 'promotion_codes/{{ stream_partition.object_id }}'
+            hydrated_path: 'promotion_codes/{{ stream_partition.object_id[0] }}'
           - name: refunds
             stream:
               $ref: "#/definitions/streams/refunds"
@@ -2085,7 +2093,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/refunds/incremental_stream"
-            hydrated_path: 'refunds/{{ stream_partition.object_id }}'
+            hydrated_path: 'refunds/{{ stream_partition.object_id[0] }}'
           - name: reviews
             stream:
               $ref: "#/definitions/streams/reviews"
@@ -2093,7 +2101,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/reviews/incremental_stream"
-            hydrated_path: 'reviews/{{ stream_partition.object_id }}'
+            hydrated_path: 'reviews/{{ stream_partition.object_id[0] }}'
           - name: setup_intents
             stream:
               $ref: "#/definitions/streams/setup_intents"
@@ -2101,7 +2109,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/setup_intents/incremental_stream"
-            hydrated_path: 'setup_intents/{{ stream_partition.object_id }}'
+            hydrated_path: 'setup_intents/{{ stream_partition.object_id[0] }}'
           - name: subscription_schedule
             stream:
               $ref: "#/definitions/streams/subscription_schedule"
@@ -2109,7 +2117,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/subscription_schedule/incremental_stream"
-            hydrated_path: 'subscription_schedules/{{ stream_partition.object_id }}'
+            hydrated_path: 'subscription_schedules/{{ stream_partition.object_id[0] }}'
           - name: subscriptions
             stream:
               $ref: "#/definitions/streams/subscriptions"
@@ -2117,7 +2125,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/subscriptions/incremental_stream"
-            hydrated_path: 'subscriptions/{{ stream_partition.object_id }}'
+            hydrated_path: 'subscriptions/{{ stream_partition.object_id[0] }}'
           - name: top_ups
             stream:
               $ref: "#/definitions/streams/top_ups"
@@ -2125,7 +2133,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/top_ups/incremental_stream"
-            hydrated_path: 'topups/{{ stream_partition.object_id }}'
+            hydrated_path: 'topups/{{ stream_partition.object_id[0] }}'
           - name: transactions
             stream:
               $ref: "#/definitions/streams/transactions"
@@ -2133,7 +2141,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/transactions/incremental_stream"
-            hydrated_path: 'issuing/transactions/{{ stream_partition.object_id }}'
+            hydrated_path: 'issuing/transactions/{{ stream_partition.object_id[0] }}'
           - name: transfers
             stream:
               $ref: "#/definitions/streams/transfers"
@@ -2141,7 +2149,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/transfers/incremental_stream"
-            hydrated_path: 'transfers/{{ stream_partition.object_id }}'
+            hydrated_path: 'transfers/{{ stream_partition.object_id[0] }}'
           - name: accounts
             stream:
               $ref: "#/definitions/streams/accounts"
@@ -2149,7 +2157,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/accounts/incremental_stream"
-            hydrated_path: 'accounts/{{ stream_partition.object_id }}'
+            hydrated_path: 'accounts/{{ stream_partition.object_id[0] }}'
           - name: checkout_sessions
             stream:
               $ref: "#/definitions/streams/checkout_sessions"
@@ -2157,7 +2165,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/checkout_sessions/incremental_stream"
-            hydrated_path: 'checkout/sessions/{{ stream_partition.object_id }}'
+            hydrated_path: 'checkout/sessions/{{ stream_partition.object_id[0] }}'
           - name: credit_notes
             stream:
               $ref: "#/definitions/streams/credit_notes"
@@ -2165,7 +2173,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/credit_notes/incremental_stream"
-            hydrated_path: 'credit_notes/{{ stream_partition.object_id }}'
+            hydrated_path: 'credit_notes/{{ stream_partition.object_id[0] }}'
           - name: early_fraud_warnings
             stream:
               $ref: "#/definitions/streams/early_fraud_warnings"
@@ -2173,7 +2181,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/early_fraud_warnings/incremental_stream"
-            hydrated_path: 'radar/early_fraud_warnings/{{ stream_partition.object_id }}'
+            hydrated_path: 'radar/early_fraud_warnings/{{ stream_partition.object_id[0] }}'
           - name: external_account_bank_accounts
             stream:
               $ref: "#/definitions/streams/external_account_bank_accounts"
@@ -2181,7 +2189,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/external_account_bank_accounts/incremental_stream"
-            hydrated_path: 'accounts/{{ config["account_id"] }}/external_accounts/{{ stream_partition.object_id }}'
+            hydrated_path: 'accounts/{{ config["account_id"] }}/external_accounts/{{ stream_partition.object_id[0] }}'
           - name: external_account_cards
             stream:
               $ref: "#/definitions/streams/external_account_cards"
@@ -2189,7 +2197,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/external_account_cards/incremental_stream"
-            hydrated_path: 'accounts/{{ config["account_id"] }}/external_accounts/{{ stream_partition.object_id }}'
+            hydrated_path: 'accounts/{{ config["account_id"] }}/external_accounts/{{ stream_partition.object_id[0] }}'
           - name: payment_methods
             stream:
               $ref: "#/definitions/streams/payment_methods"
@@ -2197,7 +2205,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/payment_methods/incremental_stream"
-            hydrated_path: 'payment_methods/{{ stream_partition.object_id }}'
+            hydrated_path: 'payment_methods/{{ stream_partition.object_id[0] }}'
           - name: persons
             stream:
               $ref: "#/definitions/streams/persons"
@@ -2205,7 +2213,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/persons/incremental_stream"
-            hydrated_path: 'accounts/{{ config["account_id"] }}/persons/{{ stream_partition.object_id }}'
+            hydrated_path: 'accounts/{{ config["account_id"] }}/persons/{{ stream_partition.object_id[0] }}'
           - name: application_fees_refunds
             stream:
               $ref: "#/definitions/streams/application_fees_refunds"
@@ -2213,7 +2221,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/application_fees_refunds/incremental_stream"
-            hydrated_path: 'application_fees/{{ stream_slice.extra_fields["fee"] }}/refunds/{{ stream_partition.object_id }}'
+            hydrated_path: 'application_fees/{{ stream_slice.extra_fields["fee"][0] }}/refunds/{{ stream_partition.object_id[0] }}'
             hydrated_extra_fields:
               - [updated]
               - [is_deleted]
@@ -2225,7 +2233,7 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/bank_accounts/incremental_stream"
-            hydrated_path: 'customers/{{ stream_slice.extra_fields["customer"] }}/bank_accounts/{{ stream_partition.object_id }}'
+            hydrated_path: 'customers/{{ stream_slice.extra_fields["customer"][0] }}/bank_accounts/{{ stream_partition.object_id[0] }}'
             hydrated_extra_fields:
               - [updated]
               - [is_deleted]
@@ -2244,23 +2252,23 @@ dynamic_streams:
                   fields:
                     - path:
                         - invoice_id
-                      value: "{{ stream_partition.invoice_id }}"
+                      value: "{{ stream_partition.invoice_id[0] }}"
                 - type: AddFields
                   fields:
                     - path:
                         - invoice_created
-                      value: "{{ stream_slice.extra_fields['created'] | int }}"
+                      value: "{{ stream_slice.extra_fields['created'][0] | int }}"
                       value_type: integer
                     - path:
                         - invoice_updated
-                      value: "{{ stream_slice.extra_fields['updated'] | int }}"
+                      value: "{{ stream_slice.extra_fields['updated'][0] | int }}"
                       value_type: integer
                 - type: AddFields
                   fields:
                     - path:
                         - is_deleted
                       value: "{{ True }}"
-                  condition: "{{ stream_slice.extra_fields.get('is_deleted') }}"
+                  condition: "{{ stream_slice.extra_fields['is_deleted'][0] }}"
               retriever:
                 $ref: "#/definitions/hydrated_events_based_collection_stream/retriever"
                 requester:
@@ -2269,7 +2277,7 @@ dynamic_streams:
                     expand[]: '{{["data.discounts", "data.taxes"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/invoices/incremental_stream"
-            hydrated_path: 'invoices/{{ stream_partition.invoice_id }}/lines'
+            hydrated_path: 'invoices/{{ stream_partition.invoice_id[0] }}/lines'
             hydrated_partition_field: invoice_id
             hydrated_extra_fields:
               - [updated]
@@ -2289,17 +2297,17 @@ dynamic_streams:
                   fields:
                     - path:
                         - subscription_updated
-                      value: "{{ stream_slice.extra_fields['subscription_updated'] | int }}"
+                      value: "{{ stream_slice.extra_fields['subscription_updated'][0] | int }}"
                       value_type: integer
                 - type: AddFields
                   fields:
                     - path:
                         - is_deleted
                       value: "{{ True }}"
-                  condition: "{{ stream_slice.extra_fields.get('is_deleted') }}"
+                  condition: "{{ stream_slice.extra_fields['is_deleted'][0] }}"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/subscription_items/incremental_stream"
-            hydrated_path: 'subscription_items/{{ stream_partition.object_id }}'
+            hydrated_path: 'subscription_items/{{ stream_partition.object_id[0] }}'
             hydrated_extra_fields:
               - [subscription_updated]
               - [is_deleted]
@@ -2356,6 +2364,7 @@ dynamic_streams:
             - incremental_stream
             - retriever
             - partition_router
+            - underlying_partition_router
             - parent_stream_configs
             - "0"
             - stream
@@ -2365,6 +2374,7 @@ dynamic_streams:
             - incremental_stream
             - retriever
             - partition_router
+            - underlying_partition_router
             - parent_stream_configs
             - "0"
             - partition_field
@@ -2374,6 +2384,7 @@ dynamic_streams:
             - incremental_stream
             - retriever
             - partition_router
+            - underlying_partition_router
             - parent_stream_configs
             - "0"
             - extra_fields
