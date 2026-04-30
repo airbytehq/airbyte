@@ -7,7 +7,7 @@ sidebar_label: What is Airbyte Agents?
 
 Airbyte Agents gives AI agents reliable, real-time access to your business data. It connects agents to the tools your organization runs on, unifies that data into one searchable layer, and lets agents read, search, and write across every connected system.
 
-You get managed connectors, secure credential storage, and the Context Store, a replication of connected data that your agents can query in milliseconds. Whether you use the web app, the MCP server, the Python SDK, or the HTTP API, your agents work with the same data, the same connectors, and the same permissions.
+You get managed connectors, secure credential storage, and the Context Store, (a replication of connected data that your agents can query in milliseconds). Whether you use the web app, the MCP server, the Python SDK, or the HTTP API, your agents work with the same data, the same connectors, and the same permissions.
 
 Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
 
