@@ -20,7 +20,6 @@ import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDi
 import { Grid } from "../../components/Grid/Grid";
 import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 import {
-  HeroBanner,
   QuickInstall,
   FrameworkGrid,
 } from "../../components/AiAgentsHome";
@@ -47,7 +46,6 @@ export default {
   YoutubeEmbed,
   DocMetaTags,
   CopyPageButton,
-  HeroBanner,
   QuickInstall,
   FrameworkGrid,
 };
