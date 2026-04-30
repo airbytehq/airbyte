@@ -32,6 +32,7 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-04-28 | [77274](https://github.com/airbytehq/airbyte/pull/77274) | Update dependencies |
 | 0.0.50 | 2026-04-21 | [76628](https://github.com/airbytehq/airbyte/pull/76628) | Update dependencies |
 | 0.0.49 | 2026-03-31 | [75706](https://github.com/airbytehq/airbyte/pull/75706) | Update dependencies |
 | 0.0.48 | 2026-03-24 | [75354](https://github.com/airbytehq/airbyte/pull/75354) | Update dependencies |

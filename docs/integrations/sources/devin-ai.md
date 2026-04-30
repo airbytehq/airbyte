@@ -97,6 +97,7 @@ The `session_messages` stream is a substream of `sessions`: for each session ret
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.1 | 2026-04-28 | [77201](https://github.com/airbytehq/airbyte/pull/77201) | Update dependencies |
 | 0.2.0 | 2026-04-22 | [76475](https://github.com/airbytehq/airbyte/pull/76475) | Add `sessions_insights` stream for analytics (message counts, session size, AI-generated classification); add optional `start_date` config to filter `sessions`, `sessions_insights`, and `session_messages` by creation time |
 | 0.1.1 | 2026-04-21 | [76504](https://github.com/airbytehq/airbyte/pull/76504) | Update dependencies |
 | 0.1.0 | 2026-04-15 | [74417](https://github.com/airbytehq/airbyte/pull/74417) | Initial release with sessions, session messages, playbooks, secrets, and knowledge notes streams |

@@ -48,7 +48,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
 from airbyte_agent_sdk.connectors.tiktok_marketing.models import TiktokMarketingAuthConfig
 
@@ -58,10 +60,58 @@ connector = TiktokMarketingConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @TiktokMarketingConnector.tool_utils
 async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+from airbyte_agent_sdk.connectors.tiktok_marketing.models import TiktokMarketingAuthConfig
+
+connector = TiktokMarketingConnector(
+    auth_config=TiktokMarketingAuthConfig(
+        access_token="<Your TikTok Marketing API access token>"
+    )
+)
+
+@tool
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Tiktok-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+from airbyte_agent_sdk.connectors.tiktok_marketing.models import TiktokMarketingAuthConfig
+
+connector = TiktokMarketingConnector(
+    auth_config=TiktokMarketingAuthConfig(
+        access_token="<Your TikTok Marketing API access token>"
+    )
+)
+
+mcp = FastMCP("Tiktok-Marketing Agent")
+
+@mcp.tool()
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Tiktok-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -71,8 +121,70 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
-```python
-from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `TiktokMarketingConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+
+connector = connect("tiktok-marketing", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+
+connector = connect("tiktok-marketing", workspace_name="<your_workspace_name>")
+
+@tool
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Tiktok-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+
+connector = connect("tiktok-marketing", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Tiktok-Marketing Agent")
+
+@mcp.tool()
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Tiktok-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = TiktokMarketingConnector(
     auth_config=AirbyteAuthConfig(
@@ -83,10 +195,64 @@ connector = TiktokMarketingConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @TiktokMarketingConnector.tool_utils
 async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = TiktokMarketingConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Tiktok-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.tiktok_marketing import TiktokMarketingConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = TiktokMarketingConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Tiktok-Marketing Agent")
+
+@mcp.tool()
+@TiktokMarketingConnector.tool_utils
+async def tiktok_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Tiktok-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation

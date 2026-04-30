@@ -44,7 +44,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
 from airbyte_agent_sdk.connectors.linkedin_ads.models import LinkedinAdsAuthConfig
 
@@ -56,10 +58,62 @@ connector = LinkedinAdsConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @LinkedinAdsConnector.tool_utils
 async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+from airbyte_agent_sdk.connectors.linkedin_ads.models import LinkedinAdsAuthConfig
+
+connector = LinkedinAdsConnector(
+    auth_config=LinkedinAdsAuthConfig(
+        refresh_token="<OAuth 2.0 refresh token for automatic renewal>",
+        client_id="<OAuth 2.0 application client ID>",
+        client_secret="<OAuth 2.0 application client secret>"
+    )
+)
+
+@tool
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Linkedin-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+from airbyte_agent_sdk.connectors.linkedin_ads.models import LinkedinAdsAuthConfig
+
+connector = LinkedinAdsConnector(
+    auth_config=LinkedinAdsAuthConfig(
+        refresh_token="<OAuth 2.0 refresh token for automatic renewal>",
+        client_id="<OAuth 2.0 application client ID>",
+        client_secret="<OAuth 2.0 application client secret>"
+    )
+)
+
+mcp = FastMCP("Linkedin-Ads Agent")
+
+@mcp.tool()
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Linkedin-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -69,8 +123,70 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
-```python
-from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `LinkedinAdsConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+
+connector = connect("linkedin-ads", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+
+connector = connect("linkedin-ads", workspace_name="<your_workspace_name>")
+
+@tool
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Linkedin-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+
+connector = connect("linkedin-ads", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Linkedin-Ads Agent")
+
+@mcp.tool()
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Linkedin-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = LinkedinAdsConnector(
     auth_config=AirbyteAuthConfig(
@@ -81,10 +197,64 @@ connector = LinkedinAdsConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @LinkedinAdsConnector.tool_utils
 async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = LinkedinAdsConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Linkedin-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.linkedin_ads import LinkedinAdsConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = LinkedinAdsConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Linkedin-Ads Agent")
+
+@mcp.tool()
+@LinkedinAdsConnector.tool_utils
+async def linkedin_ads_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Linkedin-Ads connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation

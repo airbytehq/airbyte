@@ -448,7 +448,12 @@ def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
     ]
     requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=true",
+        json={"channels": expected},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
         json={"channels": expected},
     )
     state = StateBuilder().with_stream_state("channels", {}).build()
@@ -486,7 +491,7 @@ def test_next_page_token(token_config):
         pytest.param(403, {}, ResponseAction.FAIL, id="403_fail"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_rate_limited"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
-        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RETRY, id="ok_false_ratelimited"),
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(200, {"ok": False, "error": "not_in_channel"}, ResponseAction.IGNORE, id="ok_false_not_in_channel"),
         pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
         pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
@@ -495,7 +500,7 @@ def test_next_page_token(token_config):
         pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
         pytest.param(200, {"ok": False, "error": "missing_scope"}, ResponseAction.FAIL, id="ok_false_auth_error"),
         pytest.param(200, {"ok": False, "error": "token_expired"}, ResponseAction.FAIL, id="ok_false_token_expired"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
     ),
 )
 def test_should_retry(token_config, status_code, response_json, expected):
@@ -531,7 +536,6 @@ def test_should_retry(token_config, status_code, response_json, expected):
             FailureType.config_error,
             id="auth_error_token_expired",
         ),
-        pytest.param("method_not_allowed", "Slack API error: method_not_allowed.", FailureType.system_error, id="general_error_catch_all"),
     ],
 )
 def test_channels_stream_ok_false_error_handling(requests_mock, token_config, slack_error, expected_error_message, expected_failure_type):
@@ -541,7 +545,7 @@ def test_channels_stream_ok_false_error_handling(requests_mock, token_config, sl
     """
     requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel",
         json={"ok": False, "error": slack_error},
     )
     state = StateBuilder().with_stream_state("channels", {}).build()
@@ -718,6 +722,17 @@ def test_channel_messages_stream_ok_false_not_in_channel(requests_mock, token_co
     assert len(output.errors) == 0, f"Expected no errors for IGNORE action, but got: {[t.trace.error.message for t in output.errors]}"
 
 
+def test_channels_stream_paginator_page_size_is_999(token_config) -> None:
+    stream = get_stream_by_name("channels", token_config)
+    assert get_retriever(stream).paginator.pagination_strategy.page_size == 999
+
+
+def test_other_streams_paginator_page_size_is_1000(token_config) -> None:
+    for stream_name in ("users", "channel_members", "channel_messages", "threads"):
+        stream = get_stream_by_name(stream_name, token_config)
+        assert get_retriever(stream).paginator.pagination_strategy.page_size == 1000, f"Expected page_size 1000 for {stream_name}"
+
+
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
 
@@ -735,3 +750,64 @@ def test_channels_stream_with_include_private_channels(token_config) -> None:
     params = get_retriever(stream).requester.get_request_params()
 
     assert params.get("types") == "public_channel,private_channel"
+
+
+def test_channels_stream_excludes_archived_when_explicitly_disabled(token_config) -> None:
+    config = deepcopy(token_config)
+    config["include_archived_channels"] = False
+
+    stream = get_stream_by_name("channels", config)
+
+    params = get_retriever(stream).requester.get_request_params()
+
+    assert params.get("exclude_archived") == "true"
+
+
+def test_channels_stream_includes_archived_when_configured(token_config) -> None:
+    config = deepcopy(token_config)
+    config["include_archived_channels"] = True
+
+    stream = get_stream_by_name("channels", config)
+
+    params = get_retriever(stream).requester.get_request_params()
+
+    assert params.get("exclude_archived") == "false"
+
+
+@pytest.mark.parametrize(
+    "status_code, response_json, expected",
+    (
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
+        pytest.param(429, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="429_ok_false_ratelimited"),
+        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_empty_body"),
+        pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
+    ),
+)
+def test_users_stream_error_handler_response_action(token_config, status_code, response_json, expected):
+    """Verify users_stream error handler returns correct action, especially for rate-limit ordering."""
+    stream = get_stream_by_name("users", token_config)
+    mocked_response = MagicMock(spec=Response, status_code=status_code)
+    mocked_response.ok = status_code == 200
+    mocked_response.headers = {"Content-Type": "application/json"}
+    mocked_response.json.return_value = response_json
+    assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+@pytest.mark.parametrize(
+    "status_code, response_json, expected",
+    (
+        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+    ),
+)
+def test_channel_members_error_handler_response_action(token_config, status_code, response_json, expected):
+    """Verify channel_members (base requester) error handler returns correct action for rate-limit ordering."""
+    stream = get_stream_by_name("channel_members", token_config)
+    mocked_response = MagicMock(spec=Response, status_code=status_code)
+    mocked_response.ok = status_code == 200
+    mocked_response.headers = {"Content-Type": "application/json"}
+    mocked_response.json.return_value = response_json
+    assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
