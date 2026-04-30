@@ -8,7 +8,7 @@ sidebar_position: 1
 The SDK authenticates with Airbyte Agents using an Airbyte `client_id` and `client_secret`. Once the SDK has these, it handles the rest: fetching tokens, refreshing them before they expire, and attaching them to every request. You never manage tokens yourself.
 
 :::note Two sets of credentials
-The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *your app* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you pass to [`create_connector`](./add-connector) so Airbyte can sign in to each third-party service on your behalf. The two are independent: rotating one doesn't affect the other.
+The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *your app* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you provide when you [add a connector](./add-connector) so Airbyte can sign in to each third-party service on your behalf. The two are independent: rotating one doesn't affect the other.
 :::
 
 ## Get your credentials
