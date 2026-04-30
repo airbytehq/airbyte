@@ -35,7 +35,7 @@ def test_transform_record(zip_file, mocked_reader, logger):
 
 
 def test_transform_record_service_account_uses_displayed_uri():
-    """Service Account auth files must expose the clean gs:// URI, not the signed URL."""
+    """Service Account auth files must expose the URL without query params, not the signed URL."""
     stream = GCSStream(
         config=Mock(),
         catalog_schema=Mock(),
@@ -53,17 +53,17 @@ def test_transform_record_service_account_uses_displayed_uri():
         "&X-Goog-Credential=sa%40project.iam.gserviceaccount.com"
         "&X-Goog-Signature=abc123"
     )
-    clean_uri = "gs://my-bucket/data.csv"
+    displayed_uri = "https://storage.googleapis.com/my-bucket/data.csv"
     last_updated = datetime.today().isoformat()
 
     sa_file = GCSUploadableRemoteFile(
         uri=signed_url,
         blob=MagicMock(),
         last_modified=last_updated,
-        displayed_uri=clean_uri,
+        displayed_uri=displayed_uri,
     )
     record = stream.transform_record({"field1": 1}, sa_file, last_updated)
 
-    assert record["_ab_source_file_url"] == clean_uri
+    assert record["_ab_source_file_url"] == displayed_uri
     assert "X-Goog-Credential" not in record["_ab_source_file_url"]
     assert "X-Goog-Signature" not in record["_ab_source_file_url"]

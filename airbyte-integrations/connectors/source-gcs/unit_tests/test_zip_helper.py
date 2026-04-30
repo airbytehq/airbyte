@@ -112,7 +112,7 @@ def test_extracted_files_use_displayed_uri_over_signed_url():
         "?X-Goog-Credential=sa%40project.iam.gserviceaccount.com"
         "&X-Goog-Signature=abc123"
     )
-    clean_uri = "gs://bucket/archive.zip"
+    displayed_uri = "https://storage.googleapis.com/bucket/archive.zip"
 
     zip_bytes = _make_zip_bytes({"data.csv": "col\n1"})
     blob = _make_blob(zip_bytes)
@@ -121,13 +121,13 @@ def test_extracted_files_use_displayed_uri_over_signed_url():
         uri=signed_url,
         blob=MagicMock(),
         last_modified=datetime.today(),
-        displayed_uri=clean_uri,
+        displayed_uri=displayed_uri,
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir_path:
         files = list(ZipHelper(blob, parent_file, tmp_dir_path).get_gcs_remote_files())
 
     assert len(files) == 1
-    assert files[0].displayed_uri == clean_uri
+    assert files[0].displayed_uri == displayed_uri
     assert "X-Goog-Credential" not in files[0].displayed_uri
     assert "X-Goog-Signature" not in files[0].displayed_uri

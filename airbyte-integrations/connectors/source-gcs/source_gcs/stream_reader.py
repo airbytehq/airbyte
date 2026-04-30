@@ -100,18 +100,19 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        clean_uri = f"gs://{blob.bucket.name}/{blob.name}"
                         if self.config.credentials.auth_type == "Client":
-                            uri = clean_uri
+                            uri = f"gs://{blob.bucket.name}/{blob.name}"
+                            displayed_uri = None
                         else:
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
+                            displayed_uri = uri.split("?")[0]
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,
                             blob=blob,
                             last_modified=last_modified,
                             mime_type=".".join(blob.name.split(".")[1:]),
-                            displayed_uri=clean_uri,
+                            displayed_uri=displayed_uri,
                         )
 
                         if blob.name.endswith(".zip") and not isinstance(self.config.delivery_method, DeliverRawFiles):
