@@ -83,9 +83,9 @@ Add the MCP server to your Cursor app.
 8. Return to Cursor. The MCP server tools are now available.
 
 </TabItem>
-<TabItem value="vscode" label="VS Code">
+<TabItem value="vscode" label="VS Code (stable)">
 
-Add the MCP server to Visual Studio Code. Airbyte Agents provides a one-click install button for both the stable and Insiders builds. If you prefer to configure VS Code manually, use the Command Palette or edit `mcp.json` directly.
+Add the MCP server to Visual Studio Code. You can use a one-click install from the Airbyte Agents web app, or configure VS Code manually with the Command Palette or `mcp.json`.
 
 ### Option 1: One-click install from Airbyte Agents (recommended)
 
@@ -93,7 +93,7 @@ Add the MCP server to Visual Studio Code. Airbyte Agents provides a one-click in
 
 2. In the left sidebar, click **MCP Server**.
 
-3. Select **Add to VS Code**, or **Add to VS Code Insiders** for Insiders builds. A new tab opens at `vscode.dev/redirect` (or `insiders.vscode.dev/redirect`) and hands the install off to VS Code.
+3. Select **Add to VS Code**. A new tab opens at `vscode.dev/redirect` and hands the install off to VS Code.
 
 4. Confirm the install in VS Code. The Airbyte Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
 
@@ -137,6 +137,62 @@ Run **MCP: Open User Configuration** from the Command Palette to open your user 
 ```
 
 Save the file. VS Code detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
+
+</TabItem>
+<TabItem value="vscode-insiders" label="VS Code (Insiders)">
+
+Add the MCP server to Visual Studio Code Insiders. You can use a one-click install from the Airbyte Agents web app, or configure VS Code Insiders manually with the Command Palette or `mcp.json`.
+
+### Option 1: One-click install from Airbyte Agents (recommended)
+
+1. Sign into [app.airbyte.ai](https://app.airbyte.ai).
+
+2. In the left sidebar, click **MCP Server**.
+
+3. Select **Add to VS Code Insiders**. A new tab opens at `insiders.vscode.dev/redirect` and hands the install off to VS Code Insiders.
+
+4. Confirm the install in VS Code Insiders. The Airbyte Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
+
+5. VS Code Insiders detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
+
+6. Return to VS Code Insiders. The MCP server's tools are now available in Copilot Chat.
+
+:::note
+If VS Code Insiders isn't installed, the click lands on the `insiders.vscode.dev` help page instead of opening a blank tab. Install VS Code Insiders and try the button again.
+:::
+
+### Option 2: Add the server from the Command Palette
+
+1. In VS Code Insiders, open the Command Palette with ⇧⌘P (macOS) or Ctrl+Shift+P (Windows, Linux).
+
+2. Run **MCP: Add Server** and choose **HTTP** as the server type.
+
+3. Enter the server URL: `https://mcp.airbyte.ai/mcp`
+
+4. Enter a server name, such as `Airbyte Agent MCP`.
+
+5. Choose whether to install the server in your user profile (**Global**) or the current workspace.
+
+6. VS Code Insiders detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
+
+7. The MCP server's tools are now available in Copilot Chat.
+
+### Option 3: Edit `mcp.json` directly
+
+Run **MCP: Open User Configuration** from the Command Palette to open your user `mcp.json` file, or create `.vscode/mcp.json` in your workspace, and add:
+
+```json
+{
+  "servers": {
+    "Airbyte Agent MCP": {
+      "type": "http",
+      "url": "https://mcp.airbyte.ai/mcp"
+    }
+  }
+}
+```
+
+Save the file. VS Code Insiders detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
