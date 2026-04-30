@@ -2648,6 +2648,31 @@ definitions:
         - credentials
         - auth_type
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
+
+# Rate limits: https://help.getharvest.com/api-v2/introduction/overview/general/
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT15M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/reports/"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT15S
+      matchers: []
+  ratelimit_reset_header: "Retry-After"
+  status_codes_for_ratelimit_hit:
+    - 429
+
 streams:
   - $ref: "#/definitions/streams/clients"
   - $ref: "#/definitions/streams/company"
@@ -2772,6 +2797,17 @@ spec:
             additionalProperties: true
         order: 3
         title: Authentication mechanism
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up
+          syncs but may increase API rate limit usage. Adjust based on your
+          Harvest API plan.
+        default: 4
+        minimum: 2
+        maximum: 10
+        order: 4
     additionalProperties: true
 
 metadata:
