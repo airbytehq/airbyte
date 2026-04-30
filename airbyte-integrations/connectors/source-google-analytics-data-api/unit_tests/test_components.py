@@ -7,6 +7,8 @@ from typing import Dict, List, Union
 
 import pytest
 import yaml
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
 
 
 _CONFIG = {
@@ -260,9 +262,6 @@ def test_config_normalization_infers_auth_type(credentials, expected_auth_type):
 
     Regression test for https://github.com/airbytehq/oncall/issues/12125
     """
-    from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
-    from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-
     manifest_path = Path(__file__).parent.parent / "manifest.yaml"
     manifest = yaml.safe_load(manifest_path.read_text())
 
@@ -284,9 +283,6 @@ def test_config_normalization_infers_auth_type(credentials, expected_auth_type):
 
 def test_config_normalization_no_credentials_does_not_add_auth_type():
     """Verify that config normalization does not add auth_type when no credentials are present."""
-    from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
-    from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-
     manifest_path = Path(__file__).parent.parent / "manifest.yaml"
     manifest = yaml.safe_load(manifest_path.read_text())
 
