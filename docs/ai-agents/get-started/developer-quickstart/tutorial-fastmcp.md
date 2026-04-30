@@ -109,14 +109,17 @@ my-mcp-agent/
     load_dotenv()
     ```
 
-## Part 4: Add the GitHub connector to your workspace
+## Part 4: Add the GitHub connector
 
-Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. You can do this through either the web app or the REST API.
+Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. You can do this through either the web app, MCP, or API.
 
-- **Web app**: Open [app.airbyte.ai](https://app.airbyte.ai/), go to **Connectors**, click **Add Connector**, search for **GitHub**, and complete the authentication flow with your GitHub personal access token. See [Add a connector (UI)](../../interfaces/ui/add-connector) for a full walkthrough.
-- **REST API**: Send a `POST` request to create the connector programmatically. See [Add a connector (API)](../../interfaces/api/add-connector) for request examples.
+- **Web app**: Open [app.airbyte.ai](https://app.airbyte.ai/), click **Connectors**, click **Add Connector**, search for **GitHub**, and complete the authentication flow with your GitHub personal access token. See [Add a connector (UI)](../../interfaces/ui/add-connector) for a full walkthrough.
 
-You only need to add the connector once. After it exists in your workspace, you can skip this step on subsequent runs.
+- **API**: Send a `POST` request to create the connector programmatically. See [Add a connector (API)](../../interfaces/api/add-connector) for request examples.
+
+- **MCP**: If you run Airbyte's Agent MCP, you can add a new connector from your existing agent. See [Agent MCP](../../interfaces/mcp) to learn how to use the MCP server.
+
+You only need to add the connector once. After it exists in your workspace, you can skip this step when setting up new agents.
 
 ## Part 5: Configure your MCP server
 
@@ -253,7 +256,8 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- **Add another connector.** Add Slack, Stripe, Salesforce, or any other connector from the [Airbyte agent connectors catalog](../../connectors) through the [web app](../../interfaces/ui/add-connector) or [REST API](../../interfaces/api/add-connector), then call `slack = connect("slack")` in your server and register a second tool with another `@mcp.tool()` / `@SlackConnector.tool_utils` stack. Your MCP client now reads GitHub and posts to Slack with no additional OAuth setup.
-- **Use write actions.** Connectors expose create, update, and post actions alongside the read ones. Ask your client to file an issue, comment on a PR, or send a Slack message, and `execute` carries the write through with the stored OAuth token.
-- **Let your AI assistant scaffold the next server.** The Airbyte agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new MCP server without retyping them. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
-- **Reach the same connectors from a hosted MCP endpoint.** Airbyte Agents exposes the same connectors through a hosted MCP endpoint that works with Claude Code, Cursor, and ChatGPT, with one OAuth flow per provider shared across clients. Use this when you don't want to run and maintain your own MCP server.
+- **Learn more about the SDK**: See the [full SDK interface tutorial](../../interfaces/sdk) and [reference documentation](../../reference/sdk).
+
+- **Let your AI assistant scaffold the next agent.** The Airbyte agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new agent quickly. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
+
+- **Reach the same connectors from any other interface.** Airbyte Agents exposes the same connectors through all of its [interfaces](../../interfaces). Since you already added a connector, you can use that connector anywhere you use Airbyte Agents.
