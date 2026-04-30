@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 0
 ---
 

@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_label: "FastMCP"
 sidebar_position: 1
 ---

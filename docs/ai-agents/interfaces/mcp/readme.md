@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 6
 ---
 
@@ -196,7 +197,7 @@ On Business, Enterprise, and Education plans, you must be a workspace owner or a
 
 4. Go back to **Settings** > **Apps & Connectors**.
 
-5. Click **Create**. This button only appears when Developer Mode is enabled.
+5. Click **Create App**. This button only appears when Developer Mode is enabled.
 
 6. Enter the connector details:
 

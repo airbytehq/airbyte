@@ -21,6 +21,7 @@ const getRemarkPlugins = () => ({
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
   connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
+  codeBlockTabs: require("./src/remark/codeBlockTabs"),
 });
 
 const plugins = getRemarkPlugins();
@@ -201,6 +202,7 @@ const config: Config = {
           plugins.planInformation,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
+          plugins.codeBlockTabs,
         ],
       },
     ],

@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_label: "LangChain"
 sidebar_position: 2
 ---

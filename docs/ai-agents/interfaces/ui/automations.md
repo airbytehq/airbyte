@@ -1,10 +1,11 @@
 ---
+plan: all
 sidebar_position: 2
 ---
 
 # Automations
 
-An Automation is an agent task that runs on its own, without a human in the loop. You describe what you want done once, pick how you want to trigger it—manually, on a schedule, or from a webhook—and Airbyte runs the task every time the trigger fires. Automations are the right choice when you need the same work to happen repeatedly, reliably, and without someone sitting at a keyboard.
+An Automation is an agent task that runs on its own, without a human in the loop. You describe what you want done once, pick how you want to trigger it (manually, on a schedule, or from a webhook), and Airbyte runs the task every time the trigger fires. Automations are the right choice when you need the same work to happen repeatedly, reliably, and without someone sitting at a keyboard.
 
 To open Automations, click **Automations** in the left sidebar.
 
@@ -102,7 +103,7 @@ An Automation runs when its trigger fires. Choose one trigger per Automation.
 
 ### Manually
 
-Manual Automations only run when you explicitly invoke them. Click the **Run** (play) icon on the Automation's row in the Automations page, or click **Run** in the Automation Builder header, to start a run immediately. Airbyte queues the run, shows a confirmation, and records it in Run History. Use manual runs for Automations you want available on demand but not on a clock—for example, an end-of-quarter summary you invoke when you're ready to review it.
+Manual Automations only run when you explicitly invoke them. Click the **Run** (play) icon on the Automation's row in the Automations page, or click **Run** in the Automation Builder header, to start a run immediately. Airbyte queues the run, shows a confirmation, and records it in Run History. Use manual runs for Automations you want available on demand but not on a clock. For example, an end-of-quarter summary you invoke when you're ready to review it.
 
 ### On a schedule
 
@@ -121,7 +122,7 @@ Keep this in mind when you design schedules:
 
 - **Avoid stacking many heavy Automations on the same round cadence.** If you have several Automations that each do substantial work, stagger them across different minutes (for example, `5 * * * *`, `15 * * * *`, `25 * * * *`) rather than running them all at `0 * * * *`. This spreads load on your connectors, reduces the chance of hitting upstream rate limits at the same moment, and makes failures easier to diagnose one Automation at a time.
 - **Expect near-simultaneous webhook or connector calls** when multiple Automations share a trigger time and hit the same third-party API. If that API enforces per-minute rate limits, consider splitting the schedules.
-- **Dispatch time isn't execution time.** Airbyte dispatches the run on the dot, but the agent work itself takes as long as it takes. A 9:00 schedule doesn't guarantee results by 9:00—only that the run starts then.
+- **Dispatch time isn't execution time.** Airbyte dispatches the run on the dot, but the agent work itself takes as long as it takes. A 9:00 schedule doesn't guarantee results by 9:00, only that the run starts then.
 
 If you need a schedule that's more fine-grained than the Automation Builder's presets allow, use **Custom cron** and pick a specific minute offset that isn't shared with your other Automations.
 
@@ -144,10 +145,10 @@ A result webhook is an optional URL where Airbyte posts the result of each run. 
 When a run finishes, Airbyte POSTs a JSON payload containing the Automation's output to the URL you provided. Use result webhooks to:
 
 - Forward Automation output to another system, like a message channel, a queue, or a dashboard.
-- Chain Automations together—one Automation's result webhook triggers another system that kicks off the next step.
+- Chain Automations together. One Automation's result webhook triggers another system that kicks off the next step.
 - Store results somewhere you control, in addition to Airbyte's own history.
 
-Result webhooks are currently persisted for scheduled Automations. If you leave the field blank, Airbyte still records the result in Run History—it just doesn't forward it anywhere.
+Result webhooks are currently persisted for scheduled Automations. If you leave the field blank, Airbyte still records the result in Run History. It just doesn't forward it anywhere.
 
 ## Run history
 

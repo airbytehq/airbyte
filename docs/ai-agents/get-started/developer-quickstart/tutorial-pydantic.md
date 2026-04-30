@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_label: "Pydantic AI"
 sidebar_position: 3
 ---

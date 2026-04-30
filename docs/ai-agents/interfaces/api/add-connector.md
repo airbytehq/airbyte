@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 2
 ---
 
@@ -23,7 +24,7 @@ Exactly one of the two is required. If none is provided, the server responds wit
 
 ### API token connectors
 
-Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific — GitHub uses `personal_access_token`, Linear uses `api_key`, Notion uses `token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the field name the connector expects.
+Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific. GitHub uses `personal_access_token`, Linear uses `api_key`, Notion uses `token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the field name the connector expects.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
@@ -43,7 +44,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   }'
 ```
 
-Some connectors also need non-credential configuration. Pass those fields under `replication_config` on the request body — not at the top level. GitHub's `replication_config.repositories` above is one example. Without it the call fails with `422 "required property 'repositories' not found"`; the same error applies if you place `repositories` at the top level instead. See the connector's page in the [Connectors](../../connectors) reference for any extra required fields and where they belong.
+Some connectors also need non-credential configuration. Pass those fields under `replication_config` on the request body, not at the top level. GitHub's `replication_config.repositories` above is one example. Without it the call fails with `422 "required property 'repositories' not found"`; the same error applies if you place `repositories` at the top level instead. See the connector's page in the [Connectors](../../connectors) reference for any extra required fields and where they belong.
 
 ### OAuth connectors
 
@@ -70,7 +71,7 @@ Each connector defines its own credential shape. See the connector's page in the
 <!--
 AGENTIC-1141: credentials aren't validated at create-time; any typo in the
 client_id/secret/refresh_token surfaces as an auth error on the first
-execute. Don't highlight this in the public narrative — the single line
+execute. Don't highlight this in the public narrative. The single line
 above covers it neutrally. Remove the note once create-time validation
 lands.
 -->
@@ -80,7 +81,7 @@ lands.
 The `definition_id` identifies the connector type. You can look it up two ways:
 
 - Call `GET /api/v1/integrations/definitions/sources` to list every available connector type. See [Make your first request](./#make-your-first-request). Recommended.
-- Filter by name to get a single connector in one call — for example, to grab the GitHub `definition_id`:
+- Filter by name to get a single connector in one call. For example, to grab the GitHub `definition_id`:
 
 ```bash
 curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources?name=github' \
@@ -106,7 +107,7 @@ across endpoints.
 
 ## List connectors
 
-List the connectors in a workspace. A workspace identifier is required — pass `workspace_name` (or `workspace_id`) as a query parameter.
+List the connectors in a workspace. A workspace identifier is required. Pass `workspace_name` (or `workspace_id`) as a query parameter.
 
 ```bash title="Request"
 curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default' \
@@ -190,7 +191,7 @@ Common codes:
 - `400`: the credentials block doesn't match the connector's auth scheme. The `message` typically includes `"Credentials do not match any auth scheme. Provided keys: [...]. Available schemes: ..."`.
 - `401` / `403`: missing or invalid bearer token.
 - `404`: the `workspace_name` doesn't exist, or the connector ID in the URL isn't found.
-- `422`: the request body parsed but failed schema validation — missing required field on the connector spec, unknown property, and so on.
+- `422`: the request body parsed but failed schema validation. Missing required field on the connector spec, unknown property, and so on.
 
 ## Next steps
 
