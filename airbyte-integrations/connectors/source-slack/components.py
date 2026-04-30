@@ -5,7 +5,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set
 
 import requests
 
