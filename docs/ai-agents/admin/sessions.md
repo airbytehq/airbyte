@@ -1,6 +1,6 @@
 # Review sessions
 
-The Sessions page shows a read-only history of every agent interaction in your workspace, along with token usage and the tools each interaction used. Use it to audit what your agents did, troubleshoot unexpected results, and understand what's driving your [agent operations (AOs)](../concepts/agent-operations.md).
+The Sessions page shows a read-only history of every agent interaction in your workspace, along with token usage and the connectors each interaction used. Use it to audit what your agents did, troubleshoot unexpected results, and understand what's driving your [agent operations (AOs)](../concepts/agent-operations.md).
 
 ## What sessions are
 
@@ -21,7 +21,7 @@ The Sessions table lists the most recent sessions first. Each row represents one
 - **Source**: A descriptive name for the session. For automations, this is the automation's name. For chats, this is the chat's title.
 - **Type**: Whether the session is a [Chat](#chat), an [Automation](#automation), or an **Automation Builder Chat**.
 - **Status**: Notes Active or Deleted. Active chats are resumable.
-- **Tools**: The connectors the agent used during the session. Hover over a connector icon to see its name.
+- **Connectors**: The connectors the agent used during the session. Hover over a connector icon to see its name.
 - **Messages**: The number of messages exchanged in the session. Automation sessions typically have fewer messages than chat sessions, since they don't involve a back-and-forth with a user.
 - **Tool Calls**: The number of tool calls the agent made during the session. Drill into [tool calls](./tool-calls.md) to see individual calls.
 - **Input Tokens**: The total tokens the agent received as input, across every turn in the session.
@@ -31,7 +31,7 @@ The Sessions table lists the most recent sessions first. Each row represents one
     - Click the **View** icon to open the session and see its messages and tool calls.
     - Click the **Chat** icon to jump to the chat or automation the session belongs to.
 
-Use the **Type**, **Status**, and **Tools** filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Tools filter scopes to sessions that used one or more specific connectors.
+Use the **Type**, **Status**, and **Connectors** filters above the table to narrow the list. The Type filter scopes to chats or automations. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors.
 
 ## Session types {#session-types}
 
