@@ -218,6 +218,8 @@ constructor(
         )
         jdbcProperties.putIfAbsent(PREPARE_THRESHOLD.getName(), "0")
         jdbcProperties.putIfAbsent(TCP_KEEP_ALIVE.getName(), "true")
+        // hack: circumvent JdbcConnectionFactory setting readOnly causing pooler issues
+        jdbcProperties.putIfAbsent("readOnlyMode", "ignore")
     }
 
     private fun fromIncrementalSpec(

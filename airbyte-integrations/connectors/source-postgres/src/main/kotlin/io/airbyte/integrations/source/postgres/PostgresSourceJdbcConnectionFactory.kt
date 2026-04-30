@@ -83,9 +83,7 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
     private class ConnectionWithCleanup(val base: Connection) : Connection by base {
         // prevents closing the socket with an open transaction which causes problems with poolers
         override fun close() {
-            base.use { base ->
-                base.rollback()
-            }
+            base.use { it.rollback() }
         }
 
         // below are boilerplate - Java class requires explicit delegation on default methods
