@@ -17,7 +17,7 @@ Before making API calls, you need an application token. For details on obtaining
 Every execute call targets a specific connector by its `connector_id` in the URL. If you didn't store the ID from the [create response](./add-connector), look it up by workspace and connector type. Call `GET /api/v1/integrations/connectors` and filter by `workspace_name` and `definition_id`:
 
 ```bash title="Request"
-curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default&definition_id=ef69ef6e-aa7f-4af1-a01d-ef775033524e' \
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default&definition_id=<github_definition_id>' \
   --header 'Authorization: Bearer <your_application_token>'
 ```
 

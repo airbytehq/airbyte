@@ -125,7 +125,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=defau
 Add `definition_id` to narrow results to a single connector type.
 
 ```bash title="Request"
-curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default&definition_id=36c891d9-4bd9-43ac-bad2-10e12756272c' \
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default&definition_id=<hubspot_definition_id>' \
   --header 'Authorization: Bearer <application_token>'
 ```
 
