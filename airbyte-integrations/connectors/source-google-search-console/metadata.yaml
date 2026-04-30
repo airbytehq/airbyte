@@ -42,7 +42,7 @@ data:
           `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams.
           Users syncing these streams must perform a full refresh after upgrading to ensure correct deduplication.
           See the [migration guide](https://docs.airbyte.com/integrations/sources/google-search-console-migrations) for details."
-        upgradeDeadline: "2026-05-05"
+        upgradeDeadline: "2026-05-14"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
