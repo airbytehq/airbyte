@@ -5,9 +5,13 @@
 
 import logging
 from datetime import datetime
+from typing import MutableMapping
 
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.types import StreamState
 from source_gcs.helpers import GCSUploadableRemoteFile
+
+_SIGNED_URL_PREFIX = "https://storage.googleapis.com/"
 
 
 class Cursor(DefaultFileBasedCursor):
@@ -15,6 +19,35 @@ class Cursor(DefaultFileBasedCursor):
     def get_file_uri(file: GCSUploadableRemoteFile) -> str:
         file_uri = file.displayed_uri if file.displayed_uri else file.uri
         return file_uri.split("?")[0]
+
+    def set_initial_state(self, value: StreamState) -> None:
+        migrated = self._migrate_history(value)
+        super().set_initial_state(migrated)
+
+    @staticmethod
+    def _migrate_history(state: StreamState) -> StreamState:
+        """Convert old signed-URL-based cursor keys to gs:// format.
+
+        Prior to 0.10.13, Service Account auth stored cursor history keys as
+        `https://storage.googleapis.com/{bucket}/{path}`. This migration
+        converts them to `gs://{bucket}/{path}` so the cursor recognizes
+        previously-synced files after the upgrade.
+        """
+        history: MutableMapping[str, str] = state.get("history", {})
+        if not history:
+            return state
+
+        migrated_history: MutableMapping[str, str] = {}
+        for uri, timestamp in history.items():
+            if uri.startswith(_SIGNED_URL_PREFIX):
+                # https://storage.googleapis.com/{bucket}/{path} -> gs://{bucket}/{path}
+                migrated_history[f"gs://{uri[len(_SIGNED_URL_PREFIX):]}"] = timestamp
+            else:
+                migrated_history[uri] = timestamp
+
+        result = dict(state)
+        result["history"] = migrated_history
+        return result
 
     def add_file(self, file: GCSUploadableRemoteFile) -> None:
         uri = self.get_file_uri(file)

@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 from datetime import datetime
 
+import pytest
 from source_gcs import Cursor
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -129,3 +130,67 @@ def test_add_file_zip_files(mocked_reader, zip_file, logger):
     saved_history_cursor = datetime.strptime(cursor._file_to_datetime_history[zip_file.displayed_uri], cursor.DATE_TIME_FORMAT)
 
     assert saved_history_cursor == zip_file.last_modified
+
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_history",
+    [
+        pytest.param(
+            {
+                "history": {
+                    "https://storage.googleapis.com/my-bucket/path/to/file.csv": "2024-06-01T10:00:00.000000Z",
+                    "https://storage.googleapis.com/my-bucket/other/data.jsonl": "2024-06-02T12:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2024-06-02T12:00:00.000000Z_https://storage.googleapis.com/my-bucket/other/data.jsonl",
+            },
+            {
+                "gs://my-bucket/path/to/file.csv": "2024-06-01T10:00:00.000000Z",
+                "gs://my-bucket/other/data.jsonl": "2024-06-02T12:00:00.000000Z",
+            },
+            id="migrates_signed_url_keys_to_gs_format",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "gs://my-bucket/path/to/file.csv": "2024-06-01T10:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2024-06-01T10:00:00.000000Z_gs://my-bucket/path/to/file.csv",
+            },
+            {
+                "gs://my-bucket/path/to/file.csv": "2024-06-01T10:00:00.000000Z",
+            },
+            id="already_gs_format_unchanged",
+        ),
+        pytest.param(
+            {
+                "history": {
+                    "https://storage.googleapis.com/bucket/migrated.csv": "2024-06-01T10:00:00.000000Z",
+                    "gs://bucket/already-clean.csv": "2024-06-02T12:00:00.000000Z",
+                },
+                "_ab_source_file_last_modified": "2024-06-02T12:00:00.000000Z_gs://bucket/already-clean.csv",
+            },
+            {
+                "gs://bucket/migrated.csv": "2024-06-01T10:00:00.000000Z",
+                "gs://bucket/already-clean.csv": "2024-06-02T12:00:00.000000Z",
+            },
+            id="mixed_old_and_new_format",
+        ),
+        pytest.param(
+            {"history": {}},
+            {},
+            id="empty_history_unchanged",
+        ),
+        pytest.param(
+            {},
+            {},
+            id="no_history_key_unchanged",
+        ),
+    ],
+)
+def test_state_migration_converts_signed_url_keys(stream_config, input_state, expected_history):
+    """State migration must convert https://storage.googleapis.com/ keys to gs:// format."""
+    cursor = Cursor(stream_config=stream_config)
+    cursor.set_initial_state(input_state)
+
+    assert dict(cursor._file_to_datetime_history) == expected_history
