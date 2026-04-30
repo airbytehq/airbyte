@@ -82,20 +82,21 @@ jobs:
                 if [ -n "$LAST_COMMENT_DATE" ] && [ "$LAST_COMMENT_DATE" \< "$CUTOFF_DATE" ]; then
                   echo "Closing #$DISC_NUM (housekeeping comment from $LAST_COMMENT_DATE)"
 
-                  # Add closing comment
-                  gh api graphql -f query="
-                    mutation {
-                      addDiscussionComment(input: {discussionId: \"$DISC_ID\", body: \"$CLOSE_COMMENT\"}) {
-                        comment { id }
-                      }
-                    }
-                  " > /dev/null 2>&1 || true
-
-                  # Close discussion
+                  # Close discussion first — if this fails, the BOT_MARKER comment
+                  # remains as last comment so the discussion will be retried next run
                   gh api graphql -f query="
                     mutation {
                       closeDiscussion(input: {discussionId: \"$DISC_ID\", reason: OUTDATED}) {
                         discussion { id }
+                      }
+                    }
+                  " > /dev/null 2>&1 || { echo "Failed to close #$DISC_NUM, skipping"; SKIPPED=$((SKIPPED + 1)); sleep 1; continue; }
+
+                  # Add closing comment only after successful close
+                  gh api graphql -f query="
+                    mutation {
+                      addDiscussionComment(input: {discussionId: \"$DISC_ID\", body: \"$CLOSE_COMMENT\"}) {
+                        comment { id }
                       }
                     }
                   " > /dev/null 2>&1 || true
