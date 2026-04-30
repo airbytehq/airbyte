@@ -117,41 +117,59 @@ class TestDateRangesMatch:
         assert ReportCreationRequester._date_ranges_match("not-a-date", "2023-01-30T00:00:00Z", report) is False
 
 
-class TestMarketplaceIdsMatch:
-    """Tests for ReportCreationRequester._marketplace_ids_match static method."""
+class TestFetchReports:
+    """Tests for ReportCreationRequester._fetch_reports query parameters."""
 
-    def test_matching_single_marketplace(self):
-        report = _make_report(marketplace_ids=["ATVPDKIKX0DER"])
-        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is True
+    def test_passes_page_size_and_marketplace_ids(self):
+        """Verify _fetch_reports sends pageSize=100 and marketplaceIds as comma-separated string."""
+        requester = _make_requester()
+        get_response = _make_get_reports_response([_make_report()])
+        requester._http_client.send_request.return_value = (None, get_response)
 
-    def test_matching_multiple_marketplaces(self):
-        report = _make_report(marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"])
-        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"], report) is True
+        requester._fetch_reports(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
+        )
 
-    def test_matching_different_order(self):
-        """Order shouldn't matter — sets should be compared."""
-        report = _make_report(marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"])
-        assert ReportCreationRequester._marketplace_ids_match(["A2EUQ1WTGCTBG2", "ATVPDKIKX0DER"], report) is True
+        call_kwargs = requester._http_client.send_request.call_args
+        params = call_kwargs.kwargs.get("params", call_kwargs[1].get("params", {}))
+        assert params["pageSize"] == 100
+        assert params["marketplaceIds"] == "ATVPDKIKX0DER,A2EUQ1WTGCTBG2"
+        assert params["reportTypes"] == "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
 
-    def test_non_matching_marketplace(self):
-        report = _make_report(marketplace_ids=["A2EUQ1WTGCTBG2"])
-        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is False
+    def test_omits_marketplace_ids_when_empty(self):
+        """When marketplace_ids is empty, marketplaceIds should not be in params."""
+        requester = _make_requester()
+        get_response = _make_get_reports_response([])
+        requester._http_client.send_request.return_value = (None, get_response)
 
-    def test_empty_requested(self):
-        report = _make_report(marketplace_ids=["ATVPDKIKX0DER"])
-        assert ReportCreationRequester._marketplace_ids_match([], report) is False
+        requester._fetch_reports(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            marketplace_ids=[],
+        )
 
-    def test_empty_report(self):
-        report = _make_report(marketplace_ids=[])
-        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is False
+        call_kwargs = requester._http_client.send_request.call_args
+        params = call_kwargs.kwargs.get("params", call_kwargs[1].get("params", {}))
+        assert "marketplaceIds" not in params
+        assert params["pageSize"] == 100
 
-    def test_both_empty(self):
-        report = _make_report(marketplace_ids=[])
-        assert ReportCreationRequester._marketplace_ids_match([], report) is False
+    def test_returns_empty_on_exception(self):
+        requester = _make_requester()
+        requester._http_client.send_request.side_effect = Exception("Network error")
 
-    def test_subset_does_not_match(self):
-        report = _make_report(marketplace_ids=["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"])
-        assert ReportCreationRequester._marketplace_ids_match(["ATVPDKIKX0DER"], report) is False
+        reports, response = requester._fetch_reports(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert reports == []
+        assert response is None
 
 
 class TestBuildSyntheticResponse:
@@ -234,21 +252,22 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-fatal"
 
-    def test_returns_latest_when_fatal_and_in_progress_exist(self):
-        """When both FATAL and IN_PROGRESS reports exist, return the latest by createdTime."""
+    def test_returns_first_matching_report(self):
+        """API returns reports sorted by createdTime desc, so first match is returned."""
         requester = _make_requester()
         now = datetime.now(tz=timezone.utc)
-        fatal_report = _make_report(
-            report_id="rpt-fatal",
-            status="FATAL",
-            created_time=(now - timedelta(hours=2)).isoformat(),
-        )
+        # API returns newest first
         ip_report = _make_report(
             report_id="rpt-ip",
             status="IN_PROGRESS",
             created_time=(now - timedelta(hours=1)).isoformat(),
         )
-        get_response = _make_get_reports_response([fatal_report, ip_report])
+        fatal_report = _make_report(
+            report_id="rpt-fatal",
+            status="FATAL",
+            created_time=(now - timedelta(hours=2)).isoformat(),
+        )
+        get_response = _make_get_reports_response([ip_report, fatal_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester._find_existing_report(
@@ -291,23 +310,6 @@ class TestFindExistingReport:
 
         assert result is not None
         assert result.json()["reportId"] == "rpt-ip"
-
-    def test_skips_marketplace_mismatch(self):
-        requester = _make_requester()
-        report = _make_report(report_id="rpt-wrong-mp", marketplace_ids=["A2EUQ1WTGCTBG2"])
-        get_response = _make_get_reports_response([report])
-        requester._http_client.send_request.return_value = (None, get_response)
-
-        result = requester._find_existing_report(
-            stream_state=None,
-            stream_slice=None,
-            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
-            requested_start="2023-01-01T00:00:00Z",
-            requested_end="2023-01-30T00:00:00Z",
-            requested_marketplace_ids=["ATVPDKIKX0DER"],
-        )
-
-        assert result is None
 
     def test_skips_date_range_mismatch(self):
         requester = _make_requester()
@@ -496,17 +498,17 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-old-ip"
 
-    def test_returns_latest_report_by_created_time(self):
-        """When multiple matching reports exist, return the most recently created one."""
+    def test_returns_first_match_from_api_sorted_results(self):
+        """API returns reports sorted by createdTime desc; first match in list is returned."""
         requester = _make_requester(config={"max_done_report_age_hours": 24})
         now = datetime.now(tz=timezone.utc)
-        older_time = (now - timedelta(hours=2)).isoformat()
         newer_time = (now - timedelta(hours=1)).isoformat()
+        older_time = (now - timedelta(hours=2)).isoformat()
 
-        older_report = _make_report(report_id="rpt-older", status="DONE", created_time=older_time)
+        # API returns newest first
         newer_report = _make_report(report_id="rpt-newer", status="DONE", created_time=newer_time)
-        # Older report appears first in the list
-        get_response = _make_get_reports_response([older_report, newer_report])
+        older_report = _make_report(report_id="rpt-older", status="DONE", created_time=older_time)
+        get_response = _make_get_reports_response([newer_report, older_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester._find_existing_report(
@@ -520,30 +522,6 @@ class TestFindExistingReport:
 
         assert result is not None
         assert result.json()["reportId"] == "rpt-newer"
-
-    def test_returns_latest_in_progress_over_older_done(self):
-        """A newer IN_PROGRESS report should be preferred over an older DONE report."""
-        requester = _make_requester(config={"max_done_report_age_hours": 24})
-        now = datetime.now(tz=timezone.utc)
-        done_time = (now - timedelta(hours=10)).isoformat()
-        ip_time = (now - timedelta(hours=1)).isoformat()
-
-        done_report = _make_report(report_id="rpt-done", status="DONE", created_time=done_time)
-        ip_report = _make_report(report_id="rpt-ip", status="IN_PROGRESS", created_time=ip_time)
-        get_response = _make_get_reports_response([done_report, ip_report])
-        requester._http_client.send_request.return_value = (None, get_response)
-
-        result = requester._find_existing_report(
-            stream_state=None,
-            stream_slice=None,
-            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
-            requested_start="2023-01-01T00:00:00Z",
-            requested_end="2023-01-30T00:00:00Z",
-            requested_marketplace_ids=["ATVPDKIKX0DER"],
-        )
-
-        assert result is not None
-        assert result.json()["reportId"] == "rpt-ip"
 
     def test_done_report_without_created_time_is_still_usable_when_max_age_set(self):
         """DONE reports without createdTime should still be reusable when max_age > 0."""
@@ -769,22 +747,24 @@ class TestSendRequest:
         assert result is not None
         assert result.json()["reportId"] == "rpt-fatal"
 
-    def test_skips_marketplace_mismatch_in_send_request(self):
-        """When report has different marketplace, should create new."""
+    def test_passes_marketplace_ids_to_fetch_reports(self):
+        """Verify that send_request passes marketplaceIds from body_json to _fetch_reports."""
         requester = _make_requester()
         requester._request_body_json.return_value = {
             "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
             "dataStartTime": "2023-01-01T00:00:00Z",
             "dataEndTime": "2023-01-30T00:00:00Z",
-            "marketplaceIds": ["ATVPDKIKX0DER"],
+            "marketplaceIds": ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
         }
-        wrong_mp = _make_report(report_id="rpt-wrong-mp", marketplace_ids=["A2EUQ1WTGCTBG2"])
-        get_response = _make_get_reports_response([wrong_mp])
+        # GET /reports returns empty — no match
+        get_response = _make_get_reports_response([])
         requester._http_client.send_request.return_value = (None, get_response)
 
         create_response = _create_response(200, {"reportId": "rpt-new"})
         with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
-            result = requester.send_request(stream_state=None, stream_slice=None)
+            requester.send_request(stream_state=None, stream_slice=None)
 
-        assert result is not None
-        assert result.json()["reportId"] == "rpt-new"
+        # Verify the GET /reports call included marketplaceIds
+        call_kwargs = requester._http_client.send_request.call_args
+        params = call_kwargs.kwargs.get("params", call_kwargs[1].get("params", {}))
+        assert params["marketplaceIds"] == "ATVPDKIKX0DER,A2EUQ1WTGCTBG2"

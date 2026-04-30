@@ -639,21 +639,30 @@ class ReportCreationRequester(HttpRequester):
         stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Any],
         report_type: str,
+        marketplace_ids: List[str],
     ) -> Tuple[List[Dict[str, Any]], Optional[requests.Response]]:
         """
-        Query GET /reports to retrieve the list of existing reports for the given reportType.
+        Query GET /reports to retrieve the list of existing reports for the given reportType
+        and marketplaceIds. Results are sorted by createdTime descending (newest first) by the API.
+        Uses pageSize=100 (max) to get the most complete first page.
         Returns a tuple of (reports_list, original_response). Returns ([], None) on any error.
         """
         try:
             url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
             get_url = self._join_url(url_base, "reports/2021-06-30/reports")
             headers = self._request_headers(stream_state, stream_slice, None, {"content-type": "application/json"})
+            params: Dict[str, Any] = {
+                "reportTypes": report_type,
+                "pageSize": 100,
+            }
+            if marketplace_ids:
+                params["marketplaceIds"] = ",".join(marketplace_ids)
             _, get_response = self._http_client.send_request(
                 http_method="GET",
                 url=get_url,
                 request_kwargs={"stream": False},
                 headers=headers,
-                params={"reportTypes": report_type},
+                params=params,
             )
         except Exception:
             logger.warning(
@@ -683,21 +692,22 @@ class ReportCreationRequester(HttpRequester):
     ) -> Optional[requests.Response]:
         """
         Find an existing report matching the given reportType, date range, and marketplaceIds.
-        Returns a synthetic Response wrapping the most recently created matching report if found,
-        or None.
+        Returns a synthetic Response wrapping the first matching report if found, or None.
+
+        The API returns reports sorted by createdTime descending (newest first), and we
+        filter by reportType and marketplaceIds in the query params, so the first match
+        in the iteration is the most recently created matching report.
 
         CANCELLED reports are skipped so that a new report is always created for them.
         This acts as a retry mechanism: if the data is now available, the new report will
         succeed; if still no data, the new report will also be CANCELLED and the CDK's
         SKIPPED status mapping will handle it silently.
         """
-        reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type)
+        reports, get_response = self._fetch_reports(
+            stream_state, stream_slice, report_type, requested_marketplace_ids
+        )
         if not reports:
             return None
-
-        # Collect all matching candidates, then pick the most recently created one
-        best_candidate = None
-        best_created_time = None
 
         for report in reports:
             report_status = report.get("processingStatus", "")
@@ -708,41 +718,21 @@ class ReportCreationRequester(HttpRequester):
                 )
                 continue
 
-            if not self._marketplace_ids_match(requested_marketplace_ids, report):
-                continue
-
             if not self._date_ranges_match(requested_start, requested_end, report):
                 continue
 
             if not self._is_report_fresh(report, report_type):
                 continue
 
-            # Parse createdTime to compare candidates
-            report_created_time = None
-            created_time_str = report.get("createdTime", "")
-            if created_time_str:
-                try:
-                    report_created_time = ab_datetime_parse(created_time_str)
-                except (ValueError, TypeError):
-                    pass  # If we can't parse createdTime, treat as unknown — don't use it for ordering
-
-            # Keep the most recently created matching report
-            if best_candidate is None or (
-                report_created_time is not None and (best_created_time is None or report_created_time > best_created_time)
-            ):
-                best_candidate = report
-                best_created_time = report_created_time
-
-        if best_candidate is not None:
-            report_id = best_candidate.get("reportId", "")
-            report_status = best_candidate.get("processingStatus", "")
-            report_start = best_candidate.get("dataStartTime", "")
-            report_end = best_candidate.get("dataEndTime", "")
+            # First matching report is the most recently created (API sorts by createdTime desc)
+            report_id = report.get("reportId", "")
+            report_start = report.get("dataStartTime", "")
+            report_end = report.get("dataEndTime", "")
             logger.info(
                 f"Found existing report {report_id} (status={report_status}) "
                 f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
             )
-            return self._build_synthetic_response(best_candidate, get_response)
+            return self._build_synthetic_response(report, get_response)
 
         return None
 
@@ -787,20 +777,6 @@ class ReportCreationRequester(HttpRequester):
                 pass  # If we can't parse createdTime, don't skip — still usable
 
         return True
-
-    @staticmethod
-    def _marketplace_ids_match(
-        requested_marketplace_ids: List[str],
-        report: Dict[str, Any],
-    ) -> bool:
-        """
-        Check if the marketplace IDs from the creation request match those of an existing report.
-        Extracts marketplaceIds from the report and compares as sorted sets to handle ordering differences.
-        """
-        report_marketplace_ids = report.get("marketplaceIds", [])
-        if not requested_marketplace_ids or not report_marketplace_ids:
-            return False
-        return sorted(requested_marketplace_ids) == sorted(report_marketplace_ids)
 
     @staticmethod
     def _date_ranges_match(
