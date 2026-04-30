@@ -26,6 +26,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.types import StreamSlice, StreamState
@@ -290,7 +293,25 @@ class ReportCreationRequester(HttpRequester):
 
     For streams that already have hardcoded `reportOptions` (e.g. Brand Analytics, Vendor
     Forecasting), user-configured options are merged on top with user options taking precedence.
+
+    The `request_body_json` and `request_headers` fields are accepted directly because
+    the CDK's `create_custom_component` factory does not process these into an
+    `InterpolatedRequestOptionsProvider` like `create_http_requester` does.
     """
+
+    request_body_json: Optional[Mapping[str, Any]] = None
+    request_headers: Optional[Mapping[str, str]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        params = parameters or {}
+        if self.request_body_json or self.request_headers:
+            self.request_options_provider = InterpolatedRequestOptionsProvider(
+                request_body_json=self.request_body_json,
+                request_headers=self.request_headers,
+                config=self.config,
+                parameters=params,
+            )
+        super().__post_init__(params)
 
     def get_request_body_json(
         self,
