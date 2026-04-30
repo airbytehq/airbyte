@@ -95,10 +95,6 @@ definitions:
           action: RETRY
           failure_type: transient_error
           error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
-        - predicate: "{{ response.get('ok') is false }}"
-          action: FAIL
-          failure_type: system_error
-          error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
         - http_codes: [429]
           action: RATE_LIMITED
           failure_type: transient_error
@@ -107,6 +103,10 @@ definitions:
           action: RETRY
           failure_type: transient_error
           error_message: Failed to perform a request due to internal server error.
+        - predicate: "{{ response.get('ok') is false }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
 
   selector:
     type: RecordSelector
@@ -159,10 +159,6 @@ definitions:
               action: RETRY
               failure_type: transient_error
               error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
-            - predicate: "{{ response.get('ok') is false }}"
-              action: FAIL
-              failure_type: system_error
-              error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
             - http_codes: [429]
               action: RATE_LIMITED
               failure_type: transient_error
@@ -175,6 +171,10 @@ definitions:
               action: RETRY
               failure_type: transient_error
               error_message: Failed to perform a request due to internal server error.
+            - predicate: "{{ response.get('ok') is false }}"
+              action: FAIL
+              failure_type: system_error
+              error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
       record_selector:
         $ref: "#/definitions/selector"
       paginator:

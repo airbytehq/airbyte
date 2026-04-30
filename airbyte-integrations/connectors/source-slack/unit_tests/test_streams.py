@@ -858,7 +858,9 @@ def test_channels_stream_includes_archived_when_configured(token_config) -> None
     (
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(429, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="429_ok_false_ratelimited"),
-        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="429_ok_false_catch_all"),
+        pytest.param(
+            429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_http_takes_precedence"
+        ),
         pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_empty_body"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
@@ -877,7 +879,9 @@ def test_users_stream_error_handler_response_action(token_config, status_code, r
 @pytest.mark.parametrize(
     "status_code, response_json, expected",
     (
-        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="429_ok_false_catch_all"),
+        pytest.param(
+            429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_http_takes_precedence"
+        ),
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
     ),
