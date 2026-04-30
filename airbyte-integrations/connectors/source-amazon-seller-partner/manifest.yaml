@@ -3034,7 +3034,8 @@ definitions:
       field_path:
         - processingStatus
     creation_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportCreationRequester
       path: reports/2021-06-30/reports
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"

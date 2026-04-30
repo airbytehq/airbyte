@@ -25,7 +25,9 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
@@ -276,6 +278,55 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
         except (json.JSONDecodeError, AttributeError, TypeError):
             # If we can't parse the response, don't invalidate
             pass
+
+
+@dataclass
+class ReportCreationRequester(HttpRequester):
+    """Extends `HttpRequester` to inject `reportOptions` from `config.report_options_list`.
+
+    When the user configures `report_options_list` in the connector spec, this requester
+    looks up matching options by `report_name` (matching the `reportType` in the request body)
+    and merges them into the `reportOptions` field of the createReport API request body.
+
+    For streams that already have hardcoded `reportOptions` (e.g. Brand Analytics, Vendor
+    Forecasting), user-configured options are merged on top with user options taking precedence.
+    """
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        body = super().get_request_body_json(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
+        if not body:
+            return body
+
+        report_type = body.get("reportType")
+        if not report_type:
+            return body
+
+        report_options_list = self.config.get("report_options_list", []) or []
+        config_options: Dict[str, str] = {}
+        for report_option in report_options_list:
+            if report_option.get("report_name") == report_type:
+                for opt in report_option.get("options_list", []):
+                    config_options[opt["option_name"]] = opt["option_value"]
+
+        if config_options:
+            existing_options = body.get("reportOptions") or {}
+            if isinstance(existing_options, dict):
+                merged = {**existing_options, **config_options}
+            else:
+                merged = config_options
+            body = {**body, "reportOptions": merged}
+
+        return body
 
 
 @dataclass
