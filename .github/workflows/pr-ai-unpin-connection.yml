@@ -74,7 +74,7 @@ jobs:
     name: AI unpin connections with preview build
     needs: check-permissions
     # if: needs.check-permissions.outputs.event-type == 'issue'
-    if: needs.check-permissions.outputs.event-type == 'workflow_dispatch'
+    # if: needs.check-permissions.outputs.event-type == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Authenticate as GitHub App
