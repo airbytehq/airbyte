@@ -45,7 +45,7 @@ async def main():
     async with Workspace() as ws:
         # Add a connector.
         await ws.create_connector(
-            definition_id="<github_definition_id>",
+            definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
             name="My GitHub Connector",
             credentials={
                 "option_title": "PAT Credentials",

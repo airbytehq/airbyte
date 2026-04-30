@@ -51,7 +51,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
   -H 'Content-Type: application/json' \
   -d '{
     "workspace_name": "default",
-    "definition_id": "<github_definition_id>",
+    "definition_id": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "My GitHub Connector",
     "credentials": {
       "option_title": "PAT Credentials",

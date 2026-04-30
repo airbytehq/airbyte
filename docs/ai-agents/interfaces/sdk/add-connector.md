@@ -36,7 +36,7 @@ from airbyte_agent_sdk import Workspace
 async def main():
     async with Workspace() as ws:
         await ws.create_connector(
-            definition_id="<github_definition_id>",
+            definition_id="ef69ef6e-aa7f-4af1-a01d-ef775033524e",
             name="My GitHub Connector",
             credentials={
                 "option_title": "PAT Credentials",
@@ -61,7 +61,7 @@ from airbyte_agent_sdk import Workspace
 async def main():
     async with Workspace() as ws:
         await ws.create_connector(
-            definition_id="<hubspot_definition_id>",
+            definition_id="36c891d9-4bd9-43ac-bad2-10e12756272c",
             name="My HubSpot Connector",
             credentials={
                 "client_id": "<hubspot_client_id>",
