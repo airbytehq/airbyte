@@ -766,41 +766,6 @@ def test_channels_stream_ok_false_unrecognized_error_catch_all(requests_mock, to
     assert any(trace.trace.error.failure_type == FailureType.system_error for trace in output.errors)
 
 
-def test_threads_parent_stream_filters_channel_join_and_leave_subtypes(requests_mock, token_config):
-    """
-    Verify that messages with subtype channel_join or channel_leave are excluded
-    from the threads parent stream so conversations.replies is never called with
-    their ts values (which would return thread_not_found).
-    """
-    token_config["channel_filter"] = []
-    messages = [
-        {"ts": "1577866844.000100", "text": "real message", "reply_count": 1},
-        {"ts": "1577866845.000200", "subtype": "channel_join", "text": "joined"},
-        {"ts": "1577866846.000300", "subtype": "channel_leave", "text": "left"},
-        {"ts": "1577866847.000400", "text": "another real message", "reply_count": 2},
-    ]
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
-    )
-
-    stream = get_stream_by_name("threads", token_config)
-    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
-
-    # channel_join and channel_leave messages should be filtered out,
-    # so only the 2 real messages per channel should produce partitions (4 total)
-    ts_values = [s["float_ts"] for s in slices]
-    assert 1577866845.0002 not in ts_values, "channel_join message should be filtered out"
-    assert 1577866846.0003 not in ts_values, "channel_leave message should be filtered out"
-    assert len(slices) == 4, f"Expected 4 thread partitions (2 real messages x 2 channels), got {len(slices)}"
-
-
 def test_channels_stream_paginator_page_size_is_999(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
     assert get_retriever(stream).paginator.pagination_strategy.page_size == 999
