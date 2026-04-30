@@ -41,7 +41,7 @@ Airbyte counts three kinds of work as sessions. Each is billed as AOs against yo
 
 A Chat session is a conversation you have with an agent in the web app. You send prompts, the agent responds, and the agent may call tools to answer you. Chat sessions continue until you stop chatting, and you can return to them later to keep the conversation going.
 
-Chats you hold inside the Automation Builder, while designing or editing an automation, are also Chat sessions. Airbyte tracks them separately in the Usage panel as **Automation Builder Chat** so you can see how much of your usage comes from building automations versus general chatting. 
+Chats you hold inside the Automation Builder, while designing or editing an automation, are also Chat sessions. Airbyte tracks them separately in the Usage panel as **Automation Builder Chat** so you can see how much of your usage comes from building automations versus general chatting.
 
 ### Automation {#automation}
 
