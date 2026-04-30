@@ -3,11 +3,9 @@
 #
 
 """
-Tests that the settlement report streams use a 2-minute buffer on the 90-day lookback
-(P89DT23H58M instead of P90D) to prevent 400 errors caused by network latency
-when the Amazon SP-API rejects createdSince values more than 90 days old at the
-time the request is received. This mirrors the PT2M buffer pattern used on
-end_datetime in other streams.
+Tests that the settlement report streams use a 89-day lookback buffer (not 90 days)
+to prevent 400 errors caused by network latency when the Amazon SP-API rejects
+createdSince values more than 90 days old at the time the request is received.
 
 See: https://github.com/airbytehq/airbyte/issues/76265
 """
@@ -34,8 +32,7 @@ BASE_CONFIG = {
 
 FROZEN_NOW = "2025-06-15T12:00:00Z"
 FROZEN_NOW_DT = datetime(2025, 6, 15, 12, 0, 0)
-# P89DT23H58M = 90 days minus 2 minutes
-EXPECTED_BUFFERED_START = (FROZEN_NOW_DT - timedelta(days=89, hours=23, minutes=58)).strftime("%Y-%m-%dT%H:%M:%SZ")
+EXPECTED_89_DAYS_AGO = (FROZEN_NOW_DT - timedelta(days=89)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
@@ -58,13 +55,12 @@ def _load_manifest():
         ),
     ],
 )
-def test_manifest_settlement_definitions_use_buffered_duration_not_p90d(definition_path):
+def test_manifest_settlement_definitions_use_p89d_not_p90d(definition_path):
     """
     Verify that the manifest YAML for both settlement-related stream definitions
-    uses P89DT23H58M (not P90D) in the start_datetime expression. This is a
-    2-minute buffer matching the PT2M pattern used on end_datetime in other
-    streams, preventing the race condition where network latency causes the
-    SP-API to reject createdSince values computed as exactly 90 days ago.
+    uses P89D (not P90D) in the start_datetime expression. This directly validates
+    the fix for the race condition where network latency causes the SP-API to
+    reject createdSince values computed as exactly 90 days ago.
     """
     manifest = _load_manifest()
     stream_def = manifest
@@ -73,8 +69,8 @@ def test_manifest_settlement_definitions_use_buffered_duration_not_p90d(definiti
 
     start_datetime_expr = stream_def["incremental_sync"]["start_datetime"]["datetime"]
 
-    assert "P89DT23H58M" in start_datetime_expr, (
-        f"Definition '{'/'.join(definition_path)}' should use P89DT23H58M in start_datetime, "
+    assert "P89D" in start_datetime_expr, (
+        f"Definition '{'/'.join(definition_path)}' should use P89D in start_datetime, "
         f"but the expression is: {start_datetime_expr}"
     )
     assert "P90D" not in start_datetime_expr, (
@@ -89,8 +85,8 @@ def test_manifest_settlement_definitions_use_buffered_duration_not_p90d(definiti
     [
         pytest.param(
             {},
-            EXPECTED_BUFFERED_START,
-            id="no_start_date_defaults_to_90d_minus_2min",
+            EXPECTED_89_DAYS_AGO,
+            id="no_start_date_defaults_to_89_days_ago",
         ),
         pytest.param(
             {"replication_start_date": "2025-05-01T00:00:00Z"},
@@ -103,13 +99,13 @@ def test_settlement_helper_stream_start_datetime(config_override, expected_start
     """
     Test that the flat_file_settlement_v2_helper stream (which is the parent stream
     that makes the createdSince API call) computes the correct start_datetime based
-    on config. This stream uses P89DT23H58M (90 days minus 2 minutes) to prevent
-    the SP-API from rejecting createdSince values due to network latency.
+    on config. This stream uses a 89-day buffer (not 90) to prevent the SP-API from
+    rejecting createdSince values due to network latency.
 
     Note: The "old start date gets clamped" scenario is not tested at the HTTP level
     because it resolves to the same createdSince URL as the "no start date" case,
     causing requests_cache to serve the cached response and bypass requests_mock.
-    The clamping logic is already validated by the manifest-level P89DT23H58M tests.
+    The clamping logic is already validated by the manifest-level P89D tests.
     """
     # Bypass requests_cache so requests_mock can intercept all HTTP calls.
     mocker.patch(
@@ -150,5 +146,5 @@ def test_settlement_helper_stream_start_datetime(config_override, expected_start
     # requests_mock lowercases query parameter values, so compare case-insensitively
     assert created_since.lower() == expected_start.lower(), (
         f"Expected createdSince={expected_start}, got createdSince={created_since}. "
-        f"The 2-minute buffer (P89DT23H58M) prevents the SP-API 400 error race condition."
+        f"The 89-day buffer prevents the SP-API 400 error race condition."
     )
