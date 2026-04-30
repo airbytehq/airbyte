@@ -7,7 +7,7 @@ draft: true
 Hidden pending multi-tenant scope work. Single-workspace usage is the
 documented path for now (see ../add-connector for the PAT/refresh-token
 flows). This page also depends on an org-level source template being
-pre-configured for each connector type — when that prerequisite has a
+pre-configured for each connector type. When that prerequisite has a
 public API and the multi-tenant narrative comes back into scope, unhide
 by removing `draft: true` and re-running the OAuth tutorial end-to-end.
 -->
@@ -17,7 +17,7 @@ by removing `draft: true` and re-running the OAuth tutorial end-to-end.
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-When a connector authenticates through OAuth, Airbyte can drive the consent screen for you. If you'd rather drive it yourself — with your own branding, UX, and OAuth app — you can build a server-side OAuth flow that still lands the credentials in Airbyte at the end. This page shows how.
+When a connector authenticates through OAuth, Airbyte can drive the consent screen for you. If you'd rather drive it yourself, with your own branding, UX, and OAuth app, you can build a server-side OAuth flow that still lands the credentials in Airbyte at the end. This page shows how.
 
 :::note
 Initiating an OAuth consent URL is an API-only operation. The SDK wraps the [OAuth override configuration](#part-1-configure-oauth-overrides-optional) (`configure_oauth_app_parameters`), but [Part 2](#part-2-initiate-the-oauth-flow) and [Part 3](#part-3-handle-the-callback) use the API directly from your backend.
@@ -61,7 +61,7 @@ Before implementing an OAuth flow, ensure you have:
 
 3. **A redirect URL**: A URL in your app that receives the OAuth callback with the `connector_id`.
 
-A **scoped token** is optional — you only need one if you want to issue initiate calls from a workspace-scoped context (for example, from a per-tenant backend session). The application token in step 2 is sufficient for the whole flow.
+A **scoped token** is optional. You only need one if you want to issue initiate calls from a workspace-scoped context (for example, from a per-tenant backend session). The application token in step 2 is sufficient for the whole flow.
 
 ## Part 1: Configure OAuth overrides (optional)
 
@@ -187,7 +187,7 @@ When your user wants to connect a third-party service, initiate the OAuth flow t
 
 Initiate requires an organization-specific source template for the connector type. Without one, the call returns `400` with `"No organization-specific source template configured for this connector type."` (This differs from [Add a connector](../add-connector), which falls back to Airbyte-managed defaults when no org template exists.)
 
-The easiest way to enable a connector is in the Airbyte Agents app — it's a one-time setup and anyone on your team can do it.
+The easiest way to enable a connector is in the Airbyte Agents app. It's a one-time setup and anyone on your team can do it.
 
 <Tabs>
 <TabItem value="ui" label="Airbyte Agents app" default>

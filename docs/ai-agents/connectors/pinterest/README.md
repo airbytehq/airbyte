@@ -45,7 +45,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
 from airbyte_agent_sdk.connectors.pinterest.models import PinterestAuthConfig
 
@@ -57,10 +59,62 @@ connector = PinterestConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @PinterestConnector.tool_utils
 async def pinterest_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
+from airbyte_agent_sdk.connectors.pinterest.models import PinterestAuthConfig
+
+connector = PinterestConnector(
+    auth_config=PinterestAuthConfig(
+        refresh_token="<Pinterest OAuth2 refresh token.>",
+        client_id="<Pinterest OAuth2 client ID.>",
+        client_secret="<Pinterest OAuth2 client secret.>"
+    )
+)
+
+@tool
+@PinterestConnector.tool_utils
+async def pinterest_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Pinterest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
+from airbyte_agent_sdk.connectors.pinterest.models import PinterestAuthConfig
+
+connector = PinterestConnector(
+    auth_config=PinterestAuthConfig(
+        refresh_token="<Pinterest OAuth2 refresh token.>",
+        client_id="<Pinterest OAuth2 client ID.>",
+        client_secret="<Pinterest OAuth2 client secret.>"
+    )
+)
+
+mcp = FastMCP("Pinterest Agent")
+
+@mcp.tool()
+@PinterestConnector.tool_utils
+async def pinterest_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Pinterest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -72,21 +126,66 @@ This example assumes you've already authenticated your connector with Airbyte. S
 
 The `connect()` factory returns a fully typed `PinterestConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
 
 connector = connect("pinterest", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @PinterestConnector.tool_utils
 async def pinterest_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
+
+connector = connect("pinterest", workspace_name="<your_workspace_name>")
+
+@tool
+@PinterestConnector.tool_utils
+async def pinterest_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Pinterest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
+
+connector = connect("pinterest", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Pinterest Agent")
+
+@mcp.tool()
+@PinterestConnector.tool_utils
+async def pinterest_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Pinterest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -99,10 +198,64 @@ connector = PinterestConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @PinterestConnector.tool_utils
 async def pinterest_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = PinterestConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@PinterestConnector.tool_utils
+async def pinterest_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Pinterest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.pinterest import PinterestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = PinterestConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Pinterest Agent")
+
+@mcp.tool()
+@PinterestConnector.tool_utils
+async def pinterest_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Pinterest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation

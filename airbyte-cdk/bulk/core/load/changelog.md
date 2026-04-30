@@ -9,6 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                         |
 |---------|------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| 1.0.11  | 2026-04-28 | [#77539](https://github.com/airbytehq/airbyte/pull/77539)      | Mainline fast timestamp coercion. Fast date time coercion is now the only path. |
 | 1.0.10  | 2026-04-23 | [#76966](https://github.com/airbytehq/airbyte/pull/76966/)     | Bump bulk-cdk-core-base from 1.0.1 to 1.0.3: picks up fix to use AIRBYTE_EDITION env var instead of DEPLOYMENT_MODE for cloud feature flag (base 1.0.3). |
 | 1.0.9   | 2026-04-15 | [#76246](https://github.com/airbytehq/airbyte/pull/76246)      | Perf: fix timestamp coercion using exception-as-control-flow. Use ethlo/itu for ISO-8601 fast path (~25x faster), JDK TemporalQueries fallback for exotic formats. Eliminates ~56% destination CPU on timestamp-heavy workloads. |
 | 1.0.8   | 2026-04-14 | [#74728](https://github.com/airbytehq/airbyte/pull/74728)      | Fix OAuthAuthenticator to track token expiry via `expires_in` and refresh expired tokens. |

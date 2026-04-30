@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_label: "Pydantic AI"
 sidebar_position: 3
 ---
@@ -23,7 +24,7 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.13 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
@@ -54,33 +55,25 @@ my-ai-agent/
 
 You create `.env` and `uv.lock` files in later steps, so don't worry about them yet.
 
-## Part 2: Install dependencies
+## Part 2: Install dependencies and create your agent file
 
-Install the Airbyte agent SDK, Pydantic AI, and `python-dotenv`:
-
-```bash
-uv add airbyte-agent-sdk pydantic-ai python-dotenv
-```
-
-This command installs:
-
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
-- `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
-- `python-dotenv`: A library you can use to load environment variables from a `.env` file.
-
-:::note
-If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
-:::
-
-## Part 3: Import Pydantic AI and the GitHub agent connector
-
-1. Create an `agent.py` file for your agent definition:
+1. Install the Airbyte agent SDK, Pydantic AI, and `python-dotenv`:
 
     ```bash
-    touch agent.py
+    uv add airbyte-agent-sdk pydantic-ai python-dotenv
     ```
 
-2. Add the following imports to `agent.py`:
+    This command installs:
+
+    - `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+    - `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
+    - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
+
+    :::note
+    If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
+    :::
+
+2. Create an `agent.py` file with the following imports:
 
     ```python title="agent.py"
     from dotenv import load_dotenv
@@ -96,7 +89,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     - `connect`: The Airbyte agent SDK entry point. One call returns a typed connector bound to your workspace.
     - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
-## Part 4: Add a .env file with your secrets
+## Part 3: Add a .env file with your secrets
 
 1. Create a `.env` file in your project root and add your secrets to it. Replace the placeholder values with your actual credentials.
 
@@ -121,17 +114,11 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
     This makes your secrets available via `os.environ`. Pydantic AI automatically reads `OPENAI_API_KEY` from the environment, and the agent SDK picks up `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment in the next step.
 
-## Part 5: Add the GitHub connector to your workspace
+## Part 4: Add the GitHub connector to your workspace
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
-1. Create a `setup.py` file:
-
-    ```bash
-    touch setup.py
-    ```
-
-2. Add the following to `setup.py`:
+1. Create a `setup.py` file with the following:
 
 ```python title="setup.py"
 import asyncio
@@ -160,7 +147,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-3. Run the setup script:
+2. Run the setup script:
 
     ```bash
     uv run setup.py
@@ -172,7 +159,7 @@ You only need to run `setup.py` once. After the connector exists in your workspa
 
 See [Add a connector](../../interfaces/sdk/add-connector) for more details, including how to find the `definition_id` for other connector types.
 
-## Part 6: Configure your connector and agent
+## Part 5: Configure your connector and agent
 
 Now add the following code to `agent.py` to connect to the GitHub connector and create the Pydantic AI agent.
 
@@ -211,7 +198,7 @@ agent = Agent(
 - The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Airbyte agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 - The prompt references a `github_execute` tool. You register that tool in the next part.
 
-## Part 7: Add a tool to your agent
+## Part 6: Add a tool to your agent
 
 Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `tool_utils` decorator fills in the entity and action catalog as the tool description, so the model knows what's available without you writing a schema.
 
@@ -228,7 +215,7 @@ The decorator stack is the whole tool definition. No per-action `docstring`, no 
 
 Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). Pydantic AI serializes the dict for the model automatically, so you don't need to call `json.dumps` here. You can keep the result as-is, filter it in Python, or page through it using `meta.end_cursor`.
 
-## Part 8: Run your project
+## Part 7: Run your project
 
 Now that your agent is configured with a tool, update `main.py` and run your project.
 

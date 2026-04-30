@@ -1,5 +1,7 @@
 ---
+plan: all
 sidebar_position: 2
+description: "Create, list, get, and delete connectors for third-party services."
 ---
 
 # Add a connector
@@ -15,7 +17,7 @@ Confirm the fix ships and the docs' pinned SDK version includes it before
 merging.
 -->
 
-A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call — by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
 
 The `Workspace` class covers every connector operation: create, list, get, and delete.
 
@@ -23,11 +25,11 @@ The `Workspace` class covers every connector operation: create, list, get, and d
 
 Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the credentials in the shape that connector expects.
 
-`create_connector` returns a string `connector_id`. You can ignore it if the workspace only ever has one connector of this type — later calls can resolve the connector by slug. Store the ID if you plan to run multiple connectors of the same type in the same workspace.
+`create_connector` returns a string `connector_id`. You can ignore it if the workspace only ever has one connector of this type, since later calls can resolve the connector by slug. Store the `connector_id` if you plan to run multiple connectors of the same type in the same workspace.
 
 ### API token connectors
 
-Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific — GitHub uses `personal_access_token`, Linear uses `api_key`, Notion uses `token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the exact field name.
+Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific. GitHub uses `personal_access_token`, Linear uses `api_key`, Notion uses `token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the exact field name.
 
 ```python title="agent.py"
 import asyncio
@@ -48,7 +50,7 @@ async def main():
 asyncio.run(main())
 ```
 
-Some connectors also require non-credential configuration alongside `credentials`. Pass those fields as `replication_config` — not alongside `credentials`. GitHub, for example, requires a `repositories` array of `owner/repo` strings; the create call above fails with a `422` without it. Check the connector's page for any required configuration.
+Some connectors also require non-credential configuration alongside `credentials`. Pass those fields as `replication_config`, not alongside `credentials`. GitHub, for example, requires a `repositories` array of `owner/repo` strings; the create call above fails with a `422` without it. Check the connector's page for any required configuration.
 
 ### OAuth connectors
 
@@ -77,7 +79,7 @@ Each connector defines its own credential shape. See the connector's page in the
 
 ### Find a `definition_id`
 
-The `definition_id` identifies the connector type. Look it up once from the public `GET /api/v1/integrations/definitions/sources` endpoint and paste the value into your `create_connector` call. See [Find a `definition_id`](../api/add-connector#find-a-definition_id) on the API side for the exact request, including the `?name=github` filter you can use to fetch a single entry. The endpoint returns `sourceDefinitionId`; the SDK accepts it as `definition_id` — both names refer to the same UUID.
+The `definition_id` identifies the connector type. Look it up once from the public `GET /api/v1/integrations/definitions/sources` endpoint and paste the value into your `create_connector` call. See [Find a `definition_id`](../api/add-connector#find-a-definition_id) on the API side for the exact request, including the `?name=github` filter you can use to fetch a single entry. The endpoint returns `sourceDefinitionId`; the SDK accepts it as `definition_id`. Both names refer to the same UUID.
 
 ## List connectors
 
@@ -104,7 +106,7 @@ finally:
     await stripe.close()
 ```
 
-When multiple connectors of the same type exist in the workspace — for example, two separate Stripe accounts — pass `connector_id` explicitly to `connect()`:
+When multiple connectors of the same type exist in the workspace (for example, two separate Stripe accounts), pass `connector_id` explicitly to `connect()`:
 
 ```python title="agent.py"
 stripe_us = connect("stripe", connector_id="<us_account_connector_id>")

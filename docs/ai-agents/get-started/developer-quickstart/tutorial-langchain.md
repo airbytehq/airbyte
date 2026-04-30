@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_label: "LangChain"
 sidebar_position: 2
 ---
@@ -23,7 +24,7 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.13 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
 - Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
@@ -54,31 +55,23 @@ my-langchain-agent/
 
 You create `.env` and `uv.lock` files in later steps, so don't worry about them yet.
 
-## Part 2: Install dependencies
+## Part 2: Install dependencies and create your agent file
 
-Install the Airbyte agent SDK, LangChain with OpenAI support, and LangGraph for the agent runtime:
-
-```bash
-uv add airbyte-agent-sdk langchain langchain-openai langgraph python-dotenv
-```
-
-This command installs:
-
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
-- `langchain`: The LangChain framework core.
-- `langchain-openai`: LangChain's OpenAI integration for chat models.
-- `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.
-- `python-dotenv`: A library you can use to load environment variables from a `.env` file.
-
-## Part 3: Import LangChain and the GitHub agent connector
-
-1. Create an `agent.py` file for your agent definition:
+1. Install the Airbyte agent SDK, LangChain with OpenAI support, and LangGraph for the agent runtime:
 
     ```bash
-    touch agent.py
+    uv add airbyte-agent-sdk langchain langchain-openai langgraph python-dotenv
     ```
 
-2. Add the following imports to `agent.py`:
+    This command installs:
+
+    - `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+    - `langchain`: The LangChain framework core.
+    - `langchain-openai`: LangChain's OpenAI integration for chat models.
+    - `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.
+    - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
+
+2. Create an `agent.py` file with the following imports:
 
     ```python title="agent.py"
     import json
@@ -101,7 +94,7 @@ This command installs:
     - `connect`: The Airbyte agent SDK entry point. One call returns a typed connector bound to your workspace.
     - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
-## Part 4: Add a .env file with your secrets
+## Part 3: Add a .env file with your secrets
 
 1. Create a `.env` file in your project root and add your secrets to it. Replace the placeholder values with your actual credentials.
 
@@ -126,17 +119,11 @@ This command installs:
 
     This makes your secrets available via `os.environ`. LangChain's `ChatOpenAI` automatically reads `OPENAI_API_KEY` from the environment, and the agent SDK picks up `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment in the next step.
 
-## Part 5: Add the GitHub connector to your workspace
+## Part 4: Add the GitHub connector to your workspace
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. The SDK handles this in a few lines.
 
-1. Create a `setup.py` file:
-
-    ```bash
-    touch setup.py
-    ```
-
-2. Add the following to `setup.py`:
+1. Create a `setup.py` file with the following:
 
 ```python title="setup.py"
 import asyncio
@@ -165,7 +152,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-3. Run the setup script:
+2. Run the setup script:
 
     ```bash
     uv run setup.py
@@ -177,7 +164,7 @@ You only need to run `setup.py` once. After the connector exists in your workspa
 
 See [Add a connector](../../interfaces/sdk/add-connector) for more details, including how to find the `definition_id` for other connector types.
 
-## Part 6: Configure your connector and agent
+## Part 5: Configure your connector and agent
 
 Now add the following code to `agent.py` to connect to the GitHub connector and create the LangChain agent.
 
@@ -236,7 +223,7 @@ agent = create_react_agent(
 - `create_react_agent` creates a ReAct agent that reasons about which tools to call based on the user's input.
 - The `prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Airbyte agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 
-## Part 7: Run your project
+## Part 6: Run your project
 
 Now that your agent is configured with tools, update `main.py` and run your project.
 

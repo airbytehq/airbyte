@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import requests
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import (
     NoAuth,
@@ -65,11 +66,20 @@ class JoinChannelsStream(HttpStream):
         Override to simply indicate that the specific channel was joined successfully.
         This method should not return any data, but should return an empty iterable.
         """
-        is_ok = response.json().get("ok", False)
+        response_json = response.json()
+        is_ok = response_json.get("ok", False)
         if is_ok:
             self.logger.info(f"Successfully joined channel: {stream_slice['channel_name']}")
         else:
-            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response.json()}")
+            error_code = response_json.get("error", "")
+            if error_code == "missing_scope":
+                needed = response_json.get("needed", "unknown")
+                raise AirbyteTracedException(
+                    message=f"OAuth scope '{needed}' is required but not granted.",
+                    internal_message=f"conversations.join for channel '{stream_slice['channel_name']}' returned missing_scope: needed={needed}, response={response_json}",
+                    failure_type=FailureType.config_error,
+                )
+            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response_json}")
         return []
 
     def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:

@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 3
 ---
 
@@ -30,7 +31,7 @@ The four pages in this section are designed to map one-to-one with the [SDK](../
 
 3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
-4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete) — operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
+4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
 
 ## End-to-end example
 

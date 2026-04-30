@@ -280,7 +280,7 @@ def test_threads_stream_skips_messages_without_replies_when_enabled(requests_moc
             {
                 "json": {
                     "messages": [
-                        {"ts": 1577866844, "reply_count": 3},
+                        {"ts": 1577866844, "thread_ts": "1577866844.000000", "reply_count": 3},
                         {"ts": 1577877406, "reply_count": 0},
                         {"ts": 1577888888, "reply_count": None},
                     ]
@@ -369,7 +369,7 @@ def test_threads_stream_no_replies_api_calls_skipped_when_enabled(requests_mock,
             {
                 "json": {
                     "messages": [
-                        {"ts": "1577866844.000000", "reply_count": 3},
+                        {"ts": "1577866844.000000", "thread_ts": "1577866844.000000", "reply_count": 3},
                         {"ts": "1577877406.000000", "reply_count": 0},
                     ]
                 }
@@ -438,6 +438,161 @@ def test_threads_stream_no_replies_api_calls_skipped_when_enabled(requests_mock,
     assert "ts=1577866844.000000" in replies_calls[0].url
 
 
+def test_threads_stream_ignore_no_replies_filters_by_thread_ts_and_reply_count(requests_mock, token_config):
+    """
+    When threads_ignore_no_replies=True, only messages with both thread_ts present
+    and reply_count > 0 should produce partitions. Messages without thread_ts
+    (including system messages) and messages with reply_count=0 are filtered.
+    """
+    token_config["channel_filter"] = []
+    token_config["threads_ignore_no_replies"] = True
+
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [
+            {
+                "json": {
+                    "messages": [
+                        {"ts": 1577866844, "thread_ts": "1577866844.000000", "reply_count": 3},
+                        {"ts": 1577877406, "reply_count": 2},
+                        {"ts": 1577888888, "thread_ts": "1577888888.000000", "reply_count": 0},
+                        {"ts": 1577899999, "subtype": "channel_join"},
+                    ]
+                }
+            },
+            {"json": {"messages": []}},
+        ],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [{"json": {"messages": []}}, {"json": {"messages": []}}],
+    )
+
+    stream = get_stream_by_name("threads", token_config)
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
+
+    # Only the first message has both thread_ts and reply_count > 0
+    assert len(slices) == 1
+    assert slices[0]["float_ts"] == 1577866844
+
+
+def test_threads_stream_ignore_no_replies_disabled_passes_all_messages(requests_mock, token_config):
+    """
+    When threads_ignore_no_replies is not set (default=False), all messages pass through
+    as partitions regardless of thread_ts or reply_count, preserving current behavior.
+    """
+    token_config["channel_filter"] = []
+
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [
+            {
+                "json": {
+                    "messages": [
+                        {"ts": 1577866844, "thread_ts": "1577866844.000000", "reply_count": 3},
+                        {"ts": 1577877406, "reply_count": 0},
+                        {"ts": 1577888888, "subtype": "channel_join"},
+                    ]
+                }
+            },
+            {"json": {"messages": []}},
+        ],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [{"json": {"messages": []}}, {"json": {"messages": []}}],
+    )
+
+    stream = get_stream_by_name("threads", token_config)
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
+
+    # All 3 messages should pass through when threads_ignore_no_replies is disabled
+    assert len(slices) == 3
+
+
+def test_threads_stream_ignore_no_replies_api_calls_skipped_for_non_thread_messages(requests_mock, token_config):
+    """
+    End-to-end test: when threads_ignore_no_replies=True, verify that conversations.replies
+    is only called for messages with thread_ts and reply_count > 0.
+    """
+    token_config["channel_filter"] = []
+    token_config["threads_ignore_no_replies"] = True
+
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [
+            {
+                "json": {
+                    "messages": [
+                        {"ts": "1577866844.000000", "subtype": "channel_join"},
+                        {"ts": "1577877406.000000", "reply_count": 0},
+                        {"ts": "1577888888.000000", "thread_ts": "1577888888.000000", "reply_count": 2},
+                    ]
+                }
+            },
+            {"json": {"messages": []}},
+        ],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [{"json": {"messages": []}}, {"json": {"messages": []}}],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.replies?channel=airbyte-for-beginners&limit=1000&ts=1577888888.000000",
+        json={
+            "messages": [
+                {
+                    "type": "message",
+                    "ts": "1577888888.000000",
+                    "thread_ts": "1577888888.000000",
+                    "reply_count": 2,
+                    "text": "parent",
+                },
+                {
+                    "type": "message",
+                    "ts": "1577888889.000000",
+                    "thread_ts": "1577888888.000000",
+                    "text": "reply",
+                },
+            ]
+        },
+    )
+
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "threads",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("threads", {}).build()
+    source_slack = get_source(token_config, "threads", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+
+    # Only the thread parent with replies should produce records
+    assert len(output.records) == 2
+
+    # conversations.replies should only be called for the message with thread_ts + reply_count > 0
+    replies_calls = [req for req in requests_mock.request_history if "conversations.replies" in req.url]
+    assert len(replies_calls) == 1
+    assert "ts=1577888888.000000" in replies_calls[0].url
+
+
 def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
     """
     The test uses the `conversations_list` fixture(autouse=true) as API mocker.
@@ -495,12 +650,22 @@ def test_next_page_token(token_config):
         pytest.param(200, {"ok": False, "error": "not_in_channel"}, ResponseAction.IGNORE, id="ok_false_not_in_channel"),
         pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
         pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
+        pytest.param(200, {"ok": False, "error": "thread_not_found"}, ResponseAction.IGNORE, id="ok_false_thread_not_found"),
+        pytest.param(
+            200, {"ok": False, "error": "method_not_supported_for_channel_type"}, ResponseAction.IGNORE, id="ok_false_method_not_supported"
+        ),
         pytest.param(200, {"ok": False, "error": "request_timeout"}, ResponseAction.RETRY, id="ok_false_request_timeout"),
         pytest.param(200, {"ok": False, "error": "service_unavailable"}, ResponseAction.RETRY, id="ok_false_service_unavailable"),
         pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
+        pytest.param(200, {"ok": False, "error": "accesslimited"}, ResponseAction.RETRY, id="ok_false_accesslimited"),
+        pytest.param(200, {"ok": False, "error": "team_added_to_org"}, ResponseAction.RETRY, id="ok_false_team_added_to_org"),
         pytest.param(200, {"ok": False, "error": "missing_scope"}, ResponseAction.FAIL, id="ok_false_auth_error"),
         pytest.param(200, {"ok": False, "error": "token_expired"}, ResponseAction.FAIL, id="ok_false_token_expired"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(200, {"ok": False, "error": "access_denied"}, ResponseAction.FAIL, id="ok_false_access_denied"),
+        pytest.param(200, {"ok": False, "error": "not_allowed_token_type"}, ResponseAction.FAIL, id="ok_false_not_allowed_token_type"),
+        pytest.param(200, {"ok": False, "error": "enterprise_is_restricted"}, ResponseAction.FAIL, id="ok_false_enterprise_is_restricted"),
+        pytest.param(200, {"ok": False, "error": "team_access_not_granted"}, ResponseAction.FAIL, id="ok_false_team_access_not_granted"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
     ),
 )
 def test_should_retry(token_config, status_code, response_json, expected):
@@ -722,6 +887,40 @@ def test_channel_messages_stream_ok_false_not_in_channel(requests_mock, token_co
     assert len(output.errors) == 0, f"Expected no errors for IGNORE action, but got: {[t.trace.error.message for t in output.errors]}"
 
 
+def test_channels_stream_ok_false_unrecognized_error_catch_all(requests_mock, token_config):
+    """
+    Verify that an unrecognized ok=false error code is caught by the catch-all
+    predicate and surfaces as a system_error FAIL instead of silently returning
+    zero records.
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel",
+        json={"ok": False, "error": "some_brand_new_error_code"},
+    )
+    state = StateBuilder().with_stream_state("channels", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channels", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = get_source(token_config, "channels", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert len(output.records) == 0
+    assert len(output.errors) > 0
+    error_messages = [trace.trace.error.message for trace in output.errors]
+    assert any(
+        "Slack API returned an unrecognized error: some_brand_new_error_code." in msg for msg in error_messages
+    ), f"Expected catch-all error message not found in: {error_messages}"
+    assert any(trace.trace.error.failure_type == FailureType.system_error for trace in output.errors)
+
+
 def test_channels_stream_paginator_page_size_is_999(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
     assert get_retriever(stream).paginator.pagination_strategy.page_size == 999
@@ -779,8 +978,10 @@ def test_channels_stream_includes_archived_when_configured(token_config) -> None
     (
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(429, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="429_ok_false_ratelimited"),
-        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(
+            429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_http_takes_precedence"
+        ),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_empty_body"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
     ),
@@ -798,9 +999,11 @@ def test_users_stream_error_handler_response_action(token_config, status_code, r
 @pytest.mark.parametrize(
     "status_code, response_json, expected",
     (
-        pytest.param(429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_unhandled_error"),
+        pytest.param(
+            429, {"ok": False, "error": "some_unknown_error"}, ResponseAction.RATE_LIMITED, id="429_ok_false_http_takes_precedence"
+        ),
         pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
-        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.SUCCESS, id="ok_false_unhandled_default"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
     ),
 )
 def test_channel_members_error_handler_response_action(token_config, status_code, response_json, expected):

@@ -62,7 +62,9 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
 from airbyte_agent_sdk.connectors.zendesk_chat.models import ZendeskChatAuthConfig
 
@@ -72,10 +74,58 @@ connector = ZendeskChatConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @ZendeskChatConnector.tool_utils
 async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+from airbyte_agent_sdk.connectors.zendesk_chat.models import ZendeskChatAuthConfig
+
+connector = ZendeskChatConnector(
+    auth_config=ZendeskChatAuthConfig(
+        access_token="<Your Zendesk Chat OAuth 2.0 access token>"
+    )
+)
+
+@tool
+@ZendeskChatConnector.tool_utils
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Zendesk-Chat connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+from airbyte_agent_sdk.connectors.zendesk_chat.models import ZendeskChatAuthConfig
+
+connector = ZendeskChatConnector(
+    auth_config=ZendeskChatAuthConfig(
+        access_token="<Your Zendesk Chat OAuth 2.0 access token>"
+    )
+)
+
+mcp = FastMCP("Zendesk-Chat Agent")
+
+@mcp.tool()
+@ZendeskChatConnector.tool_utils
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Zendesk-Chat connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -87,21 +137,66 @@ This example assumes you've already authenticated your connector with Airbyte. S
 
 The `connect()` factory returns a fully typed `ZendeskChatConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
 
 connector = connect("zendesk-chat", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @ZendeskChatConnector.tool_utils
 async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+
+connector = connect("zendesk-chat", workspace_name="<your_workspace_name>")
+
+@tool
+@ZendeskChatConnector.tool_utils
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Zendesk-Chat connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+
+connector = connect("zendesk-chat", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Zendesk-Chat Agent")
+
+@mcp.tool()
+@ZendeskChatConnector.tool_utils
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Zendesk-Chat connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -114,10 +209,64 @@ connector = ZendeskChatConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @ZendeskChatConnector.tool_utils
 async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ZendeskChatConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@ZendeskChatConnector.tool_utils
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Zendesk-Chat connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.zendesk_chat import ZendeskChatConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ZendeskChatConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Zendesk-Chat Agent")
+
+@mcp.tool()
+@ZendeskChatConnector.tool_utils
+async def zendesk_chat_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Zendesk-Chat connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation

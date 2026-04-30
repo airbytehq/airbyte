@@ -132,25 +132,70 @@ This authentication method isn't available for this connector.
 After creating the connector, execute operations using either the Python SDK or API.
 If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
 
+
 **Python SDK**
 
 The `connect()` factory returns a fully typed `GmailConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.gmail import GmailConnector
 
 connector = connect("gmail", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GmailConnector.tool_utils
 async def gmail_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+**LangChain**
 
-```python
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.gmail import GmailConnector
+
+connector = connect("gmail", workspace_name="<your_workspace_name>")
+
+@tool
+@GmailConnector.tool_utils
+async def gmail_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Gmail connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.gmail import GmailConnector
+
+connector = connect("gmail", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Gmail Agent")
+
+@mcp.tool()
+@GmailConnector.tool_utils
+async def gmail_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Gmail connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+**Pydantic AI**
+
+```python title="Pydantic AI"
 from airbyte_agent_sdk.connectors.gmail import GmailConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -163,10 +208,64 @@ connector = GmailConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @GmailConnector.tool_utils
 async def gmail_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.gmail import GmailConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GmailConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@GmailConnector.tool_utils
+async def gmail_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Gmail connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.gmail import GmailConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GmailConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Gmail Agent")
+
+@mcp.tool()
+@GmailConnector.tool_utils
+async def gmail_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Gmail connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 **API**
