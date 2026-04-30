@@ -65,6 +65,7 @@ internal class RedshiftInsertBufferTest {
             jdbcUrlParams = null,
             uploadingMethod = s3Config,
             tunnelMethod = null,
+            dropCascade = false,
         )
 
     private lateinit var buffer: RedshiftInsertBuffer

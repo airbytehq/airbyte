@@ -349,8 +349,12 @@ class RedshiftAirbyteClient(
                     Failed to modify table because other database objects (such as views \
                     or rules) depend on it. Original error: ${e.message}
 
-                    You can manually drop the dependent views before running the sync, \
-                    then recreate them afterward. To find dependent views, run:
+                    You can enable the 'Drop tables with CASCADE' option in the destination \
+                    configuration to automatically drop dependent objects during sync. \
+                    WARNING: This will delete all data in dependent objects (views, etc.).
+
+                    Alternatively, you can manually drop the dependent views before running \
+                    the sync, then recreate them afterward. To find dependent views, run:
                     SELECT dependent_ns.nspname, dependent_view.relname \
                     FROM pg_depend \
                     JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid \

@@ -42,7 +42,7 @@ class RedshiftCheckerTest {
         val spec = mapper.treeToValue(config, RedshiftSpecification::class.java)
         configuration = RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
         dataSource = RedshiftConnect(configuration).createDataSource()
-        sqlGenerator = RedshiftSqlGenerator()
+        sqlGenerator = RedshiftSqlGenerator(configuration)
     }
 
     @Test

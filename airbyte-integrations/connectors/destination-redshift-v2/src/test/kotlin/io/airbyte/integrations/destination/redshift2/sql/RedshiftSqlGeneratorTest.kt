@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift2.sql
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
@@ -14,6 +15,7 @@ import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -28,9 +31,12 @@ internal class RedshiftSqlGeneratorTest {
 
     private lateinit var sqlGenerator: RedshiftSqlGenerator
 
+    private fun mockConfig(dropCascade: Boolean = false): RedshiftConfiguration =
+        mockk<RedshiftConfiguration> { every { this@mockk.dropCascade } returns dropCascade }
+
     @BeforeEach
     fun setUp() {
-        sqlGenerator = RedshiftSqlGenerator()
+        sqlGenerator = RedshiftSqlGenerator(mockConfig(dropCascade = false))
     }
 
     // ================================================================
@@ -57,6 +63,20 @@ internal class RedshiftSqlGeneratorTest {
                 every { getPrimaryKey() } returns primaryKey
                 every { getCursor() } returns cursor
                 every { importType } returns Dedupe(primaryKey = primaryKey, cursor = cursor)
+            }
+        return mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
+    }
+
+    private fun mockAppendStream(
+        finalSchema: Map<String, ColumnType>,
+    ): DestinationStream {
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema =
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns emptyList()
+                every { getCursor() } returns emptyList()
+                every { importType } returns Append
             }
         return mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
     }
@@ -141,6 +161,105 @@ internal class RedshiftSqlGeneratorTest {
         assertFalse(sql.contains("BEGIN TRANSACTION;"))
         assertFalse(sql.contains("COMMIT;"))
         assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"))
+    }
+
+    // ================================================================
+    // DDL: DISTKEY / SORTKEY
+    // ================================================================
+
+    @Test
+    fun `createTable for dedup stream with single PK adds DISTKEY and SORTKEY`() {
+        val finalSchema =
+            mapOf(
+                "id" to ColumnType("bigint", false),
+                "name" to ColumnType("varchar(65535)", true),
+            )
+        val stream =
+            mockStream(
+                finalSchema = finalSchema,
+                primaryKey = listOf(listOf("id")),
+                cursor = listOf("updated_at"),
+            )
+        val tableName = TableName(namespace = "public", name = "users")
+
+        val sql = sqlGenerator.createTable(stream, tableName, replace = false)
+
+        assertTrue(sql.contains("""DISTKEY("id")"""), "Expected DISTKEY on first PK column")
+        assertTrue(
+            sql.contains("""COMPOUND SORTKEY("id")"""),
+            "Expected COMPOUND SORTKEY on PK columns",
+        )
+    }
+
+    @Test
+    fun `createTable for dedup stream with multiple PKs uses first PK as DISTKEY and all PKs as SORTKEY`() {
+        val finalSchema =
+            mapOf(
+                "org_id" to ColumnType("bigint", false),
+                "user_id" to ColumnType("bigint", false),
+                "name" to ColumnType("varchar(65535)", true),
+            )
+        val stream =
+            mockStream(
+                finalSchema = finalSchema,
+                primaryKey = listOf(listOf("org_id"), listOf("user_id")),
+                cursor = listOf("updated_at"),
+            )
+        val tableName = TableName(namespace = "public", name = "org_users")
+
+        val sql = sqlGenerator.createTable(stream, tableName, replace = false)
+
+        assertTrue(
+            sql.contains("""DISTKEY("org_id")"""),
+            "Expected DISTKEY on first PK column",
+        )
+        assertTrue(
+            sql.contains("""COMPOUND SORTKEY("org_id", "user_id")"""),
+            "Expected COMPOUND SORTKEY on all PK columns",
+        )
+    }
+
+    @Test
+    fun `createTable for append stream has no DISTKEY or SORTKEY`() {
+        val finalSchema =
+            mapOf(
+                "id" to ColumnType("bigint", false),
+                "name" to ColumnType("varchar(65535)", true),
+            )
+        val stream = mockAppendStream(finalSchema)
+        val tableName = TableName(namespace = "public", name = "events")
+
+        val sql = sqlGenerator.createTable(stream, tableName, replace = false)
+
+        assertFalse(sql.contains("DISTKEY"), "Append stream should not have DISTKEY")
+        assertFalse(sql.contains("SORTKEY"), "Append stream should not have SORTKEY")
+    }
+
+    @Test
+    fun `createTable for dedup stream with replace preserves DISTKEY and SORTKEY`() {
+        val finalSchema =
+            mapOf(
+                "id" to ColumnType("bigint", false),
+                "name" to ColumnType("varchar(65535)", true),
+            )
+        val stream =
+            mockStream(
+                finalSchema = finalSchema,
+                primaryKey = listOf(listOf("id")),
+                cursor = listOf("updated_at"),
+            )
+        val tableName = TableName(namespace = "public", name = "users")
+
+        val sql = sqlGenerator.createTable(stream, tableName, replace = true)
+
+        assertTrue(sql.contains("BEGIN TRANSACTION;"))
+        assertTrue(sql.contains("DROP TABLE IF EXISTS"))
+        assertTrue(sql.contains("""DISTKEY("id")"""), "Expected DISTKEY in replace mode")
+        assertTrue(
+            sql.contains("""COMPOUND SORTKEY("id")"""),
+            "Expected COMPOUND SORTKEY in replace mode",
+        )
+        assertTrue(sql.contains("COMMIT;"))
     }
 
     @Test
@@ -685,5 +804,129 @@ internal class RedshiftSqlGeneratorTest {
     fun `blank namespace is passed through without defaulting`() {
         val sql = sqlGenerator.dropTable(TableName(namespace = "", name = "tbl"))
         assertEquals("""DROP TABLE IF EXISTS ""."tbl";""", sql)
+    }
+
+    // ================================================================
+    // Drop CASCADE tests
+    // ================================================================
+
+    @Nested
+    inner class DropCascadeTests {
+
+        private lateinit var cascadeGenerator: RedshiftSqlGenerator
+
+        @BeforeEach
+        fun setUp() {
+            cascadeGenerator = RedshiftSqlGenerator(mockConfig(dropCascade = true))
+        }
+
+        @Test
+        fun `dropTable with cascade appends CASCADE`() {
+            val sql = cascadeGenerator.dropTable(TableName(namespace = "ns", name = "tbl"))
+            assertEquals("""DROP TABLE IF EXISTS "ns"."tbl" CASCADE;""", sql)
+        }
+
+        @Test
+        fun `createTable with replace and cascade appends CASCADE to DROP`() {
+            val finalSchema =
+                mapOf(
+                    "id" to ColumnType("bigint", false),
+                    "name" to ColumnType("varchar(65535)", true),
+                )
+            val stream = mockStream(finalSchema)
+            val tableName = TableName(namespace = "public", name = "users")
+
+            val sql = cascadeGenerator.createTable(stream, tableName, replace = true)
+
+            assertTrue(sql.contains("""DROP TABLE IF EXISTS "public"."users" CASCADE;"""))
+            assertTrue(sql.contains("BEGIN TRANSACTION;"))
+            assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"))
+            assertTrue(sql.contains("COMMIT;"))
+        }
+
+        @Test
+        fun `createTable without replace and cascade does not add CASCADE`() {
+            val finalSchema = mapOf("id" to ColumnType("bigint", false))
+            val stream = mockStream(finalSchema)
+            val tableName = TableName(namespace = "public", name = "users")
+
+            val sql = cascadeGenerator.createTable(stream, tableName, replace = false)
+
+            assertFalse(sql.contains("CASCADE"))
+            assertFalse(sql.contains("DROP TABLE"))
+        }
+
+        @Test
+        fun `overwriteTable with cascade appends CASCADE to DROP`() {
+            val source = TableName(namespace = "ns", name = "tmp")
+            val target = TableName(namespace = "ns", name = "final")
+
+            val sql = cascadeGenerator.overwriteTable(source, target)
+
+            assertTrue(sql.contains("""DROP TABLE IF EXISTS "ns"."final" CASCADE;"""))
+            assertTrue(sql.contains("""ALTER TABLE "ns"."tmp" RENAME TO "final""""))
+        }
+
+        @Test
+        fun `matchSchemas removes columns with CASCADE`() {
+            val tableName = TableName(namespace = "ns", name = "tbl")
+            val sql =
+                cascadeGenerator.matchSchemas(
+                    tableName,
+                    columnsToAdd = emptyMap(),
+                    columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
+                    columnsToModify = emptyMap(),
+                )
+
+            assertTrue(sql.contains("""ALTER TABLE "ns"."tbl" DROP COLUMN "old_col" CASCADE;"""))
+        }
+
+        @Test
+        fun `matchSchemas type change drops column with CASCADE`() {
+            val tableName = TableName(namespace = "ns", name = "tbl")
+            val sql =
+                cascadeGenerator.matchSchemas(
+                    tableName,
+                    columnsToAdd = emptyMap(),
+                    columnsToRemove = emptyMap(),
+                    columnsToModify =
+                        mapOf(
+                            "num_col" to
+                                ColumnTypeChange(
+                                    originalType = ColumnType("bigint", false),
+                                    newType = ColumnType("numeric(38,9)", false),
+                                )
+                        ),
+                )
+
+            assertTrue(sql.contains("""DROP COLUMN "num_col" CASCADE;"""))
+            assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
+        }
+
+        @Test
+        fun `upsertTable temp table drop does not use CASCADE even when enabled`() {
+            val finalSchema =
+                mapOf(
+                    "id" to ColumnType("bigint", false),
+                    "name" to ColumnType("varchar(65535)", true),
+                    "updated_at" to ColumnType("timestamptz", true),
+                )
+            val stream =
+                mockStream(
+                    finalSchema = finalSchema,
+                    primaryKey = listOf(listOf("id")),
+                    cursor = listOf("updated_at"),
+                )
+
+            val source = TableName(namespace = "ns", name = "staging")
+            val target = TableName(namespace = "ns", name = "final")
+
+            val sql = cascadeGenerator.upsertTable(stream, source, target)
+
+            // The temp table drop should NOT have CASCADE (temp tables can't have dependent views)
+            val dedup = """"_airbyte_dedup_staging""""
+            assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
+            assertFalse(sql.contains("DROP TABLE IF EXISTS $dedup CASCADE;"))
+        }
     }
 }

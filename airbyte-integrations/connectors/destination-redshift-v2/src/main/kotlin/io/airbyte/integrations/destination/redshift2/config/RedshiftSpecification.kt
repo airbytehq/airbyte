@@ -84,10 +84,20 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
     val jdbcUrlParams: String? = null
 
+    @get:JsonSchemaTitle("Drop tables with CASCADE")
+    @get:JsonPropertyDescription(
+        "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects " +
+            "(views, etc.). Use with caution. This option is intended for usecases which can " +
+            "easily rebuild the dependent objects."
+    )
+    @get:JsonProperty("drop_cascade")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "default": false}""")
+    val dropCascade: Boolean = false
+
     @get:JsonSchemaTitle("Uploading Method")
     @get:JsonPropertyDescription("The way data will be uploaded to Redshift.")
     @get:JsonProperty("uploading_method")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "display_type": "radio"}""")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 9, "display_type": "radio"}""")
     val uploadingMethod: S3StagingConfiguration? = null
 
     @JsonIgnore
@@ -106,7 +116,7 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use."
     )
-    @JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
+    @JsonSchemaInject(json = """{"group": "connection", "order": 10}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 }

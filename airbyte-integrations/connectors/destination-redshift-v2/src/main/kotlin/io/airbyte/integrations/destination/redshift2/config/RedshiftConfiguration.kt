@@ -20,6 +20,7 @@ data class RedshiftConfiguration(
     val jdbcUrlParams: String?,
     val uploadingMethod: S3StagingConfiguration?,
     val tunnelMethod: SshTunnelMethodConfiguration?,
+    val dropCascade: Boolean,
 ) : DestinationConfiguration()
 
 /** Factory for creating RedshiftConfiguration from RedshiftSpecification. */
@@ -38,6 +39,7 @@ class RedshiftConfigurationFactory :
             jdbcUrlParams = pojo.jdbcUrlParams,
             uploadingMethod = pojo.uploadingMethod,
             tunnelMethod = pojo.getTunnelMethodValue(),
+            dropCascade = pojo.dropCascade,
         )
     }
 }
