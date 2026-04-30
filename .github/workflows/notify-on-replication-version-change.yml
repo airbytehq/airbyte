@@ -35,28 +35,19 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Download "published-source-*" artifacts uploaded by the publish
-          # workflow's matrix jobs.  Using the REST API directly because
-          # actions/download-artifact@v4 has a known bug where run-id is
-          # silently ignored (https://github.com/actions/download-artifact/issues/295).
-          ARTIFACT_IDS=$(gh api "repos/$REPO/actions/runs/$WORKFLOW_RUN_ID/artifacts" \
+          # Query the publish workflow run's jobs to find which source connectors
+          # were published successfully.
+          # Job names follow the pattern: "Publish connectors (source-xyz)"
+          PUBLISHED=$(gh api "repos/$REPO/actions/runs/$WORKFLOW_RUN_ID/jobs" \
             --paginate \
-            --jq '[.artifacts[] | select(.name | startswith("published-source-")) | .id]')
+            --jq '[.jobs[]
+              | select(.name | startswith("Publish connectors (source-"))
+              | select(.conclusion == "success")
+              | .name
+              | capture("\\((?<connector>source-[^)]+)\\)")
+              | .connector
+            ]')
 
-          if [[ "$ARTIFACT_IDS" == "[]" || -z "$ARTIFACT_IDS" ]]; then
-            echo "No published-source artifacts found."
-            echo "published=[]" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          mkdir -p ./published-sources
-          for ARTIFACT_ID in $(echo "$ARTIFACT_IDS" | jq -r '.[]'); do
-            gh api "repos/$REPO/actions/artifacts/$ARTIFACT_ID/zip" > "/tmp/artifact-${ARTIFACT_ID}.zip"
-            unzip -o "/tmp/artifact-${ARTIFACT_ID}.zip" -d ./published-sources/
-            rm -f "/tmp/artifact-${ARTIFACT_ID}.zip"
-          done
-
-          PUBLISHED=$(jq -sc '[.[].connector]' ./published-sources/*.json)
           echo "Successfully published source connectors: $PUBLISHED"
           echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
 
