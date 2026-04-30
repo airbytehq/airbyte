@@ -10,6 +10,7 @@ import {
   faPuzzlePiece,
   faRobot,
   faRocket,
+  faWindowMaximize,
 } from "@fortawesome/free-solid-svg-icons";
 import { faPython } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,6 +29,7 @@ const FA_ICONS = {
   "fa-python": faPython,
   "fa-robot": faRobot,
   "fa-rocket": faRocket,
+  "fa-window-maximize": faWindowMaximize,
 };
 
 const CUSTOM_ICONS = {
