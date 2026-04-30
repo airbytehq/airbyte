@@ -113,7 +113,7 @@ my-mcp-agent/
 
 Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. You can do this through either the web app or the REST API.
 
-- **Web app**: Open [app.airbyte.ai](https://app.airbyte.ai/), go to **Connectors**, click **Add Connector**, select the `default` workspace, search for **GitHub**, and complete the authentication flow with your GitHub personal access token. See [Add a connector (UI)](../../interfaces/ui/add-connector) for a full walkthrough.
+- **Web app**: Open [app.airbyte.ai](https://app.airbyte.ai/), go to **Connectors**, click **Add Connector**, search for **GitHub**, and complete the authentication flow with your GitHub personal access token. See [Add a connector (UI)](../../interfaces/ui/add-connector) for a full walkthrough.
 - **REST API**: Send a `POST` request to create the connector programmatically. See [Add a connector (API)](../../interfaces/api/add-connector) for request examples.
 
 You only need to add the connector once. After it exists in your workspace, you can skip this step on subsequent runs.
