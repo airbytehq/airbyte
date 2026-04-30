@@ -6,9 +6,9 @@ This page contains the setup guide and reference information for the Twilio sour
 
 Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
 
-You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
+You can find your Account SID and Auth Token in the [Twilio Console](https://console.twilio.com/).
 
-See [docs](https://www.twilio.com/docs/iam/api) for more details.
+For more information, see the [Twilio API authentication documentation](https://www.twilio.com/docs/iam/api).
 
 ## Setup guide
 
@@ -64,7 +64,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 - [Available Phone Numbers Local](https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources) \(Incremental\)
 - [Available Phone Numbers Mobile](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources) \(Incremental\)
 - [Available Phone Numbers Toll Free](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources) \(Incremental\)
-- [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
+- [Calls](https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources) \(Incremental\)
 - [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
 - [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
 - [Conversations](https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources)
@@ -93,7 +93,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Performance considerations
 
-The Twilio connector gracefully handles rate limits. For more information, see the [Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
 
 ### Tuning the slice step duration
 
@@ -115,7 +115,7 @@ Smaller windows increase the number of API requests and are more likely to be ra
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.17.9 | 2026-04-29 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
+| 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
 | 0.17.7 | 2026-04-22 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
 | 0.17.6 | 2026-04-21 | [76801](https://github.com/airbytehq/airbyte/pull/76801) | Update dependencies |
