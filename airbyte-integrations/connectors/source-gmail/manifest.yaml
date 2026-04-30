@@ -501,13 +501,7 @@ spec:
                   - credentials
                   - client_refresh_token
                 value: "{{ config['client_refresh_token'] }}"
-            condition: "{{ config.get('client_id') is not none and config.get('credentials') is none }}"
-          - type: ConfigRemoveFields
-            field_pointers:
-              - - client_id
-              - - client_secret
-              - - client_refresh_token
-            condition: "{{ config.get('credentials') is not none }}"
+            condition: "{{ config.get('client_id') is not none }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
