@@ -4,6 +4,10 @@ sidebar_position: 1
 
 # Web app
 
+:::info Research Preview
+The Airbyte Agents web app is currently in Research Preview. Features, interfaces, and behavior may change as the product evolves.
+:::
+
 The Airbyte Agents web app at [app.airbyte.ai](https://app.airbyte.ai) is the fastest way to use Airbyte Agents without writing code. Describe what you want in natural language, and Airbyte picks the right connectors, makes the necessary tool calls, and replies with an answer grounded in your data.
 
 Use the web app when you want Airbyte itself to be your agent. For Python agents you build yourself, use the [SDK](../sdk). For agents in any other language, use the [API](../api). For agents that already speak Model Context Protocol, use the [MCP server](../mcp).
