@@ -2,6 +2,7 @@ import {
   faArrowRight,
   faBook,
   faCloud,
+  faCode,
   faDownload,
   faGear,
   faLightbulb,
@@ -20,6 +21,7 @@ import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
 const FA_ICONS = {
   "fa-book": faBook,
   "fa-cloud": faCloud,
+  "fa-code": faCode,
   "fa-download": faDownload,
   "fa-gear": faGear,
   "fa-lightbulb": faLightbulb,
