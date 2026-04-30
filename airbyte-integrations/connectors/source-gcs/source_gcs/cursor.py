@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 from source_gcs.helpers import GCSUploadableRemoteFile
 
+
 _SIGNED_URL_PREFIX = "https://storage.googleapis.com/"
 
 

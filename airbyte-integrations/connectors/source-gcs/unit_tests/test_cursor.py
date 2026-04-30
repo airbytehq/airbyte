@@ -132,7 +132,6 @@ def test_add_file_zip_files(mocked_reader, zip_file, logger):
     assert saved_history_cursor == zip_file.last_modified
 
 
-
 @pytest.mark.parametrize(
     "input_state,expected_history",
     [
