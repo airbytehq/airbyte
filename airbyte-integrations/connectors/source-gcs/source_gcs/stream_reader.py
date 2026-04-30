@@ -105,7 +105,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                             displayed_uri = None
                         else:
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
-                            displayed_uri = uri.split("?")[0]
+                            displayed_uri = uri.split("?")[0] if self.config.sanitize_signed_urls else None
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,
