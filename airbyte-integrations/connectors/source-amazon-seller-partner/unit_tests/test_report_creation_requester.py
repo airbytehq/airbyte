@@ -197,8 +197,8 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-match"
 
-    def test_reuses_cancelled_report(self):
-        """CANCELLED reports should be reused — status_mapping handles the behavior."""
+    def test_skips_cancelled_report(self):
+        """CANCELLED reports should be skipped so a new report is created to retry."""
         requester = _make_requester()
         cancelled_report = _make_report(report_id="rpt-cancelled", status="CANCELLED")
         get_response = _make_get_reports_response([cancelled_report])
@@ -213,8 +213,7 @@ class TestFindExistingReport:
             requested_marketplace_ids=["ATVPDKIKX0DER"],
         )
 
-        assert result is not None
-        assert result.json()["reportId"] == "rpt-cancelled"
+        assert result is None
 
     def test_reuses_fatal_report(self):
         """FATAL reports should be reused — status_mapping handles the behavior."""
@@ -250,6 +249,35 @@ class TestFindExistingReport:
             created_time=(now - timedelta(hours=1)).isoformat(),
         )
         get_response = _make_get_reports_response([fatal_report, ip_report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-ip"
+
+    def test_skips_cancelled_but_returns_in_progress(self):
+        """When both CANCELLED and IN_PROGRESS reports exist, CANCELLED is skipped and IN_PROGRESS is returned."""
+        requester = _make_requester()
+        now = datetime.now(tz=timezone.utc)
+        cancelled_report = _make_report(
+            report_id="rpt-cancelled",
+            status="CANCELLED",
+            created_time=(now - timedelta(hours=1)).isoformat(),
+        )
+        ip_report = _make_report(
+            report_id="rpt-ip",
+            status="IN_PROGRESS",
+            created_time=(now - timedelta(hours=2)).isoformat(),
+        )
+        get_response = _make_get_reports_response([cancelled_report, ip_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester._find_existing_report(
@@ -703,8 +731,8 @@ class TestSendRequest:
         assert result is not None
         assert result.json()["reportId"] == "rpt-no-type"
 
-    def test_reuses_cancelled_report_in_send_request(self):
-        """CANCELLED reports should be reused — status_mapping handles the behavior."""
+    def test_creates_new_report_when_only_cancelled_exists(self):
+        """CANCELLED reports should be skipped, causing a new report to be created."""
         requester = _make_requester()
         requester._request_body_json.return_value = {
             "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
@@ -716,10 +744,12 @@ class TestSendRequest:
         get_response = _make_get_reports_response([cancelled])
         requester._http_client.send_request.return_value = (None, get_response)
 
-        result = requester.send_request(stream_state=None, stream_slice=None)
+        create_response = _create_response(200, {"reportId": "rpt-new"})
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
+            result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
-        assert result.json()["reportId"] == "rpt-cancelled"
+        assert result.json()["reportId"] == "rpt-new"
 
     def test_reuses_fatal_report_in_send_request(self):
         """FATAL reports should be reused — status_mapping handles the behavior."""

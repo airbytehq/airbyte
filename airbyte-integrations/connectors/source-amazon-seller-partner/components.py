@@ -684,8 +684,12 @@ class ReportCreationRequester(HttpRequester):
         """
         Find an existing report matching the given reportType, date range, and marketplaceIds.
         Returns a synthetic Response wrapping the most recently created matching report if found,
-        or None. No status filtering is applied here — the manifest's status_mapping is the
-        single source of truth for handling each report status.
+        or None.
+
+        CANCELLED reports are skipped so that a new report is always created for them.
+        This acts as a retry mechanism: if the data is now available, the new report will
+        succeed; if still no data, the new report will also be CANCELLED and the CDK's
+        SKIPPED status mapping will handle it silently.
         """
         reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type)
         if not reports:
@@ -696,6 +700,14 @@ class ReportCreationRequester(HttpRequester):
         best_created_time = None
 
         for report in reports:
+            report_status = report.get("processingStatus", "")
+            if report_status == "CANCELLED":
+                logger.info(
+                    f"Skipping CANCELLED report {report.get('reportId', '')} for {report_type}. "
+                    f"A new report will be created to retry in case data is now available."
+                )
+                continue
+
             if not self._marketplace_ids_match(requested_marketplace_ids, report):
                 continue
 
@@ -730,14 +742,6 @@ class ReportCreationRequester(HttpRequester):
                 f"Found existing report {report_id} (status={report_status}) "
                 f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
             )
-            if report_status == "CANCELLED":
-                logger.warning(
-                    f"Report {report_id} for {report_type} [{report_start} - {report_end}] has CANCELLED status. "
-                    f"Amazon cancels reports either automatically (no data to return) or manually via the cancelReport API. "
-                    f"If this report was manually cancelled, data for this period will be skipped and not synced. "
-                    f"The cursor state will not advance, so the same period will be retried on the next sync. "
-                    f"To avoid data loss, do not manually cancel reports that are being used by Airbyte syncs."
-                )
             return self._build_synthetic_response(best_candidate, get_response)
 
         return None
