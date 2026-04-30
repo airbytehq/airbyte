@@ -525,10 +525,21 @@ class InsightAsyncJob(AsyncJob):
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
+        # Filter out breakdown fields and object breakdown ID fields from the
+        # primary key before adding them to the API ``fields`` parameter.
+        # Breakdown fields (e.g. "dma", "region") are sent via the separate
+        # ``breakdowns`` parameter and object breakdown IDs (e.g.
+        # "image_asset_id") are synthetic fields injected post-response — neither
+        # is valid in the ``fields`` list.
+        breakdowns = set(self._params.get("breakdowns", []))
+        object_breakdown_ids = set(self._object_breakdowns.values())
+        non_field_pks = breakdowns | object_breakdown_ids
+        api_pk_fields = [f for f in self._primary_key if f not in non_field_pks]
+
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = api_pk_fields + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = api_pk_fields + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,
@@ -548,7 +559,7 @@ class InsightAsyncJob(AsyncJob):
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
         )
-        logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
+        logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(api_pk_fields), len(part_a), len(part_b))
         return ParentAsyncJob(
             jobs=[job_a, job_b],
             api=self._api,

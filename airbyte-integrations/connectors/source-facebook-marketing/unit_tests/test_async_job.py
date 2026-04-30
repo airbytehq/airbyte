@@ -921,6 +921,147 @@ class TestParentAsyncJob:
         assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"
 
 
+class TestSplitByFieldsParent:
+    """Tests for InsightAsyncJob._split_by_fields_parent()."""
+
+    def test_split_by_fields_excludes_breakdown_fields_from_api_fields(self, api):
+        """
+        When the primary key includes breakdown fields (e.g. 'dma'), those
+        fields must NOT appear in the API 'fields' parameter of the split
+        jobs because they are already sent via the 'breakdowns' parameter.
+        """
+        interval = DateInterval(date(2023, 1, 1), date(2023, 1, 1))
+        pk = ["date_start", "account_id", "ad_id", "dma"]
+        params = {
+            "fields": ["date_start", "account_id", "ad_id", "field_a", "field_b", "field_c", "field_d"],
+            "breakdowns": ["dma"],
+            "time_increment": 1,
+        }
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad("ad-1"),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+        )
+
+        parent = job._split_by_fields_parent()
+        child_jobs = parent._jobs
+        assert len(child_jobs) == 2
+
+        for child in child_jobs:
+            child_fields = child._params["fields"]
+            assert "dma" not in child_fields, (
+                "Breakdown field 'dma' should not be in the API fields parameter"
+            )
+            # The non-breakdown PK fields should still be present
+            assert "date_start" in child_fields
+            assert "account_id" in child_fields
+            assert "ad_id" in child_fields
+
+    def test_split_by_fields_excludes_object_breakdown_ids_from_api_fields(self, api):
+        """
+        When the primary key includes object breakdown ID fields (e.g.
+        'image_asset_id'), those must NOT appear in the API 'fields'
+        parameter because they are synthetic fields injected post-response.
+        """
+        interval = DateInterval(date(2023, 1, 1), date(2023, 1, 1))
+        pk = ["date_start", "account_id", "ad_id", "image_asset_id"]
+        ob_map = {"image_asset": "image_asset_id"}
+        params = {
+            "fields": ["date_start", "account_id", "ad_id", "field_a", "field_b", "field_c", "field_d"],
+            "breakdowns": [],
+            "time_increment": 1,
+        }
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad("ad-1"),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+            object_breakdowns=ob_map,
+        )
+
+        parent = job._split_by_fields_parent()
+        child_jobs = parent._jobs
+
+        for child in child_jobs:
+            child_fields = child._params["fields"]
+            assert "image_asset_id" not in child_fields, (
+                "Object breakdown ID 'image_asset_id' should not be in the API fields parameter"
+            )
+
+    def test_split_by_fields_excludes_both_breakdowns_and_object_breakdown_ids(self, api):
+        """
+        When the primary key includes both regular breakdown fields and
+        object breakdown ID fields, both kinds must be filtered out.
+        """
+        interval = DateInterval(date(2023, 1, 1), date(2023, 1, 1))
+        pk = ["date_start", "account_id", "ad_id", "dma", "image_asset_id"]
+        ob_map = {"image_asset": "image_asset_id"}
+        params = {
+            "fields": ["date_start", "account_id", "ad_id", "field_a", "field_b", "field_c", "field_d"],
+            "breakdowns": ["dma"],
+            "time_increment": 1,
+        }
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad("ad-1"),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+            object_breakdowns=ob_map,
+        )
+
+        parent = job._split_by_fields_parent()
+        child_jobs = parent._jobs
+
+        for child in child_jobs:
+            child_fields = child._params["fields"]
+            assert "dma" not in child_fields
+            assert "image_asset_id" not in child_fields
+            assert "date_start" in child_fields
+            assert "account_id" in child_fields
+            assert "ad_id" in child_fields
+
+    def test_split_by_fields_no_breakdowns_preserves_full_pk(self, api):
+        """
+        When there are no breakdowns, the full primary key should still
+        appear in the API fields (no regression).
+        """
+        interval = DateInterval(date(2023, 1, 1), date(2023, 1, 1))
+        pk = ["date_start", "account_id", "ad_id"]
+        params = {
+            "fields": ["date_start", "account_id", "ad_id", "field_a", "field_b", "field_c", "field_d"],
+            "breakdowns": [],
+            "time_increment": 1,
+        }
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad("ad-1"),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+        )
+
+        parent = job._split_by_fields_parent()
+        child_jobs = parent._jobs
+
+        for child in child_jobs:
+            child_fields = child._params["fields"]
+            assert "date_start" in child_fields
+            assert "account_id" in child_fields
+            assert "ad_id" in child_fields
+
+
 class TestAPILimitTypeAnnotation:
     """Verify that the APILimit forward reference in async_job.py resolves correctly.
 
