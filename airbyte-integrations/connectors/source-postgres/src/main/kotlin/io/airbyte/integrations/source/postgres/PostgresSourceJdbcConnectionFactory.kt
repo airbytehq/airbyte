@@ -13,6 +13,7 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.ShardingKey
 import java.util.Properties
 import org.postgresql.PGConnection
 import org.postgresql.util.PSQLException
@@ -43,7 +44,7 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
         // Setting autoCommit to false in pg jdbc allows the driver to start returning result before
         // the entire result set is received from the server. This improves performance and memory
         // consumption when fetching large result sets.
-        return super.get().also { it.autoCommit = false }
+        return ConnectionWithCleanup(super.get()).also { it.autoCommit = false }
     }
 
     fun getReplication(): PGConnection {
@@ -77,6 +78,37 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
         validateReplicationConnection(connection)
 
         return connection.unwrap(PGConnection::class.java)
+    }
+
+    private class ConnectionWithCleanup(val base: Connection) : Connection by base {
+        // prevents closing the socket with an open transaction which causes problems with poolers
+        override fun close() {
+            base.rollback()
+        }
+
+        // below are boilerplate - Java class requires explicit delegation on default methods
+        override fun beginRequest() {
+            base.beginRequest()
+        }
+        override fun endRequest() {
+            base.endRequest()
+        }
+        override fun setShardingKeyIfValid(
+            shardingKey: ShardingKey?,
+            superShardingKey: ShardingKey?,
+            timeout: Int
+        ): Boolean {
+            return base.setShardingKeyIfValid(shardingKey, superShardingKey, timeout)
+        }
+        override fun setShardingKeyIfValid(shardingKey: ShardingKey?, timeout: Int): Boolean {
+            return base.setShardingKeyIfValid(shardingKey, timeout)
+        }
+        override fun setShardingKey(shardingKey: ShardingKey?, superShardingKey: ShardingKey?) {
+            base.setShardingKey(shardingKey, superShardingKey)
+        }
+        override fun setShardingKey(shardingKey: ShardingKey?) {
+            base.setShardingKey(shardingKey)
+        }
     }
 
     private fun validateReplicationConnection(connection: Connection) {
