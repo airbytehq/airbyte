@@ -953,9 +953,7 @@ class TestSplitByFieldsParent:
 
         for child in child_jobs:
             child_fields = child._params["fields"]
-            assert "dma" not in child_fields, (
-                "Breakdown field 'dma' should not be in the API fields parameter"
-            )
+            assert "dma" not in child_fields, "Breakdown field 'dma' should not be in the API fields parameter"
             # The non-breakdown PK fields should still be present
             assert "date_start" in child_fields
             assert "account_id" in child_fields
@@ -991,9 +989,7 @@ class TestSplitByFieldsParent:
 
         for child in child_jobs:
             child_fields = child._params["fields"]
-            assert "image_asset_id" not in child_fields, (
-                "Object breakdown ID 'image_asset_id' should not be in the API fields parameter"
-            )
+            assert "image_asset_id" not in child_fields, "Object breakdown ID 'image_asset_id' should not be in the API fields parameter"
 
     def test_split_by_fields_excludes_both_breakdowns_and_object_breakdown_ids(self, api):
         """
