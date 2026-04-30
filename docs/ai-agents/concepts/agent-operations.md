@@ -21,7 +21,7 @@ Any interaction with an agent consumes AOs. The source of the interaction determ
 | Source | Description | Tracked as a session? | Tool calls visible? |
 | --- | --- | --- | --- |
 | **Chat** | A conversation with an agent in the web app. | Yes | Yes |
-| **Automation** | A single run of a scheduled, webhook-triggered, or manually triggered automation. | Yes | Yes |
+| **Automation** | A single run of a scheduled or manually triggered automation. | Yes | Yes |
 | **Automation Builder Chat** | A conversation inside the Automation Builder while designing an automation. | Yes | Yes |
 | **MCP** | Tool calls from agents connected through the Model Context Protocol. | No | Yes |
 | **API** | Direct calls to the Airbyte Agents API. | No | Yes |
