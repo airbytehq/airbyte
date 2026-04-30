@@ -12,10 +12,10 @@ jobs:
       - name: Checkout airbyte repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Checkout airbyte-agent-connectors
+      - name: Checkout airbyte-agent-sdk
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: airbytehq/airbyte-agent-connectors
+          repository: airbytehq/airbyte-agent-sdk
           path: agent-connectors-source
 
       - name: Sync connector docs
@@ -60,12 +60,12 @@ jobs:
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          commit-message: "docs: sync agent connector docs from airbyte-agent-connectors repo"
+          commit-message: "docs: sync agent connector docs from airbyte-agent-sdk repo"
           branch: auto-sync-ai-connector-docs
           delete-branch: true
-          title: "docs: sync agent connector docs from airbyte-agent-connectors repo"
+          title: "docs: sync agent connector docs from airbyte-agent-sdk repo"
           body: |
-            Automated sync of agent connector docs from airbyte-agent-connectors.
+            Automated sync of agent connector docs from airbyte-agent-sdk.
 
             This PR was automatically created by the sync-agent-connector-docs workflow.
           labels: |
