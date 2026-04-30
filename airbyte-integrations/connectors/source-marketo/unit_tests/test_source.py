@@ -22,6 +22,7 @@ from source_marketo.source import (
 )
 
 from airbyte_cdk.legacy.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.models import AirbyteStream, AirbyteStreamStatus, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
@@ -607,17 +608,69 @@ def test_refresh_access_token_returns_airbyte_datetime(config, requests_mock):
     assert isinstance(expiry, AirbyteDateTime)
 
 
-def test_source_streams_handles_activity_types_failure(config, requests_mock, caplog):
-    """P2-2: Verify that a failed activity types fetch logs a warning and returns base streams."""
+def test_source_streams_raises_on_activity_types_failure(config, requests_mock):
+    """Verify that a failed activity types fetch raises AirbyteTracedException."""
     source = SourceMarketo(config=config)
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json",
         status_code=500,
     )
-    caplog.set_level("WARNING")
-    streams = source.streams(config)
+    with pytest.raises(AirbyteTracedException, match="Failed to fetch Marketo activity types"):
+        source.streams(config)
 
-    # Should still have 8 streams (7 declarative + 1 leads), but no activities_*
-    assert len(streams) == 8
-    assert not any(getattr(s, "name", "").startswith("activities_") for s in streams)
-    assert "An error occurred while creating activity streams" in caplog.text
+
+def _make_configured_catalog(stream_names: list[str]) -> ConfiguredAirbyteCatalog:
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+            for name in stream_names
+        ]
+    )
+
+
+def test_read_mixed_catalog_does_not_emit_false_incomplete(config, activity, requests_mock):
+    """Mixed catalog (declarative + legacy) must not mark leads INCOMPLETE before reading it."""
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json",
+        json={"result": [activity]},
+    )
+    source = SourceMarketo(config=config)
+
+    catalog = _make_configured_catalog(["activity_types", "leads"])
+
+    with patch.object(Leads, "read", return_value=iter([])):
+        messages = list(source.read(logger, config, catalog, state=None))
+
+    status_messages = [
+        m for m in messages if m.type.value == "TRACE" and hasattr(m.trace, "stream_status") and m.trace.stream_status is not None
+    ]
+    for sm in status_messages:
+        if sm.trace.stream_status.stream_descriptor.name == "leads":
+            assert sm.trace.stream_status.status != AirbyteStreamStatus.INCOMPLETE
+
+
+def test_read_failed_legacy_stream_raises_after_emitting_incomplete(config, activity, requests_mock):
+    """A failed legacy stream should emit INCOMPLETE + trace, then raise so the sync exits failed."""
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/activities/types.json",
+        json={"result": [activity]},
+    )
+    source = SourceMarketo(config=config)
+
+    catalog = _make_configured_catalog(["leads"])
+
+    with patch.object(Leads, "read", side_effect=RuntimeError("export failed")):
+        messages = []
+        with pytest.raises(AirbyteTracedException, match="did not sync successfully"):
+            for msg in source.read(logger, config, catalog, state=None):
+                messages.append(msg)
+
+    status_messages = [
+        m for m in messages if m.type.value == "TRACE" and hasattr(m.trace, "stream_status") and m.trace.stream_status is not None
+    ]
+    leads_statuses = [sm.trace.stream_status.status for sm in status_messages if sm.trace.stream_status.stream_descriptor.name == "leads"]
+    assert AirbyteStreamStatus.INCOMPLETE in leads_statuses

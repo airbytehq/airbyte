@@ -671,7 +671,12 @@ class SourceMarketo(YamlDeclarativeSource):
             else:
                 legacy_streams[stream.name] = stream
 
-        selected_concurrent = self._select_streams(streams=concurrent_streams, configured_catalog=catalog)
+        concurrent_names = {stream.name for stream in concurrent_streams}
+        concurrent_catalog = ConfiguredAirbyteCatalog(
+            streams=[configured_stream for configured_stream in catalog.streams if configured_stream.stream.name in concurrent_names]
+        )
+
+        selected_concurrent = self._select_streams(streams=concurrent_streams, configured_catalog=concurrent_catalog)
         if selected_concurrent:
             yield from self._concurrent_source.read(selected_concurrent)
 
@@ -688,6 +693,7 @@ class SourceMarketo(YamlDeclarativeSource):
         state_manager = ConnectorStateManager(state=state)
         slice_logger = DebugSliceLogger()
         internal_config = InternalConfig()
+        stream_name_to_exception: dict[str, AirbyteTracedException] = {}
 
         for configured_stream in catalog.streams:
             stream_instance = legacy_streams.get(configured_stream.stream.name)
@@ -727,12 +733,22 @@ class SourceMarketo(YamlDeclarativeSource):
                 yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
             except AirbyteTracedException as e:
                 logger.exception(f"Error reading stream {configured_stream.stream.name}")
+                stream_name_to_exception[configured_stream.stream.name] = e
                 yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                 yield e.as_sanitized_airbyte_message()
             except Exception as e:
                 logger.exception(f"Error reading stream {configured_stream.stream.name}")
+                traced = AirbyteTracedException.from_exception(e)
+                stream_name_to_exception[configured_stream.stream.name] = traced
                 yield as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                yield AirbyteTracedException.from_exception(e).as_sanitized_airbyte_message()
+                yield traced.as_sanitized_airbyte_message()
+
+        if stream_name_to_exception:
+            error_streams = ", ".join(stream_name_to_exception)
+            raise AirbyteTracedException(
+                message=f"During the sync, the following streams did not sync successfully: {error_streams}",
+                failure_type=FailureType.config_error,
+            )
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream | AbstractStream]:  # type: ignore[override]
         config["authenticator"] = MarketoAuthenticator(config)
@@ -750,6 +766,10 @@ class SourceMarketo(YamlDeclarativeSource):
                 stream_instance = stream_class(config)
                 streams.append(stream_instance)
         except (requests.RequestException, KeyError, ValueError) as e:
-            self.logger.warning(f"An error occurred while creating activity streams: {repr(e)}")
+            raise AirbyteTracedException.from_exception(
+                e,
+                message="Failed to fetch Marketo activity types, so activity streams cannot be created.",
+                failure_type=FailureType.transient_error,
+            )
 
         return streams
