@@ -199,7 +199,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.6 | 2026-04-30 | [77619](https://github.com/airbytehq/airbyte/pull/77619) | Apply comprehensive ok=false error handling to JoinChannelsStream with config-error, transient-error, ignorable, and system-error buckets |
+| 3.2.6 | 2026-04-30 | [77608](https://github.com/airbytehq/airbyte/pull/77608) | Apply comprehensive ok=false error handling to JoinChannelsStream with config-error, transient-error, ignorable, and system-error buckets |
 | 3.2.5 | 2026-04-29 | [77601](https://github.com/airbytehq/airbyte/pull/77601) | Surface missing OAuth scope as config error instead of silently failing channel joins |
 | 3.2.4 | 2026-04-28 | [77531](https://github.com/airbytehq/airbyte/pull/77531) | Use RATE_LIMITED action for rate-limit filters, add failure_type classification, and remove generic ok=false catch-all in favor of default HTTP status handling |
 | 3.2.3 | 2026-04-28 | [77450](https://github.com/airbytehq/airbyte/pull/77450) | Update dependencies |
