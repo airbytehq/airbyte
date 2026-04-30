@@ -395,9 +395,7 @@ class IncrementalTest(TestCase):
         assert most_recent_state.stream_state.updated == str(cursor_value)
 
     @HttpMocker()
-    def test_given_hydrated_mode_when_read_then_refresh_record_from_application_fee_refund_endpoint(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_hydrated_mode_when_read_then_refresh_record_from_application_fee_refund_endpoint(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
         cursor_value = int(state_datetime.timestamp()) + 1
         refund = _a_refund().with_id("fr_hydrated").build()

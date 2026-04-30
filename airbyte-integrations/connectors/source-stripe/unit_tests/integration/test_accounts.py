@@ -15,8 +15,8 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
-    NestedPath,
     HttpResponseBuilder,
+    NestedPath,
     RecordBuilder,
     create_record_builder,
     create_response_builder,
@@ -29,7 +29,12 @@ from integration.request_builder import StripeRequestBuilder
 
 
 _STREAM_NAME = "accounts"
-_EVENT_TYPES = ["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]
+_EVENT_TYPES = [
+    "account.updated",
+    "account.external_account.created",
+    "account.external_account.updated",
+    "account.external_account.deleted",
+]
 _DATA_FIELD = NestedPath(["data", "object"])
 _ACCOUNT_ID = "acct_1G9HZLIEn49ers"
 _CLIENT_SECRET = "ConfigBuilder default client secret"
@@ -129,15 +134,24 @@ class AccountsTest(TestCase):
         account = _create_record().with_id("acct_hydrated").build()
 
         http_mocker.get(
-            _create_events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
-            _create_events_response().with_record(_create_event_record().with_cursor(cursor_value).with_field(_DATA_FIELD, account)).build(),
+            _create_events_request()
+            .with_created_gte(state_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(_EVENT_TYPES)
+            .build(),
+            _create_events_response()
+            .with_record(_create_event_record().with_cursor(cursor_value).with_field(_DATA_FIELD, account))
+            .build(),
         )
         http_mocker.get(
             _create_account_request("acct_hydrated").build(),
             HttpResponse(json.dumps(account), 200),
         )
 
-        config = _create_config().with_start_date(_NOW - timedelta(days=75)).with_event_based_incremental_sync_mode("hydrated_events").build()
+        config = (
+            _create_config().with_start_date(_NOW - timedelta(days=75)).with_event_based_incremental_sync_mode("hydrated_events").build()
+        )
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
         source = get_source(config=config, state=state)
         actual_messages = read(source, config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
