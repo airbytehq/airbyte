@@ -80,7 +80,6 @@ Credentials you add through one interface are available to all of them. A connec
 - Platform tokens are short-lived by design. Application tokens expire after 15 minutes; scoped tokens expire after 20 minutes.
 - Airbyte stores connector credentials server-side and never returns them in API responses after creation.
 - Never expose platform credentials or tokens in client-side code. Keep them in your backend.
-- Rotate platform credentials periodically from the [Profile page](https://app.airbyte.ai/profile).
 
 ## Related topics
 

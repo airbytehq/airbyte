@@ -115,4 +115,3 @@ If you belong to a single organization, you can omit `organization_id`.
 
 - Never commit `AIRBYTE_CLIENT_ID` or `AIRBYTE_CLIENT_SECRET` to version control. Use a `.env` file and add it to `.gitignore`.
 - Keep Airbyte credentials server-side. The SDK is designed for backend use.
-- Rotate credentials periodically from the [Profile page](https://app.airbyte.ai/profile).
