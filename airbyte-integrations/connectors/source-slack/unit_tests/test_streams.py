@@ -438,105 +438,11 @@ def test_threads_stream_no_replies_api_calls_skipped_when_enabled(requests_mock,
     assert "ts=1577866844.000000" in replies_calls[0].url
 
 
-@pytest.mark.parametrize(
-    "subtype",
-    [
-        pytest.param("channel_join", id="channel_join"),
-        pytest.param("channel_leave", id="channel_leave"),
-        pytest.param("channel_topic", id="channel_topic"),
-        pytest.param("channel_purpose", id="channel_purpose"),
-        pytest.param("channel_name", id="channel_name"),
-        pytest.param("channel_archive", id="channel_archive"),
-        pytest.param("channel_unarchive", id="channel_unarchive"),
-        pytest.param("channel_posting_permissions", id="channel_posting_permissions"),
-        pytest.param("channel_convert_to_private", id="channel_convert_to_private"),
-        pytest.param("channel_convert_to_public", id="channel_convert_to_public"),
-        pytest.param("pinned_item", id="pinned_item"),
-        pytest.param("unpinned_item", id="unpinned_item"),
-        pytest.param("reminder_add", id="reminder_add"),
-        pytest.param("bot_add", id="bot_add"),
-        pytest.param("bot_remove", id="bot_remove"),
-    ],
-)
-def test_threads_stream_filters_system_message_subtypes(requests_mock, token_config, subtype):
+def test_threads_stream_ignore_no_replies_filters_by_thread_ts_and_reply_count(requests_mock, token_config):
     """
-    Verify that system message subtypes are excluded from thread partitions.
-    These messages cannot have threaded replies, so querying conversations.replies for them
-    wastes Slack API quota.
-    """
-    token_config["channel_filter"] = []
-
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [
-            {
-                "json": {
-                    "messages": [
-                        {"ts": 1577866844, "subtype": subtype},
-                        {"ts": 1577877406, "reply_count": 3},
-                    ]
-                }
-            },
-            {"json": {"messages": []}},
-        ],
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": []}}, {"json": {"messages": []}}],
-    )
-
-    stream = get_stream_by_name("threads", token_config)
-    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
-
-    # Only the regular message should produce a partition; the system message should be filtered
-    assert len(slices) == 1
-    assert slices[0]["float_ts"] == 1577877406
-
-
-@pytest.mark.parametrize(
-    "subtype",
-    [
-        pytest.param("bot_message", id="bot_message"),
-        pytest.param("me_message", id="me_message"),
-        pytest.param("file_share", id="file_share"),
-        pytest.param("thread_broadcast", id="thread_broadcast"),
-    ],
-)
-def test_threads_stream_allows_threadable_subtypes(requests_mock, token_config, subtype):
-    """
-    Verify that subtypes that can have threads (bot_message, me_message, file_share,
-    thread_broadcast) are NOT filtered from thread partitions.
-    """
-    token_config["channel_filter"] = []
-
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [
-            {"json": {"messages": [{"ts": 1577866844, "subtype": subtype, "reply_count": 2}]}},
-            {"json": {"messages": []}},
-        ],
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": []}}, {"json": {"messages": []}}],
-    )
-
-    stream = get_stream_by_name("threads", token_config)
-    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
-
-    assert len(slices) == 1
-    assert slices[0]["float_ts"] == 1577866844
-
-
-def test_threads_stream_system_messages_filtered_with_ignore_no_replies(requests_mock, token_config):
-    """
-    Verify that system message filtering and threads_ignore_no_replies work together:
-    system messages should be filtered even when they have reply_count > 0,
-    and messages without replies should also be filtered when the option is enabled.
+    When threads_ignore_no_replies=True, only messages with both thread_ts present
+    and reply_count > 0 should produce partitions. Messages without thread_ts
+    (including system messages) and messages with reply_count=0 are filtered.
     """
     token_config["channel_filter"] = []
     token_config["threads_ignore_no_replies"] = True
@@ -548,9 +454,10 @@ def test_threads_stream_system_messages_filtered_with_ignore_no_replies(requests
             {
                 "json": {
                     "messages": [
-                        {"ts": 1577866844, "subtype": "channel_join", "reply_count": 5},
-                        {"ts": 1577877406, "reply_count": 3},
-                        {"ts": 1577888888, "reply_count": 0},
+                        {"ts": 1577866844, "thread_ts": "1577866844.000000", "reply_count": 3},
+                        {"ts": 1577877406, "reply_count": 2},
+                        {"ts": 1577888888, "thread_ts": "1577888888.000000", "reply_count": 0},
+                        {"ts": 1577899999, "subtype": "channel_join"},
                     ]
                 }
             },
@@ -566,16 +473,15 @@ def test_threads_stream_system_messages_filtered_with_ignore_no_replies(requests
     stream = get_stream_by_name("threads", token_config)
     slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
 
-    # channel_join is filtered (system message), reply_count=0 is filtered (no replies),
-    # only the regular message with reply_count=3 should produce a partition
+    # Only the first message has both thread_ts and reply_count > 0
     assert len(slices) == 1
-    assert slices[0]["float_ts"] == 1577877406
+    assert slices[0]["float_ts"] == 1577866844
 
 
-def test_threads_stream_system_messages_no_replies_api_calls(requests_mock, token_config):
+def test_threads_stream_ignore_no_replies_disabled_passes_all_messages(requests_mock, token_config):
     """
-    End-to-end test: verify that conversations.replies is NOT called for system messages
-    but IS called for regular messages.
+    When threads_ignore_no_replies is not set (default=False), all messages pass through
+    as partitions regardless of thread_ts or reply_count, preserving current behavior.
     """
     token_config["channel_filter"] = []
 
@@ -586,9 +492,46 @@ def test_threads_stream_system_messages_no_replies_api_calls(requests_mock, toke
             {
                 "json": {
                     "messages": [
+                        {"ts": 1577866844, "thread_ts": "1577866844.000000", "reply_count": 3},
+                        {"ts": 1577877406, "reply_count": 0},
+                        {"ts": 1577888888, "subtype": "channel_join"},
+                    ]
+                }
+            },
+            {"json": {"messages": []}},
+        ],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [{"json": {"messages": []}}, {"json": {"messages": []}}],
+    )
+
+    stream = get_stream_by_name("threads", token_config)
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
+
+    # All 3 messages should pass through when threads_ignore_no_replies is disabled
+    assert len(slices) == 3
+
+
+def test_threads_stream_ignore_no_replies_api_calls_skipped_for_non_thread_messages(requests_mock, token_config):
+    """
+    End-to-end test: when threads_ignore_no_replies=True, verify that conversations.replies
+    is only called for messages with thread_ts and reply_count > 0.
+    """
+    token_config["channel_filter"] = []
+    token_config["threads_ignore_no_replies"] = True
+
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [
+            {
+                "json": {
+                    "messages": [
                         {"ts": "1577866844.000000", "subtype": "channel_join"},
-                        {"ts": "1577877406.000000", "subtype": "channel_leave"},
-                        {"ts": "1577888888.000000", "reply_count": 2},
+                        {"ts": "1577877406.000000", "reply_count": 0},
+                        {"ts": "1577888888.000000", "thread_ts": "1577888888.000000", "reply_count": 2},
                     ]
                 }
             },
@@ -641,10 +584,10 @@ def test_threads_stream_system_messages_no_replies_api_calls(requests_mock, toke
     source_slack = get_source(token_config, "threads", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
 
-    # Only the regular message should produce replies records
+    # Only the thread parent with replies should produce records
     assert len(output.records) == 2
 
-    # conversations.replies should only be called for the regular message, not system messages
+    # conversations.replies should only be called for the message with thread_ts + reply_count > 0
     replies_calls = [req for req in requests_mock.request_history if "conversations.replies" in req.url]
     assert len(replies_calls) == 1
     assert "ts=1577888888.000000" in replies_calls[0].url
