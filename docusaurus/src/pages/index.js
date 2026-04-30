@@ -204,7 +204,7 @@ export default function Home() {
     {
       title: 'Reference',
       link: '/ai-agents/reference/',
-      description: 'API and SDK reference for endpoints, classes, methods, and type signatures.',
+      description: 'API and SDK reference for endpoints, classes, methods, and type signatures',
       icon: AgentApiIcon,
     },
     {
@@ -359,6 +359,7 @@ export default function Home() {
 
           </div>
         </section>
+
 
         {/* GitHub Badges */}
         <section className={styles.badgesSection}>
