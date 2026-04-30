@@ -3,8 +3,8 @@
 import datetime
 from unittest.mock import MagicMock, Mock, PropertyMock
 
-import pytz
 import pytest
+import pytz
 from source_gcs import Config, SourceGCSStreamReader
 from source_gcs.config import ServiceAccountCredentials
 
