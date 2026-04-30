@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.schema.RedshiftTableSchemaMapper
 import io.airbyte.integrations.destination.redshift2.schema.toRedshiftCompatibleName
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import java.time.ZoneOffset
 
 private val testObjectMapper: ObjectMapper = ObjectMapper()
@@ -56,7 +55,7 @@ class RedshiftDataDumper(
 
             // Use the TableSchemaMapper to get the correct table name
             val tableName = schemaMapper.toFinalTableName(stream.mappedDescriptor)
-            val sqlGenerator = RedshiftSqlGenerator()
+            val sqlGenerator = RedshiftTestConfigProvider.sqlGenerator
             val quotedTableName = sqlGenerator.getFullyQualifiedName(tableName)
             val existsResultSet = statement.executeQuery(sqlGenerator.tableExists(tableName))
             existsResultSet.next()

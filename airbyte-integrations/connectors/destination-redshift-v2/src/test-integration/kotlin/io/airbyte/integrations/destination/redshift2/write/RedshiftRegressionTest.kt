@@ -6,11 +6,7 @@ package io.airbyte.integrations.destination.redshift2.write
 
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.write.RegressionTestSuite
-import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
 import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
-import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
@@ -18,26 +14,14 @@ import org.junit.jupiter.api.parallel.ResourceLock
 
 /**
  * Regression tests for the Redshift destination. Verifies that schema structure and table
- * identifiers remain stable across code changes
+ * identifiers remain stable across code changes.
  */
 class RedshiftRegressionTest :
     RegressionTestSuite(
         configContents = Files.readString(Path.of(CONFIG_PATH)),
         configSpecClass = RedshiftSpecification::class.java,
         schemaDumperProvider = { RedshiftSchemaDumper(it) },
-        opsClientProvider = { spec ->
-            val config =
-                RedshiftConfigurationFactory()
-                    .makeWithoutExceptionHandling(spec as RedshiftSpecification)
-            val dataSource = RedshiftConnect(config).createDataSource()
-            RedshiftAirbyteClient(
-                dataSource,
-                RedshiftSqlGenerator(),
-                software.amazon.awssdk.services.s3.S3Client.builder()
-                    .region(software.amazon.awssdk.regions.Region.US_EAST_1)
-                    .build(),
-            )
-        },
+        opsClientProvider = { RedshiftTestConfigProvider.airbyteClientFrom(it) },
         tableIdentifierRegressionTestExpectedTableNames =
             listOf(
                 // basic identifier: table_id_regression_test.table_id_regression_test

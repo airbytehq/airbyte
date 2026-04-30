@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
 import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
 import java.nio.file.Files
 import java.nio.file.Path
@@ -35,11 +34,7 @@ abstract class RedshiftBaseAcceptanceTest(
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of(CONFIG_PATH)),
         configSpecClass = RedshiftSpecification::class.java,
-        dataDumper =
-            RedshiftDataDumper { spec ->
-                RedshiftConfigurationFactory()
-                    .makeWithoutExceptionHandling(spec as RedshiftSpecification)
-            },
+        dataDumper = RedshiftDataDumper { RedshiftTestConfigProvider.configFrom(it) },
         destinationCleaner = RedshiftDataCleaner,
         recordMangler = RedshiftExpectedRecordMapper,
         isStreamSchemaRetroactive = true,

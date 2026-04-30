@@ -4,19 +4,15 @@
 
 package io.airbyte.integrations.destination.redshift2.check
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
-import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
 import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
-import java.nio.file.Files
-import java.nio.file.Path
+import io.airbyte.integrations.destination.redshift2.write.RedshiftTestConfigProvider
+import io.airbyte.integrations.destination.redshift2.write.RedshiftTestDataSourceProvider
+import javax.sql.DataSource
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -28,21 +24,13 @@ import org.junit.jupiter.api.assertThrows
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RedshiftCheckerTest {
 
-    private val mapper =
-        ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-
-    private val config = mapper.readTree(Files.readString(Path.of("secrets/config_staging.json")))
-
     private lateinit var configuration: RedshiftConfiguration
-    private lateinit var dataSource: HikariDataSource
-    private lateinit var sqlGenerator: RedshiftSqlGenerator
+    private lateinit var dataSource: DataSource
 
     @BeforeAll
     fun setup() {
-        val spec = mapper.treeToValue(config, RedshiftSpecification::class.java)
-        configuration = RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
-        dataSource = RedshiftConnect(configuration).createDataSource()
-        sqlGenerator = RedshiftSqlGenerator()
+        configuration = RedshiftTestConfigProvider.configFromFile()
+        dataSource = RedshiftTestDataSourceProvider.get()
     }
 
     @Test
@@ -145,9 +133,14 @@ class RedshiftCheckerTest {
     /** Builds a [RedshiftChecker] from the given config and data source. */
     private fun buildChecker(
         config: RedshiftConfiguration,
-        ds: HikariDataSource,
+        ds: DataSource,
     ): RedshiftChecker {
-        val client = RedshiftAirbyteClient(ds, sqlGenerator, S3Connect(config).createS3Client())
+        val client =
+            RedshiftAirbyteClient(
+                ds,
+                RedshiftTestConfigProvider.sqlGenerator,
+                S3Connect(config).createS3Client(),
+            )
         return RedshiftChecker(client, config)
     }
 
