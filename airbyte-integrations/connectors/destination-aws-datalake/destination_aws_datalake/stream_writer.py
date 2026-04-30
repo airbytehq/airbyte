@@ -21,6 +21,36 @@ from .constants import EMPTY_VALUES, GLUE_TYPE_MAPPING_DECIMAL, GLUE_TYPE_MAPPIN
 
 
 _PYARROW_COLUMN_RE = re.compile(r"Conversion failed for column ([^\s]+) with type")
+
+
+def _split_struct_fields(inner: str) -> List[Tuple[str, str]]:
+    """
+    Split the inner body of a Glue `struct<...>` into `(field_name, field_type)`
+    pairs, respecting nested `<...>` so that `struct<a:struct<b:int>,c:string>`
+    parses as `[("a", "struct<b:int>"), ("c", "string")]`. Each field is
+    expected to be of the form `<name>:<type>`.
+    """
+    fields: List[Tuple[str, str]] = []
+    depth = 0
+    start = 0
+    for i, ch in enumerate(inner):
+        if ch == "<":
+            depth += 1
+        elif ch == ">":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            chunk = inner[start:i].strip()
+            if ":" in chunk:
+                name, typ = chunk.split(":", 1)
+                fields.append((name.strip(), typ.strip()))
+            start = i + 1
+    chunk = inner[start:].strip()
+    if chunk and ":" in chunk:
+        name, typ = chunk.split(":", 1)
+        fields.append((name.strip(), typ.strip()))
+    return fields
+
+
 _PYARROW_TYPE_HINT_RES: Tuple[re.Pattern, ...] = (
     re.compile(r"object of type <class '([^']+)'> cannot be converted to (\w+)"),
     re.compile(r"with type (\w+): tried to convert to (\w+)"),
@@ -51,9 +81,40 @@ _TARGET_TO_PYTHON_TYPES: Dict[str, Tuple[str, ...]] = {
     "bool": ("bool",),
     "boolean": ("bool",),
 }
+_TARGET_TO_PA_TYPE: Dict[str, pa.DataType] = {
+    "int": pa.int64(),
+    "int64": pa.int64(),
+    "int32": pa.int32(),
+    "double": pa.float64(),
+    "float": pa.float64(),
+    "float64": pa.float64(),
+    "float32": pa.float32(),
+    "string": pa.string(),
+    "str": pa.string(),
+    "bool": pa.bool_(),
+    "boolean": pa.bool_(),
+}
+# Glue scalar types that map to each pyarrow target type. Used to decide
+# whether a sub-field declared in the awswrangler dtype dict is plausibly
+# the one pyarrow expected as the target.
+_TARGET_TO_GLUE_TYPES: Dict[str, Tuple[str, ...]] = {
+    "int": ("bigint", "int", "smallint", "tinyint", "long"),
+    "int64": ("bigint", "int", "smallint", "tinyint", "long"),
+    "int32": ("bigint", "int", "smallint", "tinyint", "long"),
+    "double": ("double", "float", "decimal"),
+    "float": ("double", "float", "decimal"),
+    "float64": ("double", "float", "decimal"),
+    "float32": ("double", "float", "decimal"),
+    "string": ("string", "varchar", "char"),
+    "str": ("string", "varchar", "char"),
+    "bool": ("boolean",),
+    "boolean": ("boolean",),
+}
 # Cap how many records the mixed-type discoverer walks to avoid pathological cost on large batches.
 _MIXED_TYPE_RECORD_CAP = 5000
 _MAX_MIXED_TYPE_CANDIDATES = 8
+# Cap how many records the brute-force pyarrow probe replays per candidate sub-path.
+_PROBE_RECORD_CAP = 1000
 
 
 # By default we set glue decimal type to decimal(28,25)
@@ -91,6 +152,7 @@ class StreamWriter:
 
         self._messages = []
         self._partial_flush_count = 0
+        self._last_flush_dtype: Dict[str, str] = {}
 
         logger.info(f"Creating StreamWriter for {self._database}:{self._table}")
 
@@ -445,6 +507,9 @@ class StreamWriter:
         dtype, json_casts = self._get_glue_dtypes_from_json_schema(self._schema)
         dtype = {**dtype, **partition_fields}
         partition_fields = list(partition_fields.keys())
+        # Stash the dtype dict so `_build_type_mismatch_exception` can surface
+        # it (and parse out per-sub-field expected types) when pyarrow fails.
+        self._last_flush_dtype = dtype
 
         # Make sure complex types that can't be converted
         # to a struct or array are converted to a json string
@@ -522,9 +587,33 @@ class StreamWriter:
         declared_type: Optional[str] = None
         mixed_candidates: List[Tuple[str, Set[str]]] = []
         observed_type_map: Dict[str, Set[str]] = {}
+        probe_path: Optional[str] = None
+        probe_error: Optional[str] = None
+        target_pa_type = self._parse_pyarrow_target_pa_type(err_msg)
+        target_glue_types = self._parse_pyarrow_target_glue_types(err_msg)
+        column_glue_type = self._last_flush_dtype.get(column) if column else None
+        # `glue_oracle_available` indicates the probe can use the awswrangler
+        # `dtype` dict — the actual schema pyarrow validated against — to
+        # restrict candidates to sub-paths declared as the target Glue type.
+        # When this is true, a probe match is authoritative and overrides
+        # the heuristic walkers below.
+        glue_oracle_available = bool(
+            column_glue_type
+            and target_glue_types
+            and self._collect_glue_paths_matching_target(column_glue_type, column or "", target_glue_types)
+        )
         if column and column in df.columns:
             values = df[column].tolist()
             observed_type_map = self._collect_observed_type_map(values, prefix=column)
+            if target_pa_type is not None and observed_filter is not None:
+                probe_path, probe_error = self._probe_pyarrow_culprit(
+                    values=values,
+                    column_prefix=column,
+                    target_pa_type=target_pa_type,
+                    observed_type_map=observed_type_map,
+                    observed_filter=observed_filter,
+                    target_glue_types=target_glue_types,
+                )
             mixed_candidates = self._rank_type_mismatch_candidates(
                 observed_type_map,
                 observed_filter=observed_filter,
@@ -532,10 +621,29 @@ class StreamWriter:
                 schema_entry=self._schema.get(column),
                 column_prefix=column,
             )
-            if mixed_candidates:
+            # The brute-force probe is authoritative when it ran against the
+            # Glue dtype oracle (the actual schema pyarrow validated against)
+            # and reproduced the failure on a specific sub-path. In that case
+            # it overrides the heuristic walkers below.
+            if glue_oracle_available and probe_path is not None:
+                bad_path = probe_path
+                observed_type = observed_filter
+                schema_entry_for_column = self._schema.get(column)
+                declared_for_bad_path = (
+                    self._lookup_declared_schema_type(schema_entry_for_column, bad_path, column)
+                    if schema_entry_for_column is not None
+                    else None
+                )
+                if declared_for_bad_path is not None:
+                    declared_type = declared_for_bad_path
+                elif declared_filter:
+                    declared_type = "/".join(declared_filter)
+                else:
+                    declared_type = "?"
+            elif mixed_candidates:
                 bad_path, observed_types_set = mixed_candidates[0]
                 observed_type = "/".join(sorted(observed_types_set))
-                declared_for_bad_path: Optional[str] = None
+                declared_for_bad_path = None
                 schema_entry_for_column = self._schema.get(column)
                 if schema_entry_for_column is not None:
                     declared_for_bad_path = self._lookup_declared_schema_type(schema_entry_for_column, bad_path, column)
@@ -558,6 +666,24 @@ class StreamWriter:
                 if bad_path is None:
                     bad_path, observed_type, declared_type = self._find_first_type_mismatch(values, schema_entry, prefix=column)
 
+            # Fallback: heuristic JSON-Schema-oracle probe (no Glue oracle).
+            # Only kicks in when no walker pinpointed a path.
+            if bad_path is None and probe_path is not None:
+                bad_path = probe_path
+                observed_type = observed_filter
+                schema_entry_for_column = self._schema.get(column)
+                declared_for_bad_path = (
+                    self._lookup_declared_schema_type(schema_entry_for_column, bad_path, column)
+                    if schema_entry_for_column is not None
+                    else None
+                )
+                if declared_for_bad_path is not None:
+                    declared_type = declared_for_bad_path
+                elif declared_filter:
+                    declared_type = "/".join(declared_filter)
+                else:
+                    declared_type = "?"
+
         if bad_path is not None:
             message = (
                 f'Stream "{self._table}" field "{bad_path}" has values of type '
@@ -577,10 +703,18 @@ class StreamWriter:
         if not mixed_candidates and observed_type_map:
             sorted_entries = sorted(observed_type_map.items())[:_MAX_MIXED_TYPE_CANDIDATES]
             fallback_type_map_repr = "; ".join(f"{path}={{{','.join(sorted(types))}}}" for path, types in sorted_entries)
+        probe_repr = ""
+        if probe_path is not None:
+            probe_repr = f"probe_path={probe_path} probe_error={probe_error!r} "
+        column_glue_type = self._last_flush_dtype.get(column) if column else None
+        glue_repr = f"column_glue_type={column_glue_type} " if column_glue_type else ""
         internal_message = (
             f"[stream={self._table} column={column} field={bad_path} "
             f"observed_type={observed_type} declared_type={declared_type} "
             f"observed_filter={observed_filter} target_python_types={target_python_types} "
+            f"target_glue_types={target_glue_types} "
+            f"{glue_repr}"
+            f"{probe_repr}"
             f"mixed_type_candidates=[{candidates_repr}] "
             f"observed_type_map_sample=[{fallback_type_map_repr}]] "
             f"pyarrow conversion failed: {ex!r}"
@@ -625,6 +759,214 @@ class StreamWriter:
             target = match.group(2)
             return _TARGET_TO_PYTHON_TYPES.get(target)
         return None
+
+    @staticmethod
+    def _parse_pyarrow_target_glue_types(err_msg: str) -> Tuple[str, ...]:
+        """
+        Parse the target conversion type out of a pyarrow error message and map
+        it to the tuple of Glue scalar type names that are plausibly the
+        oracle pyarrow validated against. Returns `()` if the target type
+        cannot be parsed.
+        """
+        for pattern in _PYARROW_TYPE_HINT_RES:
+            match = pattern.search(err_msg)
+            if not match:
+                continue
+            target = match.group(2)
+            return _TARGET_TO_GLUE_TYPES.get(target, ())
+        return ()
+
+    @staticmethod
+    def _parse_pyarrow_target_pa_type(err_msg: str) -> Optional[pa.DataType]:
+        """
+        Parse the target conversion type out of a pyarrow error message and map
+        it to a concrete `pa.DataType` that can be used to replay
+        `pa.array(values, type=...)`. Returns `None` if the target type
+        cannot be parsed or is not in the supported map.
+        """
+        for pattern in _PYARROW_TYPE_HINT_RES:
+            match = pattern.search(err_msg)
+            if not match:
+                continue
+            target = match.group(2)
+            return _TARGET_TO_PA_TYPE.get(target)
+        return None
+
+    @staticmethod
+    def _extract_values_at_path(values: List[Any], path: str, column_prefix: str) -> List[Any]:
+        """
+        Walk `values` (the list of top-level values for `column_prefix`) and
+        return the list of leaf values at dotted `path`. The path uses `.<key>`
+        for dict keys and `[]` for array elements (matching the format produced
+        by `_collect_observed_types`). Records that do not have the path are
+        represented by `None` in the result, mirroring how `pa.array` would
+        treat absent struct fields.
+        """
+        if not path.startswith(column_prefix):
+            return []
+        remainder = path[len(column_prefix) :]
+        token_pattern = re.compile(r"\.([^.\[]+)|\[\]")
+        tokens: List[Tuple[str, Optional[str]]] = []
+        pos = 0
+        for match in token_pattern.finditer(remainder):
+            if match.start() != pos:
+                return []
+            pos = match.end()
+            if match.group(0) == "[]":
+                tokens.append(("array", None))
+            else:
+                tokens.append(("key", match.group(1)))
+        if pos != len(remainder):
+            return []
+
+        extracted: List[Any] = []
+
+        def walk(node: Any, idx: int) -> None:
+            if idx == len(tokens):
+                extracted.append(node)
+                return
+            kind, key = tokens[idx]
+            if kind == "key":
+                if isinstance(node, dict) and key in node:
+                    walk(node[key], idx + 1)
+                else:
+                    extracted.append(None)
+            else:
+                if isinstance(node, list):
+                    for item in node:
+                        walk(item, idx + 1)
+
+        for value in values[:_PROBE_RECORD_CAP]:
+            walk(value, 0)
+        return extracted
+
+    def _probe_pyarrow_culprit(
+        self,
+        values: List[Any],
+        column_prefix: str,
+        target_pa_type: pa.DataType,
+        observed_type_map: Dict[str, Set[str]],
+        observed_filter: str,
+        target_glue_types: Tuple[str, ...] = (),
+    ) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Identify the exact sub-path that triggers pyarrow's conversion failure
+        by replaying `pa.array(values_at_path, type=target_pa_type)` against
+        each candidate sub-path in `observed_type_map`. Returns
+        `(path, probe_error_message)` for the first sub-path that raises an
+        `ArrowInvalid` / `ArrowTypeError` for the target type, or `(None, None)`
+        if no sub-path reproduces it.
+
+        Candidate selection (most authoritative oracle first):
+        1. Sub-paths whose Glue type in the awswrangler `dtype` dict matches
+           the target (for example `bigint` when target is `int`). This
+           directly mirrors the schema pyarrow validated against — if the
+           probe reproduces the failure here, we have a 1:1 match with what
+           pyarrow rejected.
+        2. Sub-paths whose declared JSON Schema type matches the target type
+           (for example declared `number` when target is `int`).
+        3. Sub-paths not declared in either oracle.
+
+        Sub-paths whose declared type is *incompatible* with the target are
+        intentionally excluded: probing them produces false positives because
+        `pa.array(strs, type=int64)` raises for any uniform-str path
+        regardless of whether pyarrow itself would have failed there.
+        """
+        target_python_set = set(_TARGET_TO_PYTHON_TYPES.get(str(target_pa_type), ()))
+        schema_entry = self._schema.get(column_prefix)
+        column_glue_type = self._last_flush_dtype.get(column_prefix)
+        glue_paths = (
+            self._collect_glue_paths_matching_target(column_glue_type, column_prefix, target_glue_types)
+            if column_glue_type and target_glue_types
+            else set()
+        )
+
+        def declared_for(path: str) -> Optional[str]:
+            if schema_entry is None:
+                return None
+            return self._lookup_declared_schema_type(schema_entry, path, column_prefix)
+
+        def json_schema_matches_target(declared: Optional[str]) -> bool:
+            if declared is None:
+                return False
+            if declared in ("integer", "number") and target_python_set & {"int", "float", "Decimal"}:
+                return True
+            if declared == "string" and "str" in target_python_set:
+                return True
+            if declared == "boolean" and "bool" in target_python_set:
+                return True
+            return False
+
+        # When the Glue dtype is known and lists at least one sub-field of the
+        # target type, that's the authoritative oracle pyarrow validated
+        # against — restrict the probe to those sub-paths only. Otherwise
+        # fall back to the JSON Schema as a heuristic oracle.
+        candidates: List[str] = []
+        if glue_paths:
+            for path, observed_types in observed_type_map.items():
+                if observed_filter in observed_types and path in glue_paths:
+                    candidates.append(path)
+        else:
+            tier_2: List[str] = []
+            tier_3: List[str] = []
+            for path, observed_types in observed_type_map.items():
+                if observed_filter not in observed_types:
+                    continue
+                declared = declared_for(path)
+                if json_schema_matches_target(declared):
+                    tier_2.append(path)
+                elif declared is None:
+                    tier_3.append(path)
+            candidates = tier_2 + tier_3
+
+        for path in candidates:
+            extracted = self._extract_values_at_path(values, path, column_prefix)
+            if not extracted:
+                continue
+            if not any(type(v).__name__ == observed_filter for v in extracted):
+                continue
+            try:
+                pa.array(extracted, type=target_pa_type, from_pandas=True)
+            except (pa.ArrowInvalid, pa.ArrowTypeError) as probe_ex:
+                return path, str(probe_ex)
+        return None, None
+
+    @staticmethod
+    def _collect_glue_paths_matching_target(
+        glue_type: str,
+        prefix: str,
+        target_glue_types: Tuple[str, ...],
+    ) -> Set[str]:
+        """
+        Walk a Glue type string (for example `struct<a:bigint,b:string,
+        nested:struct<n:bigint>>`) starting from `prefix` and return the set of
+        dotted sub-paths whose leaf Glue scalar type is in `target_glue_types`.
+        Array elements contribute the sub-path with a `[]` segment, matching
+        the format produced by `_collect_observed_types`.
+        """
+        matching: Set[str] = set()
+
+        def normalize(raw: str) -> str:
+            # Strip parameterized parts like `decimal(28,25)` -> `decimal`.
+            return raw.split("(", 1)[0].strip().lower()
+
+        def walk(typ: str, path_prefix: str) -> None:
+            stripped = typ.strip()
+            lower = stripped.lower()
+            if lower.startswith("struct<") and stripped.endswith(">"):
+                inner = stripped[len("struct<") : -1]
+                for field_name, field_type in _split_struct_fields(inner):
+                    sub_path = f"{path_prefix}.{field_name}"
+                    walk(field_type, sub_path)
+            elif lower.startswith("array<") and stripped.endswith(">"):
+                inner = stripped[len("array<") : -1]
+                walk(inner, f"{path_prefix}[]")
+            else:
+                if normalize(stripped) in target_glue_types:
+                    matching.add(path_prefix)
+
+        walk(glue_type, prefix)
+        return matching
 
     def _collect_observed_type_map(self, values: List[Any], prefix: str) -> Dict[str, Set[str]]:
         """

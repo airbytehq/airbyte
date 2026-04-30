@@ -1064,3 +1064,118 @@ def test_parse_pyarrow_target_python_types():
         "Decimal",
     )
     assert StreamWriter._parse_pyarrow_target_python_types("unrelated message") is None
+
+
+def test_build_type_mismatch_exception_probe_uses_glue_dtype_to_pinpoint_culprit():
+    """The production case: every sub-path under `properties` is uniformly
+    `str`, so neither the mixed-type walker nor the JSON-schema walker
+    pinpoints a culprit. The brute-force probe should fall back to the Glue
+    dtype dict (the actual oracle pyarrow validated against) to identify
+    which sub-field expected `bigint`/`int` and verify that pyarrow's error
+    reproduces there."""
+    writer = get_big_schema_writer(get_config())
+    # Simulate awswrangler being told to expect `bigint` for `properties.foo`
+    # — for example because the existing Glue table has that column as
+    # bigint from a prior sync.
+    writer._last_flush_dtype = {"properties": "struct<foo:bigint,bar:string,baz:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    df = pd.DataFrame(
+        [
+            {"properties": {"foo": "abc", "bar": "x", "baz": "y"}},
+            {"properties": {"foo": "def", "bar": "x", "baz": "y"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column properties with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "properties.foo"' in traced.message
+    # `bar` and `baz` are declared as `string` in the dtype dict — even
+    # though they are uniform-str like `foo`, pyarrow would not have
+    # rejected them, and the probe must NOT misattribute them.
+    assert 'field "properties.bar"' not in traced.message
+    assert 'field "properties.baz"' not in traced.message
+    assert "probe_path=properties.foo" in traced.internal_message
+    assert "column_glue_type=struct<foo:bigint,bar:string,baz:string>" in traced.internal_message
+
+
+def test_probe_pyarrow_culprit_uses_glue_oracle_to_disambiguate_uniform_str_paths():
+    """When multiple sub-paths are uniform-str, the probe must use the Glue
+    dtype dict to identify which one was declared as the target type
+    (for example `bigint` for `int` target). Without this oracle, every
+    uniform-str path raises and the probe would return the first
+    iteration-order match."""
+    writer = get_big_schema_writer(get_config())
+    writer._last_flush_dtype = {"properties": "struct<a:string,b:bigint,c:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    values = [
+        {"a": "x", "b": "9876", "c": "z"},
+        {"a": "x", "b": "5432", "c": "z"},
+    ]
+    type_map = {
+        "properties.a": {"str"},
+        "properties.b": {"str"},
+        "properties.c": {"str"},
+    }
+    path, err = writer._probe_pyarrow_culprit(
+        values=values,
+        column_prefix="properties",
+        target_pa_type=pa.int64(),
+        observed_type_map=type_map,
+        observed_filter="str",
+        target_glue_types=("bigint", "int", "smallint", "tinyint", "long"),
+    )
+    assert path == "properties.b"
+    assert err is not None
+    assert "convert" in err
+
+
+def test_probe_pyarrow_culprit_returns_none_when_no_glue_target_path_reproduces_error():
+    """If every Glue-declared int sub-path converts cleanly to the target
+    type, the probe must return `(None, None)` rather than a false positive."""
+    writer = get_big_schema_writer(get_config())
+    writer._last_flush_dtype = {"properties": "struct<a:bigint,b:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    values = [{"a": 1, "b": "x"}, {"a": 2, "b": "y"}]
+    type_map = {"properties.a": {"int"}, "properties.b": {"str"}}
+    path, err = writer._probe_pyarrow_culprit(
+        values=values,
+        column_prefix="properties",
+        target_pa_type=pa.int64(),
+        observed_type_map=type_map,
+        observed_filter="str",
+        target_glue_types=("bigint",),
+    )
+    assert path is None
+    assert err is None
+
+
+def test_collect_glue_paths_matching_target_handles_nested_struct_and_array():
+    paths = StreamWriter._collect_glue_paths_matching_target(
+        glue_type="struct<a:bigint,b:string,nested:struct<n:bigint>,arr:array<struct<m:bigint>>>",
+        prefix="props",
+        target_glue_types=("bigint",),
+    )
+    assert paths == {"props.a", "props.nested.n", "props.arr[].m"}
+
+
+def test_extract_values_at_path_walks_dotted_keys():
+    values = [{"a": {"b": 1}}, {"a": {"b": 2}}, {"a": {}}]
+    extracted = StreamWriter._extract_values_at_path(values, "props.a.b", "props")
+    assert extracted == [1, 2, None]
+
+
+def test_extract_values_at_path_walks_array_marker():
+    values = [{"items": [{"id": 1}, {"id": 2}]}, {"items": [{"id": 3}]}]
+    extracted = StreamWriter._extract_values_at_path(values, "props.items[].id", "props")
+    assert extracted == [1, 2, 3]
+
+
+def test_parse_pyarrow_target_pa_type():
+    assert StreamWriter._parse_pyarrow_target_pa_type("object of type <class 'str'> cannot be converted to int") == pa.int64()
+    assert StreamWriter._parse_pyarrow_target_pa_type("Could not convert 'foo' with type str: tried to convert to double") == pa.float64()
+    assert StreamWriter._parse_pyarrow_target_pa_type("unrelated message") is None
