@@ -661,7 +661,9 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("CSV GZIP"))
         assertTrue(sql.contains("REGION 'us-east-1'"))
         assertTrue(sql.contains("TIMEFORMAT 'auto'"))
+        assertTrue(sql.contains("ROUNDEC"))
         assertTrue(sql.contains("IGNOREHEADER 1"))
+        assertTrue(sql.contains("EMPTYASNULL"))
     }
 
     @Test

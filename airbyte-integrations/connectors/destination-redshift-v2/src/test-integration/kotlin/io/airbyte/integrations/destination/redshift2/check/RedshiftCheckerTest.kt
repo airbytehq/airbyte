@@ -163,7 +163,6 @@ class RedshiftCheckerTest {
                 maximumPoolSize = 2
                 minimumIdle = 0
                 initializationFailTimeout = -1
-                driverClassName = RedshiftConnect.DRIVER_CLASS
                 jdbcUrl = "jdbc:redshift://$endpoint/${config.database}"
                 username = config.username
                 password = config.password
