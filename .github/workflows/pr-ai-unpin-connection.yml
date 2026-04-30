@@ -16,26 +16,48 @@ permissions:
   discussions: write
 
 jobs:
-  # check-permissions:
-  #   name: Resolve Input Variables
-  #   runs-on: ubuntu-24.04
-  #   steps:
-  #     - name: Gather event metadata
-  #       id: gather-metadata
-  #       run: |
-  #         echo "author=${{github.event.sender.login}}" >> $GITHUB_OUTPUT
-  #         if [[ "${{ github.event_name }}" == "issues" ]]; then
-  #           echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
-  #           echo "event-type=issue" >> $GITHUB_OUTPUT
-  #         elif [[ "${{ github.event_name }}" == "discussion" ]]; then
-  #           echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
-  #           echo "event-type=discussion" >> $GITHUB_OUTPUT
-  #         fi
+  check-permissions:
+    name: Resolve Input Variables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gather event metadata
+        id: gather-metadata
+        run: |
+          echo "author=${{github.event.sender.login}}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "issues" ]]; then
+            echo "author=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
+            echo "event-type=issue" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "discussion" ]]; then
+            echo "author=${{ github.event.discussion.user.login }}" >> $GITHUB_OUTPUT
+            echo "event-type=discussion" >> $GITHUB_OUTPUT
+          fi
 
   ai-unpin:
+    name: AI unpin connections with preview build
+    needs: check-permissions
+    # if: needs.check-permissions.outputs.event-type == 'issue'
+    if: needs.check-permissions.outputs.event-type == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    name: AI Unpin Connections
     steps:
-      - name: No-op
-        if: github.event_name == 'workflow_dispatch'
-        run: true
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+        
+      - name: Run AI Triage
+        uses: aaronsteers/devin-action@main
+        with:
+          dry-run: true
+          playbook-macro: "!oss_issue_triage"
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          prompt-text: ${{ steps.prepare-prompt.outputs.prompt }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          tags: |
+            oss-issue-triage
+            community-discussion
