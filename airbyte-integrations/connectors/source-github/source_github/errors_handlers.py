@@ -38,7 +38,7 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     410: ErrorResolution(
         response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="GitHub returned 410 Gone. The endpoint or API version may be deprecated.",
+        error_message="Resource is no longer available (HTTP 410).",
     ),
 }
 
