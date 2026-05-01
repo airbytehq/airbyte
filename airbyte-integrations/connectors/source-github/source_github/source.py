@@ -126,7 +126,11 @@ class SourceGithub(AbstractSource):
             return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
         if "personal_access_token" in credentials:
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
-        raise Exception("Invalid config format")
+        raise AirbyteTracedException(
+            internal_message="Invalid config format: missing access_token / personal_access_token in credentials.",
+            message="Invalid configuration: credentials are missing or malformed. Please ensure your config provides either OAuth credentials (access_token) or a Personal Access Token (personal_access_token).",
+            failure_type=FailureType.config_error,
+        )
 
     def _get_authenticator(self, config: Mapping[str, Any]):
         _, token = self.get_access_token(config)
@@ -174,23 +178,6 @@ class SourceGithub(AbstractSource):
     def _is_http_allowed() -> bool:
         return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
-    def user_friendly_error_message(self, message: str) -> str:
-        user_message = ""
-        if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
-            # 404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100
-            full_repo_name = message.split("https://api.github.com/repos/")[1].split("?")[0]
-            user_message = f'Repo name: "{full_repo_name}" is unknown, "repository" config option should use existing full repo name <organization>/<repository>'
-        elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
-            # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
-            org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
-            user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
-        elif "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
-            # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
-            user_message = (
-                "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
-            )
-        return user_message
-
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
         try:
@@ -199,42 +186,29 @@ class SourceGithub(AbstractSource):
             if not repositories:
                 return (
                     False,
-                    "Some of the provided repositories couldn't be found. Please verify if every entered repository has a valid name and it matches the following format: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte.",
+                    "No repositories from the configuration were accessible. Please verify repository names and permissions.",
                 )
             return True, None
 
         except AirbyteTracedException as e:
-            user_message = self.user_friendly_error_message(e.message)
-            return False, user_message or e.message
+            return False, e.message or "Connection check failed."
         except Exception as e:
-            message = repr(e)
-            user_message = self.user_friendly_error_message(message)
-            return False, user_message or message
+            logger.error("Connection check failed with unexpected error", exc_info=True)
+            return False, f"{type(e).__name__}: {e}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
-        try:
-            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
-        except Exception as e:
-            message = repr(e)
-            user_message = self.user_friendly_error_message(message)
-            if user_message:
-                raise AirbyteTracedException(
-                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
-                )
-            else:
-                raise e
+        organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
 
         if not any((organizations, repositories)):
-            user_message = (
-                "No streams available. Looks like your config for repositories or organizations is not valid."
-                " Please, check your permissions, names of repositories and organizations."
-                " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, workflow."
-            )
             raise AirbyteTracedException(
                 internal_message="No streams available. Please check permissions",
-                message=user_message,
+                message=(
+                    "No streams available. Looks like your config for repositories or organizations is not valid."
+                    " Please, check your permissions, names of repositories and organizations."
+                    " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, read:project, workflow."
+                ),
                 failure_type=FailureType.config_error,
             )
 
