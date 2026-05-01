@@ -26,7 +26,7 @@ class S3DataLakeBeanFactory {
         AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000L,
             maxEstBytesPerAgg =
-                200L * 1024L * 1024L, // copied from DEFAULT_RECORD_BATCH_SIZE_BYTES in legacy-cdk
+                5L * 1024L * 1024L, // 5MB
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
         )
