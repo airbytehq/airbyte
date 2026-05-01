@@ -8,17 +8,17 @@ The Zendesk-Talk connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Phone Numbers | [List](#phone-numbers-list), [Get](#phone-numbers-get), [Search](#phone-numbers-search) |
-| Addresses | [List](#addresses-list), [Get](#addresses-get), [Search](#addresses-search) |
-| Greetings | [List](#greetings-list), [Get](#greetings-get), [Search](#greetings-search) |
-| Greeting Categories | [List](#greeting-categories-list), [Get](#greeting-categories-get), [Search](#greeting-categories-search) |
-| Ivrs | [List](#ivrs-list), [Get](#ivrs-get), [Search](#ivrs-search) |
-| Agents Activity | [List](#agents-activity-list), [Search](#agents-activity-search) |
-| Agents Overview | [List](#agents-overview-list), [Search](#agents-overview-search) |
-| Account Overview | [List](#account-overview-list), [Search](#account-overview-search) |
-| Current Queue Activity | [List](#current-queue-activity-list), [Search](#current-queue-activity-search) |
-| Calls | [List](#calls-list), [Search](#calls-search) |
-| Call Legs | [List](#call-legs-list), [Search](#call-legs-search) |
+| Phone Numbers | [List](#phone-numbers-list), [Get](#phone-numbers-get), [Context Store Search](#phone-numbers-context-store-search) |
+| Addresses | [List](#addresses-list), [Get](#addresses-get), [Context Store Search](#addresses-context-store-search) |
+| Greetings | [List](#greetings-list), [Get](#greetings-get), [Context Store Search](#greetings-context-store-search) |
+| Greeting Categories | [List](#greeting-categories-list), [Get](#greeting-categories-get), [Context Store Search](#greeting-categories-context-store-search) |
+| Ivrs | [List](#ivrs-list), [Get](#ivrs-get), [Context Store Search](#ivrs-context-store-search) |
+| Agents Activity | [List](#agents-activity-list), [Context Store Search](#agents-activity-context-store-search) |
+| Agents Overview | [List](#agents-overview-list), [Context Store Search](#agents-overview-context-store-search) |
+| Account Overview | [List](#account-overview-list), [Context Store Search](#account-overview-context-store-search) |
+| Current Queue Activity | [List](#current-queue-activity-list), [Context Store Search](#current-queue-activity-context-store-search) |
+| Calls | [List](#calls-list), [Context Store Search](#calls-context-store-search) |
+| Call Legs | [List](#call-legs-list), [Context Store Search](#call-legs-context-store-search) |
 
 ## Phone Numbers
 
@@ -171,14 +171,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Phone Numbers Search
+### Phone Numbers Context Store Search
 
 Search and filter phone numbers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.phone_numbers.search(
+await zendesk_talk.phone_numbers.context_store_search(
     query={"filter": {"eq": {"call_recording_consent": "<str>"}}}
 )
 ```
@@ -191,7 +191,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "phone_numbers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"call_recording_consent": "<str>"}}}
     }
@@ -394,14 +394,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Addresses Search
+### Addresses Context Store Search
 
 Search and filter addresses records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.addresses.search(
+await zendesk_talk.addresses.context_store_search(
     query={"filter": {"eq": {"city": "<str>"}}}
 )
 ```
@@ -414,7 +414,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "addresses",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"city": "<str>"}}}
     }
@@ -583,14 +583,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Greetings Search
+### Greetings Context Store Search
 
 Search and filter greetings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.greetings.search(
+await zendesk_talk.greetings.context_store_search(
     query={"filter": {"eq": {"active": True}}}
 )
 ```
@@ -603,7 +603,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "greetings",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"active": True}}}
     }
@@ -758,14 +758,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Greeting Categories Search
+### Greeting Categories Context Store Search
 
 Search and filter greeting categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.greeting_categories.search(
+await zendesk_talk.greeting_categories.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -778,7 +778,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "greeting_categories",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -917,14 +917,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Ivrs Search
+### Ivrs Context Store Search
 
 Search and filter ivrs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.ivrs.search(
+await zendesk_talk.ivrs.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -937,7 +937,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "ivrs",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -1052,14 +1052,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Agents Activity Search
+### Agents Activity Context Store Search
 
 Search and filter agents activity records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.agents_activity.search(
+await zendesk_talk.agents_activity.context_store_search(
     query={"filter": {"eq": {"accepted_third_party_conferences": 0}}}
 )
 ```
@@ -1072,7 +1072,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "agents_activity",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"accepted_third_party_conferences": 0}}}
     }
@@ -1220,14 +1220,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Agents Overview Search
+### Agents Overview Context Store Search
 
 Search and filter agents overview records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.agents_overview.search(
+await zendesk_talk.agents_overview.context_store_search(
     query={"filter": {"eq": {"average_accepted_transfers": 0}}}
 )
 ```
@@ -1240,7 +1240,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "agents_overview",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"average_accepted_transfers": 0}}}
     }
@@ -1382,14 +1382,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Account Overview Search
+### Account Overview Context Store Search
 
 Search and filter account overview records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.account_overview.search(
+await zendesk_talk.account_overview.context_store_search(
     query={"filter": {"eq": {"average_call_duration": 0}}}
 )
 ```
@@ -1402,7 +1402,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "account_overview",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"average_call_duration": 0}}}
     }
@@ -1529,14 +1529,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Current Queue Activity Search
+### Current Queue Activity Context Store Search
 
 Search and filter current queue activity records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.current_queue_activity.search(
+await zendesk_talk.current_queue_activity.context_store_search(
     query={"filter": {"eq": {"agents_online": 0}}}
 )
 ```
@@ -1549,7 +1549,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "current_queue_activity",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"agents_online": 0}}}
     }
@@ -1702,14 +1702,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Calls Search
+### Calls Context Store Search
 
 Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.calls.search(
+await zendesk_talk.calls.context_store_search(
     query={"filter": {"eq": {"agent_id": 0}}}
 )
 ```
@@ -1722,7 +1722,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "calls",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"agent_id": 0}}}
     }
@@ -1920,14 +1920,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Call Legs Search
+### Call Legs Context Store Search
 
 Search and filter call legs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_talk.call_legs.search(
+await zendesk_talk.call_legs.context_store_search(
     query={"filter": {"eq": {"agent_id": 0}}}
 )
 ```
@@ -1940,7 +1940,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "call_legs",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"agent_id": 0}}}
     }
