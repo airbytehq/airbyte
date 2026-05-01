@@ -3,37 +3,10 @@ import styles from "./AiAgentsHome.module.css";
 
 const TABS = [
   {
-    id: "sdk",
-    label: "Python SDK",
-    command: "uv add airbyte-agent-sdk",
-    description: "Add the SDK to your Python project.",
-    docsLink: "/ai-agents/get-started/developer-quickstart/",
-    docsLabel: "Quickstart tutorials",
-    tools: [
-      {
-        name: "Pydantic AI",
-        href: "/ai-agents/get-started/developer-quickstart/tutorial-pydantic",
-        icon: "/img/ai-agents/pydantic.svg",
-      },
-      {
-        name: "LangChain",
-        href: "/ai-agents/get-started/developer-quickstart/tutorial-langchain",
-        icon: "/img/ai-agents/langchain.svg",
-      },
-      {
-        name: "FastMCP",
-        href: "/ai-agents/get-started/developer-quickstart/tutorial-fastmcp",
-        icon: "/img/ai-agents/fastmcp.svg",
-      },
-    ],
-  },
-  {
     id: "mcp",
     label: "MCP",
     command: "https://mcp.airbyte.ai/mcp",
     description: "Add this URL to your MCP client.",
-    docsLink: "/ai-agents/interfaces/mcp/",
-    docsLabel: "MCP setup guide",
     tools: [
       {
         name: "Claude",
@@ -55,40 +28,80 @@ const TABS = [
         href: "/ai-agents/interfaces/mcp/",
         icon: "/img/ai-agents/visualstudiocode.svg",
       },
+      {
+        name: "ChatGPT",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/openai.svg",
+      },
+      {
+        name: "Codex",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/openai.svg",
+      },
     ],
   },
   {
+    id: "sdk",
+    label: "Python SDK",
+    command: "uv add airbyte-agent-sdk",
+    description: "Add the SDK to your Python project.",
+    toolsLabel: "Or try one of our developer quickstarts:",
+    tools: [
+      {
+        name: "Pydantic AI",
+        href: "/ai-agents/get-started/developer-quickstart/tutorial-pydantic",
+        icon: "/img/ai-agents/pydantic.svg",
+      },
+      {
+        name: "LangChain",
+        href: "/ai-agents/get-started/developer-quickstart/tutorial-langchain",
+        icon: "/img/ai-agents/langchain.svg",
+      },
+      {
+        name: "FastMCP",
+        href: "/ai-agents/get-started/developer-quickstart/tutorial-fastmcp",
+        icon: "/img/ai-agents/fastmcp.svg",
+      },
+    ],
+    skills: [
+      {
+        name: "Claude Code",
+        href: "/ai-agents/get-started/developer-quickstart/skills/claude-code",
+        icon: "/img/ai-agents/anthropic.svg",
+      },
+      {
+        name: "Codex",
+        href: "/ai-agents/get-started/developer-quickstart/skills/codex",
+        icon: "/img/ai-agents/openai.svg",
+      },
+      {
+        name: "Lovable",
+        href: "/ai-agents/get-started/developer-quickstart/skills/lovable",
+        icon: "/img/ai-agents/lovable.svg",
+      },
+    ],
+  },
+  {
+    id: "api",
+    label: "API",
+    command: "https://mcp.airbyte.ai",
+    description: "Integrate with the Airbyte Agents REST API.",
+    docsLink: "/ai-agents/interfaces/api/",
+    docsLabel: "API reference",
+    tools: [],
+  },
+  {
     id: "webapp",
-    label: "Web app",
+    label: "Web app (research preview)",
     command: null,
     description:
-      "Chat with an AI agent in your browser. No code, no install.",
-    docsLink: "https://app.airbyte.ai",
-    docsLabel: "Open the web app",
+      "Chat with an AI agent and build automations in your web browser. No code, nothing to install.",
     tools: [],
   },
 ];
 
-const SKILLS = [
-  {
-    name: "Claude Code",
-    href: "/ai-agents/get-started/developer-quickstart/skills/claude-code",
-    icon: "/img/ai-agents/anthropic.svg",
-  },
-  {
-    name: "Codex",
-    href: "/ai-agents/get-started/developer-quickstart/skills/codex",
-    icon: "/img/ai-agents/openai.svg",
-  },
-  {
-    name: "Lovable",
-    href: "/ai-agents/get-started/developer-quickstart/skills/lovable",
-    icon: "/img/ai-agents/lovable.svg",
-  },
-];
-
 export const QuickInstall = () => {
-  const [activeTab, setActiveTab] = useState("sdk");
+  const [activeTab, setActiveTab] = useState("mcp");
   const [copied, setCopied] = useState(false);
   const tab = TABS.find((t) => t.id === activeTab);
 
@@ -120,6 +133,7 @@ export const QuickInstall = () => {
         ))}
       </div>
       <div className={styles.quickInstallBody}>
+        <p className={styles.quickInstallDescription}>{tab.description}</p>
         {tab.command && (
           <div className={styles.quickInstallCode}>
             <code>{tab.command}</code>
@@ -132,10 +146,24 @@ export const QuickInstall = () => {
             </button>
           </div>
         )}
-        <p className={styles.quickInstallDescription}>{tab.description}</p>
-        <a className={styles.quickInstallLink} href={tab.docsLink}>
-          {tab.docsLabel} &rarr;
-        </a>
+        {tab.id === "webapp" && (
+          <a className={styles.webAppButton} href="https://app.airbyte.ai">
+            <img
+              className={styles.webAppButtonLogo}
+              src="/img/logo.png"
+              alt="Airbyte"
+            />
+            Open web app
+          </a>
+        )}
+        {tab.docsLink && (
+          <a className={styles.quickInstallLink} href={tab.docsLink}>
+            {tab.docsLabel} &rarr;
+          </a>
+        )}
+        {tab.toolsLabel && (
+          <p className={styles.toolsLabel}>{tab.toolsLabel}</p>
+        )}
         {tab.tools.length > 0 && (
           <div className={styles.toolChips}>
             {tab.tools.map((tool) => (
@@ -150,21 +178,27 @@ export const QuickInstall = () => {
             ))}
           </div>
         )}
-      </div>
-      <div className={styles.skillsSection}>
-        <span className={styles.skillsLabel}>Agent skills</span>
-        <div className={styles.skillsChips}>
-          {SKILLS.map((skill) => (
-            <a key={skill.name} className={styles.skillChip} href={skill.href}>
-              <img
-                className={styles.toolChipIcon}
-                src={skill.icon}
-                alt={skill.name}
-              />
-              <span>{skill.name}</span>
-            </a>
-          ))}
-        </div>
+        {tab.skills && tab.skills.length > 0 && (
+          <div className={styles.skillsSection}>
+            <span className={styles.skillsLabel}>Agent skills</span>
+            <div className={styles.skillsChips}>
+              {tab.skills.map((skill) => (
+                <a
+                  key={skill.name}
+                  className={styles.skillChip}
+                  href={skill.href}
+                >
+                  <img
+                    className={styles.toolChipIcon}
+                    src={skill.icon}
+                    alt={skill.name}
+                  />
+                  <span>{skill.name}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

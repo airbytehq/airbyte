@@ -96,18 +96,30 @@
 .quickInstallDescription {
   color: var(--color-grey-500);
   font-size: 0.95rem;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .quickInstallLink {
+  display: inline-block;
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--ifm-color-primary);
   text-decoration: none;
+  margin-bottom: 4px;
 }
 
 .quickInstallLink:hover {
   text-decoration: underline;
+}
+
+/* ── Tools label ─────────────────────────────────────────── */
+
+.toolsLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-grey-500);
+  margin-top: 16px;
+  margin-bottom: 8px;
 }
 
 /* ── Tool Chips (inside tabs) ────────────────────────────── */
@@ -116,9 +128,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-ae-card-border);
+  margin-top: 8px;
 }
 
 .toolChip {
@@ -152,12 +162,10 @@
   filter: invert(1);
 }
 
-/* ── Skills Section ──────────────────────────────────────── */
+/* ── Skills Section (SDK tab only) ───────────────────────── */
 
 .skillsSection {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-ae-card-border);
+  margin-top: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -198,4 +206,32 @@
   border-color: var(--ifm-color-primary);
   background: var(--color-white);
   text-decoration: none;
+}
+
+/* ── Web App Button ──────────────────────────────────────── */
+
+.webAppButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: var(--ifm-color-primary);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.webAppButton:hover {
+  opacity: 0.9;
+  text-decoration: none;
+  color: #fff;
+}
+
+.webAppButtonLogo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
