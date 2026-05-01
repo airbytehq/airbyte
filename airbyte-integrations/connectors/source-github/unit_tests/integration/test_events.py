@@ -183,9 +183,9 @@ class EventsTest(TestCase):
         }
 
     @mock.patch("time.sleep")
-    def test_read_handles_permission_error_correctly_and_exits_with_incomplete_status(self, time_mock):
+    def test_read_handles_permission_error_gracefully_and_skips_stream(self, time_mock):
         """Ensure a 403 permission error (no rate-limit headers) fails immediately
-        and the stream exits with INCOMPLETE status rather than retrying indefinitely."""
+        and the stream gracefully skips with a warning rather than crashing or retrying."""
         self.r_mock.get(
             HttpRequest(
                 url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
@@ -196,7 +196,7 @@ class EventsTest(TestCase):
         source = SourceGithub()
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert Level.ERROR in [x.log.level for x in actual_messages.logs]
+        assert Level.WARN in [x.log.level for x in actual_messages.logs]
         events_stream_status_message = [x for x in actual_messages.trace_messages if x.trace.type == TraceType.STREAM_STATUS][-1]
         assert events_stream_status_message.trace.stream_status.stream_descriptor.name == "events"
-        assert events_stream_status_message.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE
+        assert events_stream_status_message.trace.stream_status.status == AirbyteStreamStatus.COMPLETE

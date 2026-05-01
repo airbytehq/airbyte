@@ -47,6 +47,31 @@ from .graphql import (
 from .utils import GitHubAPILimitException, getter
 
 
+def _extract_status_and_response(e: AirbyteTracedException) -> tuple:
+    """Extract HTTP status code and response from an `AirbyteTracedException`.
+
+    The CDK raises `AirbyteTracedException` from two paths:
+    - RETRY path (backoff exhaustion): wraps `DefaultBackoffException` with `.response`
+    - FAIL path (immediate failure): embeds status code in `internal_message`, no response object
+
+    Returns `(status_code, response)` where `response` may be `None` for the FAIL path.
+    Returns `(None, None)` if the status code cannot be determined.
+    """
+    if hasattr(e, "_exception") and e._exception is not None:
+        resp = getattr(e._exception, "response", None)
+        if resp is not None:
+            return resp.status_code, resp
+
+    if e.internal_message and "status code '" in e.internal_message:
+        try:
+            code_str = e.internal_message.split("status code '")[1].split("'")[0]
+            return int(code_str), None
+        except (IndexError, ValueError):
+            pass
+
+    return None, None
+
+
 class GithubStreamABC(HttpStream, ABC):
     primary_key = "id"
 
@@ -138,13 +163,14 @@ class GithubStreamABC(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            # `requests.RequestException` subclasses always expose a `response` attribute, but it
-            # defaults to `None` for transport-layer failures (ConnectionError, ConnectTimeout,
-            # ReadTimeout, SSLError, DNS failures, etc.). Treat a missing or `None` response as
-            # something this handler cannot classify, and let the CDK surface it.
-            if not hasattr(e, "_exception") or getattr(e._exception, "response", None) is None:
+            #
+            # Exceptions arrive via two CDK paths:
+            #   RETRY path (backoff exhaustion): _exception wraps DefaultBackoffException with .response
+            #   FAIL path (immediate failure): status code embedded in internal_message, no response object
+            status_code, response = _extract_status_and_response(e)
+            if status_code is None:
                 raise e
-            if e._exception.response.status_code == requests.codes.NOT_FOUND:
+            if status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
                 if isinstance(self, Organizations):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
@@ -152,8 +178,8 @@ class GithubStreamABC(HttpStream, ABC):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
-            elif e._exception.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e._exception.response.json().get("message"))
+            elif status_code == requests.codes.FORBIDDEN:
+                error_msg = str(response.json().get("message")) if response is not None else "Access denied"
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -169,27 +195,27 @@ class GithubStreamABC(HttpStream, ABC):
                     error_msg = (
                         f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
                     )
-            elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
+            elif status_code == requests.codes.UNAUTHORIZED:
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
-                    error_msg = str(e._exception.response.json().get("message"))
+                    error_msg = str(response.json().get("message")) if response is not None else "Bad credentials"
                     self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
                 raise e
-            elif e._exception.response.status_code == requests.codes.GONE and isinstance(self, Projects):
+            elif status_code == requests.codes.GONE and isinstance(self, Projects):
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
                 error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e._exception.response.status_code == requests.codes.CONFLICT:
+            elif status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
-            elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
+            elif status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e._exception.response.status_code == requests.codes.BAD_GATEWAY:
+            elif status_code == requests.codes.BAD_GATEWAY:
                 error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
             else:
-                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
-                self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
+                error_detail = response.text if response is not None else (e.internal_message or str(e))
+                self.logger.error(f"Undefined error while reading records: {error_detail}")
                 raise e
 
             self.logger.warning(error_msg)

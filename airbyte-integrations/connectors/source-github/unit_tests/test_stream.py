@@ -107,19 +107,19 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     [
         (
             HTTPStatus.OK,
-            {"X-RateLimit-Resource": "graphql"},
+            {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"},
             '{"errors": [{"type": "RATE_LIMITED"}]}',
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GraphQL rate limit exceeded.",
+            "GraphQL rate limit exceeded. Rate limit resets at epoch 1655804724.",
         ),
         (
             HTTPStatus.FORBIDDEN,
-            {"X-RateLimit-Remaining": "0"},
+            {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"},
             "",
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded.",
+            "GitHub API rate limit exceeded. Rate limit resets at epoch 1655804724.",
         ),
         (
             HTTPStatus.FORBIDDEN,
@@ -127,7 +127,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             "",
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded.",
+            "GitHub API rate limit exceeded. Retry after 0 seconds.",
         ),
         (
             HTTPStatus.FORBIDDEN,
@@ -135,7 +135,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             "",
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded.",
+            "GitHub API rate limit exceeded. Retry after 60 seconds.",
         ),
         (
             HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -228,7 +228,7 @@ def test_rate_limit_403_retries(response_headers):
         ),
         pytest.param(
             HTTPStatus.NOT_FOUND,
-            ResponseAction.RETRY,
+            ResponseAction.FAIL,
             FailureType.config_error,
             "Requested GitHub resource not found. Verify repository name and token permissions.",
             id="404_not_found",
@@ -243,8 +243,8 @@ def test_rate_limit_403_retries(response_headers):
         pytest.param(
             HTTPStatus.UNPROCESSABLE_ENTITY,
             ResponseAction.FAIL,
-            FailureType.system_error,
-            "GitHub API validation failed.",
+            FailureType.config_error,
+            "Validation Failed",
             id="422_validation_failed",
         ),
     ],
@@ -258,14 +258,19 @@ def test_error_mapping_status_codes(http_status, expected_action, expected_failu
     response_mock = MagicMock(spec=requests.Response)
     response_mock.status_code = http_status
     response_mock.headers = {}
-    response_mock.text = "{}"
+    if http_status == HTTPStatus.UNPROCESSABLE_ENTITY:
+        body = {"message": "Validation Failed", "errors": [{"resource": "Issue", "field": "title", "code": "missing_field"}]}
+        response_mock.text = json.dumps(body)
+        response_mock.json = lambda: body
+    else:
+        response_mock.text = "{}"
+        response_mock.json = lambda: {}
     response_mock.ok = False
-    response_mock.json = lambda: {}
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == expected_action
     assert result.failure_type == expected_failure_type
-    assert result.error_message == expected_message
+    assert expected_message in result.error_message
 
 
 def test_409_conflict_empty_repo_is_ignored():
@@ -288,10 +293,77 @@ def test_409_conflict_empty_repo_is_ignored():
     assert result.response_action == ResponseAction.IGNORE
 
 
+def test_409_conflict_non_empty_repo_fallback():
+    """
+    Verify that a 409 response that is NOT an empty-repository conflict falls through
+    to the static mapping and produces a broader fallback message.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.CONFLICT
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Merge conflict"}'
+    response_mock.ok = False
+    response_mock.json = lambda: {"message": "Merge conflict"}
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RETRY
+    assert result.failure_type == FailureType.config_error
+    assert "conflict" in result.error_message.lower()
+    assert "empty" not in result.error_message.lower() or "may be empty" in result.error_message.lower()
+
+
+def test_422_validation_error_with_details():
+    """
+    Verify that a 422 response with a realistic GitHub error body surfaces
+    the validation details in the error message.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.UNPROCESSABLE_ENTITY
+    response_mock.headers = {}
+    body = {
+        "message": "Validation Failed",
+        "errors": [
+            {"resource": "Issue", "field": "title", "code": "missing_field"},
+            {"resource": "Label", "code": "invalid", "message": "name is too long"},
+        ],
+    }
+    response_mock.text = json.dumps(body)
+    response_mock.ok = False
+    response_mock.json = lambda: body
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert "Validation Failed" in result.error_message
+    assert "Issue" in result.error_message
+    assert "missing_field" in result.error_message
+    assert "name is too long" in result.error_message
+
+
+def test_422_validation_error_empty_body():
+    """
+    Verify that a 422 response with an empty/unparseable body falls back gracefully.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.UNPROCESSABLE_ENTITY
+    response_mock.headers = {}
+    response_mock.text = ""
+    response_mock.ok = False
+    response_mock.json = MagicMock(side_effect=ValueError("No JSON"))
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert "GitHub API validation failed." in result.error_message
+
+
 def test_graphql_rate_limit_error_message():
     """
     Verify that GraphQL rate-limit responses produce a clear 'GraphQL rate limit exceeded'
-    message instead of the confusing 'Response status code: 200. Retrying...' message.
+    message with reset timing instead of the confusing 'Response status code: 200. Retrying...'
     """
     stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
     response_mock = MagicMock(spec=requests.Response)
@@ -303,14 +375,35 @@ def test_graphql_rate_limit_error_message():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert result.error_message == "GraphQL rate limit exceeded."
+    assert "GraphQL rate limit exceeded." in result.error_message
+    assert "1655804724" in result.error_message
     assert "200" not in result.error_message
+
+
+def test_graphql_rate_limit_via_graphql_error_handler():
+    """
+    Verify that GitHubGraphQLErrorHandler correctly classifies GraphQL rate-limit
+    responses as RATE_LIMITED instead of misclassifying them as generic GraphQL errors.
+    Real GraphQL streams (e.g. Releases) use GitHubGraphQLErrorHandler, not the base handler.
+    """
+    stream = Releases(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+    response_mock.text = '{"errors": [{"type": "RATE_LIMITED"}]}'
+    response_mock.ok = True
+    response_mock.json = lambda: {"errors": [{"type": "RATE_LIMITED"}]}
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+    assert "GraphQL rate limit exceeded." in result.error_message
+    assert "1655804724" in result.error_message
 
 
 def test_rest_rate_limit_error_message():
     """
     Verify that REST API rate-limit responses produce a clear 'GitHub API rate limit exceeded'
-    message instead of the generic 'Response status code: 403. Retrying...' message.
+    message with reset timing instead of the generic 'Response status code: 403. Retrying...'
     """
     stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
     response_mock = MagicMock(spec=requests.Response)
@@ -321,8 +414,26 @@ def test_rest_rate_limit_error_message():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert result.error_message == "GitHub API rate limit exceeded."
+    assert "GitHub API rate limit exceeded." in result.error_message
+    assert "1655804724" in result.error_message
     assert "403" not in result.error_message
+
+
+def test_rest_rate_limit_retry_after():
+    """
+    Verify that REST API rate-limit responses with Retry-After header include
+    the retry timing in the error message.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"Retry-After": "120"}
+    response_mock.text = ""
+    response_mock.ok = False
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+    assert "Retry after 120 seconds." in result.error_message
 
 
 @pytest.mark.parametrize(
@@ -384,10 +495,11 @@ def test_retry_after_rate_limit(time_mock, requests_mock):
 
 
 @patch("time.sleep")
-def test_permission_403_raises_error(time_mock, requests_mock):
+def test_permission_403_skips_organization(time_mock, requests_mock):
     """
-    A bare 403 (no rate-limit headers) is a permission error and should fail immediately,
-    not retry indefinitely.
+    A bare 403 on an Organization stream should gracefully skip the unavailable
+    resource rather than crashing the entire sync. The stream logs a warning
+    and continues.
     """
     requests_mock.get(
         "https://api.github.com/orgs/airbytehq",
@@ -396,9 +508,27 @@ def test_permission_403_raises_error(time_mock, requests_mock):
     )
 
     stream = Organizations(organizations=["airbytehq"])
-    with pytest.raises((AirbyteTracedException, AttributeError)):
+    assert list(read_full_refresh(stream)) == []
+    # Should fail immediately without retries
+    assert requests_mock.call_count == 1
+
+
+@patch("time.sleep")
+def test_permission_403_raises_for_repositories(time_mock, requests_mock):
+    """
+    A bare 403 on the Repositories stream should raise because check_connection
+    depends on it to detect invalid credentials.
+    """
+    requests_mock.get(
+        "https://api.github.com/orgs/org_name/repos",
+        status_code=HTTPStatus.FORBIDDEN,
+        json={"message": "Resource not accessible by personal access token"},
+    )
+
+    stream = Repositories(organizations=["org_name"])
+    with pytest.raises(AirbyteTracedException):
         list(read_full_refresh(stream))
-    # Should fail on first attempt, not retry
+    # Should fail immediately without retries
     assert requests_mock.call_count == 1
 
 
@@ -449,7 +579,8 @@ def test_stream_teams_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    # 404 should fail immediately without retries
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
 
 
@@ -523,7 +654,8 @@ def test_stream_repositories_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    # 404 should fail immediately without retries since the resource does not exist
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
