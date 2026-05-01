@@ -16,9 +16,9 @@ from . import constants
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     401: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message="GitHub authentication failed. Token is invalid or expired.",
     ),
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
@@ -28,17 +28,22 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     404: ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message="Requested GitHub resource not found. Verify repository name and token permissions.",
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message="Git repository is empty.",
     ),
     410: ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.config_error,
-        error_message="Gone. Please ensure the url is valid.",
+        error_message="GitHub resource is gone. The feature may be disabled for this repository.",
+    ),
+    422: ErrorResolution(
+        response_action=ResponseAction.FAIL,
+        failure_type=FailureType.system_error,
+        error_message="GitHub API validation failed.",
     ),
 }
 
@@ -89,10 +94,14 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 self._logger.info(
                     f"Rate limit handling for stream `{self.stream.name}` for the response with {response_or_exception.status_code} status code, {string_headers} with message: {response_or_exception.text}"
                 )
+
+                is_graphql = response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
+                error_message = "GraphQL rate limit exceeded." if is_graphql else "GitHub API rate limit exceeded."
+
                 return ErrorResolution(
                     response_action=ResponseAction.RATE_LIMITED,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=error_message,
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
@@ -135,7 +144,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=f"GitHub API gateway timeout for stream `{self.stream.name}`. Reducing page size and retrying.",
                 )
 
             self.stream.page_size = (
@@ -146,7 +155,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=f"GitHub GraphQL API returned errors for stream `{self.stream.name}`. Retrying.",
                 )
 
         return super().interpret_response(response_or_exception)

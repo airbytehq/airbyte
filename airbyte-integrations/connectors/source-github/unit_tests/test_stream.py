@@ -103,42 +103,60 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_headers", "text", "response_action", "error_message"),
+    ("http_status", "response_headers", "text", "response_action", "failure_type", "error_message"),
     [
         (
             HTTPStatus.OK,
             {"X-RateLimit-Resource": "graphql"},
             '{"errors": [{"type": "RATE_LIMITED"}]}',
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.OK}. Retrying...",
+            FailureType.transient_error,
+            "GraphQL rate limit exceeded.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"X-RateLimit-Remaining": "0"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            FailureType.transient_error,
+            "GitHub API rate limit exceeded.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"Retry-After": "0"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            FailureType.transient_error,
+            "GitHub API rate limit exceeded.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"Retry-After": "60"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            FailureType.transient_error,
+            "GitHub API rate limit exceeded.",
         ),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "HTTP Status Code: 500. Error: Internal server error."),
-        (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "HTTP Status Code: 502. Error: Bad gateway."),
-        (HTTPStatus.SERVICE_UNAVAILABLE, {}, "", ResponseAction.RETRY, "HTTP Status Code: 503. Error: Service unavailable."),
+        (
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            {},
+            "",
+            ResponseAction.RETRY,
+            FailureType.transient_error,
+            "HTTP Status Code: 500. Error: Internal server error.",
+        ),
+        (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, FailureType.transient_error, "HTTP Status Code: 502. Error: Bad gateway."),
+        (
+            HTTPStatus.SERVICE_UNAVAILABLE,
+            {},
+            "",
+            ResponseAction.RETRY,
+            FailureType.transient_error,
+            "HTTP Status Code: 503. Error: Service unavailable.",
+        ),
     ],
 )
-def test_error_handler(http_status, response_headers, text, response_action, error_message):
+def test_error_handler(http_status, response_headers, text, response_action, failure_type, error_message):
     stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
     response_mock = MagicMock(spec=requests.Response)
     response_mock.status_code = http_status
@@ -149,7 +167,7 @@ def test_error_handler(http_status, response_headers, text, response_action, err
 
     expected = ErrorResolution(
         response_action=response_action,
-        failure_type=FailureType.transient_error,
+        failure_type=failure_type,
         error_message=error_message,  # type: ignore[union-attr]
     )
     assert stream.get_error_handler().interpret_response(response_mock) == expected
@@ -196,6 +214,141 @@ def test_rate_limit_403_retries(response_headers):
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
     assert result.failure_type == FailureType.transient_error
+
+
+@pytest.mark.parametrize(
+    ("http_status", "expected_action", "expected_failure_type", "expected_message"),
+    [
+        pytest.param(
+            HTTPStatus.UNAUTHORIZED,
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            "GitHub authentication failed. Token is invalid or expired.",
+            id="401_auth_failure",
+        ),
+        pytest.param(
+            HTTPStatus.NOT_FOUND,
+            ResponseAction.RETRY,
+            FailureType.config_error,
+            "Requested GitHub resource not found. Verify repository name and token permissions.",
+            id="404_not_found",
+        ),
+        pytest.param(
+            HTTPStatus.GONE,
+            ResponseAction.RETRY,
+            FailureType.config_error,
+            "GitHub resource is gone. The feature may be disabled for this repository.",
+            id="410_gone",
+        ),
+        pytest.param(
+            HTTPStatus.UNPROCESSABLE_ENTITY,
+            ResponseAction.FAIL,
+            FailureType.system_error,
+            "GitHub API validation failed.",
+            id="422_validation_failed",
+        ),
+    ],
+)
+def test_error_mapping_status_codes(http_status, expected_action, expected_failure_type, expected_message):
+    """
+    Verify that error mapping entries have correct response actions, failure types,
+    and descriptive error messages for GitHub-specific HTTP status codes.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = http_status
+    response_mock.headers = {}
+    response_mock.text = "{}"
+    response_mock.ok = False
+    response_mock.json = lambda: {}
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == expected_action
+    assert result.failure_type == expected_failure_type
+    assert result.error_message == expected_message
+
+
+def test_409_conflict_empty_repo_is_ignored():
+    """
+    Verify that a 409 response indicating an empty repository is handled with
+    ResponseAction.IGNORE so the sync can continue past empty repos.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.CONFLICT
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Git Repository is empty."}'
+    response_mock.ok = False
+    response_mock.json = lambda: {"message": "Git Repository is empty."}
+    response_mock.request = MagicMock()
+    response_mock.request.method = "GET"
+    response_mock.url = "https://api.github.com/repos/test_repo/commits"
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.IGNORE
+
+
+def test_graphql_rate_limit_error_message():
+    """
+    Verify that GraphQL rate-limit responses produce a clear 'GraphQL rate limit exceeded'
+    message instead of the confusing 'Response status code: 200. Retrying...' message.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+    response_mock.text = '{"errors": [{"type": "RATE_LIMITED"}]}'
+    response_mock.ok = True
+    response_mock.json = lambda: {"errors": [{"type": "RATE_LIMITED"}]}
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+    assert result.error_message == "GraphQL rate limit exceeded."
+    assert "200" not in result.error_message
+
+
+def test_rest_rate_limit_error_message():
+    """
+    Verify that REST API rate-limit responses produce a clear 'GitHub API rate limit exceeded'
+    message instead of the generic 'Response status code: 403. Retrying...' message.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
+    response_mock.text = ""
+    response_mock.ok = False
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+    assert result.error_message == "GitHub API rate limit exceeded."
+    assert "403" not in result.error_message
+
+
+@pytest.mark.parametrize(
+    ("status_code",),
+    [
+        pytest.param(HTTPStatus.BAD_GATEWAY, id="502_bad_gateway"),
+        pytest.param(HTTPStatus.GATEWAY_TIMEOUT, id="504_gateway_timeout"),
+    ],
+)
+def test_graphql_gateway_timeout_error_message(status_code):
+    """
+    Verify that the GraphQL error handler returns a descriptive gateway timeout message
+    with the stream name, instead of the generic 'Response status code: 5xx. Retrying...'
+    """
+    stream = Releases(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = status_code
+    response_mock.headers = {}
+    response_mock.text = ""
+    response_mock.ok = False
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RETRY
+    assert result.failure_type == FailureType.transient_error
+    assert "gateway timeout" in result.error_message.lower()
+    assert "releases" in result.error_message.lower()
 
 
 @patch("time.sleep")
@@ -390,11 +543,11 @@ def test_stream_repositories_401(time_mock, caplog, requests_mock):
     with pytest.raises(AirbyteTracedException):
         assert list(read_full_refresh(stream)) == []
 
-    assert requests_mock.call_count == 6
+    # 401 should fail immediately without retries since retrying won't fix invalid/expired tokens
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
 
 
 @responses.activate
