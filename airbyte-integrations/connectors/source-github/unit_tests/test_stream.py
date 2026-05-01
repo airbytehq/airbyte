@@ -27,6 +27,7 @@ from source_github.streams import (
     IssueEvents,
     IssueLabels,
     IssueMilestones,
+    Issues,
     IssueTimelineEvents,
     Organizations,
     ProjectCards,
@@ -618,6 +619,75 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     assert records == []
     ignore_message = "Ignoring response for 'GET' request to 'https://api.github.com/repos/organization/repository/commits?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=branch' with response code '409' as the repository is empty."
     assert ignore_message in caplog.messages
+
+
+def test_stream_issues_409_empty_repository_different_body(caplog, requests_mock):
+    """
+    Test that REST streams handle 409 responses with body text OTHER than 'Git Repository is empty.'
+    GitHub returns different 409 body messages for non-Git Database endpoints on empty repos.
+    """
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-02T10:10:03Z",
+    }
+
+    stream = Issues(**repository_args_with_start_date)
+    stream.page_size = 2
+
+    repo_api_url = "https://api.github.com/repos/organization/repository"
+    issues_api_url = "https://api.github.com/repos/organization/repository/issues"
+
+    requests_mock.get(
+        repo_api_url,
+        json={"id": 1, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/repository"},
+    )
+    different_409_body = {
+        "message": "Repository is empty.",
+        "documentation_url": "https://docs.github.com/rest",
+        "status": "409",
+    }
+    requests_mock.get(
+        issues_api_url,
+        json=different_409_body,
+        status_code=requests.codes.CONFLICT,
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert records == []
+    assert any("as the repository is empty" in msg for msg in caplog.messages)
+
+
+@patch("time.sleep")
+def test_stream_releases_409_empty_repository(time_mock, caplog, requests_mock):
+    """
+    Test that GraphQL streams (Releases) handle 409 responses for empty repositories
+    instead of retrying until exhaustion.
+    """
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 20,
+        "repositories": ["organization/repository"],
+    }
+
+    stream = Releases(**repository_args_with_start_date)
+
+    graphql_409_body = {
+        "message": "Repository access blocked",
+        "errors": [{"type": "FORBIDDEN", "message": "Repository access blocked"}],
+        "documentation_url": "https://docs.github.com/rest",
+    }
+    requests_mock.post(
+        "https://api.github.com/graphql",
+        json=graphql_409_body,
+        status_code=requests.codes.CONFLICT,
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert records == []
+    assert any("as the repository is empty" in msg for msg in caplog.messages)
 
 
 def test_stream_pull_request_commits(requests_mock):

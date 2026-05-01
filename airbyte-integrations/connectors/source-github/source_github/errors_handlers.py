@@ -45,8 +45,7 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
 
 def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
     if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
-        response_data = response_or_exception.json()
-        return response_data.get("message") == "Git Repository is empty."
+        return True
     return False
 
 
@@ -136,6 +135,14 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
                     error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                )
+
+            if is_conflict_with_empty_repository(response_or_exception):
+                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
+                    error_message=log_message,
                 )
 
             self.stream.page_size = (
