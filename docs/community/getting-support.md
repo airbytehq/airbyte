@@ -8,9 +8,9 @@ Airbyte offers support for both Data Replication and Airbyte Agents. If you can'
 
 **The in-app support bot is available 24/7 for Airbyte Cloud and Enterprise customers.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The bot can also create support tickets for the Airbyte support team if further help is needed.
 
-### Support center
+### Support Center
 
-**For additional help, create a ticket in Airbyte's [support center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
+**For additional help, create a ticket in Airbyte's [Support Center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
 
 - For account or billing inquiries, [contact sales](https://airbyte.com/talk-to-sales).
 - Sign up for Airbyte Cloud with your company email address. Airbyte Cloud doesn't support personal accounts.
@@ -21,7 +21,7 @@ Core users don't have access to paid support but can use the [Community Slack](#
 
 ### Connector support levels
 
-Connector support depends on the connector's certification status. See [Connector Support Levels](/integrations/connector-support-levels) for details.
+Connector support depends on the connector's support level. See [Connector Support Levels](/integrations/connector-support-levels) for details.
 
 If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).
 
@@ -44,7 +44,7 @@ Check the [issue list](https://github.com/airbytehq/airbyte/issues) first in cas
 ### Support by plan
 
 - **Free**: AI and [community](#community-slack) support.
-- **Individual / Team**: Standard human support, in addition to AI and community support. The in-app support bot can create a ticket for you, or you can create your own in the [support center](https://support.airbyte.com/hc/en-us/requests/new).
+- **Individual / Team**: Standard human support, in addition to AI and community support. The in-app support bot can create a ticket for you, or you can create your own in the [Support Center](https://support.airbyte.com/hc/en-us/requests/new).
 - **Custom**: Dedicated human support.
 
 For full details on Agents plans, see [Billing and pricing](/ai-agents/admin/billing).

@@ -14,7 +14,7 @@ Bug reports help make Airbyte better for everyone. Airbyte provides templates fo
 
 ### Airbyte Agents
 
-For bugs related to Airbyte Agents, create a ticket in the [support center](https://support.airbyte.com/hc/en-us/requests/new) or use the [`#airbyte-agents`](https://airbytehq.slack.com/archives/C0B1CUSEQKT) channel in Slack.
+For bugs related to Airbyte Agents, create a ticket in the [Support Center](https://support.airbyte.com/hc/en-us/requests/new) or use the [`#airbyte-agents`](https://airbytehq.slack.com/archives/C0B1CUSEQKT) channel in Slack.
 
 ## Request a new feature or connector
 
@@ -26,7 +26,7 @@ Requesting new features [or connectors](https://github.com/airbytehq/airbyte/dis
 
 ### Airbyte Agents
 
-For Airbyte Agents feature requests, use the [support center](https://support.airbyte.com/hc/en-us/requests/new).
+For Airbyte Agents feature requests, use the [Support Center](https://support.airbyte.com/hc/en-us/requests/new).
 
 ## Report a security issue
 
