@@ -1042,8 +1042,7 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     records = read_incremental(stream, stream_state)
     assert records == []
     assert any(
-        "Skipping 'commits'" in msg and "409 Conflict" in msg and "no commits" in msg
-        for msg in caplog.messages
+        "Skipping 'commits'" in msg and "409 Conflict" in msg and "no commits" in msg for msg in caplog.messages
     ), f"Expected 409 empty-repo skip message in logs, got: {caplog.messages}"
 
 
@@ -2475,8 +2474,7 @@ def test_401_pat_log_message_actionable(time_mock, caplog, requests_mock):
         list(read_full_refresh(stream))
 
     assert any(
-        "GitHub authentication failed (HTTP 401)" in msg and "repositories" in msg
-        for msg in caplog.messages
+        "GitHub authentication failed (HTTP 401)" in msg and "repositories" in msg for msg in caplog.messages
     ), f"Expected actionable 401 PAT message in logs, got: {caplog.messages}"
 
 
@@ -2496,6 +2494,5 @@ def test_catch_all_reraises_with_logging(time_mock, caplog, requests_mock):
         list(read_full_refresh(stream))
 
     assert any(
-        "Unexpected GitHub response for stream 'collaborators'" in msg
-        for msg in caplog.messages
+        "Unexpected GitHub response for stream 'collaborators'" in msg for msg in caplog.messages
     ), f"Expected catch-all log message, got: {caplog.messages}"

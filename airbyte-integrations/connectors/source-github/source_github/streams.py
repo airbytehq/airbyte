@@ -229,9 +229,7 @@ class GithubStreamABC(HttpStream, ABC):
                     f"This is usually transient — the next sync attempt should succeed."
                 )
             else:
-                error_detail = filter_secrets(
-                    response.text if response is not None else (e.internal_message or str(e))
-                )
+                error_detail = filter_secrets(response.text if response is not None else (e.internal_message or str(e)))
                 self.logger.error(f"Unexpected GitHub response for stream '{self.name}': {error_detail}")
                 raise e
 
