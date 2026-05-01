@@ -695,7 +695,7 @@ spec:
         extract_output:
           - access_token
           - refresh_token
-          - token_expiry_date
+          - expires_in
       complete_oauth_output_specification:
         type: object
         properties:
