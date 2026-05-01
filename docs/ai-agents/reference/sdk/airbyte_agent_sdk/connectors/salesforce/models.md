@@ -31,16 +31,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.AccountAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.AccountAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="AccountAttributes"></a>
@@ -64,10 +64,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="AccountQueryResult"></a>
@@ -88,19 +88,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Account] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Account] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="AccountsListResultMeta"></a>
@@ -121,13 +121,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsSearchData"></a>
@@ -294,7 +294,9 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[LeadsSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[OpportunitiesSearchData]
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[OpportunityStagesSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[TasksSearchData]
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[UsersSearchData]
 
     ### Class variables
 
@@ -463,6 +465,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[OpportunityStagesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesSearchResult"></a>
+
+`OpportunityStagesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `AirbyteSearchResult[TasksSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -502,6 +543,45 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[UsersSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="Attachment"></a>
 
 `Attachment(**data: Any)`
@@ -520,25 +600,25 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.AttachmentAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.AttachmentAttributes | None`
     :   The type of the None singleton.
 
-    `body_length: int | Any`
+    `body_length: int | None`
     :   The type of the None singleton.
 
-    `content_type: str | Any`
+    `content_type: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `parent_id: str | Any`
+    `parent_id: str | None`
     :   The type of the None singleton.
 
 <a id="AttachmentAttributes"></a>
@@ -562,10 +642,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="AttachmentQueryResult"></a>
@@ -586,19 +666,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Attachment] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="AttachmentsListResultMeta"></a>
@@ -619,13 +699,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="Campaign"></a>
@@ -646,16 +726,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.CampaignAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.CampaignAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignAttributes"></a>
@@ -679,10 +759,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignQueryResult"></a>
@@ -703,19 +783,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Campaign] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Campaign] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListResultMeta"></a>
@@ -736,13 +816,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="Case"></a>
@@ -763,19 +843,19 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.CaseAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.CaseAttributes | None`
     :   The type of the None singleton.
 
-    `case_number: str | Any`
+    `case_number: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `subject: str | Any`
+    `subject: str | None`
     :   The type of the None singleton.
 
 <a id="CaseAttributes"></a>
@@ -799,10 +879,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CaseQueryResult"></a>
@@ -823,19 +903,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Case] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Case] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="CasesListResultMeta"></a>
@@ -856,13 +936,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="Contact"></a>
@@ -883,16 +963,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.ContactAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.ContactAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ContactAttributes"></a>
@@ -916,10 +996,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ContactQueryResult"></a>
@@ -940,19 +1020,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Contact] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Contact] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -973,13 +1053,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsSearchData"></a>
@@ -1099,31 +1179,31 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.ContentVersionAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.ContentVersionAttributes | None`
     :   The type of the None singleton.
 
-    `content_document_id: str | Any`
+    `content_document_id: str | None`
     :   The type of the None singleton.
 
-    `content_size: int | Any`
+    `content_size: int | None`
     :   The type of the None singleton.
 
-    `file_extension: str | Any`
+    `file_extension: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_latest: bool | Any`
+    `is_latest: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `version_number: str | Any`
+    `version_number: str | None`
     :   The type of the None singleton.
 
 <a id="ContentVersionAttributes"></a>
@@ -1147,10 +1227,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ContentVersionQueryResult"></a>
@@ -1171,19 +1251,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.ContentVersion] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.ContentVersion] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="ContentVersionsListResultMeta"></a>
@@ -1204,13 +1284,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="Event"></a>
@@ -1231,16 +1311,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.EventAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.EventAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `subject: str | Any`
+    `subject: str | None`
     :   The type of the None singleton.
 
 <a id="EventAttributes"></a>
@@ -1264,10 +1344,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="EventQueryResult"></a>
@@ -1288,19 +1368,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Event] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Event] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="EventsListResultMeta"></a>
@@ -1321,13 +1401,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="Lead"></a>
@@ -1348,16 +1428,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.LeadAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.LeadAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="LeadAttributes"></a>
@@ -1381,10 +1461,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="LeadQueryResult"></a>
@@ -1405,19 +1485,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Lead] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Lead] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="LeadsListResultMeta"></a>
@@ -1438,13 +1518,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="LeadsSearchData"></a>
@@ -1588,16 +1668,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.NoteAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.NoteAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="NoteAttributes"></a>
@@ -1621,10 +1701,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="NoteQueryResult"></a>
@@ -1645,19 +1725,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Note] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Note] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="NotesListResultMeta"></a>
@@ -1678,13 +1758,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="OpportunitiesListResultMeta"></a>
@@ -1705,13 +1785,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="OpportunitiesSearchData"></a>
@@ -1831,16 +1911,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.OpportunityAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.OpportunityAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="OpportunityAttributes"></a>
@@ -1864,10 +1944,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="OpportunityQueryResult"></a>
@@ -1888,20 +1968,206 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Opportunity] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Opportunity] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
+
+<a id="OpportunityStage"></a>
+
+`OpportunityStage(**data: Any)`
+:   Salesforce OpportunityStage object - uses FIELDS(STANDARD) so all standard fields are returned
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.OpportunityStageAttributes | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `master_label: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="OpportunityStageAttributes"></a>
+
+`OpportunityStageAttributes(**data: Any)`
+:   Nested schema for OpportunityStage.attributes
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `url: str | None`
+    :   The type of the None singleton.
+
+<a id="OpportunityStageQueryResult"></a>
+
+`OpportunityStageQueryResult(**data: Any)`
+:   SOQL query result for opportunity stages
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `done: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_records_url: str | None`
+    :   The type of the None singleton.
+
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.OpportunityStage] | None`
+    :   The type of the None singleton.
+
+    `total_size: int | None`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesListResultMeta"></a>
+
+`OpportunityStagesListResultMeta(**data: Any)`
+:   Metadata for opportunity_stages.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `done: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_records_url: str | None`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesSearchData"></a>
+
+`OpportunityStagesSearchData(**data: Any)`
+:   Search result data for opportunity_stages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `api_name: str | None`
+    :   API name of the stage used in code and integrations
+
+    `created_by_id: str | None`
+    :   ID of the user who created this stage
+
+    `created_date: str | None`
+    :   Date and time when the stage was created
+
+    `default_probability: float | None`
+    :   Default probability percentage for opportunities at this stage
+
+    `description: str | None`
+    :   Description of the stage
+
+    `forecast_category: str | None`
+    :   Forecast category for opportunities at this stage
+
+    `forecast_category_name: str | None`
+    :   Display name of the forecast category
+
+    `id: str`
+    :   Unique identifier for the opportunity stage record
+
+    `is_active: bool | None`
+    :   Whether the stage is currently active and can be used
+
+    `is_closed: bool | None`
+    :   Whether opportunities at this stage are considered closed
+
+    `is_won: bool | None`
+    :   Whether opportunities at this stage are considered won
+
+    `last_modified_by_id: str | None`
+    :   ID of the user who last modified this stage
+
+    `last_modified_date: str | None`
+    :   Date and time when the stage was last modified
+
+    `master_label: str | None`
+    :   Display label for the stage
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `sort_order: int | None`
+    :   Order in which the stage appears in the sales process
+
+    `system_modstamp: str | None`
+    :   System timestamp when the record was last modified
 
 <a id="QueryListResultMeta"></a>
 
@@ -1921,13 +2187,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="QueryResult"></a>
@@ -1948,19 +2214,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[dict[str, typing.Any]] | Any`
+    `records: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="Report"></a>
@@ -1981,22 +2247,22 @@ Classes
 
     ### Class variables
 
-    `describe_url: str | Any | None`
+    `describe_url: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `instances_url: str | Any | None`
+    `instances_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ReportResults"></a>
@@ -2017,31 +2283,31 @@ Classes
 
     ### Class variables
 
-    `all_data: bool | Any | None`
+    `all_data: bool | None`
     :   The type of the None singleton.
 
-    `attributes: dict[str, typing.Any] | Any | None`
+    `attributes: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `fact_map: dict[str, typing.Any] | Any | None`
+    `fact_map: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `groupings_across: dict[str, typing.Any] | Any | None`
+    `groupings_across: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `groupings_down: dict[str, typing.Any] | Any | None`
+    `groupings_down: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `has_detail_rows: bool | Any | None`
+    `has_detail_rows: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `report_extended_metadata: dict[str, typing.Any] | Any | None`
+    `report_extended_metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `report_metadata: dict[str, typing.Any] | Any | None`
+    `report_metadata: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="SObject"></a>
@@ -2062,40 +2328,40 @@ Classes
 
     ### Class variables
 
-    `createable: bool | Any | None`
+    `createable: bool | None`
     :   The type of the None singleton.
 
-    `custom: bool | Any | None`
+    `custom: bool | None`
     :   The type of the None singleton.
 
-    `deletable: bool | Any | None`
+    `deletable: bool | None`
     :   The type of the None singleton.
 
-    `key_prefix: str | Any | None`
+    `key_prefix: str | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
-    `label_plural: str | Any | None`
+    `label_plural: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `queryable: bool | Any | None`
+    `queryable: bool | None`
     :   The type of the None singleton.
 
-    `searchable: bool | Any | None`
+    `searchable: bool | None`
     :   The type of the None singleton.
 
-    `updateable: bool | Any | None`
+    `updateable: bool | None`
     :   The type of the None singleton.
 
-    `urls: dict[str, typing.Any] | Any | None`
+    `urls: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="SObjectsResponse"></a>
@@ -2116,16 +2382,16 @@ Classes
 
     ### Class variables
 
-    `encoding: str | Any | None`
+    `encoding: str | None`
     :   The type of the None singleton.
 
-    `max_batch_size: int | Any | None`
+    `max_batch_size: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `sobjects: list[airbyte_agent_sdk.connectors.salesforce.models.SObject] | Any`
+    `sobjects: list[airbyte_agent_sdk.connectors.salesforce.models.SObject] | None`
     :   The type of the None singleton.
 
 <a id="SalesforceAuthConfig"></a>
@@ -2258,8 +2524,10 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Event], EventsListResultMeta]
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Lead], LeadsListResultMeta]
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Note], NotesListResultMeta]
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[OpportunityStage], OpportunityStagesListResultMeta]
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Opportunity], OpportunitiesListResultMeta]
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Task], TasksListResultMeta]
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[User], UsersListResultMeta]
     * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[dict[str, Any]], QueryListResultMeta]
 
     ### Class variables
@@ -2672,6 +2940,51 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`SalesforceExecuteResultWithMeta[list[OpportunityStage], OpportunityStagesListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="OpportunityStagesListResult"></a>
+
+`OpportunityStagesListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `SalesforceExecuteResultWithMeta[list[Opportunity], OpportunitiesListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -2744,6 +3057,51 @@ Classes
 <a id="TasksListResult"></a>
 
 `TasksListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`SalesforceExecuteResultWithMeta[list[User], UsersListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="UsersListResult"></a>
+
+`UsersListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3157,7 +3515,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `search_records: list[airbyte_agent_sdk.connectors.salesforce.models.SearchResultSearchrecordsItem] | Any`
+    `search_records: list[airbyte_agent_sdk.connectors.salesforce.models.SearchResultSearchrecordsItem] | None`
     :   The type of the None singleton.
 
 <a id="SearchResultSearchrecordsItem"></a>
@@ -3178,10 +3536,10 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.SearchResultSearchrecordsItemAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.SearchResultSearchrecordsItemAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3208,10 +3566,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="Task"></a>
@@ -3232,16 +3590,16 @@ Classes
 
     ### Class variables
 
-    `attributes: airbyte_agent_sdk.connectors.salesforce.models.TaskAttributes | Any`
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.TaskAttributes | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `subject: str | Any`
+    `subject: str | None`
     :   The type of the None singleton.
 
 <a id="TaskAttributes"></a>
@@ -3265,10 +3623,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="TaskQueryResult"></a>
@@ -3289,19 +3647,19 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
-    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Task] | Any`
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.Task] | None`
     :   The type of the None singleton.
 
-    `total_size: int | Any`
+    `total_size: int | None`
     :   The type of the None singleton.
 
 <a id="TasksListResultMeta"></a>
@@ -3322,13 +3680,13 @@ Classes
 
     ### Class variables
 
-    `done: bool | Any`
+    `done: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_records_url: str | Any`
+    `next_records_url: str | None`
     :   The type of the None singleton.
 
 <a id="TasksSearchData"></a>
@@ -3423,3 +3781,237 @@ Classes
 
     `who_id: str | None`
     :   ID of the related person (Contact or Lead)
+
+<a id="User"></a>
+
+`User(**data: Any)`
+:   Salesforce User object - uses FIELDS(STANDARD) so all standard fields are returned
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `attributes: airbyte_agent_sdk.connectors.salesforce.models.UserAttributes | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+<a id="UserAttributes"></a>
+
+`UserAttributes(**data: Any)`
+:   Nested schema for User.attributes
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `url: str | None`
+    :   The type of the None singleton.
+
+<a id="UserQueryResult"></a>
+
+`UserQueryResult(**data: Any)`
+:   SOQL query result for users
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `done: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_records_url: str | None`
+    :   The type of the None singleton.
+
+    `records: list[airbyte_agent_sdk.connectors.salesforce.models.User] | None`
+    :   The type of the None singleton.
+
+    `total_size: int | None`
+    :   The type of the None singleton.
+
+<a id="UsersListResultMeta"></a>
+
+`UsersListResultMeta(**data: Any)`
+:   Metadata for users.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `done: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_records_url: str | None`
+    :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
+
+`UsersSearchData(**data: Any)`
+:   Search result data for users entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_id: str | None`
+    :   ID of the account associated with this user (for portal users)
+
+    `alias: str | None`
+    :   Short name used to identify the user in list views and reports
+
+    `city: str | None`
+    :   City portion of the user's address
+
+    `company_name: str | None`
+    :   Name of the user's company
+
+    `contact_id: str | None`
+    :   ID of the contact associated with this user (for portal users)
+
+    `country: str | None`
+    :   Country portion of the user's address
+
+    `created_by_id: str | None`
+    :   ID of the user who created this user record
+
+    `created_date: str | None`
+    :   Date and time when the user was created
+
+    `department: str | None`
+    :   Department within the organization
+
+    `division: str | None`
+    :   Division within the organization
+
+    `email: str | None`
+    :   Email address of the user
+
+    `employee_number: str | None`
+    :   Employee number or ID assigned by the organization
+
+    `first_name: str | None`
+    :   First name of the user
+
+    `id: str`
+    :   Unique identifier for the user record
+
+    `is_active: bool | None`
+    :   Whether the user is active and can log in
+
+    `last_login_date: str | None`
+    :   Date and time of the user's most recent login
+
+    `last_modified_by_id: str | None`
+    :   ID of the user who last modified this user record
+
+    `last_modified_date: str | None`
+    :   Date and time when the user was last modified
+
+    `last_name: str | None`
+    :   Last name of the user
+
+    `manager_id: str | None`
+    :   ID of the user's manager
+
+    `mobile_phone: str | None`
+    :   Mobile phone number of the user
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the user
+
+    `phone: str | None`
+    :   Business phone number of the user
+
+    `postal_code: str | None`
+    :   Postal code portion of the user's address
+
+    `profile_id: str | None`
+    :   ID of the user's profile
+
+    `state: str | None`
+    :   State or province portion of the user's address
+
+    `street: str | None`
+    :   Street address of the user
+
+    `system_modstamp: str | None`
+    :   System timestamp when the record was last modified
+
+    `title: str | None`
+    :   Job title of the user
+
+    `user_role_id: str | None`
+    :   ID of the user's role in the organization
+
+    `user_type: str | None`
+    :   Type of user license (e.g., Standard, PowerPartner)
+
+    `username: str | None`
+    :   Username for logging into Salesforce (unique across all orgs)

@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 3
 ---
 
@@ -21,7 +22,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=defau
   --header 'Authorization: Bearer <your_application_token>'
 ```
 
-`definition_id` is the connector type (GitHub, HubSpot, and so on). See [Find a `definition_id`](./add-connector#find-a-definition_id) for how to look one up. The response includes each matching connector's `id` — use it in the execute URL below.
+`definition_id` is the connector type (GitHub, HubSpot, and so on). See [Find a `definition_id`](./add-connector#find-a-definition_id) for how to look one up. The response includes each matching connector's `id`. Use it in the execute URL below.
 
 The Airbyte Agent Python SDK can resolve a connector by its slug (for example, `"hubspot"`) without any IDs. Consider using the [SDK](../sdk/execute) if you want to avoid managing connector IDs in application code.
 
@@ -85,7 +86,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 This example searches for records using filter conditions.
 
 :::note `search` reads from the [Context Store](../../concepts/context-store)
-The `search` action reads from Airbyte's pre-indexed Context Store, not the live third-party API. The store is enabled by default in new organizations, and Airbyte populates it per connector after the connector is created. If you call `search` while the connector's Context Store still shows `Loading` or `Building Preview` on the Credentials page, the call returns an error at runtime. Wait for the status to reach `Preview` or `Ready`, or use `list`/`get` against the live API until it does.
+The `search` action reads from Airbyte's pre-indexed Context Store, not the live third-party API. The store is always on and Airbyte populates it per connector after the connector is created. If you call `search` while the connector's Context Store still shows `Loading` or `Building Preview` on the Connectors page, the call returns an error at runtime. Wait for the status to reach `Preview` or `Ready`, or use `list`/`get` against the live API until it does.
 :::
 
 ```bash title="Request"
@@ -197,7 +198,7 @@ Every execute response uses the same top-level envelope. The connector's records
 }
 ```
 
-- `result` is whatever the operation returns — an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
+- `result` is whatever the operation returns: an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
 - `connector_metadata` surfaces pagination state. The exact key names depend on the connector; expect `has_next_page` and `end_cursor`.
 - `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`.
 
@@ -215,7 +216,7 @@ prefix is dropped server-side.
 
 ### Paginate through results
 
-When `connector_metadata.has_next_page` is `true`, pass the `end_cursor` from the previous response as `params.cursor` to get the next page. `cursor` is the conventional request-side parameter name for pagination across Airbyte connectors. A small number of connectors use different request keys (for example, an offset-based pager might accept `offset` and `limit`); check the connector's reference page if `cursor` is rejected.
+When `connector_metadata.has_next_page` is `true`, pass the `end_cursor` from the previous response as `params.cursor` to get the next page. `cursor` is the conventional request-side parameter name for pagination across Airbyte connectors. A small number of connectors use different request keys (for example, an offset-based pagination might accept `offset` and `limit`); check the connector's reference page if `cursor` is rejected.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \

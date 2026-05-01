@@ -252,55 +252,184 @@ Classes
 
     ### Class variables
 
-    `author_icon: str | Any | None`
+    `author_icon: str | None`
     :   The type of the None singleton.
 
-    `author_link: str | Any | None`
+    `author_link: str | None`
     :   The type of the None singleton.
 
-    `author_name: str | Any | None`
+    `author_name: str | None`
     :   The type of the None singleton.
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `fallback: str | Any | None`
+    `fallback: str | None`
     :   The type of the None singleton.
 
-    `fields: list[dict[str, typing.Any]] | Any | None`
+    `fields: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `footer: str | Any | None`
+    `footer: str | None`
     :   The type of the None singleton.
 
-    `footer_icon: str | Any | None`
+    `footer_icon: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any | None`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `image_url: str | Any | None`
+    `image_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pretext: str | Any | None`
+    `pretext: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `thumb_url: str | Any | None`
+    `thumb_url: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `title_link: str | Any | None`
+    `title_link: str | None`
     :   The type of the None singleton.
 
-    `ts: Any`
+    `ts: typing.Any | None`
+    :   The type of the None singleton.
+
+<a id="Bookmark"></a>
+
+`Bookmark(**data: Any)`
+:   A channel bookmark
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `app_id: str | None`
+    :   The type of the None singleton.
+
+    `channel_id: str | None`
+    :   The type of the None singleton.
+
+    `date_created: int | None`
+    :   The type of the None singleton.
+
+    `date_updated: int | None`
+    :   The type of the None singleton.
+
+    `emoji: str | None`
+    :   The type of the None singleton.
+
+    `entity_id: str | None`
+    :   The type of the None singleton.
+
+    `icon_url: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `last_updated_by_team_id: str | None`
+    :   The type of the None singleton.
+
+    `last_updated_by_user_id: str | None`
+    :   The type of the None singleton.
+
+    `link: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `rank: str | None`
+    :   The type of the None singleton.
+
+    `shortcut_id: str | None`
+    :   The type of the None singleton.
+
+    `title: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+<a id="BookmarkAddParams"></a>
+
+`BookmarkAddParams(**data: Any)`
+:   Parameters for adding a bookmark to a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel_id: str`
+    :   The type of the None singleton.
+
+    `emoji: str | None`
+    :   The type of the None singleton.
+
+    `link: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `type_: str`
+    :   The type of the None singleton.
+
+<a id="BookmarkAddResponse"></a>
+
+`BookmarkAddResponse(**data: Any)`
+:   Response from adding a bookmark
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `bookmark: airbyte_agent_sdk.connectors.slack.models.Bookmark | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="BotProfile"></a>
@@ -321,25 +450,25 @@ Classes
 
     ### Class variables
 
-    `app_id: str | Any | None`
+    `app_id: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `team_id: str | Any | None`
+    `team_id: str | None`
     :   The type of the None singleton.
 
-    `updated: int | Any | None`
+    `updated: int | None`
     :   The type of the None singleton.
 
 <a id="Channel"></a>
@@ -360,100 +489,148 @@ Classes
 
     ### Class variables
 
-    `context_team_id: str | Any | None`
+    `context_team_id: str | None`
     :   The type of the None singleton.
 
-    `created: int | Any | None`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `creator: str | Any | None`
+    `creator: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
-    `is_channel: bool | Any | None`
+    `is_channel: bool | None`
     :   The type of the None singleton.
 
-    `is_ext_shared: bool | Any | None`
+    `is_ext_shared: bool | None`
     :   The type of the None singleton.
 
-    `is_general: bool | Any | None`
+    `is_general: bool | None`
     :   The type of the None singleton.
 
-    `is_group: bool | Any | None`
+    `is_group: bool | None`
     :   The type of the None singleton.
 
-    `is_im: bool | Any | None`
+    `is_im: bool | None`
     :   The type of the None singleton.
 
-    `is_member: bool | Any | None`
+    `is_member: bool | None`
     :   The type of the None singleton.
 
-    `is_mpim: bool | Any | None`
+    `is_mpim: bool | None`
     :   The type of the None singleton.
 
-    `is_org_shared: bool | Any | None`
+    `is_org_shared: bool | None`
     :   The type of the None singleton.
 
-    `is_pending_ext_shared: bool | Any | None`
+    `is_pending_ext_shared: bool | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any | None`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
-    `is_read_only: bool | Any | None`
+    `is_read_only: bool | None`
     :   The type of the None singleton.
 
-    `is_shared: bool | Any | None`
+    `is_shared: bool | None`
     :   The type of the None singleton.
 
-    `is_thread_only: bool | Any | None`
+    `is_thread_only: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `name_normalized: str | Any | None`
+    `name_normalized: str | None`
     :   The type of the None singleton.
 
-    `num_members: int | Any | None`
+    `num_members: int | None`
     :   The type of the None singleton.
 
-    `parent_conversation: str | Any | None`
+    `parent_conversation: str | None`
     :   The type of the None singleton.
 
-    `pending_connected_team_ids: list[str] | Any | None`
+    `pending_connected_team_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `pending_shared: list[str] | Any | None`
+    `pending_shared: list[str] | None`
     :   The type of the None singleton.
 
-    `previous_names: list[str] | Any | None`
+    `previous_names: list[str] | None`
     :   The type of the None singleton.
 
-    `properties: dict[str, typing.Any] | Any | None`
+    `properties: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `purpose: Any`
+    `purpose: typing.Any | None`
     :   The type of the None singleton.
 
-    `shared_team_ids: list[str] | Any | None`
+    `shared_team_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `topic: Any`
+    `topic: typing.Any | None`
     :   The type of the None singleton.
 
-    `unlinked: int | Any | None`
+    `unlinked: int | None`
     :   The type of the None singleton.
 
-    `updated: int | Any | None`
+    `updated: int | None`
+    :   The type of the None singleton.
+
+<a id="ChannelArchiveParams"></a>
+
+`ChannelArchiveParams(**data: Any)`
+:   Parameters for archiving a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ChannelArchiveResponse"></a>
+
+`ChannelArchiveResponse(**data: Any)`
+:   Response from archiving a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelCreateParams"></a>
@@ -474,13 +651,13 @@ Classes
 
     ### Class variables
 
-    `is_private: bool | Any`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
 <a id="ChannelCreateResponse"></a>
@@ -501,13 +678,13 @@ Classes
 
     ### Class variables
 
-    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | Any`
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelInviteParams"></a>
@@ -528,16 +705,16 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
-    `force: bool | Any`
+    `force: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `users: str | Any`
+    `users: str`
     :   The type of the None singleton.
 
 <a id="ChannelInviteResponse"></a>
@@ -558,13 +735,67 @@ Classes
 
     ### Class variables
 
-    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | Any`
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
+    :   The type of the None singleton.
+
+<a id="ChannelKickParams"></a>
+
+`ChannelKickParams(**data: Any)`
+:   Parameters for removing a user from a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `user: str`
+    :   The type of the None singleton.
+
+<a id="ChannelKickResponse"></a>
+
+`ChannelKickResponse(**data: Any)`
+:   Response from removing a user from a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `errors: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelMessagesListResultMeta"></a>
@@ -585,13 +816,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="ChannelMessagesSearchData"></a>
@@ -687,16 +918,16 @@ Classes
 
     ### Class variables
 
-    `creator: str | Any | None`
+    `creator: str | None`
     :   The type of the None singleton.
 
-    `last_set: int | Any | None`
+    `last_set: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="ChannelPurposeParams"></a>
@@ -717,13 +948,13 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `purpose: str | Any`
+    `purpose: str`
     :   The type of the None singleton.
 
 <a id="ChannelPurposeResponse"></a>
@@ -744,13 +975,13 @@ Classes
 
     ### Class variables
 
-    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | Any`
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelRenameParams"></a>
@@ -771,13 +1002,13 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
 <a id="ChannelRenameResponse"></a>
@@ -798,13 +1029,13 @@ Classes
 
     ### Class variables
 
-    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | Any`
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelResponse"></a>
@@ -825,13 +1056,13 @@ Classes
 
     ### Class variables
 
-    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | Any`
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelTopic"></a>
@@ -852,16 +1083,16 @@ Classes
 
     ### Class variables
 
-    `creator: str | Any | None`
+    `creator: str | None`
     :   The type of the None singleton.
 
-    `last_set: int | Any | None`
+    `last_set: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="ChannelTopicParams"></a>
@@ -882,13 +1113,13 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `topic: str | Any`
+    `topic: str`
     :   The type of the None singleton.
 
 <a id="ChannelTopicResponse"></a>
@@ -909,13 +1140,13 @@ Classes
 
     ### Class variables
 
-    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | Any`
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ChannelsListResponse"></a>
@@ -936,16 +1167,16 @@ Classes
 
     ### Class variables
 
-    `channels: list[airbyte_agent_sdk.connectors.slack.models.Channel] | Any`
+    `channels: list[airbyte_agent_sdk.connectors.slack.models.Channel] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
+    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | None`
     :   The type of the None singleton.
 
 <a id="ChannelsListResultMeta"></a>
@@ -969,7 +1200,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="ChannelsSearchData"></a>
@@ -1104,34 +1335,34 @@ Classes
 
     ### Class variables
 
-    `app_id: str | Any | None`
+    `app_id: str | None`
     :   The type of the None singleton.
 
-    `bot_id: str | Any | None`
+    `bot_id: str | None`
     :   The type of the None singleton.
 
-    `bot_profile: Any`
+    `bot_profile: typing.Any | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `subtype: str | Any | None`
+    `subtype: str | None`
     :   The type of the None singleton.
 
-    `team: str | Any | None`
+    `team: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `ts: str | Any`
+    `ts: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any | None`
+    `user: str | None`
     :   The type of the None singleton.
 
 <a id="EditedInfo"></a>
@@ -1155,10 +1386,73 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `ts: str | Any | None`
+    `ts: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any | None`
+    `user: str | None`
+    :   The type of the None singleton.
+
+<a id="EphemeralMessageCreateParams"></a>
+
+`EphemeralMessageCreateParams(**data: Any)`
+:   Parameters for sending an ephemeral message visible only to one user
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `blocks: str | None`
+    :   The type of the None singleton.
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `text: str`
+    :   The type of the None singleton.
+
+    `thread_ts: str | None`
+    :   The type of the None singleton.
+
+    `user: str`
+    :   The type of the None singleton.
+
+<a id="EphemeralMessageCreateResponse"></a>
+
+`EphemeralMessageCreateResponse(**data: Any)`
+:   Response from sending an ephemeral message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `message_ts: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="File"></a>
@@ -1179,64 +1473,64 @@ Classes
 
     ### Class variables
 
-    `created: int | Any | None`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `external_type: str | Any | None`
+    `external_type: str | None`
     :   The type of the None singleton.
 
-    `filetype: str | Any | None`
+    `filetype: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_external: bool | Any | None`
+    `is_external: bool | None`
     :   The type of the None singleton.
 
-    `is_public: bool | Any | None`
+    `is_public: bool | None`
     :   The type of the None singleton.
 
-    `mimetype: str | Any | None`
+    `mimetype: str | None`
     :   The type of the None singleton.
 
-    `mode: str | Any | None`
+    `mode: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `permalink: str | Any | None`
+    `permalink: str | None`
     :   The type of the None singleton.
 
-    `permalink_public: str | Any | None`
+    `permalink_public: str | None`
     :   The type of the None singleton.
 
-    `pretty_type: str | Any | None`
+    `pretty_type: str | None`
     :   The type of the None singleton.
 
-    `public_url_shared: bool | Any | None`
+    `public_url_shared: bool | None`
     :   The type of the None singleton.
 
-    `size: int | Any | None`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `timestamp: int | Any | None`
+    `timestamp: int | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `url_private: str | Any | None`
+    `url_private: str | None`
     :   The type of the None singleton.
 
-    `url_private_download: str | Any | None`
+    `url_private_download: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any | None`
+    `user: str | None`
     :   The type of the None singleton.
 
 <a id="Message"></a>
@@ -1257,70 +1551,70 @@ Classes
 
     ### Class variables
 
-    `app_id: str | Any | None`
+    `app_id: str | None`
     :   The type of the None singleton.
 
-    `attachments: list[airbyte_agent_sdk.connectors.slack.models.Attachment] | Any | None`
+    `attachments: list[airbyte_agent_sdk.connectors.slack.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `blocks: list[dict[str, typing.Any]] | Any | None`
+    `blocks: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `bot_id: str | Any | None`
+    `bot_id: str | None`
     :   The type of the None singleton.
 
-    `bot_profile: Any`
+    `bot_profile: typing.Any | None`
     :   The type of the None singleton.
 
-    `edited: Any`
+    `edited: typing.Any | None`
     :   The type of the None singleton.
 
-    `files: list[airbyte_agent_sdk.connectors.slack.models.File] | Any | None`
+    `files: list[airbyte_agent_sdk.connectors.slack.models.File] | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `latest_reply: str | Any | None`
+    `latest_reply: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reactions: list[airbyte_agent_sdk.connectors.slack.models.Reaction] | Any | None`
+    `reactions: list[airbyte_agent_sdk.connectors.slack.models.Reaction] | None`
     :   The type of the None singleton.
 
-    `reply_count: int | Any | None`
+    `reply_count: int | None`
     :   The type of the None singleton.
 
-    `reply_users: list[str] | Any | None`
+    `reply_users: list[str] | None`
     :   The type of the None singleton.
 
-    `reply_users_count: int | Any | None`
+    `reply_users_count: int | None`
     :   The type of the None singleton.
 
-    `subscribed: bool | Any | None`
+    `subscribed: bool | None`
     :   The type of the None singleton.
 
-    `subtype: str | Any | None`
+    `subtype: str | None`
     :   The type of the None singleton.
 
-    `team: str | Any | None`
+    `team: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `thread_ts: str | Any | None`
+    `thread_ts: str | None`
     :   The type of the None singleton.
 
-    `ts: str | Any`
+    `ts: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any | None`
+    `user: str | None`
     :   The type of the None singleton.
 
 <a id="MessageCreateParams"></a>
@@ -1341,25 +1635,25 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reply_broadcast: bool | Any`
+    `reply_broadcast: bool | None`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str`
     :   The type of the None singleton.
 
-    `thread_ts: str | Any`
+    `thread_ts: str | None`
     :   The type of the None singleton.
 
-    `unfurl_links: bool | Any`
+    `unfurl_links: bool | None`
     :   The type of the None singleton.
 
-    `unfurl_media: bool | Any`
+    `unfurl_media: bool | None`
     :   The type of the None singleton.
 
 <a id="MessageCreateResponse"></a>
@@ -1380,19 +1674,76 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any | None`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `message: airbyte_agent_sdk.connectors.slack.models.CreatedMessage | Any`
+    `message: airbyte_agent_sdk.connectors.slack.models.CreatedMessage | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `ts: str | Any | None`
+    `ts: str | None`
+    :   The type of the None singleton.
+
+<a id="MessageDeleteParams"></a>
+
+`MessageDeleteParams(**data: Any)`
+:   Parameters for deleting a message. Bot tokens can only delete messages posted by the bot.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ts: str`
+    :   The type of the None singleton.
+
+<a id="MessageDeleteResponse"></a>
+
+`MessageDeleteResponse(**data: Any)`
+:   Response from deleting a message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
+    :   The type of the None singleton.
+
+    `ts: str | None`
     :   The type of the None singleton.
 
 <a id="MessageUpdateParams"></a>
@@ -1413,16 +1764,16 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `text: str | Any`
+    `text: str`
     :   The type of the None singleton.
 
-    `ts: str | Any`
+    `ts: str`
     :   The type of the None singleton.
 
 <a id="MessageUpdateResponse"></a>
@@ -1443,22 +1794,22 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any | None`
+    `channel: str | None`
     :   The type of the None singleton.
 
-    `message: airbyte_agent_sdk.connectors.slack.models.CreatedMessage | Any`
+    `message: airbyte_agent_sdk.connectors.slack.models.CreatedMessage | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `ts: str | Any | None`
+    `ts: str | None`
     :   The type of the None singleton.
 
 <a id="MessagesListResponse"></a>
@@ -1479,22 +1830,73 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
-    `messages: list[airbyte_agent_sdk.connectors.slack.models.Message] | Any`
+    `messages: list[airbyte_agent_sdk.connectors.slack.models.Message] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `pin_count: int | Any | None`
+    `pin_count: int | None`
     :   The type of the None singleton.
 
-    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
+    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | None`
+    :   The type of the None singleton.
+
+<a id="PinAddParams"></a>
+
+`PinAddParams(**data: Any)`
+:   Parameters for pinning a message to a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `timestamp: str`
+    :   The type of the None singleton.
+
+<a id="PinAddResponse"></a>
+
+`PinAddResponse(**data: Any)`
+:   Response from pinning a message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="Reaction"></a>
@@ -1515,16 +1917,16 @@ Classes
 
     ### Class variables
 
-    `count: int | Any | None`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `users: list[str] | Any | None`
+    `users: list[str] | None`
     :   The type of the None singleton.
 
 <a id="ReactionAddParams"></a>
@@ -1545,16 +1947,16 @@ Classes
 
     ### Class variables
 
-    `channel: str | Any`
+    `channel: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `timestamp: str | Any`
+    `timestamp: str`
     :   The type of the None singleton.
 
 <a id="ReactionAddResponse"></a>
@@ -1578,7 +1980,61 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
+    :   The type of the None singleton.
+
+<a id="ReactionRemoveParams"></a>
+
+`ReactionRemoveParams(**data: Any)`
+:   Parameters for removing a reaction from a message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `timestamp: str`
+    :   The type of the None singleton.
+
+<a id="ReactionRemoveResponse"></a>
+
+`ReactionRemoveResponse(**data: Any)`
+:   Response from removing a reaction
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
     :   The type of the None singleton.
 
 <a id="ResponseMetadata"></a>
@@ -1602,7 +2058,139 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
+    :   The type of the None singleton.
+
+<a id="ScheduledMessageContent"></a>
+
+`ScheduledMessageContent(**data: Any)`
+:   Content of a scheduled message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `app_id: str | None`
+    :   The type of the None singleton.
+
+    `attachments: list[airbyte_agent_sdk.connectors.slack.models.Attachment] | None`
+    :   The type of the None singleton.
+
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
+    `bot_id: str | None`
+    :   The type of the None singleton.
+
+    `bot_profile: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `subtype: str | None`
+    :   The type of the None singleton.
+
+    `team: str | None`
+    :   The type of the None singleton.
+
+    `text: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `user: str | None`
+    :   The type of the None singleton.
+
+    `username: str | None`
+    :   The type of the None singleton.
+
+<a id="ScheduledMessageCreateParams"></a>
+
+`ScheduledMessageCreateParams(**data: Any)`
+:   Parameters for scheduling a message for future delivery
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `post_at: int`
+    :   The type of the None singleton.
+
+    `reply_broadcast: bool | None`
+    :   The type of the None singleton.
+
+    `text: str`
+    :   The type of the None singleton.
+
+    `thread_ts: str | None`
+    :   The type of the None singleton.
+
+    `unfurl_links: bool | None`
+    :   The type of the None singleton.
+
+    `unfurl_media: bool | None`
+    :   The type of the None singleton.
+
+<a id="ScheduledMessageCreateResponse"></a>
+
+`ScheduledMessageCreateResponse(**data: Any)`
+:   Response from scheduling a message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str | None`
+    :   The type of the None singleton.
+
+    `message: typing.Any | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
+    :   The type of the None singleton.
+
+    `post_at: int | None`
+    :   The type of the None singleton.
+
+    `scheduled_message_id: str | None`
     :   The type of the None singleton.
 
 <a id="SlackCheckResult"></a>
@@ -1985,73 +2573,73 @@ Classes
 
     ### Class variables
 
-    `app_id: str | Any | None`
+    `app_id: str | None`
     :   The type of the None singleton.
 
-    `attachments: list[airbyte_agent_sdk.connectors.slack.models.Attachment] | Any | None`
+    `attachments: list[airbyte_agent_sdk.connectors.slack.models.Attachment] | None`
     :   The type of the None singleton.
 
-    `blocks: list[dict[str, typing.Any]] | Any | None`
+    `blocks: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `bot_id: str | Any | None`
+    `bot_id: str | None`
     :   The type of the None singleton.
 
-    `bot_profile: Any`
+    `bot_profile: typing.Any | None`
     :   The type of the None singleton.
 
-    `edited: Any`
+    `edited: typing.Any | None`
     :   The type of the None singleton.
 
-    `files: list[airbyte_agent_sdk.connectors.slack.models.File] | Any | None`
+    `files: list[airbyte_agent_sdk.connectors.slack.models.File] | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `latest_reply: str | Any | None`
+    `latest_reply: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `parent_user_id: str | Any | None`
+    `parent_user_id: str | None`
     :   The type of the None singleton.
 
-    `reactions: list[airbyte_agent_sdk.connectors.slack.models.Reaction] | Any | None`
+    `reactions: list[airbyte_agent_sdk.connectors.slack.models.Reaction] | None`
     :   The type of the None singleton.
 
-    `reply_count: int | Any | None`
+    `reply_count: int | None`
     :   The type of the None singleton.
 
-    `reply_users: list[str] | Any | None`
+    `reply_users: list[str] | None`
     :   The type of the None singleton.
 
-    `reply_users_count: int | Any | None`
+    `reply_users_count: int | None`
     :   The type of the None singleton.
 
-    `subscribed: bool | Any | None`
+    `subscribed: bool | None`
     :   The type of the None singleton.
 
-    `subtype: str | Any | None`
+    `subtype: str | None`
     :   The type of the None singleton.
 
-    `team: str | Any | None`
+    `team: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `thread_ts: str | Any | None`
+    `thread_ts: str | None`
     :   The type of the None singleton.
 
-    `ts: str | Any`
+    `ts: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `user: str | Any | None`
+    `user: str | None`
     :   The type of the None singleton.
 
 <a id="ThreadRepliesResponse"></a>
@@ -2072,19 +2660,19 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
-    `messages: list[airbyte_agent_sdk.connectors.slack.models.Thread] | Any`
+    `messages: list[airbyte_agent_sdk.connectors.slack.models.Thread] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
+    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | None`
     :   The type of the None singleton.
 
 <a id="ThreadsListResultMeta"></a>
@@ -2105,13 +2693,13 @@ Classes
 
     ### Class variables
 
-    `has_more: bool | Any | None`
+    `has_more: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="ThreadsSearchData"></a>
@@ -2201,67 +2789,67 @@ Classes
 
     ### Class variables
 
-    `color: str | Any | None`
+    `color: str | None`
     :   The type of the None singleton.
 
-    `deleted: bool | Any | None`
+    `deleted: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_admin: bool | Any | None`
+    `is_admin: bool | None`
     :   The type of the None singleton.
 
-    `is_app_user: bool | Any | None`
+    `is_app_user: bool | None`
     :   The type of the None singleton.
 
-    `is_bot: bool | Any | None`
+    `is_bot: bool | None`
     :   The type of the None singleton.
 
-    `is_email_confirmed: bool | Any | None`
+    `is_email_confirmed: bool | None`
     :   The type of the None singleton.
 
-    `is_owner: bool | Any | None`
+    `is_owner: bool | None`
     :   The type of the None singleton.
 
-    `is_primary_owner: bool | Any | None`
+    `is_primary_owner: bool | None`
     :   The type of the None singleton.
 
-    `is_restricted: bool | Any | None`
+    `is_restricted: bool | None`
     :   The type of the None singleton.
 
-    `is_ultra_restricted: bool | Any | None`
+    `is_ultra_restricted: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `profile: Any`
+    `profile: typing.Any | None`
     :   The type of the None singleton.
 
-    `real_name: str | Any | None`
+    `real_name: str | None`
     :   The type of the None singleton.
 
-    `team_id: str | Any | None`
+    `team_id: str | None`
     :   The type of the None singleton.
 
-    `tz: str | Any | None`
+    `tz: str | None`
     :   The type of the None singleton.
 
-    `tz_label: str | Any | None`
+    `tz_label: str | None`
     :   The type of the None singleton.
 
-    `tz_offset: int | Any | None`
+    `tz_offset: int | None`
     :   The type of the None singleton.
 
-    `updated: int | Any | None`
+    `updated: int | None`
     :   The type of the None singleton.
 
-    `who_can_share_contact_card: str | Any | None`
+    `who_can_share_contact_card: str | None`
     :   The type of the None singleton.
 
 <a id="UserProfile"></a>
@@ -2282,70 +2870,70 @@ Classes
 
     ### Class variables
 
-    `avatar_hash: str | Any | None`
+    `avatar_hash: str | None`
     :   The type of the None singleton.
 
-    `display_name: str | Any | None`
+    `display_name: str | None`
     :   The type of the None singleton.
 
-    `display_name_normalized: str | Any | None`
+    `display_name_normalized: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `image_192: str | Any | None`
+    `image_192: str | None`
     :   The type of the None singleton.
 
-    `image_24: str | Any | None`
+    `image_24: str | None`
     :   The type of the None singleton.
 
-    `image_32: str | Any | None`
+    `image_32: str | None`
     :   The type of the None singleton.
 
-    `image_48: str | Any | None`
+    `image_48: str | None`
     :   The type of the None singleton.
 
-    `image_512: str | Any | None`
+    `image_512: str | None`
     :   The type of the None singleton.
 
-    `image_72: str | Any | None`
+    `image_72: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `real_name: str | Any | None`
+    `real_name: str | None`
     :   The type of the None singleton.
 
-    `real_name_normalized: str | Any | None`
+    `real_name_normalized: str | None`
     :   The type of the None singleton.
 
-    `skype: str | Any | None`
+    `skype: str | None`
     :   The type of the None singleton.
 
-    `status_emoji: str | Any | None`
+    `status_emoji: str | None`
     :   The type of the None singleton.
 
-    `status_expiration: int | Any | None`
+    `status_expiration: int | None`
     :   The type of the None singleton.
 
-    `status_text: str | Any | None`
+    `status_text: str | None`
     :   The type of the None singleton.
 
-    `team: str | Any | None`
+    `team: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="UserResponse"></a>
@@ -2369,10 +2957,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.slack.models.User | Any`
+    `user: airbyte_agent_sdk.connectors.slack.models.User | None`
     :   The type of the None singleton.
 
 <a id="UsersListResponse"></a>
@@ -2393,19 +2981,19 @@ Classes
 
     ### Class variables
 
-    `cache_ts: int | Any | None`
+    `cache_ts: int | None`
     :   The type of the None singleton.
 
-    `members: list[airbyte_agent_sdk.connectors.slack.models.User] | Any`
+    `members: list[airbyte_agent_sdk.connectors.slack.models.User] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ok: bool | Any`
+    `ok: bool | None`
     :   The type of the None singleton.
 
-    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | Any`
+    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ResponseMetadata | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -2429,7 +3017,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>

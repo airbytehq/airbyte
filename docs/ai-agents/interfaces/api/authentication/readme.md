@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 1
 ---
 
@@ -25,7 +26,7 @@ The Airbyte Agent API uses a hierarchical token system. Each token type has a di
 
 The application token provides organization-level access. Use it for administrative operations like managing connectors, listing workspaces, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
 
-To obtain an application token, send your app credentials to the token endpoint. Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents app.
+To obtain an application token, send your app credentials to the token endpoint. Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai).
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
@@ -47,7 +48,7 @@ The response contains your application token:
 }
 ```
 
-Application tokens are short-lived — `expires_in` is 900 seconds (15 minutes) by design, because they carry organization-wide privileges. Request a new token when yours expires. [Scoped tokens](#scoped-token) live longer (20 minutes) because they're already limited to a single workspace and their exposure is lower. If you're building a long-running app, cache the current token and refresh it just before `expires_in` elapses.
+Application tokens are short-lived. `expires_in` is 900 seconds (15 minutes) by design, because they carry organization-wide privileges. Request a new token when yours expires. [Scoped tokens](#scoped-token) live longer (20 minutes) because they're already limited to a single workspace and their exposure is lower. If you're building a long-running app, cache the current token and refresh it just before `expires_in` elapses.
 
 ### Scoped token
 

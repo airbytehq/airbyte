@@ -31,37 +31,37 @@ Classes
 
     ### Class variables
 
-    `auth_token: str | Any | None`
+    `auth_token: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `friendly_name: str | Any | None`
+    `friendly_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `owner_account_sid: str | Any | None`
+    `owner_account_sid: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsList"></a>
@@ -82,28 +82,28 @@ Classes
 
     ### Class variables
 
-    `accounts: list[airbyte_agent_sdk.connectors.twilio.models.Account] | Any`
+    `accounts: list[airbyte_agent_sdk.connectors.twilio.models.Account] | None`
     :   The type of the None singleton.
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsListResultMeta"></a>
@@ -124,19 +124,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="AccountsSearchData"></a>
@@ -202,55 +202,55 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `customer_name: str | Any | None`
+    `customer_name: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `emergency_enabled: bool | Any | None`
+    `emergency_enabled: bool | None`
     :   The type of the None singleton.
 
-    `friendly_name: str | Any | None`
+    `friendly_name: str | None`
     :   The type of the None singleton.
 
-    `iso_country: str | Any | None`
+    `iso_country: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
-    `region: str | Any | None`
+    `region: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `street: str | Any | None`
+    `street: str | None`
     :   The type of the None singleton.
 
-    `street_secondary: str | Any | None`
+    `street_secondary: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
-    `validated: bool | Any | None`
+    `validated: bool | None`
     :   The type of the None singleton.
 
-    `verified: bool | Any | None`
+    `verified: bool | None`
     :   The type of the None singleton.
 
 <a id="AddressesList"></a>
@@ -271,28 +271,28 @@ Classes
 
     ### Class variables
 
-    `addresses: list[airbyte_agent_sdk.connectors.twilio.models.Address] | Any`
+    `addresses: list[airbyte_agent_sdk.connectors.twilio.models.Address] | None`
     :   The type of the None singleton.
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="AddressesListResultMeta"></a>
@@ -313,19 +313,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="AddressesSearchData"></a>
@@ -901,88 +901,145 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `annotation: str | Any | None`
+    `annotation: str | None`
     :   The type of the None singleton.
 
-    `answered_by: str | Any | None`
+    `answered_by: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `caller_name: str | Any | None`
+    `caller_name: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `direction: str | Any | None`
+    `direction: str | None`
     :   The type of the None singleton.
 
-    `duration: str | Any | None`
+    `duration: str | None`
     :   The type of the None singleton.
 
-    `end_time: str | Any | None`
+    `end_time: str | None`
     :   The type of the None singleton.
 
-    `forwarded_from: str | Any | None`
+    `forwarded_from: str | None`
     :   The type of the None singleton.
 
-    `from_: str | Any | None`
+    `from_: str | None`
     :   The type of the None singleton.
 
-    `from_formatted: str | Any | None`
+    `from_formatted: str | None`
     :   The type of the None singleton.
 
-    `group_sid: str | Any | None`
+    `group_sid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `parent_call_sid: str | Any | None`
+    `parent_call_sid: str | None`
     :   The type of the None singleton.
 
-    `phone_number_sid: str | Any | None`
+    `phone_number_sid: str | None`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `price_unit: str | Any | None`
+    `price_unit: str | None`
     :   The type of the None singleton.
 
-    `queue_time: str | Any | None`
+    `queue_time: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `start_time: str | Any | None`
+    `start_time: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `to: str | Any | None`
+    `to: str | None`
     :   The type of the None singleton.
 
-    `to_formatted: str | Any | None`
+    `to_formatted: str | None`
     :   The type of the None singleton.
 
-    `trunk_sid: str | Any | None`
+    `trunk_sid: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
+    :   The type of the None singleton.
+
+<a id="CallCreateParams"></a>
+
+`CallCreateParams(**data: Any)`
+:   Parameters for placing an outbound call
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `application_sid: str | None`
+    :   The type of the None singleton.
+
+    `from_: str | None`
+    :   The type of the None singleton.
+
+    `machine_detection: str | None`
+    :   The type of the None singleton.
+
+    `method: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `record: bool | None`
+    :   The type of the None singleton.
+
+    `send_digits: str | None`
+    :   The type of the None singleton.
+
+    `status_callback: str | None`
+    :   The type of the None singleton.
+
+    `status_callback_method: str | None`
+    :   The type of the None singleton.
+
+    `timeout: int | None`
+    :   The type of the None singleton.
+
+    `to: str | None`
+    :   The type of the None singleton.
+
+    `twiml: str | None`
+    :   The type of the None singleton.
+
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="CallsList"></a>
@@ -1003,28 +1060,28 @@ Classes
 
     ### Class variables
 
-    `calls: list[airbyte_agent_sdk.connectors.twilio.models.Call] | Any`
+    `calls: list[airbyte_agent_sdk.connectors.twilio.models.Call] | None`
     :   The type of the None singleton.
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="CallsListResultMeta"></a>
@@ -1045,19 +1102,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="CallsSearchData"></a>
@@ -1138,43 +1195,43 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `call_sid_ending_conference: str | Any | None`
+    `call_sid_ending_conference: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `friendly_name: str | Any | None`
+    `friendly_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reason_conference_ended: str | Any | None`
+    `reason_conference_ended: str | None`
     :   The type of the None singleton.
 
-    `region: str | Any | None`
+    `region: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="ConferencesList"></a>
@@ -1195,28 +1252,28 @@ Classes
 
     ### Class variables
 
-    `conferences: list[airbyte_agent_sdk.connectors.twilio.models.Conference] | Any`
+    `conferences: list[airbyte_agent_sdk.connectors.twilio.models.Conference] | None`
     :   The type of the None singleton.
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="ConferencesListResultMeta"></a>
@@ -1237,19 +1294,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="ConferencesSearchData"></a>
@@ -1312,115 +1369,115 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `address_requirements: str | Any | None`
+    `address_requirements: str | None`
     :   The type of the None singleton.
 
-    `address_sid: str | Any | None`
+    `address_sid: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `beta: bool | Any | None`
+    `beta: bool | None`
     :   The type of the None singleton.
 
-    `bundle_sid: str | Any | None`
+    `bundle_sid: str | None`
     :   The type of the None singleton.
 
-    `capabilities: airbyte_agent_sdk.connectors.twilio.models.IncomingPhoneNumberCapabilities | Any | None`
+    `capabilities: airbyte_agent_sdk.connectors.twilio.models.IncomingPhoneNumberCapabilities | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `emergency_address_sid: str | Any | None`
+    `emergency_address_sid: str | None`
     :   The type of the None singleton.
 
-    `emergency_address_status: str | Any | None`
+    `emergency_address_status: str | None`
     :   The type of the None singleton.
 
-    `emergency_status: str | Any | None`
+    `emergency_status: str | None`
     :   The type of the None singleton.
 
-    `friendly_name: str | Any | None`
+    `friendly_name: str | None`
     :   The type of the None singleton.
 
-    `identity_sid: str | Any | None`
+    `identity_sid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `origin: str | Any | None`
+    `origin: str | None`
     :   The type of the None singleton.
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `sms_application_sid: str | Any | None`
+    `sms_application_sid: str | None`
     :   The type of the None singleton.
 
-    `sms_fallback_method: str | Any | None`
+    `sms_fallback_method: str | None`
     :   The type of the None singleton.
 
-    `sms_fallback_url: str | Any | None`
+    `sms_fallback_url: str | None`
     :   The type of the None singleton.
 
-    `sms_method: str | Any | None`
+    `sms_method: str | None`
     :   The type of the None singleton.
 
-    `sms_url: str | Any | None`
+    `sms_url: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `status_callback: str | Any | None`
+    `status_callback: str | None`
     :   The type of the None singleton.
 
-    `status_callback_method: str | Any | None`
+    `status_callback_method: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `trunk_sid: str | Any | None`
+    `trunk_sid: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
-    `voice_application_sid: str | Any | None`
+    `voice_application_sid: str | None`
     :   The type of the None singleton.
 
-    `voice_caller_id_lookup: bool | Any | None`
+    `voice_caller_id_lookup: bool | None`
     :   The type of the None singleton.
 
-    `voice_fallback_method: str | Any | None`
+    `voice_fallback_method: str | None`
     :   The type of the None singleton.
 
-    `voice_fallback_url: str | Any | None`
+    `voice_fallback_url: str | None`
     :   The type of the None singleton.
 
-    `voice_method: str | Any | None`
+    `voice_method: str | None`
     :   The type of the None singleton.
 
-    `voice_receive_mode: str | Any | None`
+    `voice_receive_mode: str | None`
     :   The type of the None singleton.
 
-    `voice_url: str | Any | None`
+    `voice_url: str | None`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumberCapabilities"></a>
@@ -1441,19 +1498,70 @@ Classes
 
     ### Class variables
 
-    `fax: bool | Any | None`
+    `fax: bool | None`
     :   The type of the None singleton.
 
-    `mms: bool | Any | None`
+    `mms: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `sms: bool | Any | None`
+    `sms: bool | None`
     :   The type of the None singleton.
 
-    `voice: bool | Any | None`
+    `voice: bool | None`
+    :   The type of the None singleton.
+
+<a id="IncomingPhoneNumberCreateParams"></a>
+
+`IncomingPhoneNumberCreateParams(**data: Any)`
+:   Parameters for provisioning a new phone number
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `area_code: str | None`
+    :   The type of the None singleton.
+
+    `friendly_name: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone_number: str | None`
+    :   The type of the None singleton.
+
+    `sms_application_sid: str | None`
+    :   The type of the None singleton.
+
+    `sms_method: str | None`
+    :   The type of the None singleton.
+
+    `sms_url: str | None`
+    :   The type of the None singleton.
+
+    `status_callback: str | None`
+    :   The type of the None singleton.
+
+    `voice_application_sid: str | None`
+    :   The type of the None singleton.
+
+    `voice_method: str | None`
+    :   The type of the None singleton.
+
+    `voice_url: str | None`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumbersList"></a>
@@ -1474,28 +1582,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
-    `incoming_phone_numbers: list[airbyte_agent_sdk.connectors.twilio.models.IncomingPhoneNumber] | Any`
+    `incoming_phone_numbers: list[airbyte_agent_sdk.connectors.twilio.models.IncomingPhoneNumber] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumbersListResultMeta"></a>
@@ -1516,19 +1624,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumbersSearchData"></a>
@@ -1594,67 +1702,109 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `body: str | Any | None`
+    `body: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_sent: str | Any | None`
+    `date_sent: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `direction: str | Any | None`
+    `direction: str | None`
     :   The type of the None singleton.
 
-    `error_code: str | Any | None`
+    `error_code: str | None`
     :   The type of the None singleton.
 
-    `error_message: str | Any | None`
+    `error_message: str | None`
     :   The type of the None singleton.
 
-    `from_: str | Any | None`
+    `from_: str | None`
     :   The type of the None singleton.
 
-    `messaging_service_sid: str | Any | None`
+    `messaging_service_sid: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `num_media: str | Any | None`
+    `num_media: str | None`
     :   The type of the None singleton.
 
-    `num_segments: str | Any | None`
+    `num_segments: str | None`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `price_unit: str | Any | None`
+    `price_unit: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `to: str | Any | None`
+    `to: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
+    :   The type of the None singleton.
+
+<a id="MessageCreateParams"></a>
+
+`MessageCreateParams(**data: Any)`
+:   Parameters for sending a new SMS/MMS/WhatsApp message
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `from_: str | None`
+    :   The type of the None singleton.
+
+    `media_url: list[str] | None`
+    :   The type of the None singleton.
+
+    `messaging_service_sid: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `status_callback: str | None`
+    :   The type of the None singleton.
+
+    `to: str | None`
+    :   The type of the None singleton.
+
+    `validity_period: int | None`
     :   The type of the None singleton.
 
 <a id="MessagesList"></a>
@@ -1675,28 +1825,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
-    `messages: list[airbyte_agent_sdk.connectors.twilio.models.Message] | Any`
+    `messages: list[airbyte_agent_sdk.connectors.twilio.models.Message] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="MessagesListResultMeta"></a>
@@ -1717,19 +1867,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="MessagesSearchData"></a>
@@ -1816,28 +1966,28 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `friendly_name: str | Any | None`
+    `friendly_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="OutgoingCallerIdsList"></a>
@@ -1858,28 +2008,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `outgoing_caller_ids: list[airbyte_agent_sdk.connectors.twilio.models.OutgoingCallerId] | Any`
+    `outgoing_caller_ids: list[airbyte_agent_sdk.connectors.twilio.models.OutgoingCallerId] | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="OutgoingCallerIdsListResultMeta"></a>
@@ -1900,19 +2050,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="OutgoingCallerIdsSearchData"></a>
@@ -1972,37 +2122,37 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `average_wait_time: int | Any | None`
+    `average_wait_time: int | None`
     :   The type of the None singleton.
 
-    `current_size: int | Any | None`
+    `current_size: int | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `friendly_name: str | Any | None`
+    `friendly_name: str | None`
     :   The type of the None singleton.
 
-    `max_size: int | Any | None`
+    `max_size: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="QueuesList"></a>
@@ -2023,28 +2173,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `queues: list[airbyte_agent_sdk.connectors.twilio.models.Queue] | Any`
+    `queues: list[airbyte_agent_sdk.connectors.twilio.models.Queue] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="QueuesListResultMeta"></a>
@@ -2065,19 +2215,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="QueuesSearchData"></a>
@@ -2143,64 +2293,64 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `call_sid: str | Any | None`
+    `call_sid: str | None`
     :   The type of the None singleton.
 
-    `channels: int | Any | None`
+    `channels: int | None`
     :   The type of the None singleton.
 
-    `conference_sid: str | Any | None`
+    `conference_sid: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `duration: str | Any | None`
+    `duration: str | None`
     :   The type of the None singleton.
 
-    `encryption_details: dict[str, typing.Any] | Any | None`
+    `encryption_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `error_code: str | Any | None`
+    `error_code: str | None`
     :   The type of the None singleton.
 
-    `media_url: str | Any | None`
+    `media_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `price_unit: str | Any | None`
+    `price_unit: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `start_time: str | Any | None`
+    `start_time: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="RecordingsList"></a>
@@ -2221,28 +2371,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `recordings: list[airbyte_agent_sdk.connectors.twilio.models.Recording] | Any`
+    `recordings: list[airbyte_agent_sdk.connectors.twilio.models.Recording] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="RecordingsListResultMeta"></a>
@@ -2263,19 +2413,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="RecordingsSearchData"></a>
@@ -2347,46 +2497,46 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `date_created: str | Any | None`
+    `date_created: str | None`
     :   The type of the None singleton.
 
-    `date_updated: str | Any | None`
+    `date_updated: str | None`
     :   The type of the None singleton.
 
-    `duration: str | Any | None`
+    `duration: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `price_unit: str | Any | None`
+    `price_unit: str | None`
     :   The type of the None singleton.
 
-    `recording_sid: str | Any | None`
+    `recording_sid: str | None`
     :   The type of the None singleton.
 
-    `sid: str | Any | None`
+    `sid: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `transcription_text: str | Any | None`
+    `transcription_text: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="TranscriptionsList"></a>
@@ -2407,28 +2557,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `transcriptions: list[airbyte_agent_sdk.connectors.twilio.models.Transcription] | Any`
+    `transcriptions: list[airbyte_agent_sdk.connectors.twilio.models.Transcription] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
 <a id="TranscriptionsListResultMeta"></a>
@@ -2449,19 +2599,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="TranscriptionsSearchData"></a>
@@ -3181,52 +3331,52 @@ Classes
 
     ### Class variables
 
-    `account_sid: str | Any | None`
+    `account_sid: str | None`
     :   The type of the None singleton.
 
-    `api_version: str | Any | None`
+    `api_version: str | None`
     :   The type of the None singleton.
 
-    `as_of: str | Any | None`
+    `as_of: str | None`
     :   The type of the None singleton.
 
-    `category: str | Any | None`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `count: str | Any | None`
+    `count: str | None`
     :   The type of the None singleton.
 
-    `count_unit: str | Any | None`
+    `count_unit: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any | None`
+    `end_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `price_unit: str | Any | None`
+    `price_unit: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `subresource_uris: dict[str, typing.Any] | Any | None`
+    `subresource_uris: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
-    `usage: str | Any | None`
+    `usage: str | None`
     :   The type of the None singleton.
 
-    `usage_unit: str | Any | None`
+    `usage_unit: str | None`
     :   The type of the None singleton.
 
 <a id="UsageRecordsList"></a>
@@ -3247,28 +3397,28 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
-    `previous_page_uri: str | Any | None`
+    `previous_page_uri: str | None`
     :   The type of the None singleton.
 
-    `uri: str | Any | None`
+    `uri: str | None`
     :   The type of the None singleton.
 
-    `usage_records: list[airbyte_agent_sdk.connectors.twilio.models.UsageRecord] | Any`
+    `usage_records: list[airbyte_agent_sdk.connectors.twilio.models.UsageRecord] | None`
     :   The type of the None singleton.
 
 <a id="UsageRecordsListResultMeta"></a>
@@ -3289,19 +3439,19 @@ Classes
 
     ### Class variables
 
-    `first_page_uri: str | Any | None`
+    `first_page_uri: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_uri: str | Any | None`
+    `next_page_uri: str | None`
     :   The type of the None singleton.
 
-    `page: int | Any | None`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `page_size: int | Any | None`
+    `page_size: int | None`
     :   The type of the None singleton.
 
 <a id="UsageRecordsSearchData"></a>

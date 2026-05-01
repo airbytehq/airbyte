@@ -1,14 +1,15 @@
 ---
+plan: all
 sidebar_position: 3
 ---
 
 # Execute operations
 
-Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers three execution paths and patterns for exposing a connector as a tool to an AI agent framework.
+Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers direct execution and patterns for exposing a connector as a tool to an AI agent framework.
 
 ## Direct execution
 
-The `connect()` factory takes a connector slug and returns an execution object. Call its `execute(entity, action, params)` method to run an operation. When your workspace has exactly one connector of a given type, you don't need to pass a `connector_id` — the SDK resolves the connector by its slug automatically.
+The `connect()` factory takes a connector slug and returns an execution object. Call its `execute(entity, action, params)` method to run an operation. When your workspace has exactly one connector of a given type, you don't need to pass a `connector_id`. The SDK resolves the connector by its slug automatically.
 
 ```python title="agent.py"
 import asyncio
@@ -28,7 +29,7 @@ asyncio.run(main())
 
 - `entity` is the resource, such as `issues`, `repositories`, or `pull_requests`.
 - `action` is one of the connector's supported actions, such as `list` or `get`. Some connectors support additional actions like `search` or `download`; check the connector's reference page.
-- `params` contains action-specific arguments. The exact keys are connector- and entity-specific — GitHub's `issues.list` accepts `per_page`, for example, while other connectors paginate via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
+- `params` contains action-specific arguments. The exact keys are connector- and entity-specific. GitHub's `issues.list` accepts `per_page`, for example, while other connectors paginate via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
 - Always wrap the call in `try`/`finally` and `await connector.close()` once you're done to release the underlying HTTP client.
 
 See the connector's page in the [Connectors](../../connectors) reference for the entities and actions it supports.
@@ -39,11 +40,11 @@ For connectors with a generated typed submodule, `connect()` returns a typed con
 
 For every other connector in the bundled registry, `connect()` returns a generic `HostedExecutor` with the same `execute(entity, action, params)` method but without typed shortcuts. The execution behavior is otherwise identical.
 
-`connect()` raises `ValueError` if the slug isn't in the bundled registry (the message lists every supported slug) or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing — YAML-only connectors return a `HostedExecutor`.
+`connect()` raises `ValueError` if the slug isn't in the bundled registry (the message lists every supported slug) or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing. YAML-only connectors return a `HostedExecutor`.
 
 ### Multiple connectors of the same type
 
-If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous. Pass an explicit `connector_id` to `connect()` so the SDK knows which one to target:
+If your workspace has more than one connector of a given type (for example, two separate Stripe accounts), slug resolution is ambiguous. Pass an explicit `connector_id` to `connect()` so the SDK knows which one to target:
 
 ```python title="agent.py"
 stripe_us = connect("stripe", connector_id="<us_account_connector_id>")
@@ -58,58 +59,6 @@ instead steer readers to pass connector_id up front.
 -->
 
 For patterns that look up a connector ID without hard-coding it, see [Get a connector](./add-connector#get-a-connector).
-
-## Natural-language queries
-
-`ask()` and `ask_sync()` dispatch a natural-language prompt across every connector in a workspace. Airbyte routes the prompt to the right connector, runs the right operations, and returns a structured result.
-
-```python title="agent.py"
-import asyncio
-from airbyte_agent_sdk import ask
-
-async def main():
-    result = await ask("list my 5 most recent Stripe customers")
-    print(result.outcome, result.answer)
-    for call in result.results:
-        print(call.entity, call.action, call.status)
-
-asyncio.run(main())
-```
-
-Check `result.outcome == "success"` before trusting `result.answer`. The `result.results` list contains one entry per tool call the dispatcher made. Each entry is an `AskToolCallResult` with the fields the dispatcher saw end-to-end:
-
-```python title="Example result.results[0] for a routed list call"
-AskToolCallResult(
-    source_id="58caf5e9-7a6b-4d1e-9f3c-d4a2e81b9f70",
-    entity="customers",
-    action="list",
-    params={"limit": 5},
-    status="success",
-    data=[{"id": "cus_…", "email": "…"}, ...],
-    connector_metadata={"has_next_page": True, "end_cursor": "…"},
-    execution_time_ms=2635,
-)
-```
-
-When the dispatcher routes to a connector-native read (`action="list"` or `"get"`), `data` is a flat list or a single record, and pagination lives in `connector_metadata`.
-
-<!--
-AGENTIC-1138 problem 1: context_store_search routing nests records and
-pagination together under data.{data,meta}, and leaves connector_metadata
-null. Don't document this in the public narrative; once the backend
-normalizes to the connector-native envelope this paragraph can go.
--->
-
-Use `ask_sync()` in scripts and notebooks where you don't want to manage an event loop:
-
-```python title="notebook.ipynb"
-from airbyte_agent_sdk import ask_sync
-
-result = ask_sync("list my 5 most recent Stripe customers")
-print(result.answer)
-```
-
-Prefer `connect()` plus `execute()` when you know exactly which entity and action to call. Prefer `ask()` when you want the platform to pick the right operation based on a natural-language request.
 
 ## Expose a connector as an agent tool
 
@@ -192,7 +141,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 Some connectors support a `download` action for binary entities like attachments, audio recordings, and documents. Download responses return a byte stream instead of JSON.
 
-Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here — YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
+Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here. YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
 
 ```python title="agent.py"
 zendesk_support = connect("zendesk-support")

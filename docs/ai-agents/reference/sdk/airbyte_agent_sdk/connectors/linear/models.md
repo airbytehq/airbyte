@@ -332,25 +332,25 @@ Classes
 
     ### Class variables
 
-    `body: str | Any`
+    `body: str`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `issue: Any`
+    `issue: typing.Any | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user: Any`
+    `user: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="CommentCreateParams"></a>
@@ -371,10 +371,10 @@ Classes
 
     ### Class variables
 
-    `body: str | Any`
+    `body: str`
     :   The type of the None singleton.
 
-    `issue_id: str | Any`
+    `issue_id: str`
     :   The type of the None singleton.
 
     `model_config`
@@ -398,7 +398,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.CommentCreateResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.CommentCreateResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -422,7 +422,7 @@ Classes
 
     ### Class variables
 
-    `comment_create: airbyte_agent_sdk.connectors.linear.models.CommentMutationPayload | Any`
+    `comment_create: airbyte_agent_sdk.connectors.linear.models.CommentMutationPayload | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -446,13 +446,13 @@ Classes
 
     ### Class variables
 
-    `comment: airbyte_agent_sdk.connectors.linear.models.Comment | Any`
+    `comment: airbyte_agent_sdk.connectors.linear.models.Comment | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `success: bool | Any`
+    `success: bool | None`
     :   The type of the None singleton.
 
 <a id="CommentResponse"></a>
@@ -473,7 +473,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.CommentResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.CommentResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -497,7 +497,7 @@ Classes
 
     ### Class variables
 
-    `comment: airbyte_agent_sdk.connectors.linear.models.Comment | Any`
+    `comment: airbyte_agent_sdk.connectors.linear.models.Comment | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -521,10 +521,10 @@ Classes
 
     ### Class variables
 
-    `body: str | Any`
+    `body: str`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
@@ -548,7 +548,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.CommentUpdateResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.CommentUpdateResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -572,7 +572,7 @@ Classes
 
     ### Class variables
 
-    `comment_update: airbyte_agent_sdk.connectors.linear.models.CommentMutationPayload | Any`
+    `comment_update: airbyte_agent_sdk.connectors.linear.models.CommentMutationPayload | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -596,7 +596,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -620,7 +620,7 @@ Classes
 
     ### Class variables
 
-    `issue: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssue | Any`
+    `issue: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssue | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -644,7 +644,7 @@ Classes
 
     ### Class variables
 
-    `comments: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssueComments | Any`
+    `comments: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssueComments | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -671,10 +671,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Comment] | Any`
+    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Comment] | None`
     :   The type of the None singleton.
 
-    `page_info: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssueCommentsPageinfo | Any`
+    `page_info: airbyte_agent_sdk.connectors.linear.models.CommentsListResponseDataIssueCommentsPageinfo | None`
     :   Pagination information
 
 <a id="CommentsListResponseDataIssueCommentsPageinfo"></a>
@@ -695,10 +695,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   Cursor to fetch next page
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   Whether there are more items available
 
     `model_config`
@@ -722,10 +722,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -815,37 +815,37 @@ Classes
 
     ### Class variables
 
-    `assignee: Any`
+    `assignee: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: Any`
+    `description: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: Any`
+    `priority: typing.Any | None`
     :   The type of the None singleton.
 
-    `project: Any`
+    `project: typing.Any | None`
     :   The type of the None singleton.
 
-    `state: Any`
+    `state: typing.Any | None`
     :   The type of the None singleton.
 
-    `team: Any`
+    `team: typing.Any | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IssueCreateParams"></a>
@@ -866,25 +866,25 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: int | Any`
+    `priority: int | None`
     :   The type of the None singleton.
 
-    `project_id: str | Any`
+    `project_id: str | None`
     :   The type of the None singleton.
 
-    `state_id: str | Any`
+    `state_id: str | None`
     :   The type of the None singleton.
 
-    `team_id: str | Any`
+    `team_id: str`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="IssueCreateResponse"></a>
@@ -905,7 +905,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.IssueCreateResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.IssueCreateResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -929,7 +929,7 @@ Classes
 
     ### Class variables
 
-    `issue_create: airbyte_agent_sdk.connectors.linear.models.IssueMutationPayload | Any`
+    `issue_create: airbyte_agent_sdk.connectors.linear.models.IssueMutationPayload | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -953,13 +953,13 @@ Classes
 
     ### Class variables
 
-    `issue: airbyte_agent_sdk.connectors.linear.models.IssueWithState | Any`
+    `issue: airbyte_agent_sdk.connectors.linear.models.IssueWithState | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `success: bool | Any`
+    `success: bool | None`
     :   The type of the None singleton.
 
 <a id="IssueResponse"></a>
@@ -980,7 +980,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.IssueResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.IssueResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1004,7 +1004,7 @@ Classes
 
     ### Class variables
 
-    `issue: airbyte_agent_sdk.connectors.linear.models.Issue | Any`
+    `issue: airbyte_agent_sdk.connectors.linear.models.Issue | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1031,28 +1031,28 @@ Classes
 
     ### Class variables
 
-    `assignee_id: str | Any`
+    `assignee_id: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: int | Any`
+    `priority: int | None`
     :   The type of the None singleton.
 
-    `project_id: str | Any`
+    `project_id: str | None`
     :   The type of the None singleton.
 
-    `state_id: str | Any`
+    `state_id: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="IssueUpdateResponse"></a>
@@ -1073,7 +1073,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.IssueUpdateResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.IssueUpdateResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1097,7 +1097,7 @@ Classes
 
     ### Class variables
 
-    `issue_update: airbyte_agent_sdk.connectors.linear.models.IssueMutationPayload | Any`
+    `issue_update: airbyte_agent_sdk.connectors.linear.models.IssueMutationPayload | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1121,34 +1121,34 @@ Classes
 
     ### Class variables
 
-    `assignee: Any`
+    `assignee: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: Any`
+    `description: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: Any`
+    `priority: typing.Any | None`
     :   The type of the None singleton.
 
-    `project: Any`
+    `project: typing.Any | None`
     :   The type of the None singleton.
 
-    `state: Any`
+    `state: typing.Any | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="IssuesListResponse"></a>
@@ -1169,7 +1169,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1193,7 +1193,7 @@ Classes
 
     ### Class variables
 
-    `issues: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseDataIssues | Any`
+    `issues: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseDataIssues | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1220,10 +1220,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Issue] | Any`
+    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Issue] | None`
     :   The type of the None singleton.
 
-    `page_info: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseDataIssuesPageinfo | Any`
+    `page_info: airbyte_agent_sdk.connectors.linear.models.IssuesListResponseDataIssuesPageinfo | None`
     :   Pagination information
 
 <a id="IssuesListResponseDataIssuesPageinfo"></a>
@@ -1244,10 +1244,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   Cursor to fetch next page
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   Whether there are more items available
 
     `model_config`
@@ -1271,10 +1271,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1872,34 +1872,34 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: Any`
+    `description: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `lead: Any`
+    `lead: typing.Any | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `start_date: Any`
+    `start_date: typing.Any | None`
     :   The type of the None singleton.
 
-    `state: Any`
+    `state: typing.Any | None`
     :   The type of the None singleton.
 
-    `target_date: Any`
+    `target_date: typing.Any | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCreateParams"></a>
@@ -1920,28 +1920,28 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `lead_id: str | Any`
+    `lead_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `target_date: str | Any`
+    `target_date: str | None`
     :   The type of the None singleton.
 
-    `team_ids: list[str] | Any`
+    `team_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="ProjectCreateResponse"></a>
@@ -1962,7 +1962,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.ProjectCreateResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.ProjectCreateResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1989,7 +1989,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `project_create: airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload | Any`
+    `project_create: airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload | None`
     :   The type of the None singleton.
 
 <a id="ProjectMutationPayload"></a>
@@ -2013,10 +2013,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.linear.models.Project | Any`
+    `project: airbyte_agent_sdk.connectors.linear.models.Project | None`
     :   The type of the None singleton.
 
-    `success: bool | Any`
+    `success: bool | None`
     :   The type of the None singleton.
 
 <a id="ProjectResponse"></a>
@@ -2037,7 +2037,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.ProjectResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.ProjectResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2064,7 +2064,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.linear.models.Project | Any`
+    `project: airbyte_agent_sdk.connectors.linear.models.Project | None`
     :   The type of the None singleton.
 
 <a id="ProjectUpdateParams"></a>
@@ -2086,28 +2086,28 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `lead_id: str | Any`
+    `lead_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `target_date: str | Any`
+    `target_date: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectUpdateResponse"></a>
@@ -2128,7 +2128,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.ProjectUpdateResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.ProjectUpdateResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2155,7 +2155,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `project_update: airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload | Any`
+    `project_update: airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload | None`
     :   The type of the None singleton.
 
 <a id="ProjectsListResponse"></a>
@@ -2176,7 +2176,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2203,7 +2203,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `projects: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseDataProjects | Any`
+    `projects: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseDataProjects | None`
     :   The type of the None singleton.
 
 <a id="ProjectsListResponseDataProjects"></a>
@@ -2227,10 +2227,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Project] | Any`
+    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Project] | None`
     :   The type of the None singleton.
 
-    `page_info: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseDataProjectsPageinfo | Any`
+    `page_info: airbyte_agent_sdk.connectors.linear.models.ProjectsListResponseDataProjectsPageinfo | None`
     :   Pagination information
 
 <a id="ProjectsListResponseDataProjectsPageinfo"></a>
@@ -2251,10 +2251,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   Cursor to fetch next page
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   Whether there are more items available
 
     `model_config`
@@ -2278,10 +2278,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2446,28 +2446,28 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: Any`
+    `description: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `timezone: Any`
+    `timezone: typing.Any | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="TeamResponse"></a>
@@ -2488,7 +2488,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.TeamResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.TeamResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2515,7 +2515,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `team: airbyte_agent_sdk.connectors.linear.models.Team | Any`
+    `team: airbyte_agent_sdk.connectors.linear.models.Team | None`
     :   The type of the None singleton.
 
 <a id="TeamsListResponse"></a>
@@ -2536,7 +2536,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2563,7 +2563,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `teams: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseDataTeams | Any`
+    `teams: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseDataTeams | None`
     :   The type of the None singleton.
 
 <a id="TeamsListResponseDataTeams"></a>
@@ -2587,10 +2587,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Team] | Any`
+    `nodes: list[airbyte_agent_sdk.connectors.linear.models.Team] | None`
     :   The type of the None singleton.
 
-    `page_info: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseDataTeamsPageinfo | Any`
+    `page_info: airbyte_agent_sdk.connectors.linear.models.TeamsListResponseDataTeamsPageinfo | None`
     :   Pagination information
 
 <a id="TeamsListResponseDataTeamsPageinfo"></a>
@@ -2611,10 +2611,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   Cursor to fetch next page
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   Whether there are more items available
 
     `model_config`
@@ -2638,10 +2638,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2806,31 +2806,31 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `admin: bool | Any`
+    `admin: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `display_name: Any`
+    `display_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="UserResponse"></a>
@@ -2851,7 +2851,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.UserResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.UserResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2878,7 +2878,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.linear.models.User | Any`
+    `user: airbyte_agent_sdk.connectors.linear.models.User | None`
     :   The type of the None singleton.
 
 <a id="UsersListResponse"></a>
@@ -2899,7 +2899,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.UsersListResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.UsersListResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2926,7 +2926,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `users: airbyte_agent_sdk.connectors.linear.models.UsersListResponseDataUsers | Any`
+    `users: airbyte_agent_sdk.connectors.linear.models.UsersListResponseDataUsers | None`
     :   The type of the None singleton.
 
 <a id="UsersListResponseDataUsers"></a>
@@ -2950,10 +2950,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `nodes: list[airbyte_agent_sdk.connectors.linear.models.User] | Any`
+    `nodes: list[airbyte_agent_sdk.connectors.linear.models.User] | None`
     :   The type of the None singleton.
 
-    `page_info: airbyte_agent_sdk.connectors.linear.models.UsersListResponseDataUsersPageinfo | Any`
+    `page_info: airbyte_agent_sdk.connectors.linear.models.UsersListResponseDataUsersPageinfo | None`
     :   Pagination information
 
 <a id="UsersListResponseDataUsersPageinfo"></a>
@@ -2974,10 +2974,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   Cursor to fetch next page
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   Whether there are more items available
 
     `model_config`
@@ -3001,10 +3001,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3109,31 +3109,31 @@ Classes
 
     ### Class variables
 
-    `color: Any`
+    `color: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `position: Any`
+    `position: typing.Any | None`
     :   The type of the None singleton.
 
-    `team: Any`
+    `team: typing.Any | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="WorkflowStatesListResponse"></a>
@@ -3154,7 +3154,7 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseData | Any`
+    `data: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseData | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3181,7 +3181,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `workflow_states: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseDataWorkflowstates | Any`
+    `workflow_states: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseDataWorkflowstates | None`
     :   The type of the None singleton.
 
 <a id="WorkflowStatesListResponseDataWorkflowstates"></a>
@@ -3205,10 +3205,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `nodes: list[airbyte_agent_sdk.connectors.linear.models.WorkflowState] | Any`
+    `nodes: list[airbyte_agent_sdk.connectors.linear.models.WorkflowState] | None`
     :   The type of the None singleton.
 
-    `page_info: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseDataWorkflowstatesPageinfo | Any`
+    `page_info: airbyte_agent_sdk.connectors.linear.models.WorkflowStatesListResponseDataWorkflowstatesPageinfo | None`
     :   Pagination information
 
 <a id="WorkflowStatesListResponseDataWorkflowstatesPageinfo"></a>
@@ -3229,10 +3229,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   Cursor to fetch next page
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   Whether there are more items available
 
     `model_config`
@@ -3256,10 +3256,10 @@ Classes
 
     ### Class variables
 
-    `end_cursor: str | Any | None`
+    `end_cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`

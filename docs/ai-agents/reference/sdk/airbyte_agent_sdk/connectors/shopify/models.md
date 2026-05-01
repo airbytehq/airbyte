@@ -31,142 +31,142 @@ Classes
 
     ### Class variables
 
-    `abandoned_checkout_url: str | Any | None`
+    `abandoned_checkout_url: str | None`
     :   The type of the None singleton.
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `billing_address: Any`
+    `billing_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `buyer_accepts_marketing: bool | Any | None`
+    `buyer_accepts_marketing: bool | None`
     :   The type of the None singleton.
 
-    `buyer_accepts_sms_marketing: bool | Any | None`
+    `buyer_accepts_sms_marketing: bool | None`
     :   The type of the None singleton.
 
-    `cart_token: str | Any | None`
+    `cart_token: str | None`
     :   The type of the None singleton.
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `completed_at: str | Any | None`
+    `completed_at: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `customer: Any`
+    `customer: typing.Any | None`
     :   The type of the None singleton.
 
-    `customer_locale: str | Any | None`
+    `customer_locale: str | None`
     :   The type of the None singleton.
 
-    `device_id: int | Any | None`
+    `device_id: int | None`
     :   The type of the None singleton.
 
-    `discount_codes: list[dict[str, typing.Any]] | Any | None`
+    `discount_codes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `gateway: str | Any | None`
+    `gateway: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `landing_site: str | Any | None`
+    `landing_site: str | None`
     :   The type of the None singleton.
 
-    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | Any | None`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | None`
     :   The type of the None singleton.
 
-    `location_id: int | Any | None`
+    `location_id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `note_attributes: list[dict[str, typing.Any]] | Any | None`
+    `note_attributes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `presentment_currency: str | Any | None`
+    `presentment_currency: str | None`
     :   The type of the None singleton.
 
-    `referring_site: str | Any | None`
+    `referring_site: str | None`
     :   The type of the None singleton.
 
-    `shipping_address: Any`
+    `shipping_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `shipping_lines: list[dict[str, typing.Any]] | Any | None`
+    `shipping_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `sms_marketing_phone: str | Any | None`
+    `sms_marketing_phone: str | None`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `source_identifier: str | Any | None`
+    `source_identifier: str | None`
     :   The type of the None singleton.
 
-    `source_name: str | Any | None`
+    `source_name: str | None`
     :   The type of the None singleton.
 
-    `source_url: str | Any | None`
+    `source_url: str | None`
     :   The type of the None singleton.
 
-    `subtotal_price: str | Any | None`
+    `subtotal_price: str | None`
     :   The type of the None singleton.
 
-    `tax_lines: list[dict[str, typing.Any]] | Any | None`
+    `tax_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `taxes_included: bool | Any | None`
+    `taxes_included: bool | None`
     :   The type of the None singleton.
 
-    `token: str | Any | None`
+    `token: str | None`
     :   The type of the None singleton.
 
-    `total_discounts: str | Any | None`
+    `total_discounts: str | None`
     :   The type of the None singleton.
 
-    `total_duties: str | Any | None`
+    `total_duties: str | None`
     :   The type of the None singleton.
 
-    `total_line_items_price: str | Any | None`
+    `total_line_items_price: str | None`
     :   The type of the None singleton.
 
-    `total_price: str | Any | None`
+    `total_price: str | None`
     :   The type of the None singleton.
 
-    `total_tax: str | Any | None`
+    `total_tax: str | None`
     :   The type of the None singleton.
 
-    `total_weight: int | Any | None`
+    `total_weight: int | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
 <a id="AbandonedCheckoutList"></a>
@@ -187,7 +187,7 @@ Classes
 
     ### Class variables
 
-    `checkouts: list[airbyte_agent_sdk.connectors.shopify.models.AbandonedCheckout] | Any`
+    `checkouts: list[airbyte_agent_sdk.connectors.shopify.models.AbandonedCheckout] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -214,7 +214,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="AbandonedCheckoutsSearchData"></a>
@@ -235,8 +235,38 @@ Classes
 
     ### Class variables
 
+    `completed_at: str | None`
+    :   ISO 8601 timestamp when the checkout was completed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the checkout was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the checkout totals
+
+    `email: str | None`
+    :   Email address provided for the checkout
+
+    `id: int | None`
+    :   Unique identifier for the abandoned checkout
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Shopify-assigned display name for the checkout (e.g. `#C12345`)
+
+    `phone: str | None`
+    :   Phone number provided for the checkout
+
+    `token: str | None`
+    :   Unique token identifying the checkout
+
+    `total_price: str | None`
+    :   Total price of the checkout in the shop's currency
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the checkout was last updated
 
 <a id="AirbyteSearchMeta"></a>
 
@@ -1437,28 +1467,28 @@ Classes
 
     ### Class variables
 
-    `collection_id: int | Any | None`
+    `collection_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `position: int | Any | None`
+    `position: int | None`
     :   The type of the None singleton.
 
-    `product_id: int | Any | None`
+    `product_id: int | None`
     :   The type of the None singleton.
 
-    `sort_value: str | Any | None`
+    `sort_value: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CollectList"></a>
@@ -1479,7 +1509,7 @@ Classes
 
     ### Class variables
 
-    `collects: list[airbyte_agent_sdk.connectors.shopify.models.Collect] | Any`
+    `collects: list[airbyte_agent_sdk.connectors.shopify.models.Collect] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1506,7 +1536,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="CollectsSearchData"></a>
@@ -1527,8 +1557,26 @@ Classes
 
     ### Class variables
 
+    `collection_id: int | None`
+    :   Identifier of the collection the product belongs to
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the collect was created
+
+    `id: int | None`
+    :   Unique identifier for the collect
+
     `model_config`
     :   The type of the None singleton.
+
+    `position: int | None`
+    :   Position of the product within the collection
+
+    `product_id: int | None`
+    :   Identifier of the product in the collection
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the collect was last updated
 
 <a id="CountriesListResultMeta"></a>
 
@@ -1551,7 +1599,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="CountriesSearchData"></a>
@@ -1572,8 +1620,20 @@ Classes
 
     ### Class variables
 
+    `code: str | None`
+    :   ISO 3166-1 alpha-2 country code
+
+    `id: int | None`
+    :   Unique identifier for the country tax row
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Human-readable country name
+
+    `tax_name: str | None`
+    :   Localized name of the tax applied in this country
 
 <a id="Country"></a>
 
@@ -1593,25 +1653,25 @@ Classes
 
     ### Class variables
 
-    `code: str | Any | None`
+    `code: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `provinces: list[dict[str, typing.Any]] | Any | None`
+    `provinces: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `tax: float | Any | None`
+    `tax: float | None`
     :   The type of the None singleton.
 
-    `tax_name: str | Any | None`
+    `tax_name: str | None`
     :   The type of the None singleton.
 
 <a id="CountryList"></a>
@@ -1632,7 +1692,7 @@ Classes
 
     ### Class variables
 
-    `countries: list[airbyte_agent_sdk.connectors.shopify.models.Country] | Any`
+    `countries: list[airbyte_agent_sdk.connectors.shopify.models.Country] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1656,43 +1716,43 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `handle: str | Any | None`
+    `handle: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `image: dict[str, typing.Any] | Any | None`
+    `image: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `products_count: int | Any | None`
+    `products_count: int | None`
     :   The type of the None singleton.
 
-    `published_at: str | Any | None`
+    `published_at: str | None`
     :   The type of the None singleton.
 
-    `published_scope: str | Any | None`
+    `published_scope: str | None`
     :   The type of the None singleton.
 
-    `sort_order: str | Any | None`
+    `sort_order: str | None`
     :   The type of the None singleton.
 
-    `template_suffix: str | Any | None`
+    `template_suffix: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CustomCollectionList"></a>
@@ -1713,7 +1773,7 @@ Classes
 
     ### Class variables
 
-    `custom_collections: list[airbyte_agent_sdk.connectors.shopify.models.CustomCollection] | Any`
+    `custom_collections: list[airbyte_agent_sdk.connectors.shopify.models.CustomCollection] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1740,7 +1800,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="CustomCollectionsSearchData"></a>
@@ -1761,8 +1821,29 @@ Classes
 
     ### Class variables
 
+    `handle: str | None`
+    :   URL-friendly handle for the custom collection
+
+    `id: int | None`
+    :   Unique identifier for the custom collection
+
     `model_config`
     :   The type of the None singleton.
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: str | None`
+    :   How products are sorted within the collection (e.g. `best-selling`)
+
+    `title: str | None`
+    :   Display title of the custom collection
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="Customer"></a>
 
@@ -1782,88 +1863,88 @@ Classes
 
     ### Class variables
 
-    `accepts_marketing: bool | Any | None`
+    `accepts_marketing: bool | None`
     :   The type of the None singleton.
 
-    `accepts_marketing_updated_at: str | Any | None`
+    `accepts_marketing_updated_at: str | None`
     :   The type of the None singleton.
 
-    `addresses: list[airbyte_agent_sdk.connectors.shopify.models.CustomerAddress] | Any | None`
+    `addresses: list[airbyte_agent_sdk.connectors.shopify.models.CustomerAddress] | None`
     :   The type of the None singleton.
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `default_address: Any`
+    `default_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `email_marketing_consent: Any`
+    `email_marketing_consent: typing.Any | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `last_order_id: int | Any | None`
+    `last_order_id: int | None`
     :   The type of the None singleton.
 
-    `last_order_name: str | Any | None`
+    `last_order_name: str | None`
     :   The type of the None singleton.
 
-    `marketing_opt_in_level: str | Any | None`
+    `marketing_opt_in_level: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `multipass_identifier: str | Any | None`
+    `multipass_identifier: str | None`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `orders_count: int | Any | None`
+    `orders_count: int | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `sms_marketing_consent: Any`
+    `sms_marketing_consent: typing.Any | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `tags: str | Any | None`
+    `tags: str | None`
     :   The type of the None singleton.
 
-    `tax_exempt: bool | Any | None`
+    `tax_exempt: bool | None`
     :   The type of the None singleton.
 
-    `tax_exemptions: list[str] | Any | None`
+    `tax_exemptions: list[str] | None`
     :   The type of the None singleton.
 
-    `total_spent: str | Any | None`
+    `total_spent: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `verified_email: bool | Any | None`
+    `verified_email: bool | None`
     :   The type of the None singleton.
 
 <a id="CustomerAddress"></a>
@@ -1884,58 +1965,58 @@ Classes
 
     ### Class variables
 
-    `address1: str | Any | None`
+    `address1: str | None`
     :   The type of the None singleton.
 
-    `address2: str | Any | None`
+    `address2: str | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `company: str | Any | None`
+    `company: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `country_name: str | Any | None`
+    `country_name: str | None`
     :   The type of the None singleton.
 
-    `customer_id: int | Any | None`
+    `customer_id: int | None`
     :   The type of the None singleton.
 
-    `default: bool | Any | None`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `province: str | Any | None`
+    `province: str | None`
     :   The type of the None singleton.
 
-    `province_code: str | Any | None`
+    `province_code: str | None`
     :   The type of the None singleton.
 
-    `zip: str | Any | None`
+    `zip: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerAddressList"></a>
@@ -1956,7 +2037,7 @@ Classes
 
     ### Class variables
 
-    `addresses: list[airbyte_agent_sdk.connectors.shopify.models.CustomerAddress] | Any`
+    `addresses: list[airbyte_agent_sdk.connectors.shopify.models.CustomerAddress] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1983,7 +2064,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="CustomerList"></a>
@@ -2004,7 +2085,7 @@ Classes
 
     ### Class variables
 
-    `customers: list[airbyte_agent_sdk.connectors.shopify.models.Customer] | Any`
+    `customers: list[airbyte_agent_sdk.connectors.shopify.models.Customer] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2031,7 +2112,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="CustomersSearchData"></a>
@@ -2052,8 +2133,41 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the customer record was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the customer's total spend
+
+    `email: str | None`
+    :   Primary email address of the customer
+
+    `first_name: str | None`
+    :   First name of the customer
+
+    `id: int | None`
+    :   Unique identifier for the customer
+
+    `last_name: str | None`
+    :   Last name of the customer
+
     `model_config`
     :   The type of the None singleton.
+
+    `orders_count: int | None`
+    :   Number of orders placed by the customer
+
+    `phone: str | None`
+    :   Primary phone number of the customer
+
+    `state: str | None`
+    :   Account state (`disabled`, `invited`, `enabled`, `declined`)
+
+    `total_spent: str | None`
+    :   Total lifetime amount spent by the customer
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the customer record was last updated
 
 <a id="DiscountCode"></a>
 
@@ -2073,25 +2187,25 @@ Classes
 
     ### Class variables
 
-    `code: str | Any | None`
+    `code: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `price_rule_id: int | Any | None`
+    `price_rule_id: int | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `usage_count: int | Any | None`
+    `usage_count: int | None`
     :   The type of the None singleton.
 
 <a id="DiscountCodeList"></a>
@@ -2112,7 +2226,7 @@ Classes
 
     ### Class variables
 
-    `discount_codes: list[airbyte_agent_sdk.connectors.shopify.models.DiscountCode] | Any`
+    `discount_codes: list[airbyte_agent_sdk.connectors.shopify.models.DiscountCode] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2139,7 +2253,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="DiscountCodesSearchData"></a>
@@ -2160,8 +2274,26 @@ Classes
 
     ### Class variables
 
+    `code: str | None`
+    :   Discount code string shoppers enter at checkout
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the code was created
+
+    `id: int | None`
+    :   Unique identifier for the discount code
+
     `model_config`
     :   The type of the None singleton.
+
+    `price_rule_id: int | None`
+    :   Identifier of the parent price rule
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the code was last updated
+
+    `usage_count: int | None`
+    :   Number of times the code has been redeemed
 
 <a id="DraftOrder"></a>
 
@@ -2181,103 +2313,103 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `allow_discount_codes_in_checkout: bool | Any | None`
+    `allow_discount_codes_in_checkout: bool | None`
     :   The type of the None singleton.
 
-    `api_client_id: int | Any | None`
+    `api_client_id: int | None`
     :   The type of the None singleton.
 
-    `applied_discount: dict[str, typing.Any] | Any | None`
+    `applied_discount: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `b2b: bool | Any | None`
+    `b2b: bool | None`
     :   The type of the None singleton.
 
-    `billing_address: Any`
+    `billing_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `completed_at: str | Any | None`
+    `completed_at: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `created_on_api_version_handle: str | Any | None`
+    `created_on_api_version_handle: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `customer: Any`
+    `customer: typing.Any | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `invoice_sent_at: str | Any | None`
+    `invoice_sent_at: str | None`
     :   The type of the None singleton.
 
-    `invoice_url: str | Any | None`
+    `invoice_url: str | None`
     :   The type of the None singleton.
 
-    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | Any | None`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `note_attributes: list[dict[str, typing.Any]] | Any | None`
+    `note_attributes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `order_id: int | Any | None`
+    `order_id: int | None`
     :   The type of the None singleton.
 
-    `payment_terms: dict[str, typing.Any] | Any | None`
+    `payment_terms: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `shipping_address: Any`
+    `shipping_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `shipping_line: dict[str, typing.Any] | Any | None`
+    `shipping_line: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subtotal_price: str | Any | None`
+    `subtotal_price: str | None`
     :   The type of the None singleton.
 
-    `tags: str | Any | None`
+    `tags: str | None`
     :   The type of the None singleton.
 
-    `tax_exempt: bool | Any | None`
+    `tax_exempt: bool | None`
     :   The type of the None singleton.
 
-    `tax_lines: list[dict[str, typing.Any]] | Any | None`
+    `tax_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `taxes_included: bool | Any | None`
+    `taxes_included: bool | None`
     :   The type of the None singleton.
 
-    `total_price: str | Any | None`
+    `total_price: str | None`
     :   The type of the None singleton.
 
-    `total_tax: str | Any | None`
+    `total_tax: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="DraftOrderList"></a>
@@ -2298,7 +2430,7 @@ Classes
 
     ### Class variables
 
-    `draft_orders: list[airbyte_agent_sdk.connectors.shopify.models.DraftOrder] | Any`
+    `draft_orders: list[airbyte_agent_sdk.connectors.shopify.models.DraftOrder] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2325,7 +2457,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="DraftOrdersSearchData"></a>
@@ -2346,8 +2478,38 @@ Classes
 
     ### Class variables
 
+    `completed_at: str | None`
+    :   ISO 8601 timestamp when the draft order was completed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the draft order was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the draft order totals
+
+    `email: str | None`
+    :   Email address associated with the draft order
+
+    `id: int | None`
+    :   Unique identifier for the draft order
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Shopify-assigned display name for the draft order (e.g. `#D12345`)
+
+    `order_id: int | None`
+    :   Identifier of the completed order, if the draft has been completed
+
+    `status: str | None`
+    :   Status of the draft order (`open`, `invoice_sent`, `completed`)
+
+    `total_price: str | None`
+    :   Total price of the draft order
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the draft order was last updated
 
 <a id="Fulfillment"></a>
 
@@ -2367,61 +2529,61 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | Any | None`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | None`
     :   The type of the None singleton.
 
-    `location_id: int | Any | None`
+    `location_id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `order_id: int | Any | None`
+    `order_id: int | None`
     :   The type of the None singleton.
 
-    `origin_address: dict[str, typing.Any] | Any | None`
+    `origin_address: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `receipt: dict[str, typing.Any] | Any | None`
+    `receipt: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `service: str | Any | None`
+    `service: str | None`
     :   The type of the None singleton.
 
-    `shipment_status: str | Any | None`
+    `shipment_status: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `tracking_company: str | Any | None`
+    `tracking_company: str | None`
     :   The type of the None singleton.
 
-    `tracking_number: str | Any | None`
+    `tracking_number: str | None`
     :   The type of the None singleton.
 
-    `tracking_numbers: list[str] | Any | None`
+    `tracking_numbers: list[str] | None`
     :   The type of the None singleton.
 
-    `tracking_url: str | Any | None`
+    `tracking_url: str | None`
     :   The type of the None singleton.
 
-    `tracking_urls: list[str] | Any | None`
+    `tracking_urls: list[str] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="FulfillmentList"></a>
@@ -2442,7 +2604,7 @@ Classes
 
     ### Class variables
 
-    `fulfillments: list[airbyte_agent_sdk.connectors.shopify.models.Fulfillment] | Any`
+    `fulfillments: list[airbyte_agent_sdk.connectors.shopify.models.Fulfillment] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2466,61 +2628,61 @@ Classes
 
     ### Class variables
 
-    `assigned_location: dict[str, typing.Any] | Any | None`
+    `assigned_location: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `assigned_location_id: int | Any | None`
+    `assigned_location_id: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `delivery_method: dict[str, typing.Any] | Any | None`
+    `delivery_method: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `destination: dict[str, typing.Any] | Any | None`
+    `destination: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `fulfill_at: str | Any | None`
+    `fulfill_at: str | None`
     :   The type of the None singleton.
 
-    `fulfill_by: str | Any | None`
+    `fulfill_by: str | None`
     :   The type of the None singleton.
 
-    `fulfillment_holds: list[dict[str, typing.Any]] | Any | None`
+    `fulfillment_holds: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `international_duties: dict[str, typing.Any] | Any | None`
+    `international_duties: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `line_items: list[dict[str, typing.Any]] | Any | None`
+    `line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `merchant_requests: list[dict[str, typing.Any]] | Any | None`
+    `merchant_requests: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `order_id: int | Any | None`
+    `order_id: int | None`
     :   The type of the None singleton.
 
-    `request_status: str | Any | None`
+    `request_status: str | None`
     :   The type of the None singleton.
 
-    `shop_id: int | Any | None`
+    `shop_id: int | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `supported_actions: list[str] | Any | None`
+    `supported_actions: list[str] | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrderList"></a>
@@ -2541,7 +2703,7 @@ Classes
 
     ### Class variables
 
-    `fulfillment_orders: list[airbyte_agent_sdk.connectors.shopify.models.FulfillmentOrder] | Any`
+    `fulfillment_orders: list[airbyte_agent_sdk.connectors.shopify.models.FulfillmentOrder] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2568,7 +2730,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrdersSearchData"></a>
@@ -2589,8 +2751,32 @@ Classes
 
     ### Class variables
 
+    `assigned_location_id: int | None`
+    :   Identifier of the location assigned to fulfill the order
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment order was created
+
+    `id: int | None`
+    :   Unique identifier for the fulfillment order
+
     `model_config`
     :   The type of the None singleton.
+
+    `order_id: int | None`
+    :   Identifier of the parent order
+
+    `request_status: str | None`
+    :   Status of the fulfillment request (e.g. `unsubmitted`, `submitted`)
+
+    `shop_id: int | None`
+    :   Identifier of the shop that owns the fulfillment order
+
+    `status: str | None`
+    :   Fulfillment order status (e.g. `open`, `in_progress`, `closed`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment order was last updated
 
 <a id="FulfillmentsListResultMeta"></a>
 
@@ -2613,7 +2799,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="FulfillmentsSearchData"></a>
@@ -2634,8 +2820,35 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment was created
+
+    `id: int | None`
+    :   Unique identifier for the fulfillment
+
+    `location_id: int | None`
+    :   Identifier of the fulfilling location
+
     `model_config`
     :   The type of the None singleton.
+
+    `order_id: int | None`
+    :   Identifier of the parent order
+
+    `shipment_status: str | None`
+    :   Carrier shipment status (e.g. `delivered`, `in_transit`)
+
+    `status: str | None`
+    :   Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`)
+
+    `tracking_company: str | None`
+    :   Name of the shipping carrier
+
+    `tracking_number: str | None`
+    :   Primary tracking number for the shipment
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment was last updated
 
 <a id="InventoryItem"></a>
 
@@ -2655,43 +2868,43 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `cost: str | Any | None`
+    `cost: str | None`
     :   The type of the None singleton.
 
-    `country_code_of_origin: str | Any | None`
+    `country_code_of_origin: str | None`
     :   The type of the None singleton.
 
-    `country_harmonized_system_codes: list[dict[str, typing.Any]] | Any | None`
+    `country_harmonized_system_codes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `harmonized_system_code: str | Any | None`
+    `harmonized_system_code: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `province_code_of_origin: str | Any | None`
+    `province_code_of_origin: str | None`
     :   The type of the None singleton.
 
-    `requires_shipping: bool | Any | None`
+    `requires_shipping: bool | None`
     :   The type of the None singleton.
 
-    `sku: str | Any | None`
+    `sku: str | None`
     :   The type of the None singleton.
 
-    `tracked: bool | Any | None`
+    `tracked: bool | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="InventoryItemList"></a>
@@ -2712,7 +2925,7 @@ Classes
 
     ### Class variables
 
-    `inventory_items: list[airbyte_agent_sdk.connectors.shopify.models.InventoryItem] | Any`
+    `inventory_items: list[airbyte_agent_sdk.connectors.shopify.models.InventoryItem] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2739,7 +2952,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="InventoryItemsSearchData"></a>
@@ -2760,8 +2973,29 @@ Classes
 
     ### Class variables
 
+    `country_code_of_origin: str | None`
+    :   ISO country code of the item's country of origin
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the inventory item was created
+
+    `id: int | None`
+    :   Unique identifier for the inventory item
+
     `model_config`
     :   The type of the None singleton.
+
+    `requires_shipping: bool | None`
+    :   Whether the item requires shipping
+
+    `sku: str | None`
+    :   Stock keeping unit associated with the inventory item
+
+    `tracked: bool | None`
+    :   Whether Shopify is tracking inventory for this item
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the inventory item was last updated
 
 <a id="InventoryLevel"></a>
 
@@ -2781,22 +3015,22 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `available: int | Any | None`
+    `available: int | None`
     :   The type of the None singleton.
 
-    `inventory_item_id: int | Any`
+    `inventory_item_id: int | None`
     :   The type of the None singleton.
 
-    `location_id: int | Any | None`
+    `location_id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="InventoryLevelList"></a>
@@ -2817,7 +3051,7 @@ Classes
 
     ### Class variables
 
-    `inventory_levels: list[airbyte_agent_sdk.connectors.shopify.models.InventoryLevel] | Any`
+    `inventory_levels: list[airbyte_agent_sdk.connectors.shopify.models.InventoryLevel] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2844,7 +3078,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="InventoryLevelsSearchData"></a>
@@ -2865,8 +3099,20 @@ Classes
 
     ### Class variables
 
+    `available: int | None`
+    :   Number of units available at the location
+
+    `inventory_item_id: int | None`
+    :   Identifier of the inventory item
+
+    `location_id: int | None`
+    :   Identifier of the location holding the inventory
+
     `model_config`
     :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the inventory level was last updated
 
 <a id="LineItem"></a>
 
@@ -2886,94 +3132,94 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `attributed_staffs: list[dict[str, typing.Any]] | Any | None`
+    `attributed_staffs: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `current_quantity: int | Any | None`
+    `current_quantity: int | None`
     :   The type of the None singleton.
 
-    `discount_allocations: list[dict[str, typing.Any]] | Any | None`
+    `discount_allocations: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `duties: list[dict[str, typing.Any]] | Any | None`
+    `duties: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `fulfillable_quantity: int | Any | None`
+    `fulfillable_quantity: int | None`
     :   The type of the None singleton.
 
-    `fulfillment_service: str | Any | None`
+    `fulfillment_service: str | None`
     :   The type of the None singleton.
 
-    `fulfillment_status: str | Any | None`
+    `fulfillment_status: str | None`
     :   The type of the None singleton.
 
-    `gift_card: bool | Any | None`
+    `gift_card: bool | None`
     :   The type of the None singleton.
 
-    `grams: int | Any | None`
+    `grams: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `price_set: dict[str, typing.Any] | Any | None`
+    `price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `product_exists: bool | Any | None`
+    `product_exists: bool | None`
     :   The type of the None singleton.
 
-    `product_id: int | Any | None`
+    `product_id: int | None`
     :   The type of the None singleton.
 
-    `properties: list[dict[str, typing.Any]] | Any | None`
+    `properties: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `quantity: int | Any | None`
+    `quantity: int | None`
     :   The type of the None singleton.
 
-    `requires_shipping: bool | Any | None`
+    `requires_shipping: bool | None`
     :   The type of the None singleton.
 
-    `sku: str | Any | None`
+    `sku: str | None`
     :   The type of the None singleton.
 
-    `tax_lines: list[dict[str, typing.Any]] | Any | None`
+    `tax_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `taxable: bool | Any | None`
+    `taxable: bool | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `total_discount: str | Any | None`
+    `total_discount: str | None`
     :   The type of the None singleton.
 
-    `total_discount_set: dict[str, typing.Any] | Any | None`
+    `total_discount_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `variant_id: int | Any | None`
+    `variant_id: int | None`
     :   The type of the None singleton.
 
-    `variant_inventory_management: str | Any | None`
+    `variant_inventory_management: str | None`
     :   The type of the None singleton.
 
-    `variant_title: str | Any | None`
+    `variant_title: str | None`
     :   The type of the None singleton.
 
-    `vendor: str | Any | None`
+    `vendor: str | None`
     :   The type of the None singleton.
 
 <a id="Location"></a>
@@ -2994,64 +3240,64 @@ Classes
 
     ### Class variables
 
-    `active: bool | Any | None`
+    `active: bool | None`
     :   The type of the None singleton.
 
-    `address1: str | Any | None`
+    `address1: str | None`
     :   The type of the None singleton.
 
-    `address2: str | Any | None`
+    `address2: str | None`
     :   The type of the None singleton.
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `country_name: str | Any | None`
+    `country_name: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `legacy: bool | Any | None`
+    `legacy: bool | None`
     :   The type of the None singleton.
 
-    `localized_country_name: str | Any | None`
+    `localized_country_name: str | None`
     :   The type of the None singleton.
 
-    `localized_province_name: str | Any | None`
+    `localized_province_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `province: str | Any | None`
+    `province: str | None`
     :   The type of the None singleton.
 
-    `province_code: str | Any | None`
+    `province_code: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `zip: str | Any | None`
+    `zip: str | None`
     :   The type of the None singleton.
 
 <a id="LocationList"></a>
@@ -3072,7 +3318,7 @@ Classes
 
     ### Class variables
 
-    `locations: list[airbyte_agent_sdk.connectors.shopify.models.Location] | Any`
+    `locations: list[airbyte_agent_sdk.connectors.shopify.models.Location] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3099,7 +3345,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="LocationsSearchData"></a>
@@ -3120,8 +3366,41 @@ Classes
 
     ### Class variables
 
+    `active: bool | None`
+    :   Whether the location is currently active
+
+    `address1: str | None`
+    :   Primary street address of the location
+
+    `city: str | None`
+    :   City of the location
+
+    `country: str | None`
+    :   Country name of the location
+
+    `country_code: str | None`
+    :   ISO 3166-1 alpha-2 country code of the location
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the location was created
+
+    `id: int | None`
+    :   Unique identifier for the location
+
     `model_config`
     :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the location
+
+    `phone: str | None`
+    :   Phone number for the location
+
+    `province: str | None`
+    :   Province, state, or region of the location
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the location was last updated
 
 <a id="MarketingConsent"></a>
 
@@ -3141,19 +3420,19 @@ Classes
 
     ### Class variables
 
-    `consent_collected_from: str | Any | None`
+    `consent_collected_from: str | None`
     :   The type of the None singleton.
 
-    `consent_updated_at: str | Any | None`
+    `consent_updated_at: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `opt_in_level: str | Any | None`
+    `opt_in_level: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
 <a id="Metafield"></a>
@@ -3174,40 +3453,40 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `key: str | Any | None`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `namespace: str | Any | None`
+    `namespace: str | None`
     :   The type of the None singleton.
 
-    `owner_id: int | Any | None`
+    `owner_id: int | None`
     :   The type of the None singleton.
 
-    `owner_resource: str | Any | None`
+    `owner_resource: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `value: Any`
+    `value: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="MetafieldCustomersListResultMeta"></a>
@@ -3231,7 +3510,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldCustomersSearchData"></a>
@@ -3252,8 +3531,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldDraftOrdersListResultMeta"></a>
 
@@ -3276,7 +3585,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldDraftOrdersSearchData"></a>
@@ -3297,8 +3606,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldList"></a>
 
@@ -3318,7 +3657,7 @@ Classes
 
     ### Class variables
 
-    `metafields: list[airbyte_agent_sdk.connectors.shopify.models.Metafield] | Any`
+    `metafields: list[airbyte_agent_sdk.connectors.shopify.models.Metafield] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3345,7 +3684,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldLocationsSearchData"></a>
@@ -3366,8 +3705,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldOrdersListResultMeta"></a>
 
@@ -3390,7 +3759,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldOrdersSearchData"></a>
@@ -3411,8 +3780,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductImagesListResultMeta"></a>
 
@@ -3435,7 +3834,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldProductImagesSearchData"></a>
@@ -3456,8 +3855,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductVariantsListResultMeta"></a>
 
@@ -3480,7 +3909,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldProductVariantsSearchData"></a>
@@ -3501,8 +3930,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductsListResultMeta"></a>
 
@@ -3525,7 +3984,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldProductsSearchData"></a>
@@ -3546,8 +4005,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldShopsListResultMeta"></a>
 
@@ -3570,7 +4059,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldShopsSearchData"></a>
@@ -3591,8 +4080,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldSmartCollectionsListResultMeta"></a>
 
@@ -3615,7 +4134,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="MetafieldSmartCollectionsSearchData"></a>
@@ -3636,8 +4155,38 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
     `model_config`
     :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
 
 <a id="Order"></a>
 
@@ -3657,286 +4206,286 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `app_id: int | Any | None`
+    `app_id: int | None`
     :   The type of the None singleton.
 
-    `billing_address: Any`
+    `billing_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `browser_ip: str | Any | None`
+    `browser_ip: str | None`
     :   The type of the None singleton.
 
-    `buyer_accepts_marketing: bool | Any | None`
+    `buyer_accepts_marketing: bool | None`
     :   The type of the None singleton.
 
-    `cancel_reason: str | Any | None`
+    `cancel_reason: str | None`
     :   The type of the None singleton.
 
-    `cancelled_at: str | Any | None`
+    `cancelled_at: str | None`
     :   The type of the None singleton.
 
-    `cart_token: str | Any | None`
+    `cart_token: str | None`
     :   The type of the None singleton.
 
-    `checkout_id: int | Any | None`
+    `checkout_id: int | None`
     :   The type of the None singleton.
 
-    `checkout_token: str | Any | None`
+    `checkout_token: str | None`
     :   The type of the None singleton.
 
-    `client_details: dict[str, typing.Any] | Any | None`
+    `client_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `company: dict[str, typing.Any] | Any | None`
+    `company: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `confirmation_number: str | Any | None`
+    `confirmation_number: str | None`
     :   The type of the None singleton.
 
-    `confirmed: bool | Any | None`
+    `confirmed: bool | None`
     :   The type of the None singleton.
 
-    `contact_email: str | Any | None`
+    `contact_email: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `current_subtotal_price: str | Any | None`
+    `current_subtotal_price: str | None`
     :   The type of the None singleton.
 
-    `current_subtotal_price_set: dict[str, typing.Any] | Any | None`
+    `current_subtotal_price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `current_total_additional_fees_set: dict[str, typing.Any] | Any | None`
+    `current_total_additional_fees_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `current_total_discounts: str | Any | None`
+    `current_total_discounts: str | None`
     :   The type of the None singleton.
 
-    `current_total_discounts_set: dict[str, typing.Any] | Any | None`
+    `current_total_discounts_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `current_total_duties_set: dict[str, typing.Any] | Any | None`
+    `current_total_duties_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `current_total_price: str | Any | None`
+    `current_total_price: str | None`
     :   The type of the None singleton.
 
-    `current_total_price_set: dict[str, typing.Any] | Any | None`
+    `current_total_price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `current_total_tax: str | Any | None`
+    `current_total_tax: str | None`
     :   The type of the None singleton.
 
-    `current_total_tax_set: dict[str, typing.Any] | Any | None`
+    `current_total_tax_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `customer: Any`
+    `customer: typing.Any | None`
     :   The type of the None singleton.
 
-    `customer_locale: str | Any | None`
+    `customer_locale: str | None`
     :   The type of the None singleton.
 
-    `device_id: int | Any | None`
+    `device_id: int | None`
     :   The type of the None singleton.
 
-    `discount_applications: list[dict[str, typing.Any]] | Any | None`
+    `discount_applications: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `discount_codes: list[dict[str, typing.Any]] | Any | None`
+    `discount_codes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `duties_included: bool | Any | None`
+    `duties_included: bool | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `estimated_taxes: bool | Any | None`
+    `estimated_taxes: bool | None`
     :   The type of the None singleton.
 
-    `financial_status: str | Any | None`
+    `financial_status: str | None`
     :   The type of the None singleton.
 
-    `fulfillment_status: str | Any | None`
+    `fulfillment_status: str | None`
     :   The type of the None singleton.
 
-    `fulfillments: list[airbyte_agent_sdk.connectors.shopify.models.Fulfillment] | Any | None`
+    `fulfillments: list[airbyte_agent_sdk.connectors.shopify.models.Fulfillment] | None`
     :   The type of the None singleton.
 
-    `gateway: str | Any | None`
+    `gateway: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `landing_site: str | Any | None`
+    `landing_site: str | None`
     :   The type of the None singleton.
 
-    `landing_site_ref: str | Any | None`
+    `landing_site_ref: str | None`
     :   The type of the None singleton.
 
-    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | Any | None`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.models.LineItem] | None`
     :   The type of the None singleton.
 
-    `location_id: int | Any | None`
+    `location_id: int | None`
     :   The type of the None singleton.
 
-    `merchant_business_entity_id: str | Any | None`
+    `merchant_business_entity_id: str | None`
     :   The type of the None singleton.
 
-    `merchant_of_record_app_id: int | Any | None`
+    `merchant_of_record_app_id: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `note_attributes: list[dict[str, typing.Any]] | Any | None`
+    `note_attributes: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `number: int | Any | None`
+    `number: int | None`
     :   The type of the None singleton.
 
-    `order_number: int | Any | None`
+    `order_number: int | None`
     :   The type of the None singleton.
 
-    `order_status_url: str | Any | None`
+    `order_status_url: str | None`
     :   The type of the None singleton.
 
-    `original_total_additional_fees_set: dict[str, typing.Any] | Any | None`
+    `original_total_additional_fees_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `original_total_duties_set: dict[str, typing.Any] | Any | None`
+    `original_total_duties_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `payment_gateway_names: list[str] | Any | None`
+    `payment_gateway_names: list[str] | None`
     :   The type of the None singleton.
 
-    `payment_terms: dict[str, typing.Any] | Any | None`
+    `payment_terms: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `po_number: str | Any | None`
+    `po_number: str | None`
     :   The type of the None singleton.
 
-    `presentment_currency: str | Any | None`
+    `presentment_currency: str | None`
     :   The type of the None singleton.
 
-    `processed_at: str | Any | None`
+    `processed_at: str | None`
     :   The type of the None singleton.
 
-    `reference: str | Any | None`
+    `reference: str | None`
     :   The type of the None singleton.
 
-    `referring_site: str | Any | None`
+    `referring_site: str | None`
     :   The type of the None singleton.
 
-    `refunds: list[airbyte_agent_sdk.connectors.shopify.models.Refund] | Any | None`
+    `refunds: list[airbyte_agent_sdk.connectors.shopify.models.Refund] | None`
     :   The type of the None singleton.
 
-    `shipping_address: Any`
+    `shipping_address: typing.Any | None`
     :   The type of the None singleton.
 
-    `shipping_lines: list[dict[str, typing.Any]] | Any | None`
+    `shipping_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `source_identifier: str | Any | None`
+    `source_identifier: str | None`
     :   The type of the None singleton.
 
-    `source_name: str | Any | None`
+    `source_name: str | None`
     :   The type of the None singleton.
 
-    `source_url: str | Any | None`
+    `source_url: str | None`
     :   The type of the None singleton.
 
-    `subtotal_price: str | Any | None`
+    `subtotal_price: str | None`
     :   The type of the None singleton.
 
-    `subtotal_price_set: dict[str, typing.Any] | Any | None`
+    `subtotal_price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `tags: str | Any | None`
+    `tags: str | None`
     :   The type of the None singleton.
 
-    `tax_exempt: bool | Any | None`
+    `tax_exempt: bool | None`
     :   The type of the None singleton.
 
-    `tax_lines: list[dict[str, typing.Any]] | Any | None`
+    `tax_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `taxes_included: bool | Any | None`
+    `taxes_included: bool | None`
     :   The type of the None singleton.
 
-    `test: bool | Any | None`
+    `test: bool | None`
     :   The type of the None singleton.
 
-    `token: str | Any | None`
+    `token: str | None`
     :   The type of the None singleton.
 
-    `total_cash_rounding_payment_adjustment_set: dict[str, typing.Any] | Any | None`
+    `total_cash_rounding_payment_adjustment_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_cash_rounding_refund_adjustment_set: dict[str, typing.Any] | Any | None`
+    `total_cash_rounding_refund_adjustment_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_discounts: str | Any | None`
+    `total_discounts: str | None`
     :   The type of the None singleton.
 
-    `total_discounts_set: dict[str, typing.Any] | Any | None`
+    `total_discounts_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_line_items_price: str | Any | None`
+    `total_line_items_price: str | None`
     :   The type of the None singleton.
 
-    `total_line_items_price_set: dict[str, typing.Any] | Any | None`
+    `total_line_items_price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_outstanding: str | Any | None`
+    `total_outstanding: str | None`
     :   The type of the None singleton.
 
-    `total_price: str | Any | None`
+    `total_price: str | None`
     :   The type of the None singleton.
 
-    `total_price_set: dict[str, typing.Any] | Any | None`
+    `total_price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_shipping_price_set: dict[str, typing.Any] | Any | None`
+    `total_shipping_price_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_tax: str | Any | None`
+    `total_tax: str | None`
     :   The type of the None singleton.
 
-    `total_tax_set: dict[str, typing.Any] | Any | None`
+    `total_tax_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_tip_received: str | Any | None`
+    `total_tip_received: str | None`
     :   The type of the None singleton.
 
-    `total_weight: int | Any | None`
+    `total_weight: int | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
 <a id="OrderAddress"></a>
@@ -3957,52 +4506,52 @@ Classes
 
     ### Class variables
 
-    `address1: str | Any | None`
+    `address1: str | None`
     :   The type of the None singleton.
 
-    `address2: str | Any | None`
+    `address2: str | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `company: str | Any | None`
+    `company: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `latitude: float | Any | None`
+    `latitude: float | None`
     :   The type of the None singleton.
 
-    `longitude: float | Any | None`
+    `longitude: float | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `province: str | Any | None`
+    `province: str | None`
     :   The type of the None singleton.
 
-    `province_code: str | Any | None`
+    `province_code: str | None`
     :   The type of the None singleton.
 
-    `zip: str | Any | None`
+    `zip: str | None`
     :   The type of the None singleton.
 
 <a id="OrderList"></a>
@@ -4026,7 +4575,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `orders: list[airbyte_agent_sdk.connectors.shopify.models.Order] | Any`
+    `orders: list[airbyte_agent_sdk.connectors.shopify.models.Order] | None`
     :   The type of the None singleton.
 
 <a id="OrderRefundsListResultMeta"></a>
@@ -4050,7 +4599,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="OrderRefundsSearchData"></a>
@@ -4071,8 +4620,26 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the refund was created
+
+    `id: int | None`
+    :   Unique identifier for the refund
+
     `model_config`
     :   The type of the None singleton.
+
+    `note: str | None`
+    :   Merchant-provided note explaining the refund
+
+    `order_id: int | None`
+    :   Identifier of the refunded order
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the refund was processed
+
+    `user_id: int | None`
+    :   Identifier of the staff user who processed the refund
 
 <a id="OrdersListResultMeta"></a>
 
@@ -4095,7 +4662,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="PriceRule"></a>
@@ -4116,97 +4683,97 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `allocation_limit: int | Any | None`
+    `allocation_limit: int | None`
     :   The type of the None singleton.
 
-    `allocation_method: str | Any | None`
+    `allocation_method: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `customer_segment_prerequisite_ids: list[int] | Any | None`
+    `customer_segment_prerequisite_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `customer_selection: str | Any | None`
+    `customer_selection: str | None`
     :   The type of the None singleton.
 
-    `ends_at: str | Any | None`
+    `ends_at: str | None`
     :   The type of the None singleton.
 
-    `entitled_collection_ids: list[int] | Any | None`
+    `entitled_collection_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `entitled_country_ids: list[int] | Any | None`
+    `entitled_country_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `entitled_product_ids: list[int] | Any | None`
+    `entitled_product_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `entitled_variant_ids: list[int] | Any | None`
+    `entitled_variant_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `once_per_customer: bool | Any | None`
+    `once_per_customer: bool | None`
     :   The type of the None singleton.
 
-    `prerequisite_collection_ids: list[int] | Any | None`
+    `prerequisite_collection_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `prerequisite_customer_ids: list[int] | Any | None`
+    `prerequisite_customer_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `prerequisite_product_ids: list[int] | Any | None`
+    `prerequisite_product_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `prerequisite_quantity_range: dict[str, typing.Any] | Any | None`
+    `prerequisite_quantity_range: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prerequisite_shipping_price_range: dict[str, typing.Any] | Any | None`
+    `prerequisite_shipping_price_range: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prerequisite_subtotal_range: dict[str, typing.Any] | Any | None`
+    `prerequisite_subtotal_range: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prerequisite_to_entitlement_purchase: dict[str, typing.Any] | Any | None`
+    `prerequisite_to_entitlement_purchase: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prerequisite_to_entitlement_quantity_ratio: dict[str, typing.Any] | Any | None`
+    `prerequisite_to_entitlement_quantity_ratio: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `prerequisite_variant_ids: list[int] | Any | None`
+    `prerequisite_variant_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `starts_at: str | Any | None`
+    `starts_at: str | None`
     :   The type of the None singleton.
 
-    `target_selection: str | Any | None`
+    `target_selection: str | None`
     :   The type of the None singleton.
 
-    `target_type: str | Any | None`
+    `target_type: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `usage_limit: int | Any | None`
+    `usage_limit: int | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
-    `value_type: str | Any | None`
+    `value_type: str | None`
     :   The type of the None singleton.
 
 <a id="PriceRuleList"></a>
@@ -4230,7 +4797,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `price_rules: list[airbyte_agent_sdk.connectors.shopify.models.PriceRule] | Any`
+    `price_rules: list[airbyte_agent_sdk.connectors.shopify.models.PriceRule] | None`
     :   The type of the None singleton.
 
 <a id="PriceRulesListResultMeta"></a>
@@ -4254,7 +4821,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="PriceRulesSearchData"></a>
@@ -4275,8 +4842,41 @@ Classes
 
     ### Class variables
 
+    `allocation_method: str | None`
+    :   How the discount is allocated (`each` or `across`)
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the rule was created
+
+    `ends_at: str | None`
+    :   ISO 8601 timestamp when the rule stops being active, if applicable
+
+    `id: int | None`
+    :   Unique identifier for the price rule
+
     `model_config`
     :   The type of the None singleton.
+
+    `starts_at: str | None`
+    :   ISO 8601 timestamp when the rule starts being active
+
+    `target_selection: str | None`
+    :   Which target items the rule applies to (`all` or `entitled`)
+
+    `target_type: str | None`
+    :   Type of target the rule applies to (`line_item` or `shipping_line`)
+
+    `title: str | None`
+    :   Administrative title of the price rule
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the rule was last updated
+
+    `value: str | None`
+    :   Discount value applied by the rule
+
+    `value_type: str | None`
+    :   How the discount value is interpreted (`fixed_amount` or `percentage`)
 
 <a id="Product"></a>
 
@@ -4296,61 +4896,61 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `handle: str | Any | None`
+    `handle: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `image: Any`
+    `image: typing.Any | None`
     :   The type of the None singleton.
 
-    `images: list[airbyte_agent_sdk.connectors.shopify.models.ProductImage] | Any | None`
+    `images: list[airbyte_agent_sdk.connectors.shopify.models.ProductImage] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `options: list[dict[str, typing.Any]] | Any | None`
+    `options: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `product_type: str | Any | None`
+    `product_type: str | None`
     :   The type of the None singleton.
 
-    `published_at: str | Any | None`
+    `published_at: str | None`
     :   The type of the None singleton.
 
-    `published_scope: str | Any | None`
+    `published_scope: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `tags: str | Any | None`
+    `tags: str | None`
     :   The type of the None singleton.
 
-    `template_suffix: str | Any | None`
+    `template_suffix: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `variants: list[airbyte_agent_sdk.connectors.shopify.models.ProductVariant] | Any | None`
+    `variants: list[airbyte_agent_sdk.connectors.shopify.models.ProductVariant] | None`
     :   The type of the None singleton.
 
-    `vendor: str | Any | None`
+    `vendor: str | None`
     :   The type of the None singleton.
 
 <a id="ProductImage"></a>
@@ -4371,40 +4971,40 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `alt: str | Any | None`
+    `alt: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `position: int | Any | None`
+    `position: int | None`
     :   The type of the None singleton.
 
-    `product_id: int | Any | None`
+    `product_id: int | None`
     :   The type of the None singleton.
 
-    `src: str | Any | None`
+    `src: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `variant_ids: list[int] | Any | None`
+    `variant_ids: list[int] | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="ProductImageList"></a>
@@ -4425,7 +5025,7 @@ Classes
 
     ### Class variables
 
-    `images: list[airbyte_agent_sdk.connectors.shopify.models.ProductImage] | Any`
+    `images: list[airbyte_agent_sdk.connectors.shopify.models.ProductImage] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -4452,7 +5052,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductImagesSearchData"></a>
@@ -4473,8 +5073,35 @@ Classes
 
     ### Class variables
 
+    `alt: str | None`
+    :   Alt text for the image
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the image was created
+
+    `height: int | None`
+    :   Image height in pixels
+
+    `id: int | None`
+    :   Unique identifier for the product image
+
     `model_config`
     :   The type of the None singleton.
+
+    `position: int | None`
+    :   Display position of the image within the product
+
+    `product_id: int | None`
+    :   Identifier of the product the image belongs to
+
+    `src: str | None`
+    :   Public URL of the image
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the image was last updated
+
+    `width: int | None`
+    :   Image width in pixels
 
 <a id="ProductList"></a>
 
@@ -4497,7 +5124,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `products: list[airbyte_agent_sdk.connectors.shopify.models.Product] | Any`
+    `products: list[airbyte_agent_sdk.connectors.shopify.models.Product] | None`
     :   The type of the None singleton.
 
 <a id="ProductVariant"></a>
@@ -4518,85 +5145,85 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `barcode: str | Any | None`
+    `barcode: str | None`
     :   The type of the None singleton.
 
-    `compare_at_price: str | Any | None`
+    `compare_at_price: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `fulfillment_service: str | Any | None`
+    `fulfillment_service: str | None`
     :   The type of the None singleton.
 
-    `grams: int | Any | None`
+    `grams: int | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `image_id: int | Any | None`
+    `image_id: int | None`
     :   The type of the None singleton.
 
-    `inventory_item_id: int | Any | None`
+    `inventory_item_id: int | None`
     :   The type of the None singleton.
 
-    `inventory_management: str | Any | None`
+    `inventory_management: str | None`
     :   The type of the None singleton.
 
-    `inventory_policy: str | Any | None`
+    `inventory_policy: str | None`
     :   The type of the None singleton.
 
-    `inventory_quantity: int | Any | None`
+    `inventory_quantity: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `old_inventory_quantity: int | Any | None`
+    `old_inventory_quantity: int | None`
     :   The type of the None singleton.
 
-    `option1: str | Any | None`
+    `option1: str | None`
     :   The type of the None singleton.
 
-    `option2: str | Any | None`
+    `option2: str | None`
     :   The type of the None singleton.
 
-    `option3: str | Any | None`
+    `option3: str | None`
     :   The type of the None singleton.
 
-    `position: int | Any | None`
+    `position: int | None`
     :   The type of the None singleton.
 
-    `price: str | Any | None`
+    `price: str | None`
     :   The type of the None singleton.
 
-    `product_id: int | Any | None`
+    `product_id: int | None`
     :   The type of the None singleton.
 
-    `requires_shipping: bool | Any | None`
+    `requires_shipping: bool | None`
     :   The type of the None singleton.
 
-    `sku: str | Any | None`
+    `sku: str | None`
     :   The type of the None singleton.
 
-    `taxable: bool | Any | None`
+    `taxable: bool | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `weight: float | Any | None`
+    `weight: float | None`
     :   The type of the None singleton.
 
-    `weight_unit: str | Any | None`
+    `weight_unit: str | None`
     :   The type of the None singleton.
 
 <a id="ProductVariantList"></a>
@@ -4620,7 +5247,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `variants: list[airbyte_agent_sdk.connectors.shopify.models.ProductVariant] | Any`
+    `variants: list[airbyte_agent_sdk.connectors.shopify.models.ProductVariant] | None`
     :   The type of the None singleton.
 
 <a id="ProductVariantsListResultMeta"></a>
@@ -4644,7 +5271,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="ProductVariantsSearchData"></a>
@@ -4665,8 +5292,38 @@ Classes
 
     ### Class variables
 
+    `compare_at_price: str | None`
+    :   Original (compare-at) price of the variant, if set
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the variant was created
+
+    `id: int | None`
+    :   Unique identifier for the product variant
+
+    `inventory_policy: str | None`
+    :   Behaviour when out of stock (`deny` or `continue`)
+
     `model_config`
     :   The type of the None singleton.
+
+    `position: int | None`
+    :   Display position of the variant within the product
+
+    `price: str | None`
+    :   Price of the variant in the shop's currency
+
+    `product_id: int | None`
+    :   Identifier of the parent product
+
+    `sku: str | None`
+    :   Stock keeping unit for the variant
+
+    `title: str | None`
+    :   Display title of the variant
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the variant was last updated
 
 <a id="ProductsListResultMeta"></a>
 
@@ -4689,7 +5346,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="Refund"></a>
@@ -4710,52 +5367,52 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `duties: list[dict[str, typing.Any]] | Any | None`
+    `duties: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `note: str | Any | None`
+    `note: str | None`
     :   The type of the None singleton.
 
-    `order_adjustments: list[dict[str, typing.Any]] | Any | None`
+    `order_adjustments: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `order_id: int | Any | None`
+    `order_id: int | None`
     :   The type of the None singleton.
 
-    `processed_at: str | Any | None`
+    `processed_at: str | None`
     :   The type of the None singleton.
 
-    `refund_line_items: list[dict[str, typing.Any]] | Any | None`
+    `refund_line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `refund_shipping_lines: list[dict[str, typing.Any]] | Any | None`
+    `refund_shipping_lines: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `restock: bool | Any | None`
+    `restock: bool | None`
     :   The type of the None singleton.
 
-    `return_: dict[str, typing.Any] | Any | None`
+    `return_: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `total_duties_set: dict[str, typing.Any] | Any | None`
+    `total_duties_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `transactions: list[airbyte_agent_sdk.connectors.shopify.models.Transaction] | Any | None`
+    `transactions: list[airbyte_agent_sdk.connectors.shopify.models.Transaction] | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
 <a id="RefundList"></a>
@@ -4779,7 +5436,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `refunds: list[airbyte_agent_sdk.connectors.shopify.models.Refund] | Any`
+    `refunds: list[airbyte_agent_sdk.connectors.shopify.models.Refund] | None`
     :   The type of the None singleton.
 
 <a id="Shop"></a>
@@ -4800,169 +5457,169 @@ Classes
 
     ### Class variables
 
-    `address1: str | Any | None`
+    `address1: str | None`
     :   The type of the None singleton.
 
-    `address2: str | Any | None`
+    `address2: str | None`
     :   The type of the None singleton.
 
-    `auto_configure_tax_inclusivity: bool | Any | None`
+    `auto_configure_tax_inclusivity: bool | None`
     :   The type of the None singleton.
 
-    `checkout_api_supported: bool | Any | None`
+    `checkout_api_supported: bool | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `country_code: str | Any | None`
+    `country_code: str | None`
     :   The type of the None singleton.
 
-    `country_name: str | Any | None`
+    `country_name: str | None`
     :   The type of the None singleton.
 
-    `county_taxes: bool | Any | None`
+    `county_taxes: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `customer_email: str | Any | None`
+    `customer_email: str | None`
     :   The type of the None singleton.
 
-    `domain: str | Any | None`
+    `domain: str | None`
     :   The type of the None singleton.
 
-    `eligible_for_payments: bool | Any | None`
+    `eligible_for_payments: bool | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `enabled_presentment_currencies: list[str] | Any | None`
+    `enabled_presentment_currencies: list[str] | None`
     :   The type of the None singleton.
 
-    `finances: bool | Any | None`
+    `finances: bool | None`
     :   The type of the None singleton.
 
-    `google_apps_domain: str | Any | None`
+    `google_apps_domain: str | None`
     :   The type of the None singleton.
 
-    `google_apps_login_enabled: bool | Any | None`
+    `google_apps_login_enabled: bool | None`
     :   The type of the None singleton.
 
-    `has_discounts: bool | Any | None`
+    `has_discounts: bool | None`
     :   The type of the None singleton.
 
-    `has_gift_cards: bool | Any | None`
+    `has_gift_cards: bool | None`
     :   The type of the None singleton.
 
-    `has_storefront: bool | Any | None`
+    `has_storefront: bool | None`
     :   The type of the None singleton.
 
-    `iana_timezone: str | Any | None`
+    `iana_timezone: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `latitude: float | Any | None`
+    `latitude: float | None`
     :   The type of the None singleton.
 
-    `longitude: float | Any | None`
+    `longitude: float | None`
     :   The type of the None singleton.
 
-    `marketing_sms_consent_enabled_at_checkout: bool | Any | None`
+    `marketing_sms_consent_enabled_at_checkout: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `money_format: str | Any | None`
+    `money_format: str | None`
     :   The type of the None singleton.
 
-    `money_in_emails_format: str | Any | None`
+    `money_in_emails_format: str | None`
     :   The type of the None singleton.
 
-    `money_with_currency_format: str | Any | None`
+    `money_with_currency_format: str | None`
     :   The type of the None singleton.
 
-    `money_with_currency_in_emails_format: str | Any | None`
+    `money_with_currency_in_emails_format: str | None`
     :   The type of the None singleton.
 
-    `multi_location_enabled: bool | Any | None`
+    `multi_location_enabled: bool | None`
     :   The type of the None singleton.
 
-    `myshopify_domain: str | Any | None`
+    `myshopify_domain: str | None`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `password_enabled: bool | Any | None`
+    `password_enabled: bool | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `plan_display_name: str | Any | None`
+    `plan_display_name: str | None`
     :   The type of the None singleton.
 
-    `plan_name: str | Any | None`
+    `plan_name: str | None`
     :   The type of the None singleton.
 
-    `pre_launch_enabled: bool | Any | None`
+    `pre_launch_enabled: bool | None`
     :   The type of the None singleton.
 
-    `primary_locale: str | Any | None`
+    `primary_locale: str | None`
     :   The type of the None singleton.
 
-    `primary_location_id: int | Any | None`
+    `primary_location_id: int | None`
     :   The type of the None singleton.
 
-    `province: str | Any | None`
+    `province: str | None`
     :   The type of the None singleton.
 
-    `province_code: str | Any | None`
+    `province_code: str | None`
     :   The type of the None singleton.
 
-    `requires_extra_payments_agreement: bool | Any | None`
+    `requires_extra_payments_agreement: bool | None`
     :   The type of the None singleton.
 
-    `setup_required: bool | Any | None`
+    `setup_required: bool | None`
     :   The type of the None singleton.
 
-    `shop_owner: str | Any | None`
+    `shop_owner: str | None`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `tax_shipping: bool | Any | None`
+    `tax_shipping: bool | None`
     :   The type of the None singleton.
 
-    `taxes_included: bool | Any | None`
+    `taxes_included: bool | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
-    `transactional_sms_disabled: bool | Any | None`
+    `transactional_sms_disabled: bool | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `weight_unit: str | Any | None`
+    `weight_unit: str | None`
     :   The type of the None singleton.
 
-    `zip: str | Any | None`
+    `zip: str | None`
     :   The type of the None singleton.
 
 <a id="ShopSearchData"></a>
@@ -4983,8 +5640,41 @@ Classes
 
     ### Class variables
 
+    `country_code: str | None`
+    :   ISO 3166-1 alpha-2 country code of the shop
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the shop was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code used by the shop
+
+    `domain: str | None`
+    :   Custom domain configured for the shop, if any
+
+    `email: str | None`
+    :   Primary contact email for the shop
+
+    `id: int | None`
+    :   Unique identifier for the shop
+
     `model_config`
     :   The type of the None singleton.
+
+    `myshopify_domain: str | None`
+    :   Canonical `*.myshopify.com` domain for the shop
+
+    `name: str | None`
+    :   Display name of the shop
+
+    `plan_name: str | None`
+    :   Shopify plan identifier (e.g. `shopify_plus`, `basic`)
+
+    `timezone: str | None`
+    :   Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the shop was last updated
 
 <a id="ShopifyAuthConfig"></a>
 
@@ -6548,49 +7238,49 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `disjunctive: bool | Any | None`
+    `disjunctive: bool | None`
     :   The type of the None singleton.
 
-    `handle: str | Any | None`
+    `handle: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `image: dict[str, typing.Any] | Any | None`
+    `image: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `products_count: int | Any | None`
+    `products_count: int | None`
     :   The type of the None singleton.
 
-    `published_at: str | Any | None`
+    `published_at: str | None`
     :   The type of the None singleton.
 
-    `published_scope: str | Any | None`
+    `published_scope: str | None`
     :   The type of the None singleton.
 
-    `rules: list[dict[str, typing.Any]] | Any | None`
+    `rules: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
-    `sort_order: str | Any | None`
+    `sort_order: str | None`
     :   The type of the None singleton.
 
-    `template_suffix: str | Any | None`
+    `template_suffix: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="SmartCollectionList"></a>
@@ -6614,7 +7304,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `smart_collections: list[airbyte_agent_sdk.connectors.shopify.models.SmartCollection] | Any`
+    `smart_collections: list[airbyte_agent_sdk.connectors.shopify.models.SmartCollection] | None`
     :   The type of the None singleton.
 
 <a id="SmartCollectionsListResultMeta"></a>
@@ -6638,7 +7328,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="SmartCollectionsSearchData"></a>
@@ -6659,8 +7349,29 @@ Classes
 
     ### Class variables
 
+    `handle: str | None`
+    :   URL-friendly handle for the smart collection
+
+    `id: int | None`
+    :   Unique identifier for the smart collection
+
     `model_config`
     :   The type of the None singleton.
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: str | None`
+    :   How products are sorted within the collection
+
+    `title: str | None`
+    :   Display title of the smart collection
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="TenderTransaction"></a>
 
@@ -6680,37 +7391,37 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `order_id: int | Any | None`
+    `order_id: int | None`
     :   The type of the None singleton.
 
-    `payment_details: dict[str, typing.Any] | Any | None`
+    `payment_details: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `payment_method: str | Any | None`
+    `payment_method: str | None`
     :   The type of the None singleton.
 
-    `processed_at: str | Any | None`
+    `processed_at: str | None`
     :   The type of the None singleton.
 
-    `remote_reference: str | Any | None`
+    `remote_reference: str | None`
     :   The type of the None singleton.
 
-    `test: bool | Any | None`
+    `test: bool | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
 <a id="TenderTransactionList"></a>
@@ -6734,7 +7445,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `tender_transactions: list[airbyte_agent_sdk.connectors.shopify.models.TenderTransaction] | Any`
+    `tender_transactions: list[airbyte_agent_sdk.connectors.shopify.models.TenderTransaction] | None`
     :   The type of the None singleton.
 
 <a id="TenderTransactionsListResultMeta"></a>
@@ -6758,7 +7469,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.
 
 <a id="TenderTransactionsSearchData"></a>
@@ -6779,8 +7490,32 @@ Classes
 
     ### Class variables
 
+    `amount: str | None`
+    :   Amount of the transaction in the shop's currency
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the transaction amount
+
+    `id: int | None`
+    :   Unique identifier for the tender transaction
+
     `model_config`
     :   The type of the None singleton.
+
+    `order_id: int | None`
+    :   Identifier of the order the transaction belongs to
+
+    `payment_method: str | None`
+    :   Payment method used (e.g. `credit_card`, `paypal`)
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `test: bool | None`
+    :   Whether the transaction was a test transaction
+
+    `user_id: int | None`
+    :   Identifier of the staff user who processed the transaction
 
 <a id="Transaction"></a>
 
@@ -6800,79 +7535,79 @@ Classes
 
     ### Class variables
 
-    `admin_graphql_api_id: str | Any | None`
+    `admin_graphql_api_id: str | None`
     :   The type of the None singleton.
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `authorization: str | Any | None`
+    `authorization: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `currency_exchange_adjustment: dict[str, typing.Any] | Any | None`
+    `currency_exchange_adjustment: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `device_id: int | Any | None`
+    `device_id: int | None`
     :   The type of the None singleton.
 
-    `error_code: str | Any | None`
+    `error_code: str | None`
     :   The type of the None singleton.
 
-    `gateway: str | Any | None`
+    `gateway: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `kind: str | Any | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
-    `location_id: int | Any | None`
+    `location_id: int | None`
     :   The type of the None singleton.
 
-    `manual_payment_gateway: bool | Any | None`
+    `manual_payment_gateway: bool | None`
     :   The type of the None singleton.
 
-    `message: str | Any | None`
+    `message: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `order_id: int | Any | None`
+    `order_id: int | None`
     :   The type of the None singleton.
 
-    `parent_id: int | Any | None`
+    `parent_id: int | None`
     :   The type of the None singleton.
 
-    `payment_id: str | Any | None`
+    `payment_id: str | None`
     :   The type of the None singleton.
 
-    `processed_at: str | Any | None`
+    `processed_at: str | None`
     :   The type of the None singleton.
 
-    `receipt: dict[str, typing.Any] | Any | None`
+    `receipt: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `source_name: str | Any | None`
+    `source_name: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `test: bool | Any | None`
+    `test: bool | None`
     :   The type of the None singleton.
 
-    `total_unsettled_set: dict[str, typing.Any] | Any | None`
+    `total_unsettled_set: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `user_id: int | Any | None`
+    `user_id: int | None`
     :   The type of the None singleton.
 
 <a id="TransactionList"></a>
@@ -6896,7 +7631,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `transactions: list[airbyte_agent_sdk.connectors.shopify.models.Transaction] | Any`
+    `transactions: list[airbyte_agent_sdk.connectors.shopify.models.Transaction] | None`
     :   The type of the None singleton.
 
 <a id="TransactionsListResultMeta"></a>
@@ -6920,5 +7655,5 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_page_url: str | Any | None`
+    `next_page_url: str | None`
     :   The type of the None singleton.

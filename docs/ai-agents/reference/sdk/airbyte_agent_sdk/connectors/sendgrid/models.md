@@ -612,19 +612,19 @@ Classes
 
     ### Class variables
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reason: str | Any`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="BlocksListResultMeta"></a>
@@ -648,7 +648,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="BlocksSearchData"></a>
@@ -702,19 +702,19 @@ Classes
 
     ### Class variables
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reason: str | Any`
+    `reason: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="BouncesListResultMeta"></a>
@@ -738,7 +738,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="BouncesSearchData"></a>
@@ -792,28 +792,28 @@ Classes
 
     ### Class variables
 
-    `channels: list[str] | Any | None`
+    `channels: list[str] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_abtest: bool | Any`
+    `is_abtest: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsList"></a>
@@ -834,13 +834,13 @@ Classes
 
     ### Class variables
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.CampaignsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.CampaignsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.Campaign] | Any`
+    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.Campaign] | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListMetadata"></a>
@@ -864,7 +864,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsListResultMeta"></a>
@@ -888,7 +888,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchData"></a>
@@ -951,70 +951,70 @@ Classes
 
     ### Class variables
 
-    `address_line_1: str | Any | None`
+    `address_line_1: str | None`
     :   The type of the None singleton.
 
-    `address_line_2: str | Any | None`
+    `address_line_2: str | None`
     :   The type of the None singleton.
 
-    `alternate_emails: list[str] | Any | None`
+    `alternate_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any | None`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `facebook: str | Any | None`
+    `facebook: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `line: str | Any | None`
+    `line: str | None`
     :   The type of the None singleton.
 
-    `list_ids: list[str] | Any | None`
+    `list_ids: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   The type of the None singleton.
 
-    `postal_code: str | Any | None`
+    `postal_code: str | None`
     :   The type of the None singleton.
 
-    `segment_ids: list[str] | Any | None`
+    `segment_ids: list[str] | None`
     :   The type of the None singleton.
 
-    `state_province_region: str | Any | None`
+    `state_province_region: str | None`
     :   The type of the None singleton.
 
-    `unique_name: str | Any | None`
+    `unique_name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `whatsapp: str | Any | None`
+    `whatsapp: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsList"></a>
@@ -1035,16 +1035,16 @@ Classes
 
     ### Class variables
 
-    `contact_count: int | Any`
+    `contact_count: int | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.ContactsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.ContactsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.Contact] | Any`
+    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.Contact] | None`
     :   The type of the None singleton.
 
 <a id="ContactsListMetadata"></a>
@@ -1068,7 +1068,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -1089,13 +1089,13 @@ Classes
 
     ### Class variables
 
-    `contact_count: int | Any`
+    `contact_count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsSearchData"></a>
@@ -1197,10 +1197,10 @@ Classes
 
     ### Class variables
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1227,7 +1227,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="GlobalSuppressionsSearchData"></a>
@@ -1275,16 +1275,16 @@ Classes
 
     ### Class variables
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `reason: str | Any`
+    `reason: str | None`
     :   The type of the None singleton.
 
 <a id="InvalidEmailsListResultMeta"></a>
@@ -1308,7 +1308,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="InvalidEmailsSearchData"></a>
@@ -1359,19 +1359,19 @@ Classes
 
     ### Class variables
 
-    `contact_count: int | Any`
+    `contact_count: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.ListMetadata | Any | None`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.ListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ListMetadata"></a>
@@ -1395,7 +1395,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="ListsList"></a>
@@ -1416,13 +1416,13 @@ Classes
 
     ### Class variables
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.ListsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.ListsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.List] | Any`
+    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.List] | None`
     :   The type of the None singleton.
 
 <a id="ListsListMetadata"></a>
@@ -1446,7 +1446,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ListsListResultMeta"></a>
@@ -1470,7 +1470,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="ListsSearchData"></a>
@@ -1524,37 +1524,37 @@ Classes
 
     ### Class variables
 
-    `contacts_count: int | Any`
+    `contacts_count: int | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `next_sample_update: str | Any | None`
+    `next_sample_update: str | None`
     :   The type of the None singleton.
 
-    `parent_list_ids: list[str | None] | Any | None`
+    `parent_list_ids: list[str | None] | None`
     :   The type of the None singleton.
 
-    `query_version: str | Any`
+    `query_version: str | None`
     :   The type of the None singleton.
 
-    `sample_updated_at: str | Any | None`
+    `sample_updated_at: str | None`
     :   The type of the None singleton.
 
-    `status: airbyte_agent_sdk.connectors.sendgrid.models.SegmentStatus | Any | None`
+    `status: airbyte_agent_sdk.connectors.sendgrid.models.SegmentStatus | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="SegmentStatus"></a>
@@ -1578,7 +1578,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `query_validation: str | Any`
+    `query_validation: str | None`
     :   The type of the None singleton.
 
 <a id="SegmentsList"></a>
@@ -1602,7 +1602,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.sendgrid.models.Segment] | Any`
+    `results: list[airbyte_agent_sdk.connectors.sendgrid.models.Segment] | None`
     :   The type of the None singleton.
 
 <a id="SegmentsSearchData"></a>
@@ -2456,37 +2456,37 @@ Classes
 
     ### Class variables
 
-    `categories: list[str] | Any | None`
+    `categories: list[str] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `email_config: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendEmailConfig | Any | None`
+    `email_config: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendEmailConfig | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_abtest: bool | Any`
+    `is_abtest: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `send_at: str | Any | None`
+    `send_at: str | None`
     :   The type of the None singleton.
 
-    `send_to: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendSendTo | Any | None`
+    `send_to: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendSendTo | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="SingleSendEmailConfig"></a>
@@ -2507,37 +2507,37 @@ Classes
 
     ### Class variables
 
-    `custom_unsubscribe_url: str | Any | None`
+    `custom_unsubscribe_url: str | None`
     :   The type of the None singleton.
 
-    `design_id: str | Any | None`
+    `design_id: str | None`
     :   The type of the None singleton.
 
-    `editor: str | Any | None`
+    `editor: str | None`
     :   The type of the None singleton.
 
-    `generate_plain_content: bool | Any`
+    `generate_plain_content: bool | None`
     :   The type of the None singleton.
 
-    `html_content: str | Any | None`
+    `html_content: str | None`
     :   The type of the None singleton.
 
-    `ip_pool: str | Any | None`
+    `ip_pool: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `plain_content: str | Any | None`
+    `plain_content: str | None`
     :   The type of the None singleton.
 
-    `sender_id: int | Any | None`
+    `sender_id: int | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `suppression_group_id: int | Any | None`
+    `suppression_group_id: int | None`
     :   The type of the None singleton.
 
 <a id="SingleSendSendTo"></a>
@@ -2558,16 +2558,16 @@ Classes
 
     ### Class variables
 
-    `all: bool | Any`
+    `all: bool | None`
     :   The type of the None singleton.
 
-    `list_ids: list[str] | Any | None`
+    `list_ids: list[str] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `segment_ids: list[str] | Any | None`
+    `segment_ids: list[str] | None`
     :   The type of the None singleton.
 
 <a id="SingleSendStats"></a>
@@ -2588,22 +2588,22 @@ Classes
 
     ### Class variables
 
-    `ab_phase: str | Any | None`
+    `ab_phase: str | None`
     :   The type of the None singleton.
 
-    `ab_variation: str | Any | None`
+    `ab_variation: str | None`
     :   The type of the None singleton.
 
-    `aggregation: str | Any | None`
+    `aggregation: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `stats: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStatsStats | Any | None`
+    `stats: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStatsStats | None`
     :   The type of the None singleton.
 
 <a id="SingleSendStatsList"></a>
@@ -2624,13 +2624,13 @@ Classes
 
     ### Class variables
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStatsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStatsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStats] | Any`
+    `results: list[airbyte_agent_sdk.connectors.sendgrid.models.SingleSendStats] | None`
     :   The type of the None singleton.
 
 <a id="SingleSendStatsListMetadata"></a>
@@ -2654,7 +2654,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SingleSendStatsStats"></a>
@@ -2675,43 +2675,43 @@ Classes
 
     ### Class variables
 
-    `bounce_drops: int | Any`
+    `bounce_drops: int | None`
     :   The type of the None singleton.
 
-    `bounces: int | Any`
+    `bounces: int | None`
     :   The type of the None singleton.
 
-    `clicks: int | Any`
+    `clicks: int | None`
     :   The type of the None singleton.
 
-    `delivered: int | Any`
+    `delivered: int | None`
     :   The type of the None singleton.
 
-    `invalid_emails: int | Any`
+    `invalid_emails: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `opens: int | Any`
+    `opens: int | None`
     :   The type of the None singleton.
 
-    `requests: int | Any`
+    `requests: int | None`
     :   The type of the None singleton.
 
-    `spam_report_drops: int | Any`
+    `spam_report_drops: int | None`
     :   The type of the None singleton.
 
-    `spam_reports: int | Any`
+    `spam_reports: int | None`
     :   The type of the None singleton.
 
-    `unique_clicks: int | Any`
+    `unique_clicks: int | None`
     :   The type of the None singleton.
 
-    `unique_opens: int | Any`
+    `unique_opens: int | None`
     :   The type of the None singleton.
 
-    `unsubscribes: int | Any`
+    `unsubscribes: int | None`
     :   The type of the None singleton.
 
 <a id="SingleSendsList"></a>
@@ -2732,13 +2732,13 @@ Classes
 
     ### Class variables
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendsListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.SingleSendsListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.SingleSend] | Any`
+    `result: list[airbyte_agent_sdk.connectors.sendgrid.models.SingleSend] | None`
     :   The type of the None singleton.
 
 <a id="SingleSendsListMetadata"></a>
@@ -2762,7 +2762,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SinglesendStatsListResultMeta"></a>
@@ -2786,7 +2786,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SinglesendStatsSearchData"></a>
@@ -2846,7 +2846,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SinglesendsSearchData"></a>
@@ -2912,13 +2912,13 @@ Classes
 
     ### Class variables
 
-    `created: int | Any`
+    `created: int | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `ip: str | Any`
+    `ip: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2945,7 +2945,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SuppressionGroup"></a>
@@ -2966,22 +2966,22 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int | None`
     :   The type of the None singleton.
 
-    `is_default: bool | Any`
+    `is_default: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `unsubscribes: int | Any`
+    `unsubscribes: int | None`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupMember"></a>
@@ -3002,16 +3002,16 @@ Classes
 
     ### Class variables
 
-    `created_at: int | Any`
+    `created_at: int | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `group_id: int | Any`
+    `group_id: int | None`
     :   The type of the None singleton.
 
-    `group_name: str | Any`
+    `group_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3038,7 +3038,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupMembersSearchData"></a>
@@ -3128,22 +3128,22 @@ Classes
 
     ### Class variables
 
-    `generation: str | Any`
+    `generation: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `versions: list[typing.Any] | Any | None`
+    `versions: list[typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TemplatesList"></a>
@@ -3164,13 +3164,13 @@ Classes
 
     ### Class variables
 
-    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.TemplatesListMetadata | Any`
+    `metadata: airbyte_agent_sdk.connectors.sendgrid.models.TemplatesListMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `templates: list[airbyte_agent_sdk.connectors.sendgrid.models.Template] | Any`
+    `templates: list[airbyte_agent_sdk.connectors.sendgrid.models.Template] | None`
     :   The type of the None singleton.
 
 <a id="TemplatesListMetadata"></a>
@@ -3194,7 +3194,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="TemplatesListResultMeta"></a>
@@ -3218,7 +3218,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="TemplatesSearchData"></a>

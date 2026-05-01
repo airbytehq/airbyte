@@ -812,31 +812,31 @@ Classes
 
     ### Class variables
 
-    `address: str | Any | None`
+    `address: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `statement_key: str | Any | None`
+    `statement_key: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ClientsList"></a>
@@ -857,31 +857,31 @@ Classes
 
     ### Class variables
 
-    `clients: list[airbyte_agent_sdk.connectors.harvest.models.Client] | Any`
+    `clients: list[airbyte_agent_sdk.connectors.harvest.models.Client] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="ClientsListResultMeta"></a>
@@ -905,7 +905,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="ClientsSearchData"></a>
@@ -968,79 +968,79 @@ Classes
 
     ### Class variables
 
-    `approval_feature: bool | Any | None`
+    `approval_feature: bool | None`
     :   The type of the None singleton.
 
-    `base_uri: str | Any | None`
+    `base_uri: str | None`
     :   The type of the None singleton.
 
-    `clock: str | Any | None`
+    `clock: str | None`
     :   The type of the None singleton.
 
-    `color_scheme: str | Any | None`
+    `color_scheme: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `currency_code_display: str | Any | None`
+    `currency_code_display: str | None`
     :   The type of the None singleton.
 
-    `currency_symbol_display: str | Any | None`
+    `currency_symbol_display: str | None`
     :   The type of the None singleton.
 
-    `date_format: str | Any | None`
+    `date_format: str | None`
     :   The type of the None singleton.
 
-    `day_entry_notes_required: bool | Any | None`
+    `day_entry_notes_required: bool | None`
     :   The type of the None singleton.
 
-    `decimal_symbol: str | Any | None`
+    `decimal_symbol: str | None`
     :   The type of the None singleton.
 
-    `estimate_feature: bool | Any | None`
+    `estimate_feature: bool | None`
     :   The type of the None singleton.
 
-    `expense_feature: bool | Any | None`
+    `expense_feature: bool | None`
     :   The type of the None singleton.
 
-    `full_domain: str | Any | None`
+    `full_domain: str | None`
     :   The type of the None singleton.
 
-    `invoice_feature: bool | Any | None`
+    `invoice_feature: bool | None`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `plan_type: str | Any | None`
+    `plan_type: str | None`
     :   The type of the None singleton.
 
-    `saml_sign_in_required: bool | Any | None`
+    `saml_sign_in_required: bool | None`
     :   The type of the None singleton.
 
-    `team_feature: bool | Any | None`
+    `team_feature: bool | None`
     :   The type of the None singleton.
 
-    `thousands_separator: str | Any | None`
+    `thousands_separator: str | None`
     :   The type of the None singleton.
 
-    `time_format: str | Any | None`
+    `time_format: str | None`
     :   The type of the None singleton.
 
-    `wants_timestamp_timers: bool | Any | None`
+    `wants_timestamp_timers: bool | None`
     :   The type of the None singleton.
 
-    `week_start_day: str | Any | None`
+    `week_start_day: str | None`
     :   The type of the None singleton.
 
-    `weekly_capacity: int | Any | None`
+    `weekly_capacity: int | None`
     :   The type of the None singleton.
 
 <a id="CompanySearchData"></a>
@@ -1103,40 +1103,40 @@ Classes
 
     ### Class variables
 
-    `client: airbyte_agent_sdk.connectors.harvest.models.ContactClient | Any | None`
+    `client: airbyte_agent_sdk.connectors.harvest.models.ContactClient | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `fax: str | Any | None`
+    `fax: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `phone_mobile: str | Any | None`
+    `phone_mobile: str | None`
     :   The type of the None singleton.
 
-    `phone_office: str | Any | None`
+    `phone_office: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ContactClient"></a>
@@ -1157,13 +1157,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Client ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Client name
 
 <a id="ContactsList"></a>
@@ -1184,31 +1184,31 @@ Classes
 
     ### Class variables
 
-    `contacts: list[airbyte_agent_sdk.connectors.harvest.models.Contact] | Any`
+    `contacts: list[airbyte_agent_sdk.connectors.harvest.models.Contact] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -1232,7 +1232,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsSearchData"></a>
@@ -1298,79 +1298,79 @@ Classes
 
     ### Class variables
 
-    `accepted_at: str | Any | None`
+    `accepted_at: str | None`
     :   The type of the None singleton.
 
-    `amount: float | Any | None`
+    `amount: float | None`
     :   The type of the None singleton.
 
-    `client: dict[str, typing.Any] | Any | None`
+    `client: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `client_key: str | Any | None`
+    `client_key: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator: dict[str, typing.Any] | Any | None`
+    `creator: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `declined_at: str | Any | None`
+    `declined_at: str | None`
     :   The type of the None singleton.
 
-    `discount: float | Any | None`
+    `discount: float | None`
     :   The type of the None singleton.
 
-    `discount_amount: float | Any | None`
+    `discount_amount: float | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `issue_date: str | Any | None`
+    `issue_date: str | None`
     :   The type of the None singleton.
 
-    `line_items: list[dict[str, typing.Any]] | Any | None`
+    `line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `notes: str | Any | None`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `number: str | Any | None`
+    `number: str | None`
     :   The type of the None singleton.
 
-    `purchase_order: str | Any | None`
+    `purchase_order: str | None`
     :   The type of the None singleton.
 
-    `sent_at: str | Any | None`
+    `sent_at: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `tax: float | Any | None`
+    `tax: float | None`
     :   The type of the None singleton.
 
-    `tax2: float | Any | None`
+    `tax2: float | None`
     :   The type of the None singleton.
 
-    `tax2_amount: float | Any | None`
+    `tax2_amount: float | None`
     :   The type of the None singleton.
 
-    `tax_amount: float | Any | None`
+    `tax_amount: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="EstimateItemCategoriesList"></a>
@@ -1391,31 +1391,31 @@ Classes
 
     ### Class variables
 
-    `estimate_item_categories: list[airbyte_agent_sdk.connectors.harvest.models.EstimateItemCategory] | Any`
+    `estimate_item_categories: list[airbyte_agent_sdk.connectors.harvest.models.EstimateItemCategory] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="EstimateItemCategoriesListResultMeta"></a>
@@ -1439,7 +1439,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="EstimateItemCategoriesSearchData"></a>
@@ -1493,19 +1493,19 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="EstimatesList"></a>
@@ -1526,31 +1526,31 @@ Classes
 
     ### Class variables
 
-    `estimates: list[airbyte_agent_sdk.connectors.harvest.models.Estimate] | Any`
+    `estimates: list[airbyte_agent_sdk.connectors.harvest.models.Estimate] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="EstimatesListResultMeta"></a>
@@ -1574,7 +1574,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="EstimatesSearchData"></a>
@@ -1646,70 +1646,70 @@ Classes
 
     ### Class variables
 
-    `approval_status: str | Any | None`
+    `approval_status: str | None`
     :   The type of the None singleton.
 
-    `billable: bool | Any | None`
+    `billable: bool | None`
     :   The type of the None singleton.
 
-    `client: dict[str, typing.Any] | Any | None`
+    `client: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `expense_category: dict[str, typing.Any] | Any | None`
+    `expense_category: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `invoice: dict[str, typing.Any] | Any | None`
+    `invoice: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `is_billed: bool | Any | None`
+    `is_billed: bool | None`
     :   The type of the None singleton.
 
-    `is_closed: bool | Any | None`
+    `is_closed: bool | None`
     :   The type of the None singleton.
 
-    `is_explicitly_locked: bool | Any | None`
+    `is_explicitly_locked: bool | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `locked_reason: str | Any | None`
+    `locked_reason: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `notes: str | Any | None`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `project: dict[str, typing.Any] | Any | None`
+    `project: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `receipt: dict[str, typing.Any] | Any | None`
+    `receipt: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `spent_date: str | Any | None`
+    `spent_date: str | None`
     :   The type of the None singleton.
 
-    `total_cost: float | Any | None`
+    `total_cost: float | None`
     :   The type of the None singleton.
 
-    `units: float | Any | None`
+    `units: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user: dict[str, typing.Any] | Any | None`
+    `user: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `user_assignment: dict[str, typing.Any] | Any | None`
+    `user_assignment: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="ExpenseCategoriesList"></a>
@@ -1730,31 +1730,31 @@ Classes
 
     ### Class variables
 
-    `expense_categories: list[airbyte_agent_sdk.connectors.harvest.models.ExpenseCategory] | Any`
+    `expense_categories: list[airbyte_agent_sdk.connectors.harvest.models.ExpenseCategory] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="ExpenseCategoriesListResultMeta"></a>
@@ -1778,7 +1778,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="ExpenseCategoriesSearchData"></a>
@@ -1841,28 +1841,28 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `unit_name: str | Any | None`
+    `unit_name: str | None`
     :   The type of the None singleton.
 
-    `unit_price: float | Any | None`
+    `unit_price: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ExpensesList"></a>
@@ -1883,31 +1883,31 @@ Classes
 
     ### Class variables
 
-    `expenses: list[airbyte_agent_sdk.connectors.harvest.models.Expense] | Any`
+    `expenses: list[airbyte_agent_sdk.connectors.harvest.models.Expense] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="ExpensesListResultMeta"></a>
@@ -1931,7 +1931,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="ExpensesSearchData"></a>
@@ -2969,109 +2969,109 @@ Classes
 
     ### Class variables
 
-    `amount: float | Any | None`
+    `amount: float | None`
     :   The type of the None singleton.
 
-    `client: dict[str, typing.Any] | Any | None`
+    `client: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `client_key: str | Any | None`
+    `client_key: str | None`
     :   The type of the None singleton.
 
-    `closed_at: str | Any | None`
+    `closed_at: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `creator: dict[str, typing.Any] | Any | None`
+    `creator: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `discount: float | Any | None`
+    `discount: float | None`
     :   The type of the None singleton.
 
-    `discount_amount: float | Any | None`
+    `discount_amount: float | None`
     :   The type of the None singleton.
 
-    `due_amount: float | Any | None`
+    `due_amount: float | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `estimate: dict[str, typing.Any] | Any | None`
+    `estimate: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `issue_date: str | Any | None`
+    `issue_date: str | None`
     :   The type of the None singleton.
 
-    `line_items: list[dict[str, typing.Any]] | Any | None`
+    `line_items: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `notes: str | Any | None`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `number: str | Any | None`
+    `number: str | None`
     :   The type of the None singleton.
 
-    `paid_at: str | Any | None`
+    `paid_at: str | None`
     :   The type of the None singleton.
 
-    `paid_date: str | Any | None`
+    `paid_date: str | None`
     :   The type of the None singleton.
 
-    `payment_options: list[str] | Any | None`
+    `payment_options: list[str] | None`
     :   The type of the None singleton.
 
-    `payment_term: str | Any | None`
+    `payment_term: str | None`
     :   The type of the None singleton.
 
-    `period_end: str | Any | None`
+    `period_end: str | None`
     :   The type of the None singleton.
 
-    `period_start: str | Any | None`
+    `period_start: str | None`
     :   The type of the None singleton.
 
-    `purchase_order: str | Any | None`
+    `purchase_order: str | None`
     :   The type of the None singleton.
 
-    `recurring_invoice_id: int | Any | None`
+    `recurring_invoice_id: int | None`
     :   The type of the None singleton.
 
-    `retainer: dict[str, typing.Any] | Any | None`
+    `retainer: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `sent_at: str | Any | None`
+    `sent_at: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `tax: float | Any | None`
+    `tax: float | None`
     :   The type of the None singleton.
 
-    `tax2: float | Any | None`
+    `tax2: float | None`
     :   The type of the None singleton.
 
-    `tax2_amount: float | Any | None`
+    `tax2_amount: float | None`
     :   The type of the None singleton.
 
-    `tax_amount: float | Any | None`
+    `tax_amount: float | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceItemCategoriesList"></a>
@@ -3092,31 +3092,31 @@ Classes
 
     ### Class variables
 
-    `invoice_item_categories: list[airbyte_agent_sdk.connectors.harvest.models.InvoiceItemCategory] | Any`
+    `invoice_item_categories: list[airbyte_agent_sdk.connectors.harvest.models.InvoiceItemCategory] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="InvoiceItemCategoriesListResultMeta"></a>
@@ -3140,7 +3140,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="InvoiceItemCategoriesSearchData"></a>
@@ -3200,25 +3200,25 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `use_as_expense: bool | Any | None`
+    `use_as_expense: bool | None`
     :   The type of the None singleton.
 
-    `use_as_service: bool | Any | None`
+    `use_as_service: bool | None`
     :   The type of the None singleton.
 
 <a id="InvoicesList"></a>
@@ -3239,31 +3239,31 @@ Classes
 
     ### Class variables
 
-    `invoices: list[airbyte_agent_sdk.connectors.harvest.models.Invoice] | Any`
+    `invoices: list[airbyte_agent_sdk.connectors.harvest.models.Invoice] | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="InvoicesListResultMeta"></a>
@@ -3287,7 +3287,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="InvoicesSearchData"></a>
@@ -3365,19 +3365,19 @@ Classes
 
     ### Class variables
 
-    `first: str | Any | None`
+    `first: str | None`
     :   The type of the None singleton.
 
-    `last: str | Any | None`
+    `last: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any | None`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `previous: str | Any | None`
+    `previous: str | None`
     :   The type of the None singleton.
 
 <a id="Project"></a>
@@ -3398,79 +3398,79 @@ Classes
 
     ### Class variables
 
-    `bill_by: str | Any | None`
+    `bill_by: str | None`
     :   The type of the None singleton.
 
-    `budget: float | Any | None`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `budget_by: str | Any | None`
+    `budget_by: str | None`
     :   The type of the None singleton.
 
-    `budget_is_monthly: bool | Any | None`
+    `budget_is_monthly: bool | None`
     :   The type of the None singleton.
 
-    `client: airbyte_agent_sdk.connectors.harvest.models.ProjectClient | Any | None`
+    `client: airbyte_agent_sdk.connectors.harvest.models.ProjectClient | None`
     :   The type of the None singleton.
 
-    `code: str | Any | None`
+    `code: str | None`
     :   The type of the None singleton.
 
-    `cost_budget: float | Any | None`
+    `cost_budget: float | None`
     :   The type of the None singleton.
 
-    `cost_budget_include_expenses: bool | Any | None`
+    `cost_budget_include_expenses: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `ends_on: str | Any | None`
+    `ends_on: str | None`
     :   The type of the None singleton.
 
-    `fee: float | Any | None`
+    `fee: float | None`
     :   The type of the None singleton.
 
-    `hourly_rate: float | Any | None`
+    `hourly_rate: float | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
-    `is_billable: bool | Any | None`
+    `is_billable: bool | None`
     :   The type of the None singleton.
 
-    `is_fixed_fee: bool | Any | None`
+    `is_fixed_fee: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `notes: str | Any | None`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `notify_when_over_budget: bool | Any | None`
+    `notify_when_over_budget: bool | None`
     :   The type of the None singleton.
 
-    `over_budget_notification_date: str | Any | None`
+    `over_budget_notification_date: str | None`
     :   The type of the None singleton.
 
-    `over_budget_notification_percentage: float | Any | None`
+    `over_budget_notification_percentage: float | None`
     :   The type of the None singleton.
 
-    `show_budget_to_all: bool | Any | None`
+    `show_budget_to_all: bool | None`
     :   The type of the None singleton.
 
-    `starts_on: str | Any | None`
+    `starts_on: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectClient"></a>
@@ -3491,16 +3491,16 @@ Classes
 
     ### Class variables
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   Client currency
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Client ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Client name
 
 <a id="ProjectsList"></a>
@@ -3521,31 +3521,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `projects: list[airbyte_agent_sdk.connectors.harvest.models.Project] | Any`
+    `projects: list[airbyte_agent_sdk.connectors.harvest.models.Project] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="ProjectsListResultMeta"></a>
@@ -3569,7 +3569,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchData"></a>
@@ -3644,22 +3644,22 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user_ids: list[int] | Any | None`
+    `user_ids: list[int] | None`
     :   The type of the None singleton.
 
 <a id="RolesList"></a>
@@ -3680,31 +3680,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `roles: list[airbyte_agent_sdk.connectors.harvest.models.Role] | Any`
+    `roles: list[airbyte_agent_sdk.connectors.harvest.models.Role] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="RolesListResultMeta"></a>
@@ -3728,7 +3728,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="RolesSearchData"></a>
@@ -3785,31 +3785,31 @@ Classes
 
     ### Class variables
 
-    `billable_by_default: bool | Any | None`
+    `billable_by_default: bool | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default_hourly_rate: float | Any | None`
+    `default_hourly_rate: float | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
-    `is_default: bool | Any | None`
+    `is_default: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="TaskAssignment"></a>
@@ -3830,34 +3830,34 @@ Classes
 
     ### Class variables
 
-    `billable: bool | Any | None`
+    `billable: bool | None`
     :   The type of the None singleton.
 
-    `budget: float | Any | None`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `hourly_rate: float | Any | None`
+    `hourly_rate: float | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.harvest.models.TaskAssignmentProject | Any | None`
+    `project: airbyte_agent_sdk.connectors.harvest.models.TaskAssignmentProject | None`
     :   The type of the None singleton.
 
-    `task: airbyte_agent_sdk.connectors.harvest.models.TaskAssignmentTask | Any | None`
+    `task: airbyte_agent_sdk.connectors.harvest.models.TaskAssignmentTask | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="TaskAssignmentProject"></a>
@@ -3878,16 +3878,16 @@ Classes
 
     ### Class variables
 
-    `code: str | Any | None`
+    `code: str | None`
     :   Project code
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Project ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Project name
 
 <a id="TaskAssignmentTask"></a>
@@ -3908,13 +3908,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Task ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Task name
 
 <a id="TaskAssignmentsList"></a>
@@ -3935,31 +3935,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `task_assignments: list[airbyte_agent_sdk.connectors.harvest.models.TaskAssignment] | Any`
+    `task_assignments: list[airbyte_agent_sdk.connectors.harvest.models.TaskAssignment] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="TaskAssignmentsListResultMeta"></a>
@@ -3983,7 +3983,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="TaskAssignmentsSearchData"></a>
@@ -4049,31 +4049,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `tasks: list[airbyte_agent_sdk.connectors.harvest.models.Task] | Any`
+    `tasks: list[airbyte_agent_sdk.connectors.harvest.models.Task] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="TasksListResultMeta"></a>
@@ -4097,7 +4097,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="TasksSearchData"></a>
@@ -4160,31 +4160,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `time_entries: list[airbyte_agent_sdk.connectors.harvest.models.TimeEntry] | Any`
+    `time_entries: list[airbyte_agent_sdk.connectors.harvest.models.TimeEntry] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="TimeEntriesListResultMeta"></a>
@@ -4208,7 +4208,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="TimeEntriesSearchData"></a>
@@ -4286,97 +4286,97 @@ Classes
 
     ### Class variables
 
-    `approval_status: str | Any | None`
+    `approval_status: str | None`
     :   The type of the None singleton.
 
-    `billable: bool | Any | None`
+    `billable: bool | None`
     :   The type of the None singleton.
 
-    `billable_rate: float | Any | None`
+    `billable_rate: float | None`
     :   The type of the None singleton.
 
-    `budgeted: bool | Any | None`
+    `budgeted: bool | None`
     :   The type of the None singleton.
 
-    `client: airbyte_agent_sdk.connectors.harvest.models.TimeEntryClient | Any | None`
+    `client: airbyte_agent_sdk.connectors.harvest.models.TimeEntryClient | None`
     :   The type of the None singleton.
 
-    `cost_rate: float | Any | None`
+    `cost_rate: float | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `ended_time: str | Any | None`
+    `ended_time: str | None`
     :   The type of the None singleton.
 
-    `external_reference: dict[str, typing.Any] | Any | None`
+    `external_reference: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `hours: float | Any | None`
+    `hours: float | None`
     :   The type of the None singleton.
 
-    `hours_without_timer: float | Any | None`
+    `hours_without_timer: float | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `invoice: airbyte_agent_sdk.connectors.harvest.models.TimeEntryInvoice | Any | None`
+    `invoice: airbyte_agent_sdk.connectors.harvest.models.TimeEntryInvoice | None`
     :   The type of the None singleton.
 
-    `is_billed: bool | Any | None`
+    `is_billed: bool | None`
     :   The type of the None singleton.
 
-    `is_closed: bool | Any | None`
+    `is_closed: bool | None`
     :   The type of the None singleton.
 
-    `is_explicitly_locked: bool | Any | None`
+    `is_explicitly_locked: bool | None`
     :   The type of the None singleton.
 
-    `is_locked: bool | Any | None`
+    `is_locked: bool | None`
     :   The type of the None singleton.
 
-    `is_running: bool | Any | None`
+    `is_running: bool | None`
     :   The type of the None singleton.
 
-    `locked_reason: str | Any | None`
+    `locked_reason: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `notes: str | Any | None`
+    `notes: str | None`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.harvest.models.TimeEntryProject | Any | None`
+    `project: airbyte_agent_sdk.connectors.harvest.models.TimeEntryProject | None`
     :   The type of the None singleton.
 
-    `rounded_hours: float | Any | None`
+    `rounded_hours: float | None`
     :   The type of the None singleton.
 
-    `spent_date: str | Any | None`
+    `spent_date: str | None`
     :   The type of the None singleton.
 
-    `started_time: str | Any | None`
+    `started_time: str | None`
     :   The type of the None singleton.
 
-    `task: airbyte_agent_sdk.connectors.harvest.models.TimeEntryTask | Any | None`
+    `task: airbyte_agent_sdk.connectors.harvest.models.TimeEntryTask | None`
     :   The type of the None singleton.
 
-    `task_assignment: dict[str, typing.Any] | Any | None`
+    `task_assignment: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `timer_started_at: str | Any | None`
+    `timer_started_at: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.harvest.models.TimeEntryUser | Any | None`
+    `user: airbyte_agent_sdk.connectors.harvest.models.TimeEntryUser | None`
     :   The type of the None singleton.
 
-    `user_assignment: dict[str, typing.Any] | Any | None`
+    `user_assignment: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
 <a id="TimeEntryClient"></a>
@@ -4397,13 +4397,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Client ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Client name
 
 <a id="TimeEntryInvoice"></a>
@@ -4424,13 +4424,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Invoice ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `number: str | Any | None`
+    `number: str | None`
     :   Invoice number
 
 <a id="TimeEntryProject"></a>
@@ -4451,13 +4451,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Project ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Project name
 
 <a id="TimeEntryTask"></a>
@@ -4478,13 +4478,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Task ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Task name
 
 <a id="TimeEntryUser"></a>
@@ -4505,13 +4505,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   User ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   User name
 
 <a id="TimeProject"></a>
@@ -4532,31 +4532,31 @@ Classes
 
     ### Class variables
 
-    `billable_amount: float | Any | None`
+    `billable_amount: float | None`
     :   The type of the None singleton.
 
-    `billable_hours: float | Any | None`
+    `billable_hours: float | None`
     :   The type of the None singleton.
 
-    `client_id: int | Any | None`
+    `client_id: int | None`
     :   The type of the None singleton.
 
-    `client_name: str | Any | None`
+    `client_name: str | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `project_id: int | Any | None`
+    `project_id: int | None`
     :   The type of the None singleton.
 
-    `project_name: str | Any | None`
+    `project_name: str | None`
     :   The type of the None singleton.
 
-    `total_hours: float | Any | None`
+    `total_hours: float | None`
     :   The type of the None singleton.
 
 <a id="TimeProjectsList"></a>
@@ -4577,31 +4577,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.harvest.models.TimeProject] | Any`
+    `results: list[airbyte_agent_sdk.connectors.harvest.models.TimeProject] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="TimeProjectsListResultMeta"></a>
@@ -4625,7 +4625,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="TimeProjectsSearchData"></a>
@@ -4691,25 +4691,25 @@ Classes
 
     ### Class variables
 
-    `billable_amount: float | Any | None`
+    `billable_amount: float | None`
     :   The type of the None singleton.
 
-    `billable_hours: float | Any | None`
+    `billable_hours: float | None`
     :   The type of the None singleton.
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `task_id: int | Any | None`
+    `task_id: int | None`
     :   The type of the None singleton.
 
-    `task_name: str | Any | None`
+    `task_name: str | None`
     :   The type of the None singleton.
 
-    `total_hours: float | Any | None`
+    `total_hours: float | None`
     :   The type of the None singleton.
 
 <a id="TimeTasksList"></a>
@@ -4730,31 +4730,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.harvest.models.TimeTask] | Any`
+    `results: list[airbyte_agent_sdk.connectors.harvest.models.TimeTask] | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
 <a id="TimeTasksListResultMeta"></a>
@@ -4778,7 +4778,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="TimeTasksSearchData"></a>
@@ -4838,73 +4838,73 @@ Classes
 
     ### Class variables
 
-    `access_roles: list[str] | Any | None`
+    `access_roles: list[str] | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `calendar_integration_enabled: bool | Any | None`
+    `calendar_integration_enabled: bool | None`
     :   The type of the None singleton.
 
-    `calendar_integration_source: str | Any | None`
+    `calendar_integration_source: str | None`
     :   The type of the None singleton.
 
-    `can_create_projects: bool | Any | None`
+    `can_create_projects: bool | None`
     :   The type of the None singleton.
 
-    `cost_rate: float | Any | None`
+    `cost_rate: float | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default_hourly_rate: float | Any | None`
+    `default_hourly_rate: float | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `employee_id: str | Any | None`
+    `employee_id: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `has_access_to_all_future_projects: bool | Any | None`
+    `has_access_to_all_future_projects: bool | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
-    `is_contractor: bool | Any | None`
+    `is_contractor: bool | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `permissions_claims: list[str] | Any | None`
+    `permissions_claims: list[str] | None`
     :   The type of the None singleton.
 
-    `roles: list[str] | Any | None`
+    `roles: list[str] | None`
     :   The type of the None singleton.
 
-    `telephone: str | Any | None`
+    `telephone: str | None`
     :   The type of the None singleton.
 
-    `timezone: str | Any | None`
+    `timezone: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `weekly_capacity: int | Any | None`
+    `weekly_capacity: int | None`
     :   The type of the None singleton.
 
 <a id="UserAssignment"></a>
@@ -4925,37 +4925,37 @@ Classes
 
     ### Class variables
 
-    `budget: float | Any | None`
+    `budget: float | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `hourly_rate: float | Any | None`
+    `hourly_rate: float | None`
     :   The type of the None singleton.
 
-    `id: int | Any`
+    `id: int`
     :   The type of the None singleton.
 
-    `is_active: bool | Any | None`
+    `is_active: bool | None`
     :   The type of the None singleton.
 
-    `is_project_manager: bool | Any | None`
+    `is_project_manager: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `project: airbyte_agent_sdk.connectors.harvest.models.UserAssignmentProject | Any | None`
+    `project: airbyte_agent_sdk.connectors.harvest.models.UserAssignmentProject | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `use_default_rates: bool | Any | None`
+    `use_default_rates: bool | None`
     :   The type of the None singleton.
 
-    `user: airbyte_agent_sdk.connectors.harvest.models.UserAssignmentUser | Any | None`
+    `user: airbyte_agent_sdk.connectors.harvest.models.UserAssignmentUser | None`
     :   The type of the None singleton.
 
 <a id="UserAssignmentProject"></a>
@@ -4976,16 +4976,16 @@ Classes
 
     ### Class variables
 
-    `code: str | Any | None`
+    `code: str | None`
     :   Project code
 
-    `id: int | Any | None`
+    `id: int | None`
     :   Project ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   Project name
 
 <a id="UserAssignmentUser"></a>
@@ -5006,13 +5006,13 @@ Classes
 
     ### Class variables
 
-    `id: int | Any | None`
+    `id: int | None`
     :   User ID
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   User name
 
 <a id="UserAssignmentsList"></a>
@@ -5033,31 +5033,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
-    `user_assignments: list[airbyte_agent_sdk.connectors.harvest.models.UserAssignment] | Any`
+    `user_assignments: list[airbyte_agent_sdk.connectors.harvest.models.UserAssignment] | None`
     :   The type of the None singleton.
 
 <a id="UserAssignmentsListResultMeta"></a>
@@ -5081,7 +5081,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="UserAssignmentsSearchData"></a>
@@ -5150,31 +5150,31 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | Any`
+    `links: airbyte_agent_sdk.connectors.harvest.models.PaginationLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_page: int | Any | None`
+    `next_page: int | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `previous_page: int | Any | None`
+    `previous_page: int | None`
     :   The type of the None singleton.
 
-    `total_entries: int | Any`
+    `total_entries: int | None`
     :   The type of the None singleton.
 
-    `total_pages: int | Any`
+    `total_pages: int | None`
     :   The type of the None singleton.
 
-    `users: list[airbyte_agent_sdk.connectors.harvest.models.User] | Any`
+    `users: list[airbyte_agent_sdk.connectors.harvest.models.User] | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -5198,7 +5198,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next_link: str | Any | None`
+    `next_link: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>

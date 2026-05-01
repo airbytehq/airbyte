@@ -31,104 +31,320 @@ Classes
 
     ### Class variables
 
-    `account_name: str | Any | None`
+    `account_name: str | None`
     :   The type of the None singleton.
 
-    `account_number: str | Any | None`
+    `account_number: str | None`
     :   The type of the None singleton.
 
-    `account_type: str | Any | None`
+    `account_type: str | None`
     :   The type of the None singleton.
 
-    `annual_revenue: float | Any | None`
+    `annual_revenue: float | None`
     :   The type of the None singleton.
 
-    `billing_city: str | Any | None`
+    `billing_city: str | None`
     :   The type of the None singleton.
 
-    `billing_code: str | Any | None`
+    `billing_code: str | None`
     :   The type of the None singleton.
 
-    `billing_country: str | Any | None`
+    `billing_country: str | None`
     :   The type of the None singleton.
 
-    `billing_state: str | Any | None`
+    `billing_state: str | None`
     :   The type of the None singleton.
 
-    `billing_street: str | Any | None`
+    `billing_street: str | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `employees: int | Any | None`
+    `employees: int | None`
     :   The type of the None singleton.
 
-    `fax: str | Any | None`
+    `fax: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `industry: str | Any | None`
+    `industry: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `ownership: str | Any | None`
+    `ownership: str | None`
     :   The type of the None singleton.
 
-    `parent_account: Any`
+    `parent_account: typing.Any | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `rating: str | Any | None`
+    `rating: str | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `shipping_city: str | Any | None`
+    `shipping_city: str | None`
     :   The type of the None singleton.
 
-    `shipping_code: str | Any | None`
+    `shipping_code: str | None`
     :   The type of the None singleton.
 
-    `shipping_country: str | Any | None`
+    `shipping_country: str | None`
     :   The type of the None singleton.
 
-    `shipping_state: str | Any | None`
+    `shipping_state: str | None`
     :   The type of the None singleton.
 
-    `shipping_street: str | Any | None`
+    `shipping_street: str | None`
     :   The type of the None singleton.
 
-    `sic_code: int | Any | None`
+    `sic_code: int | None`
     :   The type of the None singleton.
 
-    `ticker_symbol: str | Any | None`
+    `ticker_symbol: str | None`
     :   The type of the None singleton.
 
-    `website: str | Any | None`
+    `website: str | None`
     :   The type of the None singleton.
+
+<a id="AccountCreateParams"></a>
+
+`AccountCreateParams(**data: Any)`
+:   Parameters for creating an account. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.AccountCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AccountCreateParamsDataItem"></a>
+
+`AccountCreateParamsDataItem(**data: Any)`
+:   Nested schema for AccountCreateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_name: str`
+    :   Account/company name (required)
+
+    `account_number: str | None`
+    :   Account number
+
+    `account_type: str | None`
+    :   Type of account (e.g., Analyst, Competitor, Customer)
+
+    `annual_revenue: float | None`
+    :   Annual revenue of the account
+
+    `billing_city: str | None`
+    :   Billing city
+
+    `billing_code: str | None`
+    :   Billing ZIP/postal code
+
+    `billing_country: str | None`
+    :   Billing country
+
+    `billing_state: str | None`
+    :   Billing state or province
+
+    `billing_street: str | None`
+    :   Billing street address
+
+    `description: str | None`
+    :   Description or notes about the account
+
+    `employees: int | None`
+    :   Number of employees
+
+    `industry: str | None`
+    :   Industry the account belongs to
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ownership: str | None`
+    :   Ownership type (e.g., Public, Private)
+
+    `phone: str | None`
+    :   Account phone number
+
+    `rating: str | None`
+    :   Account rating
+
+    `shipping_city: str | None`
+    :   Shipping city
+
+    `shipping_code: str | None`
+    :   Shipping ZIP/postal code
+
+    `shipping_country: str | None`
+    :   Shipping country
+
+    `shipping_state: str | None`
+    :   Shipping state or province
+
+    `shipping_street: str | None`
+    :   Shipping street address
+
+    `website: str | None`
+    :   Account website URL
+
+<a id="AccountUpdateParams"></a>
+
+`AccountUpdateParams(**data: Any)`
+:   Parameters for updating an account. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.AccountUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AccountUpdateParamsDataItem"></a>
+
+`AccountUpdateParamsDataItem(**data: Any)`
+:   Nested schema for AccountUpdateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_name: str | None`
+    :   Account/company name
+
+    `account_number: str | None`
+    :   Account number
+
+    `account_type: str | None`
+    :   Type of account (e.g., Analyst, Competitor, Customer)
+
+    `annual_revenue: float | None`
+    :   Annual revenue of the account
+
+    `billing_city: str | None`
+    :   Billing city
+
+    `billing_code: str | None`
+    :   Billing ZIP/postal code
+
+    `billing_country: str | None`
+    :   Billing country
+
+    `billing_state: str | None`
+    :   Billing state or province
+
+    `billing_street: str | None`
+    :   Billing street address
+
+    `description: str | None`
+    :   Description or notes about the account
+
+    `employees: int | None`
+    :   Number of employees
+
+    `industry: str | None`
+    :   Industry the account belongs to
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ownership: str | None`
+    :   Ownership type (e.g., Public, Private)
+
+    `phone: str | None`
+    :   Account phone number
+
+    `rating: str | None`
+    :   Account rating
+
+    `shipping_city: str | None`
+    :   Shipping city
+
+    `shipping_code: str | None`
+    :   Shipping ZIP/postal code
+
+    `shipping_country: str | None`
+    :   Shipping country
+
+    `shipping_state: str | None`
+    :   Shipping state or province
+
+    `shipping_street: str | None`
+    :   Shipping street address
+
+    `website: str | None`
+    :   Account website URL
 
 <a id="AccountsList"></a>
 
@@ -148,10 +364,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Account] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Account] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -178,10 +394,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="AccountsSearchData"></a>
@@ -775,64 +991,64 @@ Classes
 
     ### Class variables
 
-    `call_duration: str | Any | None`
+    `call_duration: str | None`
     :   The type of the None singleton.
 
-    `call_duration_in_seconds: float | Any | None`
+    `call_duration_in_seconds: float | None`
     :   The type of the None singleton.
 
-    `call_purpose: str | Any | None`
+    `call_purpose: str | None`
     :   The type of the None singleton.
 
-    `call_result: str | Any | None`
+    `call_result: str | None`
     :   The type of the None singleton.
 
-    `call_start_time: str | Any | None`
+    `call_start_time: str | None`
     :   The type of the None singleton.
 
-    `call_type: str | Any | None`
+    `call_type: str | None`
     :   The type of the None singleton.
 
-    `caller_id: str | Any | None`
+    `caller_id: str | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `outgoing_call_status: str | Any | None`
+    `outgoing_call_status: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `what_id: Any`
+    `what_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `who_id: Any`
+    `who_id: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="CallsList"></a>
@@ -853,10 +1069,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Call] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Call] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -883,10 +1099,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="CallsSearchData"></a>
@@ -967,61 +1183,61 @@ Classes
 
     ### Class variables
 
-    `actual_cost: float | Any | None`
+    `actual_cost: float | None`
     :   The type of the None singleton.
 
-    `budgeted_cost: float | Any | None`
+    `budgeted_cost: float | None`
     :   The type of the None singleton.
 
-    `campaign_name: str | Any | None`
+    `campaign_name: str | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any | None`
+    `end_date: str | None`
     :   The type of the None singleton.
 
-    `expected_response: int | Any | None`
+    `expected_response: int | None`
     :   The type of the None singleton.
 
-    `expected_revenue: float | Any | None`
+    `expected_revenue: float | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `num_sent: str | Any | None`
+    `num_sent: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="CampaignsList"></a>
@@ -1042,10 +1258,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Campaign] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Campaign] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1072,10 +1288,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchData"></a>
@@ -1159,98 +1375,278 @@ Classes
 
     ### Class variables
 
-    `account_name: Any`
+    `account_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `date_of_birth: str | Any | None`
+    `date_of_birth: str | None`
     :   The type of the None singleton.
 
-    `department: str | Any | None`
+    `department: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `fax: str | Any | None`
+    `fax: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `full_name: str | Any | None`
+    `full_name: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `lead_source: str | Any | None`
+    `lead_source: str | None`
     :   The type of the None singleton.
 
-    `mailing_city: str | Any | None`
+    `mailing_city: str | None`
     :   The type of the None singleton.
 
-    `mailing_country: str | Any | None`
+    `mailing_country: str | None`
     :   The type of the None singleton.
 
-    `mailing_state: str | Any | None`
+    `mailing_state: str | None`
     :   The type of the None singleton.
 
-    `mailing_street: str | Any | None`
+    `mailing_street: str | None`
     :   The type of the None singleton.
 
-    `mailing_zip: str | Any | None`
+    `mailing_zip: str | None`
     :   The type of the None singleton.
 
-    `mobile: str | Any | None`
+    `mobile: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `other_city: str | Any | None`
+    `other_city: str | None`
     :   The type of the None singleton.
 
-    `other_country: str | Any | None`
+    `other_country: str | None`
     :   The type of the None singleton.
 
-    `other_state: str | Any | None`
+    `other_state: str | None`
     :   The type of the None singleton.
 
-    `other_street: str | Any | None`
+    `other_street: str | None`
     :   The type of the None singleton.
 
-    `other_zip: str | Any | None`
+    `other_zip: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
+
+<a id="ContactCreateParams"></a>
+
+`ContactCreateParams(**data: Any)`
+:   Parameters for creating a contact. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.ContactCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ContactCreateParamsDataItem"></a>
+
+`ContactCreateParamsDataItem(**data: Any)`
+:   Nested schema for ContactCreateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `date_of_birth: str | None`
+    :   Contact's date of birth (YYYY-MM-DD)
+
+    `department: str | None`
+    :   Department the contact belongs to
+
+    `description: str | None`
+    :   Description or notes about the contact
+
+    `email: str | None`
+    :   Contact's email address
+
+    `first_name: str | None`
+    :   Contact's first name
+
+    `last_name: str`
+    :   Contact's last name (required)
+
+    `lead_source: str | None`
+    :   Source from which the contact was generated
+
+    `mailing_city: str | None`
+    :   Mailing city
+
+    `mailing_country: str | None`
+    :   Mailing country
+
+    `mailing_state: str | None`
+    :   Mailing state or province
+
+    `mailing_street: str | None`
+    :   Mailing street address
+
+    `mailing_zip: str | None`
+    :   Mailing ZIP/postal code
+
+    `mobile: str | None`
+    :   Contact's mobile number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   Contact's phone number
+
+    `title: str | None`
+    :   Contact's job title
+
+<a id="ContactUpdateParams"></a>
+
+`ContactUpdateParams(**data: Any)`
+:   Parameters for updating a contact. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.ContactUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ContactUpdateParamsDataItem"></a>
+
+`ContactUpdateParamsDataItem(**data: Any)`
+:   Nested schema for ContactUpdateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `date_of_birth: str | None`
+    :   Contact's date of birth (YYYY-MM-DD)
+
+    `department: str | None`
+    :   Department the contact belongs to
+
+    `description: str | None`
+    :   Description or notes about the contact
+
+    `email: str | None`
+    :   Contact's email address
+
+    `first_name: str | None`
+    :   Contact's first name
+
+    `last_name: str | None`
+    :   Contact's last name
+
+    `lead_source: str | None`
+    :   Source from which the contact was generated
+
+    `mailing_city: str | None`
+    :   Mailing city
+
+    `mailing_country: str | None`
+    :   Mailing country
+
+    `mailing_state: str | None`
+    :   Mailing state or province
+
+    `mailing_street: str | None`
+    :   Mailing street address
+
+    `mailing_zip: str | None`
+    :   Mailing ZIP/postal code
+
+    `mobile: str | None`
+    :   Contact's mobile number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone: str | None`
+    :   Contact's phone number
+
+    `title: str | None`
+    :   Contact's job title
 
 <a id="ContactsList"></a>
 
@@ -1270,10 +1666,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Contact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Contact] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1300,10 +1696,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="ContactsSearchData"></a>
@@ -1396,16 +1792,16 @@ Classes
 
     ### Class variables
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="Deal"></a>
@@ -1426,68 +1822,140 @@ Classes
 
     ### Class variables
 
-    `account_name: Any`
+    `account_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `amount: float | Any | None`
+    `amount: float | None`
     :   The type of the None singleton.
 
-    `campaign_source: Any`
+    `campaign_source: typing.Any | None`
     :   The type of the None singleton.
 
-    `closing_date: str | Any | None`
+    `closing_date: str | None`
     :   The type of the None singleton.
 
-    `contact_name: Any`
+    `contact_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `deal_name: str | Any | None`
+    `deal_name: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `lead_source: str | Any | None`
+    `lead_source: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `next_step: str | Any | None`
+    `next_step: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `pipeline: airbyte_agent_sdk.connectors.zoho_crm.models.DealPipeline | Any | None`
+    `pipeline: airbyte_agent_sdk.connectors.zoho_crm.models.DealPipeline | None`
     :   The type of the None singleton.
 
-    `probability: int | Any | None`
+    `probability: int | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `stage: str | Any | None`
+    `stage: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
+
+<a id="DealCreateParams"></a>
+
+`DealCreateParams(**data: Any)`
+:   Parameters for creating a deal. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.DealCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="DealCreateParamsDataItem"></a>
+
+`DealCreateParamsDataItem(**data: Any)`
+:   Nested schema for DealCreateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: float | None`
+    :   Monetary value of the deal
+
+    `closing_date: str`
+    :   Expected closing date (YYYY-MM-DD)
+
+    `deal_name: str`
+    :   Deal name (required)
+
+    `description: str | None`
+    :   Description or notes about the deal
+
+    `lead_source: str | None`
+    :   Source from which the deal originated
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_step: str | None`
+    :   Next step in the deal process
+
+    `probability: int | None`
+    :   Probability of closing the deal (percentage)
+
+    `stage: str`
+    :   Current stage of the deal in the pipeline (required)
+
+    `type_: str | None`
+    :   Type of deal (e.g., New Business, Existing Business)
 
 <a id="DealPipeline"></a>
 
@@ -1507,14 +1975,86 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
+
+<a id="DealUpdateParams"></a>
+
+`DealUpdateParams(**data: Any)`
+:   Parameters for updating a deal. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.DealUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="DealUpdateParamsDataItem"></a>
+
+`DealUpdateParamsDataItem(**data: Any)`
+:   Nested schema for DealUpdateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: float | None`
+    :   Monetary value of the deal
+
+    `closing_date: str | None`
+    :   Expected closing date (YYYY-MM-DD)
+
+    `deal_name: str | None`
+    :   Deal name
+
+    `description: str | None`
+    :   Description or notes about the deal
+
+    `lead_source: str | None`
+    :   Source from which the deal originated
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_step: str | None`
+    :   Next step in the deal process
+
+    `probability: int | None`
+    :   Probability of closing the deal (percentage)
+
+    `stage: str | None`
+    :   Current stage of the deal in the pipeline
+
+    `type_: str | None`
+    :   Type of deal (e.g., New Business, Existing Business)
 
 <a id="DealsList"></a>
 
@@ -1534,10 +2074,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Deal] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Deal] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1564,10 +2104,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="DealsSearchData"></a>
@@ -1645,61 +2185,61 @@ Classes
 
     ### Class variables
 
-    `all_day: bool | Any | None`
+    `all_day: bool | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `end_date_time: str | Any | None`
+    `end_date_time: str | None`
     :   The type of the None singleton.
 
-    `event_title: str | Any | None`
+    `event_title: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `location: str | Any | None`
+    `location: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `participants: list[airbyte_agent_sdk.connectors.zoho_crm.models.EventParticipantsItem] | Any | None`
+    `participants: list[airbyte_agent_sdk.connectors.zoho_crm.models.EventParticipantsItem] | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `recurring_activity: dict[str, typing.Any] | Any | None`
+    `recurring_activity: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `remind_at: dict[str, typing.Any] | Any | None`
+    `remind_at: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `start_date_time: str | Any | None`
+    `start_date_time: str | None`
     :   The type of the None singleton.
 
-    `what_id: Any`
+    `what_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `who_id: Any`
+    `who_id: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="EventParticipantsItem"></a>
@@ -1720,25 +2260,25 @@ Classes
 
     ### Class variables
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `invited: bool | Any`
+    `invited: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `participant: str | Any`
+    `participant: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="EventsList"></a>
@@ -1759,10 +2299,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Event] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Event] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1789,10 +2329,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="EventsSearchData"></a>
@@ -1861,112 +2401,112 @@ Classes
 
     ### Class variables
 
-    `account_name: Any`
+    `account_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `adjustment: float | Any | None`
+    `adjustment: float | None`
     :   The type of the None singleton.
 
-    `billing_city: str | Any | None`
+    `billing_city: str | None`
     :   The type of the None singleton.
 
-    `billing_code: str | Any | None`
+    `billing_code: str | None`
     :   The type of the None singleton.
 
-    `billing_country: str | Any | None`
+    `billing_country: str | None`
     :   The type of the None singleton.
 
-    `billing_state: str | Any | None`
+    `billing_state: str | None`
     :   The type of the None singleton.
 
-    `billing_street: str | Any | None`
+    `billing_street: str | None`
     :   The type of the None singleton.
 
-    `contact_name: Any`
+    `contact_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `deal_name: Any`
+    `deal_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `discount: float | Any | None`
+    `discount: float | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `excise_duty: float | Any | None`
+    `excise_duty: float | None`
     :   The type of the None singleton.
 
-    `grand_total: float | Any | None`
+    `grand_total: float | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `invoice_date: str | Any | None`
+    `invoice_date: str | None`
     :   The type of the None singleton.
 
-    `invoice_number: str | Any | None`
+    `invoice_number: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `purchase_order: str | Any | None`
+    `purchase_order: str | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `sales_order: Any`
+    `sales_order: typing.Any | None`
     :   The type of the None singleton.
 
-    `shipping_city: str | Any | None`
+    `shipping_city: str | None`
     :   The type of the None singleton.
 
-    `shipping_code: str | Any | None`
+    `shipping_code: str | None`
     :   The type of the None singleton.
 
-    `shipping_country: str | Any | None`
+    `shipping_country: str | None`
     :   The type of the None singleton.
 
-    `shipping_state: str | Any | None`
+    `shipping_state: str | None`
     :   The type of the None singleton.
 
-    `shipping_street: str | Any | None`
+    `shipping_street: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `sub_total: float | Any | None`
+    `sub_total: float | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `tax: float | Any | None`
+    `tax: float | None`
     :   The type of the None singleton.
 
-    `terms_and_conditions: str | Any | None`
+    `terms_and_conditions: str | None`
     :   The type of the None singleton.
 
 <a id="InvoicesList"></a>
@@ -1987,10 +2527,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Invoice] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Invoice] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2017,10 +2557,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="InvoicesSearchData"></a>
@@ -2113,98 +2653,308 @@ Classes
 
     ### Class variables
 
-    `annual_revenue: float | Any | None`
+    `annual_revenue: float | None`
     :   The type of the None singleton.
 
-    `city: str | Any | None`
+    `city: str | None`
     :   The type of the None singleton.
 
-    `company: str | Any | None`
+    `company: str | None`
     :   The type of the None singleton.
 
-    `converted_detail: dict[str, typing.Any] | Any | None`
+    `converted_detail: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `country: str | Any | None`
+    `country: str | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `fax: str | Any | None`
+    `fax: str | None`
     :   The type of the None singleton.
 
-    `first_name: str | Any | None`
+    `first_name: str | None`
     :   The type of the None singleton.
 
-    `full_name: str | Any | None`
+    `full_name: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `industry: str | Any | None`
+    `industry: str | None`
     :   The type of the None singleton.
 
-    `last_name: str | Any | None`
+    `last_name: str | None`
     :   The type of the None singleton.
 
-    `lead_source: str | Any | None`
+    `lead_source: str | None`
     :   The type of the None singleton.
 
-    `lead_status: str | Any | None`
+    `lead_status: str | None`
     :   The type of the None singleton.
 
-    `mobile: str | Any | None`
+    `mobile: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `no_of_employees: int | Any | None`
+    `no_of_employees: int | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `phone: str | Any | None`
+    `phone: str | None`
     :   The type of the None singleton.
 
-    `rating: str | Any | None`
+    `rating: str | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `street: str | Any | None`
+    `street: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `website: str | Any | None`
+    `website: str | None`
     :   The type of the None singleton.
 
-    `zip_code: str | Any | None`
+    `zip_code: str | None`
     :   The type of the None singleton.
+
+<a id="LeadCreateParams"></a>
+
+`LeadCreateParams(**data: Any)`
+:   Parameters for creating a lead. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.LeadCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="LeadCreateParamsDataItem"></a>
+
+`LeadCreateParamsDataItem(**data: Any)`
+:   Nested schema for LeadCreateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `annual_revenue: float | None`
+    :   Annual revenue of the lead's company
+
+    `city: str | None`
+    :   City
+
+    `company: str | None`
+    :   Company the lead is associated with
+
+    `country: str | None`
+    :   Country
+
+    `description: str | None`
+    :   Description or notes about the lead
+
+    `email: str | None`
+    :   Lead's email address
+
+    `first_name: str | None`
+    :   Lead's first name
+
+    `industry: str | None`
+    :   Industry the lead belongs to
+
+    `last_name: str`
+    :   Lead's last name (required)
+
+    `lead_source: str | None`
+    :   Source from which the lead was generated
+
+    `lead_status: str | None`
+    :   Current status of the lead
+
+    `mobile: str | None`
+    :   Lead's mobile number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `no_of_employees: int | None`
+    :   Number of employees in the lead's company
+
+    `phone: str | None`
+    :   Lead's phone number
+
+    `rating: str | None`
+    :   Lead rating
+
+    `state: str | None`
+    :   State or province
+
+    `street: str | None`
+    :   Street address
+
+    `title: str | None`
+    :   Lead's job title
+
+    `website: str | None`
+    :   Lead's website URL
+
+    `zip_code: str | None`
+    :   ZIP/postal code
+
+<a id="LeadUpdateParams"></a>
+
+`LeadUpdateParams(**data: Any)`
+:   Parameters for updating a lead. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.LeadUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="LeadUpdateParamsDataItem"></a>
+
+`LeadUpdateParamsDataItem(**data: Any)`
+:   Nested schema for LeadUpdateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `annual_revenue: float | None`
+    :   Annual revenue of the lead's company
+
+    `city: str | None`
+    :   City
+
+    `company: str | None`
+    :   Company the lead is associated with
+
+    `country: str | None`
+    :   Country
+
+    `description: str | None`
+    :   Description or notes about the lead
+
+    `email: str | None`
+    :   Lead's email address
+
+    `first_name: str | None`
+    :   Lead's first name
+
+    `industry: str | None`
+    :   Industry the lead belongs to
+
+    `last_name: str | None`
+    :   Lead's last name
+
+    `lead_source: str | None`
+    :   Source from which the lead was generated
+
+    `lead_status: str | None`
+    :   Current status of the lead
+
+    `mobile: str | None`
+    :   Lead's mobile number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `no_of_employees: int | None`
+    :   Number of employees in the lead's company
+
+    `phone: str | None`
+    :   Lead's phone number
+
+    `rating: str | None`
+    :   Lead rating
+
+    `state: str | None`
+    :   State or province
+
+    `street: str | None`
+    :   Street address
+
+    `title: str | None`
+    :   Lead's job title
+
+    `website: str | None`
+    :   Lead's website URL
+
+    `zip_code: str | None`
+    :   ZIP/postal code
 
 <a id="LeadsList"></a>
 
@@ -2224,10 +2974,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Lead] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Lead] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2254,10 +3004,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="LeadsSearchData"></a>
@@ -2365,13 +3115,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ModifiedBy"></a>
@@ -2392,16 +3142,16 @@ Classes
 
     ### Class variables
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="Owner"></a>
@@ -2422,16 +3172,16 @@ Classes
 
     ### Class variables
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="PaginationInfo"></a>
@@ -2452,25 +3202,25 @@ Classes
 
     ### Class variables
 
-    `count: int | Any`
+    `count: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
-    `per_page: int | Any`
+    `per_page: int | None`
     :   The type of the None singleton.
 
-    `sort_by: str | Any`
+    `sort_by: str | None`
     :   The type of the None singleton.
 
-    `sort_order: str | Any`
+    `sort_order: str | None`
     :   The type of the None singleton.
 
 <a id="Product"></a>
@@ -2491,85 +3241,85 @@ Classes
 
     ### Class variables
 
-    `commission_rate: float | Any | None`
+    `commission_rate: float | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `handler: Any`
+    `handler: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
-    `manufacturer: str | Any | None`
+    `manufacturer: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `product_active: bool | Any | None`
+    `product_active: bool | None`
     :   The type of the None singleton.
 
-    `product_category: str | Any | None`
+    `product_category: str | None`
     :   The type of the None singleton.
 
-    `product_code: str | Any | None`
+    `product_code: str | None`
     :   The type of the None singleton.
 
-    `product_name: str | Any | None`
+    `product_name: str | None`
     :   The type of the None singleton.
 
-    `qty_in_demand: float | Any | None`
+    `qty_in_demand: float | None`
     :   The type of the None singleton.
 
-    `qty_in_stock: float | Any | None`
+    `qty_in_stock: float | None`
     :   The type of the None singleton.
 
-    `qty_ordered: float | Any | None`
+    `qty_ordered: float | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `reorder_level: float | Any | None`
+    `reorder_level: float | None`
     :   The type of the None singleton.
 
-    `sales_end_date: str | Any | None`
+    `sales_end_date: str | None`
     :   The type of the None singleton.
 
-    `sales_start_date: str | Any | None`
+    `sales_start_date: str | None`
     :   The type of the None singleton.
 
-    `support_expiry_date: str | Any | None`
+    `support_expiry_date: str | None`
     :   The type of the None singleton.
 
-    `support_start_date: str | Any | None`
+    `support_start_date: str | None`
     :   The type of the None singleton.
 
-    `tax: list[str] | Any | None`
+    `tax: list[str] | None`
     :   The type of the None singleton.
 
-    `unit_price: float | Any | None`
+    `unit_price: float | None`
     :   The type of the None singleton.
 
-    `vendor_name: Any`
+    `vendor_name: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="ProductsList"></a>
@@ -2590,10 +3340,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Product] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Product] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2620,10 +3370,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="ProductsSearchData"></a>
@@ -2713,100 +3463,100 @@ Classes
 
     ### Class variables
 
-    `account_name: Any`
+    `account_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `adjustment: float | Any | None`
+    `adjustment: float | None`
     :   The type of the None singleton.
 
-    `billing_city: str | Any | None`
+    `billing_city: str | None`
     :   The type of the None singleton.
 
-    `billing_code: str | Any | None`
+    `billing_code: str | None`
     :   The type of the None singleton.
 
-    `billing_country: str | Any | None`
+    `billing_country: str | None`
     :   The type of the None singleton.
 
-    `billing_state: str | Any | None`
+    `billing_state: str | None`
     :   The type of the None singleton.
 
-    `billing_street: str | Any | None`
+    `billing_street: str | None`
     :   The type of the None singleton.
 
-    `carrier: str | Any | None`
+    `carrier: str | None`
     :   The type of the None singleton.
 
-    `contact_name: Any`
+    `contact_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `deal_name: Any`
+    `deal_name: typing.Any | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `discount: float | Any | None`
+    `discount: float | None`
     :   The type of the None singleton.
 
-    `grand_total: float | Any | None`
+    `grand_total: float | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `quote_stage: str | Any | None`
+    `quote_stage: str | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `shipping_city: str | Any | None`
+    `shipping_city: str | None`
     :   The type of the None singleton.
 
-    `shipping_code: str | Any | None`
+    `shipping_code: str | None`
     :   The type of the None singleton.
 
-    `shipping_country: str | Any | None`
+    `shipping_country: str | None`
     :   The type of the None singleton.
 
-    `shipping_state: str | Any | None`
+    `shipping_state: str | None`
     :   The type of the None singleton.
 
-    `shipping_street: str | Any | None`
+    `shipping_street: str | None`
     :   The type of the None singleton.
 
-    `sub_total: float | Any | None`
+    `sub_total: float | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `tax: float | Any | None`
+    `tax: float | None`
     :   The type of the None singleton.
 
-    `terms_and_conditions: str | Any | None`
+    `terms_and_conditions: str | None`
     :   The type of the None singleton.
 
-    `valid_till: str | Any | None`
+    `valid_till: str | None`
     :   The type of the None singleton.
 
 <a id="QuotesList"></a>
@@ -2827,10 +3577,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Quote] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Quote] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2857,10 +3607,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="QuotesSearchData"></a>
@@ -2944,62 +3694,188 @@ Classes
 
     ### Class variables
 
-    `closed_time: str | Any | None`
+    `closed_time: str | None`
     :   The type of the None singleton.
 
-    `created_by: Any`
+    `created_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `created_time: str | Any | None`
+    `created_time: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modified_by: Any`
+    `modified_by: typing.Any | None`
     :   The type of the None singleton.
 
-    `modified_time: str | Any | None`
+    `modified_time: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `priority: str | Any | None`
+    `priority: str | None`
     :   The type of the None singleton.
 
-    `record_status_s: str | Any | None`
+    `record_status_s: str | None`
     :   The type of the None singleton.
 
-    `recurring_activity: dict[str, typing.Any] | Any | None`
+    `recurring_activity: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `remind_at: dict[str, typing.Any] | Any | None`
+    `remind_at: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `send_notification_email: bool | Any | None`
+    `send_notification_email: bool | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
-    `what_id: Any`
+    `what_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `who_id: Any`
+    `who_id: typing.Any | None`
     :   The type of the None singleton.
+
+<a id="TaskCreateParams"></a>
+
+`TaskCreateParams(**data: Any)`
+:   Parameters for creating a task. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.TaskCreateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TaskCreateParamsDataItem"></a>
+
+`TaskCreateParamsDataItem(**data: Any)`
+:   Nested schema for TaskCreateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `description: str | None`
+    :   Description or notes about the task
+
+    `due_date: str | None`
+    :   Due date for the task (YYYY-MM-DD)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `priority: str | None`
+    :   Priority level (e.g., High, Highest, Low, Lowest, Normal)
+
+    `send_notification_email: bool | None`
+    :   Whether to send a notification email
+
+    `status: str | None`
+    :   Task status (e.g., Not Started, In Progress, Completed)
+
+    `subject: str`
+    :   Subject or title of the task (required)
+
+<a id="TaskUpdateParams"></a>
+
+`TaskUpdateParams(**data: Any)`
+:   Parameters for updating a task. The record fields must be nested inside a data array.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.TaskUpdateParamsDataItem]`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TaskUpdateParamsDataItem"></a>
+
+`TaskUpdateParamsDataItem(**data: Any)`
+:   Nested schema for TaskUpdateParams.data_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `description: str | None`
+    :   Description or notes about the task
+
+    `due_date: str | None`
+    :   Due date for the task (YYYY-MM-DD)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `priority: str | None`
+    :   Priority level (e.g., High, Highest, Low, Lowest, Normal)
+
+    `send_notification_email: bool | None`
+    :   Whether to send a notification email
+
+    `status: str | None`
+    :   Task status (e.g., Not Started, In Progress, Completed)
+
+    `subject: str | None`
+    :   Subject or title of the task
 
 <a id="TasksList"></a>
 
@@ -3019,10 +3895,10 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Task] | Any`
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.Task] | None`
     :   The type of the None singleton.
 
-    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | Any`
+    `info: airbyte_agent_sdk.connectors.zoho_crm.models.PaginationInfo | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3049,10 +3925,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `more_records: bool | Any`
+    `more_records: bool | None`
     :   The type of the None singleton.
 
-    `page: int | Any`
+    `page: int | None`
     :   The type of the None singleton.
 
 <a id="TasksSearchData"></a>
@@ -3105,6 +3981,99 @@ Classes
 
     `subject: str | None`
     :   Subject or title of the task
+
+<a id="WriteResponse"></a>
+
+`WriteResponse(**data: Any)`
+:   Response from a create or update operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: list[airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponseItem] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="WriteResponseDetail"></a>
+
+`WriteResponseDetail(**data: Any)`
+:   Details of a successfully written record
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_by: typing.Any | None`
+    :   The type of the None singleton.
+
+    `created_time: str | None`
+    :   The type of the None singleton.
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `modified_by: typing.Any | None`
+    :   The type of the None singleton.
+
+    `modified_time: str | None`
+    :   The type of the None singleton.
+
+<a id="WriteResponseItem"></a>
+
+`WriteResponseItem(**data: Any)`
+:   Individual record write result
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `code: str | None`
+    :   The type of the None singleton.
+
+    `details: airbyte_agent_sdk.connectors.zoho_crm.models.WriteResponseDetail | None`
+    :   The type of the None singleton.
+
+    `message: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
 
 <a id="ZohoCrmAuthConfig"></a>
 

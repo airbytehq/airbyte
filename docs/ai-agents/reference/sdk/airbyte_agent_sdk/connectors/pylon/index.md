@@ -19,6 +19,51 @@ Sub-modules
 Classes
 -------
 
+<a id="AccountsSearchData"></a>
+
+`AccountsSearchData(**data: Any)`
+:   Search result data for accounts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Timestamp when the account was created, in ISO 8601 format
+
+    `domain: str | None`
+    :   Primary domain associated with the account
+
+    `id: str`
+    :   Unique identifier for the account
+
+    `is_disabled: bool | None`
+    :   Whether the account has been disabled
+
+    `latest_customer_activity_time: str | None`
+    :   Timestamp of the most recent activity from this account, in ISO 8601 format
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the account (customer organization)
+
+    `primary_domain: str | None`
+    :   Canonical primary domain for the account
+
+    `type_: str | None`
+    :   Classification of the account (e.g. customer, prospect)
+
 <a id="AirbyteAuthConfig"></a>
 
 `AirbyteAuthConfig(**data: Any)`
@@ -88,6 +133,425 @@ Classes
 
     `workspace_name: str | None`
     :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[AccountsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[ContactsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[CustomFieldsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[IssuesSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[MessagesSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TagsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TeamsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UserRolesSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UsersSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AccountsSearchResult"></a>
+
+`AccountsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ContactsSearchResult"></a>
+
+`ContactsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CustomFieldsSearchResult"></a>
+
+`CustomFieldsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssuesSearchResult"></a>
+
+`IssuesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MessagesSearchResult"></a>
+
+`MessagesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TagsSearchResult"></a>
+
+`TagsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TeamsSearchResult"></a>
+
+`TeamsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TicketFormsSearchResult"></a>
+
+`TicketFormsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UserRolesSearchResult"></a>
+
+`UserRolesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ContactsSearchData"></a>
+
+`ContactsSearchData(**data: Any)`
+:   Search result data for contacts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the contact
+
+    `id: str`
+    :   Unique identifier for the contact
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the contact
+
+    `portal_role: str | None`
+    :   Role the contact has in the customer portal
+
+    `primary_phone_number: str | None`
+    :   Primary phone number of the contact
+
+<a id="CustomFieldsSearchData"></a>
+
+`CustomFieldsSearchData(**data: Any)`
+:   Search result data for custom_fields entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Timestamp when the custom field was created, in ISO 8601 format
+
+    `id: str`
+    :   Unique identifier for the custom field
+
+    `is_read_only: bool | None`
+    :   Whether the custom field is read-only
+
+    `label: str | None`
+    :   Display label of the custom field
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_type: str | None`
+    :   Type of object this custom field applies to (e.g. issue, account)
+
+    `slug: str | None`
+    :   URL-safe identifier for the custom field
+
+    `type_: str | None`
+    :   Data type of the custom field (e.g. text, select)
+
+<a id="IssuesSearchData"></a>
+
+`IssuesSearchData(**data: Any)`
+:   Search result data for issues entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Timestamp when the issue was created, in ISO 8601 format
+
+    `customer_portal_visible: bool | None`
+    :   Whether the issue is visible in the customer portal
+
+    `id: str`
+    :   Unique identifier for the issue
+
+    `latest_message_time: str | None`
+    :   Timestamp of the most recent message on the issue, in ISO 8601 format
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `number: int | None`
+    :   Human-readable issue number within the workspace
+
+    `resolution_time: str | None`
+    :   Timestamp when the issue was resolved, in ISO 8601 format
+
+    `snoozed_until_time: str | None`
+    :   Timestamp the issue is snoozed until, in ISO 8601 format
+
+    `source: str | None`
+    :   Channel the issue originated from (e.g. email, slack)
+
+    `state: str | None`
+    :   Current state of the issue (e.g. new, in_progress, closed)
+
+    `title: str | None`
+    :   Title of the issue
+
+    `type_: str | None`
+    :   Type classification of the issue
+
+<a id="MessagesSearchData"></a>
+
+`MessagesSearchData(**data: Any)`
+:   Search result data for messages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the message
+
+    `is_private: bool | None`
+    :   Whether the message is an internal note (not visible to the customer)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `source: str | None`
+    :   Channel the message was sent through (e.g. email, slack)
+
+    `thread_id: str | None`
+    :   Identifier of the thread this message belongs to
+
+    `timestamp: str | None`
+    :   Timestamp the message was posted, in ISO 8601 format
 
 <a id="PylonAuthConfig"></a>
 
@@ -201,8 +665,13 @@ Classes
             # Use the connector
             result = await connector.execute("entity", "list", \{\})
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000) ‑> ~_F | Callable[[~_F], ~_F]`
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
         
         Usage:
             @mcp.tool()
@@ -215,9 +684,29 @@ Classes
             async def execute(entity: str, action: str, params: dict):
                 ...
         
+            @mcp.tool()
+            @PylonConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
         Args:
             update_docstring: When True, append connector capabilities to __doc__.
             max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -266,7 +755,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -302,3 +791,159 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="TagsSearchData"></a>
+
+`TagsSearchData(**data: Any)`
+:   Search result data for tags entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the tag
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_type: str | None`
+    :   Type of object this tag applies to (e.g. issue, account)
+
+    `value: str | None`
+    :   Display value of the tag
+
+<a id="TeamsSearchData"></a>
+
+`TeamsSearchData(**data: Any)`
+:   Search result data for teams entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the team
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the team
+
+<a id="TicketFormsSearchData"></a>
+
+`TicketFormsSearchData(**data: Any)`
+:   Search result data for ticket_forms entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the ticket form
+
+    `is_public: bool | None`
+    :   Whether the ticket form is publicly accessible
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the ticket form
+
+    `slug: str | None`
+    :   URL-safe identifier for the ticket form
+
+<a id="UserRolesSearchData"></a>
+
+`UserRolesSearchData(**data: Any)`
+:   Search result data for user_roles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the user role
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the user role
+
+    `slug: str | None`
+    :   URL-safe identifier for the user role
+
+<a id="UsersSearchData"></a>
+
+`UsersSearchData(**data: Any)`
+:   Search result data for users entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the user
+
+    `id: str`
+    :   Unique identifier for the user
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the user
+
+    `role_id: str | None`
+    :   Identifier of the user's role
+
+    `status: str | None`
+    :   Current status of the user (e.g. active, disabled)

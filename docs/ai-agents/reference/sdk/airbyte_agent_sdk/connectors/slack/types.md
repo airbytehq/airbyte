@@ -33,6 +33,46 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="BookmarksCreateParams"></a>
+
+`BookmarksCreateParams(*args, **kwargs)`
+:   Parameters for bookmarks.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel_id: str`
+    :   The type of the None singleton.
+
+    `emoji: str`
+    :   The type of the None singleton.
+
+    `link: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+<a id="ChannelArchivesCreateParams"></a>
+
+`ChannelArchivesCreateParams(*args, **kwargs)`
+:   Parameters for channel_archives.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
 <a id="ChannelInvitesCreateParams"></a>
 
 `ChannelInvitesCreateParams(*args, **kwargs)`
@@ -51,6 +91,23 @@ Classes
     :   The type of the None singleton.
 
     `users: str`
+    :   The type of the None singleton.
+
+<a id="ChannelKicksCreateParams"></a>
+
+`ChannelKicksCreateParams(*args, **kwargs)`
+:   Parameters for channel_kicks.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `user: str`
     :   The type of the None singleton.
 
 <a id="ChannelMessagesAndCondition"></a>
@@ -1566,6 +1623,32 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
+<a id="EphemeralMessagesCreateParams"></a>
+
+`EphemeralMessagesCreateParams(*args, **kwargs)`
+:   Parameters for ephemeral_messages.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blocks: str`
+    :   The type of the None singleton.
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `text: str`
+    :   The type of the None singleton.
+
+    `thread_ts: str`
+    :   The type of the None singleton.
+
+    `user: str`
+    :   The type of the None singleton.
+
 <a id="MessagesCreateParams"></a>
 
 `MessagesCreateParams(*args, **kwargs)`
@@ -1595,6 +1678,23 @@ Classes
     `unfurl_media: bool`
     :   The type of the None singleton.
 
+<a id="MessagesDeleteParams"></a>
+
+`MessagesDeleteParams(*args, **kwargs)`
+:   Parameters for messages.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `ts: str`
+    :   The type of the None singleton.
+
 <a id="MessagesUpdateParams"></a>
 
 `MessagesUpdateParams(*args, **kwargs)`
@@ -1615,6 +1715,23 @@ Classes
     `ts: str`
     :   The type of the None singleton.
 
+<a id="PinsCreateParams"></a>
+
+`PinsCreateParams(*args, **kwargs)`
+:   Parameters for pins.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `timestamp: str`
+    :   The type of the None singleton.
+
 <a id="ReactionsCreateParams"></a>
 
 `ReactionsCreateParams(*args, **kwargs)`
@@ -1633,6 +1750,58 @@ Classes
     :   The type of the None singleton.
 
     `timestamp: str`
+    :   The type of the None singleton.
+
+<a id="ReactionsDeleteParams"></a>
+
+`ReactionsDeleteParams(*args, **kwargs)`
+:   Parameters for reactions.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `timestamp: str`
+    :   The type of the None singleton.
+
+<a id="ScheduledMessagesCreateParams"></a>
+
+`ScheduledMessagesCreateParams(*args, **kwargs)`
+:   Parameters for scheduled_messages.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `post_at: int`
+    :   The type of the None singleton.
+
+    `reply_broadcast: bool`
+    :   The type of the None singleton.
+
+    `text: str`
+    :   The type of the None singleton.
+
+    `thread_ts: str`
+    :   The type of the None singleton.
+
+    `unfurl_links: bool`
+    :   The type of the None singleton.
+
+    `unfurl_media: bool`
     :   The type of the None singleton.
 
 <a id="ThreadsAndCondition"></a>

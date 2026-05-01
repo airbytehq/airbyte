@@ -332,52 +332,52 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `fields: list[airbyte_agent_sdk.connectors.typeform.models.FormFieldsItem | None] | Any | None`
+    `fields: list[airbyte_agent_sdk.connectors.typeform.models.FormFieldsItem | None] | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `last_updated_at: str | Any | None`
+    `last_updated_at: str | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.typeform.models.FormLinks | Any | None`
+    `links: airbyte_agent_sdk.connectors.typeform.models.FormLinks | None`
     :   The type of the None singleton.
 
-    `logic: list[airbyte_agent_sdk.connectors.typeform.models.FormLogicItem | None] | Any | None`
+    `logic: list[airbyte_agent_sdk.connectors.typeform.models.FormLogicItem | None] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `published_at: str | Any | None`
+    `published_at: str | None`
     :   The type of the None singleton.
 
-    `self: airbyte_agent_sdk.connectors.typeform.models.FormSelf | Any | None`
+    `self: airbyte_agent_sdk.connectors.typeform.models.FormSelf | None`
     :   The type of the None singleton.
 
-    `settings: airbyte_agent_sdk.connectors.typeform.models.FormSettings | Any | None`
+    `settings: airbyte_agent_sdk.connectors.typeform.models.FormSettings | None`
     :   The type of the None singleton.
 
-    `thankyou_screens: list[airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItem | None] | Any | None`
+    `thankyou_screens: list[airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItem | None] | None`
     :   The type of the None singleton.
 
-    `theme: airbyte_agent_sdk.connectors.typeform.models.FormTheme | Any | None`
+    `theme: airbyte_agent_sdk.connectors.typeform.models.FormTheme | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `welcome_screens: list[airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItem | None] | Any | None`
+    `welcome_screens: list[airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItem | None] | None`
     :   The type of the None singleton.
 
-    `workspace: airbyte_agent_sdk.connectors.typeform.models.FormWorkspace | Any | None`
+    `workspace: airbyte_agent_sdk.connectors.typeform.models.FormWorkspace | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItem"></a>
@@ -398,31 +398,31 @@ Classes
 
     ### Class variables
 
-    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemAttachment | Any | None`
+    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemAttachment | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `layout: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayout | Any | None`
+    `layout: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayout | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemProperties | Any | None`
+    `properties: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemProperties | None`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `validations: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemValidations | Any | None`
+    `validations: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemValidations | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemAttachment"></a>
@@ -443,13 +443,13 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemLayout"></a>
@@ -470,19 +470,19 @@ Classes
 
     ### Class variables
 
-    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayoutAttachment | Any | None`
+    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayoutAttachment | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `placement: str | Any | None`
+    `placement: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayoutProperties | Any | None`
+    `properties: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayoutProperties | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemLayoutAttachment"></a>
@@ -503,16 +503,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `scale: float | Any | None`
+    `scale: float | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemLayoutProperties"></a>
@@ -533,13 +533,13 @@ Classes
 
     ### Class variables
 
-    `brightness: float | Any | None`
+    `brightness: float | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `focal_point: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayoutPropertiesFocalPoint | Any | None`
+    `focal_point: airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemLayoutPropertiesFocalPoint | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -566,10 +566,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `x: float | Any | None`
+    `x: float | None`
     :   The type of the None singleton.
 
-    `y: float | Any | None`
+    `y: float | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemProperties"></a>
@@ -590,22 +590,22 @@ Classes
 
     ### Class variables
 
-    `allow_multiple_selection: bool | Any | None`
+    `allow_multiple_selection: bool | None`
     :   The type of the None singleton.
 
-    `allow_other_choice: bool | Any | None`
+    `allow_other_choice: bool | None`
     :   The type of the None singleton.
 
-    `choices: list[airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemPropertiesChoicesItem | None] | Any | None`
+    `choices: list[airbyte_agent_sdk.connectors.typeform.models.FormFieldsItemPropertiesChoicesItem | None] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `randomize: bool | Any | None`
+    `randomize: bool | None`
     :   The type of the None singleton.
 
-    `vertical_alignment: bool | Any | None`
+    `vertical_alignment: bool | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemPropertiesChoicesItem"></a>
@@ -626,16 +626,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
 <a id="FormFieldsItemValidations"></a>
@@ -659,7 +659,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `required: bool | Any | None`
+    `required: bool | None`
     :   The type of the None singleton.
 
 <a id="FormLinks"></a>
@@ -680,7 +680,7 @@ Classes
 
     ### Class variables
 
-    `display: str | Any | None`
+    `display: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -704,16 +704,16 @@ Classes
 
     ### Class variables
 
-    `actions: list[airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItem | None] | Any | None`
+    `actions: list[airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItem | None] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormLogicItemActionsItem"></a>
@@ -734,13 +734,13 @@ Classes
 
     ### Class variables
 
-    `action: str | Any | None`
+    `action: str | None`
     :   The type of the None singleton.
 
-    `condition: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemCondition | Any | None`
+    `condition: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemCondition | None`
     :   The type of the None singleton.
 
-    `details: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetails | Any | None`
+    `details: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetails | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -767,10 +767,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `op: str | Any | None`
+    `op: str | None`
     :   The type of the None singleton.
 
-    `vars: list[airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemConditionVarsItem | None] | Any | None`
+    `vars: list[airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemConditionVarsItem | None] | None`
     :   The type of the None singleton.
 
 <a id="FormLogicItemActionsItemConditionVarsItem"></a>
@@ -794,10 +794,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="FormLogicItemActionsItemDetails"></a>
@@ -821,13 +821,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `target: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetailsTarget | Any | None`
+    `target: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetailsTarget | None`
     :   The type of the None singleton.
 
-    `to: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetailsTo | Any | None`
+    `to: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetailsTo | None`
     :   The type of the None singleton.
 
-    `value: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetailsValue | Any | None`
+    `value: airbyte_agent_sdk.connectors.typeform.models.FormLogicItemActionsItemDetailsValue | None`
     :   The type of the None singleton.
 
 <a id="FormLogicItemActionsItemDetailsTarget"></a>
@@ -851,10 +851,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="FormLogicItemActionsItemDetailsTo"></a>
@@ -878,10 +878,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="FormLogicItemActionsItemDetailsValue"></a>
@@ -905,10 +905,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="FormSelf"></a>
@@ -929,7 +929,7 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   URL of this form resource
 
     `model_config`
@@ -953,58 +953,58 @@ Classes
 
     ### Class variables
 
-    `are_uploads_public: bool | Any | None`
+    `are_uploads_public: bool | None`
     :   The type of the None singleton.
 
-    `capabilities: airbyte_agent_sdk.connectors.typeform.models.FormSettingsCapabilities | Any | None`
+    `capabilities: airbyte_agent_sdk.connectors.typeform.models.FormSettingsCapabilities | None`
     :   The type of the None singleton.
 
-    `cui_settings: airbyte_agent_sdk.connectors.typeform.models.FormSettingsCuiSettings | Any | None`
+    `cui_settings: airbyte_agent_sdk.connectors.typeform.models.FormSettingsCuiSettings | None`
     :   The type of the None singleton.
 
-    `facebook_pixel: str | Any | None`
+    `facebook_pixel: str | None`
     :   The type of the None singleton.
 
-    `google_analytics: str | Any | None`
+    `google_analytics: str | None`
     :   The type of the None singleton.
 
-    `google_tag_manager: str | Any | None`
+    `google_tag_manager: str | None`
     :   The type of the None singleton.
 
-    `hide_navigation: bool | Any | None`
+    `hide_navigation: bool | None`
     :   The type of the None singleton.
 
-    `is_public: bool | Any | None`
+    `is_public: bool | None`
     :   The type of the None singleton.
 
-    `is_trial: bool | Any | None`
+    `is_trial: bool | None`
     :   The type of the None singleton.
 
-    `language: str | Any | None`
+    `language: str | None`
     :   Language of the form
 
-    `meta: airbyte_agent_sdk.connectors.typeform.models.FormSettingsMeta | Any | None`
+    `meta: airbyte_agent_sdk.connectors.typeform.models.FormSettingsMeta | None`
     :   Meta information
 
     `model_config`
     :   The type of the None singleton.
 
-    `notifications: airbyte_agent_sdk.connectors.typeform.models.FormSettingsNotifications | Any | None`
+    `notifications: airbyte_agent_sdk.connectors.typeform.models.FormSettingsNotifications | None`
     :   The type of the None singleton.
 
-    `progress_bar: str | Any | None`
+    `progress_bar: str | None`
     :   Progress bar settings
 
-    `redirect_after_submit_url: str | Any | None`
+    `redirect_after_submit_url: str | None`
     :   The type of the None singleton.
 
-    `show_progress_bar: bool | Any | None`
+    `show_progress_bar: bool | None`
     :   The type of the None singleton.
 
-    `show_time_to_complete: bool | Any | None`
+    `show_time_to_complete: bool | None`
     :   The type of the None singleton.
 
-    `show_typeform_branding: bool | Any | None`
+    `show_typeform_branding: bool | None`
     :   The type of the None singleton.
 
 <a id="FormSettingsCapabilities"></a>
@@ -1025,7 +1025,7 @@ Classes
 
     ### Class variables
 
-    `e2e_encryption: airbyte_agent_sdk.connectors.typeform.models.FormSettingsCapabilitiesE2eEncryption | Any | None`
+    `e2e_encryption: airbyte_agent_sdk.connectors.typeform.models.FormSettingsCapabilitiesE2eEncryption | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1049,13 +1049,13 @@ Classes
 
     ### Class variables
 
-    `enabled: bool | Any | None`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `modifiable: bool | Any | None`
+    `modifiable: bool | None`
     :   The type of the None singleton.
 
 <a id="FormSettingsCuiSettings"></a>
@@ -1076,16 +1076,16 @@ Classes
 
     ### Class variables
 
-    `avatar: str | Any | None`
+    `avatar: str | None`
     :   The type of the None singleton.
 
-    `is_typing_emulation_disabled: bool | Any | None`
+    `is_typing_emulation_disabled: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `typing_emulation_speed: str | Any | None`
+    `typing_emulation_speed: str | None`
     :   The type of the None singleton.
 
 <a id="FormSettingsMeta"></a>
@@ -1106,19 +1106,19 @@ Classes
 
     ### Class variables
 
-    `allow_indexing: bool | Any | None`
+    `allow_indexing: bool | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `image: airbyte_agent_sdk.connectors.typeform.models.FormSettingsMetaImage | Any | None`
+    `image: airbyte_agent_sdk.connectors.typeform.models.FormSettingsMetaImage | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="FormSettingsMetaImage"></a>
@@ -1139,7 +1139,7 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1166,10 +1166,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `respondent: airbyte_agent_sdk.connectors.typeform.models.FormSettingsNotificationsRespondent | Any | None`
+    `respondent: airbyte_agent_sdk.connectors.typeform.models.FormSettingsNotificationsRespondent | None`
     :   The type of the None singleton.
 
-    `self: airbyte_agent_sdk.connectors.typeform.models.FormSettingsNotificationsSelf | Any | None`
+    `self: airbyte_agent_sdk.connectors.typeform.models.FormSettingsNotificationsSelf | None`
     :   The type of the None singleton.
 
 <a id="FormSettingsNotificationsRespondent"></a>
@@ -1190,22 +1190,22 @@ Classes
 
     ### Class variables
 
-    `enabled: bool | Any | None`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
-    `message: str | Any | None`
+    `message: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `recipients: list[str | None] | Any | None`
+    `recipients: list[str | None] | None`
     :   The type of the None singleton.
 
-    `reply_to: str | Any | None`
+    `reply_to: str | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
 <a id="FormSettingsNotificationsSelf"></a>
@@ -1226,22 +1226,22 @@ Classes
 
     ### Class variables
 
-    `enabled: bool | Any | None`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
-    `message: str | Any | None`
+    `message: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `recipients: list[str | None] | Any | None`
+    `recipients: list[str | None] | None`
     :   The type of the None singleton.
 
-    `reply_to: str | Any | None`
+    `reply_to: str | None`
     :   The type of the None singleton.
 
-    `subject: str | Any | None`
+    `subject: str | None`
     :   The type of the None singleton.
 
 <a id="FormThankyouScreensItem"></a>
@@ -1262,25 +1262,25 @@ Classes
 
     ### Class variables
 
-    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemAttachment | Any | None`
+    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemAttachment | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `layout: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayout | Any | None`
+    `layout: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayout | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemProperties | Any | None`
+    `properties: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemProperties | None`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="FormThankyouScreensItemAttachment"></a>
@@ -1304,10 +1304,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `placement: str | Any | None`
+    `placement: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormThankyouScreensItemLayout"></a>
@@ -1328,19 +1328,19 @@ Classes
 
     ### Class variables
 
-    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayoutAttachment | Any | None`
+    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayoutAttachment | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `placement: str | Any | None`
+    `placement: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayoutProperties | Any | None`
+    `properties: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayoutProperties | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormThankyouScreensItemLayoutAttachment"></a>
@@ -1361,16 +1361,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `scale: float | Any | None`
+    `scale: float | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormThankyouScreensItemLayoutProperties"></a>
@@ -1391,13 +1391,13 @@ Classes
 
     ### Class variables
 
-    `brightness: float | Any | None`
+    `brightness: float | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `focal_point: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayoutPropertiesFocalPoint | Any | None`
+    `focal_point: airbyte_agent_sdk.connectors.typeform.models.FormThankyouScreensItemLayoutPropertiesFocalPoint | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1424,10 +1424,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `x: float | Any | None`
+    `x: float | None`
     :   The type of the None singleton.
 
-    `y: float | Any | None`
+    `y: float | None`
     :   The type of the None singleton.
 
 <a id="FormThankyouScreensItemProperties"></a>
@@ -1448,22 +1448,22 @@ Classes
 
     ### Class variables
 
-    `button_mode: str | Any | None`
+    `button_mode: str | None`
     :   The type of the None singleton.
 
-    `button_text: str | Any | None`
+    `button_text: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `redirect_url: str | Any | None`
+    `redirect_url: str | None`
     :   The type of the None singleton.
 
-    `share_icons: bool | Any | None`
+    `share_icons: bool | None`
     :   The type of the None singleton.
 
-    `show_button: bool | Any | None`
+    `show_button: bool | None`
     :   The type of the None singleton.
 
 <a id="FormTheme"></a>
@@ -1484,7 +1484,7 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   URL of the theme
 
     `model_config`
@@ -1508,25 +1508,25 @@ Classes
 
     ### Class variables
 
-    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemAttachment | Any | None`
+    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemAttachment | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `layout: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayout | Any | None`
+    `layout: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayout | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemProperties | Any | None`
+    `properties: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemProperties | None`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="FormWelcomeScreensItemAttachment"></a>
@@ -1550,10 +1550,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `placement: str | Any | None`
+    `placement: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormWelcomeScreensItemLayout"></a>
@@ -1574,19 +1574,19 @@ Classes
 
     ### Class variables
 
-    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayoutAttachment | Any | None`
+    `attachment: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayoutAttachment | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `placement: str | Any | None`
+    `placement: str | None`
     :   The type of the None singleton.
 
-    `properties: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayoutProperties | Any | None`
+    `properties: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayoutProperties | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormWelcomeScreensItemLayoutAttachment"></a>
@@ -1607,16 +1607,16 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `scale: float | Any | None`
+    `scale: float | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="FormWelcomeScreensItemLayoutProperties"></a>
@@ -1637,13 +1637,13 @@ Classes
 
     ### Class variables
 
-    `brightness: float | Any | None`
+    `brightness: float | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `focal_point: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayoutPropertiesFocalPoint | Any | None`
+    `focal_point: airbyte_agent_sdk.connectors.typeform.models.FormWelcomeScreensItemLayoutPropertiesFocalPoint | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1670,10 +1670,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `x: float | Any | None`
+    `x: float | None`
     :   The type of the None singleton.
 
-    `y: float | Any | None`
+    `y: float | None`
     :   The type of the None singleton.
 
 <a id="FormWelcomeScreensItemProperties"></a>
@@ -1694,22 +1694,22 @@ Classes
 
     ### Class variables
 
-    `button_mode: str | Any | None`
+    `button_mode: str | None`
     :   The type of the None singleton.
 
-    `button_text: str | Any | None`
+    `button_text: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `redirect_url: str | Any | None`
+    `redirect_url: str | None`
     :   The type of the None singleton.
 
-    `share_icons: bool | Any | None`
+    `share_icons: bool | None`
     :   The type of the None singleton.
 
-    `show_button: bool | Any | None`
+    `show_button: bool | None`
     :   The type of the None singleton.
 
 <a id="FormWorkspace"></a>
@@ -1730,7 +1730,7 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   URL of the workspace
 
     `model_config`
@@ -1754,16 +1754,16 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.typeform.models.Form] | Any`
+    `items: list[airbyte_agent_sdk.connectors.typeform.models.Form] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="FormsListResultMeta"></a>
@@ -1787,10 +1787,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="FormsSearchData"></a>
@@ -1874,34 +1874,34 @@ Classes
 
     ### Class variables
 
-    `avg_color: str | Any | None`
+    `avg_color: str | None`
     :   The type of the None singleton.
 
-    `file_name: str | Any | None`
+    `file_name: str | None`
     :   The type of the None singleton.
 
-    `has_alpha: bool | Any | None`
+    `has_alpha: bool | None`
     :   The type of the None singleton.
 
-    `height: int | Any | None`
+    `height: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `media_type: str | Any | None`
+    `media_type: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `src: str | Any | None`
+    `src: str | None`
     :   The type of the None singleton.
 
-    `upload_source: str | Any | None`
+    `upload_source: str | None`
     :   The type of the None singleton.
 
-    `width: int | Any | None`
+    `width: int | None`
     :   The type of the None singleton.
 
 <a id="ImagesSearchData"></a>
@@ -1967,43 +1967,43 @@ Classes
 
     ### Class variables
 
-    `answers: list[airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItem | None] | Any | None`
+    `answers: list[airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItem | None] | None`
     :   The type of the None singleton.
 
-    `calculated: airbyte_agent_sdk.connectors.typeform.models.ResponseCalculated | Any | None`
+    `calculated: airbyte_agent_sdk.connectors.typeform.models.ResponseCalculated | None`
     :   The type of the None singleton.
 
-    `form_id: str | Any | None`
+    `form_id: str | None`
     :   The type of the None singleton.
 
-    `hidden: dict[str, typing.Any] | Any | None`
+    `hidden: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `landed_at: str | Any | None`
+    `landed_at: str | None`
     :   The type of the None singleton.
 
-    `landing_id: str | Any | None`
+    `landing_id: str | None`
     :   The type of the None singleton.
 
-    `metadata: airbyte_agent_sdk.connectors.typeform.models.ResponseMetadata | Any | None`
+    `metadata: airbyte_agent_sdk.connectors.typeform.models.ResponseMetadata | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `response_id: str | Any | None`
+    `response_id: str | None`
     :   The type of the None singleton.
 
-    `response_type: str | Any | None`
+    `response_type: str | None`
     :   The type of the None singleton.
 
-    `submitted_at: str | Any | None`
+    `submitted_at: str | None`
     :   The type of the None singleton.
 
-    `token: str | Any | None`
+    `token: str | None`
     :   The type of the None singleton.
 
-    `variables: list[airbyte_agent_sdk.connectors.typeform.models.ResponseVariablesItem | None] | Any | None`
+    `variables: list[airbyte_agent_sdk.connectors.typeform.models.ResponseVariablesItem | None] | None`
     :   The type of the None singleton.
 
 <a id="ResponseAnswersItem"></a>
@@ -2024,46 +2024,46 @@ Classes
 
     ### Class variables
 
-    `boolean: bool | Any | None`
+    `boolean: bool | None`
     :   The type of the None singleton.
 
-    `choice: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemChoice | Any | None`
+    `choice: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemChoice | None`
     :   The type of the None singleton.
 
-    `choices: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemChoices | Any | None`
+    `choices: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemChoices | None`
     :   The type of the None singleton.
 
-    `date: str | Any | None`
+    `date: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `field: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemField | Any | None`
+    `field: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemField | None`
     :   The type of the None singleton.
 
-    `file_url: str | Any | None`
+    `file_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number: float | Any | None`
+    `number: float | None`
     :   The type of the None singleton.
 
-    `payment: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemPayment | Any | None`
+    `payment: airbyte_agent_sdk.connectors.typeform.models.ResponseAnswersItemPayment | None`
     :   The type of the None singleton.
 
-    `phone_number: str | Any | None`
+    `phone_number: str | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="ResponseAnswersItemChoice"></a>
@@ -2084,10 +2084,10 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2111,10 +2111,10 @@ Classes
 
     ### Class variables
 
-    `ids: list[str | None] | Any | None`
+    `ids: list[str | None] | None`
     :   The type of the None singleton.
 
-    `labels: list[str | None] | Any | None`
+    `labels: list[str | None] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2138,16 +2138,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `ref: str | Any | None`
+    `ref: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ResponseAnswersItemPayment"></a>
@@ -2168,19 +2168,19 @@ Classes
 
     ### Class variables
 
-    `amount: str | Any | None`
+    `amount: str | None`
     :   The type of the None singleton.
 
-    `last4: str | Any | None`
+    `last4: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `success: bool | Any | None`
+    `success: bool | None`
     :   The type of the None singleton.
 
 <a id="ResponseCalculated"></a>
@@ -2204,7 +2204,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `score: int | Any | None`
+    `score: int | None`
     :   The type of the None singleton.
 
 <a id="ResponseMetadata"></a>
@@ -2228,16 +2228,16 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `network_id: str | Any | None`
+    `network_id: str | None`
     :   The type of the None singleton.
 
-    `platform: str | Any | None`
+    `platform: str | None`
     :   The type of the None singleton.
 
-    `referer: str | Any | None`
+    `referer: str | None`
     :   The type of the None singleton.
 
-    `user_agent: str | Any | None`
+    `user_agent: str | None`
     :   The type of the None singleton.
 
 <a id="ResponseVariablesItem"></a>
@@ -2258,19 +2258,19 @@ Classes
 
     ### Class variables
 
-    `key: str | Any | None`
+    `key: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number: float | Any | None`
+    `number: float | None`
     :   The type of the None singleton.
 
-    `text: str | Any | None`
+    `text: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="ResponsesList"></a>
@@ -2291,16 +2291,16 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.typeform.models.Response] | Any`
+    `items: list[airbyte_agent_sdk.connectors.typeform.models.Response] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="ResponsesListResultMeta"></a>
@@ -2324,10 +2324,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="ResponsesSearchData"></a>
@@ -2405,43 +2405,43 @@ Classes
 
     ### Class variables
 
-    `background: airbyte_agent_sdk.connectors.typeform.models.ThemeBackground | Any | None`
+    `background: airbyte_agent_sdk.connectors.typeform.models.ThemeBackground | None`
     :   The type of the None singleton.
 
-    `colors: airbyte_agent_sdk.connectors.typeform.models.ThemeColors | Any | None`
+    `colors: airbyte_agent_sdk.connectors.typeform.models.ThemeColors | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `fields: airbyte_agent_sdk.connectors.typeform.models.ThemeFields | Any | None`
+    `fields: airbyte_agent_sdk.connectors.typeform.models.ThemeFields | None`
     :   The type of the None singleton.
 
-    `font: str | Any | None`
+    `font: str | None`
     :   The type of the None singleton.
 
-    `has_transparent_button: bool | Any | None`
+    `has_transparent_button: bool | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `rounded_corners: str | Any | None`
+    `rounded_corners: str | None`
     :   The type of the None singleton.
 
-    `screens: airbyte_agent_sdk.connectors.typeform.models.ThemeScreens | Any | None`
+    `screens: airbyte_agent_sdk.connectors.typeform.models.ThemeScreens | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `visibility: str | Any | None`
+    `visibility: str | None`
     :   The type of the None singleton.
 
 <a id="ThemeBackground"></a>
@@ -2462,13 +2462,13 @@ Classes
 
     ### Class variables
 
-    `brightness: float | Any | None`
+    `brightness: float | None`
     :   The type of the None singleton.
 
-    `href: str | Any | None`
+    `href: str | None`
     :   The type of the None singleton.
 
-    `layout: str | Any | None`
+    `layout: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2492,19 +2492,19 @@ Classes
 
     ### Class variables
 
-    `answer: str | Any | None`
+    `answer: str | None`
     :   Color of answer text
 
-    `background: str | Any | None`
+    `background: str | None`
     :   Background color
 
-    `button: str | Any | None`
+    `button: str | None`
     :   Color of buttons
 
     `model_config`
     :   The type of the None singleton.
 
-    `question: str | Any | None`
+    `question: str | None`
     :   Color of question text
 
 <a id="ThemeFields"></a>
@@ -2525,10 +2525,10 @@ Classes
 
     ### Class variables
 
-    `alignment: str | Any | None`
+    `alignment: str | None`
     :   The type of the None singleton.
 
-    `font_size: str | Any | None`
+    `font_size: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2552,10 +2552,10 @@ Classes
 
     ### Class variables
 
-    `alignment: str | Any | None`
+    `alignment: str | None`
     :   The type of the None singleton.
 
-    `font_size: str | Any | None`
+    `font_size: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2579,16 +2579,16 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.typeform.models.Theme] | Any`
+    `items: list[airbyte_agent_sdk.connectors.typeform.models.Theme] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="ThemesListResultMeta"></a>
@@ -2612,10 +2612,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="ThemesSearchData"></a>
@@ -3107,31 +3107,31 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `enabled: bool | Any | None`
+    `enabled: bool | None`
     :   The type of the None singleton.
 
-    `form_id: str | Any | None`
+    `form_id: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `tag: str | Any | None`
+    `tag: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
-    `verify_ssl: bool | Any | None`
+    `verify_ssl: bool | None`
     :   The type of the None singleton.
 
 <a id="WebhooksList"></a>
@@ -3152,7 +3152,7 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.typeform.models.Webhook] | Any`
+    `items: list[airbyte_agent_sdk.connectors.typeform.models.Webhook] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -3221,28 +3221,28 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any | None`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `default: bool | Any | None`
+    `default: bool | None`
     :   The type of the None singleton.
 
-    `forms: airbyte_agent_sdk.connectors.typeform.models.WorkspaceForms | Any | None`
+    `forms: airbyte_agent_sdk.connectors.typeform.models.WorkspaceForms | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `self: airbyte_agent_sdk.connectors.typeform.models.WorkspaceSelf | Any | None`
+    `self: airbyte_agent_sdk.connectors.typeform.models.WorkspaceSelf | None`
     :   The type of the None singleton.
 
-    `shared: bool | Any | None`
+    `shared: bool | None`
     :   The type of the None singleton.
 
 <a id="WorkspaceForms"></a>
@@ -3263,10 +3263,10 @@ Classes
 
     ### Class variables
 
-    `count: float | Any | None`
+    `count: float | None`
     :   Total number of forms in this workspace
 
-    `href: str | Any | None`
+    `href: str | None`
     :   URL to retrieve the forms
 
     `model_config`
@@ -3290,7 +3290,7 @@ Classes
 
     ### Class variables
 
-    `href: str | Any | None`
+    `href: str | None`
     :   URL to this workspace
 
     `model_config`
@@ -3314,16 +3314,16 @@ Classes
 
     ### Class variables
 
-    `items: list[airbyte_agent_sdk.connectors.typeform.models.Workspace] | Any`
+    `items: list[airbyte_agent_sdk.connectors.typeform.models.Workspace] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesListResultMeta"></a>
@@ -3347,10 +3347,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_count: int | Any | None`
+    `page_count: int | None`
     :   The type of the None singleton.
 
-    `total_items: int | Any | None`
+    `total_items: int | None`
     :   The type of the None singleton.
 
 <a id="WorkspacesSearchData"></a>

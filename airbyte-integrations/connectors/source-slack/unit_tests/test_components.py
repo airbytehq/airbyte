@@ -6,7 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.call_rate import HttpRequestMatcher, MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
@@ -75,21 +76,8 @@ def test_join_channels_make_join_channel_slice(token_config, components_module):
     assert retriever.make_join_channel_slice({"id": "C061EG9SL", "name": "general"}) == expected_slice
 
 
-@pytest.mark.parametrize(
-    "join_response, log_message",
-    (
-        (
-            {"ok": True, "channel": {"is_member": True, "id": "channel 2", "name": "test channel"}},
-            "Successfully joined channel: test channel",
-        ),
-        (
-            {"ok": False, "error": "missing_scope", "needed": "channels:write"},
-            "Unable to joined channel: test channel. Reason: {'ok': False, 'error': " "'missing_scope', 'needed': 'channels:write'}",
-        ),
-    ),
-    ids=["successful_join_to_channel", "failed_join_to_channel"],
-)
-def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, join_response, log_message, components_module):
+def test_join_channel_read_success(requests_mock, token_config, joined_channel, caplog, components_module):
+    join_response = {"ok": True, "channel": {"is_member": True, "id": "channel 2", "name": "test channel"}}
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
     requests_mock.get(
         url="https://slack.com/api/conversations.list",
@@ -100,7 +88,36 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
     assert len(list(retriever.read_records(records_schema={}))) == 2
     assert mocked_request.called
     assert mocked_request.last_request._request.body == b'{"channel": "channel 2"}'
-    assert log_message in caplog.text
+    assert "Successfully joined channel: test channel" in caplog.text
+
+
+def test_join_channel_read_missing_scope_raises_config_error(requests_mock, token_config, joined_channel, components_module):
+    join_response = {"ok": False, "error": "missing_scope", "needed": "channels:join"}
+    requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
+    )
+
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(retriever.read_records(records_schema={}))
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "channels:join" in exc_info.value.message
+
+
+def test_join_channel_read_other_error_logs_warning(requests_mock, token_config, joined_channel, caplog, components_module):
+    join_response = {"ok": False, "error": "channel_not_found"}
+    mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
+    )
+
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    assert len(list(retriever.read_records(records_schema={}))) == 2
+    assert mocked_request.called
+    assert "Unable to joined channel: test channel" in caplog.text
 
 
 @pytest.mark.parametrize(

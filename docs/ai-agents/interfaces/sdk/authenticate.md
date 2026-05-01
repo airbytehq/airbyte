@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 1
 ---
 
@@ -7,19 +8,21 @@ sidebar_position: 1
 The SDK authenticates with Airbyte Agents using an Airbyte `client_id` and `client_secret`. Once the SDK has these, it handles the rest: fetching tokens, refreshing them before they expire, and attaching them to every request. You never manage tokens yourself.
 
 :::note Two sets of credentials
-The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *your app* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you pass to [`create_connector`](./add-connector) so Airbyte can sign in to each third-party service on your behalf. The two are independent: rotating one doesn't affect the other.
+The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *your app* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you provide when you [add a connector](./add-connector) so Airbyte can sign in to each third-party service on your behalf. The two are independent: rotating one doesn't affect the other.
 :::
 
 ## Get your credentials
 
 1. Sign in to [app.airbyte.ai](https://app.airbyte.ai/).
-2. Open the [Profile page](https://app.airbyte.ai/profile) and copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET`.
+2. Open the Profile page and copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET`.
 
 For details, see [Manage your user profile](../../admin/profile).
 
 ## Provide credentials
 
-The SDK accepts credentials three ways. Pick whichever fits your app. The SDK resolves them in the order **explicit keyword arguments → `configure()` → environment variables**.
+The SDK accepts credentials three ways. Pick whichever fits your app best. The SDK resolves them in the order:
+
+**Explicit keyword arguments → `configure()` → environment variables**.
 
 ### Environment variables
 
@@ -44,7 +47,7 @@ asyncio.run(main())
 
 ### Explicit keyword arguments
 
-Pass credentials directly to `Workspace`, `connect()`, `ask()`, or `ask_sync()`. Useful when you rotate credentials per request or run against multiple Airbyte organizations from the same process.
+Pass credentials directly to `Workspace` or `connect()`. Useful when you rotate credentials per request.
 
 ```python title="agent.py"
 import asyncio
@@ -68,7 +71,7 @@ asyncio.run(main())
 
 ### Global `configure()` call
 
-Call `configure()` once at startup to set process-wide defaults. This is helpful in notebooks where `connect()` and `ask()` are called repeatedly and you don't want to repeat credentials.
+Call `configure()` once at startup to set process-wide defaults. This is helpful in notebooks where `connect()` is called repeatedly and you don't want to repeat credentials.
 
 ```python title="notebook.ipynb"
 from airbyte_agent_sdk import configure, connect
@@ -87,8 +90,8 @@ github = connect("github")
 | ----------------- | ------------- | ----------- | ---------------------------------------------------------------------------- |
 | `client_id`       | `str`         | —           | Airbyte `client_id`. Required.                                               |
 | `client_secret`   | `str`         | —           | Airbyte `client_secret`. Required.                                           |
-| `organization_id` | `str \| None` | `None`      | Organization to target when your account belongs to multiple organizations.  |
-| `workspace_name`  | `str`         | `"default"` | Default workspace for `connect()`, `ask()`, and `Workspace()` calls.         |
+| `organization_id` | `str \| None` | `None`      | Organization to target.                                                      |
+| `workspace_name`  | `str`         | `"default"` | Default workspace for `connect()` and `Workspace()` calls.                   |
 
 Explicit keyword arguments always override `configure()`, and `configure()` always overrides environment variables.
 
@@ -113,4 +116,3 @@ If you belong to a single organization, you can omit `organization_id`.
 
 - Never commit `AIRBYTE_CLIENT_ID` or `AIRBYTE_CLIENT_SECRET` to version control. Use a `.env` file and add it to `.gitignore`.
 - Keep Airbyte credentials server-side. The SDK is designed for backend use.
-- Rotate credentials periodically from the [Profile page](https://app.airbyte.ai/profile).

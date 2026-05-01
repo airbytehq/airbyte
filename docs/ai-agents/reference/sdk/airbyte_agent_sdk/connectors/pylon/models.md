@@ -31,49 +31,49 @@ Classes
 
     ### Class variables
 
-    `channels: list[airbyte_agent_sdk.connectors.pylon.models.AccountChannel] | Any | None`
+    `channels: list[airbyte_agent_sdk.connectors.pylon.models.AccountChannel] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any | None`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `domain: str | Any | None`
+    `domain: str | None`
     :   The type of the None singleton.
 
-    `domains: list[str] | Any | None`
+    `domains: list[str] | None`
     :   The type of the None singleton.
 
-    `external_ids: dict[str, typing.Any] | Any | None`
+    `external_ids: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_disabled: bool | Any | None`
+    `is_disabled: bool | None`
     :   The type of the None singleton.
 
-    `latest_customer_activity_time: str | Any | None`
+    `latest_customer_activity_time: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner: Any`
+    `owner: typing.Any | None`
     :   The type of the None singleton.
 
-    `primary_domain: str | Any | None`
+    `primary_domain: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any | None`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="AccountChannel"></a>
@@ -94,16 +94,16 @@ Classes
 
     ### Class variables
 
-    `channel_id: str | Any | None`
+    `channel_id: str | None`
     :   The type of the None singleton.
 
-    `is_primary: bool | Any | None`
+    `is_primary: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
 <a id="AccountCreateParams"></a>
@@ -124,25 +124,25 @@ Classes
 
     ### Class variables
 
-    `domains: list[str] | Any`
+    `domains: list[str] | None`
     :   The type of the None singleton.
 
-    `logo_url: str | Any`
+    `logo_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `owner_id: str | Any`
+    `owner_id: str | None`
     :   The type of the None singleton.
 
-    `primary_domain: str | Any`
+    `primary_domain: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
 <a id="AccountResponse"></a>
@@ -163,13 +163,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Account | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Account | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="AccountUpdateParams"></a>
@@ -190,28 +190,28 @@ Classes
 
     ### Class variables
 
-    `domains: list[str] | Any`
+    `domains: list[str] | None`
     :   The type of the None singleton.
 
-    `is_disabled: bool | Any`
+    `is_disabled: bool | None`
     :   The type of the None singleton.
 
-    `logo_url: str | Any`
+    `logo_url: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner_id: str | Any`
+    `owner_id: str | None`
     :   The type of the None singleton.
 
-    `primary_domain: str | Any`
+    `primary_domain: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
 <a id="AccountsListResultMeta"></a>
@@ -232,13 +232,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="AccountsResponse"></a>
@@ -259,17 +259,523 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.Account] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.Account] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="AccountsSearchData"></a>
+
+`AccountsSearchData(**data: Any)`
+:   Search result data for accounts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Timestamp when the account was created, in ISO 8601 format
+
+    `domain: str | None`
+    :   Primary domain associated with the account
+
+    `id: str`
+    :   Unique identifier for the account
+
+    `is_disabled: bool | None`
+    :   Whether the account has been disabled
+
+    `latest_customer_activity_time: str | None`
+    :   Timestamp of the most recent activity from this account, in ISO 8601 format
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the account (customer organization)
+
+    `primary_domain: str | None`
+    :   Canonical primary domain for the account
+
+    `type_: str | None`
+    :   Classification of the account (e.g. customer, prospect)
+
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[AccountsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[ContactsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[CustomFieldsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[IssuesSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[MessagesSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TagsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TeamsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UserRolesSearchData]
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[UsersSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+`AirbyteSearchResult[AccountsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AccountsSearchResult"></a>
+
+`AccountsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[ContactsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ContactsSearchResult"></a>
+
+`ContactsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[CustomFieldsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="CustomFieldsSearchResult"></a>
+
+`CustomFieldsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[IssuesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssuesSearchResult"></a>
+
+`IssuesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[MessagesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="MessagesSearchResult"></a>
+
+`MessagesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[TagsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TagsSearchResult"></a>
+
+`TagsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[TeamsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TeamsSearchResult"></a>
+
+`TeamsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[TicketFormsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TicketFormsSearchResult"></a>
+
+`TicketFormsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[UserRolesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="UserRolesSearchResult"></a>
+
+`UserRolesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[UsersSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 <a id="Article"></a>
 
@@ -289,31 +795,31 @@ Classes
 
     ### Class variables
 
-    `author_user_id: str | Any | None`
+    `author_user_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_published: bool | Any | None`
+    `is_published: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ArticleCreateParams"></a>
@@ -334,22 +840,22 @@ Classes
 
     ### Class variables
 
-    `author_user_id: str | Any`
+    `author_user_id: str`
     :   The type of the None singleton.
 
-    `body_html: str | Any`
+    `body_html: str`
     :   The type of the None singleton.
 
-    `is_published: bool | Any`
+    `is_published: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `slug: str | Any`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="ArticleResponse"></a>
@@ -370,13 +876,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Article | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Article | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="ArticleUpdateParams"></a>
@@ -397,13 +903,13 @@ Classes
 
     ### Class variables
 
-    `body_html: str | Any`
+    `body_html: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="CSATResponse"></a>
@@ -424,13 +930,13 @@ Classes
 
     ### Class variables
 
-    `comment: str | Any | None`
+    `comment: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `score: int | Any | None`
+    `score: int | None`
     :   The type of the None singleton.
 
 <a id="Collection"></a>
@@ -451,22 +957,22 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="CollectionCreateParams"></a>
@@ -487,16 +993,16 @@ Classes
 
     ### Class variables
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `slug: str | Any`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="CollectionResponse"></a>
@@ -517,13 +1023,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Collection | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Collection | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="Contact"></a>
@@ -544,40 +1050,40 @@ Classes
 
     ### Class variables
 
-    `account: Any`
+    `account: typing.Any | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | Any | None`
+    `custom_fields: dict[str, typing.Any] | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `emails: list[str] | Any | None`
+    `emails: list[str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `integration_user_ids: list[airbyte_agent_sdk.connectors.pylon.models.IntegrationUserId] | Any | None`
+    `integration_user_ids: list[airbyte_agent_sdk.connectors.pylon.models.IntegrationUserId] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `phone_numbers: list[str] | Any | None`
+    `phone_numbers: list[str] | None`
     :   The type of the None singleton.
 
-    `portal_role: str | Any | None`
+    `portal_role: str | None`
     :   The type of the None singleton.
 
-    `portal_role_id: str | Any | None`
+    `portal_role_id: str | None`
     :   The type of the None singleton.
 
 <a id="ContactCreateParams"></a>
@@ -598,19 +1104,19 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `avatar_url: str | Any`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
 <a id="ContactResponse"></a>
@@ -631,13 +1137,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Contact | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Contact | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="ContactUpdateParams"></a>
@@ -658,16 +1164,16 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any`
+    `email: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsListResultMeta"></a>
@@ -688,13 +1194,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="ContactsResponse"></a>
@@ -715,17 +1221,53 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.Contact] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.Contact] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="ContactsSearchData"></a>
+
+`ContactsSearchData(**data: Any)`
+:   Search result data for contacts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the contact
+
+    `id: str`
+    :   Unique identifier for the contact
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the contact
+
+    `portal_role: str | None`
+    :   Role the contact has in the customer portal
+
+    `primary_phone_number: str | None`
+    :   Primary phone number of the contact
 
 <a id="CustomField"></a>
 
@@ -745,49 +1287,49 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `default_value: str | Any | None`
+    `default_value: str | None`
     :   The type of the None singleton.
 
-    `default_values: list[str] | Any | None`
+    `default_values: list[str] | None`
     :   The type of the None singleton.
 
-    `description: str | Any | None`
+    `description: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_read_only: bool | Any | None`
+    `is_read_only: bool | None`
     :   The type of the None singleton.
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number_metadata: Any`
+    `number_metadata: typing.Any | None`
     :   The type of the None singleton.
 
-    `object_type: str | Any | None`
+    `object_type: str | None`
     :   The type of the None singleton.
 
-    `select_metadata: Any`
+    `select_metadata: typing.Any | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="CustomFieldResponse"></a>
@@ -808,13 +1350,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.CustomField | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.CustomField | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="CustomFieldValue"></a>
@@ -838,13 +1380,13 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
-    `values: list[str] | Any | None`
+    `values: list[str] | None`
     :   The type of the None singleton.
 
 <a id="CustomFieldsListResultMeta"></a>
@@ -865,13 +1407,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="CustomFieldsResponse"></a>
@@ -892,16 +1434,82 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.CustomField] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.CustomField] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
+    :   The type of the None singleton.
+
+<a id="CustomFieldsSearchData"></a>
+
+`CustomFieldsSearchData(**data: Any)`
+:   Search result data for custom_fields entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Timestamp when the custom field was created, in ISO 8601 format
+
+    `id: str`
+    :   Unique identifier for the custom field
+
+    `is_read_only: bool | None`
+    :   Whether the custom field is read-only
+
+    `label: str | None`
+    :   Display label of the custom field
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_type: str | None`
+    :   Type of object this custom field applies to (e.g. issue, account)
+
+    `slug: str | None`
+    :   URL-safe identifier for the custom field
+
+    `type_: str | None`
+    :   Data type of the custom field (e.g. text, select)
+
+<a id="DeleteIssueResponse"></a>
+
+`DeleteIssueResponse(**data: Any)`
+:   DeleteIssueResponse type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="EmailMessageInfo"></a>
@@ -922,22 +1530,22 @@ Classes
 
     ### Class variables
 
-    `bcc_emails: list[str] | Any | None`
+    `bcc_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `cc_emails: list[str] | Any | None`
+    `cc_emails: list[str] | None`
     :   The type of the None singleton.
 
-    `from_email: str | Any | None`
+    `from_email: str | None`
     :   The type of the None singleton.
 
-    `message_id: str | Any | None`
+    `message_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `to_emails: list[str] | Any | None`
+    `to_emails: list[str] | None`
     :   The type of the None singleton.
 
 <a id="ExternalIssue"></a>
@@ -958,16 +1566,16 @@ Classes
 
     ### Class variables
 
-    `external_id: str | Any | None`
+    `external_id: str | None`
     :   The type of the None singleton.
 
-    `link: str | Any | None`
+    `link: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
 <a id="IntegrationUserId"></a>
@@ -988,13 +1596,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
 <a id="Issue"></a>
@@ -1015,100 +1623,136 @@ Classes
 
     ### Class variables
 
-    `account: Any`
+    `account: typing.Any | None`
     :   The type of the None singleton.
 
-    `assignee: Any`
+    `assignee: typing.Any | None`
     :   The type of the None singleton.
 
-    `attachment_urls: list[str] | Any | None`
+    `attachment_urls: list[str] | None`
     :   The type of the None singleton.
 
-    `author_unverified: bool | Any | None`
+    `author_unverified: bool | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `business_hours_first_response_seconds: int | Any | None`
+    `business_hours_first_response_seconds: int | None`
     :   The type of the None singleton.
 
-    `business_hours_resolution_seconds: int | Any | None`
+    `business_hours_resolution_seconds: int | None`
     :   The type of the None singleton.
 
-    `chat_widget_info: Any`
+    `business_hours_time_in_status_seconds: dict[str, int] | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `chat_widget_info: typing.Any | None`
     :   The type of the None singleton.
 
-    `csat_responses: list[airbyte_agent_sdk.connectors.pylon.models.CSATResponse] | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, airbyte_agent_sdk.connectors.pylon.models.CustomFieldValue] | Any | None`
+    `csat_responses: list[airbyte_agent_sdk.connectors.pylon.models.CSATResponse] | None`
     :   The type of the None singleton.
 
-    `customer_portal_visible: bool | Any | None`
+    `custom_fields: dict[str, airbyte_agent_sdk.connectors.pylon.models.CustomFieldValue] | None`
     :   The type of the None singleton.
 
-    `external_issues: list[airbyte_agent_sdk.connectors.pylon.models.ExternalIssue] | Any | None`
+    `customer_portal_visible: bool | None`
     :   The type of the None singleton.
 
-    `first_response_seconds: int | Any | None`
+    `external_issues: list[airbyte_agent_sdk.connectors.pylon.models.ExternalIssue] | None`
     :   The type of the None singleton.
 
-    `first_response_time: str | Any | None`
+    `first_response_seconds: int | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `first_response_time: str | None`
     :   The type of the None singleton.
 
-    `latest_message_time: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `link: str | Any | None`
+    `latest_message_time: str | None`
+    :   The type of the None singleton.
+
+    `link: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `number: int | Any | None`
+    `number: int | None`
     :   The type of the None singleton.
 
-    `number_of_touches: int | Any | None`
+    `number_of_touches: int | None`
     :   The type of the None singleton.
 
-    `requester: Any`
+    `requester: typing.Any | None`
     :   The type of the None singleton.
 
-    `resolution_seconds: int | Any | None`
+    `resolution_seconds: int | None`
     :   The type of the None singleton.
 
-    `resolution_time: str | Any | None`
+    `resolution_time: str | None`
     :   The type of the None singleton.
 
-    `slack: Any`
+    `slack: typing.Any | None`
     :   The type of the None singleton.
 
-    `snoozed_until_time: str | Any | None`
+    `snoozed_until_time: str | None`
     :   The type of the None singleton.
 
-    `source: Any`
+    `source: typing.Any | None`
     :   The type of the None singleton.
 
-    `state: str | Any | None`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any | None`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `team: Any`
+    `team: typing.Any | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `time_in_status_seconds: dict[str, int] | None`
     :   The type of the None singleton.
 
-    `type_: Any`
+    `title: str | None`
+    :   The type of the None singleton.
+
+    `type_: typing.Any | None`
+    :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueAssignParams"></a>
+
+`IssueAssignParams(**data: Any)`
+:   IssueAssignParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `assignee_id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `team_id: str | None`
     :   The type of the None singleton.
 
 <a id="IssueChatWidgetInfo"></a>
@@ -1132,7 +1776,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `page_url: str | Any | None`
+    `page_url: str | None`
     :   The type of the None singleton.
 
 <a id="IssueCreateParams"></a>
@@ -1153,34 +1797,34 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `assignee_id: str | Any`
+    `assignee_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any`
+    `body_html: str`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `priority: str | Any`
+    `priority: str | None`
     :   The type of the None singleton.
 
-    `requester_email: str | Any`
+    `requester_email: str | None`
     :   The type of the None singleton.
 
-    `requester_name: str | Any`
+    `requester_name: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `team_id: str | Any`
+    `team_id: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="IssueNote"></a>
@@ -1201,16 +1845,16 @@ Classes
 
     ### Class variables
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `timestamp: str | Any | None`
+    `timestamp: str | None`
     :   The type of the None singleton.
 
 <a id="IssueNoteCreateParams"></a>
@@ -1231,16 +1875,16 @@ Classes
 
     ### Class variables
 
-    `body_html: str | Any`
+    `body_html: str`
     :   The type of the None singleton.
 
-    `message_id: str | Any`
+    `message_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `thread_id: str | Any`
+    `thread_id: str | None`
     :   The type of the None singleton.
 
 <a id="IssueNoteResponse"></a>
@@ -1261,13 +1905,103 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.IssueNote | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.IssueNote | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueReplyCreateParams"></a>
+
+`IssueReplyCreateParams(**data: Any)`
+:   IssueReplyCreateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `attachment_urls: list[str] | None`
+    :   The type of the None singleton.
+
+    `body_html: str`
+    :   The type of the None singleton.
+
+    `contact_id: str | None`
+    :   The type of the None singleton.
+
+    `message_id: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `user_id: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueReplyData"></a>
+
+`IssueReplyData(**data: Any)`
+:   IssueReplyData type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `issue_id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueReplyResponse"></a>
+
+`IssueReplyResponse(**data: Any)`
+:   IssueReplyResponse type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `data: airbyte_agent_sdk.connectors.pylon.models.IssueReplyData | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="IssueResponse"></a>
@@ -1288,13 +2022,37 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Issue | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Issue | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
+    :   The type of the None singleton.
+
+<a id="IssueStatusUpdateParams"></a>
+
+`IssueStatusUpdateParams(**data: Any)`
+:   IssueStatusUpdateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `state: str`
     :   The type of the None singleton.
 
 <a id="IssueThread"></a>
@@ -1315,13 +2073,13 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="IssueThreadCreateParams"></a>
@@ -1345,7 +2103,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="IssueThreadResponse"></a>
@@ -1366,13 +2124,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.IssueThread | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.IssueThread | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="IssueUpdateParams"></a>
@@ -1393,22 +2151,22 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `assignee_id: str | Any`
+    `assignee_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `state: str | Any`
+    `state: str | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | Any`
+    `tags: list[str] | None`
     :   The type of the None singleton.
 
-    `team_id: str | Any`
+    `team_id: str | None`
     :   The type of the None singleton.
 
 <a id="IssuesListResultMeta"></a>
@@ -1429,13 +2187,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="IssuesResponse"></a>
@@ -1456,17 +2214,71 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.Issue] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.Issue] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="IssuesSearchData"></a>
+
+`IssuesSearchData(**data: Any)`
+:   Search result data for issues entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Timestamp when the issue was created, in ISO 8601 format
+
+    `customer_portal_visible: bool | None`
+    :   Whether the issue is visible in the customer portal
+
+    `id: str`
+    :   Unique identifier for the issue
+
+    `latest_message_time: str | None`
+    :   Timestamp of the most recent message on the issue, in ISO 8601 format
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `number: int | None`
+    :   Human-readable issue number within the workspace
+
+    `resolution_time: str | None`
+    :   Timestamp when the issue was resolved, in ISO 8601 format
+
+    `snoozed_until_time: str | None`
+    :   Timestamp the issue is snoozed until, in ISO 8601 format
+
+    `source: str | None`
+    :   Channel the issue originated from (e.g. email, slack)
+
+    `state: str | None`
+    :   Current state of the issue (e.g. new, in_progress, closed)
+
+    `title: str | None`
+    :   Title of the issue
+
+    `type_: str | None`
+    :   Type classification of the issue
 
 <a id="MeResponse"></a>
 
@@ -1486,13 +2298,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.User | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.User | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="Message"></a>
@@ -1513,34 +2325,34 @@ Classes
 
     ### Class variables
 
-    `author: Any`
+    `author: typing.Any | None`
     :   The type of the None singleton.
 
-    `email_info: Any`
+    `email_info: typing.Any | None`
     :   The type of the None singleton.
 
-    `file_urls: list[str] | Any | None`
+    `file_urls: list[str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_private: bool | Any | None`
+    `is_private: bool | None`
     :   The type of the None singleton.
 
-    `message_html: str | Any | None`
+    `message_html: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `source: str | Any | None`
+    `source: str | None`
     :   The type of the None singleton.
 
-    `thread_id: str | Any | None`
+    `thread_id: str | None`
     :   The type of the None singleton.
 
-    `timestamp: str | Any | None`
+    `timestamp: str | None`
     :   The type of the None singleton.
 
 <a id="MessageAuthor"></a>
@@ -1561,19 +2373,19 @@ Classes
 
     ### Class variables
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `contact: Any`
+    `contact: typing.Any | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `user: Any`
+    `user: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="MessagesListResultMeta"></a>
@@ -1594,13 +2406,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="MessagesResponse"></a>
@@ -1621,17 +2433,53 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.Message] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.Message] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="MessagesSearchData"></a>
+
+`MessagesSearchData(**data: Any)`
+:   Search result data for messages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the message
+
+    `is_private: bool | None`
+    :   Whether the message is an internal note (not visible to the customer)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `source: str | None`
+    :   Channel the message was sent through (e.g. email, slack)
+
+    `thread_id: str | None`
+    :   Identifier of the thread this message belongs to
+
+    `timestamp: str | None`
+    :   Timestamp the message was posted, in ISO 8601 format
 
 <a id="Milestone"></a>
 
@@ -1651,25 +2499,25 @@ Classes
 
     ### Class variables
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `project_id: str | Any | None`
+    `project_id: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="MilestoneCreateParams"></a>
@@ -1690,16 +2538,16 @@ Classes
 
     ### Class variables
 
-    `due_date: str | Any`
+    `due_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `project_id: str | Any`
+    `project_id: str`
     :   The type of the None singleton.
 
 <a id="MilestoneResponse"></a>
@@ -1720,13 +2568,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Milestone | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Milestone | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="MilestoneUpdateParams"></a>
@@ -1747,13 +2595,13 @@ Classes
 
     ### Class variables
 
-    `due_date: str | Any`
+    `due_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="MiniAccount"></a>
@@ -1774,7 +2622,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1798,10 +2646,10 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1825,7 +2673,7 @@ Classes
 
     ### Class variables
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1849,10 +2697,10 @@ Classes
 
     ### Class variables
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any | None`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1876,13 +2724,13 @@ Classes
 
     ### Class variables
 
-    `currency: str | Any | None`
+    `currency: str | None`
     :   The type of the None singleton.
 
-    `decimal_places: int | Any | None`
+    `decimal_places: int | None`
     :   The type of the None singleton.
 
-    `format: str | Any | None`
+    `format: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1906,10 +2754,10 @@ Classes
 
     ### Class variables
 
-    `cursor: str | Any | None`
+    `cursor: str | None`
     :   The type of the None singleton.
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1933,37 +2781,37 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any | None`
+    `account_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `description_html: str | Any | None`
+    `description_html: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any | None`
+    `end_date: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any | None`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `owner_id: str | Any | None`
+    `owner_id: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | Any | None`
+    `start_date: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectCreateParams"></a>
@@ -1984,22 +2832,22 @@ Classes
 
     ### Class variables
 
-    `account_id: str | Any`
+    `account_id: str`
     :   The type of the None singleton.
 
-    `description_html: str | Any`
+    `description_html: str | None`
     :   The type of the None singleton.
 
-    `end_date: str | Any`
+    `end_date: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str`
     :   The type of the None singleton.
 
-    `start_date: str | Any`
+    `start_date: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectResponse"></a>
@@ -2020,13 +2868,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Project | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Project | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="ProjectUpdateParams"></a>
@@ -2047,16 +2895,16 @@ Classes
 
     ### Class variables
 
-    `description_html: str | Any`
+    `description_html: str | None`
     :   The type of the None singleton.
 
-    `is_archived: bool | Any`
+    `is_archived: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="PylonAuthConfig"></a>
@@ -2658,7 +3506,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `options: list[airbyte_agent_sdk.connectors.pylon.models.SelectOption] | Any | None`
+    `options: list[airbyte_agent_sdk.connectors.pylon.models.SelectOption] | None`
     :   The type of the None singleton.
 
 <a id="SelectOption"></a>
@@ -2679,13 +3527,13 @@ Classes
 
     ### Class variables
 
-    `label: str | Any | None`
+    `label: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="SlackInfo"></a>
@@ -2706,16 +3554,16 @@ Classes
 
     ### Class variables
 
-    `channel_id: str | Any | None`
+    `channel_id: str | None`
     :   The type of the None singleton.
 
-    `message_ts: str | Any | None`
+    `message_ts: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `workspace_id: str | Any | None`
+    `workspace_id: str | None`
     :   The type of the None singleton.
 
 <a id="Tag"></a>
@@ -2736,19 +3584,19 @@ Classes
 
     ### Class variables
 
-    `hex_color: str | Any | None`
+    `hex_color: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_type: str | Any | None`
+    `object_type: str | None`
     :   The type of the None singleton.
 
-    `value: str | Any | None`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="TagCreateParams"></a>
@@ -2769,16 +3617,16 @@ Classes
 
     ### Class variables
 
-    `hex_color: str | Any`
+    `hex_color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `object_type: str | Any`
+    `object_type: str`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str`
     :   The type of the None singleton.
 
 <a id="TagResponse"></a>
@@ -2799,13 +3647,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Tag | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Tag | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="TagUpdateParams"></a>
@@ -2826,13 +3674,13 @@ Classes
 
     ### Class variables
 
-    `hex_color: str | Any`
+    `hex_color: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `value: str | Any`
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="TagsListResultMeta"></a>
@@ -2853,13 +3701,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="TagsResponse"></a>
@@ -2880,17 +3728,47 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.Tag] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.Tag] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="TagsSearchData"></a>
+
+`TagsSearchData(**data: Any)`
+:   Search result data for tags entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the tag
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_type: str | None`
+    :   Type of object this tag applies to (e.g. issue, account)
+
+    `value: str | None`
+    :   Display value of the tag
 
 <a id="Task"></a>
 
@@ -2910,37 +3788,37 @@ Classes
 
     ### Class variables
 
-    `assignee_id: str | Any | None`
+    `assignee_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any | None`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any | None`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `milestone_id: str | Any | None`
+    `milestone_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `project_id: str | Any | None`
+    `project_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any | None`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `updated_at: str | Any | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="TaskCreateParams"></a>
@@ -2961,28 +3839,28 @@ Classes
 
     ### Class variables
 
-    `assignee_id: str | Any`
+    `assignee_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any`
+    `body_html: str | None`
     :   The type of the None singleton.
 
-    `due_date: str | Any`
+    `due_date: str | None`
     :   The type of the None singleton.
 
-    `milestone_id: str | Any`
+    `milestone_id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `project_id: str | Any`
+    `project_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="TaskResponse"></a>
@@ -3003,13 +3881,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Task | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Task | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="TaskUpdateParams"></a>
@@ -3030,19 +3908,19 @@ Classes
 
     ### Class variables
 
-    `assignee_id: str | Any`
+    `assignee_id: str | None`
     :   The type of the None singleton.
 
-    `body_html: str | Any`
+    `body_html: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
 <a id="Team"></a>
@@ -3063,16 +3941,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `users: list[airbyte_agent_sdk.connectors.pylon.models.MiniUser] | Any | None`
+    `users: list[airbyte_agent_sdk.connectors.pylon.models.MiniUser] | None`
     :   The type of the None singleton.
 
 <a id="TeamCreateParams"></a>
@@ -3096,7 +3974,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="TeamResponse"></a>
@@ -3117,13 +3995,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.Team | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.Team | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="TeamUpdateParams"></a>
@@ -3147,7 +4025,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="TeamsListResultMeta"></a>
@@ -3168,13 +4046,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="TeamsResponse"></a>
@@ -3195,17 +4073,44 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.Team] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.Team] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="TeamsSearchData"></a>
+
+`TeamsSearchData(**data: Any)`
+:   Search result data for teams entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the team
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the team
 
 <a id="TicketForm"></a>
 
@@ -3225,28 +4130,28 @@ Classes
 
     ### Class variables
 
-    `description_html: str | Any | None`
+    `description_html: str | None`
     :   The type of the None singleton.
 
-    `fields: list[airbyte_agent_sdk.connectors.pylon.models.TicketFormField] | Any | None`
+    `fields: list[airbyte_agent_sdk.connectors.pylon.models.TicketFormField] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `is_public: bool | Any | None`
+    `is_public: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `url: str | Any | None`
+    `url: str | None`
     :   The type of the None singleton.
 
 <a id="TicketFormField"></a>
@@ -3267,19 +4172,19 @@ Classes
 
     ### Class variables
 
-    `description_html: str | Any | None`
+    `description_html: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any | None`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="TicketFormsListResultMeta"></a>
@@ -3300,13 +4205,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="TicketFormsResponse"></a>
@@ -3327,17 +4232,50 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.TicketForm] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.TicketForm] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="TicketFormsSearchData"></a>
+
+`TicketFormsSearchData(**data: Any)`
+:   Search result data for ticket_forms entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the ticket form
+
+    `is_public: bool | None`
+    :   Whether the ticket form is publicly accessible
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the ticket form
+
+    `slug: str | None`
+    :   URL-safe identifier for the ticket form
 
 <a id="User"></a>
 
@@ -3357,28 +4295,28 @@ Classes
 
     ### Class variables
 
-    `avatar_url: str | Any | None`
+    `avatar_url: str | None`
     :   The type of the None singleton.
 
-    `email: str | Any | None`
+    `email: str | None`
     :   The type of the None singleton.
 
-    `emails: list[str] | Any | None`
+    `emails: list[str] | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `role_id: str | Any | None`
+    `role_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any | None`
+    `status: str | None`
     :   The type of the None singleton.
 
 <a id="UserResponse"></a>
@@ -3399,13 +4337,13 @@ Classes
 
     ### Class variables
 
-    `data: airbyte_agent_sdk.connectors.pylon.models.User | Any`
+    `data: airbyte_agent_sdk.connectors.pylon.models.User | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
 
 <a id="UserRole"></a>
@@ -3426,16 +4364,16 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any | None`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `slug: str | Any | None`
+    `slug: str | None`
     :   The type of the None singleton.
 
 <a id="UserRolesListResultMeta"></a>
@@ -3456,13 +4394,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="UserRolesResponse"></a>
@@ -3483,17 +4421,47 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.UserRole] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.UserRole] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="UserRolesSearchData"></a>
+
+`UserRolesSearchData(**data: Any)`
+:   Search result data for user_roles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str`
+    :   Unique identifier for the user role
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the user role
+
+    `slug: str | None`
+    :   URL-safe identifier for the user role
 
 <a id="UsersListResultMeta"></a>
 
@@ -3513,13 +4481,13 @@ Classes
 
     ### Class variables
 
-    `has_next_page: bool | Any`
+    `has_next_page: bool | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next_cursor: str | Any | None`
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="UsersResponse"></a>
@@ -3540,14 +4508,50 @@ Classes
 
     ### Class variables
 
-    `data: list[airbyte_agent_sdk.connectors.pylon.models.User] | Any`
+    `data: list[airbyte_agent_sdk.connectors.pylon.models.User] | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | Any`
+    `pagination: airbyte_agent_sdk.connectors.pylon.models.Pagination | None`
     :   The type of the None singleton.
 
-    `request_id: str | Any`
+    `request_id: str | None`
     :   The type of the None singleton.
+
+<a id="UsersSearchData"></a>
+
+`UsersSearchData(**data: Any)`
+:   Search result data for users entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `email: str | None`
+    :   Primary email address of the user
+
+    `id: str`
+    :   Unique identifier for the user
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Full name of the user
+
+    `role_id: str | None`
+    :   Identifier of the user's role
+
+    `status: str | None`
+    :   Current status of the user (e.g. active, disabled)

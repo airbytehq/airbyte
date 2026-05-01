@@ -292,19 +292,19 @@ Classes
 
     ### Class variables
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="AuditRecord"></a>
@@ -325,40 +325,40 @@ Classes
 
     ### Class variables
 
-    `affected_object: airbyte_agent_sdk.connectors.confluence.models.AuditRecordAffectedobject | Any`
+    `affected_object: airbyte_agent_sdk.connectors.confluence.models.AuditRecordAffectedobject | None`
     :   The type of the None singleton.
 
-    `associated_objects: list[airbyte_agent_sdk.connectors.confluence.models.AuditRecordAssociatedobjectsItem] | Any`
+    `associated_objects: list[airbyte_agent_sdk.connectors.confluence.models.AuditRecordAssociatedobjectsItem] | None`
     :   The type of the None singleton.
 
-    `author: airbyte_agent_sdk.connectors.confluence.models.AuditRecordAuthor | Any`
+    `author: airbyte_agent_sdk.connectors.confluence.models.AuditRecordAuthor | None`
     :   The type of the None singleton.
 
-    `category: str | Any`
+    `category: str | None`
     :   The type of the None singleton.
 
-    `changed_values: list[typing.Any] | Any`
+    `changed_values: list[typing.Any] | None`
     :   The type of the None singleton.
 
-    `creation_date: int | Any`
+    `creation_date: int | None`
     :   The type of the None singleton.
 
-    `description: str | Any`
+    `description: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `remote_address: str | Any`
+    `remote_address: str | None`
     :   The type of the None singleton.
 
-    `summary: str | Any`
+    `summary: str | None`
     :   The type of the None singleton.
 
-    `super_admin: bool | Any`
+    `super_admin: bool | None`
     :   The type of the None singleton.
 
-    `sys_admin: bool | Any`
+    `sys_admin: bool | None`
     :   The type of the None singleton.
 
 <a id="AuditRecordAffectedobject"></a>
@@ -382,10 +382,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Name of the affected object
 
-    `object_type: str | Any`
+    `object_type: str | None`
     :   Type of the affected object
 
 <a id="AuditRecordAssociatedobjectsItem"></a>
@@ -409,10 +409,10 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   Name of the associated object
 
-    `object_type: str | Any`
+    `object_type: str | None`
     :   Type of the associated object
 
 <a id="AuditRecordAuthor"></a>
@@ -433,28 +433,28 @@ Classes
 
     ### Class variables
 
-    `account_type: str | Any`
+    `account_type: str | None`
     :   Account type
 
-    `display_name: str | Any`
+    `display_name: str | None`
     :   Display name of the author
 
-    `external_collaborator: bool | Any`
+    `external_collaborator: bool | None`
     :   Whether the author is an external collaborator
 
-    `is_external_collaborator: bool | Any`
+    `is_external_collaborator: bool | None`
     :   Whether the author is an external collaborator
 
     `model_config`
     :   The type of the None singleton.
 
-    `operations: Any`
+    `operations: typing.Any | None`
     :   Operations available for the author
 
-    `public_name: str | Any`
+    `public_name: str | None`
     :   Public name of the author
 
-    `type_: str | Any`
+    `type_: str | None`
     :   Author type
 
 <a id="AuditRecordsList"></a>
@@ -475,22 +475,22 @@ Classes
 
     ### Class variables
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.AuditRecordsListLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.AuditRecordsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.confluence.models.AuditRecord] | Any`
+    `results: list[airbyte_agent_sdk.connectors.confluence.models.AuditRecord] | None`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="AuditRecordsListLinks"></a>
@@ -511,19 +511,19 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   The type of the None singleton.
 
-    `context: str | Any`
+    `context: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="AuditSearchData"></a>
@@ -598,34 +598,34 @@ Classes
 
     ### Class variables
 
-    `author_id: str | Any`
+    `author_id: str | None`
     :   The type of the None singleton.
 
-    `body: airbyte_agent_sdk.connectors.confluence.models.BlogPostBody | Any`
+    `body: airbyte_agent_sdk.connectors.confluence.models.BlogPostBody | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.BlogPostLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.BlogPostLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `space_id: str | Any`
+    `space_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `version: airbyte_agent_sdk.connectors.confluence.models.BlogPostVersion | Any`
+    `version: airbyte_agent_sdk.connectors.confluence.models.BlogPostVersion | None`
     :   The type of the None singleton.
 
 <a id="BlogPostBody"></a>
@@ -646,13 +646,13 @@ Classes
 
     ### Class variables
 
-    `atlas_doc_format: dict[str, typing.Any] | Any`
+    `atlas_doc_format: dict[str, typing.Any] | None`
     :   Atlas doc format body
 
     `model_config`
     :   The type of the None singleton.
 
-    `storage: dict[str, typing.Any] | Any`
+    `storage: dict[str, typing.Any] | None`
     :   Storage format body
 
 <a id="BlogPostLinks"></a>
@@ -673,22 +673,22 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   Base URL
 
-    `editui: str | Any`
+    `editui: str | None`
     :   Edit UI link
 
-    `edituiv2: str | Any`
+    `edituiv2: str | None`
     :   Edit UI v2 link
 
     `model_config`
     :   The type of the None singleton.
 
-    `tinyui: str | Any`
+    `tinyui: str | None`
     :   Tiny UI link
 
-    `webui: str | Any`
+    `webui: str | None`
     :   Web UI link
 
 <a id="BlogPostVersion"></a>
@@ -709,25 +709,25 @@ Classes
 
     ### Class variables
 
-    `author_id: str | Any`
+    `author_id: str | None`
     :   ID of the version author
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   Version creation timestamp
 
-    `message: str | Any`
+    `message: str | None`
     :   Version message
 
-    `minor_edit: bool | Any`
+    `minor_edit: bool | None`
     :   Whether this was a minor edit
 
     `model_config`
     :   The type of the None singleton.
 
-    `ncs_step_version: Any`
+    `ncs_step_version: typing.Any | None`
     :   NCS step version
 
-    `number: int | Any`
+    `number: int | None`
     :   Version number
 
 <a id="BlogPostsList"></a>
@@ -748,13 +748,13 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.BlogPostsListLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.BlogPostsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.confluence.models.BlogPost] | Any`
+    `results: list[airbyte_agent_sdk.connectors.confluence.models.BlogPost] | None`
     :   The type of the None singleton.
 
 <a id="BlogPostsListLinks"></a>
@@ -775,13 +775,13 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   Base URL
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   URL for the next page of results
 
 <a id="BlogPostsListResultMeta"></a>
@@ -805,7 +805,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="BlogPostsSearchData"></a>
@@ -1225,28 +1225,28 @@ Classes
 
     ### Class variables
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.GroupLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.GroupLinks | None`
     :   The type of the None singleton.
 
-    `managed_by: str | Any`
+    `managed_by: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `resource_ari: str | Any`
+    `resource_ari: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
-    `usage_type: str | Any`
+    `usage_type: str | None`
     :   The type of the None singleton.
 
 <a id="GroupLinks"></a>
@@ -1270,7 +1270,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   Self link
 
 <a id="GroupsList"></a>
@@ -1291,22 +1291,22 @@ Classes
 
     ### Class variables
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.GroupsListLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.GroupsListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.confluence.models.Group] | Any`
+    `results: list[airbyte_agent_sdk.connectors.confluence.models.Group] | None`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="GroupsListLinks"></a>
@@ -1327,19 +1327,19 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   The type of the None singleton.
 
-    `context: str | Any`
+    `context: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `self: str | Any`
+    `self: str | None`
     :   The type of the None singleton.
 
 <a id="GroupsListResultMeta"></a>
@@ -1360,19 +1360,19 @@ Classes
 
     ### Class variables
 
-    `limit: int | Any`
+    `limit: int | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
-    `size: int | Any`
+    `size: int | None`
     :   The type of the None singleton.
 
-    `start: int | Any`
+    `start: int | None`
     :   The type of the None singleton.
 
 <a id="GroupsSearchData"></a>
@@ -1426,49 +1426,49 @@ Classes
 
     ### Class variables
 
-    `author_id: str | Any`
+    `author_id: str | None`
     :   The type of the None singleton.
 
-    `body: airbyte_agent_sdk.connectors.confluence.models.PageBody | Any`
+    `body: airbyte_agent_sdk.connectors.confluence.models.PageBody | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `last_owner_id: Any`
+    `last_owner_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.PageLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.PageLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `owner_id: str | Any`
+    `owner_id: str | None`
     :   The type of the None singleton.
 
-    `parent_id: Any`
+    `parent_id: typing.Any | None`
     :   The type of the None singleton.
 
-    `parent_type: Any`
+    `parent_type: typing.Any | None`
     :   The type of the None singleton.
 
-    `position: int | Any`
+    `position: int | None`
     :   The type of the None singleton.
 
-    `space_id: str | Any`
+    `space_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `title: str | Any`
+    `title: str | None`
     :   The type of the None singleton.
 
-    `version: airbyte_agent_sdk.connectors.confluence.models.PageVersion | Any`
+    `version: airbyte_agent_sdk.connectors.confluence.models.PageVersion | None`
     :   The type of the None singleton.
 
 <a id="PageBody"></a>
@@ -1489,13 +1489,13 @@ Classes
 
     ### Class variables
 
-    `atlas_doc_format: dict[str, typing.Any] | Any`
+    `atlas_doc_format: dict[str, typing.Any] | None`
     :   Atlas doc format body
 
     `model_config`
     :   The type of the None singleton.
 
-    `storage: dict[str, typing.Any] | Any`
+    `storage: dict[str, typing.Any] | None`
     :   Storage format body
 
 <a id="PageLinks"></a>
@@ -1516,22 +1516,22 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   Base URL
 
-    `editui: str | Any`
+    `editui: str | None`
     :   Edit UI link
 
-    `edituiv2: str | Any`
+    `edituiv2: str | None`
     :   Edit UI v2 link
 
     `model_config`
     :   The type of the None singleton.
 
-    `tinyui: str | Any`
+    `tinyui: str | None`
     :   Tiny UI link
 
-    `webui: str | Any`
+    `webui: str | None`
     :   Web UI link
 
 <a id="PageVersion"></a>
@@ -1552,25 +1552,25 @@ Classes
 
     ### Class variables
 
-    `author_id: str | Any`
+    `author_id: str | None`
     :   ID of the version author
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   Version creation timestamp
 
-    `message: str | Any`
+    `message: str | None`
     :   Version message
 
-    `minor_edit: bool | Any`
+    `minor_edit: bool | None`
     :   Whether this was a minor edit
 
     `model_config`
     :   The type of the None singleton.
 
-    `ncs_step_version: Any`
+    `ncs_step_version: typing.Any | None`
     :   NCS step version
 
-    `number: int | Any`
+    `number: int | None`
     :   Version number
 
 <a id="PagesList"></a>
@@ -1591,13 +1591,13 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.PagesListLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.PagesListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.confluence.models.Page] | Any`
+    `results: list[airbyte_agent_sdk.connectors.confluence.models.Page] | None`
     :   The type of the None singleton.
 
 <a id="PagesListLinks"></a>
@@ -1618,13 +1618,13 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   Base URL
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   URL for the next page of results
 
 <a id="PagesListResultMeta"></a>
@@ -1648,7 +1648,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="PagesSearchData"></a>
@@ -1732,46 +1732,46 @@ Classes
 
     ### Class variables
 
-    `author_id: str | Any`
+    `author_id: str | None`
     :   The type of the None singleton.
 
-    `created_at: str | Any`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `current_active_alias: str | Any`
+    `current_active_alias: str | None`
     :   The type of the None singleton.
 
-    `description: Any`
+    `description: typing.Any | None`
     :   The type of the None singleton.
 
-    `homepage_id: str | Any`
+    `homepage_id: str | None`
     :   The type of the None singleton.
 
-    `icon: Any`
+    `icon: typing.Any | None`
     :   The type of the None singleton.
 
-    `id: str | Any`
+    `id: str | None`
     :   The type of the None singleton.
 
-    `key: str | Any`
+    `key: str | None`
     :   The type of the None singleton.
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.SpaceLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.SpaceLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `name: str | Any`
+    `name: str | None`
     :   The type of the None singleton.
 
-    `space_owner_id: str | Any`
+    `space_owner_id: str | None`
     :   The type of the None singleton.
 
-    `status: str | Any`
+    `status: str | None`
     :   The type of the None singleton.
 
-    `type_: str | Any`
+    `type_: str | None`
     :   The type of the None singleton.
 
 <a id="SpaceLinks"></a>
@@ -1792,13 +1792,13 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   Base URL
 
     `model_config`
     :   The type of the None singleton.
 
-    `webui: str | Any`
+    `webui: str | None`
     :   Web UI link
 
 <a id="SpacesList"></a>
@@ -1819,13 +1819,13 @@ Classes
 
     ### Class variables
 
-    `links: airbyte_agent_sdk.connectors.confluence.models.SpacesListLinks | Any`
+    `links: airbyte_agent_sdk.connectors.confluence.models.SpacesListLinks | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
-    `results: list[airbyte_agent_sdk.connectors.confluence.models.Space] | Any`
+    `results: list[airbyte_agent_sdk.connectors.confluence.models.Space] | None`
     :   The type of the None singleton.
 
 <a id="SpacesListLinks"></a>
@@ -1846,13 +1846,13 @@ Classes
 
     ### Class variables
 
-    `base: str | Any`
+    `base: str | None`
     :   Base URL
 
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   URL for the next page of results
 
 <a id="SpacesListResultMeta"></a>
@@ -1876,7 +1876,7 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `next: str | Any`
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="SpacesSearchData"></a>

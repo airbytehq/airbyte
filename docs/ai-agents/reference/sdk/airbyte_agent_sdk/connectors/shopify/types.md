@@ -63,6 +63,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `completed_at: Any`
+    :   ISO 8601 timestamp when the checkout was completed, if applicable
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the checkout was created
+
+    `currency: Any`
+    :   ISO 4217 currency code for the checkout totals
+
+    `email: Any`
+    :   Email address provided for the checkout
+
+    `id: Any`
+    :   Unique identifier for the abandoned checkout
+
+    `name: Any`
+    :   Shopify-assigned display name for the checkout (e.g. `#C12345`)
+
+    `phone: Any`
+    :   Phone number provided for the checkout
+
+    `token: Any`
+    :   Unique token identifying the checkout
+
+    `total_price: Any`
+    :   Total price of the checkout in the shop's currency
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the checkout was last updated
+
 <a id="AbandonedCheckoutsContainsCondition"></a>
 
 `AbandonedCheckoutsContainsCondition(*args, **kwargs)`
@@ -163,6 +195,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `completed_at: list[str]`
+    :   ISO 8601 timestamp when the checkout was completed, if applicable
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the checkout was created
+
+    `currency: list[str]`
+    :   ISO 4217 currency code for the checkout totals
+
+    `email: list[str]`
+    :   Email address provided for the checkout
+
+    `id: list[int]`
+    :   Unique identifier for the abandoned checkout
+
+    `name: list[str]`
+    :   Shopify-assigned display name for the checkout (e.g. `#C12345`)
+
+    `phone: list[str]`
+    :   Phone number provided for the checkout
+
+    `token: list[str]`
+    :   Unique token identifying the checkout
+
+    `total_price: list[str]`
+    :   Total price of the checkout in the shop's currency
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the checkout was last updated
 
 <a id="AbandonedCheckoutsKeywordCondition"></a>
 
@@ -319,6 +383,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `completed_at: str | None`
+    :   ISO 8601 timestamp when the checkout was completed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the checkout was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the checkout totals
+
+    `email: str | None`
+    :   Email address provided for the checkout
+
+    `id: int | None`
+    :   Unique identifier for the abandoned checkout
+
+    `name: str | None`
+    :   Shopify-assigned display name for the checkout (e.g. `#C12345`)
+
+    `phone: str | None`
+    :   Phone number provided for the checkout
+
+    `token: str | None`
+    :   Unique token identifying the checkout
+
+    `total_price: str | None`
+    :   Total price of the checkout in the shop's currency
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the checkout was last updated
+
 <a id="AbandonedCheckoutsSearchQuery"></a>
 
 `AbandonedCheckoutsSearchQuery(*args, **kwargs)`
@@ -345,6 +441,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `completed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the checkout was completed, if applicable
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the checkout was created
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code for the checkout totals
+
+    `email: Literal['asc', 'desc']`
+    :   Email address provided for the checkout
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the abandoned checkout
+
+    `name: Literal['asc', 'desc']`
+    :   Shopify-assigned display name for the checkout (e.g. `#C12345`)
+
+    `phone: Literal['asc', 'desc']`
+    :   Phone number provided for the checkout
+
+    `token: Literal['asc', 'desc']`
+    :   Unique token identifying the checkout
+
+    `total_price: Literal['asc', 'desc']`
+    :   Total price of the checkout in the shop's currency
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the checkout was last updated
+
 <a id="AbandonedCheckoutsStringFilter"></a>
 
 `AbandonedCheckoutsStringFilter(*args, **kwargs)`
@@ -353,6 +481,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `completed_at: str`
+    :   ISO 8601 timestamp when the checkout was completed, if applicable
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the checkout was created
+
+    `currency: str`
+    :   ISO 4217 currency code for the checkout totals
+
+    `email: str`
+    :   Email address provided for the checkout
+
+    `id: str`
+    :   Unique identifier for the abandoned checkout
+
+    `name: str`
+    :   Shopify-assigned display name for the checkout (e.g. `#C12345`)
+
+    `phone: str`
+    :   Phone number provided for the checkout
+
+    `token: str`
+    :   Unique token identifying the checkout
+
+    `total_price: str`
+    :   Total price of the checkout in the shop's currency
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the checkout was last updated
 
 <a id="AirbyteSearchParams"></a>
 
@@ -429,6 +589,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `collection_id: Any`
+    :   Identifier of the collection the product belongs to
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the collect was created
+
+    `id: Any`
+    :   Unique identifier for the collect
+
+    `position: Any`
+    :   Position of the product within the collection
+
+    `product_id: Any`
+    :   Identifier of the product in the collection
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the collect was last updated
 
 <a id="CollectsContainsCondition"></a>
 
@@ -544,6 +724,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `collection_id: list[int]`
+    :   Identifier of the collection the product belongs to
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the collect was created
+
+    `id: list[int]`
+    :   Unique identifier for the collect
+
+    `position: list[int]`
+    :   Position of the product within the collection
+
+    `product_id: list[int]`
+    :   Identifier of the product in the collection
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the collect was last updated
 
 <a id="CollectsKeywordCondition"></a>
 
@@ -691,6 +891,26 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `collection_id: int | None`
+    :   Identifier of the collection the product belongs to
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the collect was created
+
+    `id: int | None`
+    :   Unique identifier for the collect
+
+    `position: int | None`
+    :   Position of the product within the collection
+
+    `product_id: int | None`
+    :   Identifier of the product in the collection
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the collect was last updated
+
 <a id="CollectsSearchQuery"></a>
 
 `CollectsSearchQuery(*args, **kwargs)`
@@ -717,6 +937,26 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `collection_id: Literal['asc', 'desc']`
+    :   Identifier of the collection the product belongs to
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the collect was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the collect
+
+    `position: Literal['asc', 'desc']`
+    :   Position of the product within the collection
+
+    `product_id: Literal['asc', 'desc']`
+    :   Identifier of the product in the collection
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the collect was last updated
+
 <a id="CollectsStringFilter"></a>
 
 `CollectsStringFilter(*args, **kwargs)`
@@ -725,6 +965,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `collection_id: str`
+    :   Identifier of the collection the product belongs to
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the collect was created
+
+    `id: str`
+    :   Unique identifier for the collect
+
+    `position: str`
+    :   Position of the product within the collection
+
+    `product_id: str`
+    :   Identifier of the product in the collection
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the collect was last updated
 
 <a id="CountriesAndCondition"></a>
 
@@ -778,6 +1038,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `code: Any`
+    :   ISO 3166-1 alpha-2 country code
+
+    `id: Any`
+    :   Unique identifier for the country tax row
+
+    `name: Any`
+    :   Human-readable country name
+
+    `tax_name: Any`
+    :   Localized name of the tax applied in this country
 
 <a id="CountriesContainsCondition"></a>
 
@@ -893,6 +1167,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `code: list[str]`
+    :   ISO 3166-1 alpha-2 country code
+
+    `id: list[int]`
+    :   Unique identifier for the country tax row
+
+    `name: list[str]`
+    :   Human-readable country name
+
+    `tax_name: list[str]`
+    :   Localized name of the tax applied in this country
 
 <a id="CountriesKeywordCondition"></a>
 
@@ -1031,6 +1319,20 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `code: str | None`
+    :   ISO 3166-1 alpha-2 country code
+
+    `id: int | None`
+    :   Unique identifier for the country tax row
+
+    `name: str | None`
+    :   Human-readable country name
+
+    `tax_name: str | None`
+    :   Localized name of the tax applied in this country
+
 <a id="CountriesSearchQuery"></a>
 
 `CountriesSearchQuery(*args, **kwargs)`
@@ -1057,6 +1359,20 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `code: Literal['asc', 'desc']`
+    :   ISO 3166-1 alpha-2 country code
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the country tax row
+
+    `name: Literal['asc', 'desc']`
+    :   Human-readable country name
+
+    `tax_name: Literal['asc', 'desc']`
+    :   Localized name of the tax applied in this country
+
 <a id="CountriesStringFilter"></a>
 
 `CountriesStringFilter(*args, **kwargs)`
@@ -1065,6 +1381,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `code: str`
+    :   ISO 3166-1 alpha-2 country code
+
+    `id: str`
+    :   Unique identifier for the country tax row
+
+    `name: str`
+    :   Human-readable country name
+
+    `tax_name: str`
+    :   Localized name of the tax applied in this country
 
 <a id="CustomCollectionsAndCondition"></a>
 
@@ -1118,6 +1448,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `handle: Any`
+    :   URL-friendly handle for the custom collection
+
+    `id: Any`
+    :   Unique identifier for the custom collection
+
+    `published_at: Any`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: Any`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: Any`
+    :   How products are sorted within the collection (e.g. `best-selling`)
+
+    `title: Any`
+    :   Display title of the custom collection
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="CustomCollectionsContainsCondition"></a>
 
@@ -1233,6 +1586,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `handle: list[str]`
+    :   URL-friendly handle for the custom collection
+
+    `id: list[int]`
+    :   Unique identifier for the custom collection
+
+    `published_at: list[str]`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: list[str]`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: list[str]`
+    :   How products are sorted within the collection (e.g. `best-selling`)
+
+    `title: list[str]`
+    :   Display title of the custom collection
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="CustomCollectionsKeywordCondition"></a>
 
@@ -1386,6 +1762,29 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `handle: str | None`
+    :   URL-friendly handle for the custom collection
+
+    `id: int | None`
+    :   Unique identifier for the custom collection
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: str | None`
+    :   How products are sorted within the collection (e.g. `best-selling`)
+
+    `title: str | None`
+    :   Display title of the custom collection
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the collection was last updated
+
 <a id="CustomCollectionsSearchQuery"></a>
 
 `CustomCollectionsSearchQuery(*args, **kwargs)`
@@ -1412,6 +1811,29 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the custom collection
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the custom collection
+
+    `published_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: Literal['asc', 'desc']`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: Literal['asc', 'desc']`
+    :   How products are sorted within the collection (e.g. `best-selling`)
+
+    `title: Literal['asc', 'desc']`
+    :   Display title of the custom collection
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the collection was last updated
+
 <a id="CustomCollectionsStringFilter"></a>
 
 `CustomCollectionsStringFilter(*args, **kwargs)`
@@ -1420,6 +1842,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `handle: str`
+    :   URL-friendly handle for the custom collection
+
+    `id: str`
+    :   Unique identifier for the custom collection
+
+    `published_at: str`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: str`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: str`
+    :   How products are sorted within the collection (e.g. `best-selling`)
+
+    `title: str`
+    :   Display title of the custom collection
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="CustomerAddressGetParams"></a>
 
@@ -1507,6 +1952,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the customer record was created
+
+    `currency: Any`
+    :   ISO 4217 currency code for the customer's total spend
+
+    `email: Any`
+    :   Primary email address of the customer
+
+    `first_name: Any`
+    :   First name of the customer
+
+    `id: Any`
+    :   Unique identifier for the customer
+
+    `last_name: Any`
+    :   Last name of the customer
+
+    `orders_count: Any`
+    :   Number of orders placed by the customer
+
+    `phone: Any`
+    :   Primary phone number of the customer
+
+    `state: Any`
+    :   Account state (`disabled`, `invited`, `enabled`, `declined`)
+
+    `total_spent: Any`
+    :   Total lifetime amount spent by the customer
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the customer record was last updated
 
 <a id="CustomersContainsCondition"></a>
 
@@ -1622,6 +2102,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the customer record was created
+
+    `currency: list[str]`
+    :   ISO 4217 currency code for the customer's total spend
+
+    `email: list[str]`
+    :   Primary email address of the customer
+
+    `first_name: list[str]`
+    :   First name of the customer
+
+    `id: list[int]`
+    :   Unique identifier for the customer
+
+    `last_name: list[str]`
+    :   Last name of the customer
+
+    `orders_count: list[int]`
+    :   Number of orders placed by the customer
+
+    `phone: list[str]`
+    :   Primary phone number of the customer
+
+    `state: list[str]`
+    :   Account state (`disabled`, `invited`, `enabled`, `declined`)
+
+    `total_spent: list[str]`
+    :   Total lifetime amount spent by the customer
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the customer record was last updated
 
 <a id="CustomersKeywordCondition"></a>
 
@@ -1775,6 +2290,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the customer record was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the customer's total spend
+
+    `email: str | None`
+    :   Primary email address of the customer
+
+    `first_name: str | None`
+    :   First name of the customer
+
+    `id: int | None`
+    :   Unique identifier for the customer
+
+    `last_name: str | None`
+    :   Last name of the customer
+
+    `orders_count: int | None`
+    :   Number of orders placed by the customer
+
+    `phone: str | None`
+    :   Primary phone number of the customer
+
+    `state: str | None`
+    :   Account state (`disabled`, `invited`, `enabled`, `declined`)
+
+    `total_spent: str | None`
+    :   Total lifetime amount spent by the customer
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the customer record was last updated
+
 <a id="CustomersSearchQuery"></a>
 
 `CustomersSearchQuery(*args, **kwargs)`
@@ -1801,6 +2351,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the customer record was created
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code for the customer's total spend
+
+    `email: Literal['asc', 'desc']`
+    :   Primary email address of the customer
+
+    `first_name: Literal['asc', 'desc']`
+    :   First name of the customer
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the customer
+
+    `last_name: Literal['asc', 'desc']`
+    :   Last name of the customer
+
+    `orders_count: Literal['asc', 'desc']`
+    :   Number of orders placed by the customer
+
+    `phone: Literal['asc', 'desc']`
+    :   Primary phone number of the customer
+
+    `state: Literal['asc', 'desc']`
+    :   Account state (`disabled`, `invited`, `enabled`, `declined`)
+
+    `total_spent: Literal['asc', 'desc']`
+    :   Total lifetime amount spent by the customer
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the customer record was last updated
+
 <a id="CustomersStringFilter"></a>
 
 `CustomersStringFilter(*args, **kwargs)`
@@ -1809,6 +2394,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the customer record was created
+
+    `currency: str`
+    :   ISO 4217 currency code for the customer's total spend
+
+    `email: str`
+    :   Primary email address of the customer
+
+    `first_name: str`
+    :   First name of the customer
+
+    `id: str`
+    :   Unique identifier for the customer
+
+    `last_name: str`
+    :   Last name of the customer
+
+    `orders_count: str`
+    :   Number of orders placed by the customer
+
+    `phone: str`
+    :   Primary phone number of the customer
+
+    `state: str`
+    :   Account state (`disabled`, `invited`, `enabled`, `declined`)
+
+    `total_spent: str`
+    :   Total lifetime amount spent by the customer
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the customer record was last updated
 
 <a id="DiscountCodesAndCondition"></a>
 
@@ -1862,6 +2482,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `code: Any`
+    :   Discount code string shoppers enter at checkout
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the code was created
+
+    `id: Any`
+    :   Unique identifier for the discount code
+
+    `price_rule_id: Any`
+    :   Identifier of the parent price rule
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the code was last updated
+
+    `usage_count: Any`
+    :   Number of times the code has been redeemed
 
 <a id="DiscountCodesContainsCondition"></a>
 
@@ -1980,6 +2620,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `code: list[str]`
+    :   Discount code string shoppers enter at checkout
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the code was created
+
+    `id: list[int]`
+    :   Unique identifier for the discount code
+
+    `price_rule_id: list[int]`
+    :   Identifier of the parent price rule
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the code was last updated
+
+    `usage_count: list[int]`
+    :   Number of times the code has been redeemed
 
 <a id="DiscountCodesKeywordCondition"></a>
 
@@ -2121,6 +2781,26 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `code: str | None`
+    :   Discount code string shoppers enter at checkout
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the code was created
+
+    `id: int | None`
+    :   Unique identifier for the discount code
+
+    `price_rule_id: int | None`
+    :   Identifier of the parent price rule
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the code was last updated
+
+    `usage_count: int | None`
+    :   Number of times the code has been redeemed
+
 <a id="DiscountCodesSearchQuery"></a>
 
 `DiscountCodesSearchQuery(*args, **kwargs)`
@@ -2147,6 +2827,26 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `code: Literal['asc', 'desc']`
+    :   Discount code string shoppers enter at checkout
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the code was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the discount code
+
+    `price_rule_id: Literal['asc', 'desc']`
+    :   Identifier of the parent price rule
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the code was last updated
+
+    `usage_count: Literal['asc', 'desc']`
+    :   Number of times the code has been redeemed
+
 <a id="DiscountCodesStringFilter"></a>
 
 `DiscountCodesStringFilter(*args, **kwargs)`
@@ -2155,6 +2855,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `code: str`
+    :   Discount code string shoppers enter at checkout
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the code was created
+
+    `id: str`
+    :   Unique identifier for the discount code
+
+    `price_rule_id: str`
+    :   Identifier of the parent price rule
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the code was last updated
+
+    `usage_count: str`
+    :   Number of times the code has been redeemed
 
 <a id="DraftOrdersAndCondition"></a>
 
@@ -2208,6 +2928,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `completed_at: Any`
+    :   ISO 8601 timestamp when the draft order was completed, if applicable
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the draft order was created
+
+    `currency: Any`
+    :   ISO 4217 currency code for the draft order totals
+
+    `email: Any`
+    :   Email address associated with the draft order
+
+    `id: Any`
+    :   Unique identifier for the draft order
+
+    `name: Any`
+    :   Shopify-assigned display name for the draft order (e.g. `#D12345`)
+
+    `order_id: Any`
+    :   Identifier of the completed order, if the draft has been completed
+
+    `status: Any`
+    :   Status of the draft order (`open`, `invoice_sent`, `completed`)
+
+    `total_price: Any`
+    :   Total price of the draft order
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the draft order was last updated
 
 <a id="DraftOrdersContainsCondition"></a>
 
@@ -2323,6 +3075,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `completed_at: list[str]`
+    :   ISO 8601 timestamp when the draft order was completed, if applicable
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the draft order was created
+
+    `currency: list[str]`
+    :   ISO 4217 currency code for the draft order totals
+
+    `email: list[str]`
+    :   Email address associated with the draft order
+
+    `id: list[int]`
+    :   Unique identifier for the draft order
+
+    `name: list[str]`
+    :   Shopify-assigned display name for the draft order (e.g. `#D12345`)
+
+    `order_id: list[int]`
+    :   Identifier of the completed order, if the draft has been completed
+
+    `status: list[str]`
+    :   Status of the draft order (`open`, `invoice_sent`, `completed`)
+
+    `total_price: list[str]`
+    :   Total price of the draft order
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the draft order was last updated
 
 <a id="DraftOrdersKeywordCondition"></a>
 
@@ -2473,6 +3257,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `completed_at: str | None`
+    :   ISO 8601 timestamp when the draft order was completed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the draft order was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the draft order totals
+
+    `email: str | None`
+    :   Email address associated with the draft order
+
+    `id: int | None`
+    :   Unique identifier for the draft order
+
+    `name: str | None`
+    :   Shopify-assigned display name for the draft order (e.g. `#D12345`)
+
+    `order_id: int | None`
+    :   Identifier of the completed order, if the draft has been completed
+
+    `status: str | None`
+    :   Status of the draft order (`open`, `invoice_sent`, `completed`)
+
+    `total_price: str | None`
+    :   Total price of the draft order
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the draft order was last updated
+
 <a id="DraftOrdersSearchQuery"></a>
 
 `DraftOrdersSearchQuery(*args, **kwargs)`
@@ -2499,6 +3315,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `completed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the draft order was completed, if applicable
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the draft order was created
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code for the draft order totals
+
+    `email: Literal['asc', 'desc']`
+    :   Email address associated with the draft order
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the draft order
+
+    `name: Literal['asc', 'desc']`
+    :   Shopify-assigned display name for the draft order (e.g. `#D12345`)
+
+    `order_id: Literal['asc', 'desc']`
+    :   Identifier of the completed order, if the draft has been completed
+
+    `status: Literal['asc', 'desc']`
+    :   Status of the draft order (`open`, `invoice_sent`, `completed`)
+
+    `total_price: Literal['asc', 'desc']`
+    :   Total price of the draft order
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the draft order was last updated
+
 <a id="DraftOrdersStringFilter"></a>
 
 `DraftOrdersStringFilter(*args, **kwargs)`
@@ -2507,6 +3355,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `completed_at: str`
+    :   ISO 8601 timestamp when the draft order was completed, if applicable
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the draft order was created
+
+    `currency: str`
+    :   ISO 4217 currency code for the draft order totals
+
+    `email: str`
+    :   Email address associated with the draft order
+
+    `id: str`
+    :   Unique identifier for the draft order
+
+    `name: str`
+    :   Shopify-assigned display name for the draft order (e.g. `#D12345`)
+
+    `order_id: str`
+    :   Identifier of the completed order, if the draft has been completed
+
+    `status: str`
+    :   Status of the draft order (`open`, `invoice_sent`, `completed`)
+
+    `total_price: str`
+    :   Total price of the draft order
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the draft order was last updated
 
 <a id="FulfillmentOrdersAndCondition"></a>
 
@@ -2560,6 +3440,32 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `assigned_location_id: Any`
+    :   Identifier of the location assigned to fulfill the order
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the fulfillment order was created
+
+    `id: Any`
+    :   Unique identifier for the fulfillment order
+
+    `order_id: Any`
+    :   Identifier of the parent order
+
+    `request_status: Any`
+    :   Status of the fulfillment request (e.g. `unsubmitted`, `submitted`)
+
+    `shop_id: Any`
+    :   Identifier of the shop that owns the fulfillment order
+
+    `status: Any`
+    :   Fulfillment order status (e.g. `open`, `in_progress`, `closed`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the fulfillment order was last updated
 
 <a id="FulfillmentOrdersContainsCondition"></a>
 
@@ -2675,6 +3581,32 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `assigned_location_id: list[int]`
+    :   Identifier of the location assigned to fulfill the order
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the fulfillment order was created
+
+    `id: list[int]`
+    :   Unique identifier for the fulfillment order
+
+    `order_id: list[int]`
+    :   Identifier of the parent order
+
+    `request_status: list[str]`
+    :   Status of the fulfillment request (e.g. `unsubmitted`, `submitted`)
+
+    `shop_id: list[int]`
+    :   Identifier of the shop that owns the fulfillment order
+
+    `status: list[str]`
+    :   Fulfillment order status (e.g. `open`, `in_progress`, `closed`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the fulfillment order was last updated
 
 <a id="FulfillmentOrdersKeywordCondition"></a>
 
@@ -2813,6 +3745,32 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `assigned_location_id: int | None`
+    :   Identifier of the location assigned to fulfill the order
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment order was created
+
+    `id: int | None`
+    :   Unique identifier for the fulfillment order
+
+    `order_id: int | None`
+    :   Identifier of the parent order
+
+    `request_status: str | None`
+    :   Status of the fulfillment request (e.g. `unsubmitted`, `submitted`)
+
+    `shop_id: int | None`
+    :   Identifier of the shop that owns the fulfillment order
+
+    `status: str | None`
+    :   Fulfillment order status (e.g. `open`, `in_progress`, `closed`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment order was last updated
+
 <a id="FulfillmentOrdersSearchQuery"></a>
 
 `FulfillmentOrdersSearchQuery(*args, **kwargs)`
@@ -2839,6 +3797,32 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `assigned_location_id: Literal['asc', 'desc']`
+    :   Identifier of the location assigned to fulfill the order
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the fulfillment order was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the fulfillment order
+
+    `order_id: Literal['asc', 'desc']`
+    :   Identifier of the parent order
+
+    `request_status: Literal['asc', 'desc']`
+    :   Status of the fulfillment request (e.g. `unsubmitted`, `submitted`)
+
+    `shop_id: Literal['asc', 'desc']`
+    :   Identifier of the shop that owns the fulfillment order
+
+    `status: Literal['asc', 'desc']`
+    :   Fulfillment order status (e.g. `open`, `in_progress`, `closed`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the fulfillment order was last updated
+
 <a id="FulfillmentOrdersStringFilter"></a>
 
 `FulfillmentOrdersStringFilter(*args, **kwargs)`
@@ -2847,6 +3831,32 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `assigned_location_id: str`
+    :   Identifier of the location assigned to fulfill the order
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the fulfillment order was created
+
+    `id: str`
+    :   Unique identifier for the fulfillment order
+
+    `order_id: str`
+    :   Identifier of the parent order
+
+    `request_status: str`
+    :   Status of the fulfillment request (e.g. `unsubmitted`, `submitted`)
+
+    `shop_id: str`
+    :   Identifier of the shop that owns the fulfillment order
+
+    `status: str`
+    :   Fulfillment order status (e.g. `open`, `in_progress`, `closed`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the fulfillment order was last updated
 
 <a id="FulfillmentsAndCondition"></a>
 
@@ -2900,6 +3910,35 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the fulfillment was created
+
+    `id: Any`
+    :   Unique identifier for the fulfillment
+
+    `location_id: Any`
+    :   Identifier of the fulfilling location
+
+    `order_id: Any`
+    :   Identifier of the parent order
+
+    `shipment_status: Any`
+    :   Carrier shipment status (e.g. `delivered`, `in_transit`)
+
+    `status: Any`
+    :   Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`)
+
+    `tracking_company: Any`
+    :   Name of the shipping carrier
+
+    `tracking_number: Any`
+    :   Primary tracking number for the shipment
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the fulfillment was last updated
 
 <a id="FulfillmentsContainsCondition"></a>
 
@@ -3018,6 +4057,35 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the fulfillment was created
+
+    `id: list[int]`
+    :   Unique identifier for the fulfillment
+
+    `location_id: list[int]`
+    :   Identifier of the fulfilling location
+
+    `order_id: list[int]`
+    :   Identifier of the parent order
+
+    `shipment_status: list[str]`
+    :   Carrier shipment status (e.g. `delivered`, `in_transit`)
+
+    `status: list[str]`
+    :   Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`)
+
+    `tracking_company: list[str]`
+    :   Name of the shipping carrier
+
+    `tracking_number: list[str]`
+    :   Primary tracking number for the shipment
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the fulfillment was last updated
 
 <a id="FulfillmentsKeywordCondition"></a>
 
@@ -3174,6 +4242,35 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment was created
+
+    `id: int | None`
+    :   Unique identifier for the fulfillment
+
+    `location_id: int | None`
+    :   Identifier of the fulfilling location
+
+    `order_id: int | None`
+    :   Identifier of the parent order
+
+    `shipment_status: str | None`
+    :   Carrier shipment status (e.g. `delivered`, `in_transit`)
+
+    `status: str | None`
+    :   Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`)
+
+    `tracking_company: str | None`
+    :   Name of the shipping carrier
+
+    `tracking_number: str | None`
+    :   Primary tracking number for the shipment
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the fulfillment was last updated
+
 <a id="FulfillmentsSearchQuery"></a>
 
 `FulfillmentsSearchQuery(*args, **kwargs)`
@@ -3200,6 +4297,35 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the fulfillment was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the fulfillment
+
+    `location_id: Literal['asc', 'desc']`
+    :   Identifier of the fulfilling location
+
+    `order_id: Literal['asc', 'desc']`
+    :   Identifier of the parent order
+
+    `shipment_status: Literal['asc', 'desc']`
+    :   Carrier shipment status (e.g. `delivered`, `in_transit`)
+
+    `status: Literal['asc', 'desc']`
+    :   Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`)
+
+    `tracking_company: Literal['asc', 'desc']`
+    :   Name of the shipping carrier
+
+    `tracking_number: Literal['asc', 'desc']`
+    :   Primary tracking number for the shipment
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the fulfillment was last updated
+
 <a id="FulfillmentsStringFilter"></a>
 
 `FulfillmentsStringFilter(*args, **kwargs)`
@@ -3208,6 +4334,35 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the fulfillment was created
+
+    `id: str`
+    :   Unique identifier for the fulfillment
+
+    `location_id: str`
+    :   Identifier of the fulfilling location
+
+    `order_id: str`
+    :   Identifier of the parent order
+
+    `shipment_status: str`
+    :   Carrier shipment status (e.g. `delivered`, `in_transit`)
+
+    `status: str`
+    :   Fulfillment status (e.g. `pending`, `open`, `success`, `cancelled`)
+
+    `tracking_company: str`
+    :   Name of the shipping carrier
+
+    `tracking_number: str`
+    :   Primary tracking number for the shipment
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the fulfillment was last updated
 
 <a id="InventoryItemsAndCondition"></a>
 
@@ -3261,6 +4416,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `country_code_of_origin: Any`
+    :   ISO country code of the item's country of origin
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the inventory item was created
+
+    `id: Any`
+    :   Unique identifier for the inventory item
+
+    `requires_shipping: Any`
+    :   Whether the item requires shipping
+
+    `sku: Any`
+    :   Stock keeping unit associated with the inventory item
+
+    `tracked: Any`
+    :   Whether Shopify is tracking inventory for this item
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the inventory item was last updated
 
 <a id="InventoryItemsContainsCondition"></a>
 
@@ -3376,6 +4554,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `country_code_of_origin: list[str]`
+    :   ISO country code of the item's country of origin
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the inventory item was created
+
+    `id: list[int]`
+    :   Unique identifier for the inventory item
+
+    `requires_shipping: list[bool]`
+    :   Whether the item requires shipping
+
+    `sku: list[str]`
+    :   Stock keeping unit associated with the inventory item
+
+    `tracked: list[bool]`
+    :   Whether Shopify is tracking inventory for this item
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the inventory item was last updated
 
 <a id="InventoryItemsKeywordCondition"></a>
 
@@ -3517,6 +4718,29 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `country_code_of_origin: str | None`
+    :   ISO country code of the item's country of origin
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the inventory item was created
+
+    `id: int | None`
+    :   Unique identifier for the inventory item
+
+    `requires_shipping: bool | None`
+    :   Whether the item requires shipping
+
+    `sku: str | None`
+    :   Stock keeping unit associated with the inventory item
+
+    `tracked: bool | None`
+    :   Whether Shopify is tracking inventory for this item
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the inventory item was last updated
+
 <a id="InventoryItemsSearchQuery"></a>
 
 `InventoryItemsSearchQuery(*args, **kwargs)`
@@ -3543,6 +4767,29 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `country_code_of_origin: Literal['asc', 'desc']`
+    :   ISO country code of the item's country of origin
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the inventory item was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the inventory item
+
+    `requires_shipping: Literal['asc', 'desc']`
+    :   Whether the item requires shipping
+
+    `sku: Literal['asc', 'desc']`
+    :   Stock keeping unit associated with the inventory item
+
+    `tracked: Literal['asc', 'desc']`
+    :   Whether Shopify is tracking inventory for this item
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the inventory item was last updated
+
 <a id="InventoryItemsStringFilter"></a>
 
 `InventoryItemsStringFilter(*args, **kwargs)`
@@ -3551,6 +4798,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `country_code_of_origin: str`
+    :   ISO country code of the item's country of origin
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the inventory item was created
+
+    `id: str`
+    :   Unique identifier for the inventory item
+
+    `requires_shipping: str`
+    :   Whether the item requires shipping
+
+    `sku: str`
+    :   Stock keeping unit associated with the inventory item
+
+    `tracked: str`
+    :   Whether Shopify is tracking inventory for this item
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the inventory item was last updated
 
 <a id="InventoryLevelsAndCondition"></a>
 
@@ -3604,6 +4874,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `available: Any`
+    :   Number of units available at the location
+
+    `inventory_item_id: Any`
+    :   Identifier of the inventory item
+
+    `location_id: Any`
+    :   Identifier of the location holding the inventory
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the inventory level was last updated
 
 <a id="InventoryLevelsContainsCondition"></a>
 
@@ -3705,6 +4989,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `available: list[int]`
+    :   Number of units available at the location
+
+    `inventory_item_id: list[int]`
+    :   Identifier of the inventory item
+
+    `location_id: list[int]`
+    :   Identifier of the location holding the inventory
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the inventory level was last updated
 
 <a id="InventoryLevelsKeywordCondition"></a>
 
@@ -3846,6 +5144,20 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `available: int | None`
+    :   Number of units available at the location
+
+    `inventory_item_id: int | None`
+    :   Identifier of the inventory item
+
+    `location_id: int | None`
+    :   Identifier of the location holding the inventory
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the inventory level was last updated
+
 <a id="InventoryLevelsSearchQuery"></a>
 
 `InventoryLevelsSearchQuery(*args, **kwargs)`
@@ -3872,6 +5184,20 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `available: Literal['asc', 'desc']`
+    :   Number of units available at the location
+
+    `inventory_item_id: Literal['asc', 'desc']`
+    :   Identifier of the inventory item
+
+    `location_id: Literal['asc', 'desc']`
+    :   Identifier of the location holding the inventory
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the inventory level was last updated
+
 <a id="InventoryLevelsStringFilter"></a>
 
 `InventoryLevelsStringFilter(*args, **kwargs)`
@@ -3880,6 +5206,20 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `available: str`
+    :   Number of units available at the location
+
+    `inventory_item_id: str`
+    :   Identifier of the inventory item
+
+    `location_id: str`
+    :   Identifier of the location holding the inventory
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the inventory level was last updated
 
 <a id="LocationsAndCondition"></a>
 
@@ -3933,6 +5273,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `active: Any`
+    :   Whether the location is currently active
+
+    `address1: Any`
+    :   Primary street address of the location
+
+    `city: Any`
+    :   City of the location
+
+    `country: Any`
+    :   Country name of the location
+
+    `country_code: Any`
+    :   ISO 3166-1 alpha-2 country code of the location
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the location was created
+
+    `id: Any`
+    :   Unique identifier for the location
+
+    `name: Any`
+    :   Display name of the location
+
+    `phone: Any`
+    :   Phone number for the location
+
+    `province: Any`
+    :   Province, state, or region of the location
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the location was last updated
 
 <a id="LocationsContainsCondition"></a>
 
@@ -4048,6 +5423,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `active: list[bool]`
+    :   Whether the location is currently active
+
+    `address1: list[str]`
+    :   Primary street address of the location
+
+    `city: list[str]`
+    :   City of the location
+
+    `country: list[str]`
+    :   Country name of the location
+
+    `country_code: list[str]`
+    :   ISO 3166-1 alpha-2 country code of the location
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the location was created
+
+    `id: list[int]`
+    :   Unique identifier for the location
+
+    `name: list[str]`
+    :   Display name of the location
+
+    `phone: list[str]`
+    :   Phone number for the location
+
+    `province: list[str]`
+    :   Province, state, or region of the location
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the location was last updated
 
 <a id="LocationsKeywordCondition"></a>
 
@@ -4181,6 +5591,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `active: bool | None`
+    :   Whether the location is currently active
+
+    `address1: str | None`
+    :   Primary street address of the location
+
+    `city: str | None`
+    :   City of the location
+
+    `country: str | None`
+    :   Country name of the location
+
+    `country_code: str | None`
+    :   ISO 3166-1 alpha-2 country code of the location
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the location was created
+
+    `id: int | None`
+    :   Unique identifier for the location
+
+    `name: str | None`
+    :   Display name of the location
+
+    `phone: str | None`
+    :   Phone number for the location
+
+    `province: str | None`
+    :   Province, state, or region of the location
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the location was last updated
+
 <a id="LocationsSearchQuery"></a>
 
 `LocationsSearchQuery(*args, **kwargs)`
@@ -4207,6 +5652,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `active: Literal['asc', 'desc']`
+    :   Whether the location is currently active
+
+    `address1: Literal['asc', 'desc']`
+    :   Primary street address of the location
+
+    `city: Literal['asc', 'desc']`
+    :   City of the location
+
+    `country: Literal['asc', 'desc']`
+    :   Country name of the location
+
+    `country_code: Literal['asc', 'desc']`
+    :   ISO 3166-1 alpha-2 country code of the location
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the location was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the location
+
+    `name: Literal['asc', 'desc']`
+    :   Display name of the location
+
+    `phone: Literal['asc', 'desc']`
+    :   Phone number for the location
+
+    `province: Literal['asc', 'desc']`
+    :   Province, state, or region of the location
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the location was last updated
+
 <a id="LocationsStringFilter"></a>
 
 `LocationsStringFilter(*args, **kwargs)`
@@ -4215,6 +5695,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `active: str`
+    :   Whether the location is currently active
+
+    `address1: str`
+    :   Primary street address of the location
+
+    `city: str`
+    :   City of the location
+
+    `country: str`
+    :   Country name of the location
+
+    `country_code: str`
+    :   ISO 3166-1 alpha-2 country code of the location
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the location was created
+
+    `id: str`
+    :   Unique identifier for the location
+
+    `name: str`
+    :   Display name of the location
+
+    `phone: str`
+    :   Phone number for the location
+
+    `province: str`
+    :   Province, state, or region of the location
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the location was last updated
 
 <a id="MetafieldCustomersAndCondition"></a>
 
@@ -4268,6 +5783,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldCustomersContainsCondition"></a>
 
@@ -4369,6 +5916,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldCustomersKeywordCondition"></a>
 
@@ -4519,6 +6098,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldCustomersSearchQuery"></a>
 
 `MetafieldCustomersSearchQuery(*args, **kwargs)`
@@ -4545,6 +6156,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldCustomersStringFilter"></a>
 
 `MetafieldCustomersStringFilter(*args, **kwargs)`
@@ -4553,6 +6196,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldDraftOrdersAndCondition"></a>
 
@@ -4606,6 +6281,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldDraftOrdersContainsCondition"></a>
 
@@ -4707,6 +6414,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldDraftOrdersKeywordCondition"></a>
 
@@ -4857,6 +6596,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldDraftOrdersSearchQuery"></a>
 
 `MetafieldDraftOrdersSearchQuery(*args, **kwargs)`
@@ -4883,6 +6654,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldDraftOrdersStringFilter"></a>
 
 `MetafieldDraftOrdersStringFilter(*args, **kwargs)`
@@ -4891,6 +6694,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldLocationsAndCondition"></a>
 
@@ -4944,6 +6779,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldLocationsContainsCondition"></a>
 
@@ -5045,6 +6912,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldLocationsKeywordCondition"></a>
 
@@ -5195,6 +7094,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldLocationsSearchQuery"></a>
 
 `MetafieldLocationsSearchQuery(*args, **kwargs)`
@@ -5221,6 +7152,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldLocationsStringFilter"></a>
 
 `MetafieldLocationsStringFilter(*args, **kwargs)`
@@ -5229,6 +7192,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldOrdersAndCondition"></a>
 
@@ -5282,6 +7277,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldOrdersContainsCondition"></a>
 
@@ -5383,6 +7410,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldOrdersKeywordCondition"></a>
 
@@ -5533,6 +7592,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldOrdersSearchQuery"></a>
 
 `MetafieldOrdersSearchQuery(*args, **kwargs)`
@@ -5559,6 +7650,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldOrdersStringFilter"></a>
 
 `MetafieldOrdersStringFilter(*args, **kwargs)`
@@ -5567,6 +7690,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductImagesAndCondition"></a>
 
@@ -5620,6 +7775,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductImagesContainsCondition"></a>
 
@@ -5721,6 +7908,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductImagesKeywordCondition"></a>
 
@@ -5874,6 +8093,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldProductImagesSearchQuery"></a>
 
 `MetafieldProductImagesSearchQuery(*args, **kwargs)`
@@ -5900,6 +8151,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldProductImagesStringFilter"></a>
 
 `MetafieldProductImagesStringFilter(*args, **kwargs)`
@@ -5908,6 +8191,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductVariantsAndCondition"></a>
 
@@ -5961,6 +8276,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductVariantsContainsCondition"></a>
 
@@ -6062,6 +8409,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductVariantsKeywordCondition"></a>
 
@@ -6212,6 +8591,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldProductVariantsSearchQuery"></a>
 
 `MetafieldProductVariantsSearchQuery(*args, **kwargs)`
@@ -6238,6 +8649,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldProductVariantsStringFilter"></a>
 
 `MetafieldProductVariantsStringFilter(*args, **kwargs)`
@@ -6246,6 +8689,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductsAndCondition"></a>
 
@@ -6299,6 +8774,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductsContainsCondition"></a>
 
@@ -6400,6 +8907,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldProductsKeywordCondition"></a>
 
@@ -6550,6 +9089,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldProductsSearchQuery"></a>
 
 `MetafieldProductsSearchQuery(*args, **kwargs)`
@@ -6576,6 +9147,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldProductsStringFilter"></a>
 
 `MetafieldProductsStringFilter(*args, **kwargs)`
@@ -6584,6 +9187,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldShopsAndCondition"></a>
 
@@ -6637,6 +9272,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldShopsContainsCondition"></a>
 
@@ -6752,6 +9419,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldShopsKeywordCondition"></a>
 
@@ -6902,6 +9601,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldShopsSearchQuery"></a>
 
 `MetafieldShopsSearchQuery(*args, **kwargs)`
@@ -6928,6 +9659,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldShopsStringFilter"></a>
 
 `MetafieldShopsStringFilter(*args, **kwargs)`
@@ -6936,6 +9699,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldSmartCollectionsAndCondition"></a>
 
@@ -6989,6 +9784,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Any`
+    :   Human-readable description of the metafield
+
+    `id: Any`
+    :   Unique identifier for the metafield
+
+    `key: Any`
+    :   Key of the metafield within its namespace
+
+    `namespace: Any`
+    :   Namespace group for the metafield
+
+    `owner_id: Any`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Any`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Any`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Any`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldSmartCollectionsContainsCondition"></a>
 
@@ -7090,6 +9917,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: list[str]`
+    :   Human-readable description of the metafield
+
+    `id: list[int]`
+    :   Unique identifier for the metafield
+
+    `key: list[str]`
+    :   Key of the metafield within its namespace
+
+    `namespace: list[str]`
+    :   Namespace group for the metafield
+
+    `owner_id: list[int]`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: list[str]`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: list[str]`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: list[str]`
+    :   Serialized value stored in the metafield
 
 <a id="MetafieldSmartCollectionsKeywordCondition"></a>
 
@@ -7240,6 +10099,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Key of the metafield within its namespace
+
+    `namespace: str | None`
+    :   Namespace group for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str | None`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldSmartCollectionsSearchQuery"></a>
 
 `MetafieldSmartCollectionsSearchQuery(*args, **kwargs)`
@@ -7266,6 +10157,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: Literal['asc', 'desc']`
+    :   Human-readable description of the metafield
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the metafield
+
+    `key: Literal['asc', 'desc']`
+    :   Key of the metafield within its namespace
+
+    `namespace: Literal['asc', 'desc']`
+    :   Namespace group for the metafield
+
+    `owner_id: Literal['asc', 'desc']`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: Literal['asc', 'desc']`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: Literal['asc', 'desc']`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Serialized value stored in the metafield
+
 <a id="MetafieldSmartCollectionsStringFilter"></a>
 
 `MetafieldSmartCollectionsStringFilter(*args, **kwargs)`
@@ -7274,6 +10197,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str`
+    :   Human-readable description of the metafield
+
+    `id: str`
+    :   Unique identifier for the metafield
+
+    `key: str`
+    :   Key of the metafield within its namespace
+
+    `namespace: str`
+    :   Namespace group for the metafield
+
+    `owner_id: str`
+    :   Identifier of the resource that owns this metafield
+
+    `owner_resource: str`
+    :   Resource type that owns this metafield (e.g. `product`, `customer`)
+
+    `type_: str`
+    :   Shopify metafield type (e.g. `single_line_text_field`, `json`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str`
+    :   Serialized value stored in the metafield
 
 <a id="OrderRefundsAndCondition"></a>
 
@@ -7327,6 +10282,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the refund was created
+
+    `id: Any`
+    :   Unique identifier for the refund
+
+    `note: Any`
+    :   Merchant-provided note explaining the refund
+
+    `order_id: Any`
+    :   Identifier of the refunded order
+
+    `processed_at: Any`
+    :   ISO 8601 timestamp when the refund was processed
+
+    `user_id: Any`
+    :   Identifier of the staff user who processed the refund
 
 <a id="OrderRefundsContainsCondition"></a>
 
@@ -7445,6 +10420,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the refund was created
+
+    `id: list[int]`
+    :   Unique identifier for the refund
+
+    `note: list[str]`
+    :   Merchant-provided note explaining the refund
+
+    `order_id: list[int]`
+    :   Identifier of the refunded order
+
+    `processed_at: list[str]`
+    :   ISO 8601 timestamp when the refund was processed
+
+    `user_id: list[int]`
+    :   Identifier of the staff user who processed the refund
 
 <a id="OrderRefundsKeywordCondition"></a>
 
@@ -7586,6 +10581,26 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the refund was created
+
+    `id: int | None`
+    :   Unique identifier for the refund
+
+    `note: str | None`
+    :   Merchant-provided note explaining the refund
+
+    `order_id: int | None`
+    :   Identifier of the refunded order
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the refund was processed
+
+    `user_id: int | None`
+    :   Identifier of the staff user who processed the refund
+
 <a id="OrderRefundsSearchQuery"></a>
 
 `OrderRefundsSearchQuery(*args, **kwargs)`
@@ -7612,6 +10627,26 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the refund was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the refund
+
+    `note: Literal['asc', 'desc']`
+    :   Merchant-provided note explaining the refund
+
+    `order_id: Literal['asc', 'desc']`
+    :   Identifier of the refunded order
+
+    `processed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the refund was processed
+
+    `user_id: Literal['asc', 'desc']`
+    :   Identifier of the staff user who processed the refund
+
 <a id="OrderRefundsStringFilter"></a>
 
 `OrderRefundsStringFilter(*args, **kwargs)`
@@ -7620,6 +10655,26 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the refund was created
+
+    `id: str`
+    :   Unique identifier for the refund
+
+    `note: str`
+    :   Merchant-provided note explaining the refund
+
+    `order_id: str`
+    :   Identifier of the refunded order
+
+    `processed_at: str`
+    :   ISO 8601 timestamp when the refund was processed
+
+    `user_id: str`
+    :   Identifier of the staff user who processed the refund
 
 <a id="OrdersGetParams"></a>
 
@@ -7725,6 +10780,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `allocation_method: Any`
+    :   How the discount is allocated (`each` or `across`)
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the rule was created
+
+    `ends_at: Any`
+    :   ISO 8601 timestamp when the rule stops being active, if applicable
+
+    `id: Any`
+    :   Unique identifier for the price rule
+
+    `starts_at: Any`
+    :   ISO 8601 timestamp when the rule starts being active
+
+    `target_selection: Any`
+    :   Which target items the rule applies to (`all` or `entitled`)
+
+    `target_type: Any`
+    :   Type of target the rule applies to (`line_item` or `shipping_line`)
+
+    `title: Any`
+    :   Administrative title of the price rule
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the rule was last updated
+
+    `value: Any`
+    :   Discount value applied by the rule
+
+    `value_type: Any`
+    :   How the discount value is interpreted (`fixed_amount` or `percentage`)
 
 <a id="PriceRulesContainsCondition"></a>
 
@@ -7840,6 +10930,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `allocation_method: list[str]`
+    :   How the discount is allocated (`each` or `across`)
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the rule was created
+
+    `ends_at: list[str]`
+    :   ISO 8601 timestamp when the rule stops being active, if applicable
+
+    `id: list[int]`
+    :   Unique identifier for the price rule
+
+    `starts_at: list[str]`
+    :   ISO 8601 timestamp when the rule starts being active
+
+    `target_selection: list[str]`
+    :   Which target items the rule applies to (`all` or `entitled`)
+
+    `target_type: list[str]`
+    :   Type of target the rule applies to (`line_item` or `shipping_line`)
+
+    `title: list[str]`
+    :   Administrative title of the price rule
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the rule was last updated
+
+    `value: list[str]`
+    :   Discount value applied by the rule
+
+    `value_type: list[str]`
+    :   How the discount value is interpreted (`fixed_amount` or `percentage`)
 
 <a id="PriceRulesKeywordCondition"></a>
 
@@ -7993,6 +11118,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `allocation_method: str | None`
+    :   How the discount is allocated (`each` or `across`)
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the rule was created
+
+    `ends_at: str | None`
+    :   ISO 8601 timestamp when the rule stops being active, if applicable
+
+    `id: int | None`
+    :   Unique identifier for the price rule
+
+    `starts_at: str | None`
+    :   ISO 8601 timestamp when the rule starts being active
+
+    `target_selection: str | None`
+    :   Which target items the rule applies to (`all` or `entitled`)
+
+    `target_type: str | None`
+    :   Type of target the rule applies to (`line_item` or `shipping_line`)
+
+    `title: str | None`
+    :   Administrative title of the price rule
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the rule was last updated
+
+    `value: str | None`
+    :   Discount value applied by the rule
+
+    `value_type: str | None`
+    :   How the discount value is interpreted (`fixed_amount` or `percentage`)
+
 <a id="PriceRulesSearchQuery"></a>
 
 `PriceRulesSearchQuery(*args, **kwargs)`
@@ -8019,6 +11179,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `allocation_method: Literal['asc', 'desc']`
+    :   How the discount is allocated (`each` or `across`)
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the rule was created
+
+    `ends_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the rule stops being active, if applicable
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the price rule
+
+    `starts_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the rule starts being active
+
+    `target_selection: Literal['asc', 'desc']`
+    :   Which target items the rule applies to (`all` or `entitled`)
+
+    `target_type: Literal['asc', 'desc']`
+    :   Type of target the rule applies to (`line_item` or `shipping_line`)
+
+    `title: Literal['asc', 'desc']`
+    :   Administrative title of the price rule
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the rule was last updated
+
+    `value: Literal['asc', 'desc']`
+    :   Discount value applied by the rule
+
+    `value_type: Literal['asc', 'desc']`
+    :   How the discount value is interpreted (`fixed_amount` or `percentage`)
+
 <a id="PriceRulesStringFilter"></a>
 
 `PriceRulesStringFilter(*args, **kwargs)`
@@ -8027,6 +11222,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `allocation_method: str`
+    :   How the discount is allocated (`each` or `across`)
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the rule was created
+
+    `ends_at: str`
+    :   ISO 8601 timestamp when the rule stops being active, if applicable
+
+    `id: str`
+    :   Unique identifier for the price rule
+
+    `starts_at: str`
+    :   ISO 8601 timestamp when the rule starts being active
+
+    `target_selection: str`
+    :   Which target items the rule applies to (`all` or `entitled`)
+
+    `target_type: str`
+    :   Type of target the rule applies to (`line_item` or `shipping_line`)
+
+    `title: str`
+    :   Administrative title of the price rule
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the rule was last updated
+
+    `value: str`
+    :   Discount value applied by the rule
+
+    `value_type: str`
+    :   How the discount value is interpreted (`fixed_amount` or `percentage`)
 
 <a id="ProductImagesAndCondition"></a>
 
@@ -8080,6 +11310,35 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `alt: Any`
+    :   Alt text for the image
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the image was created
+
+    `height: Any`
+    :   Image height in pixels
+
+    `id: Any`
+    :   Unique identifier for the product image
+
+    `position: Any`
+    :   Display position of the image within the product
+
+    `product_id: Any`
+    :   Identifier of the product the image belongs to
+
+    `src: Any`
+    :   Public URL of the image
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the image was last updated
+
+    `width: Any`
+    :   Image width in pixels
 
 <a id="ProductImagesContainsCondition"></a>
 
@@ -8198,6 +11457,35 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `alt: list[str]`
+    :   Alt text for the image
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the image was created
+
+    `height: list[int]`
+    :   Image height in pixels
+
+    `id: list[int]`
+    :   Unique identifier for the product image
+
+    `position: list[int]`
+    :   Display position of the image within the product
+
+    `product_id: list[int]`
+    :   Identifier of the product the image belongs to
+
+    `src: list[str]`
+    :   Public URL of the image
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the image was last updated
+
+    `width: list[int]`
+    :   Image width in pixels
 
 <a id="ProductImagesKeywordCondition"></a>
 
@@ -8339,6 +11627,35 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `alt: str | None`
+    :   Alt text for the image
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the image was created
+
+    `height: int | None`
+    :   Image height in pixels
+
+    `id: int | None`
+    :   Unique identifier for the product image
+
+    `position: int | None`
+    :   Display position of the image within the product
+
+    `product_id: int | None`
+    :   Identifier of the product the image belongs to
+
+    `src: str | None`
+    :   Public URL of the image
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the image was last updated
+
+    `width: int | None`
+    :   Image width in pixels
+
 <a id="ProductImagesSearchQuery"></a>
 
 `ProductImagesSearchQuery(*args, **kwargs)`
@@ -8365,6 +11682,35 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `alt: Literal['asc', 'desc']`
+    :   Alt text for the image
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the image was created
+
+    `height: Literal['asc', 'desc']`
+    :   Image height in pixels
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the product image
+
+    `position: Literal['asc', 'desc']`
+    :   Display position of the image within the product
+
+    `product_id: Literal['asc', 'desc']`
+    :   Identifier of the product the image belongs to
+
+    `src: Literal['asc', 'desc']`
+    :   Public URL of the image
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the image was last updated
+
+    `width: Literal['asc', 'desc']`
+    :   Image width in pixels
+
 <a id="ProductImagesStringFilter"></a>
 
 `ProductImagesStringFilter(*args, **kwargs)`
@@ -8373,6 +11719,35 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `alt: str`
+    :   Alt text for the image
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the image was created
+
+    `height: str`
+    :   Image height in pixels
+
+    `id: str`
+    :   Unique identifier for the product image
+
+    `position: str`
+    :   Display position of the image within the product
+
+    `product_id: str`
+    :   Identifier of the product the image belongs to
+
+    `src: str`
+    :   Public URL of the image
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the image was last updated
+
+    `width: str`
+    :   Image width in pixels
 
 <a id="ProductVariantsAndCondition"></a>
 
@@ -8426,6 +11801,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `compare_at_price: Any`
+    :   Original (compare-at) price of the variant, if set
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the variant was created
+
+    `id: Any`
+    :   Unique identifier for the product variant
+
+    `inventory_policy: Any`
+    :   Behaviour when out of stock (`deny` or `continue`)
+
+    `position: Any`
+    :   Display position of the variant within the product
+
+    `price: Any`
+    :   Price of the variant in the shop's currency
+
+    `product_id: Any`
+    :   Identifier of the parent product
+
+    `sku: Any`
+    :   Stock keeping unit for the variant
+
+    `title: Any`
+    :   Display title of the variant
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the variant was last updated
 
 <a id="ProductVariantsContainsCondition"></a>
 
@@ -8541,6 +11948,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `compare_at_price: list[str]`
+    :   Original (compare-at) price of the variant, if set
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the variant was created
+
+    `id: list[int]`
+    :   Unique identifier for the product variant
+
+    `inventory_policy: list[str]`
+    :   Behaviour when out of stock (`deny` or `continue`)
+
+    `position: list[int]`
+    :   Display position of the variant within the product
+
+    `price: list[str]`
+    :   Price of the variant in the shop's currency
+
+    `product_id: list[int]`
+    :   Identifier of the parent product
+
+    `sku: list[str]`
+    :   Stock keeping unit for the variant
+
+    `title: list[str]`
+    :   Display title of the variant
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the variant was last updated
 
 <a id="ProductVariantsKeywordCondition"></a>
 
@@ -8685,6 +12124,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `compare_at_price: str | None`
+    :   Original (compare-at) price of the variant, if set
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the variant was created
+
+    `id: int | None`
+    :   Unique identifier for the product variant
+
+    `inventory_policy: str | None`
+    :   Behaviour when out of stock (`deny` or `continue`)
+
+    `position: int | None`
+    :   Display position of the variant within the product
+
+    `price: str | None`
+    :   Price of the variant in the shop's currency
+
+    `product_id: int | None`
+    :   Identifier of the parent product
+
+    `sku: str | None`
+    :   Stock keeping unit for the variant
+
+    `title: str | None`
+    :   Display title of the variant
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the variant was last updated
+
 <a id="ProductVariantsSearchQuery"></a>
 
 `ProductVariantsSearchQuery(*args, **kwargs)`
@@ -8711,6 +12182,38 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `compare_at_price: Literal['asc', 'desc']`
+    :   Original (compare-at) price of the variant, if set
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the variant was created
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the product variant
+
+    `inventory_policy: Literal['asc', 'desc']`
+    :   Behaviour when out of stock (`deny` or `continue`)
+
+    `position: Literal['asc', 'desc']`
+    :   Display position of the variant within the product
+
+    `price: Literal['asc', 'desc']`
+    :   Price of the variant in the shop's currency
+
+    `product_id: Literal['asc', 'desc']`
+    :   Identifier of the parent product
+
+    `sku: Literal['asc', 'desc']`
+    :   Stock keeping unit for the variant
+
+    `title: Literal['asc', 'desc']`
+    :   Display title of the variant
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the variant was last updated
+
 <a id="ProductVariantsStringFilter"></a>
 
 `ProductVariantsStringFilter(*args, **kwargs)`
@@ -8719,6 +12222,38 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `compare_at_price: str`
+    :   Original (compare-at) price of the variant, if set
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the variant was created
+
+    `id: str`
+    :   Unique identifier for the product variant
+
+    `inventory_policy: str`
+    :   Behaviour when out of stock (`deny` or `continue`)
+
+    `position: str`
+    :   Display position of the variant within the product
+
+    `price: str`
+    :   Price of the variant in the shop's currency
+
+    `product_id: str`
+    :   Identifier of the parent product
+
+    `sku: str`
+    :   Stock keeping unit for the variant
+
+    `title: str`
+    :   Display title of the variant
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the variant was last updated
 
 <a id="ProductsGetParams"></a>
 
@@ -8827,6 +12362,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `country_code: Any`
+    :   ISO 3166-1 alpha-2 country code of the shop
+
+    `created_at: Any`
+    :   ISO 8601 timestamp when the shop was created
+
+    `currency: Any`
+    :   ISO 4217 currency code used by the shop
+
+    `domain: Any`
+    :   Custom domain configured for the shop, if any
+
+    `email: Any`
+    :   Primary contact email for the shop
+
+    `id: Any`
+    :   Unique identifier for the shop
+
+    `myshopify_domain: Any`
+    :   Canonical `*.myshopify.com` domain for the shop
+
+    `name: Any`
+    :   Display name of the shop
+
+    `plan_name: Any`
+    :   Shopify plan identifier (e.g. `shopify_plus`, `basic`)
+
+    `timezone: Any`
+    :   Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`)
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the shop was last updated
 
 <a id="ShopContainsCondition"></a>
 
@@ -8937,6 +12507,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `country_code: list[str]`
+    :   ISO 3166-1 alpha-2 country code of the shop
+
+    `created_at: list[str]`
+    :   ISO 8601 timestamp when the shop was created
+
+    `currency: list[str]`
+    :   ISO 4217 currency code used by the shop
+
+    `domain: list[str]`
+    :   Custom domain configured for the shop, if any
+
+    `email: list[str]`
+    :   Primary contact email for the shop
+
+    `id: list[int]`
+    :   Unique identifier for the shop
+
+    `myshopify_domain: list[str]`
+    :   Canonical `*.myshopify.com` domain for the shop
+
+    `name: list[str]`
+    :   Display name of the shop
+
+    `plan_name: list[str]`
+    :   Shopify plan identifier (e.g. `shopify_plus`, `basic`)
+
+    `timezone: list[str]`
+    :   Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`)
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the shop was last updated
 
 <a id="ShopKeywordCondition"></a>
 
@@ -9061,6 +12666,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `country_code: str | None`
+    :   ISO 3166-1 alpha-2 country code of the shop
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the shop was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code used by the shop
+
+    `domain: str | None`
+    :   Custom domain configured for the shop, if any
+
+    `email: str | None`
+    :   Primary contact email for the shop
+
+    `id: int | None`
+    :   Unique identifier for the shop
+
+    `myshopify_domain: str | None`
+    :   Canonical `*.myshopify.com` domain for the shop
+
+    `name: str | None`
+    :   Display name of the shop
+
+    `plan_name: str | None`
+    :   Shopify plan identifier (e.g. `shopify_plus`, `basic`)
+
+    `timezone: str | None`
+    :   Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`)
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the shop was last updated
+
 <a id="ShopSearchQuery"></a>
 
 `ShopSearchQuery(*args, **kwargs)`
@@ -9087,6 +12727,41 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `country_code: Literal['asc', 'desc']`
+    :   ISO 3166-1 alpha-2 country code of the shop
+
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the shop was created
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code used by the shop
+
+    `domain: Literal['asc', 'desc']`
+    :   Custom domain configured for the shop, if any
+
+    `email: Literal['asc', 'desc']`
+    :   Primary contact email for the shop
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the shop
+
+    `myshopify_domain: Literal['asc', 'desc']`
+    :   Canonical `*.myshopify.com` domain for the shop
+
+    `name: Literal['asc', 'desc']`
+    :   Display name of the shop
+
+    `plan_name: Literal['asc', 'desc']`
+    :   Shopify plan identifier (e.g. `shopify_plus`, `basic`)
+
+    `timezone: Literal['asc', 'desc']`
+    :   Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`)
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the shop was last updated
+
 <a id="ShopStringFilter"></a>
 
 `ShopStringFilter(*args, **kwargs)`
@@ -9095,6 +12770,41 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `country_code: str`
+    :   ISO 3166-1 alpha-2 country code of the shop
+
+    `created_at: str`
+    :   ISO 8601 timestamp when the shop was created
+
+    `currency: str`
+    :   ISO 4217 currency code used by the shop
+
+    `domain: str`
+    :   Custom domain configured for the shop, if any
+
+    `email: str`
+    :   Primary contact email for the shop
+
+    `id: str`
+    :   Unique identifier for the shop
+
+    `myshopify_domain: str`
+    :   Canonical `*.myshopify.com` domain for the shop
+
+    `name: str`
+    :   Display name of the shop
+
+    `plan_name: str`
+    :   Shopify plan identifier (e.g. `shopify_plus`, `basic`)
+
+    `timezone: str`
+    :   Timezone configured for the shop (e.g. `(GMT-05:00) Eastern Time`)
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the shop was last updated
 
 <a id="SmartCollectionsAndCondition"></a>
 
@@ -9148,6 +12858,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `handle: Any`
+    :   URL-friendly handle for the smart collection
+
+    `id: Any`
+    :   Unique identifier for the smart collection
+
+    `published_at: Any`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: Any`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: Any`
+    :   How products are sorted within the collection
+
+    `title: Any`
+    :   Display title of the smart collection
+
+    `updated_at: Any`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="SmartCollectionsContainsCondition"></a>
 
@@ -9263,6 +12996,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `handle: list[str]`
+    :   URL-friendly handle for the smart collection
+
+    `id: list[int]`
+    :   Unique identifier for the smart collection
+
+    `published_at: list[str]`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: list[str]`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: list[str]`
+    :   How products are sorted within the collection
+
+    `title: list[str]`
+    :   Display title of the smart collection
+
+    `updated_at: list[str]`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="SmartCollectionsKeywordCondition"></a>
 
@@ -9416,6 +13172,29 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `handle: str | None`
+    :   URL-friendly handle for the smart collection
+
+    `id: int | None`
+    :   Unique identifier for the smart collection
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: str | None`
+    :   How products are sorted within the collection
+
+    `title: str | None`
+    :   Display title of the smart collection
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the collection was last updated
+
 <a id="SmartCollectionsSearchQuery"></a>
 
 `SmartCollectionsSearchQuery(*args, **kwargs)`
@@ -9442,6 +13221,29 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `handle: Literal['asc', 'desc']`
+    :   URL-friendly handle for the smart collection
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the smart collection
+
+    `published_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: Literal['asc', 'desc']`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: Literal['asc', 'desc']`
+    :   How products are sorted within the collection
+
+    `title: Literal['asc', 'desc']`
+    :   Display title of the smart collection
+
+    `updated_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the collection was last updated
+
 <a id="SmartCollectionsStringFilter"></a>
 
 `SmartCollectionsStringFilter(*args, **kwargs)`
@@ -9450,6 +13252,29 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `handle: str`
+    :   URL-friendly handle for the smart collection
+
+    `id: str`
+    :   Unique identifier for the smart collection
+
+    `published_at: str`
+    :   ISO 8601 timestamp when the collection was published
+
+    `published_scope: str`
+    :   Publishing scope (`web` or `global`)
+
+    `sort_order: str`
+    :   How products are sorted within the collection
+
+    `title: str`
+    :   Display title of the smart collection
+
+    `updated_at: str`
+    :   ISO 8601 timestamp when the collection was last updated
 
 <a id="TenderTransactionsAndCondition"></a>
 
@@ -9503,6 +13328,32 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `amount: Any`
+    :   Amount of the transaction in the shop's currency
+
+    `currency: Any`
+    :   ISO 4217 currency code for the transaction amount
+
+    `id: Any`
+    :   Unique identifier for the tender transaction
+
+    `order_id: Any`
+    :   Identifier of the order the transaction belongs to
+
+    `payment_method: Any`
+    :   Payment method used (e.g. `credit_card`, `paypal`)
+
+    `processed_at: Any`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `test: Any`
+    :   Whether the transaction was a test transaction
+
+    `user_id: Any`
+    :   Identifier of the staff user who processed the transaction
 
 <a id="TenderTransactionsContainsCondition"></a>
 
@@ -9604,6 +13455,32 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `amount: list[str]`
+    :   Amount of the transaction in the shop's currency
+
+    `currency: list[str]`
+    :   ISO 4217 currency code for the transaction amount
+
+    `id: list[int]`
+    :   Unique identifier for the tender transaction
+
+    `order_id: list[int]`
+    :   Identifier of the order the transaction belongs to
+
+    `payment_method: list[str]`
+    :   Payment method used (e.g. `credit_card`, `paypal`)
+
+    `processed_at: list[str]`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `test: list[bool]`
+    :   Whether the transaction was a test transaction
+
+    `user_id: list[int]`
+    :   Identifier of the staff user who processed the transaction
 
 <a id="TenderTransactionsKeywordCondition"></a>
 
@@ -9754,6 +13631,32 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `amount: str | None`
+    :   Amount of the transaction in the shop's currency
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the transaction amount
+
+    `id: int | None`
+    :   Unique identifier for the tender transaction
+
+    `order_id: int | None`
+    :   Identifier of the order the transaction belongs to
+
+    `payment_method: str | None`
+    :   Payment method used (e.g. `credit_card`, `paypal`)
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `test: bool | None`
+    :   Whether the transaction was a test transaction
+
+    `user_id: int | None`
+    :   Identifier of the staff user who processed the transaction
+
 <a id="TenderTransactionsSearchQuery"></a>
 
 `TenderTransactionsSearchQuery(*args, **kwargs)`
@@ -9780,6 +13683,32 @@ Classes
 
     * builtins.dict
 
+    ### Class variables
+
+    `amount: Literal['asc', 'desc']`
+    :   Amount of the transaction in the shop's currency
+
+    `currency: Literal['asc', 'desc']`
+    :   ISO 4217 currency code for the transaction amount
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the tender transaction
+
+    `order_id: Literal['asc', 'desc']`
+    :   Identifier of the order the transaction belongs to
+
+    `payment_method: Literal['asc', 'desc']`
+    :   Payment method used (e.g. `credit_card`, `paypal`)
+
+    `processed_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `test: Literal['asc', 'desc']`
+    :   Whether the transaction was a test transaction
+
+    `user_id: Literal['asc', 'desc']`
+    :   Identifier of the staff user who processed the transaction
+
 <a id="TenderTransactionsStringFilter"></a>
 
 `TenderTransactionsStringFilter(*args, **kwargs)`
@@ -9788,6 +13717,32 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   Amount of the transaction in the shop's currency
+
+    `currency: str`
+    :   ISO 4217 currency code for the transaction amount
+
+    `id: str`
+    :   Unique identifier for the tender transaction
+
+    `order_id: str`
+    :   Identifier of the order the transaction belongs to
+
+    `payment_method: str`
+    :   Payment method used (e.g. `credit_card`, `paypal`)
+
+    `processed_at: str`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `test: str`
+    :   Whether the transaction was a test transaction
+
+    `user_id: str`
+    :   Identifier of the staff user who processed the transaction
 
 <a id="TransactionsGetParams"></a>
 

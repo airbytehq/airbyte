@@ -1,5 +1,6 @@
 ---
-sidebar_position: 2
+plan: all
+sidebar_position: 1
 sidebar_label: Claude Code
 ---
 
