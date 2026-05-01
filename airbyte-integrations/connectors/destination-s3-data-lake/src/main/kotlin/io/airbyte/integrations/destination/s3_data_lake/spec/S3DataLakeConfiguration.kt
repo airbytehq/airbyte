@@ -33,7 +33,11 @@ data class S3DataLakeConfiguration(
     }
 
     val resolvedFlushBatchSizeBytes: Long
-        get() = (flushBatchSizeMb ?: Defaults.FLUSH_BATCH_SIZE_MB) * 1024L * 1024L
+        get() {
+            val mb = flushBatchSizeMb ?: Defaults.FLUSH_BATCH_SIZE_MB
+            require(mb >= 1) { "flush_batch_size_mb must be at least 1, got $mb" }
+            return mb * 1024L * 1024L
+        }
 }
 
 @Singleton
