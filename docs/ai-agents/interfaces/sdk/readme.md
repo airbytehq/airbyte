@@ -34,39 +34,28 @@ The install name uses dashes. The Python import name uses underscores: `from air
 
 ## End-to-end example
 
-The example below authenticates with Airbyte, adds a GitHub connector, and executes an operation against it. The pages in this section explain each step in detail.
+The example below authenticates with Airbyte and executes an operation against a GitHub connector. Before running this code, [add a GitHub connector](./add-connector) to your workspace through the [web app](../ui/add-connector) or the [REST API](../api/add-connector). The pages in this section explain each step in detail.
 
 ```python title="agent.py"
 import asyncio
-from airbyte_agent_sdk import Workspace, connect
+from airbyte_agent_sdk import connect
 
 async def main():
     # Authenticate. The SDK reads AIRBYTE_CLIENT_ID and AIRBYTE_CLIENT_SECRET
     # from the environment.
-    async with Workspace() as ws:
-        # Add a connector.
-        await ws.create_connector(
-            definition_id="<github_definition_id>",
-            name="My GitHub Connector",
-            credentials={
-                "option_title": "PAT Credentials",
-                "personal_access_token": "<github_pat>",
-            },
-            replication_config={"repositories": ["airbytehq/airbyte"]},
-        )
 
-        # Execute an operation against the connector. `connect()` resolves the
-        # connector by its slug within the current workspace. No ID needed
-        # when the workspace has one connector of this type.
-        github = connect("github")
-        try:
-            # Parameter names are connector- and entity-specific. Call
-            # `github.list_entities()` to see what each entity accepts.
-            result = await github.execute("issues", "list", params={"per_page": 10})
-            for row in result.data:
-                print(row)
-        finally:
-            await github.close()
+    # Execute an operation against the connector. `connect()` resolves the
+    # connector by its slug within the current workspace. No ID needed
+    # when the workspace has one connector of this type.
+    github = connect("github")
+    try:
+        # Parameter names are connector- and entity-specific. Call
+        # `github.list_entities()` to see what each entity accepts.
+        result = await github.execute("issues", "list", params={"per_page": 10})
+        for row in result.data:
+            print(row)
+    finally:
+        await github.close()
 
 asyncio.run(main())
 ```
