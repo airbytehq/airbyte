@@ -14,6 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
+from source_github.errors_handlers import is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -26,6 +27,7 @@ from source_github.streams import (
     GithubStreamABCBackoffStrategy,
     IssueEvents,
     IssueLabels,
+    Issues,
     IssueMilestones,
     IssueTimelineEvents,
     Organizations,
@@ -196,6 +198,77 @@ def test_rate_limit_403_retries(response_headers):
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
     assert result.failure_type == FailureType.transient_error
+
+
+@pytest.mark.parametrize(
+    "status_code,body,expected",
+    [
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Issues are disabled for this repo"},
+            True,
+            id="issues_disabled",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Projects are disabled for this repository"},
+            True,
+            id="projects_disabled",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Some other gone message"},
+            False,
+            id="unrelated_410_message",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {},
+            False,
+            id="empty_body",
+        ),
+        pytest.param(
+            requests.codes.NOT_FOUND,
+            {"message": "Issues are disabled for this repo"},
+            False,
+            id="non_410_status",
+        ),
+    ],
+)
+def test_is_gone_with_feature_disabled(status_code, body, expected):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = status_code
+    response_mock.json = lambda: body
+    assert is_gone_with_feature_disabled(response_mock) is expected
+
+
+def test_error_handler_410_feature_disabled_returns_ignore():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Issues are disabled for this repo"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+    response_mock.url = "https://api.github.com/repos/test_repo/issues"
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.IGNORE
+    assert result.failure_type == FailureType.config_error
+
+
+def test_error_handler_410_unknown_body_returns_fail():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Something else entirely"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
 
 
 @patch("time.sleep")
@@ -421,8 +494,7 @@ def test_stream_repositories_read(requests_mock):
     ] == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
-@patch("time.sleep")
-def test_stream_projects_disabled(time_mock, requests_mock):
+def test_stream_projects_disabled(requests_mock):
     repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
 
     stream = Projects(**repository_args_with_start_date)
@@ -433,10 +505,28 @@ def test_stream_projects_disabled(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
+
+
+def test_stream_issues_disabled(requests_mock):
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 30,
+        "repositories": ["test_repo"],
+    }
+
+    stream = Issues(**repository_args_with_start_date)
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/issues",
+        status_code=requests.codes.GONE,
+        json={"message": "Issues are disabled for this repo"},
+    )
+
+    assert list(read_full_refresh(stream)) == []
+    assert requests_mock.call_count == 1
 
 
 def test_stream_pull_requests_incremental_read(requests_mock):

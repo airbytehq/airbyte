@@ -174,10 +174,6 @@ class GithubStreamABC(HttpStream, ABC):
                     error_msg = str(e._exception.response.json().get("message"))
                     self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
                 raise e
-            elif e._exception.response.status_code == requests.codes.GONE and isinstance(self, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
             elif e._exception.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
