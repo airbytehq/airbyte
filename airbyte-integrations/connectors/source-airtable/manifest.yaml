@@ -688,6 +688,9 @@ spec:
           Content-Type: "application/x-www-form-urlencoded"
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
         access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
           code_verifier: "{{ state_value }}"
         extract_output:
           - access_token
