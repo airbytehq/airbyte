@@ -5,11 +5,13 @@ enterprise-connector: true
 
 # Salesforce destination
 
+<HideInUI>
+
 :::warning
 Airbyte no longer maintains or supports the Salesforce destination connector. It may continue to function but is not actively developed, and no future updates or bug fixes are planned. Use at your own discretion.
 :::
 
-<HideInUI>
+</HideInUI>
 
 The Salesforce destination connector enables [data activation](/platform/move-data/elt-data-activation) by syncing data from your data warehouse to Salesforce objects. This connector is designed for operational workflows where you need to deliver modeled data directly to your CRM for sales, marketing, and customer success teams.
 
@@ -245,5 +247,3 @@ The connector is still incubating, this section only exists to satisfy Airbyte's
 - 0.0.6
 
 </details>
-
-</HideInUI>
