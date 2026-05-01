@@ -1,37 +1,43 @@
 # Get support
 
-Airbyte offers support for both its data replication platform and Airbyte Agents. If you can't find an answer to your question in the docs, use one of the following options.
+Airbyte offers support for both Data Replication and Airbyte Agents. If you can't find an answer to your question in the docs, use one of the following options.
 
-## Support center
+## Data Replication
 
-**For support with any Airbyte product, create a ticket in Airbyte's [support center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
+### In-app support bot
+
+**The in-app support bot is available 24/7 for Airbyte Cloud and Enterprise customers.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The bot can also create support tickets for the Airbyte support team if further help is needed.
+
+### Support center
+
+**For additional help, create a ticket in Airbyte's [support center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
 
 - For account or billing inquiries, [contact sales](https://airbyte.com/talk-to-sales).
 - Sign up for Airbyte with your company email address. Airbyte doesn't support personal accounts.
 
-## In-app support agent
+### Core (open source)
 
-Both Airbyte Cloud (data replication) and Airbyte Agents include an AI-powered support agent accessible directly within each app. Look for the chat button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, troubleshoot common scenarios, and create support tickets if further help is needed.
-
-## Data replication
-
-### Plans and support availability
-
-Airbyte offers several data replication plans, from Core (free, open-source) to Enterprise. Paid plans include access to the [support center](https://support.airbyte.com/hc/en-us/requests/new) and the in-app support agent. Core users have access to community resources.
-
-If you need personalized help with Core, consider upgrading to one of Airbyte's [paid plans](https://www.airbyte.com/pricing).
+Core users don't have access to paid support but can use [community resources](#community-resources). If you need personalized help, consider upgrading to one of Airbyte's [paid plans](https://www.airbyte.com/pricing).
 
 ### Connector support levels
 
-Data replication connector support depends on the connector's certification status. See [Connector Support Levels](/integrations/connector-support-levels) for details.
+Connector support depends on the connector's certification status. See [Connector Support Levels](/integrations/connector-support-levels) for details.
 
-If you don't see a data replication connector you need, submit a [connector request](https://airbyte.com/connector-requests).
+If you don't see a connector you need, submit a [connector request](https://airbyte.com/connector-requests).
 
 ## Airbyte Agents
 
-Airbyte Agents support depends on your plan. Free plan users have access to AI and community support. Individual and Team plan users also receive standard human support. Custom plan users receive dedicated human support.
+### In-app support bot
 
-For full details on Agents plans and support availability, see [Billing and pricing](/ai-agents/admin/billing).
+**The in-app support bot is available 24/7 for all Airbyte Agents users.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, troubleshoot common scenarios, and create support tickets if further help is needed.
+
+### Support by plan
+
+- **Free**: AI and community support.
+- **Individual / Team**: Standard human support, in addition to AI and community support. Create a ticket in the [support center](https://support.airbyte.com/hc/en-us/requests/new).
+- **Custom**: Dedicated human support.
+
+For full details on Agents plans, see [Billing and pricing](/ai-agents/admin/billing).
 
 ## Community resources
 
@@ -39,7 +45,10 @@ These resources are available to all Airbyte users regardless of product or plan
 
 ### Community Slack
 
-[Join the Slack community](https://slack.airbyte.com) for help from other users and Airbyte team members. Popular channels are `#ask-ai` and `#ask-community-for-troubleshooting`.
+[Join the Slack community](https://slack.airbyte.com) for help from other users and Airbyte team members. Popular channels include:
+
+- Data Replication: `#ask-ai`, `#ask-community-for-troubleshooting`
+- Airbyte Agents: `#airbyte-agents`, `#airbyte-agents-ask-ai`
 
 ### GitHub discussions
 
@@ -50,10 +59,6 @@ These resources are available to all Airbyte users regardless of product or plan
 If you've found a bug or issue with Airbyte or its documentation, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub. If you're willing to work on this issue yourself, please indicate this.
 
 Check the [issue list](https://github.com/airbytehq/airbyte/issues) first in case the issue has already been reported.
-
-### Public roadmap
-
-To stay updated on Airbyte's future plans, take a look at [the roadmap](https://github.com/orgs/airbytehq/projects/37/views/1). Airbyte updates this every few weeks with initiatives that are of interest to the community.
 
 ## Questions about contributions
 
