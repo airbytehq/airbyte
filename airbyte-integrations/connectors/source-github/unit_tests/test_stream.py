@@ -111,7 +111,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             '{"errors": [{"type": "RATE_LIMITED"}]}',
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GraphQL rate limit exceeded. Rate limit resets at epoch 1655804724.",
+            "GitHub API rate limit exceeded. Rate limit resets at epoch 1655804724.",
         ),
         (
             HTTPStatus.FORBIDDEN,
@@ -228,14 +228,14 @@ def test_rate_limit_403_retries(response_headers):
         ),
         pytest.param(
             HTTPStatus.NOT_FOUND,
-            ResponseAction.FAIL,
+            ResponseAction.IGNORE,
             FailureType.config_error,
-            "Requested GitHub resource not found. Verify repository name and token permissions.",
+            "Requested GitHub resource not found.",
             id="404_not_found",
         ),
         pytest.param(
             HTTPStatus.GONE,
-            ResponseAction.RETRY,
+            ResponseAction.IGNORE,
             FailureType.config_error,
             "GitHub resource is gone. The feature may be disabled for this repository.",
             id="410_gone",
@@ -308,7 +308,7 @@ def test_409_conflict_non_empty_repo_fallback():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RETRY
-    assert result.failure_type == FailureType.config_error
+    assert result.failure_type == FailureType.transient_error
     assert "conflict" in result.error_message.lower()
     assert "empty" not in result.error_message.lower() or "may be empty" in result.error_message.lower()
 
@@ -362,7 +362,7 @@ def test_422_validation_error_empty_body():
 
 def test_graphql_rate_limit_error_message():
     """
-    Verify that GraphQL rate-limit responses produce a clear 'GraphQL rate limit exceeded'
+    Verify that GraphQL rate-limit responses produce a clear 'GitHub API rate limit exceeded'
     message with reset timing instead of the confusing 'Response status code: 200. Retrying...'
     """
     stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
@@ -375,7 +375,7 @@ def test_graphql_rate_limit_error_message():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert "GraphQL rate limit exceeded." in result.error_message
+    assert "GitHub API rate limit exceeded." in result.error_message
     assert "1655804724" in result.error_message
     assert "200" not in result.error_message
 
@@ -396,7 +396,7 @@ def test_graphql_rate_limit_via_graphql_error_handler():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert "GraphQL rate limit exceeded." in result.error_message
+    assert "GitHub API rate limit exceeded." in result.error_message
     assert "1655804724" in result.error_message
 
 
@@ -579,7 +579,7 @@ def test_stream_teams_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    # 404 should fail immediately without retries
+    # 404 is IGNORE — no retries, response is silently skipped
     assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
 
@@ -654,7 +654,7 @@ def test_stream_repositories_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    # 404 should fail immediately without retries since the resource does not exist
+    # 404 is IGNORE — no retries, response is silently skipped
     assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
@@ -718,7 +718,8 @@ def test_stream_projects_disabled(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    # 410 is IGNORE — no retries, response is silently skipped
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
@@ -1628,8 +1629,8 @@ def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_res
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
     ]
-    expected_message = "Syncing `TeamMemberships` stream for organization `org1`, team `team2` and user `login3` isn't available: User has no team membership. Skipping..."
-    assert expected_message in caplog.messages
+    # 404 is IGNORE — the CDK silently skips the response and logs a generic message
+    assert "Requested GitHub resource not found." in caplog.messages
 
 
 def test_stream_commit_comment_reactions_incremental_read(requests_mock):

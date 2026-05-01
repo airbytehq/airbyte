@@ -131,6 +131,8 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -405,6 +407,8 @@ class RepositoryStats(GithubStream):
         return f"repos/{stream_slice['repository']}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield response.json()
 
 
@@ -461,6 +465,8 @@ class Organizations(GithubStreamABC):
         return f"orgs/{stream_slice['organization']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield response.json()
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -487,6 +493,8 @@ class Repositories(SemiIncrementalMixin, Organizations):
         return f"orgs/{stream_slice['organization']}/repos"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():  # GitHub puts records in an array.
             record = self.transform(record=record, stream_slice=stream_slice)
             if not self._pattern or self._pattern.match(record["full_name"]):
@@ -515,6 +523,8 @@ class Teams(Organizations):
         return f"orgs/{stream_slice['organization']}/teams"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -528,6 +538,8 @@ class Users(Organizations):
         return f"orgs/{stream_slice['organization']}/members"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1787,6 +1799,8 @@ class TeamMemberships(GithubStream):
                 yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield self.transform(response.json(), stream_slice=stream_slice)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:

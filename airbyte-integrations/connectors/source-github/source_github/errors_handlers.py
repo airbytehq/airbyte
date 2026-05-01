@@ -26,17 +26,17 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="Access denied due to insufficient permissions.",
     ),
     404: ErrorResolution(
-        response_action=ResponseAction.FAIL,
+        response_action=ResponseAction.IGNORE,
         failure_type=FailureType.config_error,
-        error_message="Requested GitHub resource not found. Verify repository name and token permissions.",
+        error_message="Requested GitHub resource not found.",
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
+        failure_type=FailureType.transient_error,
         error_message="GitHub API returned a conflict. The repository may be empty or temporarily unavailable.",
     ),
     410: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.IGNORE,
         failure_type=FailureType.config_error,
         error_message="GitHub resource is gone. The feature may be disabled for this repository.",
     ),
@@ -50,8 +50,8 @@ def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requ
     return False
 
 
-def _rate_limit_message(response: requests.Response, is_graphql: bool) -> str:
-    prefix = "GraphQL rate limit exceeded." if is_graphql else "GitHub API rate limit exceeded."
+def _rate_limit_message(response: requests.Response) -> str:
+    prefix = "GitHub API rate limit exceeded."
     if retry_after := response.headers.get("Retry-After"):
         return f"{prefix} Retry after {retry_after} seconds."
     if reset_at := response.headers.get("X-RateLimit-Reset"):
@@ -119,8 +119,7 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     f"Rate limit handling for stream `{self.stream.name}` for the response with {response_or_exception.status_code} status code, {string_headers} with message: {response_or_exception.text}"
                 )
 
-                is_graphql = response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                error_message = _rate_limit_message(response_or_exception, is_graphql)
+                error_message = _rate_limit_message(response_or_exception)
 
                 return ErrorResolution(
                     response_action=ResponseAction.RATE_LIMITED,
@@ -173,9 +172,8 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
             # GraphQL rate-limit responses (HTTP 200 with errors[].type == "RATE_LIMITED")
             # must be classified before the generic errors branch, otherwise they are
             # misclassified as retryable GraphQL errors.
-            if (
-                response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                and self.stream.check_graphql_rate_limited(response_or_exception.json())
+            if response_or_exception.headers.get("X-RateLimit-Resource") == "graphql" and self.stream.check_graphql_rate_limited(
+                response_or_exception.json()
             ):
                 return super().interpret_response(response_or_exception)
 
