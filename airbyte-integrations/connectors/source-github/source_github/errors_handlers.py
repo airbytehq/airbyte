@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, Union
+import logging
+from typing import Any, Dict, Optional, Union
 
 import requests
 
@@ -12,6 +13,8 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorR
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 from . import constants
+
+logger = logging.getLogger("airbyte")
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
@@ -43,6 +46,34 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
 }
 
 
+def parse_sso_header(headers: Dict[str, Any]) -> Optional[Dict[str, Optional[str]]]:
+    """Parse the X-GitHub-SSO response header.
+
+    GitHub sends this header when a token lacks SAML SSO authorization.
+    Format examples:
+      required; url=https://github.com/orgs/ORG/sso?authorization_request=XXXXX
+      partial-results; organizations=ORG1,ORG2
+    """
+    sso_value = headers.get("X-GitHub-SSO")
+    if not sso_value:
+        return None
+
+    result: Dict[str, Optional[str]] = {"state": None, "url": None, "organizations": None}
+    parts = [p.strip() for p in sso_value.split(";")]
+    if parts:
+        result["state"] = parts[0]
+    for part in parts[1:]:
+        if "=" in part:
+            key, value = part.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+            if key == "url":
+                result["url"] = value
+            elif key == "organizations":
+                result["organizations"] = value
+    return result
+
+
 def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
     if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
         response_data = response_or_exception.json()
@@ -57,6 +88,30 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
+            # SSO authorization check — must run before rate-limit handling
+            if response_or_exception.status_code in (requests.codes.FORBIDDEN, requests.codes.NOT_FOUND):
+                sso_info = parse_sso_header(response_or_exception.headers)
+                if sso_info and sso_info.get("state") == "required":
+                    authorize_url = sso_info.get("url", "")
+                    error_message = (
+                        f"GitHub SAML SSO authorization is required. "
+                        f"The access token is not authorized for the requested organization. "
+                        f"Authorize this token at: {authorize_url}"
+                    )
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.config_error,
+                        error_message=error_message,
+                    )
+            elif response_or_exception.status_code == requests.codes.OK:
+                sso_info = parse_sso_header(response_or_exception.headers)
+                if sso_info and sso_info.get("state") == "partial-results":
+                    orgs = sso_info.get("organizations", "")
+                    logger.warning(
+                        f"GitHub SAML SSO partial results returned for stream `{self.stream.name}`. "
+                        f"Some organization data may be missing. Affected organizations: {orgs}"
+                    )
+
             retry_flag = (
                 # The GitHub GraphQL API has limitations
                 # https://docs.github.com/en/graphql/overview/resource-limitations

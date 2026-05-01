@@ -34,6 +34,7 @@ from .errors_handlers import (
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
     is_conflict_with_empty_repository,
+    parse_sso_header,
 )
 from .graphql import (
     CursorStorage,
@@ -153,6 +154,18 @@ class GithubStreamABC(HttpStream, ABC):
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
+                sso_info = parse_sso_header(e._exception.response.headers)
+                if sso_info and sso_info.get("state") == "required":
+                    authorize_url = sso_info.get("url", "")
+                    raise AirbyteTracedException(
+                        message=(
+                            f"GitHub SAML SSO authorization is required. "
+                            f"The access token is not authorized for the requested organization. "
+                            f"Authorize this token at: {authorize_url}"
+                        ),
+                        internal_message=f"Stream: `{self.name}`, slice: `{stream_slice}`. SSO header: {e._exception.response.headers.get('X-GitHub-SSO')}",
+                        failure_type=FailureType.config_error,
+                    ) from e
                 error_msg = str(e._exception.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):

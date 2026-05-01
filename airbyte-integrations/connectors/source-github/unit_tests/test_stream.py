@@ -50,6 +50,7 @@ from source_github.streams import (
     WorkflowJobs,
     WorkflowRuns,
 )
+from source_github.errors_handlers import parse_sso_header
 from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -196,6 +197,90 @@ def test_rate_limit_403_retries(response_headers):
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
     assert result.failure_type == FailureType.transient_error
+
+
+@pytest.mark.parametrize(
+    "headers, expected",
+    [
+        pytest.param({}, None, id="no_header"),
+        pytest.param({"X-GitHub-SSO": ""}, None, id="empty_header"),
+        pytest.param(
+            {"X-GitHub-SSO": "required; url=https://github.com/orgs/myorg/sso?authorization_request=ABCDEF"},
+            {"state": "required", "url": "https://github.com/orgs/myorg/sso?authorization_request=ABCDEF", "organizations": None},
+            id="required_with_url",
+        ),
+        pytest.param(
+            {"X-GitHub-SSO": "partial-results; organizations=org1,org2"},
+            {"state": "partial-results", "url": None, "organizations": "org1,org2"},
+            id="partial_results_with_orgs",
+        ),
+        pytest.param(
+            {"X-GitHub-SSO": "required ;  url=https://example.com/sso"},
+            {"state": "required", "url": "https://example.com/sso", "organizations": None},
+            id="whitespace_variations",
+        ),
+    ],
+)
+def test_parse_sso_header(headers, expected):
+    assert parse_sso_header(headers) == expected
+
+
+@pytest.mark.parametrize(
+    ("http_status",),
+    [
+        pytest.param(HTTPStatus.FORBIDDEN, id="403_with_sso"),
+        pytest.param(HTTPStatus.NOT_FOUND, id="404_with_sso"),
+    ],
+)
+def test_sso_required_error_handler(http_status):
+    """Verify that 403/404 with X-GitHub-SSO: required header results in FAIL with config_error."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = http_status
+    response_mock.headers = {"X-GitHub-SSO": "required; url=https://github.com/orgs/myorg/sso?authorization_request=XXXXX"}
+    response_mock.text = '{"message": "Resource protected by organization SAML enforcement."}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert "SAML SSO authorization is required" in result.error_message
+    assert "https://github.com/orgs/myorg/sso?authorization_request=XXXXX" in result.error_message
+
+
+def test_sso_required_takes_priority_over_rate_limit():
+    """Verify SSO detection runs before rate-limit handling on 403."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {
+        "X-GitHub-SSO": "required; url=https://github.com/orgs/myorg/sso?authorization_request=XXXXX",
+        "Retry-After": "60",
+    }
+    response_mock.text = ""
+    response_mock.ok = False
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert "SAML SSO" in result.error_message
+
+
+def test_403_without_sso_header_still_fails_with_generic_message():
+    """Verify that a 403 without SSO header still returns the generic permission error."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Resource not accessible"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert result.error_message == "Access denied due to insufficient permissions."
 
 
 @patch("time.sleep")
