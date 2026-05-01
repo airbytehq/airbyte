@@ -433,7 +433,7 @@ def test_stream_projects_disabled(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
