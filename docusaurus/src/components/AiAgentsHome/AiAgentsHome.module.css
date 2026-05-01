@@ -1,8 +1,6 @@
 /* ── Section headings ────────────────────────────────────── */
 
 .sectionHeading {
-  font-size: 1.5rem;
-  font-weight: 700;
   margin-bottom: 4px;
 }
 
@@ -33,7 +31,7 @@
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: inherit;
   font-weight: 500;
   color: var(--color-grey-500);
   border-bottom: 2px solid transparent;
@@ -68,7 +66,6 @@
 }
 
 .quickInstallCode code {
-  font-size: 0.88rem;
   white-space: nowrap;
   color: var(--ifm-code-color);
   background: none;
@@ -80,7 +77,7 @@
   flex-shrink: 0;
   padding: 4px 12px;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: inherit;
   font-weight: 600;
   border: 1px solid var(--color-grey-100);
   background: var(--color-white);
@@ -95,14 +92,12 @@
 
 .quickInstallDescription {
   color: var(--color-grey-500);
-  font-size: 0.95rem;
   margin-bottom: 12px;
 }
 
 .quickInstallLink {
   display: inline-block;
   font-weight: 600;
-  font-size: 0.95rem;
   color: var(--ifm-color-primary);
   text-decoration: none;
   margin-bottom: 4px;
@@ -115,8 +110,6 @@
 /* ── Tools label ─────────────────────────────────────────── */
 
 .toolsLabel {
-  font-size: 0.9rem;
-  font-weight: 600;
   color: var(--color-grey-500);
   margin-top: 16px;
   margin-bottom: 8px;
@@ -140,8 +133,7 @@
   border: 1px solid var(--color-grey-100);
   background: var(--color-white);
   text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: inherit;
   color: var(--ifm-heading-color);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -166,19 +158,11 @@
 
 .skillsSection {
   margin-top: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .skillsLabel {
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   color: var(--color-grey-500);
-  white-space: nowrap;
+  margin-bottom: 8px;
 }
 
 .skillsChips {
@@ -196,8 +180,7 @@
   border: 1px dashed var(--color-grey-100);
   background: transparent;
   text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: inherit;
   color: var(--ifm-heading-color);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -218,7 +201,6 @@
   border-radius: 8px;
   background: var(--ifm-color-primary);
   color: #fff;
-  font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
   transition: opacity 0.15s ease;

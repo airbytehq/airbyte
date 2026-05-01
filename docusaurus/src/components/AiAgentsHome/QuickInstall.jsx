@@ -9,24 +9,14 @@ const TABS = [
     description: "Add this URL to your MCP client.",
     tools: [
       {
-        name: "Claude",
+        name: "Claude Desktop",
         href: "/ai-agents/interfaces/mcp/",
         icon: "/img/ai-agents/anthropic.svg",
       },
       {
-        name: "Cursor",
+        name: "Claude Code",
         href: "/ai-agents/interfaces/mcp/",
-        icon: "/img/ai-agents/cursor.svg",
-      },
-      {
-        name: "Windsurf",
-        href: "/ai-agents/interfaces/mcp/",
-        icon: "/img/ai-agents/windsurf.svg",
-      },
-      {
-        name: "VS Code",
-        href: "/ai-agents/interfaces/mcp/",
-        icon: "/img/ai-agents/visualstudiocode.svg",
+        icon: "/img/ai-agents/anthropic.svg",
       },
       {
         name: "ChatGPT",
@@ -38,6 +28,21 @@ const TABS = [
         href: "/ai-agents/interfaces/mcp/",
         icon: "/img/ai-agents/openai.svg",
       },
+      {
+        name: "Cursor",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/cursor.svg",
+      },
+      {
+        name: "VS Code",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/visualstudiocode.svg",
+      },
+      {
+        name: "Windsurf",
+        href: "/ai-agents/interfaces/mcp/",
+        icon: "/img/ai-agents/windsurf.svg",
+      },
     ],
   },
   {
@@ -45,7 +50,7 @@ const TABS = [
     label: "Python SDK",
     command: "uv add airbyte-agent-sdk",
     description: "Add the SDK to your Python project.",
-    toolsLabel: "Or try one of our developer quickstarts:",
+    toolsLabel: "Or try one of our developer quickstarts.",
     tools: [
       {
         name: "Pydantic AI",
@@ -84,8 +89,8 @@ const TABS = [
   {
     id: "api",
     label: "API",
-    command: "https://mcp.airbyte.ai",
-    description: "Integrate with the Airbyte Agents REST API.",
+    command: null,
+    description: "Integrate with the Airbyte Agent API.",
     docsLink: "/ai-agents/interfaces/api/",
     docsLabel: "API reference",
     tools: [],
@@ -150,7 +155,7 @@ export const QuickInstall = () => {
           <a className={styles.webAppButton} href="https://app.airbyte.ai">
             <img
               className={styles.webAppButtonLogo}
-              src="/img/logo.png"
+              src="/img/favicon.png"
               alt="Airbyte"
             />
             Open web app
@@ -180,7 +185,9 @@ export const QuickInstall = () => {
         )}
         {tab.skills && tab.skills.length > 0 && (
           <div className={styles.skillsSection}>
-            <span className={styles.skillsLabel}>Agent skills</span>
+            <p className={styles.skillsLabel}>
+              Have your agent build it for you.
+            </p>
             <div className={styles.skillsChips}>
               {tab.skills.map((skill) => (
                 <a
