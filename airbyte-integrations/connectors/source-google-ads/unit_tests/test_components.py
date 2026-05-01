@@ -20,10 +20,9 @@ from source_google_ads.components import (
     TimeoutHTTPAdapter,
 )
 
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.types import StreamSlice
@@ -835,9 +834,9 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(
-        extractor.decoder, GoogleAdsStreamingDecoder
-    ), f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -851,9 +850,9 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(
-        extractor.decoder, GoogleAdsStreamingDecoder
-    ), f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
+        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+    )
 
 
 class TestSerializeMessageFieldsTransformation:
