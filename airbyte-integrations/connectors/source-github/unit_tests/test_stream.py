@@ -14,7 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
-from source_github.errors_handlers import GitHubGraphQLErrorHandler, GithubStreamABCErrorHandler, is_conflict_with_empty_repository
+from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository
 from source_github.streams import (
     Branches,
     Collaborators,
