@@ -29,13 +29,20 @@ data class S3DataLakeConfiguration(
     S3BucketConfigurationProvider {
 
     object Defaults {
+        const val MIN_FLUSH_BATCH_SIZE_MB = 1L
         const val FLUSH_BATCH_SIZE_MB = 200L
+        const val MAX_FLUSH_BATCH_SIZE_MB = 500L
     }
 
     val resolvedFlushBatchSizeBytes: Long
         get() {
             val mb = flushBatchSizeMb ?: Defaults.FLUSH_BATCH_SIZE_MB
-            require(mb >= 1) { "flush_batch_size_mb must be at least 1, got $mb" }
+            require(mb >= Defaults.MIN_FLUSH_BATCH_SIZE_MB) {
+                "flush_batch_size_mb must be at least ${Defaults.MIN_FLUSH_BATCH_SIZE_MB}, got $mb"
+            }
+            require(mb <= Defaults.MAX_FLUSH_BATCH_SIZE_MB) {
+                "flush_batch_size_mb must be at most ${Defaults.MAX_FLUSH_BATCH_SIZE_MB}, got $mb"
+            }
             return mb * 1024L * 1024L
         }
 }

@@ -76,7 +76,7 @@ class S3DataLakeSpecification :
         "The approximate size in megabytes of each batch of data written to Iceberg. " +
             "Smaller values flush more frequently, improving data freshness and reducing data loss on failure, " +
             "but will create more small files that require compaction. " +
-            "Default is 200 MB."
+            "Must be between 1 and 500 MB. Default is 200 MB."
     )
     @get:JsonProperty("flush_batch_size_mb", required = false)
     @get:JsonSchemaInject(json = """{"examples":[200], "default": 200, "order": 8}""")
