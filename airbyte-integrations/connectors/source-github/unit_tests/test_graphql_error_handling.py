@@ -9,13 +9,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_github.errors_handlers import (
-    GRAPHQL_CONFIG_ERROR_TYPES,
-    GRAPHQL_IGNORE_TYPES,
-    GRAPHQL_RETRYABLE_TYPES,
-    GitHubGraphQLErrorHandler,
-    classify_graphql_errors,
-)
+from source_github.errors_handlers import classify_graphql_errors
 from source_github.streams import (
     IssueReactions,
     ProjectsV2,
@@ -26,7 +20,7 @@ from source_github.streams import (
 )
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 # ---------------------------------------------------------------------------
