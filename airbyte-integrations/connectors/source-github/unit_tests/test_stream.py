@@ -2047,7 +2047,9 @@ def _setup_commits_stream(requests_mock, repositories, branches_to_pull, repo_br
 def test_validate_branches_to_pull_valid(requests_mock, repositories, branches_to_pull, repo_branches_map, expected_repos_mapping):
     stream = _setup_commits_stream(requests_mock, repositories, branches_to_pull, repo_branches_map)
     stream._validate_branches_to_pull()
-    assert stream.branches_to_repos == expected_repos_mapping
+    assert {repo: sorted(branches) for repo, branches in stream.branches_to_repos.items()} == {
+        repo: sorted(branches) for repo, branches in expected_repos_mapping.items()
+    }
 
 
 @pytest.mark.parametrize(
