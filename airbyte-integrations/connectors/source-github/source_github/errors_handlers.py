@@ -45,7 +45,10 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
 
 def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
     if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
-        response_data = response_or_exception.json()
+        try:
+            response_data = response_or_exception.json()
+        except ValueError:
+            return False
         return response_data.get("message") == "Git Repository is empty."
     return False
 
@@ -55,6 +58,13 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
         self.stream = stream
         super().__init__(**kwargs)
 
+    def _safe_json_check_graphql_rate_limited(self, response: requests.Response) -> bool:
+        try:
+            body = response.json()
+        except ValueError:
+            return False
+        return self.stream.check_graphql_rate_limited(body)
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             retry_flag = (
@@ -62,7 +72,7 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 # https://docs.github.com/en/graphql/overview/resource-limitations
                 (
                     response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                    and self.stream.check_graphql_rate_limited(response_or_exception.json())
+                    and self._safe_json_check_graphql_rate_limited(response_or_exception)
                 )
                 # Rate limit HTTP headers
                 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
@@ -128,6 +138,14 @@ class ContributorActivityErrorHandler(GithubStreamABCErrorHandler):
 
 
 class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
+    @staticmethod
+    def _safe_json_get_errors(response: requests.Response) -> bool:
+        try:
+            body = response.json()
+        except ValueError:
+            return False
+        return bool((body or {}).get("errors"))
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
@@ -142,7 +160,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
             )
 
-            if response_or_exception.json().get("errors"):
+            if self._safe_json_get_errors(response_or_exception):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,

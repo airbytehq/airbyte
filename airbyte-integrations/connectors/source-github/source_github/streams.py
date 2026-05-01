@@ -1583,8 +1583,25 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/workflows"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("workflows")
-        for record in response:
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+                response.text[:500],
+            )
+            return
+        items = (body or {}).get("workflows")
+        if not isinstance(items, list):
+            self.logger.warning(
+                "`%s` response missing or invalid `workflows` key (HTTP %s). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+            )
+            return
+        for record in items:
             yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value):
@@ -1608,8 +1625,25 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/runs"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("workflow_runs")
-        for record in response:
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+                response.text[:500],
+            )
+            return
+        items = (body or {}).get("workflow_runs")
+        if not isinstance(items, list):
+            self.logger.warning(
+                "`%s` response missing or invalid `workflow_runs` key (HTTP %s). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+            )
+            return
+        for record in items:
             yield record
 
     def read_records(
@@ -1687,7 +1721,25 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        for record in response.json()["jobs"]:
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+                response.text[:500],
+            )
+            return
+        items = (body or {}).get("jobs")
+        if not isinstance(items, list):
+            self.logger.warning(
+                "`%s` response missing or invalid `jobs` key (HTTP %s). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+            )
+            return
+        for record in items:
             if record.get(self.cursor_field):
                 yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1873,7 +1925,24 @@ class IssueTimelineEvents(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        events_list = response.json()
+        try:
+            events_list = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                self.name,
+                response.status_code,
+                response.text[:500],
+            )
+            return
+        if not isinstance(events_list, list):
+            self.logger.warning(
+                "`%s` expected a JSON list but got %s (HTTP %s). Yielding no records for this page.",
+                self.name,
+                type(events_list).__name__,
+                response.status_code,
+            )
+            return
         record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
         for event in events_list:
             record[event["event"]] = event
