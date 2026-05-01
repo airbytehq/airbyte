@@ -71,16 +71,16 @@ class S3DataLakeSpecification :
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
 
-    @get:JsonSchemaTitle("Flush Batch Size (bytes)")
+    @get:JsonSchemaTitle("Flush Batch Size (MB)")
     @get:JsonPropertyDescription(
-        "The approximate size in bytes of each batch of data written to Iceberg. " +
+        "The approximate size in megabytes of each batch of data written to Iceberg. " +
             "Smaller values flush more frequently, improving data freshness and reducing data loss on failure, " +
             "but will create more small files that require compaction. " +
-            "Default is 200 MB (209715200 bytes)."
+            "Default is 200 MB."
     )
-    @get:JsonProperty("flush_batch_size_bytes", required = false)
-    @get:JsonSchemaInject(json = """{"examples":[209715200], "default": 209715200, "order": 8}""")
-    val flushBatchSizeBytes: Long? = null
+    @get:JsonProperty("flush_batch_size_mb", required = false)
+    @get:JsonSchemaInject(json = """{"examples":[200], "default": 200, "order": 8}""")
+    val flushBatchSizeMb: Long? = null
 }
 
 @Singleton
