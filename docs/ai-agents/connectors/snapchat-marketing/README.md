@@ -34,7 +34,7 @@ The Snapchat-Marketing connector isn't currently able to handle prompts like the
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-snapchat-marketing
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -45,9 +45,11 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
-from airbyte_agent_snapchat_marketing import SnapchatMarketingConnector
-from airbyte_agent_snapchat_marketing.models import SnapchatMarketingAuthConfig
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+from airbyte_agent_sdk.connectors.snapchat_marketing.models import SnapchatMarketingAuthConfig
 
 connector = SnapchatMarketingConnector(
     auth_config=SnapchatMarketingAuthConfig(
@@ -57,10 +59,62 @@ connector = SnapchatMarketingConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @SnapchatMarketingConnector.tool_utils
 async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+from airbyte_agent_sdk.connectors.snapchat_marketing.models import SnapchatMarketingAuthConfig
+
+connector = SnapchatMarketingConnector(
+    auth_config=SnapchatMarketingAuthConfig(
+        client_id="<The Client ID of your Snapchat developer application>",
+        client_secret="<The Client Secret of your Snapchat developer application>",
+        refresh_token="<Refresh Token to renew the expired Access Token>"
+    )
+)
+
+@tool
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Snapchat-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+from airbyte_agent_sdk.connectors.snapchat_marketing.models import SnapchatMarketingAuthConfig
+
+connector = SnapchatMarketingConnector(
+    auth_config=SnapchatMarketingAuthConfig(
+        client_id="<The Client ID of your Snapchat developer application>",
+        client_secret="<The Client Secret of your Snapchat developer application>",
+        refresh_token="<Refresh Token to renew the expired Access Token>"
+    )
+)
+
+mcp = FastMCP("Snapchat-Marketing Agent")
+
+@mcp.tool()
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Snapchat-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -70,22 +124,138 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
-```python
-from airbyte_agent_snapchat_marketing import SnapchatMarketingConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `SnapchatMarketingConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+
+connector = connect("snapchat-marketing", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+
+connector = connect("snapchat-marketing", workspace_name="<your_workspace_name>")
+
+@tool
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Snapchat-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+
+connector = connect("snapchat-marketing", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Snapchat-Marketing Agent")
+
+@mcp.tool()
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Snapchat-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = SnapchatMarketingConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @SnapchatMarketingConnector.tool_utils
 async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SnapchatMarketingConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Snapchat-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.snapchat_marketing import SnapchatMarketingConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = SnapchatMarketingConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Snapchat-Marketing Agent")
+
+@mcp.tool()
+@SnapchatMarketingConnector.tool_utils
+async def snapchat_marketing_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Snapchat-Marketing connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation
@@ -96,14 +266,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Search](./REFERENCE.md#organizations-search) |
-| Adaccounts | [List](./REFERENCE.md#adaccounts-list), [Get](./REFERENCE.md#adaccounts-get), [Search](./REFERENCE.md#adaccounts-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Search](./REFERENCE.md#campaigns-search) |
-| Adsquads | [List](./REFERENCE.md#adsquads-list), [Get](./REFERENCE.md#adsquads-get), [Search](./REFERENCE.md#adsquads-search) |
-| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Search](./REFERENCE.md#ads-search) |
-| Creatives | [List](./REFERENCE.md#creatives-list), [Get](./REFERENCE.md#creatives-get), [Search](./REFERENCE.md#creatives-search) |
-| Media | [List](./REFERENCE.md#media-list), [Get](./REFERENCE.md#media-get), [Search](./REFERENCE.md#media-search) |
-| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Search](./REFERENCE.md#segments-search) |
+| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Context Store Search](./REFERENCE.md#organizations-context-store-search) |
+| Adaccounts | [List](./REFERENCE.md#adaccounts-list), [Get](./REFERENCE.md#adaccounts-get), [Context Store Search](./REFERENCE.md#adaccounts-context-store-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
+| Adsquads | [List](./REFERENCE.md#adsquads-list), [Get](./REFERENCE.md#adsquads-get), [Context Store Search](./REFERENCE.md#adsquads-context-store-search) |
+| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Context Store Search](./REFERENCE.md#ads-context-store-search) |
+| Creatives | [List](./REFERENCE.md#creatives-list), [Get](./REFERENCE.md#creatives-get), [Context Store Search](./REFERENCE.md#creatives-context-store-search) |
+| Media | [List](./REFERENCE.md#media-list), [Get](./REFERENCE.md#media-get), [Context Store Search](./REFERENCE.md#media-context-store-search) |
+| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search) |
 
 
 ### Authentication
@@ -116,7 +286,6 @@ See the official [Snapchat-Marketing API reference](https://developers.snap.com/
 
 ## Version information
 
-- **Package version:** 0.1.8
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/snapchat-marketing/CHANGELOG.md)
+- **Package version:** 1.0.4
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** unknown

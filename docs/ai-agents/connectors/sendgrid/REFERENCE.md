@@ -8,20 +8,20 @@ The Sendgrid connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Lists | [List](#lists-list), [Get](#lists-get), [Search](#lists-search) |
-| Segments | [List](#segments-list), [Get](#segments-get), [Search](#segments-search) |
-| Campaigns | [List](#campaigns-list), [Search](#campaigns-search) |
-| Singlesends | [List](#singlesends-list), [Get](#singlesends-get), [Search](#singlesends-search) |
-| Templates | [List](#templates-list), [Get](#templates-get), [Search](#templates-search) |
-| Singlesend Stats | [List](#singlesend-stats-list), [Search](#singlesend-stats-search) |
-| Bounces | [List](#bounces-list), [Search](#bounces-search) |
-| Blocks | [List](#blocks-list), [Search](#blocks-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Context Store Search](#contacts-context-store-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search) |
+| Segments | [List](#segments-list), [Get](#segments-get), [Context Store Search](#segments-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Context Store Search](#campaigns-context-store-search) |
+| Singlesends | [List](#singlesends-list), [Get](#singlesends-get), [Context Store Search](#singlesends-context-store-search) |
+| Templates | [List](#templates-list), [Get](#templates-get), [Context Store Search](#templates-context-store-search) |
+| Singlesend Stats | [List](#singlesend-stats-list), [Context Store Search](#singlesend-stats-context-store-search) |
+| Bounces | [List](#bounces-list), [Context Store Search](#bounces-context-store-search) |
+| Blocks | [List](#blocks-list), [Context Store Search](#blocks-context-store-search) |
 | Spam Reports | [List](#spam-reports-list) |
-| Invalid Emails | [List](#invalid-emails-list), [Search](#invalid-emails-search) |
-| Global Suppressions | [List](#global-suppressions-list), [Search](#global-suppressions-search) |
-| Suppression Groups | [List](#suppression-groups-list), [Get](#suppression-groups-get), [Search](#suppression-groups-search) |
-| Suppression Group Members | [List](#suppression-group-members-list), [Search](#suppression-group-members-search) |
+| Invalid Emails | [List](#invalid-emails-list), [Context Store Search](#invalid-emails-context-store-search) |
+| Global Suppressions | [List](#global-suppressions-list), [Context Store Search](#global-suppressions-context-store-search) |
+| Suppression Groups | [List](#suppression-groups-list), [Get](#suppression-groups-get), [Context Store Search](#suppression-groups-context-store-search) |
+| Suppression Group Members | [List](#suppression-group-members-list), [Context Store Search](#suppression-group-members-context-store-search) |
 
 ## Contacts
 
@@ -78,6 +78,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `null \| string` |  |
+| `contact_count` | `integer` |  |
 
 </details>
 
@@ -148,14 +155,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.contacts.search(
+await sendgrid.contacts.context_store_search(
     query={"filter": {"eq": {"address_line_1": "<str>"}}}
 )
 ```
@@ -168,7 +175,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"address_line_1": "<str>"}}}
     }
@@ -347,14 +354,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Lists Search
+### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.lists.search(
+await sendgrid.lists.context_store_search(
     query={"filter": {"eq": {"_metadata": {}}}}
 )
 ```
@@ -367,7 +374,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "lists",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_metadata": {}}}}
     }
@@ -514,14 +521,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Segments Search
+### Segments Context Store Search
 
 Search and filter segments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.segments.search(
+await sendgrid.segments.context_store_search(
     query={"filter": {"eq": {"contacts_count": 0}}}
 )
 ```
@@ -534,7 +541,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "segments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"contacts_count": 0}}}
     }
@@ -646,14 +653,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.campaigns.search(
+await sendgrid.campaigns.context_store_search(
     query={"filter": {"eq": {"channels": []}}}
 )
 ```
@@ -666,7 +673,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"channels": []}}}
     }
@@ -831,14 +838,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Singlesends Search
+### Singlesends Context Store Search
 
 Search and filter singlesends records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.singlesends.search(
+await sendgrid.singlesends.context_store_search(
     query={"filter": {"eq": {"categories": []}}}
 )
 ```
@@ -851,7 +858,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "singlesends",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"categories": []}}}
     }
@@ -950,6 +957,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `versions` | `null \| array` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `null \| string` |  |
+
 </details>
 
 ### Templates Get
@@ -1003,14 +1016,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Templates Search
+### Templates Context Store Search
 
 Search and filter templates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.templates.search(
+await sendgrid.templates.context_store_search(
     query={"filter": {"eq": {"generation": "<str>"}}}
 )
 ```
@@ -1023,7 +1036,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "templates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"generation": "<str>"}}}
     }
@@ -1123,14 +1136,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Singlesend Stats Search
+### Singlesend Stats Context Store Search
 
 Search and filter singlesend stats records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.singlesend_stats.search(
+await sendgrid.singlesend_stats.context_store_search(
     query={"filter": {"eq": {"ab_phase": "<str>"}}}
 )
 ```
@@ -1143,7 +1156,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "singlesend_stats",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ab_phase": "<str>"}}}
     }
@@ -1235,16 +1248,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Bounces Search
+### Bounces Context Store Search
 
 Search and filter bounces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.bounces.search(
+await sendgrid.bounces.context_store_search(
     query={"filter": {"eq": {"created": 0}}}
 )
 ```
@@ -1257,7 +1276,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "bounces",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created": 0}}}
     }
@@ -1347,16 +1366,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `status` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Blocks Search
+### Blocks Context Store Search
 
 Search and filter blocks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.blocks.search(
+await sendgrid.blocks.context_store_search(
     query={"filter": {"eq": {"created": 0}}}
 )
 ```
@@ -1369,7 +1394,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "blocks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created": 0}}}
     }
@@ -1458,6 +1483,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `ip` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ## Invalid Emails
@@ -1505,16 +1536,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `reason` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Invalid Emails Search
+### Invalid Emails Context Store Search
 
 Search and filter invalid emails records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.invalid_emails.search(
+await sendgrid.invalid_emails.context_store_search(
     query={"filter": {"eq": {"created": 0}}}
 )
 ```
@@ -1527,7 +1564,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invalid_emails",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created": 0}}}
     }
@@ -1613,16 +1650,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `email` | `string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Global Suppressions Search
+### Global Suppressions Context Store Search
 
 Search and filter global suppressions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.global_suppressions.search(
+await sendgrid.global_suppressions.context_store_search(
     query={"filter": {"eq": {"created": 0}}}
 )
 ```
@@ -1635,7 +1678,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "global_suppressions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created": 0}}}
     }
@@ -1768,14 +1811,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Suppression Groups Search
+### Suppression Groups Context Store Search
 
 Search and filter suppression groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.suppression_groups.search(
+await sendgrid.suppression_groups.context_store_search(
     query={"filter": {"eq": {"description": "<str>"}}}
 )
 ```
@@ -1788,7 +1831,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "suppression_groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"description": "<str>"}}}
     }
@@ -1880,16 +1923,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `integer` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Suppression Group Members Search
+### Suppression Group Members Context Store Search
 
 Search and filter suppression group members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await sendgrid.suppression_group_members.search(
+await sendgrid.suppression_group_members.context_store_search(
     query={"filter": {"eq": {"created_at": 0}}}
 )
 ```
@@ -1902,7 +1951,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "suppression_group_members",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": 0}}}
     }
