@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import com.fasterxml.jackson.databind.JsonNode
 
 class MsSqlServerJdbcPartitionFactoryTest {
     companion object {
@@ -267,6 +268,31 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+    }
+
+    @Test
+    fun testColdStartFullRefreshEmptyTable() {
+        val emptyTableStream = Stream(
+            id = StreamIdentifier.from(
+                StreamDescriptor().withNamespace("dbo").withName("empty_table")
+            ),
+            schema = setOf(fieldId),
+            configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+            configuredPrimaryKey = listOf(fieldId),
+            configuredCursor = fieldId,
+        )
+
+        val factoryWithEmptyTable = object : MsSqlServerJdbcPartitionFactory(
+            sharedState, selectQueryGenerator, config, metadataQuerierFactory,
+        ) {
+            // Simulate an empty source table: MAX(orderedColumn) returns NULL.
+            // Overriding here avoids needing a live JDBC connection for the unit test.
+            override fun findPkUpperBound(stream: Stream): JsonNode = Jsons.nullNode()
+        }
+
+        val partition = factoryWithEmptyTable.create(streamFeedBootstrap(emptyTableStream))
+        assertTrue(partition is MsSqlServerJdbcNonResumableSnapshotPartition)
+
     }
 
     @ParameterizedTest
