@@ -15,8 +15,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenA
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
-logger = logging.getLogger("airbyte")
-
 from . import constants
 from .streams import (
     Assignees,
@@ -61,6 +59,8 @@ from .streams import (
     Workflows,
 )
 from .utils import read_full_refresh
+
+logger = logging.getLogger("airbyte")
 
 
 def _is_auth_error(exc: AirbyteTracedException) -> bool:
