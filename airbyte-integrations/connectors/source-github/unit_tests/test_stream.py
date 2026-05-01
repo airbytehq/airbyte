@@ -1966,3 +1966,145 @@ def test_releases_extract_database_id_does_not_catch_type_error():
 def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
     """Verify that expected decode/unpack errors still return None after narrowing the except."""
     assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+
+
+def _setup_commits_stream(requests_mock, repositories, branches_to_pull, repo_branches_map):
+    """Helper to create a Commits stream with mocked repository and branch API responses.
+
+    Args:
+        repositories: list of repo full names, e.g. ["org/repo"]
+        branches_to_pull: list of branch entries, e.g. ["org/repo/main"]
+        repo_branches_map: dict mapping repo full name to list of (branch_name, default_branch_name) tuples,
+            e.g. {"org/repo": (["main", "dev"], "main")}
+    """
+    args = {
+        "repositories": repositories,
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+    stream = Commits(**args, branches_to_pull=branches_to_pull)
+
+    for repo in repositories:
+        branches_list, default_branch = repo_branches_map.get(repo, ([], "main"))
+        repo_api_url = f"https://api.github.com/repos/{repo}"
+        branches_api_url = f"https://api.github.com/repos/{repo}/branches"
+
+        requests_mock.get(
+            repo_api_url,
+            json={"id": 1, "updated_at": "2022-01-01T00:00:00Z", "default_branch": default_branch, "full_name": repo},
+        )
+        requests_mock.get(
+            branches_api_url,
+            json=[
+                {"name": b, "commit": {"sha": "abc123", "url": f"https://api.github.com/repos/{repo}/commits/abc123"}, "protected": False}
+                for b in branches_list
+            ],
+        )
+
+    return stream
+
+
+@pytest.mark.parametrize(
+    "repositories,branches_to_pull,repo_branches_map,expected_repos_mapping",
+    [
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/main"],
+            {"org/repo": (["main", "dev"], "main")},
+            {"org/repo": ["main"]},
+            id="single_valid_branch",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/main", "org/repo/dev"],
+            {"org/repo": (["main", "dev"], "main")},
+            {"org/repo": ["main", "dev"]},
+            id="multiple_valid_branches",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/main", "org/repo/nonexistent"],
+            {"org/repo": (["main", "dev"], "main")},
+            {"org/repo": ["main"]},
+            id="multiple_branches_some_invalid_nonexistent",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/main", "other/repo/main"],
+            {"org/repo": (["main"], "main")},
+            {"org/repo": ["main"]},
+            id="multiple_branches_some_invalid_wrong_repo",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/main", "malformed"],
+            {"org/repo": (["main"], "main")},
+            {"org/repo": ["main"]},
+            id="multiple_branches_some_invalid_malformed",
+        ),
+    ],
+)
+def test_validate_branches_to_pull_valid(requests_mock, repositories, branches_to_pull, repo_branches_map, expected_repos_mapping):
+    stream = _setup_commits_stream(requests_mock, repositories, branches_to_pull, repo_branches_map)
+    stream._validate_branches_to_pull()
+    assert stream.branches_to_repos == expected_repos_mapping
+
+
+@pytest.mark.parametrize(
+    "repositories,branches_to_pull,repo_branches_map",
+    [
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/nonexistent"],
+            {"org/repo": (["main"], "main")},
+            id="single_invalid_branch_nonexistent",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["other/repo/main"],
+            {"org/repo": (["main"], "main")},
+            id="single_invalid_branch_wrong_repo",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["malformed"],
+            {"org/repo": (["main"], "main")},
+            id="single_invalid_branch_malformed",
+        ),
+        pytest.param(
+            ["org/repo"],
+            ["org/repo/nonexistent", "other/repo/main"],
+            {"org/repo": (["main"], "main")},
+            id="all_branches_invalid",
+        ),
+    ],
+)
+def test_validate_branches_to_pull_raises_config_error(requests_mock, repositories, branches_to_pull, repo_branches_map):
+    stream = _setup_commits_stream(requests_mock, repositories, branches_to_pull, repo_branches_map)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        stream._validate_branches_to_pull()
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "No valid branches found" in exc_info.value.message
+
+
+def test_validate_branches_to_pull_warns_for_partial_invalid(requests_mock, caplog):
+    stream = _setup_commits_stream(
+        requests_mock,
+        repositories=["org/repo"],
+        branches_to_pull=["org/repo/main", "org/repo/nonexistent"],
+        repo_branches_map={"org/repo": (["main", "dev"], "main")},
+    )
+    stream._validate_branches_to_pull()
+    assert stream.branches_to_repos == {"org/repo": ["main"]}
+    assert any("Skipping invalid branch entry" in msg and "nonexistent" in msg for msg in caplog.messages)
+
+
+def test_validate_branches_to_pull_falls_back_to_default_branch(requests_mock):
+    stream = _setup_commits_stream(
+        requests_mock,
+        repositories=["org/repo"],
+        branches_to_pull=[],
+        repo_branches_map={"org/repo": (["main", "dev"], "main")},
+    )
+    stream._validate_branches_to_pull()
+    assert stream.branches_to_repos == {"org/repo": ["main"]}
