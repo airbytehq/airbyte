@@ -26,7 +26,7 @@ jobs:
           submodules: true
 
       - name: Install yq
-        run: sudo snap install yq
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq
 
       - name: List certified connectors
         id: list-connectors
@@ -70,7 +70,7 @@ jobs:
           submodules: true
 
       - name: Install yq
-        run: sudo snap install yq
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq
 
       - name: Setup Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
