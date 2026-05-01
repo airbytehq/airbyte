@@ -19,7 +19,7 @@ New to Airbyte Agents? Start here. Learn what the product is, choose the right i
 
 <CardWithIcon title="SDK" description="Build and run agent connectors directly in your Python applications." ctaText="SDK" ctaLink="/ai-agents/interfaces/sdk/" icon="fa-python" />
 
-<CardWithIcon title="MCP server" description="Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data." ctaText="MCP server" ctaLink="/ai-agents/interfaces/mcp/" icon="fa-plug" />
+<CardWithIcon title="Airbyte Agent MCP" description="Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data." ctaText="Airbyte Agent MCP" ctaLink="/ai-agents/interfaces/mcp/" icon="fa-plug" />
 
 <CardWithIcon title="API" description="Integrate Airbyte Agents into any language or framework over HTTP." ctaText="API" ctaLink="/ai-agents/interfaces/api/" icon="fa-code" />
 

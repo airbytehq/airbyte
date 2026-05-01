@@ -8,7 +8,7 @@ sidebar_label: What is Airbyte Agents?
 
 Airbyte Agents gives AI agents reliable, real-time access to your business data. It connects agents to the tools your organization runs on, unifies that data into one searchable layer, and lets agents read, search, and write across every connected system.
 
-You get managed connectors to 50+ SaaS applications, secure credential storage, and a pre-indexed Context Store that agents can query in milliseconds. Whether you use the web app, the MCP server, the Python SDK, or the HTTP API, your agents work with the same data, the same connectors, and the same permissions.
+You get managed connectors to 50+ SaaS applications, secure credential storage, and a pre-indexed Context Store that agents can query in milliseconds. Whether you use the web app, the Airbyte Agent MCP, the Python SDK, or the HTTP API, your agents work with the same data, the same connectors, and the same permissions.
 
 Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
 
@@ -86,7 +86,7 @@ The interface is the same across every connector and every access path. Whether 
 Airbyte Agents supports four interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
 
 - [**Web app**](../interfaces/ui): Chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
-- [**MCP server**](../interfaces/mcp): Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
+- [**Airbyte Agent MCP**](../interfaces/mcp): Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
 - [**Python SDK**](../interfaces/sdk): Build agents with typed connectors, automatic credential handling, and framework integrations.
 - [**HTTP API**](../interfaces/api): Manage connectors, tokens, and execution from any language or backend.
 

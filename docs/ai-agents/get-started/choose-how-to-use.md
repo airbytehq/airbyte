@@ -13,24 +13,24 @@ Use the flowchart below to find the best starting point, then read the section t
 ```mermaid
 flowchart TD
     START(["How do you want to use<br/>Airbyte Agents?"])
-    START -->|"I already use Claude,<br/>Cursor, or ChatGPT"| MCP["MCP server"]
+    START -->|"I already use Claude,<br/>Cursor, or ChatGPT"| MCP["Airbyte Agent MCP"]
     START -->|"I'm building a<br/>Python agent"| SDK["Python SDK"]
     START -->|"No code needed"| WEB["Web app"]
     START -->|"Non-Python backend<br/>or custom admin"| API["HTTP API"]
 
-    click MCP "#mcp-server"
+    click MCP "#airbyte-agent-mcp"
     click SDK "#python-sdk"
     click WEB "#web-app-research-preview"
     click API "#http-api"
 ```
 
-## MCP server
+## Airbyte Agent MCP
 
 **Best for:** Users of Claude, Cursor, ChatGPT, VS Code, or any agent that supports the [Model Context Protocol](https://modelcontextprotocol.io/).
 
-The [MCP server](../interfaces/mcp) is a remote, Airbyte-hosted server that gives MCP-capable agents authenticated access to your connected data. You have nothing to install. Add the server URL to your agent's MCP configuration, authenticate with your Airbyte account, and your agent can immediately read and write data across every connector in your workspace.
+The [Airbyte Agent MCP](../interfaces/mcp) is a remote, Airbyte-hosted MCP that gives MCP-capable agents authenticated access to your connected data. You have nothing to install. Add the server URL to your agent's MCP configuration, authenticate with your Airbyte account, and your agent can immediately read and write data across every connector in your workspace.
 
-**Get started:** See the [MCP server docs](../interfaces/mcp) for setup instructions for Claude Code, Cursor, VS Code, Claude Desktop, ChatGPT, and other clients.
+**Get started:** See the [Airbyte Agent MCP docs](../interfaces/mcp) for setup instructions for Claude Code, Cursor, VS Code, Claude Desktop, ChatGPT, and other clients.
 
 ## Python SDK
 
@@ -71,6 +71,6 @@ The [HTTP API](../interfaces/api) exposes REST endpoints for managing connectors
 
 ## All paths lead to the same data
 
-Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, API, and MCP server. You can mix and match interfaces as your needs evolve.
+Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, API, and Airbyte Agent MCP. You can mix and match interfaces as your needs evolve.
 
 For a deeper look at how the platform is organized, see [System architecture](../concepts/architecture).

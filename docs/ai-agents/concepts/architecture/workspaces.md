@@ -9,7 +9,7 @@ A workspace is an isolation boundary within an [organization](./organizations). 
 
 ## The default workspace
 
-Every organization starts with a workspace named `default`. Most people use this single workspace and never need to create additional ones. The web app, SDK, API, and MCP server all target the `default` workspace unless you specify otherwise.
+Every organization starts with a workspace named `default`. Most people use this single workspace and never need to create additional ones. The web app, SDK, API, and Airbyte Agent MCP all target the `default` workspace unless you specify otherwise.
 
 ## When to create additional workspaces
 

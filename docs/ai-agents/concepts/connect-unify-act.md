@@ -15,7 +15,7 @@ The platform manages the hard parts of connecting to third-party systems:
 
 - **Authentication.** The platform handles OAuth flows, API keys, and token refresh for you. Store end-user credentials once and use them from any interface.
 - **Multi-tenancy.** [Workspaces](../interfaces/sdk/workspaces) isolate connectors and credentials across tenants, teams, or environments within an organization.
-- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui) in chats and automations, the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
+- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui) in chats and automations, the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [Airbyte Agent MCP](../interfaces/mcp), whichever fits your stack.
 
 Connecting a new data source takes minutes, not weeks. You don't build or maintain API wrappers, manage credential storage, or handle token lifecycle.
 
