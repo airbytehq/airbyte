@@ -2682,9 +2682,5 @@
   "sidebar.connectors.doc.Yugabytedb": {
     "message": "Yugabytedb",
     "description": "The label for the doc item Yugabytedb in sidebar connectors, linking to the doc destinations/yugabytedb"
-  },
-  "sidebar.connectors.doc.Salesforce Destination": {
-    "message": "Salesforce Destination",
-    "description": "The label for the doc item Salesforce Destination in sidebar connectors, linking to the doc enterprise-connectors/destination-salesforce"
   }
 }
