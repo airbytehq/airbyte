@@ -16,6 +16,7 @@ import jakarta.annotation.PreDestroy
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.ShardingKey
 import java.time.Duration
 import java.util.Properties
 import org.postgresql.PGConnection
@@ -70,7 +71,38 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
         )
     }
 
-    override fun get(): Connection = dataSource.connection
+    override fun get(): Connection = ConnectionWithCleanup(dataSource.connection)
+
+    private class ConnectionWithCleanup(val base: Connection) : Connection by base {
+        // prevents closing the socket with an open transaction which causes problems with poolers
+        override fun close() {
+            base.use { it.rollback() }
+        }
+
+        // below are boilerplate - Java class requires explicit delegation on default methods
+        override fun beginRequest() {
+            base.beginRequest()
+        }
+        override fun endRequest() {
+            base.endRequest()
+        }
+        override fun setShardingKeyIfValid(
+            shardingKey: ShardingKey?,
+            superShardingKey: ShardingKey?,
+            timeout: Int
+        ): Boolean {
+            return base.setShardingKeyIfValid(shardingKey, superShardingKey, timeout)
+        }
+        override fun setShardingKeyIfValid(shardingKey: ShardingKey?, timeout: Int): Boolean {
+            return base.setShardingKeyIfValid(shardingKey, timeout)
+        }
+        override fun setShardingKey(shardingKey: ShardingKey?, superShardingKey: ShardingKey?) {
+            base.setShardingKey(shardingKey, superShardingKey)
+        }
+        override fun setShardingKey(shardingKey: ShardingKey?) {
+            base.setShardingKey(shardingKey)
+        }
+    }
 
     @PreDestroy
     fun close() {
