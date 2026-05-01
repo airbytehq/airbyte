@@ -22,8 +22,8 @@ This authentication method isn't available for this connector.
 Example request:
 
 ```python
-from airbyte_agent_airtable import AirtableConnector
-from airbyte_agent_airtable.models import AirtableAuthConfig
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
 
 connector = AirtableConnector(
     auth_config=AirtableAuthConfig(
@@ -60,7 +60,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Airtable",
     "name": "My Airtable Connector",
     "credentials": {
@@ -74,24 +74,140 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 After creating the connector, execute operations using either the Python SDK or API.
 If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
 
+
 **Python SDK**
 
-```python
-from airbyte_agent_airtable import AirtableConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `AirtableConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+
+connector = connect("airtable", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+
+connector = connect("airtable", workspace_name="<your_workspace_name>")
+
+@tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+
+connector = connect("airtable", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Airtable Agent")
+
+@mcp.tool()
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = AirtableConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @AirtableConnector.tool_utils
 async def airtable_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Airtable Agent")
+
+@mcp.tool()
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 **API**

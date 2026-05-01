@@ -35,7 +35,7 @@ The Ashby connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-ashby
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -46,9 +46,11 @@ Connectors can run in open source or hosted mode.
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
-from airbyte_agent_ashby import AshbyConnector
-from airbyte_agent_ashby.models import AshbyAuthConfig
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.connectors.ashby.models import AshbyAuthConfig
 
 connector = AshbyConnector(
     auth_config=AshbyAuthConfig(
@@ -56,10 +58,58 @@ connector = AshbyConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @AshbyConnector.tool_utils
 async def ashby_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.connectors.ashby.models import AshbyAuthConfig
+
+connector = AshbyConnector(
+    auth_config=AshbyAuthConfig(
+        api_key="<Your Ashby API key>"
+    )
+)
+
+@tool
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.connectors.ashby.models import AshbyAuthConfig
+
+connector = AshbyConnector(
+    auth_config=AshbyAuthConfig(
+        api_key="<Your Ashby API key>"
+    )
+)
+
+mcp = FastMCP("Ashby Agent")
+
+@mcp.tool()
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ### Hosted
@@ -69,22 +119,138 @@ If your Airbyte client can access multiple organizations, also set `organization
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
-```python
-from airbyte_agent_ashby import AshbyConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `AshbyConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+
+connector = connect("ashby", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+
+connector = connect("ashby", workspace_name="<your_workspace_name>")
+
+@tool
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+
+connector = connect("ashby", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Ashby Agent")
+
+@mcp.tool()
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = AshbyConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @AshbyConnector.tool_utils
 async def ashby_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AshbyConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.ashby import AshbyConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AshbyConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Ashby Agent")
+
+@mcp.tool()
+@AshbyConnector.tool_utils
+async def ashby_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Ashby connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 ## Full documentation
@@ -95,13 +261,13 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get) |
-| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Context Store Search](./REFERENCE.md#jobs-context-store-search) |
 | Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get) |
 | Locations | [List](./REFERENCE.md#locations-list), [Get](./REFERENCE.md#locations-get) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Job Postings | [List](./REFERENCE.md#job-postings-list), [Get](./REFERENCE.md#job-postings-get) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Job Postings | [List](./REFERENCE.md#job-postings-list), [Get](./REFERENCE.md#job-postings-get), [Context Store Search](./REFERENCE.md#job-postings-context-store-search) |
 | Sources | [List](./REFERENCE.md#sources-list) |
 | Archive Reasons | [List](./REFERENCE.md#archive-reasons-list) |
 | Candidate Tags | [List](./REFERENCE.md#candidate-tags-list) |
@@ -119,7 +285,6 @@ See the official [Ashby API reference](https://developers.ashbyhq.com/reference)
 
 ## Version information
 
-- **Package version:** 0.1.22
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/ashby/CHANGELOG.md)
+- **Package version:** 0.1.4
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** unknown
