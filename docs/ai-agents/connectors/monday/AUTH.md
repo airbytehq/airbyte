@@ -22,8 +22,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_monday import MondayConnector
-from airbyte_agent_monday.models import MondayOauth20AuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayOauth20AuthenticationAuthConfig
 
 connector = MondayConnector(
     auth_config=MondayOauth20AuthenticationAuthConfig(
@@ -45,8 +45,8 @@ connector = MondayConnector(
 Example request:
 
 ```python
-from airbyte_agent_monday import MondayConnector
-from airbyte_agent_monday.models import MondayApiTokenAuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayApiTokenAuthenticationAuthConfig
 
 connector = MondayConnector(
     auth_config=MondayApiTokenAuthenticationAuthConfig(
@@ -78,7 +78,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Monday",
     "name": "My Monday Connector",
     "credentials": {
@@ -100,7 +100,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Monday") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -111,7 +111,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Monday",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -147,7 +147,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Monday",
     "name": "My Monday Connector",
     "credentials": {
@@ -161,24 +161,140 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 After creating the connector, execute operations using either the Python SDK or API.
 If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
 
+
 **Python SDK**
 
-```python
-from airbyte_agent_monday import MondayConnector, AirbyteAuthConfig
+The `connect()` factory returns a fully typed `MondayConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+
+connector = connect("monday", workspace_name="<your_workspace_name>")
+
+@agent.tool_plain
+@MondayConnector.tool_utils
+async def monday_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+
+connector = connect("monday", workspace_name="<your_workspace_name>")
+
+@tool
+@MondayConnector.tool_utils
+async def monday_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Monday connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+
+connector = connect("monday", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Monday Agent")
+
+@mcp.tool()
+@MondayConnector.tool_utils
+async def monday_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Monday connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = MondayConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+@agent.tool_plain
 @MondayConnector.tool_utils
 async def monday_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+import json
+
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = MondayConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@MondayConnector.tool_utils
+async def monday_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Monday connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+import json
+
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = MondayConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Monday Agent")
+
+@mcp.tool()
+@MondayConnector.tool_utils
+async def monday_execute(entity: str, action: str, params: dict | None = None) -> str:
+    """Execute Monday connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return json.dumps(result, default=str)
 ```
 
 **API**
