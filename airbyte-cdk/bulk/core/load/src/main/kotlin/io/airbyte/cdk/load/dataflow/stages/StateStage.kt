@@ -26,6 +26,7 @@ class StateStage(
 
         stateHistogramStore.acceptFlushedCounts(countUpdates)
         statsStore.acceptStats(input.mappedDesc!!, countUpdates, byteUpdates)
+        log.info { "STATE STAGE — reported flushed counts for stream=${input.mappedDesc}" }
 
         return input
     }

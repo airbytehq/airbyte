@@ -40,11 +40,11 @@ class AggregateStore(
         for ((key, entry) in aggregates) {
             // remove complete
             if (entry.isComplete()) {
-                log.info { "PUBLISH — Reason: Complete" }
+                log.info { "PUBLISH — Reason: Complete — stream=$key records=${entry.recordCountTrigger.watermark()} bytes=${entry.estimatedBytesTrigger.watermark()}" }
                 return remove(key)
             }
             if (entry.isStale(timestampMs)) {
-                log.info { "PUBLISH — Reason: Stale" }
+                log.info { "PUBLISH — Reason: Stale — stream=$key records=${entry.recordCountTrigger.watermark()} bytes=${entry.estimatedBytesTrigger.watermark()}" }
                 return remove(key)
             }
         }
@@ -55,9 +55,9 @@ class AggregateStore(
 
             if (activeBytes > config.maxEstBytesAllAggregates) {
                 // evict largest in case of heavy cardinality
-                log.info { "PUBLISH — Reason: Cardinality" }
                 val largest =
                     aggregates.entries.maxBy { it.value.estimatedBytesTrigger.watermark() }
+                log.info { "PUBLISH — Reason: Cardinality — stream=${largest.key} records=${largest.value.recordCountTrigger.watermark()} bytes=${largest.value.estimatedBytesTrigger.watermark()} activeAggregates=${aggregates.size} totalActiveBytes=$activeBytes" }
                 return remove(largest.key)
             }
         }

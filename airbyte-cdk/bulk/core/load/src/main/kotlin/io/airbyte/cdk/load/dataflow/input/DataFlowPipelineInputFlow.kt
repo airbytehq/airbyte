@@ -37,7 +37,10 @@ class DataFlowPipelineInputFlow(
     ) {
         inputFlow.collect {
             when (it) {
-                is CheckpointMessage -> stateStore.accept(it)
+                is CheckpointMessage -> {
+                    log.info { "INPUT — received checkpoint message: type=${it::class.simpleName} recordCount=${it.sourceStats?.recordCount}" }
+                    stateStore.accept(it)
+                }
                 is DestinationRecord -> {
                     // tally read count
                     statsStore.increment(it.stream.unmappedDescriptor, 1, it.serializedSizeBytes)

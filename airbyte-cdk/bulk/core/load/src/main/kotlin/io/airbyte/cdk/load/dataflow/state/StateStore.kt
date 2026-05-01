@@ -56,12 +56,14 @@ class StateStore(
             is GlobalSnapshotCheckpoint -> {
                 enforceMode(Mode.GLOBAL)
                 globalStates[key] = msg
+                log.info { "STATE ACCEPTED — mode=GLOBAL key=${key.id} expectedRecords=${stats.recordCount}" }
             }
             is StreamCheckpoint -> {
                 enforceMode(Mode.STREAM)
                 val desc = msg.checkpoint.unmappedDescriptor
                 val state = streamStates.computeIfAbsent(desc) { StreamState() }
                 state.queue[key] = msg
+                log.info { "STATE ACCEPTED — mode=STREAM key=${key.id} stream=$desc expectedRecords=${stats.recordCount}" }
             }
         }
     }
@@ -84,6 +86,7 @@ class StateStore(
                 val msg = globalStates.remove(head)!!
                 globalNextIndex.incrementAndGet()
                 histogramStore.remove(head)
+                log.info { "STATE COMPLETE — mode=GLOBAL key=${head.id}" }
                 stateStatsEnricher.enrich(msg, head)
             }
             Mode.STREAM -> {
@@ -110,6 +113,7 @@ class StateStore(
 
                 st.nextIndex.incrementAndGet()
                 histogramStore.remove(head)
+                log.info { "STATE COMPLETE — mode=STREAM key=${head.id} stream=$desc" }
                 stateStatsEnricher.enrich(msg, head)
             }
         }

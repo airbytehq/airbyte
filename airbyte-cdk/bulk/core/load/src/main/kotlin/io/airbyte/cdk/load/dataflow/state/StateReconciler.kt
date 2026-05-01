@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.state
 import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.Duration
@@ -27,6 +28,8 @@ class StateReconciler(
     @Named("stateReconcilerScope") private val scope: CoroutineScope,
     @Named("stateReconcilerInterval") interval: Duration?, // only java durations can be injected
 ) {
+    private val log = KotlinLogging.logger {}
+
     // allow overriding this for test purposes
     private val interval = interval?.toKotlinDuration() ?: 30.seconds
     private lateinit var job: Job
@@ -43,10 +46,15 @@ class StateReconciler(
     }
 
     fun flushCompleteStates() {
+        var count = 0
         var complete = stateStore.getNextComplete()
         while (complete != null) {
             publish(complete.asProtocolMessage())
+            count++
             complete = stateStore.getNextComplete()
+        }
+        if (count > 0) {
+            log.info { "STATE RECONCILER — flushed $count complete states to platform" }
         }
     }
 
