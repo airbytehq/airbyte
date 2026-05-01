@@ -4,16 +4,19 @@
 
 package io.airbyte.integrations.source.postgres
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
+import jakarta.annotation.PreDestroy
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.ShardingKey
+import java.time.Duration
 import java.util.Properties
 import org.postgresql.PGConnection
 import org.postgresql.util.PSQLException
@@ -23,6 +26,7 @@ import org.postgresql.util.PSQLException
 class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration) :
     JdbcConnectionFactory(pgConfig) {
     private val log = KotlinLogging.logger {}
+    private val maxConcurrency: Int = pgConfig.maxConcurrency
 
     companion object {
         private const val USER = "user"
@@ -40,11 +44,37 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
             PASSWORD to config.jdbcProperties[PASSWORD]!!,
         )
 
-    override fun get(): Connection {
-        // Setting autoCommit to false in pg jdbc allows the driver to start returning result before
-        // the entire result set is received from the server. This improves performance and memory
-        // consumption when fetching large result sets.
-        return ConnectionWithCleanup(super.get()).also { it.autoCommit = false }
+    private val _dataSourceLazy = lazy { createDataSource() }
+    private val dataSource: HikariDataSource by _dataSourceLazy
+
+    private fun createDataSource(): HikariDataSource {
+        val tunnelSession: TunnelSession = ensureTunnelSession()
+        val jdbcUrl =
+            String.format(
+                config.jdbcUrlFmt,
+                tunnelSession.address.hostName,
+                tunnelSession.address.port,
+            )
+        log.info { "Creating HikariCP connection pool with size ${maxConcurrency + 1}." }
+        return HikariDataSource(
+            HikariConfig().apply {
+                this.jdbcUrl = jdbcUrl
+                isAutoCommit = false
+                maximumPoolSize = maxConcurrency + 1
+                minimumIdle = 0
+                keepaliveTime = Duration.ofSeconds(30).toMillis()
+                maxLifetime = Duration.ofMinutes(30).toMillis()
+                connectionTimeout = Duration.ofSeconds(30).toMillis()
+                dataSourceProperties = Properties().apply { putAll(config.jdbcProperties) }
+            }
+        )
+    }
+
+    override fun get(): Connection = dataSource.connection
+
+    @PreDestroy
+    fun close() {
+        if (_dataSourceLazy.isInitialized()) dataSource.close()
     }
 
     fun getReplication(): PGConnection {
@@ -78,37 +108,6 @@ class PostgresSourceJdbcConnectionFactory(pgConfig: PostgresSourceConfiguration)
         validateReplicationConnection(connection)
 
         return connection.unwrap(PGConnection::class.java)
-    }
-
-    private class ConnectionWithCleanup(val base: Connection) : Connection by base {
-        // prevents closing the socket with an open transaction which causes problems with poolers
-        override fun close() {
-            base.use { it.rollback() }
-        }
-
-        // below are boilerplate - Java class requires explicit delegation on default methods
-        override fun beginRequest() {
-            base.beginRequest()
-        }
-        override fun endRequest() {
-            base.endRequest()
-        }
-        override fun setShardingKeyIfValid(
-            shardingKey: ShardingKey?,
-            superShardingKey: ShardingKey?,
-            timeout: Int
-        ): Boolean {
-            return base.setShardingKeyIfValid(shardingKey, superShardingKey, timeout)
-        }
-        override fun setShardingKeyIfValid(shardingKey: ShardingKey?, timeout: Int): Boolean {
-            return base.setShardingKeyIfValid(shardingKey, timeout)
-        }
-        override fun setShardingKey(shardingKey: ShardingKey?, superShardingKey: ShardingKey?) {
-            base.setShardingKey(shardingKey, superShardingKey)
-        }
-        override fun setShardingKey(shardingKey: ShardingKey?) {
-            base.setShardingKey(shardingKey)
-        }
     }
 
     private fun validateReplicationConnection(connection: Connection) {
