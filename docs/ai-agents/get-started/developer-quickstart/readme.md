@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 3
 sidebar_label: Developer Quickstart
 ---
@@ -28,9 +29,9 @@ Step-by-step guides that take you from an empty project to a working agent in ap
 
 Pick the framework you use:
 
-- [**Pydantic AI**](tutorial-pydantic) — Build an agent with Pydantic AI and the Airbyte Agent SDK.
-- [**LangChain**](tutorial-langchain) — Build an agent with LangChain, LangGraph, and the Airbyte Agent SDK.
-- [**FastMCP**](tutorial-fastmcp) — Build an MCP server with FastMCP and the Airbyte Agent SDK.
+- [**Pydantic AI**](tutorial-pydantic): Build an agent with Pydantic AI and the Airbyte Agent SDK.
+- [**LangChain**](tutorial-langchain): Build an agent with LangChain, LangGraph, and the Airbyte Agent SDK.
+- [**FastMCP**](tutorial-fastmcp): Build an MCP server with FastMCP and the Airbyte Agent SDK.
 
 ## Skills
 
@@ -38,16 +39,16 @@ Skills are pre-packaged instructions you install into a coding agent so it can g
 
 Pick the coding agent you use:
 
-- [**Claude Code**](skills/claude-code) — Install Airbyte skills into Claude Code as a plugin or through skills.sh.
-- [**Codex**](skills/codex) — Install Airbyte skills into OpenAI Codex through skills.sh or a manual symlink.
-- [**Lovable**](skills/lovable) — Paste the Airbyte skill into a Lovable build prompt to generate full-stack apps with Airbyte connectors.
+- [**Claude Code**](skills/claude-code): Install Airbyte skills into Claude Code as a plugin or through skills.sh.
+- [**Codex**](skills/codex): Install Airbyte skills into OpenAI Codex through skills.sh or a manual symlink.
+- [**Lovable**](skills/lovable): Paste the Airbyte skill into a Lovable build prompt to generate full-stack apps with Airbyte connectors.
 
 ## Before you start
 
 Both paths share a few common requirements.
 
 - **An Airbyte Agents account.** Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
-- **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
+- **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai). See [Manage your user profile](../../admin/profile) for details.
 - **Python 3.10+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
 
 import DocCardList from '@theme/DocCardList';
