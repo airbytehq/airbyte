@@ -219,7 +219,9 @@ class SourceGithub(AbstractSource):
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
-            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, logger=logger, is_check_connection=True)
+            _, repositories, _ = self._get_org_repositories(
+                config=config, authenticator=authenticator, logger=logger, is_check_connection=True
+            )
             if not repositories:
                 return (
                     False,
@@ -239,7 +241,9 @@ class SourceGithub(AbstractSource):
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
         try:
-            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator, logger=logging.getLogger("airbyte"))
+            organizations, repositories, pattern = self._get_org_repositories(
+                config=config, authenticator=authenticator, logger=logging.getLogger("airbyte")
+            )
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)

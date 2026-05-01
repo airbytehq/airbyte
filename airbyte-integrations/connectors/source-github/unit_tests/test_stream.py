@@ -1992,7 +1992,13 @@ def test_validate_branches_to_pull_missing_repo(monkeypatch, requests_mock):
     # Branches endpoint for both repos
     requests_mock.get(
         "https://api.github.com/repos/org/good-repo/branches",
-        json=[{"name": "main", "commit": {"sha": "abc123", "url": "https://api.github.com/repos/org/good-repo/commits/abc123"}, "protected": False}],
+        json=[
+            {
+                "name": "main",
+                "commit": {"sha": "abc123", "url": "https://api.github.com/repos/org/good-repo/commits/abc123"},
+                "protected": False,
+            }
+        ],
     )
     requests_mock.get("https://api.github.com/repos/org/missing-repo/branches", status_code=404, json={"message": "Not Found"})
 
