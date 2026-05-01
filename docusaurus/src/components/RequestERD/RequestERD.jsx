@@ -21,9 +21,8 @@ export const RequestERD = () => {
       const entry = await getRegistryEntry({ path: location.pathname });
       const erdUrl = getFromPaths(entry, "erdUrl_[oss|cloud]");
       setHasERD(Boolean(erdUrl));
-      const name = getFromPaths(entry, "name_[oss|cloud]");
       setSource({
-        name,
+        name: entry.name,
         definitionId: entry.definitionId,
       });
     }

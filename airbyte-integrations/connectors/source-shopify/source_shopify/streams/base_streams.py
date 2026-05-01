@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -14,6 +14,7 @@ import pendulum as pdm
 import requests
 from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
+from source_shopify.shopify_graphql.bulk.external_sort import DEFAULT_SORT_CHUNK_SIZE, external_stable_sort
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
@@ -835,22 +836,38 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {}
 
+    # Chunk size used by the disk-backed external sort in `sort_output_asc`.
+    # Exposed as a class attribute so tests and subclasses can tune it.
+    sort_chunk_size: int = DEFAULT_SORT_CHUNK_SIZE
+
     def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        """Emit `non_sorted_records` in ascending `cursor_field` order.
+
+        The previous implementation relied on `sorted(...)` which fully
+        materialized the input iterable in memory. For large bulk GraphQL
+        slices (notably the metafield streams, where sorting is applied at the
+        parent-entity level but records are emitted at the child level) that
+        materialization triggered out-of-memory failures in production syncs.
+
+        This implementation preserves the prior ascending, stable ordering and
+        downstream checkpoint/state semantics while bounding peak memory via a
+        disk-backed external merge sort. Inputs that fit in a single in-memory
+        chunk take the fast path with no disk spill.
         """
-        Apply sorting for collected records, to guarantee the `ASC` output.
-        This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
-        """
-        if non_sorted_records:
-            if not self.cursor_field:
-                yield from non_sorted_records
-            else:
-                yield from sorted(
-                    non_sorted_records,
-                    key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_state_comparison_value,
-                )
-        else:
+        if not non_sorted_records:
             # always return an empty iterable, if no records
             return []
+        if not self.cursor_field:
+            return non_sorted_records
+        return external_stable_sort(
+            non_sorted_records,
+            key_fn=self._sort_key_for_record,
+            chunk_size=self.sort_chunk_size,
+        )
+
+    def _sort_key_for_record(self, record: Mapping[str, Any]) -> Any:
+        value = record.get(self.cursor_field)
+        return value if value else self.default_state_comparison_value
 
     def read_records(
         self,

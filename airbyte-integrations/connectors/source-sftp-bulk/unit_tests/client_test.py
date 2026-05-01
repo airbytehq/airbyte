@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
+import struct
 from unittest.mock import MagicMock, patch
 
 import paramiko
@@ -65,8 +66,9 @@ def test_parse_private_key_unrecognized_format_raises_config_error():
         patch.object(paramiko.ECDSAKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
         patch.object(paramiko.DSSKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
     ):
-        with pytest.raises(AirbyteTracedException, match="Failed to parse private key"):
+        with pytest.raises(AirbyteTracedException) as exc_info:
             _parse_private_key("invalid-key-content")
+        assert "Private key format is not recognized" in exc_info.value.message
 
 
 def test_parse_private_key_catches_value_error():
@@ -113,3 +115,27 @@ def test_client_without_private_key_skips_parse():
         )
         mock_parse.assert_not_called()
         assert client.key is None
+
+
+def test_parse_private_key_catches_struct_error():
+    """struct.error from a key class is caught and the next class is tried."""
+    mock_key = MagicMock(spec=paramiko.Ed25519Key)
+    with (
+        patch.object(paramiko.RSAKey, "from_private_key", side_effect=struct.error("unpack requires a buffer of 4 bytes")),
+        patch.object(paramiko.Ed25519Key, "from_private_key", return_value=mock_key),
+    ):
+        result = _parse_private_key("fake-key-content")
+        assert result is mock_key
+
+
+def test_parse_private_key_all_struct_errors_raises_config_error():
+    """All key classes raise struct.error => AirbyteTracedException with config_error."""
+    with (
+        patch.object(paramiko.RSAKey, "from_private_key", side_effect=struct.error("unpack requires a buffer of 4 bytes")),
+        patch.object(paramiko.Ed25519Key, "from_private_key", side_effect=struct.error("bad data")),
+        patch.object(paramiko.ECDSAKey, "from_private_key", side_effect=struct.error("bad data")),
+        patch.object(paramiko.DSSKey, "from_private_key", side_effect=struct.error("bad data")),
+    ):
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            _parse_private_key("invalid-key-content")
+        assert "Private key format is not recognized" in exc_info.value.message

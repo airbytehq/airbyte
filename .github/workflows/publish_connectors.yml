@@ -376,7 +376,8 @@ jobs:
             --name "${{ matrix.connector }}" \
             --repo-path "$GITHUB_WORKSPACE" \
             --new-version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
-            --no-changelog
+            --no-changelog \
+            --progressive-rollout-enabled=false
 
       # --- Registry artifact generation and publishing ---
       - name: Generate Registry Artifacts
