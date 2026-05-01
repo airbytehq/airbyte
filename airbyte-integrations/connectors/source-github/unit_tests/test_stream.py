@@ -800,7 +800,9 @@ def test_project_columns_parent_404_continues(time_mock, requests_mock):
         json=[{"id": 10, "name": "To Do", "updated_at": "2022-02-01T00:00:00Z"}],
     )
 
-    stream = ProjectColumns(parent, start_date="2022-01-01T00:00:00Z", repositories=["org/repo-good", "org/repo-bad"], page_size_for_large_streams=30)
+    stream = ProjectColumns(
+        parent, start_date="2022-01-01T00:00:00Z", repositories=["org/repo-good", "org/repo-bad"], page_size_for_large_streams=30
+    )
     parent._http_client._session.cache.clear()
     stream._http_client._session.cache.clear()
 
