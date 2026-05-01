@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Optional, Union
 
 import requests
@@ -12,6 +13,9 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorR
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 from . import constants
+
+
+logger = logging.getLogger("airbyte")
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
@@ -48,6 +52,10 @@ def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requ
         try:
             response_data = response_or_exception.json()
         except ValueError:
+            logger.warning(
+                "is_conflict_with_empty_repository received non-JSON 409 response (first 50 chars: %r).",
+                response_or_exception.text[:50],
+            )
             return False
         return response_data.get("message") == "Git Repository is empty."
     return False
@@ -62,6 +70,11 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
         try:
             body = response.json()
         except ValueError:
+            self._logger.warning(
+                "GraphQL rate-limit check received non-JSON response (HTTP %s, first 50 chars: %r).",
+                response.status_code,
+                response.text[:50],
+            )
             return False
         return self.stream.check_graphql_rate_limited(body or {})
 

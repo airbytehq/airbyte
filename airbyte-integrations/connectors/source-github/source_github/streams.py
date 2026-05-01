@@ -1587,10 +1587,10 @@ class Workflows(SemiIncrementalMixin, GithubStream):
             body = response.json()
         except ValueError:
             self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). Yielding no records for this page.",
                 self.name,
                 response.status_code,
-                response.text[:500],
+                response.text[:50],
             )
             return
         items = (body or {}).get("workflows")
@@ -1629,10 +1629,10 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
             body = response.json()
         except ValueError:
             self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). Yielding no records for this page.",
                 self.name,
                 response.status_code,
-                response.text[:500],
+                response.text[:50],
             )
             return
         items = (body or {}).get("workflow_runs")
@@ -1725,10 +1725,10 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
             body = response.json()
         except ValueError:
             self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). Yielding no records for this page.",
                 self.name,
                 response.status_code,
-                response.text[:500],
+                response.text[:50],
             )
             return
         items = (body or {}).get("jobs")
@@ -1930,10 +1930,10 @@ class IssueTimelineEvents(GithubStream):
             events_list = response.json()
         except ValueError:
             self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). " "Yielding base record without timeline events.",
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). " "Yielding base record without timeline events.",
                 self.name,
                 response.status_code,
-                response.text[:500],
+                response.text[:50],
             )
             yield record
             return
