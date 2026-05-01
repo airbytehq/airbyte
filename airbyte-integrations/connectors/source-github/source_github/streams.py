@@ -151,44 +151,62 @@ class GithubStreamABC(HttpStream, ABC):
                 elif isinstance(self, TeamMemberships):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
+                    error_msg = (
+                        f"Skipping `{self.__class__.__name__}` for repository `{repository}`: "
+                        f"GitHub returned 404 Not Found. The repository may not exist, may have been deleted, "
+                        f"or the configured token may lack access to it."
+                    )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e._exception.response.json().get("message"))
+                api_message = (e._exception.response.json() or {}).get("message", "")
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                elif isinstance(self, (Organizations, Teams, Users)):
                     error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                        f"Skipping `{self.name}` for organization `{organisation}`: "
+                        f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
+                        f"or this organization may require SAML SSO authorization. "
+                        f"GitHub message: {api_message!r}"
                     )
                 # For all other `Repository` base streams
                 else:
                     error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                        f"Skipping `{self.name}` for repository `{repository}`: "
+                        f"GitHub denied access (HTTP 403). Your token may be missing required scopes, "
+                        f"or this organization may require SAML SSO authorization. "
+                        f"GitHub message: {api_message!r}"
                     )
             elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
+                api_message = (e._exception.response.json() or {}).get("message", "")
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
-                    error_msg = str(e._exception.response.json().get("message"))
-                    self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
+                    self.logger.error(
+                        f"GitHub authentication failed (HTTP 401) for stream `{self.name}`. "
+                        f"Your Personal Access Token may need to be renewed. GitHub message: {api_message!r}"
+                    )
                 raise e
             elif e._exception.response.status_code == requests.codes.GONE and isinstance(self, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+                # Some repos don't have projects enabled and we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+                error_msg = (
+                    f"GitHub Projects (classic) is disabled for repository `{stream_slice['repository']}`. "
+                    f"Skipping the `Projects` stream for this repository."
+                )
             elif e._exception.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
+                    f"Skipping `{self.name}` for repository `{stream_slice['repository']}`: "
+                    f"GitHub returned 409 Conflict. The repository is likely empty (no commits)."
                 )
             elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e._exception.response.status_code == requests.codes.BAD_GATEWAY:
-                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
+                error_msg = (
+                    f"GitHub returned HTTP 502 Bad Gateway for stream `{self.name}` after exhausting retries. "
+                    f"This is usually transient — the next sync attempt should succeed."
+                )
             else:
-                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
 

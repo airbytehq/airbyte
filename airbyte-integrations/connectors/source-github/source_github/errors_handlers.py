@@ -23,7 +23,12 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Access denied due to insufficient permissions.",
+        error_message=(
+            "GitHub denied access (HTTP 403). Your token may be missing required scopes "
+            "(this connector typically needs: repo, read:org, read:user, read:project, workflow), "
+            "or this organization may require SAML SSO authorization. "
+            "See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api"
+        ),
     ),
     404: ErrorResolution(
         response_action=ResponseAction.RETRY,
@@ -92,11 +97,18 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RATE_LIMITED,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=(
+                        f"GitHub rate limit hit for stream `{self.stream.name}` "
+                        f"(HTTP {response_or_exception.status_code}). "
+                        f"Waiting for the rate limit window to reset before retrying."
+                    ),
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
-                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
+                log_message = (
+                    f"Skipping `{self.stream.name}` for this repository: GitHub returned 409 Conflict "
+                    f"with message 'Git Repository is empty.' This means the repository has no commits."
+                )
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
