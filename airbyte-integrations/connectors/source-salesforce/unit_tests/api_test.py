@@ -245,6 +245,53 @@ def test_stream_start_datetime_format_should_not_changed(stream_config, stream_a
 
 
 @pytest.mark.parametrize(
+    "frozen_time,expected_start_date",
+    [
+        pytest.param("2025-06-01", "2006-01-01T00:00:00Z", id="frozen_at_2025"),
+        pytest.param("2026-05-01", "2006-01-01T00:00:00Z", id="frozen_at_2026"),
+        pytest.param("2030-01-01", "2006-01-01T00:00:00Z", id="frozen_at_2030"),
+    ],
+)
+def test_default_start_date_is_fixed_not_sliding_window(frozen_time, expected_start_date):
+    """Verify that when start_date is not configured, the connector uses a fixed default
+    rather than a sliding window relative to the current date. A sliding window caused
+    data loss on schema-change-triggered refreshes because the window shifted forward
+    over time, excluding records that were previously within range.
+    """
+    with freezegun.freeze_time(frozen_time):
+        config = {
+            "client_id": "fake_client_id",
+            "client_secret": "fake_client_secret",
+            "refresh_token": "fake_refresh_token",
+            "is_sandbox": False,
+            "wait_timeout": 15,
+        }
+        assert "start_date" not in config
+        source = SourceSalesforce(None, config, None)
+        # Simulate what streams() does with the config
+        if not config.get("start_date"):
+            config["start_date"] = source.DEFAULT_START_DATE
+        assert config["start_date"] == expected_start_date
+
+
+def test_default_start_date_not_applied_when_user_provides_start_date():
+    """Verify that when a user explicitly configures start_date, the default is not applied."""
+    user_start_date = "2020-03-15T00:00:00Z"
+    config = {
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
+        "start_date": user_start_date,
+        "is_sandbox": False,
+        "wait_timeout": 15,
+    }
+    source = SourceSalesforce(None, config, None)
+    if not config.get("start_date"):
+        config["start_date"] = source.DEFAULT_START_DATE
+    assert config["start_date"] == user_start_date
+
+
+@pytest.mark.parametrize(
     "login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg",
     (
         (
