@@ -14,7 +14,7 @@ The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *y
 ## Get your credentials
 
 1. Sign in to [app.airbyte.ai](https://app.airbyte.ai/).
-2. Open the [Profile page](https://app.airbyte.ai/profile) and copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET`.
+2. Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET`.
 
 For details, see [Manage your user profile](../../admin/profile).
 
