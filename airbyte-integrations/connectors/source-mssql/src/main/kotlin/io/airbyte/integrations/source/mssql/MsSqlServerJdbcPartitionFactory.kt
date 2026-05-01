@@ -114,9 +114,12 @@ open class MsSqlServerJdbcPartitionFactory(
             val upperBound = findPkUpperBound(stream)
 
             // A null upper bound from MAX(orderedColumn) means the table is empty.
-            // Skip sampling and use a non-resumable partition to read the (empty) table in one pass.
+            // Skip sampling and use a non-resumable partition to read the (empty) table in one
+            // pass.
             if (upperBound.isNull) {
-                log.info { "Upper bound is null, indicating that the table is empty. Using non-resumable snapshot." }
+                log.info {
+                    "Upper bound is null, indicating that the table is empty. Using non-resumable snapshot."
+                }
                 // Note: MsSqlServerJdbcNonResumableSnapshotPartition.completeState always emits
                 // MsSqlServerJdbcStreamStateValue.snapshotCompleted, even in CDC (global) mode.
                 // If a future change makes CDC empty tables emit a different sentinel, that check
@@ -418,7 +421,7 @@ open class MsSqlServerJdbcPartitionFactory(
         }
         log.info {
             "Stream ${streamState.stream.name} is a view or has no ordered column. " +
-                    "Using non-resumable snapshot."
+                "Using non-resumable snapshot."
         }
         return MsSqlServerJdbcNonResumableSnapshotPartition(
             selectQueryGenerator,
