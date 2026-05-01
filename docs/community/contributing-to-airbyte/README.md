@@ -32,7 +32,7 @@ Airbyte is revamping its core Java destinations codebase. We're not reviewing/ac
 
 ### Contributions we don't accept
 
-- Platform contributions. In mid-2025, Airbyte stopped accepting community contributions to the Airbyte platform. Continue reporting issues through GitHub so we can investigate and prioritize fixes and improvements.
+- Platform contributions. In mid-2025, Airbyte stopped accepting community contributions to the data replication platform. Continue reporting issues through GitHub so we can investigate and prioritize fixes and improvements.
 - Airbyte Agents contributions. Airbyte Agents is closed-source. For bugs or feature requests related to Airbyte Agents, use the [support center](https://support.airbyte.com/hc/en-us/requests/new).
 
 ### Standard contribution workflow
