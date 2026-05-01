@@ -129,7 +129,7 @@ def test_get_org_repositories(requests_mock):
     config = {"repositories": ["airbytehq/integration-test", "docker/*"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
-    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None, logger=logging.getLogger("airbyte"))
+    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
     assert set(organisations) == {"airbytehq", "docker"}
@@ -300,7 +300,7 @@ def test_get_org_repositories_mixed_accessible_and_inaccessible(monkeypatch, rat
     config = {"repositories": ["org/good-repo", "org/bad-repo"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
-    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None, logger=logging.getLogger("airbyte"))
+    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"org/good-repo"}
     assert set(organisations) == {"org"}
@@ -319,8 +319,10 @@ def test_get_org_repositories_all_inaccessible(monkeypatch, rate_limit_mock_resp
     source = SourceGithub()
     config = source._ensure_default_values(config)
     with pytest.raises(AirbyteTracedException) as exc_info:
-        source._get_org_repositories(config, authenticator=None, logger=logging.getLogger("airbyte"))
+        source._get_org_repositories(config, authenticator=None)
     assert "All provided repositories are inaccessible" in exc_info.value.message
+    assert "org/bad1" in exc_info.value.message
+    assert "org/bad2" in exc_info.value.message
     assert exc_info.value.failure_type == FailureType.config_error
 
 
@@ -339,7 +341,7 @@ def test_get_org_repositories_all_accessible(rate_limit_mock_response, requests_
     config = {"repositories": ["org/repo1", "org/repo2"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
-    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None, logger=logging.getLogger("airbyte"))
+    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"org/repo1", "org/repo2"}
     assert set(organisations) == {"org"}
@@ -347,7 +349,7 @@ def test_get_org_repositories_all_accessible(rate_limit_mock_response, requests_
 
 @responses.activate
 def test_get_org_repositories_wildcard_with_inaccessible_org(monkeypatch, rate_limit_mock_response, requests_mock):
-    """When a wildcard org is inaccessible, it is skipped gracefully."""
+    """When a wildcard org is inaccessible (404), it is skipped gracefully."""
     from source_github.streams import GithubStreamABC
 
     monkeypatch.setattr(GithubStreamABC, "max_retries", 0)
@@ -360,7 +362,52 @@ def test_get_org_repositories_wildcard_with_inaccessible_org(monkeypatch, rate_l
     config = {"repositories": ["badorg/*", "org/repo1"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
-    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None, logger=logging.getLogger("airbyte"))
+    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"org/repo1"}
     assert set(organisations) == {"org"}
+
+
+@responses.activate
+def test_get_org_repositories_wildcard_403_org(monkeypatch, rate_limit_mock_response, requests_mock):
+    """A 403 on the wildcard org endpoint is caught (re-raised by Repositories) and the literal repo still resolves."""
+    from source_github.streams import GithubStreamABC
+
+    monkeypatch.setattr(GithubStreamABC, "max_retries", 0)
+    requests_mock.get(
+        "https://api.github.com/orgs/restricted-org/repos",
+        status_code=403,
+        json={"message": "Resource not accessible by integration"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo1",
+        json={"full_name": "org/repo1", "organization": {"login": "org"}},
+    )
+
+    config = {"repositories": ["restricted-org/*", "org/repo1"]}
+    source = SourceGithub()
+    config = source._ensure_default_values(config)
+    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
+
+    assert set(repositories) == {"org/repo1"}
+    assert set(organisations) == {"org"}
+
+
+@responses.activate
+def test_get_org_repositories_literal_401_propagates(monkeypatch, rate_limit_mock_response, requests_mock):
+    """A 401 on a literal repo propagates so the user gets a credential error, not a misleading 'inaccessible' diagnosis."""
+    from source_github.streams import GithubStreamABC
+
+    monkeypatch.setattr(GithubStreamABC, "max_retries", 0)
+    requests_mock.get(
+        "https://api.github.com/repos/org/some-repo",
+        status_code=401,
+        json={"message": "Bad credentials"},
+    )
+
+    config = {"repositories": ["org/some-repo"]}
+    source = SourceGithub()
+    config = source._ensure_default_values(config)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        source._get_org_repositories(config, authenticator=None)
+    assert "inaccessible" not in exc_info.value.message.lower()

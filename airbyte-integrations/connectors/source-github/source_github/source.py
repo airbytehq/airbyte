@@ -6,12 +6,16 @@ from os import getenv
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
+import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
+
+logger = logging.getLogger("airbyte")
 
 from . import constants
 from .streams import (
@@ -59,6 +63,15 @@ from .streams import (
 from .utils import read_full_refresh
 
 
+def _is_auth_error(exc: AirbyteTracedException) -> bool:
+    """Return True if the wrapped HTTP response is a 401 Unauthorized."""
+    inner = getattr(exc, "_exception", None)
+    response = getattr(inner, "response", None)
+    if response is not None and response.status_code == requests.codes.UNAUTHORIZED:
+        return True
+    return False
+
+
 class SourceGithub(AbstractSource):
     continue_sync_on_stream_failure = True
 
@@ -66,7 +79,6 @@ class SourceGithub(AbstractSource):
     def _get_org_repositories(
         config: Mapping[str, Any],
         authenticator: MultipleTokenAuthenticator,
-        logger: logging.Logger,
         is_check_connection: bool = False,
     ) -> Tuple[List[str], List[str], Optional[str]]:
         """
@@ -90,6 +102,8 @@ class SourceGithub(AbstractSource):
             else:
                 unchecked_repos.add(org_repos)
 
+        inaccessible: List[str] = []
+
         if unchecked_orgs:
             org_names = [org.split("/")[0] for org in unchecked_orgs]
             pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
@@ -100,11 +114,17 @@ class SourceGithub(AbstractSource):
                     repositories.add(record["full_name"])
                     organizations.add(record["organization"])
             except AirbyteTracedException as e:
-                logger.warning("Failed to fetch repositories for wildcard orgs %s: %s", unchecked_orgs, e.message)
+                if _is_auth_error(e):
+                    raise
+                logger.warning(
+                    "Failed to fetch repositories for wildcard orgs %s: %s",
+                    ", ".join(sorted(unchecked_orgs)),
+                    e.message,
+                )
+                inaccessible.extend(sorted(unchecked_orgs))
 
         unchecked_repos = unchecked_repos - repositories
         if unchecked_repos:
-            inaccessible: List[str] = []
             for repo in sorted(unchecked_repos):
                 stream = RepositoryStats(
                     authenticator=authenticator,
@@ -123,18 +143,20 @@ class SourceGithub(AbstractSource):
                         if organization:
                             organizations.add(organization)
                 except AirbyteTracedException as e:
+                    if _is_auth_error(e):
+                        raise
                     logger.warning("Failed to check repository '%s': %s", repo, e.message)
                 if not repo_found:
                     inaccessible.append(repo)
 
-            if inaccessible and not repositories:
-                raise AirbyteTracedException(
-                    message=f"All provided repositories are inaccessible: {', '.join(inaccessible)}",
-                    internal_message=f"All repos inaccessible: {', '.join(inaccessible)}",
-                    failure_type=FailureType.config_error,
-                )
-            for repo in inaccessible:
-                logger.warning("Skipping inaccessible repository '%s'.", repo)
+        if inaccessible and not repositories:
+            raise AirbyteTracedException(
+                message=f"All provided repositories are inaccessible: {', '.join(inaccessible)}",
+                internal_message=f"All repos inaccessible: {', '.join(inaccessible)}",
+                failure_type=FailureType.config_error,
+            )
+        for repo in inaccessible:
+            logger.warning("Skipping inaccessible repository '%s'.", repo)
 
         return list(organizations), list(repositories), pattern
 
@@ -219,9 +241,7 @@ class SourceGithub(AbstractSource):
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
-            _, repositories, _ = self._get_org_repositories(
-                config=config, authenticator=authenticator, logger=logger, is_check_connection=True
-            )
+            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, is_check_connection=True)
             if not repositories:
                 return (
                     False,
@@ -241,9 +261,7 @@ class SourceGithub(AbstractSource):
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
         try:
-            organizations, repositories, pattern = self._get_org_repositories(
-                config=config, authenticator=authenticator, logger=logging.getLogger("airbyte")
-            )
+            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)
