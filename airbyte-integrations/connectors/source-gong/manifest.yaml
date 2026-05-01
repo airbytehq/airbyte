@@ -81,6 +81,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - calls
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not record.get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -170,6 +173,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - calls
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not record.get('metaData', {}).get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -446,6 +452,10 @@ streams:
   - $ref: "#/definitions/streams/scorecards"
   - $ref: "#/definitions/streams/answeredScorecards"
   - $ref: "#/definitions/streams/callTranscripts"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
 
 spec:
   type: Spec

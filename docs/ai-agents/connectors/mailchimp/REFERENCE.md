@@ -8,11 +8,11 @@ The Mailchimp connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Lists | [List](#lists-list), [Get](#lists-get), [Search](#lists-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search) |
 | List Members | [List](#list-members-list), [Get](#list-members-get) |
-| Reports | [List](#reports-list), [Get](#reports-get), [Search](#reports-search) |
-| Email Activity | [List](#email-activity-list), [Search](#email-activity-search) |
+| Reports | [List](#reports-list), [Get](#reports-get), [Context Store Search](#reports-context-store-search) |
+| Email Activity | [List](#email-activity-list), [Context Store Search](#email-activity-context-store-search) |
 | Automations | [List](#automations-list) |
 | Tags | [List](#tags-list) |
 | Interest Categories | [List](#interest-categories-list), [Get](#interest-categories-get) |
@@ -95,7 +95,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -163,14 +163,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await mailchimp.campaigns.search(
+await mailchimp.campaigns.context_store_search(
     query={"filter": {"eq": {"ab_split_opts": {}}}}
 )
 ```
@@ -183,7 +183,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ab_split_opts": {}}}}
     }
@@ -336,7 +336,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -406,14 +406,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Lists Search
+### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await mailchimp.lists.search(
+await mailchimp.lists.context_store_search(
     query={"filter": {"eq": {"beamer_address": "<str>"}}}
 )
 ```
@@ -426,7 +426,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "lists",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"beamer_address": "<str>"}}}
     }
@@ -596,7 +596,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -747,7 +747,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -819,14 +819,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Reports Search
+### Reports Context Store Search
 
 Search and filter reports records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await mailchimp.reports.search(
+await mailchimp.reports.context_store_search(
     query={"filter": {"eq": {"ab_split": {}}}}
 )
 ```
@@ -839,7 +839,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "reports",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"ab_split": {}}}}
     }
@@ -986,18 +986,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
-### Email Activity Search
+### Email Activity Context Store Search
 
 Search and filter email activity records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await mailchimp.email_activity.search(
+await mailchimp.email_activity.context_store_search(
     query={"filter": {"eq": {"action": "<str>"}}}
 )
 ```
@@ -1010,7 +1010,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "email_activity",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"action": "<str>"}}}
     }
@@ -1126,7 +1126,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -1183,7 +1183,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -1244,7 +1244,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -1363,7 +1363,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -1490,7 +1490,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -1625,7 +1625,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
@@ -1690,7 +1690,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `total_items` | `integer` |  |
+| `links` | `array<object>` |  |
 
 </details>
 
