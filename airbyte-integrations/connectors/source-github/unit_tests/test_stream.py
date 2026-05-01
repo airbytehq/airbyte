@@ -301,7 +301,9 @@ def test_stream_teams_404(time_mock, requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_teams_502(sleep_mock, requests_mock):
+def test_stream_teams_502_raises_transient_error(sleep_mock, requests_mock):
+    """After retries are exhausted on a 502 Bad Gateway, the stream should raise
+    AirbyteTracedException with transient_error instead of silently completing."""
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
 
@@ -312,10 +314,33 @@ def test_stream_teams_502(sleep_mock, requests_mock):
         json={"message": "Server Error"},
     )
 
-    assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
-    # Check whether url is the same for all response.calls
-    assert set(call.url for call in requests_mock._adapter.request_history).symmetric_difference({f"{url}?per_page=100"}) == set()
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert "502 Bad Gateway" in exc_info.value.message
+    assert "teams" in exc_info.value.message
+
+
+@patch("time.sleep")
+def test_stream_commit_comments_502_raises_transient_error(sleep_mock, requests_mock):
+    """Repo-based streams should also raise transient_error on 502 after retry exhaustion."""
+    args = {"authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    stream = CommitComments(**args)
+    stream_slice = {"repository": "airbytehq/airbyte"}
+
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte/comments",
+        status_code=requests.codes.BAD_GATEWAY,
+        json={"message": "Bad Gateway"},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
+
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert "502 Bad Gateway" in exc_info.value.message
+    assert "commit_comments" in exc_info.value.message
 
 
 def test_stream_organizations_availability_report():
