@@ -1,6 +1,6 @@
 # Issues and feature requests
 
-If you're an enterprise or paid customer, discuss your needs with support or another Airbyte representative. For all other requests, see these options.
+If you're a paid customer, discuss your needs with support or another Airbyte representative. For all other requests, see these options.
 
 ## Report a bug
 
@@ -14,13 +14,17 @@ Bug reports help make Airbyte better for everyone. Airbyte provides templates fo
 
 ### Airbyte Agents
 
-For bugs related to Airbyte Agents, create a ticket in the [support center](https://support.airbyte.com/hc/en-us/requests/new). Airbyte Agents is closed-source, so GitHub issues are not used for Agents bug reports.
+For bugs related to Airbyte Agents, create a ticket in the [support center](https://support.airbyte.com/hc/en-us/requests/new).
 
 ## Request a new feature or connector
+
+### Data replication
 
 [Starting a Github Discussion](https://github.com/airbytehq/airbyte/discussions) is the best way to request new data replication features or connectors.
 
 Requesting new features [or connectors](https://github.com/airbytehq/airbyte/discussions/categories/new-connector-request) is an essential way to contribute. Your input helps Airbyte understand your needs and priorities, enabling the team to enhance the capabilities and versatility of Airbyte.
+
+### Airbyte Agents
 
 For Airbyte Agents feature requests, use the [support center](https://support.airbyte.com/hc/en-us/requests/new).
 
