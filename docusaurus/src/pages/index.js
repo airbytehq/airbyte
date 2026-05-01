@@ -107,6 +107,18 @@ export default function Home() {
     </svg>
   );
 
+  const AdminIcon = () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.navIconSvg}
+    >
+      <path d="M24 13.616v-3.232l-2.869-1.02c-.198-.687-.472-1.342-.811-1.955l1.308-2.751-2.285-2.285-2.751 1.307c-.613-.339-1.269-.613-1.955-.811l-1.021-2.869h-3.232l-1.021 2.869c-.686.198-1.342.471-1.955.811l-2.751-1.308-2.285 2.286 1.308 2.751c-.339.613-.614 1.268-.811 1.955l-2.869 1.02v3.232l2.869 1.02c.197.687.472 1.342.811 1.955l-1.308 2.751 2.285 2.286 2.751-1.308c.613.339 1.269.613 1.955.811l1.021 2.869h3.232l1.021-2.869c.687-.198 1.342-.472 1.955-.811l2.751 1.308 2.285-2.286-1.308-2.751c.339-.613.614-1.268.811-1.955l2.869-1.02zm-12 2.384c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/>
+    </svg>
+  );
+
   const DevelopersIcon = () => (
     <svg
       width="48"
@@ -166,47 +178,47 @@ export default function Home() {
 
   const aeNavLinks = [
     {
-      title: 'About Agent Engine',
-      link: '/ai-agents/about/',
-      description: 'Learn what Agent Engine is, how it works, and who it\'s for.',
-      icon: AIAgentsIcon,
-    },
-    {
-      title: 'Tutorials',
-      link: '/ai-agents/get-started/tutorials/',
-      description: 'Step-by-step guides and quickstarts to get your agents up and running.',
+      title: 'Get started',
+      link: '/ai-agents/get-started/',
+      description: 'New to Airbyte Agents? Learn what the product is, choose the right interface, or jump straight into building.',
       icon: TutorialsIcon,
     },
     {
-      title: 'SDK',
-      link: '/ai-agents/interfaces/sdk/',
-      description: 'Authenticate, configure connectors, manage context stores, and execute agent workflows.',
+      title: 'Core concepts',
+      link: '/ai-agents/concepts/',
+      description: 'Understand the building blocks: the Connect-Unify-Act model, agent operations, the Context Store, and system architecture.',
+      icon: AIAgentsIcon,
+    },
+    {
+      title: 'Interfaces',
+      link: '/ai-agents/interfaces/',
+      description: 'Choose how to work with your data: the web app, MCP server, Python SDK, or HTTP API.',
       icon: PlatformIcon,
+    },
+    {
+      title: 'Agent connectors',
+      link: '/ai-agents/connectors/',
+      description: 'Browse the catalog of open-source connectors that equip agents to call third-party APIs.',
+      icon: AgentConnectorsIcon,
     },
     {
       title: 'Reference',
       link: '/ai-agents/reference/',
-      description: 'Integrate Agent Engine into your applications with the REST API and SDK.',
+      description: 'API and SDK reference for endpoints, classes, methods, and type signatures.',
       icon: AgentApiIcon,
     },
     {
-      title: 'Connectors',
-      link: '/ai-agents/connectors/',
-      description: 'Browse the growing catalog of agent-optimized connectors for popular platforms.',
-      icon: AgentConnectorsIcon,
-    },
-    {
-      title: 'MCP server',
-      link: '/ai-agents/interfaces/mcp/',
-      description: 'Let AI agents interact with your data sources through the Model Context Protocol.',
-      icon: McpServerIcon,
+      title: 'Account and administration',
+      link: '/ai-agents/admin/',
+      description: 'Manage billing, plans, payments, usage monitoring, and subscription changes.',
+      icon: AdminIcon,
     },
   ];
 
   return (
     <Layout
       title=""
-      description="Airbyte is an open source data integration, activation, and agentic data platform. Replicate data from hundreds of sources into warehouses, lakes, and databases, and equip AI agents to query, search, and act on your data in real-time."
+      description="Airbyte is an open source data replication platform and context layer for AI agents. Equip your agents to query, search, and act on your data in real-time, or replicate data from hundreds of sources into warehouses, lakes, and databases."
     >
       <div className={styles.homePage}>
         {/* Section 1: Hero */}
@@ -214,14 +226,45 @@ export default function Home() {
           <div className={styles.heroContainer}>
             <h1 className={styles.heroTitle}>Airbyte documentation</h1>
             <p className={styles.heroDescription}>
-              Airbyte is an open source data integration, activation, and agentic data platform.
-              Replicate data from hundreds of sources into warehouses, lakes, and databases,
-              and equip AI agents to query, search, and act on your data in real-time.
+              Airbyte is an open source data replication platform and context layer for AI agents.
+              Equip your agents to query, search, and act on your data in real-time,
+              or replicate data from hundreds of sources into warehouses, lakes, and databases.
             </p>
           </div>
         </section>
 
-        {/* Section 2: Data Replication */}
+        {/* Section 2: Agents */}
+        <section className={styles.aeSection}>
+          <div className={styles.sectionInner}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.aeSectionTitle}>Agents</h2>
+              <p className={styles.aeSectionSubtitle}>
+                Airbyte Agents is a data and context layer for AI agents. It gives your agents real-time access to business data through open-source, type-safe connectors, managed credentials, and low-latency search. Use it as a cloud platform or import connectors directly into your own agents.
+              </p>
+            </div>
+
+            <div className={styles.aeNavGrid}>
+              {aeNavLinks.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <a
+                    key={index}
+                    href={item.link}
+                    className={styles.aeNavCard}
+                  >
+                    <div className={styles.aeNavIcon}>
+                      <IconComponent />
+                    </div>
+                    <h3 className={styles.aeNavTitle}>{item.title}</h3>
+                    <p className={styles.aeNavDescription}>{item.description}</p>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Data Replication */}
         <section className={styles.drSection}>
           <div className={styles.sectionInner}>
             <div className={styles.sectionHeader}>
@@ -314,37 +357,6 @@ export default function Home() {
               })}
             </div>
 
-          </div>
-        </section>
-
-        {/* Section 3: Agent Engine */}
-        <section className={styles.aeSection}>
-          <div className={styles.sectionInner}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.aeSectionTitle}>Agent Engine</h2>
-              <p className={styles.aeSectionSubtitle}>
-                Equip your AI agents to explore, query, and act on live data from any connected source.
-              </p>
-            </div>
-
-            <div className={styles.aeNavGrid}>
-              {aeNavLinks.map((item, index) => {
-                const IconComponent = item.icon;
-                return (
-                  <a
-                    key={index}
-                    href={item.link}
-                    className={styles.aeNavCard}
-                  >
-                    <div className={styles.aeNavIcon}>
-                      <IconComponent />
-                    </div>
-                    <h3 className={styles.aeNavTitle}>{item.title}</h3>
-                    <p className={styles.aeNavDescription}>{item.description}</p>
-                  </a>
-                );
-              })}
-            </div>
           </div>
         </section>
 

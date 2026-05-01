@@ -55,7 +55,7 @@
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
   --icon-background: transparent;
 
-  /* Agent Engine homepage section */
+  /* Agents homepage section */
   --color-ae-bg: hsl(240, 20%, 95%);
   --color-ae-card-border: var(--ifm-color-primary-lightest);
   --color-ae-icon-bg: var(--ifm-color-primary-lightest);
@@ -96,7 +96,7 @@ html[data-theme="dark"] {
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
 
-  /* Agent Engine homepage section */
+  /* Agents homepage section */
   --color-ae-bg: hsl(240, 18%, 16%);
   --color-ae-card-border: hsl(240, 15%, 25%);
   --color-ae-icon-bg: hsl(240, 20%, 25%);
@@ -375,7 +375,7 @@ nav a.navbar__link--active {
 
 /* Active-route indicator for the Data Replication dropdown.
    The wrapper <div> must stretch to full navbar height so the
-   border-bottom aligns with Agent Engine's underline. */
+   border-bottom aligns with the Agents link underline. */
 @media (min-width: 996px) {
   .dropdown--active-route {
     display: flex;
