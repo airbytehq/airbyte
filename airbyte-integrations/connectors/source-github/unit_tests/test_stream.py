@@ -2170,38 +2170,28 @@ def test_stream_contributor_activity_parse_empty_author(caplog, requests_mock):
     assert records == contributions_without_author
 
 
-def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response, requests_mock):
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
-        json={},
-        status_code=200,
-    )
+def test_stream_contributor_activity_202_raises_transient_error(caplog, rate_limit_mock_response, requests_mock):
+    """When /stats/contributors returns 202 for every retry, the stream should
+    raise a transient_error AirbyteTracedException after retry exhaustion."""
+    repository_args = {
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/test_airbyte"],
+    }
+    stream = ContributorActivity(**repository_args)
     resp = requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors",
         body="",
         status_code=202,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
-    config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
-    logger_mock = MagicMock()
-
     with patch("time.sleep", return_value=0):
-        records = list(source.read(config=config, logger=logger_mock, catalog=catalog, state={}))
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(read_full_refresh(stream))
 
-    assert records[2].log.message == "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/test_airbyte`."
-    assert resp.call_count == 6
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert "GitHub is still computing contributor activity statistics" in exc_info.value.message
+    assert "airbytehq/test_airbyte" in exc_info.value.message
+    assert resp.call_count >= 2
 
 
 def test_stream_contributor_activity_parse_response(requests_mock):

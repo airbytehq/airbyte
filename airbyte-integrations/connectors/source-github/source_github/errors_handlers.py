@@ -163,7 +163,7 @@ class ContributorActivityErrorHandler(GithubStreamABCErrorHandler):
             return ErrorResolution(
                 response_action=ResponseAction.RETRY,
                 failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                error_message="GitHub is computing repository statistics. Retrying.",
             )
 
         return super().interpret_response(response_or_exception)

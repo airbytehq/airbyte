@@ -1872,20 +1872,16 @@ class ContributorActivity(GithubStream):
         except AirbyteTracedException as e:
             if hasattr(e, "_exception") and hasattr(e._exception, "response"):
                 if e._exception.response.status_code == requests.codes.ACCEPTED:
-                    yield AirbyteMessage(
-                        type=MessageType.LOG,
-                        log=AirbyteLogMessage(
-                            level=Level.INFO,
-                            message=f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.",
-                        ),
+                    message = (
+                        f"GitHub is still computing contributor activity statistics for repository `{repository}` "
+                        "after retries were exhausted."
                     )
-
-                    # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
-                    # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
-                    # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
-                    partition_obj = stream_slice.get("partition")
-                    if self.cursor and partition_obj:
-                        self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                    raise AirbyteTracedException(
+                        internal_message=message,
+                        message=message,
+                        failure_type=FailureType.transient_error,
+                        exception=e,
+                    ) from e
                 else:
                     raise e
             else:
