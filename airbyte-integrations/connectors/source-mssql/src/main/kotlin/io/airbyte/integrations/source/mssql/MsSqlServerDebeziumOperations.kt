@@ -321,18 +321,16 @@ class MsSqlServerDebeziumOperations(
             }
 
         // Validate the saved LSN is still available in SQL Server
-        val isLsnValid =
+        val invalidReason: String? =
             try {
                 validateLsnStillAvailable(savedLsn)
             } catch (e: Exception) {
                 log.error(e) { "Failed to validate LSN availability: ${savedLsn}" }
-                false
+                "CDC offset validation failed."
             }
 
-        if (!isLsnValid) {
-            return abortCdcSync(
-                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs"
-            )
+        if (invalidReason != null) {
+            return abortCdcSync(invalidReason)
         }
 
         val historyNode = stateNode[MSSQL_DB_HISTORY]
@@ -448,21 +446,22 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
-     * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
-     * the LSN is available, false otherwise.
+     * Validates if the given LSN is still available in SQL Server transaction logs.
+     *
+     * @return null if the LSN is valid, or a reason string if it is not.
      */
-    private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
-        // Use jdbcConnectionFactory which handles SSH tunneling
+    private fun validateLsnStillAvailable(lsn: Lsn): String? {
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { statement ->
-                // Check if the LSN is within the available range
-                // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
-                // sys.fn_cdc_get_max_lsn returns the current maximum LSN
+                // NULLIF excludes capture instances that return a zero LSN (unauthorized)
+                // so that they do not drag MIN() down to zero and cause false negatives.
                 val query =
                     """
                     SELECT
-                        MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
-                        sys.fn_cdc_get_max_lsn() as max_lsn
+                        MIN(NULLIF(sys.fn_cdc_get_min_lsn(capture_instance),
+                                   0x00000000000000000000)) as min_lsn,
+                        sys.fn_cdc_get_max_lsn() as max_lsn,
+                        COUNT(*) as capture_instance_count
                     FROM cdc.change_tables
                 """.trimIndent()
 
@@ -470,10 +469,24 @@ class MsSqlServerDebeziumOperations(
                     if (resultSet.next()) {
                         val minLsnBytes = resultSet.getBytes("min_lsn")
                         val maxLsnBytes = resultSet.getBytes("max_lsn")
+                        val captureInstanceCount = resultSet.getInt("capture_instance_count")
 
-                        if (minLsnBytes == null || maxLsnBytes == null) {
-                            log.warn { "CDC is not enabled or no LSN range available" }
-                            return false
+                        if (maxLsnBytes == null) {
+                            log.warn { "CDC max LSN is not available" }
+                            return "CDC is not enabled on the database."
+                        }
+
+                        if (minLsnBytes == null) {
+                            if (captureInstanceCount > 0) {
+                                log.warn {
+                                    "All $captureInstanceCount CDC capture instance(s) returned " +
+                                        "zero min LSN, likely insufficient permissions."
+                                }
+                                return "CDC capture instances are not accessible " +
+                                    "with current database permissions."
+                            }
+                            log.warn { "No CDC capture instances found" }
+                            return "No CDC capture instances found in the database."
                         }
 
                         val minLsn = Lsn.valueOf(minLsnBytes)
@@ -481,29 +494,20 @@ class MsSqlServerDebeziumOperations(
 
                         log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
 
-                        // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
-                        // instances exist or insufficient permissions).
-                        if (minLsn == Lsn.ZERO) {
-                            log.warn {
-                                "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
-                                    "Treating saved LSN as invalid."
-                            }
-                            return false
-                        }
-
-                        // Check if saved LSN is within the valid range
                         val isValid = lsn.compareTo(minLsn) >= 0 && lsn.compareTo(maxLsn) <= 0
 
                         if (!isValid) {
                             log.warn {
-                                "Saved LSN '$lsn' is outside the available range [min: $minLsn, max: $maxLsn]. " +
-                                    "Transaction logs may have been truncated."
+                                "Saved LSN '$lsn' is outside the available range " +
+                                    "[min: $minLsn, max: $maxLsn]."
                             }
+                            return "CDC saved offset is no longer available " +
+                                "in SQL Server transaction logs."
                         }
 
-                        return isValid
+                        return null
                     }
-                    return false
+                    return "CDC offset validation query returned no results."
                 }
             }
         }
@@ -518,18 +522,9 @@ class MsSqlServerDebeziumOperations(
             configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration
         return when (cdcConfig.invalidCdcCursorPositionBehavior) {
             InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
-                AbortDebeziumWarmStartState(
-                    "Saved offset no longer present on the server, please reset the connection. " +
-                        "To prevent this, increase transaction log retention and/or increase sync frequency. " +
-                        "$reason."
-                )
+                AbortDebeziumWarmStartState(reason)
             InvalidCdcCursorPositionBehavior.RESET_SYNC ->
-                ResetDebeziumWarmStartState(
-                    "Saved offset no longer present on the server. " +
-                        "Automatically resetting to current position. " +
-                        "WARNING: Any changes between the saved position and current position will be lost. " +
-                        "$reason."
-                )
+                ResetDebeziumWarmStartState(reason)
         }
     }
 
