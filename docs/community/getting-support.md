@@ -39,11 +39,11 @@ Check the [issue list](https://github.com/airbytehq/airbyte/issues) first in cas
 
 ### In-app support bot
 
-**The in-app support bot is available 24/7 for all Airbyte Agents users.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, troubleshoot common scenarios, and create support tickets if further help is needed.
+**The in-app support bot is available 24/7 for all Airbyte Agents users.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your organization, troubleshoot common scenarios, and create support tickets if further help is needed.
 
 ### Support by plan
 
-- **Free**: AI and community support.
+- **Free**: AI and [community](#community-slack) support.
 - **Individual / Team**: Standard human support, in addition to AI and community support. The in-app support bot can create a ticket for you, or you can create your own in the [support center](https://support.airbyte.com/hc/en-us/requests/new).
 - **Custom**: Dedicated human support.
 
