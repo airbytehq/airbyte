@@ -673,7 +673,9 @@ Returns a paginated list of metrics (event types)
 #### Python SDK
 
 ```python
-await klaviyo.metrics.list()
+await klaviyo.metrics.list(
+    filter="<str>"
+)
 ```
 
 #### API
@@ -684,7 +686,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "metrics",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "filter": "<str>"
+    }
 }'
 ```
 
@@ -693,6 +698,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `filter` | `string` | Yes | Filter expression (Klaviyo requires a filter on /metrics; date-based filters always match) |
 | `page[size]` | `integer` | No | Number of results per page (max 100) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
