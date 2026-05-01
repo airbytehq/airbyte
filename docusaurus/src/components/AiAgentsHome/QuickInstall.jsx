@@ -120,7 +120,6 @@ export const QuickInstall = () => {
 
   return (
     <div className={styles.quickInstall}>
-      <h2 className={styles.sectionHeading}>Get started</h2>
       <div className={styles.quickInstallTabs}>
         {TABS.map((t) => (
           <button

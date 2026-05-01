@@ -8,6 +8,8 @@ Airbyte Agents is a data and context layer for AI agents. It gives your agents r
 
 [Sign up free at app.airbyte.ai](https://app.airbyte.ai) or [get started with the docs](/ai-agents/get-started/).
 
+## Try it now
+
 <QuickInstall />
 
 ## Dive into the docs
