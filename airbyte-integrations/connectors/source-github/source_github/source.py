@@ -60,6 +60,7 @@ from .streams import (
 )
 from .utils import read_full_refresh
 
+
 logger = logging.getLogger("airbyte")
 
 
