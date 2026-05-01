@@ -228,16 +228,16 @@ def test_rate_limit_403_retries(response_headers):
         ),
         pytest.param(
             HTTPStatus.NOT_FOUND,
-            ResponseAction.IGNORE,
+            ResponseAction.FAIL,
             FailureType.config_error,
-            "Requested GitHub resource not found.",
+            "Requested GitHub resource not found or not accessible with the provided token.",
             id="404_not_found",
         ),
         pytest.param(
             HTTPStatus.GONE,
-            ResponseAction.IGNORE,
+            ResponseAction.FAIL,
             FailureType.config_error,
-            "GitHub resource is gone. The feature may be disabled for this repository.",
+            "GitHub resource is gone or unavailable for this endpoint.",
             id="410_gone",
         ),
         pytest.param(
@@ -495,11 +495,10 @@ def test_retry_after_rate_limit(time_mock, requests_mock):
 
 
 @patch("time.sleep")
-def test_permission_403_skips_organization(time_mock, requests_mock):
+def test_permission_403_raises_for_organization(time_mock, requests_mock):
     """
-    A bare 403 on an Organization stream should gracefully skip the unavailable
-    resource rather than crashing the entire sync. The stream logs a warning
-    and continues.
+    A bare 403 on an Organization stream should raise (fail the stream)
+    rather than silently completing with zero records.
     """
     requests_mock.get(
         "https://api.github.com/orgs/airbytehq",
@@ -508,7 +507,8 @@ def test_permission_403_skips_organization(time_mock, requests_mock):
     )
 
     stream = Organizations(organizations=["airbytehq"])
-    assert list(read_full_refresh(stream)) == []
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
     # Should fail immediately without retries
     assert requests_mock.call_count == 1
 
@@ -578,10 +578,9 @@ def test_stream_teams_404(time_mock, requests_mock):
         json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/teams#list-teams"},
     )
 
-    assert list(read_full_refresh(stream)) == []
-    # 404 is IGNORE — no retries, response is silently skipped
-    assert requests_mock.call_count == 1
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
+    # 404 is FAIL — the stream should raise, not silently return empty
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
 
 
 @patch("time.sleep")
@@ -653,12 +652,9 @@ def test_stream_repositories_404(time_mock, requests_mock):
         json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/repos#list-organization-repositories"},
     )
 
-    assert list(read_full_refresh(stream)) == []
-    # 404 is IGNORE — no retries, response is silently skipped
-    assert requests_mock.call_count == 1
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
+    # 404 is FAIL — the stream should raise, not silently return empty
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
 
 
 @patch("time.sleep")
@@ -718,11 +714,43 @@ def test_stream_projects_disabled(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    # 410 is IGNORE — no retries, response is silently skipped
+    # 410 is FAIL, but read_records catches it for Projects streams specifically
     assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
+
+
+@patch("time.sleep")
+def test_stream_non_projects_410_raises(time_mock, requests_mock):
+    """Verify that a 410 for a non-Projects stream raises (fails the stream)
+    instead of silently completing with zero records."""
+    stream = Tags(repositories=["test_repo"], page_size_for_large_streams=30)
+
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/tags",
+        status_code=requests.codes.GONE,
+        json={"message": "Gone"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+
+@patch("time.sleep")
+def test_stream_non_empty_repo_409_raises(time_mock, requests_mock):
+    """Verify that a 409 that is NOT an empty-repository conflict raises after
+    retry exhaustion instead of silently completing with zero records."""
+    stream = Tags(repositories=["test_repo"], page_size_for_large_streams=30)
+
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/tags",
+        status_code=requests.codes.CONFLICT,
+        json={"message": "Merge conflict"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
 
 
 def test_stream_pull_requests_incremental_read(requests_mock):
@@ -1629,8 +1657,8 @@ def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_res
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
     ]
-    # 404 is IGNORE — the CDK silently skips the response and logs a generic message
-    assert "Requested GitHub resource not found." in caplog.messages
+    # 404 is FAIL, but read_records catches it for TeamMemberships and logs a skip message
+    assert any("User has no team membership" in m for m in caplog.messages)
 
 
 def test_stream_commit_comment_reactions_incremental_read(requests_mock):

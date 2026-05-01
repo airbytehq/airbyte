@@ -26,9 +26,9 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="Access denied due to insufficient permissions.",
     ),
     404: ErrorResolution(
-        response_action=ResponseAction.IGNORE,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Requested GitHub resource not found.",
+        error_message="Requested GitHub resource not found or not accessible with the provided token.",
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,
@@ -36,9 +36,9 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="GitHub API returned a conflict. The repository may be empty or temporarily unavailable.",
     ),
     410: ErrorResolution(
-        response_action=ResponseAction.IGNORE,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="GitHub resource is gone. The feature may be disabled for this repository.",
+        error_message="GitHub resource is gone or unavailable for this endpoint.",
     ),
 }
 

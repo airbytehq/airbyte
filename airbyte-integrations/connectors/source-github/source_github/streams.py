@@ -131,9 +131,6 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -174,44 +171,35 @@ class GithubStreamABC(HttpStream, ABC):
             if status_code is None:
                 raise e
             if status_code == requests.codes.NOT_FOUND:
-                # A lot of streams are not available for repositories owned by a user instead of an organization.
-                if isinstance(self, Organizations):
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
-                elif isinstance(self, TeamMemberships):
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
+                # TeamMemberships 404 means a user has no membership for a specific team — safe to skip.
+                if isinstance(self, TeamMemberships):
+                    error_msg = (
+                        f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, "
+                        f"team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` "
+                        f"isn't available: User has no team membership. Skipping..."
+                    )
                 else:
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
-            elif status_code == requests.codes.FORBIDDEN:
-                error_msg = str(response.json().get("message")) if response is not None else "Access denied"
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
+                    # All other 404s could indicate misconfigured repos/orgs or permission issues.
                     raise e
-                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
-                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-                # For all `Organisation` based streams
-                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
-                    error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
-                    )
-                # For all other `Repository` base streams
-                else:
-                    error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
-                    )
+            elif status_code == requests.codes.FORBIDDEN:
+                # A bare 403 is a permission/config problem — must not be swallowed.
+                raise e
             elif status_code == requests.codes.UNAUTHORIZED:
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
                     error_msg = str(response.json().get("message")) if response is not None else "Bad credentials"
                     self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
                 raise e
-            elif status_code == requests.codes.GONE and isinstance(self, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+            elif status_code == requests.codes.GONE:
+                if isinstance(self, Projects):
+                    # Some repos don't have projects enabled and we get "410 Client Error: Gone".
+                    error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+                else:
+                    # Any other 410 is unexpected — fail the stream.
+                    raise e
             elif status_code == requests.codes.CONFLICT:
-                error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
-                )
+                # The exact empty-repository case was already ignored by the error handler before retrying.
+                # Any remaining 409 has exhausted retries and should fail the stream.
+                raise e
             elif status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             elif status_code == requests.codes.BAD_GATEWAY:
@@ -408,9 +396,6 @@ class RepositoryStats(GithubStream):
         return f"repos/{stream_slice['repository']}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         yield response.json()
 
 
@@ -467,9 +452,6 @@ class Organizations(GithubStreamABC):
         return f"orgs/{stream_slice['organization']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         yield response.json()
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -496,9 +478,6 @@ class Repositories(SemiIncrementalMixin, Organizations):
         return f"orgs/{stream_slice['organization']}/repos"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         for record in response.json():  # GitHub puts records in an array.
             record = self.transform(record=record, stream_slice=stream_slice)
             if not self._pattern or self._pattern.match(record["full_name"]):
@@ -527,9 +506,6 @@ class Teams(Organizations):
         return f"orgs/{stream_slice['organization']}/teams"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -543,9 +519,6 @@ class Users(Organizations):
         return f"orgs/{stream_slice['organization']}/members"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1805,9 +1778,6 @@ class TeamMemberships(GithubStream):
                 yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
-            return
         yield self.transform(response.json(), stream_slice=stream_slice)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
