@@ -54,7 +54,7 @@ finally:
 
 You don't explicitly create a workspace. Airbyte provisions one automatically the first time you mint a scoped or widget token for a new `workspace_name` (see [Authentication](../api/authentication#scoped-token) on the API side). Under the hood, `Workspace()` and `connect()` both mint a scoped token on first use, so opening a `Workspace` is enough.
 
-`list_connectors()` and `get_connector()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status. They don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404 and then call `create_connector` (or open the workspace in the Airbyte Agents app and add a connector there):
+`list_connectors()` and `get_connector()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status. They don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404:
 
 ```python title="agent.py"
 import httpx
@@ -71,11 +71,10 @@ async with Workspace(workspace_name="tenant-123") as ws:
 ```
 
 <!--
-AGENTIC-1140: create_connector doesn't autocreate a workspace. It 404s if
-no scoped token has been minted for that workspace_name yet. `Workspace(...)`
-mints one on open, so readers who follow the SDK pattern above never hit
-this, which is why we don't surface the quirk in the public narrative.
-Revisit when autocreate is consistent across endpoints.
+AGENTIC-1140: The SDK no longer exposes create_connector. Connector creation
+happens via the web app or REST API. `Workspace(...)` mints a scoped token
+on open, so readers who follow the SDK pattern above never hit the 404
+quirk. Revisit when autocreate is consistent across endpoints.
 -->
 
 ## Operations that require the API

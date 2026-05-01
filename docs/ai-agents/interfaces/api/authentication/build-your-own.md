@@ -55,7 +55,7 @@ sequenceDiagram
 
 Before implementing an OAuth flow, ensure you have:
 
-1. **Airbyte Agents credentials**: Your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents app.
+1. **Airbyte Agents credentials**: Your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai).
 
 2. **An application token**: See [Authentication](./) for how to obtain one.
 
