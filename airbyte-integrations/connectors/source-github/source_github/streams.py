@@ -1925,25 +1925,27 @@ class IssueTimelineEvents(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
         try:
             events_list = response.json()
         except ValueError:
             self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). Yielding no records for this page.",
+                "`%s` received non-JSON response (HTTP %s, first 500 chars: %r). " "Yielding base record without timeline events.",
                 self.name,
                 response.status_code,
                 response.text[:500],
             )
+            yield record
             return
         if not isinstance(events_list, list):
             self.logger.warning(
-                "`%s` expected a JSON list but got %s (HTTP %s). Yielding no records for this page.",
+                "`%s` expected a JSON list but got %s (HTTP %s). " "Yielding base record without timeline events.",
                 self.name,
                 type(events_list).__name__,
                 response.status_code,
             )
+            yield record
             return
-        record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
         for event in events_list:
             record[event["event"]] = event
         yield record

@@ -1985,7 +1985,7 @@ def _make_response(status_code=200, json_data=None, text=None):
         resp.json = MagicMock(return_value=json_data)
     else:
         resp.text = ""
-        resp.json = MagicMock(return_value=None)
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
     return resp
 
 
@@ -2057,10 +2057,10 @@ def test_workflow_jobs_parse_response_defensive(json_data, text, expected_count)
     [
         pytest.param([{"event": "labeled"}, {"event": "closed"}], None, 1, id="valid_events_list"),
         pytest.param([], None, 1, id="valid_empty_events"),
-        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
-        pytest.param(None, "", 0, id="empty_body"),
-        pytest.param({"message": "error"}, None, 0, id="dict_instead_of_list"),
-        pytest.param("not_a_list", None, 0, id="string_instead_of_list"),
+        pytest.param(None, "<html>Bad Gateway</html>", 1, id="html_body_yields_base_record"),
+        pytest.param(None, "", 1, id="empty_body_yields_base_record"),
+        pytest.param({"message": "error"}, None, 1, id="dict_instead_of_list_yields_base_record"),
+        pytest.param("not_a_list", None, 1, id="string_instead_of_list_yields_base_record"),
     ],
 )
 def test_issue_timeline_events_parse_response_defensive(json_data, text, expected_count):
@@ -2135,3 +2135,18 @@ def test_graphql_error_handler_with_valid_errors():
     resp = MagicMock(spec=requests.Response)
     resp.json = MagicMock(return_value={"errors": [{"type": "SOME_ERROR"}]})
     assert handler._safe_json_get_errors(resp) is True
+
+
+def test_graphql_rate_limit_check_with_valid_rate_limited_body():
+    """When response has graphql rate-limit header AND a valid body with RATE_LIMITED error,
+    handler should return RATE_LIMITED action."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {"X-RateLimit-Resource": "graphql"}
+    resp.text = '{"errors": [{"type": "RATE_LIMITED"}]}'
+    resp.ok = True
+    resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMITED"}]})
+    result = handler.interpret_response(resp)
+    assert result.response_action == ResponseAction.RATE_LIMITED

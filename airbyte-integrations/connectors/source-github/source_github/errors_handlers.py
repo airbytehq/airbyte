@@ -63,7 +63,7 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
             body = response.json()
         except ValueError:
             return False
-        return self.stream.check_graphql_rate_limited(body)
+        return self.stream.check_graphql_rate_limited(body or {})
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
@@ -138,8 +138,7 @@ class ContributorActivityErrorHandler(GithubStreamABCErrorHandler):
 
 
 class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
-    @staticmethod
-    def _safe_json_get_errors(response: requests.Response) -> bool:
+    def _safe_json_get_errors(self, response: requests.Response) -> bool:
         try:
             body = response.json()
         except ValueError:
