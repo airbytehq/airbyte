@@ -71,7 +71,7 @@ open class MsSqlServerJdbcPartitionFactory(
         return listOf(orderedColumn)
     }
 
-    private fun findPkUpperBound(stream: Stream): JsonNode {
+    protected open fun findPkUpperBound(stream: Stream): JsonNode {
         // find upper bound using maxPk query
         // Use the ordered column for sync (prefers clustered index for SQL Server performance)
         val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id)!!
