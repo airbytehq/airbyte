@@ -521,10 +521,8 @@ class MsSqlServerDebeziumOperations(
         val cdcConfig =
             configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration
         return when (cdcConfig.invalidCdcCursorPositionBehavior) {
-            InvalidCdcCursorPositionBehavior.FAIL_SYNC ->
-                AbortDebeziumWarmStartState(reason)
-            InvalidCdcCursorPositionBehavior.RESET_SYNC ->
-                ResetDebeziumWarmStartState(reason)
+            InvalidCdcCursorPositionBehavior.FAIL_SYNC -> AbortDebeziumWarmStartState(reason)
+            InvalidCdcCursorPositionBehavior.RESET_SYNC -> ResetDebeziumWarmStartState(reason)
         }
     }
 
