@@ -34,6 +34,7 @@ from .errors_handlers import (
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
     is_conflict_with_empty_repository,
+    is_gone_with_feature_disabled,
 )
 from .graphql import (
     CursorStorage,
@@ -241,9 +242,8 @@ class GithubStream(GithubStreamABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if is_conflict_with_empty_repository(response):
-            # I would expect that this should be handled (skipped) by the error handler, but it seems like
-            # ignored this error but continue to processing records. This may be fixed in latest CDK versions.
+        if is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
+            # The CDK IGNORE action still calls parse_response; guard against non-array error bodies.
             return
         yield from super().parse_response(
             response=response,
