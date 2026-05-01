@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping impor
 
 from . import constants
 
+
 # GitHub's GraphQL error types are not officially documented
 # (see https://github.com/github/docs/issues/22607).
 # The values below are confirmed via community and third-party client usage.
@@ -51,10 +52,7 @@ def _format_graphql_config_error(stream_name: str, primary: Dict[str, Any], all_
     err_type = primary.get("type", "unknown")
     message = primary.get("message", "")
     if err_type == "INSUFFICIENT_SCOPES":
-        return (
-            f"GitHub GraphQL rejected the `{stream_name}` query: "
-            f"token is missing required scopes. GitHub message: {message!r}"
-        )
+        return f"GitHub GraphQL rejected the `{stream_name}` query: token is missing required scopes. GitHub message: {message!r}"
     if err_type == "FORBIDDEN":
         return (
             f"GitHub GraphQL denied access for the `{stream_name}` query. "
@@ -231,10 +229,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=(
-                        f"GitHub GraphQL returned errors. Retrying. "
-                        f"First error: {errors[0] if errors else 'n/a'}"
-                    ),
+                    error_message=(f"GitHub GraphQL returned errors. Retrying. First error: {errors[0] if errors else 'n/a'}"),
                 )
 
         return super().interpret_response(response_or_exception)
