@@ -8,7 +8,6 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import isodate
 import pendulum
-
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
