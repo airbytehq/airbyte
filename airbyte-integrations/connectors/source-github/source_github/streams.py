@@ -132,6 +132,7 @@ class GithubStreamABC(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
@@ -408,6 +409,7 @@ class RepositoryStats(GithubStream):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         yield response.json()
 
@@ -466,6 +468,7 @@ class Organizations(GithubStreamABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         yield response.json()
 
@@ -494,6 +497,7 @@ class Repositories(SemiIncrementalMixin, Organizations):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         for record in response.json():  # GitHub puts records in an array.
             record = self.transform(record=record, stream_slice=stream_slice)
@@ -524,6 +528,7 @@ class Teams(Organizations):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
@@ -539,6 +544,7 @@ class Users(Organizations):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
@@ -1800,6 +1806,7 @@ class TeamMemberships(GithubStream):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         if not response.ok:
+            self.logger.warning("Skipping response with status %d for stream `%s`.", response.status_code, self.name)
             return
         yield self.transform(response.json(), stream_slice=stream_slice)
 
