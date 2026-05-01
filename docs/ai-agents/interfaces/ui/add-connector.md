@@ -5,7 +5,7 @@ sidebar_position: 3
 
 # Add a connector
 
-Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use (Chats, Automations, the SDK, the API, and the Airbyte Agent MCP) can use the resulting connector.
+Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Connectors** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use (Chats, Automations, the SDK, the API, and the MCP server) can use the resulting connector.
 
 This page walks through adding connectors end-to-end: where to add them, how to add them from inside a chat or the Automation Builder, how workspaces and multiple connectors fit together, and how to update or remove connectors you've already added.
 
@@ -18,7 +18,7 @@ It helps to separate two ideas that both get called "a connector":
 
 When this doc says "add a connector," it means the second thing: creating an authenticated instance of a connector type inside one of your workspaces. Once it exists, any Chat, Automation, or external client that runs in the same workspace can use it without re-authenticating.
 
-Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, scheduled Automations, the [SDK](../sdk), the [API](../api), and the [Airbyte Agent MCP](../mcp).
+Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, scheduled Automations, the [SDK](../sdk), the [API](../api), and the [MCP server](../mcp).
 
 ## Workspaces and connectors
 
@@ -120,6 +120,6 @@ Everything on this page has programmatic equivalents:
 
 - Use the [API](../api/add-connector) to create, update, and delete connectors from a script or backend service.
 - Use the [SDK](../sdk) to manage connectors from Python code, including inside your own agent implementations.
-- Use the [Airbyte Agent MCP](../mcp) to expose an authenticated connector to any MCP-compatible client.
+- Use the [MCP server](../mcp) to expose an authenticated connector to any MCP-compatible client.
 
-All three act on the same underlying connectors, so a connector added in the web app is immediately usable from the API, SDK, and Airbyte Agent MCP, and vice versa.
+All three act on the same underlying connectors, so a connector added in the web app is immediately usable from the API, SDK, and MCP server, and vice versa.

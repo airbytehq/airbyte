@@ -11,7 +11,7 @@ Airbyte Agents handles dates and times the same way across every interface: disp
 
 - **Display**: The [web app](../interfaces/ui) formats every date and time in the local time zone set in your browser.
 - **Storage**: The backend stores every timestamp in UTC.
-- **Data in transit**: The [API](../interfaces/api), [SDK](../interfaces/sdk), and [Airbyte Agent MCP](../interfaces/mcp) read and return timestamps in UTC, formatted as ISO 8601 strings.
+- **Data in transit**: The [API](../interfaces/api), [SDK](../interfaces/sdk), and [MCP server](../interfaces/mcp) read and return timestamps in UTC, formatted as ISO 8601 strings.
 - **Automation schedules**: You pick a time zone per Automation. Airbyte stores it as an [IANA time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) (for example, `America/New_York` or `Asia/Kolkata`).
 
 ## Display in the web app
@@ -26,7 +26,7 @@ All timestamps are UTC on the backend, and every interface that reads or writes 
 
 - **API**: Request and response bodies use ISO 8601 UTC strings (for example, `2026-03-18T13:32:00Z`).
 - **SDK**: The Python SDK returns the same ISO 8601 UTC strings through its response models.
-- **Airbyte Agent MCP**: Tools that return timestamps return them in UTC. The `current_datetime` tool, which an agent calls to resolve relative dates like "today" or "last week," returns the current UTC time.
+- **MCP server**: Tools that return timestamps return them in UTC. The `current_datetime` tool, which an agent calls to resolve relative dates like "today" or "last week," returns the current UTC time.
 
 :::warning
 If you pass a timestamp into a connector action (for example, as a date filter on a list query), use UTC. The agent doing the calling is responsible for any time zone conversion before it hands the value to the platform.
@@ -63,4 +63,4 @@ The Airbyte Agent MCP doesn't currently expose tools for creating, updating, or 
 
 - [Automations](../interfaces/ui/automations): Pick a schedule and time zone.
 - [Sessions](../admin/sessions): Review when Automation runs and chat sessions happened.
-- [Airbyte Agent MCP](../interfaces/mcp): Connect an external agent to Airbyte.
+- [MCP server](../interfaces/mcp): Connect an external agent to Airbyte.

@@ -71,6 +71,6 @@ The [HTTP API](../interfaces/api) exposes REST endpoints for managing connectors
 
 ## All paths lead to the same data
 
-Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, API, and Airbyte Agent MCP. You can mix and match interfaces as your needs evolve.
+Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, API, and MCP server. You can mix and match interfaces as your needs evolve.
 
 For a deeper look at how the platform is organized, see [System architecture](../concepts/architecture).

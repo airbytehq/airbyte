@@ -25,7 +25,7 @@ The name must be between 1 and 256 characters. **Save Changes** stays disabled u
 
 ## API credentials
 
-The API Credentials card contains the values you need to authenticate programmatic access to your organization. Use these credentials with the [SDK](../interfaces/sdk/readme.md) or the [Airbyte Agent MCP](../interfaces/mcp/readme.md) to run agents outside of the chat UI.
+The API Credentials card contains the values you need to authenticate programmatic access to your organization. Use these credentials with the [SDK](../interfaces/sdk/readme.md) or the [MCP server](../interfaces/mcp/readme.md) to run agents outside of the chat UI.
 
 Airbyte displays three values:
 
