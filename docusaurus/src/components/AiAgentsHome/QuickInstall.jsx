@@ -9,7 +9,7 @@ const TABS = [
     description: "Add this URL to your MCP client.",
     tools: [
       {
-        name: "Claude Desktop",
+        name: "Claude",
         href: "/ai-agents/interfaces/mcp/",
         icon: "/img/ai-agents/anthropic.svg",
       },
@@ -91,9 +91,13 @@ const TABS = [
     label: "API",
     command: null,
     description: "Integrate with the Airbyte Agent API.",
-    docsLink: "/ai-agents/interfaces/api/",
-    docsLabel: "API reference",
-    tools: [],
+    tools: [
+      {
+        name: "API reference",
+        href: "/ai-agents/interfaces/api/",
+        icon: "/img/favicon.png",
+      },
+    ],
   },
   {
     id: "webapp",
@@ -151,19 +155,16 @@ export const QuickInstall = () => {
           </div>
         )}
         {tab.id === "webapp" && (
-          <a className={styles.webAppButton} href="https://app.airbyte.ai">
-            <img
-              className={styles.webAppButtonLogo}
-              src="/img/favicon.png"
-              alt="Airbyte"
-            />
-            Open web app
-          </a>
-        )}
-        {tab.docsLink && (
-          <a className={styles.quickInstallLink} href={tab.docsLink}>
-            {tab.docsLabel} &rarr;
-          </a>
+          <div className={styles.toolChips}>
+            <a className={styles.toolChip} href="https://app.airbyte.ai">
+              <img
+                className={styles.toolChipIcon}
+                src="/img/favicon.png"
+                alt="Airbyte"
+              />
+              <span>Open web app</span>
+            </a>
+          </div>
         )}
         {tab.toolsLabel && (
           <p className={styles.toolsLabel}>{tab.toolsLabel}</p>
@@ -185,7 +186,7 @@ export const QuickInstall = () => {
         {tab.skills && tab.skills.length > 0 && (
           <div className={styles.skillsSection}>
             <p className={styles.skillsLabel}>
-              Have your agent build it for you.
+              Or have your agent build it for you.
             </p>
             <div className={styles.skillsChips}>
               {tab.skills.map((skill) => (

@@ -95,18 +95,6 @@
   margin-bottom: 12px;
 }
 
-.quickInstallLink {
-  display: inline-block;
-  font-weight: 600;
-  color: var(--ifm-color-primary);
-  text-decoration: none;
-  margin-bottom: 4px;
-}
-
-.quickInstallLink:hover {
-  text-decoration: underline;
-}
-
 /* ── Tools label ─────────────────────────────────────────── */
 
 .toolsLabel {
@@ -191,29 +179,3 @@
   text-decoration: none;
 }
 
-/* ── Web App Button ──────────────────────────────────────── */
-
-.webAppButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  background: var(--ifm-color-primary);
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-}
-
-.webAppButton:hover {
-  opacity: 0.9;
-  text-decoration: none;
-  color: #fff;
-}
-
-.webAppButtonLogo {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
