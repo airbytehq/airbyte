@@ -14,6 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
+from source_github.errors_handlers import parse_sso_header
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -50,7 +51,6 @@ from source_github.streams import (
     WorkflowJobs,
     WorkflowRuns,
 )
-from source_github.errors_handlers import parse_sso_header
 from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType, SyncMode
