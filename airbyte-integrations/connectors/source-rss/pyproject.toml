@@ -15,9 +15,8 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_rss" } ]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
-pytz = "2022.6"
+python = "^3.10,<3.12"
+airbyte-cdk = "^7"
 feedparser = "6.0.10"
 
 [tool.poetry.scripts]
