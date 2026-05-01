@@ -1,41 +1,124 @@
 # Gmail
-Gmail is the email service provided by Google.
 
-## Configuration
+<HideInUI>
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `client_id` | `string` | OAuth Client ID.  |  |
-| `client_secret` | `string` | OAuth Client Secret.  |  |
-| `client_refresh_token` | `string` | Refresh token.  |  |
-| `include_spam_and_trash` | `boolean` | Include Spam &amp; Trash. Include drafts/messages from SPAM and TRASH in the results. Defaults to false. | false |
-| `num_workers` | `integer` | Number of concurrent workers. Higher values result in faster syncs but may trigger rate limiting on lower-tier Gmail API quotas. Reduce this value if you see frequent rate-limit errors in sync logs. | 5 |
-| `start_date` | `string` | UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Only messages, threads, and drafts received on or after this date will be replicated. If unset, the full history is replicated. |  |
+This page contains the setup guide and reference information for the [Gmail](https://developers.google.com/gmail/api) source connector.
 
-Note that this connector uses the Google API OAuth2.0 for authentication. To get started, follow the steps [here](https://developers.google.com/gmail/api/auth/web-server#create_a_client_id_and_client_secret) to retrieve `client_id` and `client_secret`. See [here](https://developers.google.com/identity/protocols/oauth2/web-server) for more detailed guide on the OAuth flow to retrieve the `client_refresh_token`.
+</HideInUI>
 
-**Also note that the scope required here is `https://www.googleapis.com/auth/gmail.readonly`**
+The Gmail source connector syncs data from a single Gmail account using the [Gmail API](https://developers.google.com/gmail/api/reference/rest). It extracts messages, threads, drafts, and labels in read-only mode.
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| profile |  | No pagination | ✅ |  ❌  |
-| drafts | id | DefaultPaginator | ✅ |  ❌  |
-| labels | id | No pagination | ✅ |  ❌  |
-| labels_details | id | No pagination | ✅ |  ❌  |
-| messages | id | DefaultPaginator | ✅ |  ❌  |
-| messages_details | id | No pagination | ✅ |  ✅  |
-| threads | id | DefaultPaginator | ✅ |  ❌  |
-| threads_details | id | No pagination | ✅ |  ❌  |
+## Prerequisites
+
+- A Google Cloud project with the [Gmail API enabled](https://console.cloud.google.com/apis/library/gmail.googleapis.com)
+- OAuth 2.0 credentials (Client ID, Client Secret, and Refresh Token) with the `https://www.googleapis.com/auth/gmail.readonly` scope
+
+## Setup guide
+
+### Step 1: Create a Google Cloud project and enable the Gmail API
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project, or select an existing one.
+2. Navigate to **APIs & Services > Library**.
+3. Search for **Gmail API** and click **Enable**.
+
+### Step 2: Create OAuth 2.0 credentials
+
+1. In the Google Cloud Console, go to **APIs & Services > Credentials**.
+2. Click **+ Create Credentials** and select **OAuth client ID**.
+3. If prompted, configure the [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) first. Add the scope `https://www.googleapis.com/auth/gmail.readonly`.
+4. For **Application type**, select **Web application**.
+5. Under **Authorized redirect URIs**, add the redirect URI for your Airbyte instance.
+6. Click **Create** and note the **Client ID** and **Client Secret**.
+
+For a detailed walkthrough, see [Google's guide to creating OAuth credentials](https://developers.google.com/gmail/api/auth/web-server#create_a_client_id_and_client_secret).
+
+### Step 3: Obtain a refresh token
+
+Follow [Google's OAuth 2.0 for Web Server Applications guide](https://developers.google.com/identity/protocols/oauth2/web-server) to complete the OAuth flow and obtain a refresh token.
+
+### Step 4: Configure the connector in Airbyte
+
+1. Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
+
+<FieldAnchor field="start_date">
+
+1. Optionally, set a **Start date** to limit replication to messages, threads, and drafts received on or after that date. If left blank, the connector replicates the full history.
+
+</FieldAnchor>
+
+<FieldAnchor field="num_workers">
+
+1. Optionally, adjust the **Number of concurrent workers** to control sync speed. The default of 5 works well for most accounts. If you encounter frequent rate-limit errors, reduce this value. Valid range: 2--10.
+
+</FieldAnchor>
+
+<FieldAnchor field="include_spam_and_trash">
+
+1. Optionally, enable **Include Spam & Trash** to include messages and drafts from the SPAM and TRASH folders.
+
+</FieldAnchor>
+
+## Supported streams
+
+| Stream | Primary key | Pagination | Full Refresh | Incremental |
+| --- | --- | --- | --- | --- |
+| [profile](https://developers.google.com/gmail/api/reference/rest/v1/users/getProfile) | | No pagination | Yes | No |
+| [drafts](https://developers.google.com/gmail/api/reference/rest/v1/users.drafts/list) | `id` | Yes | Yes | No |
+| [labels](https://developers.google.com/gmail/api/reference/rest/v1/users.labels/list) | `id` | No pagination | Yes | No |
+| [labels_details](https://developers.google.com/gmail/api/reference/rest/v1/users.labels/get) | `id` | No pagination | Yes | No |
+| [messages](https://developers.google.com/gmail/api/reference/rest/v1/users.messages/list) | `id` | Yes | Yes | No |
+| [messages_details](https://developers.google.com/gmail/api/reference/rest/v1/users.messages/get) | `id` | No pagination | Yes | Yes |
+| [threads](https://developers.google.com/gmail/api/reference/rest/v1/users.threads/list) | `id` | Yes | Yes | No |
+| [threads_details](https://developers.google.com/gmail/api/reference/rest/v1/users.threads/get) | `id` | No pagination | Yes | No |
+
+### Stream details
+
+- **profile**: Returns the authenticated user's email address, total messages count, total threads count, and current history ID.
+- **drafts**: Lists draft message stubs (ID and message metadata). Use `messages_details` for full message content.
+- **labels**: Lists all labels in the mailbox, including system labels such as `INBOX`, `SENT`, and `TRASH`.
+- **labels_details**: Retrieves full details for each label, including message and thread counts.
+- **messages**: Lists message stubs (ID and thread ID) without message content. If `start_date` is configured, only messages received after that date are returned.
+- **messages_details**: Retrieves the full content of each message, including headers, body, and labels. This is the only stream that supports incremental sync, using the message's `internalDate` as the cursor. On incremental syncs, previously synced messages are filtered out based on the stored cursor value.
+- **threads**: Lists thread stubs (ID and snippet). If `start_date` is configured, only threads with messages after that date are returned.
+- **threads_details**: Retrieves the full content of each thread, including all messages in the thread.
+
+### Parent-child stream relationships
+
+Several streams use a parent-child pattern where a "list" stream provides IDs and a "details" stream fetches the full record for each ID:
+
+- `labels` &rarr; `labels_details`
+- `messages` &rarr; `messages_details`
+- `threads` &rarr; `threads_details`
+
+When you select a details stream, Airbyte automatically syncs the corresponding parent stream to obtain the IDs.
+
+## Rate limiting
+
+The Gmail API enforces two simultaneous quota limits:
+
+| Limit | Quota |
+| --- | --- |
+| Per-project | 1,200,000 quota units per minute |
+| Per-user | 15,000 quota units per minute |
+
+Each API method consumes a different number of quota units. For example, `messages.list` costs 5 units and `messages.get` costs 5 units per call. See [Gmail API usage limits](https://developers.google.com/gmail/api/reference/quota) for the full table.
+
+The connector handles rate limiting automatically by retrying when Gmail returns HTTP 429 or quota-saturation 403 responses. If you consistently hit rate limits, reduce the **Number of concurrent workers** in the connector configuration.
+
+## Limitations and known issues
+
+- **Incremental sync is only available on `messages_details`.** All other streams use full refresh. On each sync, the parent `messages` list call fetches all message IDs (subject to `start_date` filtering) even during incremental syncs. The incremental cursor filters records on the `messages_details` side, reducing the volume of data written to the destination, but it does not reduce the number of Gmail API calls made.
+- **The `start_date` filter uses server-side query filtering** via Gmail's `q=after:` parameter. Gmail interprets this filter using Unix timestamps, so filtering is precise to the second.
+- **The connector requires the `gmail.readonly` scope.** It does not modify, send, or delete any data in the Gmail account.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-04-17 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add `messages_details` incremental sync, optional `start_date` server-side filtering on `messages`/`drafts`/`threads`, configurable concurrency via `num_workers`, and Gmail-aware rate-limit handling (429 + 403 quota-saturation) |
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.1.0 | 2026-04-29 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add `messages_details` incremental sync, optional `start_date` server-side filtering on `messages`/`drafts`/`threads`, configurable concurrency via `num_workers`, and Gmail-aware rate-limit handling (429 + 403 quota-saturation) |
 | 0.0.52 | 2026-04-28 | [77264](https://github.com/airbytehq/airbyte/pull/77264) | Update dependencies |
 | 0.0.51 | 2026-04-21 | [76616](https://github.com/airbytehq/airbyte/pull/76616) | Update dependencies |
 | 0.0.50 | 2026-03-24 | [75387](https://github.com/airbytehq/airbyte/pull/75387) | Update dependencies |
