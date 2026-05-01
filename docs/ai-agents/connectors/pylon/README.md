@@ -53,7 +53,7 @@ This connector supports the following entities and actions. For more details, se
 | Issue Replies | [Create](./REFERENCE.md#issue-replies-create) |
 | Issue Assignments | [Update](./REFERENCE.md#issue-assignments-update) |
 | Issue Statuses | [Update](./REFERENCE.md#issue-statuses-update) |
-| Messages | [List](./REFERENCE.md#messages-list), [Context Store Search](./REFERENCE.md#messages-context-store-search) |
+| Messages | [List](./REFERENCE.md#messages-list) |
 | Issue Notes | [Create](./REFERENCE.md#issue-notes-create) |
 | Issue Threads | [Create](./REFERENCE.md#issue-threads-create) |
 | Accounts | [List](./REFERENCE.md#accounts-list), [Create](./REFERENCE.md#accounts-create), [Get](./REFERENCE.md#accounts-get), [Update](./REFERENCE.md#accounts-update), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
