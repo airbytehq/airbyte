@@ -173,20 +173,20 @@ export default function Home() {
     },
     {
       title: 'Tutorials',
-      link: '/ai-agents/tutorials/',
+      link: '/ai-agents/get-started/tutorials/',
       description: 'Step-by-step guides and quickstarts to get your agents up and running.',
       icon: TutorialsIcon,
     },
     {
-      title: 'Platform',
-      link: '/ai-agents/platform/',
+      title: 'SDK',
+      link: '/ai-agents/interfaces/sdk/',
       description: 'Authenticate, configure connectors, manage context stores, and execute agent workflows.',
       icon: PlatformIcon,
     },
     {
-      title: 'API reference',
-      link: '/ai-agents/api/',
-      description: 'Integrate Agent Engine into your applications with the REST API.',
+      title: 'Reference',
+      link: '/ai-agents/reference/',
+      description: 'Integrate Agent Engine into your applications with the REST API and SDK.',
       icon: AgentApiIcon,
     },
     {
@@ -197,7 +197,7 @@ export default function Home() {
     },
     {
       title: 'MCP server',
-      link: '/ai-agents/mcp-server/',
+      link: '/ai-agents/interfaces/mcp/',
       description: 'Let AI agents interact with your data sources through the Model Context Protocol.',
       icon: McpServerIcon,
     },
