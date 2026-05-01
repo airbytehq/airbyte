@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
+import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
@@ -60,7 +61,7 @@ class PostgresSourceDebeziumOperations(
     private val config: PostgresSourceConfiguration,
     private val connectionFactory: PostgresSourceJdbcConnectionFactory,
     private val replicationSlotManager: ReplicationSlotManager,
-    private val startupState: StartupState,
+    private val startupState: StartupState?,
 ) :
     CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
     CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition> {
@@ -108,6 +109,7 @@ class PostgresSourceDebeziumOperations(
     }
 
     val commonPropertiesBuilder by lazy {
+        val tunnelSession: TunnelSession = connectionFactory.ensureTunnelSession()
         DebeziumPropertiesBuilder()
             .withDefault()
             // TODO: could be moved to withDefault()? Seems all connectors need this...
@@ -116,8 +118,8 @@ class PostgresSourceDebeziumOperations(
             .withDebeziumName(config.database)
             .withHeartbeats(config.debeziumHeartbeatInterval)
             .withDatabase(config.jdbcProperties)
-            .withDatabase("hostname", config.realHost)
-            .withDatabase("port", config.realPort.toString())
+            .withDatabase("hostname", tunnelSession.address.hostName)
+            .withDatabase("port", tunnelSession.address.port.toString())
             .withDatabase("dbname", config.database)
             .with("snapshot.mode", "initial")
             .with("publication.autocreate.mode", "disabled")
@@ -151,6 +153,10 @@ class PostgresSourceDebeziumOperations(
     }
 
     override fun generateColdStartOffset(): DebeziumOffset {
+        val startup: StartupState =
+            checkNotNull(this.startupState) {
+                "StartupState bean is required for CDC but was not instantiated"
+            }
         val key =
             Jsons.arrayNode()
                 .add(config.database)
@@ -158,17 +164,17 @@ class PostgresSourceDebeziumOperations(
         val value =
             Jsons.objectNode()
                 .putNull("transaction_id")
-                .put(LSN, startupState.lsn)
-                .put(LSN_PROC, startupState.lsn)
+                .put(LSN, startup.lsn)
+                .put(LSN_PROC, startup.lsn)
                 // Postgres commits get their own LSNs, just like row-level changes. There is no way
                 // of fetching the LSN of the latest commit, only the latest LSN overall. By putting
                 // the max LSN into this field, we are telling Debezium that we've already seen and
                 // processed all transactions before this LSN, which is true, as our snapshot will
                 // include all transactions committed before this LSN. We will start streaming from
                 // the next transaction greater than this LSN.
-                .put(LSN_COMMIT, startupState.lsn)
-                .put("txId", startupState.txId)
-                .put("ts_usec", Conversions.toEpochMicros(startupState.time))
+                .put(LSN_COMMIT, startup.lsn)
+                .put("txId", startup.txId)
+                .put("ts_usec", Conversions.toEpochMicros(startup.time))
         val wrapped = mapOf<JsonNode, JsonNode>(key to value)
         log.info { "Initial Debezium state constructed: $wrapped" }
         return DebeziumOffset(wrapped)
