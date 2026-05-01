@@ -207,6 +207,9 @@ importers:
       '@docusaurus/module-type-aliases':
         specifier: ^3.9.2
         version: 3.9.2(@swc/core@1.14.0(@swc/helpers@0.5.17))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@docusaurus/plugin-content-docs':
+        specifier: ^3.9.2
+        version: 3.9.2(@docusaurus/faster@3.9.2(@docusaurus/types@3.9.2(@swc/core@1.14.0(@swc/helpers@0.5.17))(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@swc/helpers@0.5.17))(@mdx-js/react@3.0.0(@types/react@19.2.2)(react@18.2.0))(@rspack/core@1.6.0(@swc/helpers@0.5.17))(@swc/core@1.14.0(@swc/helpers@0.5.17))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@docusaurus/plugin-debug':
         specifier: ^3.9.2
         version: 3.9.2(@docusaurus/faster@3.9.2(@docusaurus/types@3.9.2(@swc/core@1.14.0(@swc/helpers@0.5.17))(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@swc/helpers@0.5.17))(@mdx-js/react@3.0.0(@types/react@19.2.2)(react@18.2.0))(@rspack/core@1.6.0(@swc/helpers@0.5.17))(@swc/core@1.14.0(@swc/helpers@0.5.17))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
