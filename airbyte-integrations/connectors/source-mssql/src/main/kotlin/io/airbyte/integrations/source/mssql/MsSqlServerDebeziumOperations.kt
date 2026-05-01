@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.BigDecimalCodec
+import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
@@ -114,6 +115,13 @@ class MsSqlServerDebeziumOperations(
                             fieldValue.isTextual && codec is BigDecimalCodec ->
                                 java.math.BigDecimal(fieldValue.asText())
                             fieldValue.isNumber && codec is BigDecimalCodec ->
+                                fieldValue.decimalValue()
+
+                            // BigDecimal-integer (NUMERIC/DECIMAL with scale 0):
+                            // Debezium emits these as JSON strings or numbers
+                            fieldValue.isTextual && codec is BigDecimalIntegerCodec ->
+                                java.math.BigDecimal(fieldValue.asText())
+                            fieldValue.isNumber && codec is BigDecimalIntegerCodec ->
                                 fieldValue.decimalValue()
 
                             // Int: handle both string and number

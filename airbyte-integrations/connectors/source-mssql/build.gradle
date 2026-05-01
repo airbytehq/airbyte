@@ -20,6 +20,6 @@ dependencies {
     implementation 'io.debezium:debezium-connector-sqlserver:3.4.3.Final'
     implementation 'org.apache.commons:commons-lang3:3.18.0'
 
-    testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
+    testFixturesImplementation 'org.testcontainers:mssqlserver:1.21.4'
     testImplementation("io.mockk:mockk:1.12.0")
 }
