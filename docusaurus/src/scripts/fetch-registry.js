@@ -1,14 +1,19 @@
 /**
  * Utility to manage connector registry - fetching, caching, and extracting minimal data.
  *
- * Fetches both the OSS and Cloud registries from the CDN and merges them
- * into a single composite list with `_oss` / `_cloud` suffixed fields.
- * This replaces the previous dependency on the legacy
- * `connector_registry_report.json` (which is no longer regenerated).
+ * Fetches the composite connector registry from the CDN and projects each
+ * entry into the flat shape that the rest of the docs code (remark plugins,
+ * sidebar, ConnectorRegistry.jsx) consumes.
+ *
+ * The composite registry is a server-side superset of the OSS and Cloud
+ * registries, keyed by definitionId (cloud preferred when present), and
+ * exposes an `availability` field indicating which registries each connector
+ * appears in — the only bit we carry through as separate `is_oss` / `is_cloud`
+ * booleans.
  */
 const fs = require("fs");
 const https = require("https");
-const { DATA_DIR, REGISTRY_CACHE_PATH, OSS_REGISTRY_URL, CLOUD_REGISTRY_URL } = require("./constants");
+const { DATA_DIR, REGISTRY_CACHE_PATH, COMPOSITE_REGISTRY_URL } = require("./constants");
 
 const GITHUB_REPO_NAME = "airbytehq/airbyte";
 const CONNECTORS_PATH = "airbyte-integrations/connectors";
@@ -45,62 +50,17 @@ function fetchJsonFromUrl(url) {
 }
 
 /**
- * Merge the OSS and Cloud registries into a single flat list of connectors,
- * with `_oss` / `_cloud` suffixed fields matching the shape that downstream
- * consumers (remark plugins, sidebar, ConnectorRegistry.jsx) expect.
+ * Project a single composite registry entry into the shape used by downstream
+ * consumers. The composite registry has one entry per definitionId (cloud
+ * preferred when present), so we expose a single flat set of connector fields
+ * plus `is_oss` / `is_cloud` availability booleans.
  */
-function mergeRegistries(ossRegistry, cloudRegistry) {
-  const ossSourcesByRepo = new Map();
-  for (const src of ossRegistry.sources || []) {
-    ossSourcesByRepo.set(src.dockerRepository, src);
-  }
-  const ossDestsByRepo = new Map();
-  for (const dst of ossRegistry.destinations || []) {
-    ossDestsByRepo.set(dst.dockerRepository, dst);
-  }
-  const cloudSourcesByRepo = new Map();
-  for (const src of cloudRegistry.sources || []) {
-    cloudSourcesByRepo.set(src.dockerRepository, src);
-  }
-  const cloudDestsByRepo = new Map();
-  for (const dst of cloudRegistry.destinations || []) {
-    cloudDestsByRepo.set(dst.dockerRepository, dst);
-  }
-
-  const allSourceRepos = new Set([
-    ...ossSourcesByRepo.keys(),
-    ...cloudSourcesByRepo.keys(),
-  ]);
-  const allDestRepos = new Set([
-    ...ossDestsByRepo.keys(),
-    ...cloudDestsByRepo.keys(),
-  ]);
-
-  const merged = [];
-
-  for (const repo of allSourceRepos) {
-    const oss = ossSourcesByRepo.get(repo) || null;
-    const cloud = cloudSourcesByRepo.get(repo) || null;
-    merged.push(buildCompositeEntry(oss, cloud, "source", repo));
-  }
-
-  for (const repo of allDestRepos) {
-    const oss = ossDestsByRepo.get(repo) || null;
-    const cloud = cloudDestsByRepo.get(repo) || null;
-    merged.push(buildCompositeEntry(oss, cloud, "destination", repo));
-  }
-
-  return merged;
-}
-
-function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
+function buildCompositeEntry(entry, connectorType) {
+  const dockerRepository = entry.dockerRepository || "";
   const connectorName = dockerRepository.replace("airbyte/", "");
   const definitionId =
-    oss?.sourceDefinitionId ||
-    oss?.destinationDefinitionId ||
-    cloud?.sourceDefinitionId ||
-    cloud?.destinationDefinitionId ||
-    "";
+    entry.sourceDefinitionId || entry.destinationDefinitionId || "";
+  const availability = entry.availability || [];
 
   const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
   const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
@@ -109,90 +69,69 @@ function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
   return {
     connector_type: connectorType,
     definitionId,
-    is_oss: oss != null,
-    is_cloud: cloud != null,
+    is_oss: availability.includes("oss"),
+    is_cloud: availability.includes("cloud"),
     github_url: githubUrl,
     issue_url: issueUrl,
 
-    // OSS fields
-    name_oss: oss?.name || cloud?.name || "",
-    dockerRepository_oss: oss?.dockerRepository || dockerRepository,
-    dockerImageTag_oss: oss?.dockerImageTag || "",
-    supportLevel_oss: oss?.supportLevel || cloud?.supportLevel || "community",
-    iconUrl_oss: oss?.iconUrl || cloud?.iconUrl || "",
-    documentationUrl_oss: oss?.documentationUrl || cloud?.documentationUrl || "",
-    spec_oss: oss?.spec || null,
-    remoteRegistries_oss: oss?.remoteRegistries || {},
-    packageInfo_oss: oss?.packageInfo || null,
-    generated_oss: oss?.generated || null,
-
-    // Cloud fields
-    name_cloud: cloud?.name || oss?.name || "",
-    dockerRepository_cloud: cloud?.dockerRepository || "",
-    dockerImageTag_cloud: cloud?.dockerImageTag || "",
-    supportLevel_cloud: cloud?.supportLevel || "",
-    documentationUrl_cloud: cloud?.documentationUrl || "",
-    packageInfo_cloud: cloud?.packageInfo || null,
-    generated_cloud: cloud?.generated || null,
+    name: entry.name || "",
+    dockerRepository,
+    dockerImageTag: entry.dockerImageTag || "",
+    supportLevel: entry.supportLevel || "community",
+    iconUrl: entry.iconUrl || "",
+    documentationUrl: entry.documentationUrl || "",
+    spec: entry.spec || null,
+    remoteRegistries: entry.remoteRegistries || {},
+    packageInfo: entry.packageInfo || null,
+    generated: entry.generated || null,
   };
 }
 
 async function fetchConnectorRegistriesFromRemote() {
-  console.log("Fetching OSS and Cloud connector registries...");
-  const [ossRegistry, cloudRegistry] = await Promise.all([
-    fetchJsonFromUrl(OSS_REGISTRY_URL),
-    fetchJsonFromUrl(CLOUD_REGISTRY_URL),
-  ]);
+  console.log("Fetching composite connector registry...");
+  const compositeRegistry = await fetchJsonFromUrl(COMPOSITE_REGISTRY_URL);
+  const sources = compositeRegistry.sources || [];
+  const destinations = compositeRegistry.destinations || [];
   console.log(
-    `Fetched ${(ossRegistry.sources || []).length + (ossRegistry.destinations || []).length} OSS connectors, ` +
-    `${(cloudRegistry.sources || []).length + (cloudRegistry.destinations || []).length} Cloud connectors`,
+    `Fetched ${sources.length + destinations.length} connectors ` +
+      `(${sources.length} sources, ${destinations.length} destinations)`,
   );
-  return mergeRegistries(ossRegistry, cloudRegistry);
+  return [
+    ...sources.map((entry) => buildCompositeEntry(entry, "source")),
+    ...destinations.map((entry) => buildCompositeEntry(entry, "destination")),
+  ];
 }
 
 function extractMinimalRegistryData(fullRegistry) {
   return fullRegistry.map((connector) => ({
-    id: (connector.name_oss || connector.name_cloud)
+    id: connector.name
       ?.toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, ""),
     // Properties used by sidebar-connectors.js
-    docUrl:
-      connector.documentationUrl_cloud || connector.documentationUrl_oss || "",
-    supportLevel:
-      connector.supportLevel_cloud || connector.supportLevel_oss || "community",
-    // Properties used by remark/utils.js and remark/specDecoration.js
-    dockerRepository_oss: connector.dockerRepository_oss || "",
-    spec_oss: connector.spec_oss
-      ? {
-          connectionSpecification: connector.spec_oss.connectionSpecification,
-        }
-      : null,
-    // Properties used by remark/utils.js for buildArchivedRegistryEntry
-    name_oss: connector.name_oss || connector.name || "",
+    docUrl: connector.documentationUrl || "",
+    // Core connector fields (consumed by remark plugins, sidebar, the
+    // client-side catalog page, etc.).
+    connector_type: connector.connector_type || "",
+    definitionId: connector.definitionId || "",
     is_oss: connector.is_oss || false,
     is_cloud: connector.is_cloud || false,
-    iconUrl_oss: connector.iconUrl_oss || "",
-    supportLevel_oss: connector.supportLevel_oss || "community",
-    documentationUrl_oss: connector.documentationUrl_oss || "",
-    // Properties used by remark/connectorList.js (isPypiConnector)
-    remoteRegistries_oss: connector.remoteRegistries_oss || {},
-    // Properties used by remark/docsHeaderDecoration.js for HeaderDecoration component
-    dockerImageTag_oss: connector.dockerImageTag_oss || "",
     github_url: connector.github_url || "",
     issue_url: connector.issue_url || "",
-    definitionId: connector.definitionId || "",
-    packageInfo_oss: connector.packageInfo_oss || null,
-    packageInfo_cloud: connector.packageInfo_cloud || null,
-    generated_oss: connector.generated_oss || null,
-    generated_cloud: connector.generated_cloud || null,
-    // Properties used by ConnectorRegistry.jsx (client-side catalog page)
-    connector_type: connector.connector_type || "",
-    dockerRepository_cloud: connector.dockerRepository_cloud || "",
-    dockerImageTag_cloud: connector.dockerImageTag_cloud || "",
-    supportLevel_cloud: connector.supportLevel_cloud || "",
-    documentationUrl_cloud: connector.documentationUrl_cloud || "",
-    name_cloud: connector.name_cloud || "",
+    name: connector.name || "",
+    dockerRepository: connector.dockerRepository || "",
+    dockerImageTag: connector.dockerImageTag || "",
+    supportLevel: connector.supportLevel || "community",
+    iconUrl: connector.iconUrl || "",
+    documentationUrl: connector.documentationUrl || "",
+    // Strip `spec` down to only the subset remark/specDecoration.js consumes
+    // so the cached JSON stays small.
+    spec: connector.spec
+      ? { connectionSpecification: connector.spec.connectionSpecification }
+      : null,
+    remoteRegistries: connector.remoteRegistries || {},
+    packageInfo: connector.packageInfo || null,
+    generated: connector.generated || null,
   }));
 }
 

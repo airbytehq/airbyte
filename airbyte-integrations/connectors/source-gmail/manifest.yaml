@@ -9,6 +9,11 @@ check:
   stream_names:
     - messages
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 10
+
 definitions:
   streams:
     profile:
@@ -42,6 +47,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -117,6 +123,23 @@ definitions:
         schema:
           $ref: "#/schemas/labels_details"
     messages:
+      # Public, full-refresh stream. `users.messages.list` returns `{id,
+      # threadId}` stubs with no `internalDate`, so there is no record-level
+      # cursor value available on this stream. Exposing it as incremental
+      # would silently drop every record when selected standalone
+      # (DatetimeBasedCursor._is_within_daterange_boundaries returns False +
+      # WARN for records missing the cursor field).
+      #
+      # `messages_details` carries its own DatetimeBasedCursor on
+      # `internalDate` (which IS populated by `users.messages.get`); that
+      # cursor advances via the child's own observed records and filters
+      # records older than the prior cursor on repeat syncs. It does NOT
+      # bound this list call — bounding the list request by last-seen
+      # cursor in pure declarative is not supported because (a) parent
+      # records lack the cursor field so the parent's own cursor can't
+      # advance, and (b) declarative state migrations cannot copy the
+      # child's cursor into the parent's state. That optimisation is
+      # tracked separately and would require a custom state migration.
       type: DeclarativeStream
       name: messages
       primary_key:
@@ -129,6 +152,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -155,6 +179,18 @@ definitions:
         schema:
           $ref: "#/schemas/messages"
     messages_details:
+      # Incremental on `internalDate` (populated by `users.messages.get`).
+      # The cursor advances via this stream's own observed records, so
+      # state hygiene works correctly: repeat syncs filter records whose
+      # `internalDate` is older than the prior cursor and skip emitting
+      # them downstream.
+      #
+      # The list call (parent `messages`) is NOT bounded by the cursor:
+      # parent records lack `internalDate`, and pure declarative cannot
+      # copy the child's cursor into a parent's state without a custom
+      # Python state migration. So `users.messages.get` is still called
+      # for every id returned by the list call — the gain here is record
+      # filtering / state correctness, not API quota reduction.
       type: DeclarativeStream
       name: messages_details
       primary_key:
@@ -178,6 +214,16 @@ definitions:
               partition_field: message_id
               stream:
                 $ref: "#/definitions/streams/messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: internalDate
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -195,6 +241,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -261,6 +308,47 @@ definitions:
       access_token_name: access_token
       refresh_request_body: {}
       token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        # Gmail usually returns a `Retry-After` header on 429 and on 403
+        # quota-saturation responses, but not always. `WaitTimeFromHeader`
+        # reads it when present; `ExponentialBackoffStrategy` is the
+        # fallback when the header is absent so the sync still backs off
+        # instead of retrying immediately.
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+        # Gmail returns HTTP 403 with `error.errors[0].reason` set to
+        # `rateLimitExceeded` or `userRateLimitExceeded` on quota-unit
+        # saturation. The default CDK 403 mapping is FAIL/config_error
+        # (e.g. wrong OAuth scope, Gmail API disabled, revoked token),
+        # which would terminate the sync as an auth failure. We match
+        # *only* rate-limit 403s via `predicate` so auth-failure 403s
+        # keep failing fast.
+        #
+        # `HttpResponseFilter` matchers are OR'd, not AND'd, so we must
+        # not pair this with `http_codes: [403]` — that would match any
+        # 403 regardless of the predicate. Also, `error_message_contains`
+        # scans the top-level `error.message` ("User-rate limit
+        # exceeded."), not the nested `error.errors[0].reason`, so the
+        # reason string must be checked explicitly. The check uses an
+        # exact membership match against the documented reasons rather
+        # than substring containment because `'rateLimitExceeded' in
+        # 'userRateLimitExceeded'` is False (case-sensitive `R` vs `r`),
+        # so a substring check would silently miss `userRateLimitExceeded`.
+        # See https://developers.google.com/gmail/api/guides/handle-errors.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          error_message: "Gmail returned a per-user or per-project quota saturation 403 (rateLimitExceeded / userRateLimitExceeded). Honouring `Retry-After` and retrying — the sync will resume once Gmail's rolling quota window frees up."
+          predicate: >-
+            {{ ((response.get('error', {}).get('errors', [{}]) | first).get('reason', '')) in ['rateLimitExceeded', 'userRateLimitExceeded'] }}
 
 streams:
   - $ref: "#/definitions/streams/profile"
@@ -307,6 +395,30 @@ spec:
         title: Include Spam & Trash
         default: false
         order: 3
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          Number of concurrent workers used when syncing. Higher values result
+          in faster syncs but may trigger rate limiting on lower-tier Gmail API
+          quotas. The default works well for most accounts; if you see frequent
+          rate-limit errors in sync logs, reduce this value.
+        default: 5
+        minimum: 2
+        maximum: 10
+        order: 4
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Only messages,
+          threads, and drafts received on or after this date will be replicated.
+          If not set, all historical data will be replicated.
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2020-01-01T00:00:00Z"
+        order: 5
     additionalProperties: true
 
 metadata:
