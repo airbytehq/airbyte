@@ -64,7 +64,10 @@ class SourceGithub(AbstractSource):
 
     @staticmethod
     def _get_org_repositories(
-        config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator, is_check_connection: bool = False
+        config: Mapping[str, Any],
+        authenticator: MultipleTokenAuthenticator,
+        logger: logging.Logger,
+        is_check_connection: bool = False,
     ) -> Tuple[List[str], List[str], Optional[str]]:
         """
         Parse config/repositories and produce two lists: organizations, repositories.
@@ -92,25 +95,46 @@ class SourceGithub(AbstractSource):
             pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
             stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
             stream.exit_on_rate_limit = True if is_check_connection else False
-            for record in read_full_refresh(stream):
-                repositories.add(record["full_name"])
-                organizations.add(record["organization"])
+            try:
+                for record in read_full_refresh(stream):
+                    repositories.add(record["full_name"])
+                    organizations.add(record["organization"])
+            except AirbyteTracedException as e:
+                logger.warning("Failed to fetch repositories for wildcard orgs %s: %s", unchecked_orgs, e.message)
 
         unchecked_repos = unchecked_repos - repositories
         if unchecked_repos:
-            stream = RepositoryStats(
-                authenticator=authenticator,
-                repositories=list(unchecked_repos),
-                api_url=config.get("api_url"),
-                # This parameter is deprecated and in future will be used sane default, page_size: 10
-                page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
-            )
-            stream.exit_on_rate_limit = True if is_check_connection else False
-            for record in read_full_refresh(stream):
-                repositories.add(record["full_name"])
-                organization = record.get("organization", {}).get("login")
-                if organization:
-                    organizations.add(organization)
+            inaccessible: List[str] = []
+            for repo in sorted(unchecked_repos):
+                stream = RepositoryStats(
+                    authenticator=authenticator,
+                    repositories=[repo],
+                    api_url=config.get("api_url"),
+                    # This parameter is deprecated and in future will be used sane default, page_size: 10
+                    page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+                )
+                stream.exit_on_rate_limit = True if is_check_connection else False
+                repo_found = False
+                try:
+                    for record in read_full_refresh(stream):
+                        repo_found = True
+                        repositories.add(record["full_name"])
+                        organization = record.get("organization", {}).get("login")
+                        if organization:
+                            organizations.add(organization)
+                except AirbyteTracedException:
+                    pass
+                if not repo_found:
+                    inaccessible.append(repo)
+
+            if inaccessible and not repositories:
+                raise AirbyteTracedException(
+                    message=f"All provided repositories are inaccessible: {', '.join(inaccessible)}",
+                    internal_message=f"All repos inaccessible: {', '.join(inaccessible)}",
+                    failure_type=FailureType.config_error,
+                )
+            for repo in inaccessible:
+                logger.warning("Skipping inaccessible repository '%s'.", repo)
 
         return list(organizations), list(repositories), pattern
 
@@ -195,7 +219,7 @@ class SourceGithub(AbstractSource):
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
-            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, is_check_connection=True)
+            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, logger=logger, is_check_connection=True)
             if not repositories:
                 return (
                     False,
@@ -215,7 +239,7 @@ class SourceGithub(AbstractSource):
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
         try:
-            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
+            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator, logger=logging.getLogger("airbyte"))
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)

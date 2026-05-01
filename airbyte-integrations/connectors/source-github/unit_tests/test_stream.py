@@ -1966,3 +1966,38 @@ def test_releases_extract_database_id_does_not_catch_type_error():
 def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
     """Verify that expected decode/unpack errors still return None after narrowing the except."""
     assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+
+
+def test_validate_branches_to_pull_missing_repo(monkeypatch, requests_mock):
+    """When a repo is missing from default_branches (e.g. inaccessible), _validate_branches_to_pull skips it."""
+    from source_github.streams import GithubStreamABC
+
+    monkeypatch.setattr(GithubStreamABC, "max_retries", 0)
+
+    repository_args = {
+        "repositories": ["org/good-repo", "org/missing-repo"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+
+    stream = Commits(**repository_args, branches_to_pull=[])
+
+    # Only good-repo returns repository stats; missing-repo returns 404
+    requests_mock.get(
+        "https://api.github.com/repos/org/good-repo",
+        json={"full_name": "org/good-repo", "default_branch": "main", "id": 1, "updated_at": "2022-01-01T00:00:00Z"},
+    )
+    requests_mock.get("https://api.github.com/repos/org/missing-repo", status_code=404, json={"message": "Not Found"})
+
+    # Branches endpoint for both repos
+    requests_mock.get(
+        "https://api.github.com/repos/org/good-repo/branches",
+        json=[{"name": "main", "commit": {"sha": "abc123", "url": "https://api.github.com/repos/org/good-repo/commits/abc123"}, "protected": False}],
+    )
+    requests_mock.get("https://api.github.com/repos/org/missing-repo/branches", status_code=404, json={"message": "Not Found"})
+
+    stream._validate_branches_to_pull()
+
+    assert "org/good-repo" in stream.branches_to_repos
+    assert stream.branches_to_repos["org/good-repo"] == ["main"]
+    assert "org/missing-repo" not in stream.branches_to_repos
