@@ -8,10 +8,10 @@ The Hubspot connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Search](#companies-search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Search](#deals-search) |
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
+| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Context Store Search](#companies-context-store-search) |
+| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Context Store Search](#deals-context-store-search) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search), [Context Store Search](#tickets-context-store-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
 
@@ -212,14 +212,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await hubspot.contacts.search(
+await hubspot.contacts.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -232,7 +232,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -477,14 +477,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Companies Search
+### Companies Context Store Search
 
 Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await hubspot.companies.search(
+await hubspot.companies.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -497,7 +497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -742,14 +742,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Deals Search
+### Deals Context Store Search
 
 Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await hubspot.deals.search(
+await hubspot.deals.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -762,7 +762,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "deals",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -1008,6 +1008,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `total` | `integer` |  |
 | `next_cursor` | `string` |  |
 | `next_link` | `string` |  |
+
+</details>
+
+### Tickets Context Store Search
+
+Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await hubspot.tickets.context_store_search(
+    query={"filter": {"eq": {"archived": True}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tickets",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"archived": True}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `archived` | `boolean` | Indicates whether the ticket has been deleted and moved to the recycling bin |
+| `companies` | `array` | Collection of company records associated with the ticket |
+| `contacts` | `array` | Collection of contact records associated with the ticket |
+| `createdAt` | `string` | Timestamp when the ticket record was originally created |
+| `id` | `string` | Unique identifier for the ticket record |
+| `properties` | `object` | Key-value object containing all ticket properties and custom fields |
+| `updatedAt` | `string` | Timestamp when the ticket record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].archived` | `boolean` | Indicates whether the ticket has been deleted and moved to the recycling bin |
+| `data[].companies` | `array` | Collection of company records associated with the ticket |
+| `data[].contacts` | `array` | Collection of contact records associated with the ticket |
+| `data[].createdAt` | `string` | Timestamp when the ticket record was originally created |
+| `data[].id` | `string` | Unique identifier for the ticket record |
+| `data[].properties` | `object` | Key-value object containing all ticket properties and custom fields |
+| `data[].updatedAt` | `string` | Timestamp when the ticket record was last modified |
 
 </details>
 
