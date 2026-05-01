@@ -198,6 +198,54 @@ def test_rate_limit_403_retries(response_headers):
     assert result.failure_type == FailureType.transient_error
 
 
+@pytest.mark.parametrize(
+    ("http_status", "expected_action", "expected_failure_type", "expected_message_substring"),
+    [
+        pytest.param(
+            HTTPStatus.UNAUTHORIZED,
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            "authentication failed",
+            id="401_fail_config_error",
+        ),
+        pytest.param(
+            HTTPStatus.NOT_FOUND,
+            ResponseAction.IGNORE,
+            FailureType.config_error,
+            "404 Not Found",
+            id="404_ignore",
+        ),
+        pytest.param(
+            HTTPStatus.CONFLICT,
+            ResponseAction.RETRY,
+            FailureType.transient_error,
+            "409 Conflict",
+            id="409_retry_transient_error",
+        ),
+        pytest.param(
+            HTTPStatus.GONE,
+            ResponseAction.RETRY,
+            FailureType.transient_error,
+            "410 Gone",
+            id="410_retry_transient_error",
+        ),
+    ],
+)
+def test_error_mapping_status_codes(http_status, expected_action, expected_failure_type, expected_message_substring):
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = http_status
+    response_mock.headers = {}
+    response_mock.text = '{"message": "error"}'
+    response_mock.ok = False
+    response_mock.json = lambda: {"message": "error"}
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == expected_action
+    assert result.failure_type == expected_failure_type
+    assert expected_message_substring in result.error_message
+
+
 @patch("time.sleep")
 def test_retry_after_rate_limit(time_mock, requests_mock):
     """
@@ -284,8 +332,7 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
     assert sum([c[0][0] for c in sleep_mock.call_args_list]) > 300
 
 
-@patch("time.sleep")
-def test_stream_teams_404(time_mock, requests_mock):
+def test_stream_teams_404(requests_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
 
@@ -296,7 +343,7 @@ def test_stream_teams_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
 
 
@@ -358,8 +405,7 @@ def test_stream_users_read(requests_mock):
     assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/members?per_page=100"
 
 
-@patch("time.sleep")
-def test_stream_repositories_404(time_mock, requests_mock):
+def test_stream_repositories_404(requests_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Repositories(**organization_args)
 
@@ -370,14 +416,13 @@ def test_stream_repositories_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
 
 
-@patch("time.sleep")
-def test_stream_repositories_401(time_mock, caplog, requests_mock):
+def test_stream_repositories_401(requests_mock):
     organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
     stream = Repositories(**organization_args)
 
@@ -390,11 +435,10 @@ def test_stream_repositories_401(time_mock, caplog, requests_mock):
     with pytest.raises(AirbyteTracedException):
         assert list(read_full_refresh(stream)) == []
 
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
 
 
 @responses.activate
@@ -1343,7 +1387,7 @@ def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_res
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
     ]
-    expected_message = "Syncing `TeamMemberships` stream for organization `org1`, team `team2` and user `login3` isn't available: User has no team membership. Skipping..."
+    expected_message = "Skipping response with status 404 for stream `team_memberships`."
     assert expected_message in caplog.messages
 
 

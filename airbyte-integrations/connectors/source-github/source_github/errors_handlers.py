@@ -16,9 +16,9 @@ from . import constants
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     401: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message="GitHub authentication failed (HTTP 401). Verify your Personal Access Token or OAuth credentials are valid and have not expired.",
     ),
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
@@ -26,19 +26,19 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="Access denied due to insufficient permissions.",
     ),
     404: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.IGNORE,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message="GitHub returned 404 Not Found. The resource may not exist, may have been deleted, or the token may lack access. Skipping.",
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        failure_type=FailureType.transient_error,
+        error_message="Unexpected HTTP 409 Conflict. Retrying.",
     ),
     410: ErrorResolution(
         response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Gone. Please ensure the url is valid.",
+        failure_type=FailureType.transient_error,
+        error_message="GitHub returned 410 Gone. Retrying.",
     ),
 }
 
