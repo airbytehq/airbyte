@@ -28,7 +28,10 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     404: ErrorResolution(
         response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Requested GitHub resource not found or not accessible with the provided token.",
+        error_message=(
+            "GitHub returned 404. The resource does not exist or the token lacks access. "
+            "GitHub may return 404 instead of 403 for inaccessible resources."
+        ),
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,

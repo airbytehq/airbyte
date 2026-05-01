@@ -178,6 +178,20 @@ class GithubStreamABC(HttpStream, ABC):
                         f"team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` "
                         f"isn't available: User has no team membership. Skipping..."
                     )
+                elif isinstance(self, Projects):
+                    error_msg = (
+                        f"Skipping `Projects` for repository `{stream_slice['repository']}`: GitHub returned 404. "
+                        f"Projects may be disabled, deleted, private, or inaccessible to the current token."
+                    )
+                elif isinstance(self, (ProjectColumns, ProjectCards)):
+                    project_id = stream_slice.get("project_id")
+                    column_id = stream_slice.get("column_id")
+                    scope = f"project_id={project_id}" + (f", column_id={column_id}" if column_id else "")
+                    error_msg = (
+                        f"Skipping `{self.__class__.__name__}` for repository `{stream_slice['repository']}` ({scope}): "
+                        f"GitHub returned 404. Project may be private, deleted, disabled, or inaccessible "
+                        f"to the current token."
+                    )
                 else:
                     # All other 404s could indicate misconfigured repos/orgs or permission issues.
                     raise e
@@ -1466,11 +1480,21 @@ class ProjectColumns(GithubStream):
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
         for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"repository": record["repository"], "project_id": record["id"]}
+            try:
+                for record in self.parent.read_records(
+                    sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                ):
+                    yield {"repository": record["repository"], "project_id": record["id"]}
+            except AirbyteTracedException as e:
+                status_code, _ = _extract_status_and_response(e)
+                if status_code == requests.codes.NOT_FOUND:
+                    self.logger.warning(
+                        "Skipping `%s` parent slice for repository `%s`: GitHub returned 404. Continuing with remaining slices.",
+                        self.parent.__class__.__name__,
+                        stream_slice.get("repository"),
+                    )
+                    continue
+                raise
 
     def read_records(
         self,
@@ -1537,11 +1561,23 @@ class ProjectCards(GithubStream):
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
         for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
+            try:
+                for record in self.parent.read_records(
+                    sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                ):
+                    yield {"repository": record["repository"], "project_id": record["project_id"], "column_id": record["id"]}
+            except AirbyteTracedException as e:
+                status_code, _ = _extract_status_and_response(e)
+                if status_code == requests.codes.NOT_FOUND:
+                    self.logger.warning(
+                        "Skipping `%s` parent slice for repository `%s`, project_id `%s`: GitHub returned 404. "
+                        "Continuing with remaining slices.",
+                        self.parent.__class__.__name__,
+                        stream_slice.get("repository"),
+                        stream_slice.get("project_id"),
+                    )
+                    continue
+                raise
 
     def read_records(
         self,

@@ -230,7 +230,7 @@ def test_rate_limit_403_retries(response_headers):
             HTTPStatus.NOT_FOUND,
             ResponseAction.FAIL,
             FailureType.config_error,
-            "Requested GitHub resource not found or not accessible with the provided token.",
+            "GitHub returned 404. The resource does not exist or the token lacks access.",
             id="404_not_found",
         ),
         pytest.param(
@@ -751,6 +751,112 @@ def test_stream_non_empty_repo_409_raises(time_mock, requests_mock):
 
     with pytest.raises(AirbyteTracedException):
         list(read_full_refresh(stream))
+
+
+@patch("time.sleep")
+def test_projects_404_skips_per_repo(time_mock, requests_mock):
+    """Projects with two repos: repo#1 returns 200, repo#2 returns 404.
+    The stream should emit records from repo#1, warn for repo#2, and complete."""
+    stream = Projects(
+        repositories=["org/repo-good", "org/repo-bad"],
+        page_size_for_large_streams=30,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo-good/projects",
+        json=[{"id": 1, "name": "proj", "updated_at": "2022-02-01T00:00:00Z"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo-bad/projects",
+        status_code=requests.codes.NOT_FOUND,
+        json={"message": "Not Found"},
+    )
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert records[0]["repository"] == "org/repo-good"
+
+
+@patch("time.sleep")
+def test_project_columns_parent_404_continues(time_mock, requests_mock):
+    """ProjectColumns: parent yields two repos, one 404s.
+    The stream should warn for the bad repo and still yield columns from the good repo."""
+    parent = Projects(
+        repositories=["org/repo-good", "org/repo-bad"],
+        page_size_for_large_streams=30,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo-good/projects",
+        json=[{"id": 1, "name": "proj", "updated_at": "2022-02-01T00:00:00Z"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo-bad/projects",
+        status_code=requests.codes.NOT_FOUND,
+        json={"message": "Not Found"},
+    )
+    requests_mock.get(
+        "https://api.github.com/projects/1/columns",
+        json=[{"id": 10, "name": "To Do", "updated_at": "2022-02-01T00:00:00Z"}],
+    )
+
+    stream = ProjectColumns(parent, start_date="2022-01-01T00:00:00Z", repositories=["org/repo-good", "org/repo-bad"], page_size_for_large_streams=30)
+    parent._http_client._session.cache.clear()
+    stream._http_client._session.cache.clear()
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert records[0]["project_id"] == 1
+    assert records[0]["repository"] == "org/repo-good"
+
+
+@patch("time.sleep")
+def test_project_cards_parent_404_continues(time_mock, requests_mock):
+    """ProjectCards: parent yields two repos where one project column 404s.
+    The stream should warn and continue with remaining columns."""
+    parent_projects = Projects(
+        repositories=["org/repo-good", "org/repo-bad"],
+        page_size_for_large_streams=30,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo-good/projects",
+        json=[{"id": 1, "name": "proj", "updated_at": "2022-02-01T00:00:00Z"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo-bad/projects",
+        status_code=requests.codes.NOT_FOUND,
+        json={"message": "Not Found"},
+    )
+    requests_mock.get(
+        "https://api.github.com/projects/1/columns",
+        json=[{"id": 10, "name": "To Do", "updated_at": "2022-02-01T00:00:00Z"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/projects/columns/10/cards",
+        json=[{"id": 100, "name": "card", "updated_at": "2022-02-01T00:00:00Z"}],
+    )
+
+    parent_columns = ProjectColumns(
+        parent_projects,
+        start_date="2022-01-01T00:00:00Z",
+        repositories=["org/repo-good", "org/repo-bad"],
+        page_size_for_large_streams=30,
+    )
+    stream = ProjectCards(
+        parent_columns,
+        start_date="2022-01-01T00:00:00Z",
+        repositories=["org/repo-good", "org/repo-bad"],
+        page_size_for_large_streams=30,
+    )
+    parent_projects._http_client._session.cache.clear()
+    parent_columns._http_client._session.cache.clear()
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert records[0]["project_id"] == 1
+    assert records[0]["column_id"] == 10
+    assert records[0]["repository"] == "org/repo-good"
 
 
 def test_stream_pull_requests_incremental_read(requests_mock):
