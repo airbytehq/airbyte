@@ -24,6 +24,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 from . import constants
@@ -200,8 +201,14 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
             elif status_code == requests.codes.UNAUTHORIZED:
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
-                    error_msg = str(response.json().get("message")) if response is not None else "Bad credentials"
-                    self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
+                    api_message = str(response.json().get("message")) if response is not None else "Bad credentials"
+                    # Use filter_secrets to avoid leaking tokens in log output.
+                    self.logger.error(
+                        filter_secrets(
+                            f"GitHub authentication failed (HTTP 401) for stream '{self.name}'. "
+                            f"Your Personal Access Token may need to be renewed. GitHub message: {api_message!r}"
+                        )
+                    )
                 raise e
             elif status_code == requests.codes.GONE:
                 if isinstance(self, Projects):
@@ -217,10 +224,13 @@ class GithubStreamABC(HttpStream, ABC):
             elif status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             elif status_code == requests.codes.BAD_GATEWAY:
-                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
+                error_msg = (
+                    f"GitHub returned HTTP 502 Bad Gateway for stream '{self.name}' after exhausting retries. "
+                    f"This is usually transient — the next sync attempt should succeed."
+                )
             else:
-                error_detail = response.text if response is not None else (e.internal_message or str(e))
-                self.logger.error(f"Undefined error while reading records: {error_detail}")
+                error_detail = filter_secrets(response.text if response is not None else (e.internal_message or str(e)))
+                self.logger.error(f"Unexpected GitHub response for stream '{self.name}': {error_detail}")
                 raise e
 
             self.logger.warning(error_msg)

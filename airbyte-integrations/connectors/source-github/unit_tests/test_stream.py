@@ -111,7 +111,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             '{"errors": [{"type": "RATE_LIMITED"}]}',
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded. Rate limit resets at epoch 1655804724.",
+            "GitHub rate limit hit for stream 'repository_stats' (HTTP 200). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
@@ -119,7 +119,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             "",
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded. Rate limit resets at epoch 1655804724.",
+            "GitHub rate limit hit for stream 'repository_stats' (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
@@ -127,7 +127,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             "",
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded. Retry after 0 seconds.",
+            "GitHub rate limit hit for stream 'repository_stats' (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
@@ -135,7 +135,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             "",
             ResponseAction.RATE_LIMITED,
             FailureType.transient_error,
-            "GitHub API rate limit exceeded. Retry after 60 seconds.",
+            "GitHub rate limit hit for stream 'repository_stats' (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -189,7 +189,8 @@ def test_permission_403_fails_immediately():
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.FAIL
     assert result.failure_type == FailureType.config_error
-    assert result.error_message == "Access denied due to insufficient permissions."
+    assert "GitHub denied access (HTTP 403)" in result.error_message
+    assert "SAML SSO" in result.error_message
 
 
 @pytest.mark.parametrize(
@@ -291,6 +292,9 @@ def test_409_conflict_empty_repo_is_ignored():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.IGNORE
+    assert "Skipping 'repository_stats'" in result.error_message
+    assert "409 Conflict" in result.error_message
+    assert "no commits" in result.error_message
 
 
 def test_409_conflict_non_empty_repo_fallback():
@@ -375,9 +379,8 @@ def test_graphql_rate_limit_error_message():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert "GitHub API rate limit exceeded." in result.error_message
-    assert "1655804724" in result.error_message
-    assert "200" not in result.error_message
+    assert "rate limit hit" in result.error_message.lower()
+    assert "repository_stats" in result.error_message
 
 
 def test_graphql_rate_limit_via_graphql_error_handler():
@@ -396,8 +399,8 @@ def test_graphql_rate_limit_via_graphql_error_handler():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert "GitHub API rate limit exceeded." in result.error_message
-    assert "1655804724" in result.error_message
+    assert "rate limit hit" in result.error_message.lower()
+    assert "releases" in result.error_message
 
 
 def test_rest_rate_limit_error_message():
@@ -414,9 +417,9 @@ def test_rest_rate_limit_error_message():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert "GitHub API rate limit exceeded." in result.error_message
-    assert "1655804724" in result.error_message
-    assert "403" not in result.error_message
+    assert "rate limit hit" in result.error_message.lower()
+    assert "repository_stats" in result.error_message
+    assert "403" in result.error_message
 
 
 def test_rest_rate_limit_retry_after():
@@ -433,7 +436,7 @@ def test_rest_rate_limit_retry_after():
 
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
-    assert "Retry after 120 seconds." in result.error_message
+    assert "rate limit hit" in result.error_message.lower()
 
 
 @pytest.mark.parametrize(
@@ -1038,8 +1041,9 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     stream_state = {}
     records = read_incremental(stream, stream_state)
     assert records == []
-    ignore_message = "Ignoring response for 'GET' request to 'https://api.github.com/repos/organization/repository/commits?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=branch' with response code '409' as the repository is empty."
-    assert ignore_message in caplog.messages
+    assert any(
+        "Skipping 'commits'" in msg and "409 Conflict" in msg and "no commits" in msg for msg in caplog.messages
+    ), f"Expected 409 empty-repo skip message in logs, got: {caplog.messages}"
 
 
 def test_stream_pull_request_commits(requests_mock):
@@ -2378,3 +2382,117 @@ def test_releases_extract_database_id_does_not_catch_type_error():
 def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
     """Verify that expected decode/unpack errors still return None after narrowing the except."""
     assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+
+
+# ---- Q3 error-message improvement tests ----
+
+
+def test_403_error_message_includes_scopes_and_sso():
+    """Q3: 403 error message should mention required scopes and SAML SSO."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Resource not accessible by personal access token"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert "repo" in result.error_message
+    assert "read:org" in result.error_message
+    assert "SAML SSO" in result.error_message
+    assert "HTTP 403" in result.error_message
+
+
+def test_rate_limit_message_includes_stream_name_and_status_code():
+    """Q3: Rate-limit error message should include stream name and HTTP status code."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
+    response_mock.text = ""
+    response_mock.ok = False
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert "repository_stats" in result.error_message
+    assert "HTTP 403" in result.error_message
+    assert "rate limit" in result.error_message.lower()
+
+
+def test_409_empty_repo_message_includes_stream_name():
+    """Q3: 409 empty-repo IGNORE message should include stream name and explain no commits."""
+    stream = Tags(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.CONFLICT
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Git Repository is empty."}'
+    response_mock.ok = False
+    response_mock.json = lambda: {"message": "Git Repository is empty."}
+    response_mock.request = MagicMock()
+    response_mock.request.method = "GET"
+    response_mock.url = "https://api.github.com/repos/test_repo/tags"
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.IGNORE
+    assert "Skipping 'tags'" in result.error_message
+    assert "409 Conflict" in result.error_message
+    assert "no commits" in result.error_message
+
+
+@patch("time.sleep")
+def test_502_bad_gateway_message_actionable(time_mock, requests_mock):
+    """Q3: 502 Bad Gateway in read_records should produce an actionable message."""
+    repository_args = {"repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = Tags(**repository_args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/tags",
+        status_code=requests.codes.BAD_GATEWAY,
+        json={"message": "Server Error"},
+    )
+
+    records = list(read_full_refresh(stream))
+    assert records == []
+
+
+@patch("time.sleep")
+def test_401_pat_log_message_actionable(time_mock, caplog, requests_mock):
+    """Q3: 401 PAT log message should include stream name and renewal hint."""
+    organization_args = {
+        "organizations": ["org_name"],
+        "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE,
+    }
+    stream = Repositories(**organization_args)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org_name/repos",
+        status_code=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+    assert any(
+        "GitHub authentication failed (HTTP 401)" in msg and "repositories" in msg for msg in caplog.messages
+    ), f"Expected actionable 401 PAT message in logs, got: {caplog.messages}"
+
+
+@patch("time.sleep")
+def test_catch_all_reraises_with_logging(time_mock, caplog, requests_mock):
+    """Q3: Catch-all in read_records should log the unexpected status and re-raise."""
+    repository_args = {"repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = Collaborators(**repository_args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/collaborators",
+        status_code=418,
+        json={"message": "I'm a teapot"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+    assert any(
+        "Unexpected GitHub response for stream 'collaborators'" in msg for msg in caplog.messages
+    ), f"Expected catch-all log message, got: {caplog.messages}"

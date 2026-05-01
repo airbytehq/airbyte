@@ -10,6 +10,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 from . import constants
 
@@ -20,10 +21,15 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         failure_type=FailureType.config_error,
         error_message="GitHub authentication failed. Token is invalid or expired.",
     ),
+    # TODO(M1): detect X-GitHub-SSO header and surface the SAML authorize URL.
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Access denied due to insufficient permissions.",
+        error_message=(
+            "GitHub denied access (HTTP 403). Your token may be missing required scopes "
+            "(this connector typically needs: repo, read:org, read:user, read:project, workflow), "
+            "or this organization may require SAML SSO authorization."
+        ),
     ),
     404: ErrorResolution(
         response_action=ResponseAction.FAIL,
@@ -122,7 +128,11 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     f"Rate limit handling for stream `{self.stream.name}` for the response with {response_or_exception.status_code} status code, {string_headers} with message: {response_or_exception.text}"
                 )
 
-                error_message = _rate_limit_message(response_or_exception)
+                status_code = response_or_exception.status_code
+                error_message = (
+                    f"GitHub rate limit hit for stream '{self.stream.name}' (HTTP {status_code}). "
+                    f"Waiting for the rate limit window to reset before retrying."
+                )
 
                 return ErrorResolution(
                     response_action=ResponseAction.RATE_LIMITED,
@@ -138,7 +148,10 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
-                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
+                log_message = (
+                    f"Skipping '{self.stream.name}' for this repository: GitHub returned 409 Conflict "
+                    f"with message 'Git Repository is empty.' This means the repository has no commits."
+                )
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
