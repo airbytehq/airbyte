@@ -23,7 +23,7 @@ This source allows you to sync up data about your Airbyte Cloud workspaces. [Tak
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.21 | 2026-05-01 | []() | Fix double-slash in token endpoint URL causing 401 authentication failures |
+| 0.1.21 | 2026-05-01 | [77697](https://github.com/airbytehq/airbyte/pull/77697) | Fix double-slash in token endpoint URL causing 401 authentication failures |
 | 0.1.20 | 2026-04-28 | [77153](https://github.com/airbytehq/airbyte/pull/77153) | Update dependencies |
 | 0.1.19 | 2026-04-21 | [76495](https://github.com/airbytehq/airbyte/pull/76495) | Update dependencies |
 | 0.1.18 | 2026-03-17 | [74969](https://github.com/airbytehq/airbyte/pull/74969) | Update dependencies |
