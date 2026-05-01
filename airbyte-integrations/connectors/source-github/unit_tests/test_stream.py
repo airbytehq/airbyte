@@ -233,6 +233,12 @@ def test_rate_limit_403_retries(response_headers):
             False,
             id="non_410_status",
         ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": None},
+            False,
+            id="null_message",
+        ),
     ],
 )
 def test_is_gone_with_feature_disabled(status_code, body, expected):
@@ -255,6 +261,13 @@ def test_error_handler_410_feature_disabled_returns_ignore():
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.IGNORE
     assert result.failure_type == FailureType.config_error
+
+
+def test_is_gone_with_feature_disabled_malformed_json():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.json = MagicMock(side_effect=ValueError("not json"))
+    assert is_gone_with_feature_disabled(response_mock) is False
 
 
 def test_error_handler_410_unknown_body_returns_fail():
