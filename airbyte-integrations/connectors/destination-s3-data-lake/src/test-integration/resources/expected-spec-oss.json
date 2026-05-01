@@ -214,6 +214,14 @@
         "always_show" : true,
         "order" : 7,
         "type" : "object"
+      },
+      "flush_batch_size_bytes" : {
+        "type" : "integer",
+        "description" : "The approximate size in bytes of each batch of data written to Iceberg. Smaller values flush more frequently, improving data freshness and reducing data loss on failure, but will create more small files that require compaction. Default is 200 MB (209715200 bytes).",
+        "title" : "Flush Batch Size (bytes)",
+        "examples" : [ 209715200 ],
+        "default" : 209715200,
+        "order" : 8
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
