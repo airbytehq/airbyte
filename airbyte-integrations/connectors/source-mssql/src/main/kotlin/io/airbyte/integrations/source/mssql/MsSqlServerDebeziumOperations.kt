@@ -451,9 +451,9 @@ class MsSqlServerDebeziumOperations(
      * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
      * the LSN is available, false otherwise.
      *
-     * Uses NULLIF to exclude unauthorized capture instances from MIN() aggregation.
-     * Per Microsoft docs, sys.fn_cdc_get_min_lsn() returns 0x00000000000000000000
-     * when the caller lacks authorization for a capture instance.
+     * Uses NULLIF to exclude unauthorized capture instances from MIN() aggregation. Per Microsoft
+     * docs, sys.fn_cdc_get_min_lsn() returns 0x00000000000000000000 when the caller lacks
+     * authorization for a capture instance.
      */
     private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
         // Use jdbcConnectionFactory which handles SSH tunneling

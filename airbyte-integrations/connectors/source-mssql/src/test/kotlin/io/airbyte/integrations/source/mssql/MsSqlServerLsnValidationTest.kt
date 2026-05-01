@@ -22,12 +22,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for LSN validation logic in [MsSqlServerDebeziumOperations.deserializeState],
- * specifically the fix for unauthorized CDC capture instances causing false validation failures.
+ * Tests for LSN validation logic in [MsSqlServerDebeziumOperations.deserializeState], specifically
+ * the fix for unauthorized CDC capture instances causing false validation failures.
  *
  * When sys.fn_cdc_get_min_lsn() is called on an unauthorized capture instance it returns
- * 0x00000000000000000000. Without NULLIF, MIN() across all instances would return zero,
- * triggering a spurious "LSN invalid" abort even when authorized instances have valid LSNs.
+ * 0x00000000000000000000. Without NULLIF, MIN() across all instances would return zero, triggering
+ * a spurious "LSN invalid" abort even when authorized instances have valid LSNs.
  */
 class MsSqlServerLsnValidationTest {
 
@@ -42,26 +42,29 @@ class MsSqlServerLsnValidationTest {
     @BeforeEach
     fun setUp() {
         mockResultSet = mockk(relaxed = true)
-        mockStatement = mockk(relaxed = true) {
-            every { executeQuery(any()) } returns mockResultSet
-            every { close() } returns Unit
-        }
-        mockConnection = mockk(relaxed = true) {
-            every { createStatement() } returns mockStatement
-            every { close() } returns Unit
-        }
-        mockJdbcConnectionFactory = mockk {
-            every { get() } returns mockConnection
-        }
-        configuration = mockk(relaxed = true) {
-            every { incrementalReplicationConfiguration } returns CdcIncrementalConfiguration(
-                initialWaitingSeconds = Duration.ofSeconds(300),
-                invalidCdcCursorPositionBehavior = InvalidCdcCursorPositionBehavior.FAIL_SYNC,
-                initialLoadTimeout = Duration.ofHours(8),
-                pollIntervalMs = 500
-            )
-            every { databaseName } returns "test_db"
-        }
+        mockStatement =
+            mockk(relaxed = true) {
+                every { executeQuery(any()) } returns mockResultSet
+                every { close() } returns Unit
+            }
+        mockConnection =
+            mockk(relaxed = true) {
+                every { createStatement() } returns mockStatement
+                every { close() } returns Unit
+            }
+        mockJdbcConnectionFactory = mockk { every { get() } returns mockConnection }
+        configuration =
+            mockk(relaxed = true) {
+                every { incrementalReplicationConfiguration } returns
+                    CdcIncrementalConfiguration(
+                        initialWaitingSeconds = Duration.ofSeconds(300),
+                        invalidCdcCursorPositionBehavior =
+                            InvalidCdcCursorPositionBehavior.FAIL_SYNC,
+                        initialLoadTimeout = Duration.ofHours(8),
+                        pollIntervalMs = 500
+                    )
+                every { databaseName } returns "test_db"
+            }
     }
 
     private fun createDebeziumOps(): MsSqlServerDebeziumOperations {
@@ -69,30 +72,29 @@ class MsSqlServerLsnValidationTest {
     }
 
     /**
-     * Builds a minimal opaque state JSON that [MsSqlServerDebeziumOperations.deserializeState]
-     * can parse. The state embeds a single offset entry with the given commit_lsn and a
-     * non-empty schema history so that only the LSN validation path is exercised.
+     * Builds a minimal opaque state JSON that [MsSqlServerDebeziumOperations.deserializeState] can
+     * parse. The state embeds a single offset entry with the given commit_lsn and a non-empty
+     * schema history so that only the LSN validation path is exercised.
      */
     private fun buildStateJson(commitLsn: String): com.fasterxml.jackson.databind.JsonNode {
-        val offsetKey = Jsons.objectNode().apply {
-            put("server", "test_db")
-        }
-        val offsetValue = Jsons.objectNode().apply {
-            put("commit_lsn", commitLsn)
-            put("change_lsn", commitLsn)
-            put("event_serial_no", 1)
-        }
-        val offsetNode = Jsons.objectNode().apply {
-            put(Jsons.writeValueAsString(offsetKey), Jsons.writeValueAsString(offsetValue))
-        }
-        val stateNode = Jsons.objectNode().apply {
-            set<ObjectNode>("mssql_cdc_offset", offsetNode)
-            put("mssql_db_history", "{}")
-            put("is_compressed", false)
-        }
-        return Jsons.objectNode().apply {
-            set<ObjectNode>("state", stateNode)
-        }
+        val offsetKey = Jsons.objectNode().apply { put("server", "test_db") }
+        val offsetValue =
+            Jsons.objectNode().apply {
+                put("commit_lsn", commitLsn)
+                put("change_lsn", commitLsn)
+                put("event_serial_no", 1)
+            }
+        val offsetNode =
+            Jsons.objectNode().apply {
+                put(Jsons.writeValueAsString(offsetKey), Jsons.writeValueAsString(offsetValue))
+            }
+        val stateNode =
+            Jsons.objectNode().apply {
+                set<ObjectNode>("mssql_cdc_offset", offsetNode)
+                put("mssql_db_history", "{}")
+                put("is_compressed", false)
+            }
+        return Jsons.objectNode().apply { set<ObjectNode>("state", stateNode) }
     }
 
     @Test
@@ -213,10 +215,11 @@ class MsSqlServerLsnValidationTest {
         // This test verifies the SQL query contains the NULLIF pattern.
         // We capture the query executed and assert its structure.
         var capturedQuery: String? = null
-        every { mockStatement.executeQuery(any()) } answers {
-            capturedQuery = firstArg()
-            mockResultSet
-        }
+        every { mockStatement.executeQuery(any()) } answers
+            {
+                capturedQuery = firstArg()
+                mockResultSet
+            }
 
         val savedLsn = "00000025:00000728:0005"
         val minLsnBytes = Lsn.valueOf(savedLsn).binary
@@ -234,7 +237,9 @@ class MsSqlServerLsnValidationTest {
 
         assertTrue(capturedQuery != null, "SQL query should have been executed")
         assertTrue(
-            capturedQuery!!.contains("NULLIF(sys.fn_cdc_get_min_lsn(capture_instance), 0x00000000000000000000)"),
+            capturedQuery!!.contains(
+                "NULLIF(sys.fn_cdc_get_min_lsn(capture_instance), 0x00000000000000000000)"
+            ),
             "Query must use NULLIF to exclude unauthorized (zero) LSN values from MIN()"
         )
         assertTrue(
