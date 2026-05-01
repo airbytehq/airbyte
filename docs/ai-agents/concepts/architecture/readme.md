@@ -70,7 +70,7 @@ flowchart TB
 
 Airbyte Agents uses a two-layer credential model.
 
-- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, and MCP server, your organization's `client_id` and `client_secret` (available on the [Profile page](https://app.airbyte.ai/profile)) serve the same purpose.
+- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, and MCP server, your organization's `client_id` and `client_secret` (available on the Profile page at [app.airbyte.ai](https://app.airbyte.ai)) serve the same purpose.
 - **Connector credentials** authenticate with each third-party service. When you add a connector, you provide the service's API key, OAuth tokens, or other credentials. Airbyte stores them securely and handles token refresh at execution time.
 
 Add credentials once through any interface and every other interface can use them. For details, see [Connectors and credentials](./connectors-and-credentials).

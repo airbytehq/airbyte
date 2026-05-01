@@ -9,7 +9,7 @@ A **connector** in Airbyte Agents is a stored set of credentials for a third-par
 
 The `/api/v1/integrations/connectors` endpoints cover every connector operation: create, list, get, and delete.
 
-To do the same thing from Python, see [Add a connector](../sdk/add-connector) in the SDK section.
+To manage existing connectors from Python, see [Add a connector](../sdk/add-connector) in the SDK section.
 
 ## Create a connector
 

@@ -8,7 +8,7 @@ description: >-
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 5
+  default_concurrency: 6
 
 check:
   type: CheckStream
