@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.spec
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -69,6 +70,17 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
+
+    @get:JsonSchemaTitle("Flush Batch Size (bytes)")
+    @get:JsonPropertyDescription(
+        "The approximate size in bytes of each batch of data written to Iceberg. " +
+            "Smaller values flush more frequently, improving data freshness and reducing data loss on failure, " +
+            "but will create more small files that require compaction. " +
+            "Default is 200 MB (209715200 bytes)."
+    )
+    @get:JsonProperty("flush_batch_size_bytes", required = false)
+    @get:JsonSchemaInject(json = """{"examples":[209715200], "default": 209715200, "order": 8}""")
+    val flushBatchSizeBytes: Long? = null
 }
 
 @Singleton

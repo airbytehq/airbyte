@@ -21,11 +21,20 @@ data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
+    val flushBatchSizeBytes: Long?,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider
+    S3BucketConfigurationProvider {
+
+    object Defaults {
+        const val FLUSH_BATCH_SIZE_BYTES = 200L * 1024L * 1024L // 200 MiB
+    }
+
+    val resolvedFlushBatchSizeBytes: Long
+        get() = flushBatchSizeBytes ?: Defaults.FLUSH_BATCH_SIZE_BYTES
+}
 
 @Singleton
 class S3DataLakeConfigurationFactory :
@@ -38,6 +47,7 @@ class S3DataLakeConfigurationFactory :
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
+            flushBatchSizeBytes = pojo.flushBatchSizeBytes,
         )
     }
 }
