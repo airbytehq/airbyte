@@ -122,8 +122,8 @@ class SourceGithub(AbstractSource):
                         organization = record.get("organization", {}).get("login")
                         if organization:
                             organizations.add(organization)
-                except AirbyteTracedException:
-                    pass
+                except AirbyteTracedException as e:
+                    logger.warning("Failed to check repository '%s': %s", repo, e.message)
                 if not repo_found:
                     inaccessible.append(repo)
 
