@@ -177,17 +177,19 @@ class SourceGithub(AbstractSource):
     def user_friendly_error_message(self, message: str) -> str:
         user_message = ""
         if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
-            # 404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100
             full_repo_name = message.split("https://api.github.com/repos/")[1].split("?")[0]
             user_message = f'Repo name: "{full_repo_name}" is unknown, "repository" config option should use existing full repo name <organization>/<repository>'
         elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
-            # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
             org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
         elif "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
-            # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
+            # Match both PAT and OAuth 401 patterns. M4 will replace this fragile
+            # repr()-substring matcher with structured error classification.
             user_message = (
-                "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
+                "GitHub authentication failed (HTTP 401). Your credentials (Personal Access Token or OAuth token) "
+                "may have expired or been revoked. For PATs, generate a new token at "
+                "https://github.com/settings/tokens and update the connector configuration. "
+                "For OAuth, re-authenticate the connector to obtain a fresh token."
             )
         return user_message
 
