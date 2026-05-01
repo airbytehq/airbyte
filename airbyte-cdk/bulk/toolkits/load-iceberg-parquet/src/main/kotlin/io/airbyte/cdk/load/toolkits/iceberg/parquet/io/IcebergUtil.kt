@@ -49,7 +49,10 @@ private val logger = KotlinLogging.logger {}
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 @Singleton
-class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
+class IcebergUtil(
+    private val tableIdGenerator: TableIdGenerator,
+    private val coercer: AirbyteValueCoercer,
+) {
     private val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
 
     fun constructGenerationIdSuffix(stream: DestinationStream): String {
@@ -199,66 +202,70 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         } else {
             Operation.INSERT
         }
-}
 
-/**
- * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
- *
- * This function applies a function to every non-array-typed value, recursing into arrays as needed.
- * [transformer] may assume that the AirbyteValue is a valid value for the AirbyteType. For example,
- * if [transformer] is called with a [NumberType], it is safe to cast the value to [NumberValue].
- */
-fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
-    transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
-): EnrichedAirbyteValue {
     /**
-     * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue as
-     * needed, then apply [transformer]. If [transformer] returns a [ChangedValue], modify the
-     * original ArrayValue's element (and populate [EnrichedAirbyteValue.changes] if needed).
+     * RB: I just moved this inside the class. I do not take ownership of this code.
+     *
+     * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
+     *
+     * This function applies a function to every non-array-typed value, recursing into arrays as
+     * needed. [transformer] may assume that the AirbyteValue is a valid value for the AirbyteType.
+     * For example, if [transformer] is called with a [NumberType], it is safe to cast the value to
+     * [NumberValue].
      */
-    fun recurseArray(
-        currentValue: AirbyteValue,
-        currentType: AirbyteType,
-        path: String,
-    ): AirbyteValue {
-        if (currentValue == NullValue) {
-            return NullValue
-        } else if (currentType is ArrayType) {
-            // If the type is another array, we recurse deeper.
-            val coercedArray = AirbyteValueCoercer.coerceArray(currentValue)
-            if (coercedArray == null) {
-                changes.add(
-                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
-                )
+    fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
+        transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
+    ): EnrichedAirbyteValue {
+        /**
+         * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue
+         * as needed, then apply [transformer]. If [transformer] returns a [ChangedValue], modify
+         * the original ArrayValue's element (and populate [EnrichedAirbyteValue.changes] if
+         * needed).
+         */
+        fun recurseArray(
+            currentValue: AirbyteValue,
+            currentType: AirbyteType,
+            path: String,
+        ): AirbyteValue {
+            if (currentValue == NullValue) {
                 return NullValue
-            }
-            return ArrayValue(
-                coercedArray.values.mapIndexed { index, element ->
-                    val newPath = "$path.$index"
-                    recurseArray(element, currentType.items.type, newPath)
-                },
-            )
-        } else {
-            // If we're at a leaf node, call the transformer.
-            val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
-            if (coercedValue == null) {
-                changes.add(
-                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+            } else if (currentType is ArrayType) {
+                // If the type is another array, we recurse deeper.
+                val coercedArray = coercer.coerceArray(currentValue)
+                if (coercedArray == null) {
+                    changes.add(
+                        Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    )
+                    return NullValue
+                }
+                return ArrayValue(
+                    coercedArray.values.mapIndexed { index, element ->
+                        val newPath = "$path.$index"
+                        recurseArray(element, currentType.items.type, newPath)
+                    },
                 )
-                return NullValue
+            } else {
+                // If we're at a leaf node, call the transformer.
+                val coercedValue = coercer.coerce(currentValue, currentType)
+                if (coercedValue == null) {
+                    changes.add(
+                        Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    )
+                    return NullValue
+                }
+                val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
+                val (newValue, changeDescription) = transformedValue
+                changeDescription?.let { (change, reason) ->
+                    changes.add(Meta.Change(path, change, reason))
+                }
+                return newValue
             }
-            val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
-            val (newValue, changeDescription) = transformedValue
-            changeDescription?.let { (change, reason) ->
-                changes.add(Meta.Change(path, change, reason))
-            }
-            return newValue
         }
+
+        abValue = recurseArray(abValue, type, name)
+
+        return this
     }
-
-    abValue = recurseArray(abValue, type, name)
-
-    return this
 }
 
 data class ChangeDescription(val change: Change, val reason: Reason)
