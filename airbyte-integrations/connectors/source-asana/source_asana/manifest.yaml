@@ -2666,7 +2666,7 @@ spec:
           type: string
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 25
         default: 10

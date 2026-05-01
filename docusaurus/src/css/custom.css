@@ -476,7 +476,3 @@ li.api-method.patch .menu__link::before {
   background-color: var(--openapi-code-orange);
 }
 
-/* Hide announcement bar on AI Agents pages */
-html.plugin-id-ai-agents div[class*="announcementBar"] {
-  display: none;
-}
