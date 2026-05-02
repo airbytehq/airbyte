@@ -886,22 +886,28 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json().get("data", {}).get("repository")
-        if repository:
-            nodes = repository.get("releases", {}).get("nodes", [])
-            for record in nodes:
-                record["repository"] = self._get_repository_name(repository)
-                if record.get("author"):
-                    record["author"]["type"] = record["author"].pop("__typename", "User")
-                record["assets"] = self._get_assets_from_release(record)
-                record["reactions"] = self._get_reactions_from_release(record)
-                mentions_connection = record.pop("mentions_connection", None)
-                if mentions_connection is not None:
-                    record["mentions_count"] = mentions_connection.get("totalCount", 0)
-                tag_commit = record.pop("tagCommit", None)
-                record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
-                record.update(self._build_rest_urls(record["repository"], record.get("id"), record.get("tag_name")))
-                yield record
+        body = response.json()
+        repository = (body.get("data") or {}).get("repository")
+        if repository is None:
+            errors = body.get("errors") or []
+            self.logger.warning(
+                f"`{self.name}` GraphQL response had no `data.repository`. Errors: {errors}. Yielding no records for this page."
+            )
+            return
+        nodes = repository.get("releases", {}).get("nodes", [])
+        for record in nodes:
+            record["repository"] = self._get_repository_name(repository)
+            if record.get("author"):
+                record["author"]["type"] = record["author"].pop("__typename", "User")
+            record["assets"] = self._get_assets_from_release(record)
+            record["reactions"] = self._get_reactions_from_release(record)
+            mentions_connection = record.pop("mentions_connection", None)
+            if mentions_connection is not None:
+                record["mentions_count"] = mentions_connection.get("totalCount", 0)
+            tag_commit = record.pop("tagCommit", None)
+            record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
+            record.update(self._build_rest_urls(record["repository"], record.get("id"), record.get("tag_name")))
+            yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json().get("data", {}).get("repository")
@@ -955,17 +961,23 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
         return "desc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            nodes = repository["pullRequests"]["nodes"]
-            for record in nodes:
-                record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
-                record["comments"] = record["comments"]["totalCount"]
-                record["commits"] = record["commits"]["totalCount"]
-                record["repository"] = self._get_repository_name(repository)
-                if record["merged_by"]:
-                    record["merged_by"]["type"] = record["merged_by"].pop("__typename")
-                yield record
+        body = response.json()
+        repository = (body.get("data") or {}).get("repository")
+        if repository is None:
+            errors = body.get("errors") or []
+            self.logger.warning(
+                f"`{self.name}` GraphQL response had no `data.repository`. Errors: {errors}. Yielding no records for this page."
+            )
+            return
+        nodes = repository["pullRequests"]["nodes"]
+        for record in nodes:
+            record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
+            record["comments"] = record["comments"]["totalCount"]
+            record["commits"] = record["commits"]["totalCount"]
+            record["repository"] = self._get_repository_name(repository)
+            if record["merged_by"]:
+                record["merged_by"]["type"] = record["merged_by"].pop("__typename")
+            yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
@@ -1025,14 +1037,20 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
             yield record
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            repository_name = self._get_repository_name(repository)
-            if "pullRequests" in repository:
-                for pull_request in repository["pullRequests"]["nodes"]:
-                    yield from self._get_records(pull_request, repository_name)
-            elif "pullRequest" in repository:
-                yield from self._get_records(repository["pullRequest"], repository_name)
+        body = response.json()
+        repository = (body.get("data") or {}).get("repository")
+        if repository is None:
+            errors = body.get("errors") or []
+            self.logger.warning(
+                f"`{self.name}` GraphQL response had no `data.repository`. Errors: {errors}. Yielding no records for this page."
+            )
+            return
+        repository_name = self._get_repository_name(repository)
+        if "pullRequests" in repository:
+            for pull_request in repository["pullRequests"]["nodes"]:
+                yield from self._get_records(pull_request, repository_name)
+        elif "pullRequest" in repository:
+            yield from self._get_records(repository["pullRequest"], repository_name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
@@ -1110,13 +1128,19 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
     is_sorted = "asc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            nodes = repository["projectsV2"]["nodes"]
-            for record in nodes:
-                record["owner_id"] = record.pop("owner").get("id")
-                record["repository"] = self._get_repository_name(repository)
-                yield record
+        body = response.json()
+        repository = (body.get("data") or {}).get("repository")
+        if repository is None:
+            errors = body.get("errors") or []
+            self.logger.warning(
+                f"`{self.name}` GraphQL response had no `data.repository`. Errors: {errors}. Yielding no records for this page."
+            )
+            return
+        nodes = repository["projectsV2"]["nodes"]
+        for record in nodes:
+            record["owner_id"] = record.pop("owner").get("id")
+            record["repository"] = self._get_repository_name(repository)
+            yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
@@ -1257,14 +1281,20 @@ class IssueReactions(SemiIncrementalMixin, GitHubGraphQLStream):
             yield reaction
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            repository_name = self._get_repository_name(repository)
-            if "issues" in repository:
-                for issue in repository["issues"]["nodes"]:
-                    yield from self._get_reactions_from_issue(issue, repository_name)
-            elif "issue" in repository:
-                yield from self._get_reactions_from_issue(repository["issue"], repository_name)
+        body = response.json()
+        repository = (body.get("data") or {}).get("repository")
+        if repository is None:
+            errors = body.get("errors") or []
+            self.logger.warning(
+                f"`{self.name}` GraphQL response had no `data.repository`. Errors: {errors}. Yielding no records for this page."
+            )
+            return
+        repository_name = self._get_repository_name(repository)
+        if "issues" in repository:
+            for issue in repository["issues"]["nodes"]:
+                yield from self._get_reactions_from_issue(issue, repository_name)
+        elif "issue" in repository:
+            yield from self._get_reactions_from_issue(repository["issue"], repository_name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
@@ -1336,12 +1366,22 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
             yield from self._get_reactions_from_pull_request(pull_request, repository)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()["data"]
+        body = response.json()
+        data = body.get("data") or {}
         repository = data.get("repository")
+        node = data.get("node")
+
+        if repository is None and node is None:
+            errors = body.get("errors") or []
+            self.logger.warning(
+                f"`{self.name}` GraphQL response had no `data.repository` or `data.node`. "
+                f"Errors: {errors}. Yielding no records for this page."
+            )
+            return
+
         if repository:
             yield from self._get_reactions_from_repository(repository)
 
-        node = data.get("node")
         if node:
             if node["__typename"] == "PullRequest":
                 yield from self._get_reactions_from_pull_request(node, node["repository"])
