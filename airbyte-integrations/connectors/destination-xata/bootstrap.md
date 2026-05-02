@@ -1,1 +1,0 @@
-# Xata Destination Connector

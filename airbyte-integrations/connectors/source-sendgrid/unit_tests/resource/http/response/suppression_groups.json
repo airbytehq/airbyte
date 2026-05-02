@@ -1,9 +1,0 @@
-[
-  {
-    "id": 123,
-    "name": "Weekly Newsletter",
-    "description": "Weekly newsletter subscription",
-    "is_default": false,
-    "unsubscribes": 42
-  }
-]

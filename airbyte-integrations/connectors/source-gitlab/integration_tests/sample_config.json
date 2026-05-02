@@ -1,7 +1,0 @@
-{
-  "api_url": "gitlab.com",
-  "private_token": "<user`s_private_token>",
-  "groups": "new-group",
-  "projects": "new-ci-test",
-  "start_date": "2021-01-01T00:00:00Z"
-}

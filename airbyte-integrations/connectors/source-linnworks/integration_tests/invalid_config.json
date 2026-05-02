@@ -1,6 +1,0 @@
-{
-  "application_id": "invalid_id",
-  "application_secret": "invalid_secret",
-  "token": "invalid_token",
-  "start_date": "not-a-date"
-}

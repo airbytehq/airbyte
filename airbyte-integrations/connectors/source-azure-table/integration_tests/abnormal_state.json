@@ -1,9 +1,0 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "PartitionKey": "999" },
-      "stream_descriptor": { "name": "pokemon" }
-    }
-  }
-]

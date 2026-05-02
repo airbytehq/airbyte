@@ -1,6 +1,0 @@
-{
-  "email": "john@doe.com",
-  "password": "pw1234",
-  "logs_batch_size": 30,
-  "start_date": "2021-12-01"
-}

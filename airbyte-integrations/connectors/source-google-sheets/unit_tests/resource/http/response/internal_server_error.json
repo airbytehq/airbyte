@@ -1,7 +1,0 @@
-{
-  "error": {
-    "code": 500,
-    "message": "Interval Server error",
-    "status": "INTERNAL_SERVER_ERROR"
-  }
-}

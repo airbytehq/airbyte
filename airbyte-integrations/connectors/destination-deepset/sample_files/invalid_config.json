@@ -1,6 +1,0 @@
-{
-  "api_key": "hello",
-  "base_url": "localhost:3000",
-  "workspace": "default",
-  "retries": 5
-}

@@ -1,6 +1,0 @@
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "integer",
-  "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8],
-  "description": "1: handling; 2: storage; 3: prepaid_freight; 4: third_party_freight; 5: special_charges; 6: materials; 7: auto_calc_storage (used internally for sys-gen'ed charges); 8: auto_calc_handling (used internally for sys-gen'ed charges); 8: maxval (ignore, not a real value)"
-}

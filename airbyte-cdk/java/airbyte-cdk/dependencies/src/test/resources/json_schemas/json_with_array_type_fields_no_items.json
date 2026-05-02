@@ -1,9 +1,0 @@
-{
-  "type": ["object", "array"],
-  "properties": {
-    "company": {
-      "type": "string",
-      "description": "company name"
-    }
-  }
-}

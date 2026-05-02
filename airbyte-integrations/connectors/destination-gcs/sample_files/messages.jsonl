@@ -1,2 +1,0 @@
-{"type": "RECORD", "record": {"stream": "ab-airbyte-testing", "data": {"_ab_pk": "my_value", "column2": 221, "column3": "2021-01-01T20:10:22", "column4": 1.214, "column5": [1,2,3]}, "emitted_at": 1626172757000}}
-{"type": "RECORD", "record": {"stream": "ab-airbyte-testing", "data": {"_ab_pk": "my_value2", "column2": 222, "column3": "2021-01-02T22:10:22", "column5": [1,2,null]}, "emitted_at": 1626172757000}}

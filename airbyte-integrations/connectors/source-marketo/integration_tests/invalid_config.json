@@ -1,7 +1,0 @@
-{
-  "client_id": "invalid_client_id",
-  "client_secret": "invalid_client_secret",
-  "domain_url": "invalid_domain_url",
-  "start_date": "0000-00-00T00:00:00Z",
-  "window_in_days": 2
-}

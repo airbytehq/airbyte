@@ -1,5 +1,0 @@
-.venv
-.pytest_cache
-*.log
-__pycache__
-/secrets

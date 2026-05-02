@@ -16,7 +16,7 @@ Server-API
 
 - [Bounces: Deliverystats](https://postmarkapp.com/developer/api/bounce-api#delivery-stats): Lets you access all reports regarding your bounces for a specific server. Bounces are available for 45 days after a bounce.
 - [Message-Streams](https://postmarkapp.com/developer/api/message-streams-api#list-message-streams): Lets you manage message streams for a specific server. Please note: A Server may have up to 10 Streams, including the default ones. Default Streams cannot be deleted, and Servers can only have 1 Inbound Stream.
-- [Outbound stats](https://account.postmarkapp.com/servers/9708911/credentials): Lets you get all of the statistics of your outbound emails for a specific server. These statistics are stored permantently and do not expire. All stats use EST timezone
+- [Outbound stats](https://account.postmarkapp.com/servers/9708911/credentials): Lets you get all of the statistics of your outbound emails for a specific server. These statistics are stored permanently and do not expire. All stats use EST timezone
 
 Account-API
 

@@ -1,9 +1,0 @@
-{
-  "credentials": {
-    "auth_type": "Token",
-    "client_id": "client_id",
-    "tenant_id": "tenant_id",
-    "client_secret": "client_secret"
-  },
-  "period": "D180"
-}

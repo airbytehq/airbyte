@@ -1,8 +1,0 @@
-{
-  "api_key": "YOUR_API_KEY",
-  "symbol": "TSLA",
-  "interval": "60min",
-  "outputsize": "compact",
-  "slice": "year1month1",
-  "adjusted": false
-}

@@ -1,6 +1,0 @@
-{
-  "api_key": "invalid_key",
-  "urls": ["https://www.vol.at", "https://www.vienna.at"],
-  "strategies": ["desktop", "mobile"],
-  "categories": ["performance", "pwa"]
-}
