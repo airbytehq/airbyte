@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 
-from airbyte_cdk.models import ConnectorSpecification
-
 from source_google_drive import SourceGoogleDrive
+
+from airbyte_cdk.models import ConnectorSpecification
 
 
 def test_source_instantiation():
