@@ -324,7 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.18 | 2026-05-02 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update airbyte-cdk to 7.18.1 (surface actionable check errors instead of full Python tracebacks) |
+| 0.5.18 | 2026-05-02 | [77714](https://github.com/airbytehq/airbyte/pull/77714) | Update airbyte-cdk to 7.18.1 (surface actionable check errors instead of full Python tracebacks) |
 | 0.5.17 | 2026-05-02 | [77711](https://github.com/airbytehq/airbyte/pull/77711) | Update airbyte-cdk to 7.18.0 |
 | 0.5.16 | 2026-04-28 | [77266](https://github.com/airbytehq/airbyte/pull/77266) | Update dependencies |
 | 0.5.15 | 2026-04-21 | [76611](https://github.com/airbytehq/airbyte/pull/76611) | Update dependencies |
