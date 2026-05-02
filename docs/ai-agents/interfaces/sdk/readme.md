@@ -8,7 +8,7 @@ import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
 
 # SDK
 
-The Airbyte Agents Python SDK (`airbyte_agent_sdk`) is the Python entry point to Airbyte Agents. With one install you get typed connectors, automatic credential handling, direct execution, and patterns for exposing connectors as tools to AI agent frameworks.
+The Airbyte Agent SDK (`airbyte_agent_sdk`) is the Python entry point to Airbyte Agents. With one install you get typed connectors, automatic credential handling, direct execution, and patterns for exposing connectors as tools to AI agent frameworks.
 
 This section walks through authenticate, add a connector, and execute operations. Deeper class and method signatures live in the [SDK reference](/ai-agents/reference/sdk).
 
