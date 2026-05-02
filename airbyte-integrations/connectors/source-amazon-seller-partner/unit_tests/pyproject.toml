@@ -16,6 +16,7 @@ requests-mock = "^1.12.1"
 freezegun = "^1.5.2"
 pendulum = "^3.1.0"
 dateparser = "^1.2.1"
+ijson = "^3.3.0"
 pytest-mock = "^3.14.1"
 [tool.pytest.ini_options]
 filterwarnings = [

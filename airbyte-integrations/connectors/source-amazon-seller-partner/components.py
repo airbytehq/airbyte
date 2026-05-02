@@ -4,6 +4,7 @@
 
 import csv
 import gzip
+import io
 import json
 import logging
 import threading
@@ -15,6 +16,7 @@ from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional
 
 import backoff
 import dateparser
+import ijson
 import requests
 import xmltodict
 
@@ -361,6 +363,119 @@ class GzipJsonDecoder(Decoder):
             yield {}
         else:
             yield from body_json
+
+
+_GZIP_MAGIC = b"\x1f\x8b"
+
+
+@dataclass
+class GzipJsonStreamingItemsDecoder(Decoder):
+    """
+    Streaming decoder for very large gzipped JSON report payloads.
+
+    The decoder yields each element of the array located at `items_field_path`
+    one at a time, without ever materializing the full decompressed document
+    or the parsed Python object tree. It is intended for connectors that
+    download single-document reports whose bulk content is a long array (for
+    example, Amazon Seller Partner Brand Analytics reports such as
+    `GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT`).
+
+    Implementation notes:
+
+    - HTTP streaming is enabled (`is_stream_response()` returns `True`) so the
+      gzipped bytes are read directly off the socket instead of being buffered
+      into `response.content`.
+    - Decompression is done incrementally with `gzip.GzipFile`, which decodes
+      one block at a time.
+    - JSON parsing is done with `ijson`, which yields each item from the
+      configured array path without building an in-memory dict/list for the
+      whole document.
+    - When paired with this decoder, the manifest extractor's `field_path`
+      must be empty (`field_path: []`): the decoder already yields individual
+      records, so no further extraction is needed.
+
+    `items_field_path` accepts a dotted path (for example
+    `dataByDepartmentAndSearchTerm` or `payload.results`) that addresses the
+    array within the decompressed JSON document.
+    """
+
+    items_field_path: str
+    parameters: InitVar[Mapping[str, Any]]
+
+    def is_stream_response(self) -> bool:
+        return True
+
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
+        prefix = f"{self.items_field_path}.item"
+        stream = self._open_stream(response)
+        try:
+            yield from ijson.items(stream, prefix)
+        finally:
+            stream.close()
+
+    @staticmethod
+    def _open_stream(response: requests.Response) -> io.IOBase:
+        """
+        Return a binary stream over the response body, transparently
+        decompressing if the body is gzipped.
+
+        The first two bytes are peeked to detect the gzip magic number so a
+        rare uncompressed JSON payload (used by some test setups) is still
+        handled. The peeked bytes are pushed back so downstream consumers see
+        the full document.
+        """
+        raw = response.raw
+        head = raw.read(2)
+        body = _PrefixedStream(head, raw)
+        if head[:2] == _GZIP_MAGIC:
+            return gzip.GzipFile(fileobj=body, mode="rb")
+        return body
+
+
+class _PrefixedStream(io.RawIOBase):
+    """
+    Wrap a stream so a small in-memory prefix is read first and then bytes
+    pass through from the underlying source.
+
+    Used to "push back" the bytes consumed while sniffing the gzip magic
+    number so they are still visible to the downstream decompressor / parser.
+    """
+
+    def __init__(self, prefix: bytes, source: Any) -> None:
+        super().__init__()
+        self._prefix = io.BytesIO(prefix)
+        self._source = source
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, buffer: bytearray) -> int:
+        n = self._prefix.readinto(buffer)
+        if n:
+            return n
+        return self._source.readinto(buffer) if hasattr(self._source, "readinto") else self._fallback_read(buffer)
+
+    def read(self, size: int = -1) -> bytes:
+        if size is None or size < 0:
+            return self._prefix.read() + self._source.read()
+        chunk = self._prefix.read(size)
+        if len(chunk) == size:
+            return chunk
+        remaining = size - len(chunk)
+        return chunk + self._source.read(remaining)
+
+    def _fallback_read(self, buffer: bytearray) -> int:
+        chunk = self._source.read(len(buffer))
+        if not chunk:
+            return 0
+        buffer[: len(chunk)] = chunk
+        return len(chunk)
+
+    def close(self) -> None:
+        try:
+            self._source.close()
+        finally:
+            super().close()
 
 
 @dataclass
