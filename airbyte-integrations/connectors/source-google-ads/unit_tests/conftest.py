@@ -36,7 +36,10 @@ _YAML_FILE_PATH = "manifest.yaml"
 def get_source(config, state=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(path_to_yaml=str(_SOURCE_FOLDER_PATH / _YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+    # Use `SourceGoogleAds` (rather than `YamlDeclarativeSource` directly) so the
+    # `_backfill_auth_type` step runs for legacy test fixtures that pre-date the
+    # OAuth / Service Account `oneOf` split in `spec.json`.
+    return SourceGoogleAds(catalog=catalog, config=config, state=state)
 
 
 def find_stream(stream_name, config, state=None):

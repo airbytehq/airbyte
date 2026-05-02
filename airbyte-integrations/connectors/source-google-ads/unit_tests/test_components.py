@@ -15,6 +15,7 @@ from source_google_ads.components import (
     CustomGAQuerySchemaLoader,
     FlattenNestedDictsTransformation,
     GoogleAdsRetriever,
+    GoogleAdsServiceAccountAuthenticator,
     GoogleAdsStreamingDecoder,
     SerializeMessageFieldsTransformation,
 )
@@ -1061,3 +1062,77 @@ class TestSerializeMessageFieldsTransformation:
         # MESSAGE fields map to "string" type in schema
         assert schema["properties"]["change_event.old_resource"] == {"type": ["string", "null"]}
         assert schema["properties"]["change_event.new_resource"] == {"type": ["string", "null"]}
+
+
+_SERVICE_ACCOUNT_KEY_DICT = {
+    "type": "service_account",
+    "project_id": "test-project",
+    "private_key_id": "key-id",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----\n",
+    "client_email": "sa@test-project.iam.gserviceaccount.com",
+    "client_id": "1234567890",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+}
+
+
+@patch("source_google_ads.components.service_account.Credentials")
+def test_service_account_authenticator_emits_bearer_token_with_subject(mock_credentials_cls):
+    """The service-account authenticator must request a bearer token from a Google credentials
+    object that has been correctly subject-delegated to `impersonated_email`.
+    """
+    delegated = MagicMock()
+    delegated.valid = False
+    delegated.token = "ya29.test"
+
+    base = MagicMock()
+    base.with_subject.return_value = delegated
+    mock_credentials_cls.from_service_account_info.return_value = base
+
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "service_account_info": json.dumps(_SERVICE_ACCOUNT_KEY_DICT),
+                "impersonated_email": "user@example.com",
+            }
+        },
+        parameters={},
+    )
+
+    assert authenticator.auth_header == "Authorization"
+    assert authenticator.token == "Bearer ya29.test"
+
+    mock_credentials_cls.from_service_account_info.assert_called_once_with(
+        _SERVICE_ACCOUNT_KEY_DICT, scopes=["https://www.googleapis.com/auth/adwords"]
+    )
+    base.with_subject.assert_called_once_with("user@example.com")
+    delegated.refresh.assert_called_once()
+
+
+def test_service_account_authenticator_rejects_missing_info():
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={"credentials": {"auth_type": "Service", "developer_token": "x", "impersonated_email": "u@e.com"}},
+        parameters={},
+    )
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+    assert "service_account_info" in exc_info.value.message
+
+
+def test_service_account_authenticator_rejects_invalid_json():
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "x",
+                "service_account_info": "not-json",
+                "impersonated_email": "u@e.com",
+            }
+        },
+        parameters={},
+    )
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+    assert "service_account_info" in exc_info.value.message

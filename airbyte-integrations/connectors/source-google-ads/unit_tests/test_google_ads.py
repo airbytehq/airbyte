@@ -57,10 +57,100 @@ EXPECTED_CRED = {
 }
 
 
+SERVICE_ACCOUNT_KEY_DICT = {
+    "type": "service_account",
+    "project_id": "test-project",
+    "private_key_id": "key-id",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----\n",
+    "client_email": "sa@test-project.iam.gserviceaccount.com",
+    "client_id": "1234567890",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+}
+
+
+SAMPLE_SERVICE_ACCOUNT_CONFIG = {
+    "credentials": {
+        "auth_type": "Service",
+        "developer_token": "developer_token",
+        "service_account_info": json.dumps(SERVICE_ACCOUNT_KEY_DICT),
+        "impersonated_email": "user@example.com",
+    }
+}
+
+
 def test_google_ads_init(mocker):
     google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
     _ = GoogleAds(**SAMPLE_CONFIG)
     assert google_client_mocker.load_from_dict.call_args[0][0] == EXPECTED_CRED
+
+
+def test_google_ads_init_with_service_account_credentials(mocker, tmp_path):
+    """Service account credentials should be materialized to the SDK's expected `json_key_file_path` shape."""
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    _ = GoogleAds(**SAMPLE_SERVICE_ACCOUNT_CONFIG)
+
+    sdk_credentials = google_client_mocker.load_from_dict.call_args[0][0]
+    # Airbyte-only discriminator must be stripped before handing off to the SDK
+    assert "auth_type" not in sdk_credentials
+    # In-memory key payload must not be passed to the SDK
+    assert "service_account_info" not in sdk_credentials
+    assert sdk_credentials["developer_token"] == "developer_token"
+    assert sdk_credentials["impersonated_email"] == "user@example.com"
+    assert sdk_credentials["use_proto_plus"] is True
+    # The key must be written to a file the SDK can read
+    json_key_file_path = sdk_credentials["json_key_file_path"]
+    with open(json_key_file_path, "r") as fh:
+        assert json.load(fh) == SERVICE_ACCOUNT_KEY_DICT
+
+
+def test_service_account_credentials_temp_file_reused_across_clients(mocker):
+    """Subsequent `get_client(login_customer_id=...)` calls must reuse the same temp key file."""
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    google_ads_client = GoogleAds(**SAMPLE_SERVICE_ACCOUNT_CONFIG)
+    # initial call from GoogleAds.__init__
+    first_key_file = google_client_mocker.load_from_dict.call_args[0][0]["json_key_file_path"]
+
+    # Trigger a second `load_from_dict` for a non-default login_customer_id
+    google_ads_client.get_client("9999999999")
+
+    second_key_file = google_client_mocker.load_from_dict.call_args[0][0]["json_key_file_path"]
+    assert first_key_file == second_key_file
+
+
+def test_service_account_credentials_invalid_json_raises_config_error(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        GoogleAds(
+            credentials={
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "service_account_info": "not json",
+                "impersonated_email": "user@example.com",
+            }
+        )
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "service_account_info" in exc_info.value.message
+
+
+def test_service_account_credentials_missing_info_raises_config_error(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        GoogleAds(
+            credentials={
+                "auth_type": "Service",
+                "developer_token": "developer_token",
+                "impersonated_email": "user@example.com",
+            }
+        )
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "service_account_info" in exc_info.value.message
 
 
 def test_google_ads_wrong_permissions(mocker):
