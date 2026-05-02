@@ -186,7 +186,11 @@ class GithubStreamABC(HttpStream, ABC):
             elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e._exception.response.status_code == requests.codes.BAD_GATEWAY:
-                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
+                raise AirbyteTracedException(
+                    internal_message=f"Stream `{self.name}`, slice `{stream_slice}`: 502 Bad Gateway after retries.",
+                    message=f"GitHub API returned HTTP 502 (Bad Gateway) for stream `{self.name}` after exhausting retries.",
+                    failure_type=FailureType.transient_error,
+                ) from e
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")

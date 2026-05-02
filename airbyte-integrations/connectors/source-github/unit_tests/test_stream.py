@@ -312,7 +312,10 @@ def test_stream_teams_502(sleep_mock, requests_mock):
         json={"message": "Server Error"},
     )
 
-    assert list(read_full_refresh(stream)) == []
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert "502" in (exc_info.value.message or "")
     assert requests_mock.call_count == 6
     # Check whether url is the same for all response.calls
     assert set(call.url for call in requests_mock._adapter.request_history).symmetric_difference({f"{url}?per_page=100"}) == set()
