@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.withLock
@@ -366,7 +367,7 @@ class FeedReader(
     }
 
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
-        coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
+        currentCoroutineContext() + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
     private fun attemptWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
