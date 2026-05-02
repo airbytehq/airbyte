@@ -1095,6 +1095,11 @@
       "source": "/platform/2.1/:path*",
       "destination": "/platform/:path*",
       "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/concepts/connect-unify-act",
+      "destination": "/ai-agents/concepts/connect-ask-act",
+      "statusCode": 301
     }
   ]
 }
