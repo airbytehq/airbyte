@@ -743,7 +743,11 @@ class Commits(IncrementalMixin, GithubStream):
                 if "/".join(branch_parts[:2]) == repo and branch in all_branches:
                     repo_branches.append(branch_parts[-1])
             if not repo_branches:
-                repo_branches = [default_branches[repo]]
+                default_branch = default_branches.get(repo)
+                if default_branch is None:
+                    self.logger.warning("Skipping commits for repository '%s': unable to determine default branch.", repo)
+                    continue
+                repo_branches = [default_branch]
             self.branches_to_repos[repo] = repo_branches
 
 
