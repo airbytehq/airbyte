@@ -95,24 +95,18 @@ def test_orders_stream_follows_cursor_across_pages():
         output = _sync("orders")
 
     emitted_ids = [record.record.data["id"] for record in output.records]
-    assert emitted_ids == [f"order-{i}" for i in range(8)], (
-        f"expected all 8 orders across 3 pages to be emitted, got {emitted_ids}"
-    )
+    assert emitted_ids == [f"order-{i}" for i in range(8)], f"expected all 8 orders across 3 pages to be emitted, got {emitted_ids}"
 
     # The first request must NOT carry a cursor; subsequent requests must echo the
     # cursor returned by the previous page in the request body (not the query string).
-    assert captured_request_bodies[0].get("cursor") is None, (
-        "first orders request should not carry a cursor"
-    )
+    assert captured_request_bodies[0].get("cursor") is None, "first orders request should not carry a cursor"
     assert captured_request_bodies[1].get("cursor") == "cursor-page-2"
     assert captured_request_bodies[2].get("cursor") == "cursor-page-3"
 
     # The paginator must inject `limit` into the request body (not the query string).
     # Square's max limit is 1000; the manifest paginator declares `page_size: 1000`.
     for body in captured_request_bodies:
-        assert body.get("limit") == 1000, (
-            f"orders request body must declare limit=1000, got {body.get('limit')!r}"
-        )
+        assert body.get("limit") == 1000, f"orders request body must declare limit=1000, got {body.get('limit')!r}"
 
 
 def test_orders_stream_stops_when_cursor_missing():
@@ -128,9 +122,9 @@ def test_orders_stream_stops_when_cursor_missing():
 
     emitted_ids = [record.record.data["id"] for record in output.records]
     assert emitted_ids == ["order-0", "order-1"]
-    assert orders_matcher.call_count == 1, (
-        f"expected exactly one orders request when no cursor is returned, got {orders_matcher.call_count}"
-    )
+    assert (
+        orders_matcher.call_count == 1
+    ), f"expected exactly one orders request when no cursor is returned, got {orders_matcher.call_count}"
 
 
 def test_orders_stream_request_body_is_well_formed():
