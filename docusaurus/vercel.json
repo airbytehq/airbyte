@@ -793,7 +793,7 @@
     },
     {
       "source": "/embedded-api/sonar",
-      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/airbyte-agent-api",
       "statusCode": 301
     },
     {
@@ -803,7 +803,7 @@
     },
     {
       "source": "/ai-agents/embedded/api-reference/sonar",
-      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/airbyte-agent-api",
       "statusCode": 301
     },
     {
@@ -893,12 +893,22 @@
     },
     {
       "source": "/ai-agents/api/api-reference/sonar",
-      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/airbyte-agent-api",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/api/api-reference/sonar/:path*",
-      "destination": "/ai-agents/reference/api/api-reference/agent-engine-api/:path*",
+      "destination": "/ai-agents/reference/api/api-reference/airbyte-agent-api/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/reference/api/api-reference/agent-engine-api",
+      "destination": "/ai-agents/reference/api/api-reference/airbyte-agent-api",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/reference/api/api-reference/agent-engine-api/:path*",
+      "destination": "/ai-agents/reference/api/api-reference/airbyte-agent-api/:path*",
       "statusCode": 301
     },
     {

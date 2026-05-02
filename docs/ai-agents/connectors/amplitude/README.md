@@ -5,7 +5,7 @@ The Amplitude agent connector is a Python package that equips AI agents to inter
 Connector for the Amplitude Analytics API. Provides access to core analytics data including event exports, cohort definitions, chart annotations, event type listings, active user counts, and average session length metrics. Authentication uses HTTP Basic with your Amplitude API key and secret key.
 
 
-## Example questions
+## Example prompts
 
 The Amplitude connector is optimized to handle prompts like these.
 
@@ -16,7 +16,7 @@ The Amplitude connector is optimized to handle prompts like these.
 - What are the most popular event types by total count?
 - Show me annotations created in the last month
 
-## Unsupported questions
+## Unsupported prompts
 
 The Amplitude connector isn't currently able to handle prompts like these.
 
@@ -24,239 +24,7 @@ The Amplitude connector isn't currently able to handle prompts like these.
 - Delete a cohort
 - Export raw event data
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
-
-connector = AmplitudeConnector(
-    auth_config=AmplitudeAuthConfig(
-        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
->",
-        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
->"
-    )
-)
-
-@agent.tool_plain
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
-
-connector = AmplitudeConnector(
-    auth_config=AmplitudeAuthConfig(
-        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
->",
-        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
->"
-    )
-)
-
-@tool
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
-
-connector = AmplitudeConnector(
-    auth_config=AmplitudeAuthConfig(
-        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
->",
-        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
->"
-    )
-)
-
-mcp = FastMCP("Amplitude Agent")
-
-@mcp.tool()
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `AmplitudeConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-
-connector = connect("amplitude", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-
-connector = connect("amplitude", workspace_name="<your_workspace_name>")
-
-@tool
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-
-connector = connect("amplitude", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Amplitude Agent")
-
-@mcp.tool()
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = AmplitudeConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = AmplitudeConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = AmplitudeConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Amplitude Agent")
-
-@mcp.tool()
-@AmplitudeConnector.tool_utils
-async def amplitude_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Amplitude connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -269,16 +37,321 @@ This connector supports the following entities and actions. For more details, se
 | Average Session Length | [List](./REFERENCE.md#average-session-length-list), [Context Store Search](./REFERENCE.md#average-session-length-context-store-search) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Amplitude API docs
+## Amplitude API docs
 
 See the official [Amplitude API reference](https://www.docs.developers.amplitude.com/analytics/apis/).
 
+## SDK installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+## SDK usage
+
+Connectors can run in hosted or open source mode.
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `AmplitudeConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+@tool
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AmplitudeConnector.tool_utils(framework="openai_agents")
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Amplitude Assistant", tools=[amplitude_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+
+connector = connect("amplitude", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Amplitude Agent")
+
+@mcp.tool
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AmplitudeConnector.tool_utils(framework="openai_agents")
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Amplitude Assistant", tools=[amplitude_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Amplitude Agent")
+
+@mcp.tool
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+@tool
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AmplitudeConnector.tool_utils(framework="openai_agents")
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Amplitude Assistant", tools=[amplitude_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.amplitude import AmplitudeConnector
+from airbyte_agent_sdk.connectors.amplitude.models import AmplitudeAuthConfig
+
+connector = AmplitudeConnector(
+    auth_config=AmplitudeAuthConfig(
+        api_key="<Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+>",
+        secret_key="<Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+>"
+    )
+)
+
+mcp = FastMCP("Amplitude Agent")
+
+@mcp.tool
+@AmplitudeConnector.tool_utils
+async def amplitude_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Amplitude connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 ## Version information
 
-- **Package version:** 1.0.3
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 1.0.3

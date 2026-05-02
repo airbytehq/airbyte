@@ -20,7 +20,7 @@ flowchart TD
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
-    click WEB "#web-app-research-preview"
+    click WEB "#web-app"
     click API "#http-api"
 ```
 
@@ -48,7 +48,7 @@ uv add airbyte-agent-sdk
 - [LangChain tutorial](developer-quickstart/tutorial-langchain)
 - [FastMCP tutorial](developer-quickstart/tutorial-fastmcp)
 
-## Web app (Research Preview)
+## Web app
 
 **Best for:** Non-developers, operations teams, and anyone who wants to explore Airbyte Agents without writing code.
 

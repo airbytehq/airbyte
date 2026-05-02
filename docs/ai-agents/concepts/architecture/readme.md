@@ -14,36 +14,7 @@ You can interact with the platform through four interfaces. They all connect to 
 - [**SDK**](../../interfaces/sdk): Python SDK for building agents that authenticate, connect, and execute operations in your own code.
 - [**MCP server**](../../interfaces/mcp): A remote Model Context Protocol server that connects MCP-capable agents like Claude, Cursor, and ChatGPT to your data.
 
-```mermaid
-flowchart TB
-    subgraph interfaces["Interfaces"]
-        direction LR
-        UI["Web app"]
-        API["API"]
-        SDK["SDK"]
-        MCP["MCP server"]
-    end
-
-    subgraph platform["Airbyte Agents Platform"]
-        AUTH["Authentication<br/>& token management"]
-        EXEC["Execution engine"]
-        CS["Context Store"]
-    end
-
-    subgraph services["Third-party services"]
-        direction LR
-        SVC1["CRM"]
-        SVC2["Support desk"]
-        SVC3["Analytics"]
-        SVC4["..."]
-    end
-
-    interfaces --> AUTH
-    AUTH --> EXEC
-    EXEC -- "Direct" --> services
-    EXEC -- "Search" --> CS
-    CS -. "replicates from" .-> services
-```
+![System architecture diagram showing Interfaces (Web app, API, SDK, MCP server) connecting to the Airbyte Agents Platform (Authentication and token management, Execution engine with Search and Direct modes, Context Store) which interacts with Third-party services (CRM, Support desk, Analytics, and more).](/img/ai-agents-system-architecture.svg)
 
 ## Resource hierarchy
 
