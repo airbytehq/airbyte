@@ -729,21 +729,49 @@ class Commits(IncrementalMixin, GithubStream):
             for repo_stats in self.repositories_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh):
                 default_branches[repo_stats["full_name"]] = repo_stats["default_branch"]
 
-        all_branches = []
+        all_branches = set()
         for stream_slice in self.branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for branch in self.branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                all_branches.append(f"{branch['repository']}/{branch['name']}")
+                all_branches.add(f"{branch['repository']}/{branch['name']}")
+
+        # Validate each configured branch entry and collect invalid ones
+        invalid_branches = []
+        for branch in self.branches_to_pull:
+            branch_parts = branch.split("/", 2)
+            if len(branch_parts) < 3:
+                invalid_branches.append((branch, "malformed entry, expected format 'owner/repo/branch'"))
+            elif "/".join(branch_parts[:2]) not in {r for r in self.repositories}:
+                invalid_branches.append((branch, f"repository '{'/'.join(branch_parts[:2])}' is not in the configured repositories list"))
+            elif branch not in all_branches:
+                invalid_branches.append((branch, f"branch '{branch_parts[2]}' does not exist in repository '{'/'.join(branch_parts[:2])}'"))
+
+        if invalid_branches and len(self.branches_to_pull) == len(invalid_branches):
+            messages = "; ".join(f"'{b}': {reason}" for b, reason in invalid_branches)
+            raise AirbyteTracedException(
+                message=f"No valid branches found in the configured branches list. Invalid entries: {messages}",
+                internal_message=f"All {len(invalid_branches)} configured branch(es) are invalid: {messages}",
+                failure_type=FailureType.config_error,
+            )
+
+        if invalid_branches:
+            for branch, reason in invalid_branches:
+                self.logger.warning("Skipping invalid branch entry '%s': %s", branch, reason)
 
         # Create mapping of repository to list of branches to pull commits for
         # If no branches are specified for a repo, use its default branch
+        invalid_branch_names = {b for b, _ in invalid_branches}
         for repo in self.repositories:
             repo_branches = []
             for branch in self.branches_to_pull:
+                if branch in invalid_branch_names:
+                    continue
                 branch_parts = branch.split("/", 2)
-                if "/".join(branch_parts[:2]) == repo and branch in all_branches:
+                if "/".join(branch_parts[:2]) == repo:
                     repo_branches.append(branch_parts[-1])
             if not repo_branches:
-                repo_branches = [default_branches[repo]]
+                default_branch = default_branches.get(repo)
+                if default_branch:
+                    repo_branches = [default_branch]
             self.branches_to_repos[repo] = repo_branches
 
 
