@@ -4,14 +4,14 @@
 
 import logging
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
 
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import command_check
@@ -200,8 +200,21 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
     assert str(e.value) == (
         "No streams available. Looks like your config for repositories or organizations is not valid."
         " Please, check your permissions, names of repositories and organizations."
-        " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, workflow."
+        " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, read:project, workflow."
     )
+
+
+@responses.activate
+def test_streams_airbyte_traced_exception_propagates(monkeypatch, rate_limit_mock_response):
+    error = AirbyteTracedException(
+        internal_message="GitHub authentication failed.",
+        message="GitHub authentication failed. Token is invalid or expired.",
+        failure_type=FailureType.config_error,
+    )
+    monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(side_effect=error))
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
+    assert exc_info.value is error
 
 
 def test_streams_page_size(rate_limit_mock_response, requests_mock):
@@ -262,24 +275,48 @@ def test_streams_config_start_date(config, expected, rate_limit_mock_response, r
         assert not project_stream._start_date
 
 
-@pytest.mark.parametrize(
-    "error_message, expected_user_friendly_message",
-    [
-        (
-            "404 Client Error: Not Found for url: https://api.github.com/repos/repo_name",
-            'Repo name: "repo_name" is unknown, "repository" config option should use existing full repo name <organization>/<repository>',
-        ),
-        (
-            "404 Client Error: Not Found for url: https://api.github.com/orgs/org_name",
-            'Organization name: "org_name" is unknown, "repository" config option should be updated. Please validate your repository config.',
-        ),
-        (
-            "401 Client Error: Unauthorized for url",
-            "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token.",
-        ),
-    ],
-)
-def test_user_friendly_message(error_message, expected_user_friendly_message):
+def test_check_connection_airbytetracedexception_returns_message(rate_limit_mock_response):
     source = SourceGithub()
-    user_friendly_error_message = source.user_friendly_error_message(error_message)
-    assert user_friendly_error_message == expected_user_friendly_message
+    error = AirbyteTracedException(
+        internal_message="API returned 401",
+        message="GitHub authentication failed. Token is invalid or expired.",
+        failure_type=FailureType.config_error,
+    )
+    with patch.object(SourceGithub, "_get_org_repositories", side_effect=error):
+        status, message = source.check_connection(
+            logger=logging.getLogger("airbyte"),
+            config={"access_token": "test_token", "repository": "airbyte/test"},
+        )
+    assert status is False
+    assert message == "GitHub authentication failed. Token is invalid or expired."
+
+
+def test_check_connection_bare_exception_returns_formatted_backstop(rate_limit_mock_response):
+    source = SourceGithub()
+    with patch.object(SourceGithub, "_get_org_repositories", side_effect=ValueError("something unexpected")):
+        status, message = source.check_connection(
+            logger=logging.getLogger("airbyte"),
+            config={"access_token": "test_token", "repository": "airbyte/test"},
+        )
+    assert status is False
+    assert message == "ValueError: something unexpected"
+
+
+def test_check_connection_empty_repos_returns_failure(rate_limit_mock_response):
+    source = SourceGithub()
+    with patch.object(SourceGithub, "_get_org_repositories", return_value=([], [], None)):
+        status, message = source.check_connection(
+            logger=logging.getLogger("airbyte"),
+            config={"access_token": "test_token", "repository": "airbyte/test"},
+        )
+    assert status is False
+    assert "No repositories from the configuration were accessible" in message
+
+
+def test_get_access_token_malformed_config_raises_config_error():
+    source = SourceGithub()
+    config = {"credentials": {"some_other_field": "value"}}
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        source.get_access_token(config)
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "credentials are missing or malformed" in exc_info.value.message
