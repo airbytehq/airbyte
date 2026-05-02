@@ -104,8 +104,11 @@ class FeedReader(
     private suspend fun createPartitions(partitionsCreatorID: Long): List<PartitionReader> {
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
+                withContext(ctx("round-$partitionsCreatorID-partition-creator-factory")) {
+                    acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory)
+                }
                 log.info { "Attempting bootstrap using ${factory::class}." }
-                return@run factory.make(feedBootstrap) ?: continue
+                return@run factory.make(feedBootstrap).also { factory.releaseResources() } ?: continue
             }
             throw SystemErrorException(
                 "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
@@ -119,6 +122,22 @@ class FeedReader(
         }
         return withContext(ctx("round-$partitionsCreatorID-create-partitions")) {
             createPartitionsWithResources(partitionsCreatorID, partitionsCreator)
+        }
+    }
+
+    private suspend fun acquirePartitionsCreatorFactoryResources(
+        partitionsCreatorID: Long,
+        partitionsCreatorFactory: PartitionsCreatorFactory,
+    ) {
+        while (true) {
+            val status: PartitionsCreatorFactory.TryAcquireResourcesStatus =
+                root.resourceAcquisitionMutex.withLock { partitionsCreatorFactory.tryAcquireResources() }
+            if (status == PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN) break
+            root.waitForResourceAvailability()
+        }
+        log.info {
+            "acquired resources to make partitions creator factory '${partitionsCreatorFactory::class.simpleName}' " +
+                "for '${feed.label}' in round $partitionsCreatorID"
         }
     }
 

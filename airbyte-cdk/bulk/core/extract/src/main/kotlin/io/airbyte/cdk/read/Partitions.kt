@@ -24,6 +24,16 @@ interface PartitionsCreatorFactory {
      * another factory to be used instead.
      */
     fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator?
+
+    fun tryAcquireResources(): TryAcquireResourcesStatus =
+        PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN
+
+    enum class TryAcquireResourcesStatus {
+        READY_TO_RUN,
+        RETRY_LATER,
+    }
+
+    fun releaseResources() = Unit
 }
 
 /**

@@ -139,6 +139,7 @@ open class PostgresSourceJdbcPartitionFactory(
         }
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): PostgresSourceJdbcPartition? {
+        log.info { "*** Creating partition for stream ${streamFeedBootstrap.feed.id}" }
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: PostgresSourceJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
