@@ -3,9 +3,9 @@ plan: all
 sidebar_position: 0
 ---
 
-# Connect, Unify, Act
+# Connect, Ask, Act
 
-AI agents need real-time access to business data spread across dozens of systems, but building and maintaining those integrations is expensive and fragile. Airbyte Agents solves this with three layers: **Connect** your agents to any system, **Unify** data from every source into one searchable layer, and let agents **Act** on that data in real time.
+AI agents need real-time access to business data spread across dozens of systems, but building and maintaining those integrations is expensive and fragile. Airbyte Agents solves this with three layers: **Connect** your agents to any system, **Ask** questions across all your data in one searchable layer, and let agents **Act** on that data in real time.
 
 ## Connect
 
@@ -19,9 +19,9 @@ The platform manages the hard parts of connecting to third-party systems:
 
 Connecting a new data source takes minutes, not weeks. You don't build or maintain API wrappers, manage credential storage, or handle token lifecycle.
 
-## Unify
+## Ask
 
-Once your agents are connected, the [Context Store](context-store) indexes and normalizes data from every source into one searchable layer.
+Once your agents are connected, the [Context Store](context-store) unifies and indexes data from every source into a single searchable layer so you can start asking the questions that matter most.
 
 Without the Context Store, an agent that needs to answer a question like "find all open deals over $10,000" has to page through API results, manage rate limits, and accumulate records in its context window. This is slow, expensive, and unreliable. For benchmark data on how the Context Store compares to live API retrieval, see the [airbyte-agents-benchmarks](https://github.com/airbytehq/airbyte-agents-benchmarks) repository.
 
@@ -56,7 +56,7 @@ Airbyte logs every action an agent takes. You can review what happened, when, an
 
 ## How the layers compose
 
-You connect once. Data unifies automatically. Agents act with full context.
+You connect once. Ask across every source instantly. Agents act with full context.
 
 A single connector credential gives an agent the ability to fetch live data, search across an indexed store, and write changes back, all through one consistent interface. Adding a new data source extends every layer at once: the agent can immediately connect, search, and act on the new system.
 
