@@ -101,7 +101,7 @@ const TABS = [
   },
   {
     id: "webapp",
-    label: "Web app (research preview)",
+    label: "Web app",
     command: null,
     description:
       "Chat with an AI agent and build automations in your web browser. No code, nothing to install.",
