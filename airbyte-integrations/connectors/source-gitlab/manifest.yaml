@@ -258,7 +258,7 @@ definitions:
           action: FAIL
           http_codes: [404]
           failure_type: config_error
-          error_message: 'Configured GitLab group or project for stream "{{ parameters.get(''name'') }}" is invalid, deleted, or inaccessible to the access token.'
+          error_message: Configured GitLab group or project is invalid, deleted, or inaccessible to the access token.
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector
