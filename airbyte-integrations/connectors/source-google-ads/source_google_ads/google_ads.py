@@ -3,7 +3,10 @@
 #
 
 
+import json
+import tempfile
 from enum import Enum
+from pathlib import Path
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
 import backoff
@@ -22,6 +25,59 @@ from .utils import logger
 
 
 API_VERSION = "v20"
+
+SERVICE_ACCOUNT_AUTH_TYPE = "Service"
+
+
+def _materialize_service_account_credentials(credentials: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    """Convert `service_account_info` (JSON string or dict) into the `json_key_file_path` shape that the Google Ads SDK expects.
+
+    The Google Ads Python SDK's service-account flow only accepts a path to a JSON key file
+    (via the `json_key_file_path` config key). We write the in-memory key material to a
+    private temp file on first use and rewrite the credentials dict in place so subsequent
+    calls (including those for additional `login_customer_id` clients) reuse the same path.
+    """
+    if "json_key_file_path" in credentials:
+        return credentials
+
+    info = credentials.get("service_account_info")
+    if info is None:
+        raise AirbyteTracedException(
+            message="Service account credentials are missing the `service_account_info` field. Please provide the JSON key contents in the connector configuration.",
+            failure_type=FailureType.config_error,
+        )
+
+    if isinstance(info, str):
+        try:
+            info_dict = json.loads(info)
+        except json.JSONDecodeError as e:
+            raise AirbyteTracedException(
+                message="The `service_account_info` field is not valid JSON. Paste the full contents of your service account key file (including the surrounding braces).",
+                failure_type=FailureType.config_error,
+            ) from e
+    elif isinstance(info, Mapping):
+        info_dict = dict(info)
+    else:
+        raise AirbyteTracedException(
+            message="The `service_account_info` field must be a JSON string or object containing service account key material.",
+            failure_type=FailureType.config_error,
+        )
+
+    key_file = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+    Path(key_file.name).write_text(json.dumps(info_dict))
+    credentials["json_key_file_path"] = key_file.name
+    # Drop the in-memory key payload; the SDK only reads from `json_key_file_path` from here on.
+    credentials.pop("service_account_info", None)
+    return credentials
+
+
+def _prepare_credentials_for_sdk(credentials: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    """Strip Airbyte-specific keys and translate service-account credentials to the SDK's expected shape."""
+    if credentials.get("auth_type") == SERVICE_ACCOUNT_AUTH_TYPE or "service_account_info" in credentials:
+        # Mutate the original so all subsequent clients (e.g., per-login_customer_id) reuse
+        # the same temp key file rather than re-writing it on every call.
+        credentials = _materialize_service_account_credentials(credentials)
+    return {k: v for k, v in credentials.items() if k != "auth_type"}
 
 
 def on_give_up(details):
@@ -66,8 +122,9 @@ class GoogleAds:
 
     @staticmethod
     def get_google_ads_client(credentials) -> GoogleAdsClient:
+        sdk_credentials = _prepare_credentials_for_sdk(credentials)
         try:
-            return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
+            return GoogleAdsClient.load_from_dict(sdk_credentials, version=API_VERSION)
         except exceptions.RefreshError as e:
             message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
