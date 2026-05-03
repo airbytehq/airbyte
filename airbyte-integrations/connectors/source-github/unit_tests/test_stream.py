@@ -14,7 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
-from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository
+from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -28,6 +28,7 @@ from source_github.streams import (
     IssueEvents,
     IssueLabels,
     IssueMilestones,
+    Issues,
     IssueTimelineEvents,
     Organizations,
     ProjectCards,
@@ -112,28 +113,28 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
             {"X-RateLimit-Resource": "graphql"},
             '{"errors": [{"type": "RATE_LIMITED"}]}',
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.OK}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 200). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"X-RateLimit-Remaining": "0"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"Retry-After": "0"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (
             HTTPStatus.FORBIDDEN,
             {"Retry-After": "60"},
             "",
             ResponseAction.RATE_LIMITED,
-            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+            "GitHub rate limit hit for stream `repository_stats` (HTTP 403). Waiting for the rate limit window to reset before retrying.",
         ),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "HTTP Status Code: 500. Error: Internal server error."),
         (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "HTTP Status Code: 502. Error: Bad gateway."),
@@ -173,7 +174,8 @@ def test_permission_403_fails_immediately():
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.FAIL
     assert result.failure_type == FailureType.config_error
-    assert result.error_message == "Access denied due to insufficient permissions."
+    assert "GitHub denied access (HTTP 403)" in result.error_message
+    assert "SAML SSO authorization" in result.error_message
 
 
 @pytest.mark.parametrize(
@@ -198,6 +200,90 @@ def test_rate_limit_403_retries(response_headers):
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
     assert result.failure_type == FailureType.transient_error
+
+
+@pytest.mark.parametrize(
+    "status_code,body,expected",
+    [
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Issues are disabled for this repo"},
+            True,
+            id="issues_disabled",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Projects are disabled for this repository"},
+            True,
+            id="projects_disabled",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": "Some other gone message"},
+            False,
+            id="unrelated_410_message",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {},
+            False,
+            id="empty_body",
+        ),
+        pytest.param(
+            requests.codes.NOT_FOUND,
+            {"message": "Issues are disabled for this repo"},
+            False,
+            id="non_410_status",
+        ),
+        pytest.param(
+            requests.codes.GONE,
+            {"message": None},
+            False,
+            id="null_message",
+        ),
+    ],
+)
+def test_is_gone_with_feature_disabled(status_code, body, expected):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = status_code
+    response_mock.json = lambda: body
+    assert is_gone_with_feature_disabled(response_mock) is expected
+
+
+def test_error_handler_410_feature_disabled_returns_ignore():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Issues are disabled for this repo"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+    response_mock.url = "https://api.github.com/repos/test_repo/issues"
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.IGNORE
+    assert result.failure_type == FailureType.config_error
+
+
+def test_is_gone_with_feature_disabled_malformed_json():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.json = MagicMock(side_effect=ValueError("not json"))
+    assert is_gone_with_feature_disabled(response_mock) is False
+
+
+def test_error_handler_410_unknown_body_returns_fail():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.GONE
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Something else entirely"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
 
 
 @patch("time.sleep")
@@ -249,6 +335,102 @@ def test_permission_403_raises_error(time_mock, requests_mock):
         list(read_full_refresh(stream))
     # Should fail on first attempt, not retry
     assert requests_mock.call_count == 1
+
+
+@patch("time.sleep")
+def test_read_records_404_message_for_repository_stream(time_mock, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/missing-repo"], "page_size_for_large_streams": 30}
+    stream = Tags(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/missing-repo/tags",
+        status_code=requests.codes.NOT_FOUND,
+        json={"message": "Not Found"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any(
+        "Skipping `Tags` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
+    )
+
+
+@patch("time.sleep")
+def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_mock):
+    stream = Organizations(organizations=["restricted-org"])
+
+    requests_mock.get(
+        "https://api.github.com/orgs/restricted-org",
+        status_code=requests.codes.FORBIDDEN,
+        json={"message": "Resource not accessible by integration"},
+    )
+
+    with pytest.raises((AirbyteTracedException, AttributeError)):
+        list(read_full_refresh(stream))
+
+
+@patch("time.sleep")
+def test_read_records_403_raises_with_actionable_message(time_mock, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/private-repo"], "page_size_for_large_streams": 30}
+    stream = Tags(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/private-repo/tags",
+        status_code=requests.codes.FORBIDDEN,
+        json={"message": "Resource not accessible by integration"},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+    assert "GitHub denied access (HTTP 403)" in str(exc_info.value)
+    assert "SAML SSO authorization" in str(exc_info.value)
+
+
+@patch("time.sleep")
+def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/empty-repo"], "page_size_for_large_streams": 30}
+    stream = Tags(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/empty-repo/tags",
+        status_code=requests.codes.CONFLICT,
+        json={"message": "Git Repository is not empty but not a conflict either"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any(
+        "Skipping `tags` for repository `org/empty-repo`" in msg and "GitHub returned 409 Conflict" in msg and "empty (no commits)" in msg
+        for msg in caplog.messages
+    )
+
+
+@patch("time.sleep")
+def test_read_records_502_message(time_mock, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/repo"], "page_size_for_large_streams": 30}
+    stream = Tags(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo/tags",
+        status_code=requests.codes.BAD_GATEWAY,
+        json={"message": "Server Error"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any("GitHub returned HTTP 502 Bad Gateway for stream `tags`" in msg and "usually transient" in msg for msg in caplog.messages)
+
+
+@patch("time.sleep")
+def test_read_records_410_projects_disabled_message(time_mock, caplog, requests_mock):
+    repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["org/repo"]}
+    stream = Projects(**repository_args_with_start_date)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo/projects",
+        status_code=requests.codes.GONE,
+        json={"message": "Projects are disabled for this repository"},
+    )
+
+    list(read_full_refresh(stream))
+    assert any("Projects are disabled for this repository" in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
@@ -396,7 +578,10 @@ def test_stream_repositories_401(time_mock, caplog, requests_mock):
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
+    assert any(
+        "GitHub authentication failed (HTTP 401) for stream" in msg and "Personal Access Token may need to be renewed" in msg
+        for msg in caplog.messages
+    )
 
 
 @responses.activate
@@ -423,8 +608,7 @@ def test_stream_repositories_read(requests_mock):
     ] == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
-@patch("time.sleep")
-def test_stream_projects_disabled(time_mock, requests_mock):
+def test_stream_projects_disabled(requests_mock):
     repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
 
     stream = Projects(**repository_args_with_start_date)
@@ -435,10 +619,28 @@ def test_stream_projects_disabled(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][
         0
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
+
+
+def test_stream_issues_disabled(requests_mock):
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 30,
+        "repositories": ["test_repo"],
+    }
+
+    stream = Issues(**repository_args_with_start_date)
+    requests_mock.get(
+        "https://api.github.com/repos/test_repo/issues",
+        status_code=requests.codes.GONE,
+        json={"message": "Issues are disabled for this repo"},
+    )
+
+    assert list(read_full_refresh(stream)) == []
+    assert requests_mock.call_count == 1
 
 
 def test_stream_pull_requests_incremental_read(requests_mock):
@@ -618,8 +820,10 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     stream_state = {}
     records = read_incremental(stream, stream_state)
     assert records == []
-    ignore_message = "Ignoring response for 'GET' request to 'https://api.github.com/repos/organization/repository/commits?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=branch' with response code '409' as the repository is empty."
-    assert ignore_message in caplog.messages
+    assert any(
+        "Skipping `commits` for this repository: GitHub returned 409 Conflict" in msg and "repository has no commits" in msg
+        for msg in caplog.messages
+    )
 
 
 def test_stream_pull_request_commits(requests_mock):
