@@ -56,7 +56,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `start_date` | `str (date)` | Yes | UTC date in YYYY-MM-DD format from which to start replicating data. |
+| `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
 
 Example request:
 
@@ -73,7 +73,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "api_key": "<Your Orb API key>"
     },
     "replication_config": {
-      "start_date": "<UTC date in YYYY-MM-DD format from which to start replicating data.>"
+      "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>"
     }
   }'
 ```

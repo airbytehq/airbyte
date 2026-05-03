@@ -80,7 +80,7 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated. |
+| `account_id` | `str` | Yes | Your Harvest account ID. Required for all API requests. |
 
 Example request:
 
@@ -99,7 +99,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "account_id": "<Your Harvest account ID>"
     },
     "replication_config": {
-      "replication_start_date": "<UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.>"
+      "account_id": "<Your Harvest account ID. Required for all API requests.>"
     }
   }'
 ```
@@ -159,7 +159,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated. |
+| `account_id` | `str` | Yes | Your Harvest account ID. Required for all API requests. |
 
 Example request:
 
@@ -177,7 +177,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "account_id": "<Your Harvest account ID>"
     },
     "replication_config": {
-      "replication_start_date": "<UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.>"
+      "account_id": "<Your Harvest account ID. Required for all API requests.>"
     }
   }'
 ```
