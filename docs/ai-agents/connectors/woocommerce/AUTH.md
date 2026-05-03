@@ -59,7 +59,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `start_date` | `str (date-time)` | Yes | UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data. |
+| `start_date` | `str (date)` | Yes | UTC date in the format YYYY-MM-DD from which to start replicating data. |
 
 Example request:
 
@@ -77,7 +77,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
       "api_secret": "<WooCommerce REST API consumer secret (starts with cs_)>"
     },
     "replication_config": {
-      "start_date": "<UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.>"
+      "start_date": "<UTC date in the format YYYY-MM-DD from which to start replicating data.>"
     }
   }'
 ```
