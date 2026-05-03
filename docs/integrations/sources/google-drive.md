@@ -307,15 +307,17 @@ If you are syncing **identities** (users and groups) from a different domain tha
 #### Streams
 
 ##### 1. Files Permissions (ACLs)
+
 This stream syncs file permissions (Access Control Lists) for files in your Google Drive. You should set up a stream name and globs.
 
 ##### 2. Identities (Users and Groups)
+
 By default, this stream is enabled and retrieves information about **users and groups** in your Google Workspace. This helps you map file permissions (ACLs) to actual users and groups.
 
 ##### Requirements
+
 - Ensure the **Google Admin SDK API** is enabled.
 - The authenticated user must have the necessary Google Admin Directory permissions.
-
 
 ## Changelog
 
