@@ -23,7 +23,12 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Access denied due to insufficient permissions.",
+        error_message=(
+            "GitHub denied access (HTTP 403). Your token may be missing required scopes "
+            "(this connector typically needs: repo, read:org, read:user, read:project, workflow), "
+            "or this organization may require SAML SSO authorization. "
+            "See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api"
+        ),
     ),
     404: ErrorResolution(
         response_action=ResponseAction.RETRY,
@@ -36,9 +41,13 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         error_message="Conflict.",
     ),
     410: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Gone. Please ensure the url is valid.",
+        error_message=(
+            "GitHub returned 410 Gone for an unexpected reason. "
+            "The endpoint or API version may be deprecated. "
+            "Verify the connector version is current and the endpoint is still supported."
+        ),
     ),
 }
 
@@ -46,6 +55,16 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
 def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
     if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
         return True
+    return False
+
+
+def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
+    if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.GONE:
+        try:
+            message = (response_or_exception.json().get("message") or "").lower()
+        except ValueError:
+            return False
+        return "are disabled" in message or "is disabled" in message
     return False
 
 
@@ -91,11 +110,26 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RATE_LIMITED,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=(
+                        f"GitHub rate limit hit for stream `{self.stream.name}` "
+                        f"(HTTP {response_or_exception.status_code}). "
+                        f"Waiting for the rate limit window to reset before retrying."
+                    ),
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
-                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
+                log_message = (
+                    f"Skipping `{self.stream.name}` for this repository: "
+                    f"GitHub returned 409 Conflict. The repository is likely empty (no commits)."
+                )
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
+                    error_message=log_message,
+                )
+
+            if is_gone_with_feature_disabled(response_or_exception=response_or_exception):
+                log_message = f"Skipping stream slice for '{response_or_exception.url}': {response_or_exception.json().get('message', 'Feature disabled')}."
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
@@ -138,7 +172,10 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 )
 
             if is_conflict_with_empty_repository(response_or_exception):
-                log_message = f"Ignoring response for '{response_or_exception.request.method}' request to '{response_or_exception.url}' with response code '{response_or_exception.status_code}' as the repository is empty."
+                log_message = (
+                    f"Skipping `{self.stream.name}` for this repository: "
+                    f"GitHub returned 409 Conflict. The repository is likely empty (no commits)."
+                )
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,

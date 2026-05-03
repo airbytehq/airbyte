@@ -14,36 +14,7 @@ You can interact with the platform through four interfaces. They all connect to 
 - [**SDK**](../../interfaces/sdk): Python SDK for building agents that authenticate, connect, and execute operations in your own code.
 - [**MCP server**](../../interfaces/mcp): A remote Model Context Protocol server that connects MCP-capable agents like Claude, Cursor, and ChatGPT to your data.
 
-```mermaid
-flowchart TB
-    subgraph interfaces["Interfaces"]
-        direction LR
-        UI["Web app"]
-        API["API"]
-        SDK["SDK"]
-        MCP["MCP server"]
-    end
-
-    subgraph platform["Airbyte Agents Platform"]
-        AUTH["Authentication<br/>& token management"]
-        EXEC["Execution engine"]
-        CS["Context Store"]
-    end
-
-    subgraph services["Third-party services"]
-        direction LR
-        SVC1["CRM"]
-        SVC2["Support desk"]
-        SVC3["Analytics"]
-        SVC4["..."]
-    end
-
-    interfaces --> AUTH
-    AUTH --> EXEC
-    EXEC -- "Direct" --> services
-    EXEC -- "Search" --> CS
-    CS -. "replicates from" .-> services
-```
+![System architecture diagram showing Interfaces (Web app, API, SDK, MCP server) connecting to the Airbyte Agents Platform (Authentication and token management, Execution engine with Search and Direct modes, Context Store) which interacts with Third-party services (CRM, Support desk, Analytics, and more).](/img/ai-agents-system-architecture.svg)
 
 ## Resource hierarchy
 
@@ -70,7 +41,7 @@ flowchart TB
 
 Airbyte Agents uses a two-layer credential model.
 
-- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, and MCP server, your organization's `client_id` and `client_secret` (available on the [Profile page](https://app.airbyte.ai/profile)) serve the same purpose.
+- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, and MCP server, your organization's `client_id` and `client_secret` (available on the Profile page at [app.airbyte.ai](https://app.airbyte.ai)) serve the same purpose.
 - **Connector credentials** authenticate with each third-party service. When you add a connector, you provide the service's API key, OAuth tokens, or other credentials. Airbyte stores them securely and handles token refresh at execution time.
 
 Add credentials once through any interface and every other interface can use them. For details, see [Connectors and credentials](./connectors-and-credentials).

@@ -383,6 +383,14 @@ const config: Config = {
         height: 40,
       },
       items: [
+        // "Agents" is a direct link (no dropdown needed)
+        {
+          type: "doc",
+          position: "left",
+          docsPluginId: "ai-agents",
+          docId: "README",
+          label: "Agents",
+        },
         // "Data Replication" dropdown groups the five sub-sections
         // `to` makes the label itself clickable (navigates to Platform)
         {
@@ -410,14 +418,6 @@ const config: Config = {
               label: "Developers",
             },
           ],
-        },
-        // "Airbyte Agents" is a direct link (no dropdown needed)
-        {
-          type: "doc",
-          position: "left",
-          docsPluginId: "ai-agents",
-          docId: "README",
-          label: "Airbyte Agents",
         },
         // "Release notes" and "Community" are tier-one nav items
         {
