@@ -121,6 +121,7 @@ jobs:
               docs/integrations/sources/*) ;;
               docs/integrations/destinations/*) ;;
               docs/ai-agents/connectors/*) ;;
+              docs/ai-agents/reference/*) ;;
               docs/developers/pyairbyte/*) ;;
               docusaurus/src/data/*) ;;
               *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
