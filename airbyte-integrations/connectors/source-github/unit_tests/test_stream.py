@@ -397,8 +397,7 @@ def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `tags` for this repository" in msg and "409 Conflict" in msg and "empty (no commits)" in msg
-        for msg in caplog.messages
+        "Skipping `tags` for this repository" in msg and "409 Conflict" in msg and "empty (no commits)" in msg for msg in caplog.messages
     )
 
 
@@ -820,8 +819,7 @@ def test_stream_commits_409_empty_repository(caplog, requests_mock):
     records = read_incremental(stream, stream_state)
     assert records == []
     assert any(
-        "Skipping `commits` for this repository" in msg and "409 Conflict" in msg and "empty (no commits)" in msg
-        for msg in caplog.messages
+        "Skipping `commits` for this repository" in msg and "409 Conflict" in msg and "empty (no commits)" in msg for msg in caplog.messages
     )
 
 
@@ -861,8 +859,7 @@ def test_stream_issues_409_empty_repository_different_body(caplog, requests_mock
     records = read_incremental(stream, stream_state)
     assert records == []
     assert any(
-        "Skipping `issues` for this repository" in msg and "409 Conflict" in msg and "empty (no commits)" in msg
-        for msg in caplog.messages
+        "Skipping `issues` for this repository" in msg and "409 Conflict" in msg and "empty (no commits)" in msg for msg in caplog.messages
     )
 
 
