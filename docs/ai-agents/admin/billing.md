@@ -159,7 +159,7 @@ A plan to explore Airbyte Agents and prototype agents.
 A plan for personal use and daily work.
 
 - $29 per month.
-- 1,000 AOs per month.
+- 5,000 AOs per month.
 - No daily limit.
 - Overage AOs are available.
 - Context Store refreshes hourly.

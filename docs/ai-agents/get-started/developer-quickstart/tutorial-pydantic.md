@@ -65,7 +65,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
     This command installs:
 
-    - `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+    - `airbyte-agent-sdk`: The Airbyte Agent SDK, which ships every connector as a typed submodule.
 
     - `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
 

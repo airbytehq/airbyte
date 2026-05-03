@@ -44,7 +44,7 @@ This connector supports the following entities and actions. For more details, se
 | Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
 | Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
 | Blocks | [List](./REFERENCE.md#blocks-list), [Get](./REFERENCE.md#blocks-get), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
-| Comments | [List](./REFERENCE.md#comments-list) |
+| Comments | [List](./REFERENCE.md#comments-list), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
 
 
 ## Notion API docs
@@ -352,4 +352,4 @@ For all authentication options, see the connector's [authentication documentatio
 
 ## Version information
 
-**Connector version:** 0.1.11
+**Connector version:** 0.1.12

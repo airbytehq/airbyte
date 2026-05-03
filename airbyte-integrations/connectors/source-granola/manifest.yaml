@@ -10,6 +10,19 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 6
 
+# Granola API rate limits (per workspace):
+# https://docs.granola.ai/api-reference/changelog
+# Burst: 25 requests per 5-second window
+# Sustained: 5 requests/second (300/minute)
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 25
+          interval: PT5S
+      matchers: []
+
 check:
   type: CheckStream
   stream_names:

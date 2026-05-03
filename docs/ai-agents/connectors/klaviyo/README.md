@@ -357,4 +357,4 @@ For all authentication options, see the connector's [authentication documentatio
 
 ## Version information
 
-**Connector version:** 1.0.5
+**Connector version:** 1.0.6

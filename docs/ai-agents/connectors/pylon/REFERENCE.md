@@ -12,7 +12,7 @@ The Pylon connector supports the following entities and actions.
 | Issue Replies | [Create](#issue-replies-create) |
 | Issue Assignments | [Update](#issue-assignments-update) |
 | Issue Statuses | [Update](#issue-statuses-update) |
-| Messages | [List](#messages-list), [Context Store Search](#messages-context-store-search) |
+| Messages | [List](#messages-list) |
 | Issue Notes | [Create](#issue-notes-create) |
 | Issue Threads | [Create](#issue-threads-create) |
 | Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Context Store Search](#accounts-context-store-search) |
@@ -867,72 +867,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `next_cursor` | `string \| null` |  |
 | `has_next_page` | `boolean` |  |
-
-</details>
-
-### Messages Context Store Search
-
-Search and filter messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
-
-#### Python SDK
-
-```python
-await pylon.messages.context_store_search(
-    query={"filter": {"eq": {"id": "<str>"}}}
-)
-```
-
-#### API
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-    "entity": "messages",
-    "action": "context_store_search",
-    "params": {
-        "query": {"filter": {"eq": {"id": "<str>"}}}
-    }
-}'
-```
-
-#### Parameters
-
-| Parameter Name | Type | Required | Description |
-|----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
-| `query.filter` | `object` | No | Filter conditions |
-| `query.sort` | `array` | No | Sort conditions |
-| `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
-| `fields` | `array` | No | Field paths to include in results |
-
-#### Searchable Fields
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | `string` | Unique identifier for the message |
-| `timestamp` | `string` | Timestamp the message was posted, in ISO 8601 format |
-| `is_private` | `boolean` | Whether the message is an internal note (not visible to the customer) |
-| `source` | `string` | Channel the message was sent through (e.g. email, slack) |
-| `thread_id` | `string` | Identifier of the thread this message belongs to |
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `data` | `array` | List of matching records |
-| `meta` | `object` | Pagination metadata |
-| `meta.has_more` | `boolean` | Whether additional pages are available |
-| `meta.cursor` | `string \| null` | Cursor for next page of results |
-| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].id` | `string` | Unique identifier for the message |
-| `data[].timestamp` | `string` | Timestamp the message was posted, in ISO 8601 format |
-| `data[].is_private` | `boolean` | Whether the message is an internal note (not visible to the customer) |
-| `data[].source` | `string` | Channel the message was sent through (e.g. email, slack) |
-| `data[].thread_id` | `string` | Identifier of the thread this message belongs to |
 
 </details>
 
