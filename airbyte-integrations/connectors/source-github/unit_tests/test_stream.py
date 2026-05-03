@@ -333,7 +333,6 @@ def test_error_handler_410_unknown_body_returns_retry():
     assert result.failure_type == FailureType.transient_error
 
 
-
 @patch("time.sleep")
 def test_retry_after_rate_limit(time_mock, requests_mock):
     """
