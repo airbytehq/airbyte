@@ -251,6 +251,39 @@ class GithubStream(GithubStreamABC):
 
         return record
 
+    def _safe_json_list(self, response: requests.Response, key: Optional[str] = None) -> Optional[list]:
+        """Parse JSON from `response` and return a list, or ``None`` on failure.
+
+        When `key` is provided the body is expected to be a dict and the list is
+        extracted via ``body[key]``.  When `key` is ``None`` the body itself must
+        be a list.  On any parse/validation failure a warning is logged and
+        ``None`` is returned so callers can short-circuit gracefully.
+        """
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r).",
+                self.name,
+                response.status_code,
+                response.text[:50],
+            )
+            return None
+        if key is not None:
+            items = (body or {}).get(key)
+        else:
+            items = body
+        if not isinstance(items, list):
+            self.logger.warning(
+                "`%s` response has unexpected structure (HTTP %s, key=%r, got %s).",
+                self.name,
+                response.status_code,
+                key,
+                type(items).__name__,
+            )
+            return None
+        return items
+
     def parse_response(
         self,
         response: requests.Response,
@@ -1595,23 +1628,8 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/workflows"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        try:
-            body = response.json()
-        except ValueError:
-            self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). Yielding no records for this page.",
-                self.name,
-                response.status_code,
-                response.text[:50],
-            )
-            return
-        items = (body or {}).get("workflows")
-        if not isinstance(items, list):
-            self.logger.warning(
-                "`%s` response missing or invalid `workflows` key (HTTP %s). Yielding no records for this page.",
-                self.name,
-                response.status_code,
-            )
+        items = self._safe_json_list(response, key="workflows")
+        if items is None:
             return
         for record in items:
             yield self.transform(record=record, stream_slice=stream_slice)
@@ -1637,23 +1655,8 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/runs"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        try:
-            body = response.json()
-        except ValueError:
-            self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). Yielding no records for this page.",
-                self.name,
-                response.status_code,
-                response.text[:50],
-            )
-            return
-        items = (body or {}).get("workflow_runs")
-        if not isinstance(items, list):
-            self.logger.warning(
-                "`%s` response missing or invalid `workflow_runs` key (HTTP %s). Yielding no records for this page.",
-                self.name,
-                response.status_code,
-            )
+        items = self._safe_json_list(response, key="workflow_runs")
+        if items is None:
             return
         for record in items:
             yield record
@@ -1733,23 +1736,8 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        try:
-            body = response.json()
-        except ValueError:
-            self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). Yielding no records for this page.",
-                self.name,
-                response.status_code,
-                response.text[:50],
-            )
-            return
-        items = (body or {}).get("jobs")
-        if not isinstance(items, list):
-            self.logger.warning(
-                "`%s` response missing or invalid `jobs` key (HTTP %s). Yielding no records for this page.",
-                self.name,
-                response.status_code,
-            )
+        items = self._safe_json_list(response, key="jobs")
+        if items is None:
             return
         for record in items:
             if record.get(self.cursor_field):
@@ -1938,24 +1926,8 @@ class IssueTimelineEvents(GithubStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
-        try:
-            events_list = response.json()
-        except ValueError:
-            self.logger.warning(
-                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r). " "Yielding base record without timeline events.",
-                self.name,
-                response.status_code,
-                response.text[:50],
-            )
-            yield record
-            return
-        if not isinstance(events_list, list):
-            self.logger.warning(
-                "`%s` expected a JSON list but got %s (HTTP %s). " "Yielding base record without timeline events.",
-                self.name,
-                type(events_list).__name__,
-                response.status_code,
-            )
+        events_list = self._safe_json_list(response)
+        if events_list is None:
             yield record
             return
         for event in events_list:
