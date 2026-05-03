@@ -7,7 +7,7 @@ development teams. This connector provides access to issues, projects, and teams
 for sprint planning, backlog management, and development workflow analysis.
 
 
-## Example questions
+## Example prompts
 
 The Linear connector is optimized to handle prompts like these.
 
@@ -40,7 +40,7 @@ The Linear connector is optimized to handle prompts like these.
 - Which projects have the most unresolved issues?
 - Give me an overview of my team's current project backlog
 
-## Unsupported questions
+## Unsupported prompts
 
 The Linear connector isn't currently able to handle prompts like these.
 
@@ -49,230 +49,7 @@ The Linear connector isn't currently able to handle prompts like these.
 - Delete this issue
 - Remove a comment from an issue
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
-
-connector = LinearConnector(
-    auth_config=LinearAuthConfig(
-        api_key="<Your Linear API key from Settings > API > Personal API keys>"
-    )
-)
-
-@agent.tool_plain
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
-
-connector = LinearConnector(
-    auth_config=LinearAuthConfig(
-        api_key="<Your Linear API key from Settings > API > Personal API keys>"
-    )
-)
-
-@tool
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Linear connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
-
-connector = LinearConnector(
-    auth_config=LinearAuthConfig(
-        api_key="<Your Linear API key from Settings > API > Personal API keys>"
-    )
-)
-
-mcp = FastMCP("Linear Agent")
-
-@mcp.tool()
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Linear connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `LinearConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-
-connector = connect("linear", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-
-connector = connect("linear", workspace_name="<your_workspace_name>")
-
-@tool
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Linear connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-
-connector = connect("linear", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Linear Agent")
-
-@mcp.tool()
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Linear connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = LinearConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = LinearConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Linear connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = LinearConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Linear Agent")
-
-@mcp.tool()
-@LinearConnector.tool_utils
-async def linear_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Linear connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -286,16 +63,309 @@ This connector supports the following entities and actions. For more details, se
 | Comments | [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Create](./REFERENCE.md#comments-create), [Update](./REFERENCE.md#comments-update), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Linear API docs
+## Linear API docs
 
 See the official [Linear API reference](https://linear.app/developers/graphql).
 
+## SDK installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+## SDK usage
+
+Connectors can run in hosted or open source mode.
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `LinearConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+
+connector = connect("linear", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+
+connector = connect("linear", workspace_name="<your_workspace_name>")
+
+@tool
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+
+connector = connect("linear", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@LinearConnector.tool_utils(framework="openai_agents")
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Linear Assistant", tools=[linear_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+
+connector = connect("linear", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Linear Agent")
+
+@mcp.tool
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = LinearConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = LinearConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = LinearConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@LinearConnector.tool_utils(framework="openai_agents")
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Linear Assistant", tools=[linear_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = LinearConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Linear Agent")
+
+@mcp.tool
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+
+connector = LinearConnector(
+    auth_config=LinearAuthConfig(
+        api_key="<Your Linear API key from Settings > API > Personal API keys>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+
+connector = LinearConnector(
+    auth_config=LinearAuthConfig(
+        api_key="<Your Linear API key from Settings > API > Personal API keys>"
+    )
+)
+
+@tool
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+
+connector = LinearConnector(
+    auth_config=LinearAuthConfig(
+        api_key="<Your Linear API key from Settings > API > Personal API keys>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@LinearConnector.tool_utils(framework="openai_agents")
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Linear Assistant", tools=[linear_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.linear import LinearConnector
+from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+
+connector = LinearConnector(
+    auth_config=LinearAuthConfig(
+        api_key="<Your Linear API key from Settings > API > Personal API keys>"
+    )
+)
+
+mcp = FastMCP("Linear Agent")
+
+@mcp.tool
+@LinearConnector.tool_utils
+async def linear_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Linear connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 ## Version information
 
-- **Package version:** 0.1.19
-- **Connector version:** 0.1.19
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 0.1.19

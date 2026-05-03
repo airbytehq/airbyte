@@ -8,7 +8,7 @@ offers, users, departments, offices, job posts, sources, and scheduled interview
 for recruiting analytics and talent acquisition insights.
 
 
-## Example questions
+## Example prompts
 
 The Greenhouse connector is optimized to handle prompts like these.
 
@@ -24,7 +24,7 @@ The Greenhouse connector is optimized to handle prompts like these.
 - Summarize the candidate pipeline for our latest job posting
 - Find the most active departments in recruiting this month
 
-## Unsupported questions
+## Unsupported prompts
 
 The Greenhouse connector isn't currently able to handle prompts like these.
 
@@ -35,230 +35,7 @@ The Greenhouse connector isn't currently able to handle prompts like these.
 - Send an offer letter to \{candidate\}
 - Edit the details of a job description
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
-
-connector = GreenhouseConnector(
-    auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
-    )
-)
-
-@agent.tool_plain
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
-
-connector = GreenhouseConnector(
-    auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
-    )
-)
-
-@tool
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Greenhouse connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
-
-connector = GreenhouseConnector(
-    auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
-    )
-)
-
-mcp = FastMCP("Greenhouse Agent")
-
-@mcp.tool()
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Greenhouse connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `GreenhouseConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-
-connector = connect("greenhouse", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-
-connector = connect("greenhouse", workspace_name="<your_workspace_name>")
-
-@tool
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Greenhouse connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-
-connector = connect("greenhouse", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Greenhouse Agent")
-
-@mcp.tool()
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Greenhouse connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = GreenhouseConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = GreenhouseConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Greenhouse connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = GreenhouseConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Greenhouse Agent")
-
-@mcp.tool()
-@GreenhouseConnector.tool_utils
-async def greenhouse_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Greenhouse connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -278,16 +55,309 @@ This connector supports the following entities and actions. For more details, se
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Greenhouse API docs
+## Greenhouse API docs
 
 See the official [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
 
+## SDK installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+## SDK usage
+
+Connectors can run in hosted or open source mode.
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `GreenhouseConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+
+connector = connect("greenhouse", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+
+connector = connect("greenhouse", workspace_name="<your_workspace_name>")
+
+@tool
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+
+connector = connect("greenhouse", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GreenhouseConnector.tool_utils(framework="openai_agents")
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Greenhouse Assistant", tools=[greenhouse_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+
+connector = connect("greenhouse", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Greenhouse Agent")
+
+@mcp.tool
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GreenhouseConnector.tool_utils(framework="openai_agents")
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Greenhouse Assistant", tools=[greenhouse_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Greenhouse Agent")
+
+@mcp.tool
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=GreenhouseAuthConfig(
+        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=GreenhouseAuthConfig(
+        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+    )
+)
+
+@tool
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=GreenhouseAuthConfig(
+        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GreenhouseConnector.tool_utils(framework="openai_agents")
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Greenhouse Assistant", tools=[greenhouse_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.greenhouse import GreenhouseConnector
+from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
+
+connector = GreenhouseConnector(
+    auth_config=GreenhouseAuthConfig(
+        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+    )
+)
+
+mcp = FastMCP("Greenhouse Agent")
+
+@mcp.tool
+@GreenhouseConnector.tool_utils
+async def greenhouse_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Greenhouse connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 ## Version information
 
-- **Package version:** 0.1.8
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 0.1.8

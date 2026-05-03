@@ -24,7 +24,7 @@ Organizations either end up with agents that demo well but fail in production, o
 
 ## How Airbyte Agents works
 
-Airbyte Agents solves this with three layers: Connect, Unify, and Act.
+Airbyte Agents solves this with three layers: Connect, Ask, and Act.
 
 ```mermaid
 flowchart LR
@@ -32,14 +32,14 @@ flowchart LR
         C1["50+ SaaS connectors"]
         C2["Managed auth & credentials"]
     end
-    subgraph unify["Unify"]
+    subgraph ask["Ask"]
         CS["Context Store<br/>(indexed, searchable)"]
     end
     subgraph act["Act"]
         A1["Read & search"]
         A2["Create & update"]
     end
-    connect --> unify --> act
+    connect --> ask --> act
 ```
 
 ### Connect
@@ -52,7 +52,7 @@ The platform handles the hard parts:
 - **Multi-tenancy.** Workspaces isolate connectors and credentials across tenants, teams, or environments.
 - **Open source.** The SDK is a single open source Python package that includes every connector. You can inspect, extend, or run it locally.
 
-### Unify
+### Ask
 
 The [Context Store](../concepts/context-store) indexes and normalizes data from every connected source into one searchable layer.
 

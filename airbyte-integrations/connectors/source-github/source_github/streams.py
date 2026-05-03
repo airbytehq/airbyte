@@ -34,6 +34,7 @@ from .errors_handlers import (
     GitHubGraphQLErrorHandler,
     GithubStreamABCErrorHandler,
     is_conflict_with_empty_repository,
+    is_gone_with_feature_disabled,
 )
 from .graphql import (
     CursorStorage,
@@ -151,37 +152,47 @@ class GithubStreamABC(HttpStream, ABC):
                 elif isinstance(self, TeamMemberships):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
+                    error_msg = (
+                        f"Skipping `{self.__class__.__name__}` for repository `{repository}`: "
+                        f"GitHub returned 404 Not Found. The repository may not exist, may have been deleted, "
+                        f"or the configured token may lack access to it."
+                    )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e._exception.response.json().get("message"))
+                api_message = (e._exception.response.json() or {}).get("message", "")
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                elif isinstance(self, (Organizations, Teams, Users)):
                     error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                        f"Skipping `{self.name}` for organization `{organisation}`: "
+                        f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
+                        f"or this organization may require SAML SSO authorization. "
+                        f"GitHub message: {api_message!r}"
                     )
                 # For all other `Repository` base streams
                 else:
                     error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                        f"Skipping `{self.name}` for repository `{repository}`: "
+                        f"GitHub denied access (HTTP 403). Your token may be missing required scopes, "
+                        f"or this organization may require SAML SSO authorization. "
+                        f"GitHub message: {api_message!r}"
                     )
             elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
+                api_message = (e._exception.response.json() or {}).get("message", "")
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
-                    error_msg = str(e._exception.response.json().get("message"))
-                    self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
+                    self.logger.error(
+                        f"GitHub authentication failed (HTTP 401) for stream `{self.name}`. "
+                        f"Your Personal Access Token may need to be renewed. GitHub message: {api_message!r}"
+                    )
                 raise e
-            elif e._exception.response.status_code == requests.codes.GONE and isinstance(self, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+
             elif e._exception.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
+                    f"Skipping `{self.name}` for repository `{stream_slice['repository']}`: "
+                    f"GitHub returned 409 Conflict. The repository is likely empty (no commits)."
                 )
             elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
@@ -194,7 +205,6 @@ class GithubStreamABC(HttpStream, ABC):
                     exception=e,
                 ) from e
             else:
-                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
 
@@ -251,9 +261,8 @@ class GithubStream(GithubStreamABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if is_conflict_with_empty_repository(response):
-            # I would expect that this should be handled (skipped) by the error handler, but it seems like
-            # ignored this error but continue to processing records. This may be fixed in latest CDK versions.
+        if is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
+            # The CDK IGNORE action still calls parse_response; guard against non-array error bodies.
             return
         yield from super().parse_response(
             response=response,

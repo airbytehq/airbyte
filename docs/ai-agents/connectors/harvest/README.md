@@ -8,7 +8,7 @@ estimates, expenses, and more. Harvest is a cloud-based time tracking and invoic
 solution that helps teams track time, manage projects, and streamline invoicing.
 
 
-## Example questions
+## Example prompts
 
 The Harvest connector is optimized to handle prompts like these.
 
@@ -27,7 +27,7 @@ The Harvest connector is optimized to handle prompts like these.
 - List all overdue invoices
 - Which users logged the most hours this month?
 
-## Unsupported questions
+## Unsupported prompts
 
 The Harvest connector isn't currently able to handle prompts like these.
 
@@ -36,233 +36,7 @@ The Harvest connector isn't currently able to handle prompts like these.
 - Delete an invoice
 - Start a timer for a task
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
-
-connector = HarvestConnector(
-    auth_config=HarvestPersonalAccessTokenAuthConfig(
-        token="<Your Harvest personal access token>",
-        account_id="<Your Harvest account ID>"
-    )
-)
-
-@agent.tool_plain
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
-
-connector = HarvestConnector(
-    auth_config=HarvestPersonalAccessTokenAuthConfig(
-        token="<Your Harvest personal access token>",
-        account_id="<Your Harvest account ID>"
-    )
-)
-
-@tool
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Harvest connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
-
-connector = HarvestConnector(
-    auth_config=HarvestPersonalAccessTokenAuthConfig(
-        token="<Your Harvest personal access token>",
-        account_id="<Your Harvest account ID>"
-    )
-)
-
-mcp = FastMCP("Harvest Agent")
-
-@mcp.tool()
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Harvest connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `HarvestConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-
-connector = connect("harvest", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-
-connector = connect("harvest", workspace_name="<your_workspace_name>")
-
-@tool
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Harvest connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-
-connector = connect("harvest", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Harvest Agent")
-
-@mcp.tool()
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Harvest connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = HarvestConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = HarvestConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Harvest connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.harvest import HarvestConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = HarvestConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Harvest Agent")
-
-@mcp.tool()
-@HarvestConnector.tool_utils
-async def harvest_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Harvest connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -288,16 +62,313 @@ This connector supports the following entities and actions. For more details, se
 | Time Tasks | [List](./REFERENCE.md#time-tasks-list), [Context Store Search](./REFERENCE.md#time-tasks-context-store-search) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Harvest API docs
+## Harvest API docs
 
 See the official [Harvest API reference](https://help.getharvest.com/api-v2/).
 
+## SDK installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+## SDK usage
+
+Connectors can run in hosted or open source mode.
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `HarvestConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+@tool
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@HarvestConnector.tool_utils(framework="openai_agents")
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Harvest Assistant", tools=[harvest_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+
+connector = connect("harvest", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Harvest Agent")
+
+@mcp.tool
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = HarvestConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = HarvestConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = HarvestConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@HarvestConnector.tool_utils(framework="openai_agents")
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Harvest Assistant", tools=[harvest_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = HarvestConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Harvest Agent")
+
+@mcp.tool
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+
+@tool
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@HarvestConnector.tool_utils(framework="openai_agents")
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Harvest Assistant", tools=[harvest_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.harvest import HarvestConnector
+from airbyte_agent_sdk.connectors.harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+
+mcp = FastMCP("Harvest Agent")
+
+@mcp.tool
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Harvest connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 ## Version information
 
-- **Package version:** 1.0.3
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 1.0.3
