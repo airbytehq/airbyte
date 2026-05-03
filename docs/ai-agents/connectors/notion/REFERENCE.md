@@ -12,7 +12,7 @@ The Notion connector supports the following entities and actions.
 | Pages | [List](#pages-list), [Get](#pages-get), [Context Store Search](#pages-context-store-search) |
 | Data Sources | [List](#data-sources-list), [Get](#data-sources-get), [Context Store Search](#data-sources-context-store-search) |
 | Blocks | [List](#blocks-list), [Get](#blocks-get), [Context Store Search](#blocks-context-store-search) |
-| Comments | [List](#comments-list) |
+| Comments | [List](#comments-list), [Context Store Search](#comments-context-store-search) |
 
 ## Users
 
@@ -1071,6 +1071,78 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `next_cursor` | `string \| null` |  |
 | `has_more` | `boolean \| null` |  |
+
+</details>
+
+### Comments Context Store Search
+
+Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await notion.comments.context_store_search(
+    query={"filter": {"eq": {"created_by": {}}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"created_by": {}}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `created_by` | `object` | User who created the comment. |
+| `created_time` | `string` | Date and time when the comment was created. |
+| `discussion_id` | `string` | Discussion thread ID. |
+| `id` | `string` | Unique identifier for the comment. |
+| `last_edited_time` | `string` | Date and time when the comment was last edited. |
+| `object` | `string` | Always comment. |
+| `parent` | `object` | Parent of the comment. |
+| `rich_text` | `array` | Content of the comment as rich text. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].created_by` | `object` | User who created the comment. |
+| `data[].created_time` | `string` | Date and time when the comment was created. |
+| `data[].discussion_id` | `string` | Discussion thread ID. |
+| `data[].id` | `string` | Unique identifier for the comment. |
+| `data[].last_edited_time` | `string` | Date and time when the comment was last edited. |
+| `data[].object` | `string` | Always comment. |
+| `data[].parent` | `object` | Parent of the comment. |
+| `data[].rich_text` | `array` | Content of the comment as rich text. |
 
 </details>
 

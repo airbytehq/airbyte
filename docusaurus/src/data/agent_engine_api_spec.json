@@ -6042,6 +6042,18 @@
             ],
             "title": "Auth Tooltip",
             "description": "Short, non-technical guidance on how to authenticate the connector, sourced from x-airbyte-auth-tooltip in the connector YAML. A single string renders the same message for every auth method; a mapping keyed by the credentials discriminator value (e.g. the const on `credentials.auth_type` or `credentials.option_title`) renders a different message per auth method."
+          },
+          "connector_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Name",
+            "description": "Connector slug from the direct connector registry (e.g. 'salesforce', 'zendesk-support')."
           }
         },
         "type": "object",
@@ -6075,6 +6087,18 @@
               }
             ],
             "title": "Icon"
+          },
+          "connector_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Name",
+            "description": "Connector slug from the direct connector registry (e.g. 'salesforce', 'zendesk-support')."
           },
           "organization_id": {
             "anyOf": [
@@ -6400,6 +6424,18 @@
               }
             ],
             "title": "Icon"
+          },
+          "connector_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector Name",
+            "description": "Connector slug from the direct connector registry (e.g. 'salesforce', 'zendesk-support')."
           },
           "organization_id": {
             "anyOf": [

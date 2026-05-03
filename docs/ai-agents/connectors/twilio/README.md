@@ -5,7 +5,7 @@ The Twilio agent connector is a Python package that equips AI agents to interact
 Connector for the Twilio REST API. Provides read and write access to core Twilio resources including accounts, calls, messages, recordings, conferences, incoming phone numbers, usage records, addresses, queues, transcriptions, and outgoing caller IDs. Write operations include sending SMS/MMS messages, placing outbound calls, and provisioning phone numbers. Uses HTTP Basic authentication with Account SID and Auth Token.
 
 
-## Example questions
+## Example prompts
 
 The Twilio connector is optimized to handle prompts like these.
 
@@ -32,7 +32,7 @@ The Twilio connector is optimized to handle prompts like these.
 - Show me all failed messages and their error codes
 - What is the average call duration for outbound calls?
 
-## Unsupported questions
+## Unsupported prompts
 
 The Twilio connector isn't currently able to handle prompts like these.
 
@@ -41,233 +41,7 @@ The Twilio connector isn't currently able to handle prompts like these.
 - Delete a message
 - Create a new queue
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
-
-connector = TwilioConnector(
-    auth_config=TwilioAuthConfig(
-        account_sid="<Your Twilio Account SID (starts with AC)>",
-        auth_token="<Your Twilio Auth Token>"
-    )
-)
-
-@agent.tool_plain
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
-
-connector = TwilioConnector(
-    auth_config=TwilioAuthConfig(
-        account_sid="<Your Twilio Account SID (starts with AC)>",
-        auth_token="<Your Twilio Auth Token>"
-    )
-)
-
-@tool
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Twilio connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
-
-connector = TwilioConnector(
-    auth_config=TwilioAuthConfig(
-        account_sid="<Your Twilio Account SID (starts with AC)>",
-        auth_token="<Your Twilio Auth Token>"
-    )
-)
-
-mcp = FastMCP("Twilio Agent")
-
-@mcp.tool()
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Twilio connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `TwilioConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-
-connector = connect("twilio", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-
-connector = connect("twilio", workspace_name="<your_workspace_name>")
-
-@tool
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Twilio connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-
-connector = connect("twilio", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Twilio Agent")
-
-@mcp.tool()
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Twilio connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = TwilioConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = TwilioConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Twilio connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.twilio import TwilioConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = TwilioConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Twilio Agent")
-
-@mcp.tool()
-@TwilioConnector.tool_utils
-async def twilio_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Twilio connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -286,16 +60,313 @@ This connector supports the following entities and actions. For more details, se
 | Outgoing Caller Ids | [List](./REFERENCE.md#outgoing-caller-ids-list), [Get](./REFERENCE.md#outgoing-caller-ids-get), [Context Store Search](./REFERENCE.md#outgoing-caller-ids-context-store-search) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Twilio API docs
+## Twilio API docs
 
 See the official [Twilio API reference](https://www.twilio.com/docs/usage/api).
 
+## SDK installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+## SDK usage
+
+Connectors can run in hosted or open source mode.
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `TwilioConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+
+connector = connect("twilio", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+
+connector = connect("twilio", workspace_name="<your_workspace_name>")
+
+@tool
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+
+connector = connect("twilio", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@TwilioConnector.tool_utils(framework="openai_agents")
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Twilio Assistant", tools=[twilio_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+
+connector = connect("twilio", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Twilio Agent")
+
+@mcp.tool
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = TwilioConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = TwilioConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = TwilioConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@TwilioConnector.tool_utils(framework="openai_agents")
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Twilio Assistant", tools=[twilio_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = TwilioConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Twilio Agent")
+
+@mcp.tool
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
+
+connector = TwilioConnector(
+    auth_config=TwilioAuthConfig(
+        account_sid="<Your Twilio Account SID (starts with AC)>",
+        auth_token="<Your Twilio Auth Token>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
+
+connector = TwilioConnector(
+    auth_config=TwilioAuthConfig(
+        account_sid="<Your Twilio Account SID (starts with AC)>",
+        auth_token="<Your Twilio Auth Token>"
+    )
+)
+
+@tool
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
+
+connector = TwilioConnector(
+    auth_config=TwilioAuthConfig(
+        account_sid="<Your Twilio Account SID (starts with AC)>",
+        auth_token="<Your Twilio Auth Token>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@TwilioConnector.tool_utils(framework="openai_agents")
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Twilio Assistant", tools=[twilio_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.twilio import TwilioConnector
+from airbyte_agent_sdk.connectors.twilio.models import TwilioAuthConfig
+
+connector = TwilioConnector(
+    auth_config=TwilioAuthConfig(
+        account_sid="<Your Twilio Account SID (starts with AC)>",
+        auth_token="<Your Twilio Auth Token>"
+    )
+)
+
+mcp = FastMCP("Twilio Agent")
+
+@mcp.tool
+@TwilioConnector.tool_utils
+async def twilio_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Twilio connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 ## Version information
 
-- **Package version:** 1.0.4
-- **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 1.0.4
