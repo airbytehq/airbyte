@@ -358,4 +358,4 @@ For all authentication options, see the connector's [authentication documentatio
 
 ## Version information
 
-**Connector version:** 0.1.8
+**Connector version:** 0.1.9

@@ -160,7 +160,6 @@ A plan for personal use and daily work.
 
 - $29 per month.
 - 5,000 AOs per month.
-- No daily limit.
 - Overage AOs are available.
 - Context Store refreshes hourly.
 - Standard human support, in addition to AI and community support.
@@ -173,7 +172,6 @@ A plan for teams running more automations.
 
 - $299 per month.
 - 10,000 AOs per month.
-- No daily limit.
 - Overage AOs are available.
 - Context Store refreshes hourly.
 - Multiple workspaces and an authentication module.
