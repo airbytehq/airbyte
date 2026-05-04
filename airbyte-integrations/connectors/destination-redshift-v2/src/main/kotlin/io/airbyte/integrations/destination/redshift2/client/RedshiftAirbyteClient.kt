@@ -312,12 +312,12 @@ class RedshiftAirbyteClient(
      * internal type names used in DDL statements. Verified against a real Redshift cluster.
      *
      * Precision/scale/length are ignored: all varchars normalize to `varchar(65535)` and all
-     * numerics normalize to `numeric(38,9)`
+     * numerics normalize to `decimal(38,9)`
      */
     internal fun normalizeRedshiftType(redshiftType: String): String =
         when (redshiftType) {
             "character varying" -> "varchar(65535)"
-            "numeric" -> "numeric(38,9)"
+            "numeric" -> "decimal(38,9)"
             "timestamp without time zone" -> "timestamp"
             "timestamp with time zone" -> "timestamptz"
             "time without time zone" -> "time"

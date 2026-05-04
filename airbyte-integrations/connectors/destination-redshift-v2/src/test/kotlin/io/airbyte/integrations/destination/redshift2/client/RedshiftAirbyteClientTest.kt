@@ -566,7 +566,7 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `normalizeRedshiftType maps numeric`() {
-        assertEquals("numeric(38,9)", client.normalizeRedshiftType("numeric"))
+        assertEquals("decimal(38,9)", client.normalizeRedshiftType("numeric"))
     }
 
     @Test

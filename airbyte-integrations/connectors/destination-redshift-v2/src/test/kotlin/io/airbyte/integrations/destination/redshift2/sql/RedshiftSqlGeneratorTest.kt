@@ -743,13 +743,13 @@ internal class RedshiftSqlGeneratorTest {
                         "num_col" to
                             ColumnTypeChange(
                                 originalType = ColumnType("bigint", false),
-                                newType = ColumnType("numeric(38,9)", false),
+                                newType = ColumnType("decimal(38,9)", false),
                             )
                     ),
             )
 
-        assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_num_col" numeric(38,9);"""))
-        assertTrue(sql.contains("""CAST("num_col" AS numeric(38,9))"""))
+        assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_num_col" decimal(38,9);"""))
+        assertTrue(sql.contains("""CAST("num_col" AS decimal(38,9))"""))
         assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
         assertTrue(sql.contains(""""num_col" IS NOT NULL"""))
         assertTrue(sql.contains(""""_airbyte_tmp_num_col" IS NULL"""))
@@ -894,7 +894,7 @@ internal class RedshiftSqlGeneratorTest {
                             "num_col" to
                                 ColumnTypeChange(
                                     originalType = ColumnType("bigint", false),
-                                    newType = ColumnType("numeric(38,9)", false),
+                                    newType = ColumnType("decimal(38,9)", false),
                                 )
                         ),
                 )

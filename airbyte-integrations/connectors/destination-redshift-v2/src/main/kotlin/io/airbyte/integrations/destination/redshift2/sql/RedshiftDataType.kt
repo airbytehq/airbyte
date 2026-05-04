@@ -8,7 +8,7 @@ package io.airbyte.integrations.destination.redshift2.sql
 enum class RedshiftDataType(val typeName: String) {
     // Numeric types
     BIGINT("bigint"),
-    NUMERIC("numeric(38,9)"),
+    NUMERIC("decimal(38,9)"),
 
     // String types
     VARCHAR("varchar(65535)"),
