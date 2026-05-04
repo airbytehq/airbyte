@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -289,6 +291,30 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     assertThrows(MongoException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionMatchesErrorCode13() {
+    final BsonDocument response = new BsonDocument()
+        .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new BsonString("Unauthorized"))
+        .append("errmsg", new BsonString("not authorized on grid-ai to execute command"));
+    final MongoCommandException unauthorized = new MongoCommandException(response, new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(unauthorized));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException("wrapper", unauthorized)));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionDoesNotMatchOtherErrors() {
+    final BsonDocument response = new BsonDocument()
+        .append("code", new BsonInt32(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+        .append("errmsg", new BsonString("BSONObjectTooLarge"));
+    final MongoCommandException bsonTooLarge = new MongoCommandException(response, new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedException(bsonTooLarge));
+    assertFalse(MongoUtil.isUnauthorizedException(new MongoException("transient")));
+    assertFalse(MongoUtil.isUnauthorizedException(null));
   }
 
   @Test
