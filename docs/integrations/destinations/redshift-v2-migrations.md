@@ -4,17 +4,18 @@
 
 Version 4.0.0 is a full rewrite of the Redshift destination using the new CDK architecture. Key changes:
 
+> We encourage upgrading to 4.0.0 — it speeds up Airbyte syncs and reduces warehouse costs by skipping the separate typing and deduping queries.
+
 - **No raw tables** — data is written directly to final tables instead of staging through `_airbyte_raw_*` tables
-- **Same configuration** — the spec is unchanged, so no configuration updates are needed
-- **Improved error handling** — the connection checker now validates the full S3 staging → COPY → Redshift pipeline with clear error messages
+- **Improved data validation** — oversized or out-of-range values (VARCHAR > 65,535 bytes, SUPER > 16 MB, NUMERIC precision > 38) are now nullified before insertion and tracked in the `_airbyte_meta` column
+- **Updated dependencies** — uses Redshift JDBC driver 2.1.0.30 and AWS SDK v2 (2.31.1)
 
 ### Migration steps
 
-1. Upgrade the destination to version 4.0.0
-2. Trigger a full refresh sync for all connections using this destination
+1. Update any downstream dbt models or SQL queries that reference `_airbyte_raw_*` tables
+2. Upgrade the destination to version 4.0.0
 3. Verify data in the final tables
-4. Update any downstream dbt models or SQL queries that reference `_airbyte_raw_*` tables
-5. Optional: Drop old raw tables (`_airbyte_raw_*`) after verifying the new tables
+4. Optional: Drop old raw tables (`_airbyte_raw_*`) after verifying the new tables
 
 ## Upgrading to 3.0.0
 
