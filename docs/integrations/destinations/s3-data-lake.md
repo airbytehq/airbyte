@@ -339,6 +339,16 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
 **Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
 
+## Performance tuning
+
+### Flush batch size
+
+The destination buffers records in memory and flushes them to Iceberg in batches. By default, each batch is approximately 200 MB. To override the batch size, set the optional `flush_batch_size_mb` field in your connector configuration to a value between 1 and 500.
+
+This field isn't exposed in the Airbyte UI. To set it, configure the connector through the Airbyte API, the Terraform provider, or PyAirbyte.
+
+Smaller batch sizes flush more frequently, which improves data freshness and reduces the volume of buffered data lost if a sync fails. The trade-off is that the connector writes more, smaller files to S3, which increases the work required during [compaction](#compaction). Larger batch sizes use more memory but produce fewer output files.
+
 ## Compaction
 
 :::caution
@@ -392,7 +402,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.48      | 2026-05-01 | [77677](https://github.com/airbytehq/airbyte/pull/77677)  | Add configurable flush batch size for aggregate publishing.                                                                     |
+| 0.3.48      | 2026-05-04 | [77677](https://github.com/airbytehq/airbyte/pull/77677)  | Add optional `flush_batch_size_mb` configuration field to tune the size of write batches.                                       |
 | 0.3.47      | 2026-04-16 | [76410](https://github.com/airbytehq/airbyte/pull/76410) | Upgrade CDK to 1.0.9.                                                  |
 | 0.3.46      | 2026-03-30 |                                                           | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution. |
 | 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
