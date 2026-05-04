@@ -43,24 +43,26 @@ def _campaigns_response_with_old_records(campaign_ids: List[str], old_updated_at
     """Create a campaigns response with multiple campaigns that have old updated_at timestamps."""
     campaigns = []
     for cid in campaign_ids:
-        campaigns.append({
-            "sub_request_status": "SUCCESS",
-            "campaign": {
-                "id": cid,
-                "updated_at": old_updated_at,
-                "created_at": "2023-01-01T00:00:00.000Z",
-                "name": f"Campaign {cid}",
-                "ad_account_id": AD_ACCOUNT_ID,
-                "status": "ACTIVE",
-                "objective": "AWARENESS",
-                "start_time": "2024-01-01T00:00:00.000Z",
-                "end_time": "2024-12-31T23:59:59.000Z",
-                "daily_budget_micro": 100000000,
-                "lifetime_spend_cap_micro": 0,
-                "buy_model": "AUCTION",
-                "regulations": {},
-            },
-        })
+        campaigns.append(
+            {
+                "sub_request_status": "SUCCESS",
+                "campaign": {
+                    "id": cid,
+                    "updated_at": old_updated_at,
+                    "created_at": "2023-01-01T00:00:00.000Z",
+                    "name": f"Campaign {cid}",
+                    "ad_account_id": AD_ACCOUNT_ID,
+                    "status": "ACTIVE",
+                    "objective": "AWARENESS",
+                    "start_time": "2024-01-01T00:00:00.000Z",
+                    "end_time": "2024-12-31T23:59:59.000Z",
+                    "daily_budget_micro": 100000000,
+                    "lifetime_spend_cap_micro": 0,
+                    "buy_model": "AUCTION",
+                    "regulations": {},
+                },
+            }
+        )
 
     body = {
         "request_status": "SUCCESS",
@@ -179,6 +181,4 @@ class TestChildStreamDataLossRegression(TestCase):
         assert len(output.records) > 0, "Expected stats records but got none"
         record_ids = set(r.record.data.get("id") for r in output.records)
         for cid in campaign_ids:
-            assert cid in record_ids, (
-                f"Missing stats for campaign {cid} in full_refresh. Got records for: {record_ids}."
-            )
+            assert cid in record_ids, f"Missing stats for campaign {cid} in full_refresh. Got records for: {record_ids}."
