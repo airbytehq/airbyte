@@ -87,10 +87,13 @@ The `connect()` factory returns a fully typed `ConfluenceConnector` and reads `A
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
 
 connector = connect("confluence", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
 
 @agent.tool_plain
 @ConfluenceConnector.tool_utils
@@ -101,8 +104,6 @@ async def confluence_execute(entity: str, action: str, params: dict | None = Non
 **LangChain**
 
 ```python title="LangChain"
-import json
-
 from langchain_core.tools import tool
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
@@ -111,17 +112,37 @@ connector = connect("confluence", workspace_name="<your_workspace_name>")
 
 @tool
 @ConfluenceConnector.tool_utils
-async def confluence_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def confluence_execute(entity: str, action: str, params: dict | None = None):
     """Execute Confluence connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
+
+connector = connect("confluence", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@ConfluenceConnector.tool_utils(framework="openai_agents")
+async def confluence_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Confluence connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Confluence Assistant", tools=[confluence_execute])
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
-import json
-
 from fastmcp import FastMCP
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
@@ -130,18 +151,19 @@ connector = connect("confluence", workspace_name="<your_workspace_name>")
 
 mcp = FastMCP("Confluence Agent")
 
-@mcp.tool()
+@mcp.tool
 @ConfluenceConnector.tool_utils
-async def confluence_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def confluence_execute(entity: str, action: str, params: dict | None = None):
     """Execute Confluence connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -154,6 +176,8 @@ connector = ConfluenceConnector(
     )
 )
 
+agent = Agent("openai:gpt-4o")
+
 @agent.tool_plain
 @ConfluenceConnector.tool_utils
 async def confluence_execute(entity: str, action: str, params: dict | None = None):
@@ -163,8 +187,6 @@ async def confluence_execute(entity: str, action: str, params: dict | None = Non
 **LangChain**
 
 ```python title="LangChain"
-import json
-
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -180,17 +202,44 @@ connector = ConfluenceConnector(
 
 @tool
 @ConfluenceConnector.tool_utils
-async def confluence_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def confluence_execute(entity: str, action: str, params: dict | None = None):
     """Execute Confluence connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = ConfluenceConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@ConfluenceConnector.tool_utils(framework="openai_agents")
+async def confluence_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Confluence connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Confluence Assistant", tools=[confluence_execute])
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
-import json
-
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.confluence import ConfluenceConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -206,12 +255,12 @@ connector = ConfluenceConnector(
 
 mcp = FastMCP("Confluence Agent")
 
-@mcp.tool()
+@mcp.tool
 @ConfluenceConnector.tool_utils
-async def confluence_execute(entity: str, action: str, params: dict | None = None) -> str:
+async def confluence_execute(entity: str, action: str, params: dict | None = None):
     """Execute Confluence connector operations."""
     result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
 
 **API**
