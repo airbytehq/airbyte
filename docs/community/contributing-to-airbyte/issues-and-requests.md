@@ -1,6 +1,6 @@
 # Issues and feature requests
 
-If you're a paid customer, discuss your needs with support or another Airbyte representative. For all other requests, see these options.
+If you're a paid customer, discuss your needs with support or another Airbyte representative. For all other requests, see these options:
 
 ## Report a bug
 

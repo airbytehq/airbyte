@@ -1,12 +1,12 @@
 # Get support
 
-Airbyte offers support for both Data Replication and Airbyte Agents. If you can't find an answer to your question in the docs, use one of the following options.
+Airbyte offers support for both Data Replication and Airbyte Agents. If you can't find an answer to your question in the docs, use one of the following options:
 
 ## Data Replication
 
-### In-app support bot
+### In-app support agent bot
 
-**The in-app support bot is available 24/7 for Airbyte Cloud and Enterprise customers.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The bot can also create support tickets for the Airbyte support team if further help is needed.
+**The in-app support agent bot is available 24/7 for Airbyte Cloud and Enterprise customers.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The bot can also create support tickets for the Airbyte support team if further help is needed.
 
 ### Support Center
 
@@ -37,17 +37,17 @@ Check the [issue list](https://github.com/airbytehq/airbyte/issues) first in cas
 
 ## Airbyte Agents
 
-### In-app support bot
+### In-app support agent bot
 
-**The in-app support bot is available 24/7 for all Airbyte Agents users.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your organization, troubleshoot common scenarios, and create support tickets if further help is needed.
+**The in-app support agent bot is available 24/7 for all Airbyte Agents users.** Look for the chat button in the bottom-right corner of the screen. The bot can help answer questions about your organization, troubleshoot common scenarios, and create support tickets if further help is needed.
 
 ### Support by plan
 
 - **Free**: AI and [community](#community-slack) support.
-- **Individual / Team**: Standard human support, in addition to AI and community support. The in-app support bot can create a ticket for you, or you can create your own in the [Support Center](https://support.airbyte.com/hc/en-us/requests/new).
+- **Individual / Team**: Standard human support, in addition to AI and community support. The in-app support agent bot can create a ticket for you, or you can create your own in the [Support Center](https://support.airbyte.com/hc/en-us/requests/new).
 - **Custom**: Dedicated human support.
 
-For full details on Agents plans, see [Billing and pricing](/ai-agents/admin/billing).
+For full details on Airbyte Agents plans, see [Billing and pricing](/ai-agents/admin/billing).
 
 ## Community Slack
 
