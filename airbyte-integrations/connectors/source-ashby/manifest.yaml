@@ -3,7 +3,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - jobs
+    - users
 definitions:
   streams:
     applications:
