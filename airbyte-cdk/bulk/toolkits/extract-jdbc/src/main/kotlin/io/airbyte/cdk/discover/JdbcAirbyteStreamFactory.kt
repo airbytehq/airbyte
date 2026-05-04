@@ -34,7 +34,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
             if (isCdc || hasPK) discoveredStream.primaryKeyColumnIDs else emptyList()
         val stream =
             AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
-                if (isCdc && hasPK) {
+                if (isCdc) {
                     decorateAirbyteStream(this)
                 }
                 supportedSyncModes = syncModes

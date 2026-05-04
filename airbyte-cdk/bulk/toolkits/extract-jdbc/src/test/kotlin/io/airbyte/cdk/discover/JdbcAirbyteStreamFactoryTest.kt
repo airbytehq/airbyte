@@ -4,12 +4,14 @@
 
 package io.airbyte.cdk.discover
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceOperations
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -54,6 +56,11 @@ class JdbcAirbyteStreamFactoryTest {
         )
         Assertions.assertTrue(stream.sourceDefinedCursor)
         Assertions.assertTrue(stream.isResumable)
+        assertHasCdcMetaFields(stream)
+        Assertions.assertEquals(
+            listOf(H2SourceOperations.H2GlobalCursor.id),
+            stream.defaultCursorField
+        )
     }
 
     @Test
@@ -67,6 +74,13 @@ class JdbcAirbyteStreamFactoryTest {
         Assertions.assertEquals(listOf(SyncMode.FULL_REFRESH), stream.supportedSyncModes)
         Assertions.assertFalse(stream.sourceDefinedCursor)
         Assertions.assertFalse(stream.isResumable)
+        // CDC streams without a primary key must still expose the CDC meta fields in their
+        // schema; otherwise destinations whose catalog references the CDC cursor field reject it.
+        assertHasCdcMetaFields(stream)
+        Assertions.assertEquals(
+            listOf(H2SourceOperations.H2GlobalCursor.id),
+            stream.defaultCursorField
+        )
     }
 
     @Test
@@ -83,6 +97,7 @@ class JdbcAirbyteStreamFactoryTest {
         )
         Assertions.assertFalse(stream.sourceDefinedCursor)
         Assertions.assertTrue(stream.isResumable)
+        assertDoesNotHaveCdcMetaFields(stream)
     }
 
     @Test
@@ -98,5 +113,26 @@ class JdbcAirbyteStreamFactoryTest {
         Assertions.assertEquals(listOf(SyncMode.FULL_REFRESH), stream.supportedSyncModes)
         Assertions.assertFalse(stream.sourceDefinedCursor)
         Assertions.assertFalse(stream.isResumable)
+        assertDoesNotHaveCdcMetaFields(stream)
+    }
+
+    private fun assertHasCdcMetaFields(stream: AirbyteStream) {
+        val properties = stream.jsonSchema["properties"] as ObjectNode
+        for (metaField in H2SourceOperations().globalMetaFields) {
+            Assertions.assertTrue(
+                properties.has(metaField.id),
+                "expected schema properties to contain ${metaField.id} but got ${properties.fieldNames().asSequence().toList()}",
+            )
+        }
+    }
+
+    private fun assertDoesNotHaveCdcMetaFields(stream: AirbyteStream) {
+        val properties = stream.jsonSchema["properties"] as ObjectNode
+        for (metaField in H2SourceOperations().globalMetaFields) {
+            Assertions.assertFalse(
+                properties.has(metaField.id),
+                "did not expect schema properties to contain ${metaField.id}",
+            )
+        }
     }
 }
