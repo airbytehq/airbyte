@@ -93,7 +93,7 @@ The connector is restricted by [Harvest rate limits](https://help.getharvest.com
 
 The connector automatically enforces these limits using a built-in HTTP API budget and retries throttled requests using the `Retry-After` header provided by the API.
 
-You can configure the number of concurrent workers using the **Number of Concurrent Workers** field. Higher values can speed up syncs but increase API rate limit usage. The default is 4 workers, and the maximum is 10. Adjust this based on whether other applications share your Harvest API quota.
+You can configure the number of concurrent threads using the **Number of Concurrent Threads** field. Higher values can speed up syncs but increase API rate limit usage. The default is 4 threads, and the allowed range is 2 to 10. Lower this value when other applications share your Harvest API quota.
 
 Report streams (Expense Reports, Time Reports, Uninvoiced Report, and Project Budget Report) retrieve data in 365-day date windows. For accounts with a long history, initial syncs of these streams may take longer.
 
@@ -108,7 +108,7 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.36 | 2026-05-04 | [76217](https://github.com/airbytehq/airbyte/pull/76217) | Add oauthConnectorInputSpecification with granular scopes |
+| 1.2.36 | 2026-05-04 | [76217](https://github.com/airbytehq/airbyte/pull/76217) | Declare OAuth2 flow inline via `advanced_auth` and `oauthConnectorInputSpecification` |
 | 1.2.35 | 2026-04-28 | [75371](https://github.com/airbytehq/airbyte/pull/75371) | Update dependencies |
 | 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
 | 1.2.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
