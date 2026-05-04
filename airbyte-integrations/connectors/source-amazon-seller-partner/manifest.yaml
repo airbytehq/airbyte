@@ -2906,7 +2906,10 @@ definitions:
           - "%Y-%m-%d"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: "P1D"
+        # The maximum step for this stream is 30 days or lower when the customer configures the period_in_days.
+        # Amazon's GET_SALES_AND_TRAFFIC_REPORT response already returns salesAndTrafficByDate broken down per
+        # date for multi-day windows, so a per-day slice is unnecessary and wasteful for large backfills.
+        step: "P{{ min( config.get('period_in_days', 365), 30 ) }}D"
         cursor_granularity: "PT1S"
         start_datetime:
           type: MinMaxDatetime
