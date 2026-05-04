@@ -1179,3 +1179,104 @@ def test_parse_pyarrow_target_pa_type():
     assert StreamWriter._parse_pyarrow_target_pa_type("object of type <class 'str'> cannot be converted to int") == pa.int64()
     assert StreamWriter._parse_pyarrow_target_pa_type("Could not convert 'foo' with type str: tried to convert to double") == pa.float64()
     assert StreamWriter._parse_pyarrow_target_pa_type("unrelated message") is None
+
+
+def test_probe_struct_subkey_culprit_finds_inferred_int_subkey_with_str_value():
+    """The first record establishes the inferred subkey type; a later
+    record with a `str` value at that subkey makes pyarrow raise. The
+    probe must surface that subkey by replaying `pa.array()` on its
+    column and matching the error's target type to `target_pa_type`."""
+    values = [
+        {"alpha": "x", "hs_object_id": 12345},
+        {"alpha": "y", "hs_object_id": 67890},
+        {"alpha": "z", "hs_object_id": "not-an-int"},
+    ]
+    culprit, err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    assert culprit == "hs_object_id"
+    assert err is not None and ("int" in err)
+    sample_dict = dict(sample)
+    assert sample_dict["alpha"] == "string"
+    assert sample_dict["hs_object_id"].startswith("ERR:")
+
+
+def test_probe_struct_subkey_culprit_returns_none_when_no_subkey_raises():
+    """If every subkey infers cleanly, the probe returns no culprit."""
+    values = [{"a": "x", "b": 1}, {"a": "y", "b": 2}]
+    culprit, err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    assert culprit is None
+    assert err is None
+    sample_dict = dict(sample)
+    assert sample_dict["a"] == "string"
+    assert sample_dict["b"] == "int64"
+
+
+def test_probe_struct_subkey_culprit_does_not_match_unrelated_target_type():
+    """A subkey that raises for a different target type must NOT be
+    surfaced as the culprit. Here pyarrow infers `int64` for `b` and
+    fails on the str — the probe is told the original error targeted
+    `double`, so the int failure is unrelated."""
+    values = [{"a": "x", "b": 1}, {"a": "y", "b": "boom"}]
+    culprit, err, _sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.float64(),
+    )
+    assert culprit is None
+    assert err is None
+
+
+def test_probe_struct_subkey_culprit_skips_all_null_keys():
+    """A subkey that's `None` in every record contributes no inference."""
+    values = [{"a": "x", "b": None}, {"a": "y", "b": None}]
+    _culprit, _err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    keys = {k for k, _ in sample}
+    assert keys == {"a"}
+
+
+def test_probe_struct_subkey_culprit_ignores_non_dict_records():
+    """`None` records (where the column is null on a row) must not crash
+    the probe — they simply don't contribute any sub-keys."""
+    values = [None, {"a": 1}, None, {"a": "boom"}]
+    culprit, err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    assert culprit == "a"
+    assert err is not None
+    assert dict(sample)["a"].startswith("ERR:")
+
+
+def test_build_type_mismatch_exception_subkey_probe_overrides_glue_oracle_for_undeclared_subkey():
+    """Reproduces the HubSpot scenario: every Glue sub-field is `string`
+    so the Glue oracle finds no `bigint` candidate, but pyarrow infers
+    `int64` for one undeclared subkey from the data and crashes when
+    a later record has `str` there. The new per-subkey probe must
+    pinpoint that undeclared subkey."""
+    writer = get_big_schema_writer(get_config())
+    writer._last_flush_dtype = {"properties": "struct<a:string,c:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    df = pd.DataFrame(
+        {
+            "properties": [
+                {"a": "x", "hs_object_id": 1},
+                {"a": "y", "hs_object_id": 2},
+                {"a": "z", "hs_object_id": "boom"},
+            ],
+        }
+    )
+    arrow_error = pa.lib.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column properties with type object",
+    )
+    traced = writer._build_type_mismatch_exception(df, arrow_error)
+    assert 'field "properties.hs_object_id"' in traced.message
+    assert "subkey_probe_path=properties.hs_object_id" in traced.internal_message
+    assert "subkey_inference_sample=" in traced.internal_message

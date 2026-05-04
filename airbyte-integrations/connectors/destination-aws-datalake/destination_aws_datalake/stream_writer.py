@@ -115,6 +115,11 @@ _MIXED_TYPE_RECORD_CAP = 5000
 _MAX_MIXED_TYPE_CANDIDATES = 8
 # Cap how many records the brute-force pyarrow probe replays per candidate sub-path.
 _PROBE_RECORD_CAP = 1000
+# Cap how many `(key, type-or-error)` entries are surfaced from the per-subkey
+# probe in the internal log message. The probe still walks every distinct
+# top-level key — this only bounds the diagnostic sample we attach to the
+# `AirbyteTracedException`.
+_MAX_SUBKEY_INFERENCE_SAMPLE = 12
 
 
 # By default we set glue decimal type to decimal(28,25)
@@ -589,14 +594,24 @@ class StreamWriter:
         observed_type_map: Dict[str, Set[str]] = {}
         probe_path: Optional[str] = None
         probe_error: Optional[str] = None
+        subkey_probe_path: Optional[str] = None
+        subkey_probe_error: Optional[str] = None
+        subkey_inference_sample: List[Tuple[str, str]] = []
         target_pa_type = self._parse_pyarrow_target_pa_type(err_msg)
         target_glue_types = self._parse_pyarrow_target_glue_types(err_msg)
         column_glue_type = self._last_flush_dtype.get(column) if column else None
-        # `glue_oracle_available` indicates the probe can use the awswrangler
-        # `dtype` dict — the actual schema pyarrow validated against — to
-        # restrict candidates to sub-paths declared as the target Glue type.
-        # When this is true, a probe match is authoritative and overrides
-        # the heuristic walkers below.
+        # `glue_oracle_available` indicates the heuristic probe can use the
+        # awswrangler `dtype` dict — the schema awswrangler hands to pyarrow
+        # — to restrict candidates to sub-paths declared as the target Glue
+        # type. In practice the Glue dtype dict for a struct column does not
+        # always cover every sub-key the dataframe contains (HubSpot, for
+        # example, ships dynamic property keys), and pyarrow's *own*
+        # per-subkey type inference is what actually produced the target
+        # type in the original error. The per-subkey replay below
+        # (`_probe_struct_subkey_culprit`) is therefore the most
+        # authoritative oracle: it asks pyarrow exactly the question
+        # pyarrow asks itself, and the first subkey whose replay reproduces
+        # the same error signature is the field pyarrow choked on.
         glue_oracle_available = bool(
             column_glue_type
             and target_glue_types
@@ -605,6 +620,14 @@ class StreamWriter:
         if column and column in df.columns:
             values = df[column].tolist()
             observed_type_map = self._collect_observed_type_map(values, prefix=column)
+            if target_pa_type is not None:
+                subkey_culprit, subkey_err, subkey_inference_sample = self._probe_struct_subkey_culprit(
+                    values=values,
+                    target_pa_type=target_pa_type,
+                )
+                if subkey_culprit is not None:
+                    subkey_probe_path = f"{column}.{subkey_culprit}"
+                    subkey_probe_error = subkey_err
             if target_pa_type is not None and observed_filter is not None:
                 probe_path, probe_error = self._probe_pyarrow_culprit(
                     values=values,
@@ -621,11 +644,27 @@ class StreamWriter:
                 schema_entry=self._schema.get(column),
                 column_prefix=column,
             )
-            # The brute-force probe is authoritative when it ran against the
-            # Glue dtype oracle (the actual schema pyarrow validated against)
-            # and reproduced the failure on a specific sub-path. In that case
-            # it overrides the heuristic walkers below.
-            if glue_oracle_available and probe_path is not None:
+            # The per-subkey replay is the most authoritative source:
+            # pyarrow itself raised when handed exactly that subkey's values,
+            # so the match is by construction the field that crashed the
+            # full conversion. It outranks the Glue-oracle probe and all
+            # heuristic walkers below.
+            if subkey_probe_path is not None:
+                bad_path = subkey_probe_path
+                observed_type = observed_filter or "?"
+                schema_entry_for_column = self._schema.get(column)
+                declared_for_bad_path = (
+                    self._lookup_declared_schema_type(schema_entry_for_column, bad_path, column)
+                    if schema_entry_for_column is not None
+                    else None
+                )
+                if declared_for_bad_path is not None:
+                    declared_type = declared_for_bad_path
+                elif declared_filter:
+                    declared_type = "/".join(declared_filter)
+                else:
+                    declared_type = "?"
+            elif glue_oracle_available and probe_path is not None:
                 bad_path = probe_path
                 observed_type = observed_filter
                 schema_entry_for_column = self._schema.get(column)
@@ -706,6 +745,13 @@ class StreamWriter:
         probe_repr = ""
         if probe_path is not None:
             probe_repr = f"probe_path={probe_path} probe_error={probe_error!r} "
+        subkey_probe_repr = ""
+        if subkey_probe_path is not None:
+            subkey_probe_repr = f"subkey_probe_path={subkey_probe_path} subkey_probe_error={subkey_probe_error!r} "
+        subkey_inference_repr = ""
+        if subkey_inference_sample:
+            sliced = subkey_inference_sample[:_MAX_SUBKEY_INFERENCE_SAMPLE]
+            subkey_inference_repr = "subkey_inference_sample=[" + "; ".join(f"{k}={t}" for k, t in sliced) + "] "
         column_glue_type = self._last_flush_dtype.get(column) if column else None
         glue_repr = f"column_glue_type={column_glue_type} " if column_glue_type else ""
         internal_message = (
@@ -714,8 +760,10 @@ class StreamWriter:
             f"observed_filter={observed_filter} target_python_types={target_python_types} "
             f"target_glue_types={target_glue_types} "
             f"{glue_repr}"
+            f"{subkey_probe_repr}"
             f"{probe_repr}"
             f"mixed_type_candidates=[{candidates_repr}] "
+            f"{subkey_inference_repr}"
             f"observed_type_map_sample=[{fallback_type_map_repr}]] "
             f"pyarrow conversion failed: {ex!r}"
         )
@@ -839,6 +887,66 @@ class StreamWriter:
         for value in values[:_PROBE_RECORD_CAP]:
             walk(value, 0)
         return extracted
+
+    @classmethod
+    def _probe_struct_subkey_culprit(
+        cls,
+        values: List[Any],
+        target_pa_type: pa.DataType,
+    ) -> Tuple[Optional[str], Optional[str], List[Tuple[str, str]]]:
+        """
+        Identify the offending top-level subkey of a struct column by replaying
+        `pa.array([record.get(key) for record in records], from_pandas=True)`
+        for every distinct top-level key seen across `values`, with no target
+        type hint.
+
+        Returns `(culprit_key, culprit_error, sample)` where `culprit_key` is
+        the first subkey whose probe raised an Arrow error whose target
+        pyarrow type matches `target_pa_type`, `culprit_error` is the raw
+        Arrow error string, and `sample` is the sorted list of
+        `(key, inferred_type_or_error_excerpt)` pairs for diagnostic logging.
+
+        Unlike `_probe_pyarrow_culprit`, this probe takes no schema
+        oracle: pyarrow is asked exactly the question it would ask itself
+        when inferring a struct from dicts, so a match is by construction
+        the sub-field pyarrow choked on. This is the right strategy when
+        the Glue dtype dict and the JSON Schema both fail to surface a
+        candidate of the target type — for example when the dataframe
+        column has more sub-keys than the declared Glue struct, and
+        pyarrow's per-subkey type inference (rather than the Glue dtype)
+        is what produced the target type in the original error.
+
+        Matching is done by extracting the target pyarrow type from each
+        replay error (which uses one of two pyarrow error formats — see
+        `_PYARROW_TYPE_HINT_RES`) and comparing it against the original
+        `target_pa_type`. This handles both `cannot be converted to int`
+        (struct-from-pandas) and `tried to convert to int64`
+        (sequence-from-pandas) error variants.
+        """
+        keys: Set[str] = set()
+        for value in values:
+            if isinstance(value, dict):
+                keys.update(value.keys())
+
+        sample: List[Tuple[str, str]] = []
+        culprit: Optional[str] = None
+        culprit_err: Optional[str] = None
+        for key in sorted(keys):
+            sub_values = [v.get(key) if isinstance(v, dict) else None for v in values]
+            if not any(sv is not None for sv in sub_values):
+                continue
+            try:
+                arr = pa.array(sub_values, from_pandas=True)
+            except (pa.ArrowInvalid, pa.ArrowTypeError) as ex:
+                err_str = str(ex)
+                sample.append((key, f"ERR:{err_str[:80]}"))
+                replay_target = cls._parse_pyarrow_target_pa_type(err_str)
+                if culprit is None and replay_target is not None and replay_target == target_pa_type:
+                    culprit = key
+                    culprit_err = err_str
+            else:
+                sample.append((key, str(arr.type)))
+        return culprit, culprit_err, sample
 
     def _probe_pyarrow_culprit(
         self,
