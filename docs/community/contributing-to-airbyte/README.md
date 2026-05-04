@@ -33,6 +33,7 @@ Airbyte is revamping its core Java destinations codebase. We're not reviewing/ac
 ### Contributions we don't accept
 
 - Data replication platform contributions: in mid-2025, Airbyte stopped accepting community contributions to the data replication platform. Continue reporting issues through GitHub so we can investigate and prioritize fixes and improvements.
+- Contributions to destination connectors. We only accept contributions to source connectors.
 - Airbyte Agents contributions: for bugs or feature requests related to Airbyte Agents, if you're a paid customer, use the [Support Center](https://support.airbyte.com/hc/en-us/requests/new), and if you're a free user, use the [`#airbyte-agents`](https://airbytehq.slack.com/archives/C0B1CUSEQKT) channel in Slack.
 
 ### Standard contribution workflow
