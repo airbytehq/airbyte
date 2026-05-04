@@ -74,7 +74,7 @@ Agents choose between these paths automatically. You don't need to specify which
 
 ## How search works
 
-The Context Store supports structured search with filter operators, field selection, sorting, and cursor-based pagination. The agent translates user intent from natural language into a structured query, so most users don't need to construct queries by hand.
+The Context Store supports structured search with filter operators, field selection, sorting, and cursor-based pagination. The agent translates user intent from natural language into a structured query, so you don't need to construct queries by hand.
 
 If you build agents with the SDK or API, you can call `context_store_search` directly and pass structured filters. For details on the query model, see the individual [connector reference pages](../connectors), which document the available entities, filter fields, and search parameters for each connector.
 
@@ -99,6 +99,6 @@ If you already maintain your own copy of the relevant data and prefer to expose 
 ## Limitations
 
 - **Data freshness.** The Context Store is not real-time. Airbyte refreshes data on a schedule that depends on your plan, ranging from hourly to daily. See [Billing and pricing](../admin/billing) for refresh cadence by plan.
-- **Curated subset of data.** Not every field or entity from a source is included. Airbyte indexes only the fields and entities that are most useful for search. For the list of indexed entities per connector, see [Agent connectors](../connectors).
+- **Curated subset of data.** Not every field or entity from a source is included. Airbyte indexes only the fields and entities that are most useful for search. You can see which entities populate the Context Store when selecting entities in the connector authentication widget.
 - **Initial indexing delay.** The first time Airbyte populates a connector, the [initial index](#initial-index) can take minutes to days depending on data volume and API rate limits.
 - **Read-only.** The Context Store supports search operations only. Write operations like creating, updating, or deleting records always go through a direct API request.
