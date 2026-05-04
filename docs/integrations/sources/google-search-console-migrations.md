@@ -4,7 +4,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 2.0.0
 
-The `search_appearance` field has been added to the primary key of the following streams:
+The `search_appearance` field has been appended to the existing primary keys of the following streams:
 
 - `search_analytics_keyword_page_report`
 - `search_analytics_keyword_site_report_by_page`
@@ -23,17 +23,17 @@ Streams not listed above are unaffected and do not require any action.
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main navbar.
-   1. Select the connection affected by the update.
+   - Select the connection affected by the update.
 2. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   2. Select **OK**.
+   - Select **Refresh source schema**.
+   - Select **OK**.
 
 :::note
 Any detected schema changes will be listed for your review.
 :::
 
 3. Select **Save changes** at the top right of the page.
-   1. Ensure the **Reset affected streams** option is checked.
+   - Ensure the **Reset affected streams** option is checked.
 
 :::note
 Depending on destination type you may not be prompted to reset your data.

@@ -38,7 +38,7 @@ data:
     breakingChanges:
       2.0.0:
         message:
-          "The `search_appearance` field has been added to the primary key of the `search_analytics_keyword_page_report`,
+          "The `search_appearance` field has been appended to the existing primary keys of the `search_analytics_keyword_page_report`,
           `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams.
           Users syncing these streams must perform a full refresh after upgrading to ensure correct deduplication.
           See the [migration guide](https://docs.airbyte.com/integrations/sources/google-search-console-migrations) for details."
