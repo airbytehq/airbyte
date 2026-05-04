@@ -99,6 +99,6 @@ If you already maintain your own copy of the relevant data and prefer to expose 
 ## Limitations
 
 - **Data freshness.** The Context Store is not real-time. Airbyte refreshes data on a schedule that depends on your plan, ranging from hourly to daily. See [Billing and pricing](../admin/billing) for refresh cadence by plan.
-- **Curated subset of data.** Not every field or entity from a source is included. Airbyte indexes only the fields and entities that are most useful for search. You can see which entities populate the Context Store when selecting entities in the connector authentication widget.
+- **Curated subset of data.** Not every field or entity from a source is included. Airbyte indexes only the fields and entities that are most useful for search. You can see which entities populate the Context Store when selecting entities in the authentication widget.
 - **Initial indexing delay.** The first time Airbyte populates a connector, the [initial index](#initial-index) can take minutes to days depending on data volume and API rate limits.
 - **Read-only.** The Context Store supports search operations only. Write operations like creating, updating, or deleting records always go through a direct API request.
