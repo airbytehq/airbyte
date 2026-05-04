@@ -123,7 +123,10 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 ## Supported sync modes
 
-The Shopify source connector supports both Full Refresh and Incremental syncs. For more information, see [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes).
+The Shopify source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental
 
 This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API.
 
