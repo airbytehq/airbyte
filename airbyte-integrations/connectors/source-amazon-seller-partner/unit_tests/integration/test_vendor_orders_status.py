@@ -23,6 +23,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 
+from ..conftest import get_stream_by_name
 from .config import NOW, TIME_FORMAT, ConfigBuilder
 from .pagination import NEXT_TOKEN_STRING, VendorFulfillmentPaginationStrategy
 from .request_builder import RequestBuilder
@@ -36,6 +37,20 @@ _REPLICATION_START_FIELD = "createdAfter"
 _REPLICATION_END_FIELD = "createdBefore"
 _CURSOR_FIELD = "createdBefore"
 _STREAM_NAME = "VendorOrdersStatus"
+
+
+def test_cursor_field_is_declared_in_schema() -> None:
+    schema = get_stream_by_name(_STREAM_NAME, config().build()).get_json_schema()
+    properties = schema.get("properties", {})
+    assert _CURSOR_FIELD in properties, (
+        f"Expected cursor field {_CURSOR_FIELD!r} to be declared in the {_STREAM_NAME} schema "
+        f"so destinations that validate dedup configs (e.g. bulk-CDK destinations) accept "
+        f"Incremental | Append + Deduped. Found properties: {sorted(properties)}"
+    )
+    assert "changedBefore" not in properties, (
+        f"{_STREAM_NAME} schema should not declare 'changedBefore' (that field belongs to the "
+        f"VendorOrders stream and was a copy-paste leftover)."
+    )
 
 
 def _vendor_orders_status_request() -> RequestBuilder:
