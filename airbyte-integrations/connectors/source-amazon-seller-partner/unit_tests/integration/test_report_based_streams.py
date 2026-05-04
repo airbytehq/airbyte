@@ -959,3 +959,47 @@ class TestSalesAndTrafficReportRequestBody:
 
         output = self._read(stream_name, config().with_asin_granularity("SKU"))
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_by_date_stream_sends_multi_day_window_in_single_request(self, http_mocker: HttpMocker) -> None:
+        """
+        GET_SALES_AND_TRAFFIC_REPORT_BY_DATE issues a single multi-day report request rather than
+        one request per calendar day.
+
+        The connector caps the slice at min(period_in_days, 30) days. With the default config range
+        of 2023-01-01 to 2023-01-30 (29 days), the entire window fits in a single slice, so exactly
+        one create-report request is expected. Without the fix, the connector would issue one
+        per-day slice (up to 29 separate requests) and the mocked single-window body would not
+        match.
+        """
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT_BY_DATE"
+        http_mocker.clear_all_matchers()
+
+        create_report_request_body = {
+            "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-30T00:00:00Z",
+        }
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        mock_auth(http_mocker)
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response("GET_SALES_AND_TRAFFIC_REPORT", data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        # The shared GET_SALES_AND_TRAFFIC_REPORT.json fixture contains a single
+        # `salesAndTrafficByDate` entry, so we expect exactly one record after a single-slice sync.
+        assert len(output.records) == 1
