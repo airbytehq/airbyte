@@ -19,12 +19,8 @@ Your API key must have read permissions enabled for the modules that correspond 
 | Interviews | `interviews`, `interview_stages`, `interview_schedules` |
 | Jobs | `jobs`, `job_postings` |
 | Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
-| Organization | `departments`, `locations`, `users` |
+| Organization *(always required)* | `departments`, `locations`, `users` — The connection check validates connectivity using the `users` stream, so you must enable this permission even if you only intend to sync streams from other modules. Without it, the check fails with a `403 missing_endpoint_permission` error. |
 | Offers | `offers` |
-
-:::note
-The connection check always validates connectivity using the `users` stream, which requires the **Organization** read permission. You must enable the **Organization** read permission on your API key even if you only intend to sync streams from other modules (for example, `jobs` or `job_postings`). Without this permission, the connection check will fail with a `403 missing_endpoint_permission` error.
-:::
 
 :::note
 The `application_criteria_evaluations` stream requires the AI Application Review feature to be enabled for your Ashby organization. If this feature is not enabled, the stream returns empty results.
