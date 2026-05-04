@@ -10,7 +10,7 @@ The `search_appearance` field has been appended to the existing primary keys of 
 - `search_analytics_keyword_site_report_by_page`
 - `search_analytics_keyword_site_report_by_site`
 
-Previously, these streams partitioned API requests by `search_appearance` but did not include the value in the output records or primary key. This caused silent data loss when the same combination of dimensions (e.g., date, country, device, query, page) appeared under multiple search appearance types — one row would overwrite the other during deduplication.
+Previously, these streams partitioned API requests by `search_appearance` but did not include the value in the output records or primary key. This caused silent data loss when the same combination of dimensions (e.g., date, country, device, query, page) appeared under multiple search appearance types, where one row would overwrite the other during deduplication.
 
 With this change, `search_appearance` is now included in both the output records and the primary key, ensuring all rows are preserved.
 
