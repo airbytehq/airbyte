@@ -282,6 +282,12 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/links_next_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["tags"]
+        schema_normalization: Default
     schema_loader:
       type: InlineSchemaLoader
       schema:
