@@ -98,23 +98,13 @@ definitions:
       type: HttpRequester
       url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
       http_method: GET
-      # DO NOT MERGE: pre-release force-fail injection.
-      # The original SelectiveAuthenticator block is preserved below in a
-      # comment so it is trivial to restore. Every requester now uses the
-      # ForceFailAuthenticator custom component, which raises an
-      # AirbyteTracedException(failure_type=system_error) on every HTTP
-      # request — guaranteeing every sync fails.
-      #
-      # authenticator:
-      #   type: SelectiveAuthenticator
-      #   authenticator_selection_path: ["credentials", "credentials"]
-      #   authenticators:
-      #     oauth2.0: "#/definitions/bearer_authenticator"
-      #     oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
-      #     api_token: "#/definitions/basic_authenticator"
       authenticator:
-        type: CustomAuthenticator
-        class_name: source_declarative_manifest.components.ForceFailAuthenticator
+        type: SelectiveAuthenticator
+        authenticator_selection_path: ["credentials", "credentials"]
+        authenticators:
+          oauth2.0: "#/definitions/bearer_authenticator"
+          oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
+          api_token: "#/definitions/basic_authenticator"
       error_handler:
         type: DefaultErrorHandler
         response_filters:
@@ -128,7 +118,8 @@ definitions:
     record_selector:
       type: RecordSelector
       extractor:
-        type: DpathExtractor
+        type: CustomRecordExtractor
+        class_name: source_declarative_manifest.components.ForceFailExtractor
         field_path:
           ["{{ parameters.get('data_path') or parameters.get('name') }}"]
       schema_normalization: Default
@@ -248,7 +239,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.ZendeskSupportAttributeDefinitionsExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -402,7 +393,8 @@ definitions:
           type: RequestPath
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["articles"]
 
   article_attachments_stream:
@@ -430,7 +422,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["article_attachments"]
     file_uploader:
       type: FileUploader
@@ -438,20 +431,13 @@ definitions:
         type: HttpRequester
         url_base: "{{download_target}}"
         http_method: GET
-        # DO NOT MERGE: pre-release force-fail injection. See the
-        # corresponding comment on the primary retriever's authenticator
-        # for details. Original block preserved here for easy restoration.
-        #
-        # authenticator:
-        #   type: SelectiveAuthenticator
-        #   authenticator_selection_path: ["credentials", "credentials"]
-        #   authenticators:
-        #     oauth2.0: "#/definitions/bearer_authenticator"
-        #     oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
-        #     api_token: "#/definitions/basic_authenticator"
         authenticator:
-          type: CustomAuthenticator
-          class_name: source_declarative_manifest.components.ForceFailAuthenticator
+          type: SelectiveAuthenticator
+          authenticator_selection_path: ["credentials", "credentials"]
+          authenticators:
+            oauth2.0: "#/definitions/bearer_authenticator"
+            oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
+            api_token: "#/definitions/basic_authenticator"
       download_target_extractor:
         type: DpathExtractor
         field_path: ["content_url"]
@@ -489,7 +475,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["comments"]
     transformations:
       - type: AddFields
@@ -530,7 +517,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   article_comment_votes_stream:
@@ -565,7 +553,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   audit_logs_stream:
@@ -743,7 +732,8 @@ definitions:
         $ref: "#/definitions/links_next_paginator"
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["posts"]
         schema_normalization: None
 
@@ -779,7 +769,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["comments"]
     transformations:
       - type: AddFields
@@ -820,7 +811,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   post_comment_votes_stream:
@@ -855,7 +847,8 @@ definitions:
             incremental_dependency: true
       record_selector:
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["votes"]
 
   satisfaction_ratings_stream:
@@ -1021,7 +1014,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.ZendeskSupportExtractorEvents
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["ticket_events", "*", "child_events", "*"]
       paginator:
         type: DefaultPaginator
@@ -1171,7 +1164,8 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ForceFailExtractor
           field_path: ["results"]
         schema_normalization: Default
     incremental_sync:
@@ -1230,7 +1224,8 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ForceFailExtractor
             field_path: ["ticket_metrics"]
       transformations:
         - type: AddFields
@@ -1279,7 +1274,8 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.ForceFailExtractor
             field_path: ["ticket_metric"]
         partition_router:
           type: SubstreamPartitionRouter

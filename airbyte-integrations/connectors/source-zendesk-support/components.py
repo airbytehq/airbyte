@@ -6,29 +6,27 @@ from typing import Any, List, Mapping
 import requests
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @dataclass
-class ForceFailAuthenticator(NoAuth):
-    """Authenticator that force-fails every HTTP request with a system error.
+class ForceFailExtractor(RecordExtractor):
+    """Record extractor that force-fails every record extraction with a system error.
 
-    DO NOT MERGE — this authenticator exists solely to produce a pre-release
-    image that fails every sync. It is intentionally wired into the manifest
-    as the authenticator for every requester so that the failure surfaces no
-    matter which auth method (api_token, oauth2.0, oauth2_refresh) the user
-    has configured. Any merge of this connector version to a release branch
-    would break every Zendesk Support sync.
+    DO NOT MERGE — this extractor exists solely to produce a pre-release image
+    that fails every sync on the read path. The HTTP request, authentication,
+    and response are all left intact; the failure is raised when the platform
+    asks the connector to extract records from the response. Every stream's
+    `read` therefore fails with `AirbyteTracedException(failure_type=system_error)`.
     """
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         raise AirbyteTracedException(
-            internal_message="ForceFailAuthenticator raised intentionally for pre-release testing.",
+            internal_message="ForceFailExtractor raised intentionally for pre-release testing.",
             message="source-zendesk-support pre-release force-fail injection. DO NOT MERGE.",
             failure_type=FailureType.system_error,
         )
