@@ -185,7 +185,8 @@ public class MongoDbSource extends BaseConnector implements Source {
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-        // Wrap the iterator to catch BSONObjectTooLarge and Unauthorized errors and provide helpful error messages.
+        // Wrap the iterator to catch BSONObjectTooLarge and Unauthorized errors and provide helpful error
+        // messages.
         return wrapIteratorWithErrorHandling(baseIterator, sourceConfig.getDatabaseNames().size());
       } catch (final Exception e) {
         mongoClient.close();
@@ -202,8 +203,8 @@ public class MongoDbSource extends BaseConnector implements Source {
    * provide helpful, actionable error messages to users.
    *
    * @param iterator The base iterator to wrap.
-   * @param databaseCount The number of configured databases, used to choose between the single-database
-   *        and cluster-wide unauthorized error messages.
+   * @param databaseCount The number of configured databases, used to choose between the
+   *        single-database and cluster-wide unauthorized error messages.
    * @return A wrapped iterator that catches BSONObjectTooLarge and Unauthorized errors.
    */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithErrorHandling(
