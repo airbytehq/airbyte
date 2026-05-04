@@ -203,8 +203,8 @@ public class MongoDbSource extends BaseConnector implements Source {
    * {@code system_error}s.
    *
    * @param e The exception thrown during {@link #read}.
-   * @return The original exception, or a {@link ConfigErrorException} wrapping it when the cause is
-   *         a recognized MongoDB driver error.
+   * @return The original exception, or a {@link ConfigErrorException} wrapping it when the cause is a
+   *         recognized MongoDB driver error.
    */
   private RuntimeException classifyKnownException(final Exception e) {
     if (MongoUtil.isUnauthorizedException(e)) {
@@ -218,8 +218,8 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to catch known MongoDB driver errors (BSONObjectTooLarge,
-   * Unauthorized) during CDC operations and surface helpful, actionable error messages to users.
+   * Wraps an iterator to catch known MongoDB driver errors (BSONObjectTooLarge, Unauthorized) during
+   * CDC operations and surface helpful, actionable error messages to users.
    *
    * @param iterator The base iterator to wrap.
    * @return A wrapped iterator that converts recognized MongoDB driver errors into
