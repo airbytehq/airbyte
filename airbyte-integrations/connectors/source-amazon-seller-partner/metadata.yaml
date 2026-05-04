@@ -73,11 +73,12 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-AMAZON-SELLER-PARTNER_OLD_DATA_CREDS
-          fileName: config_old_data.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+        # Outdated credentials — commented out
+        # - name: SECRET_SOURCE-AMAZON-SELLER-PARTNER_OLD_DATA_CREDS
+        #   fileName: config_old_data.json
+        #   secretStore:
+        #     type: GSM
+        #     alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-AMAZON-SELLER-PARTNER__CREDS
           fileName: config.json
           secretStore:
