@@ -10811,7 +10811,7 @@ schemas:
         type:
           - 'null'
           - string
-      changedBefore:
+      createdBefore:
         description: The timestamp indicating the maximum creation date of the status data to be fetched.
         type:
           - 'null'
