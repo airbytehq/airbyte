@@ -14,7 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
-from source_github.errors_handlers import is_gone_with_feature_disabled
+from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -51,6 +51,7 @@ from source_github.streams import (
     Users,
     WorkflowJobs,
     WorkflowRuns,
+    Workflows,
 )
 from source_github.utils import read_full_refresh
 
@@ -429,7 +430,7 @@ def test_read_records_410_projects_disabled_message(time_mock, caplog, requests_
     )
 
     list(read_full_refresh(stream))
-    assert any("GitHub Projects (classic) is disabled for repository `org/repo`" in msg for msg in caplog.messages)
+    assert any("Projects are disabled for this repository" in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
@@ -2171,3 +2172,185 @@ def test_releases_extract_database_id_does_not_catch_type_error():
 def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
     """Verify that expected decode/unpack errors still return None after narrowing the except."""
     assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+
+
+# === Tests for defensive parse_response (airbyte-internal-issues/issues/16281) ===
+
+
+def _make_response(status_code=200, json_data=None, text=None):
+    """Build a mock `requests.Response` with controllable `.json()` and `.text`."""
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    if text is not None:
+        resp.text = text
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    elif json_data is not None:
+        resp.text = json.dumps(json_data)
+        resp.json = MagicMock(return_value=json_data)
+    else:
+        resp.text = ""
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    return resp
+
+
+_REPO_ARGS = {"repositories": ["org/repo"], "page_size_for_large_streams": 30}
+_STREAM_SLICE = {"repository": "org/repo"}
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param({"workflows": [{"id": 1, "updated_at": "2024-01-01T00:00:00Z"}]}, None, 1, id="valid_single_record"),
+        pytest.param({"workflows": []}, None, 0, id="valid_empty_list"),
+        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
+        pytest.param(None, "", 0, id="empty_body"),
+        pytest.param({"message": "error"}, None, 0, id="missing_key"),
+        pytest.param({"workflows": "not_a_list"}, None, 0, id="wrong_type"),
+        pytest.param({"workflows": None}, None, 0, id="key_is_none"),
+    ],
+)
+def test_workflows_parse_response_defensive(json_data, text, expected_count):
+    stream = Workflows(**_REPO_ARGS)
+    resp = _make_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_STREAM_SLICE))
+    assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param({"workflow_runs": [{"id": 1}]}, None, 1, id="valid_single_record"),
+        pytest.param({"workflow_runs": []}, None, 0, id="valid_empty_list"),
+        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
+        pytest.param(None, "", 0, id="empty_body"),
+        pytest.param({"message": "error"}, None, 0, id="missing_key"),
+        pytest.param({"workflow_runs": "not_a_list"}, None, 0, id="wrong_type"),
+        pytest.param({"workflow_runs": None}, None, 0, id="key_is_none"),
+    ],
+)
+def test_workflow_runs_parse_response_defensive(json_data, text, expected_count):
+    stream = WorkflowRuns(**{**_REPO_ARGS, "start_date": "2022-01-01T00:00:00Z"})
+    resp = _make_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_STREAM_SLICE))
+    assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param({"jobs": [{"id": 1, "completed_at": "2024-01-01T00:00:00Z", "run_id": 1}]}, None, 1, id="valid_single_record"),
+        pytest.param({"jobs": [{"id": 1, "completed_at": None, "run_id": 1}]}, None, 0, id="valid_record_no_cursor"),
+        pytest.param({"jobs": []}, None, 0, id="valid_empty_list"),
+        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
+        pytest.param(None, "", 0, id="empty_body"),
+        pytest.param({"message": "error"}, None, 0, id="missing_key"),
+        pytest.param({"jobs": "not_a_list"}, None, 0, id="wrong_type"),
+        pytest.param({"jobs": None}, None, 0, id="key_is_none"),
+    ],
+)
+def test_workflow_jobs_parse_response_defensive(json_data, text, expected_count):
+    parent = WorkflowRuns(**{**_REPO_ARGS, "start_date": "2022-01-01T00:00:00Z"})
+    stream = WorkflowJobs(parent, **{**_REPO_ARGS, "start_date": "2022-01-01T00:00:00Z"})
+    resp = _make_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_state={}, stream_slice=_STREAM_SLICE))
+    assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_count",
+    [
+        pytest.param([{"event": "labeled"}, {"event": "closed"}], None, 1, id="valid_events_list"),
+        pytest.param([], None, 1, id="valid_empty_events"),
+        pytest.param(None, "<html>Bad Gateway</html>", 1, id="html_body_yields_base_record"),
+        pytest.param(None, "", 1, id="empty_body_yields_base_record"),
+        pytest.param({"message": "error"}, None, 1, id="dict_instead_of_list_yields_base_record"),
+        pytest.param("not_a_list", None, 1, id="string_instead_of_list_yields_base_record"),
+    ],
+)
+def test_issue_timeline_events_parse_response_defensive(json_data, text, expected_count):
+    stream = IssueTimelineEvents(**_REPO_ARGS)
+    resp = _make_response(json_data=json_data, text=text)
+    slice_ = {"repository": "org/repo", "number": 1}
+    records = list(stream.parse_response(resp, stream_state={}, stream_slice=slice_))
+    assert len(records) == expected_count
+
+
+# === Tests for defensive error handlers (airbyte-internal-issues/issues/16281) ===
+
+
+@pytest.mark.parametrize(
+    "status_code,text,expected",
+    [
+        pytest.param(409, '{"message": "Git Repository is empty."}', True, id="conflict_empty_repo"),
+        pytest.param(409, '{"message": "other"}', False, id="conflict_other_message"),
+        pytest.param(409, "<html>Error</html>", False, id="conflict_html_body"),
+        pytest.param(409, "", False, id="conflict_empty_body"),
+        pytest.param(200, '{"message": "Git Repository is empty."}', False, id="non_409_status"),
+    ],
+)
+def test_is_conflict_with_empty_repository_defensive(status_code, text, expected):
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    if text:
+        try:
+            parsed = json.loads(text)
+            resp.json = MagicMock(return_value=parsed)
+        except json.JSONDecodeError:
+            resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    else:
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    assert is_conflict_with_empty_repository(resp) == expected
+
+
+def test_graphql_rate_limit_check_with_html_response():
+    """GithubStreamABCErrorHandler should not crash when response is non-JSON
+    during graphql rate limit check."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {"X-RateLimit-Resource": "graphql"}
+    resp.text = "<html>Error</html>"
+    resp.ok = True
+    resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    result = handler.interpret_response(resp)
+    assert result.response_action != ResponseAction.RATE_LIMITED
+
+
+def test_graphql_error_handler_with_html_response():
+    """GitHubGraphQLErrorHandler._safe_json_get_errors should not crash on non-JSON."""
+    stream = MagicMock()
+    stream.name = "test_stream"
+    stream.large_stream = False
+    stream.page_size = 100
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {}
+    resp.text = "<html>Error</html>"
+    resp.ok = True
+    resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    assert handler._safe_json_get_errors(resp) is False
+
+
+def test_graphql_error_handler_with_valid_errors():
+    """GitHubGraphQLErrorHandler._safe_json_get_errors returns True when errors present."""
+    handler = GitHubGraphQLErrorHandler(stream=MagicMock(), logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.json = MagicMock(return_value={"errors": [{"type": "SOME_ERROR"}]})
+    assert handler._safe_json_get_errors(resp) is True
+
+
+def test_graphql_rate_limit_check_with_valid_rate_limited_body():
+    """When response has graphql rate-limit header AND a valid body with RATE_LIMITED error,
+    handler should return RATE_LIMITED action."""
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {"X-RateLimit-Resource": "graphql"}
+    resp.text = '{"errors": [{"type": "RATE_LIMITED"}]}'
+    resp.ok = True
+    resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMITED"}]})
+    result = handler.interpret_response(resp)
+    assert result.response_action == ResponseAction.RATE_LIMITED

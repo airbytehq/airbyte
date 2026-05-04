@@ -28,7 +28,7 @@ asyncio.run(main())
 ```
 
 - `entity` is the resource, such as `issues`, `repositories`, or `pull_requests`.
-- `action` is one of the connector's supported actions, such as `list` or `get`. Some connectors support additional actions like `search` or `download`; check the connector's reference page.
+- `action` is one of the connector's supported actions, such as `list` or `get`. Some connectors support additional actions like `context_store_search`, `api_search`, or `download`; check the connector's reference page.
 - `params` contains action-specific arguments. The exact keys are connector- and entity-specific. GitHub's `issues.list` accepts `per_page`, for example, while other connectors paginate via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
 - Always wrap the call in `try`/`finally` and `await connector.close()` once you're done to release the underlying HTTP client.
 
@@ -130,7 +130,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     """Execute GitHub operations.
 
     `entity` must be a simple name such as `issues`, `repositories`, or `pull_requests`.
-    `action` must be `list`, `get`, or `search`.
+    `action` must be `list`, `get`, or `context_store_search`.
     Pass owner and repo info in the `params` dict, for example:
     `params={"owner": "airbytehq", "repo": "airbyte"}`.
     """

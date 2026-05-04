@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Optional, Union
 
 import requests
@@ -12,6 +13,9 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorR
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 from . import constants
+
+
+logger = logging.getLogger("airbyte")
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
@@ -54,7 +58,14 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
 
 def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
     if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
-        response_data = response_or_exception.json()
+        try:
+            response_data = response_or_exception.json()
+        except ValueError:
+            logger.warning(
+                "is_conflict_with_empty_repository received non-JSON 409 response (first 50 chars: %r).",
+                response_or_exception.text[:50],
+            )
+            return False
         return response_data.get("message") == "Git Repository is empty."
     return False
 
@@ -64,6 +75,10 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
         try:
             message = (response_or_exception.json().get("message") or "").lower()
         except ValueError:
+            logger.warning(
+                "is_gone_with_feature_disabled received non-JSON 410 response (first 50 chars: %r).",
+                response_or_exception.text[:50],
+            )
             return False
         return "are disabled" in message or "is disabled" in message
     return False
@@ -74,6 +89,18 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
         self.stream = stream
         super().__init__(**kwargs)
 
+    def _safe_json_check_graphql_rate_limited(self, response: requests.Response) -> bool:
+        try:
+            body = response.json()
+        except ValueError:
+            self._logger.warning(
+                "GraphQL rate-limit check received non-JSON response (HTTP %s, first 50 chars: %r).",
+                response.status_code,
+                response.text[:50],
+            )
+            return False
+        return self.stream.check_graphql_rate_limited(body or {})
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             retry_flag = (
@@ -81,7 +108,7 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 # https://docs.github.com/en/graphql/overview/resource-limitations
                 (
                     response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                    and self.stream.check_graphql_rate_limited(response_or_exception.json())
+                    and self._safe_json_check_graphql_rate_limited(response_or_exception)
                 )
                 # Rate limit HTTP headers
                 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
@@ -162,6 +189,13 @@ class ContributorActivityErrorHandler(GithubStreamABCErrorHandler):
 
 
 class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
+    def _safe_json_get_errors(self, response: requests.Response) -> bool:
+        try:
+            body = response.json()
+        except ValueError:
+            return False
+        return bool((body or {}).get("errors"))
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
@@ -176,7 +210,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
             )
 
-            if response_or_exception.json().get("errors"):
+            if self._safe_json_get_errors(response_or_exception):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
