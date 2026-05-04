@@ -46,7 +46,7 @@ The request body contains three fields:
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `entity` | `string` | The entity to operate on, such as `users`, `calls`, or `issues`. |
-| `action` | `string` | The action to perform, such as `list`, `get`, or `search`. |
+| `action` | `string` | The action to perform, such as `list`, `get`, or `context_store_search`. |
 | `params` | `object` | Parameters for the action. The required parameters depend on the entity and action. |
 
 ### Example: List issues
@@ -85,8 +85,8 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 
 This example searches for records using filter conditions.
 
-:::note `search` reads from the [Context Store](../../concepts/context-store)
-The `search` action reads from Airbyte's pre-indexed Context Store, not the live third-party API. The store is always on and Airbyte populates it per connector after the connector is created. If you call `search` while the connector's Context Store still shows `Loading` or `Building Preview` on the Connectors page, the call returns an error at runtime. Wait for the status to reach `Preview` or `Ready`, or use `list`/`get` against the live API until it does.
+:::note `context_store_search` reads from the [Context Store](../../concepts/context-store)
+The `context_store_search` action reads from Airbyte's pre-indexed Context Store, not the live third-party API. The store is always on and Airbyte populates it per connector after the connector is created. If you call `context_store_search` while the connector's Context Store still shows `Loading` or `Building Preview` on the Connectors page, the call returns an error at runtime. Wait for the status to reach `Preview` or `Ready`, or use `list`/`get` against the live API until it does.
 :::
 
 ```bash title="Request"
@@ -95,13 +95,15 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
   --header 'Content-Type: application/json' \
   --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
       "query": {"filter": {"eq": {"active": true}}},
       "limit": 100
     }
   }'
 ```
+
+Some connectors also expose an `api_search` action that calls the third-party platform's live search endpoint instead of the Context Store. Check the [connector's reference page](/ai-agents/connectors) to see whether your connector supports it.
 
 ## Download files
 
@@ -198,7 +200,7 @@ Every execute response uses the same top-level envelope. The connector's records
 }
 ```
 
-- `result` is whatever the operation returns: an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
+- `result` is whatever the operation returns: an array for `list` and `context_store_search`, a single object for `get`, or a byte stream for `download`.
 - `connector_metadata` surfaces pagination state. The exact key names depend on the connector; expect `has_next_page` and `end_cursor`.
 - `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`.
 

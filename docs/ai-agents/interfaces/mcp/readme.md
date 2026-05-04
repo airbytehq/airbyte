@@ -1,14 +1,15 @@
 ---
 plan: all
 sidebar_position: 6
+sidebar_label: MCP
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# MCP server
+# Airbyte Agent MCP
 
-The Airbyte Agent MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
+The Airbyte Agent MCP connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
@@ -22,7 +23,7 @@ Before you begin, make sure you have the following:
 
 - **Credentials for the connectors you want to use.** Each service requires its own authentication. For example, you need a Linear API key to connect Linear, or Salesforce OAuth credentials to connect Salesforce.
 
-## Add the MCP server to your agent
+## Add the Airbyte Agent MCP to your agent
 
 Select your client below for setup instructions. Each client requires you to authenticate with your Airbyte account before you can use the MCP server.
 
@@ -346,7 +347,7 @@ The agent uses field selection to return only the data you need, which reduces t
 
 ## How authentication works
 
-The MCP server uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
+The Airbyte Agent MCP uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
 
 ### Layer 1: Authenticating with the MCP server
 

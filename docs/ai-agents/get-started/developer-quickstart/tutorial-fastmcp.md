@@ -64,7 +64,7 @@ my-mcp-agent/
 
     This command installs:
 
-    - `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
+    - `airbyte-agent-sdk`: The Airbyte Agent SDK, which ships every connector as a typed submodule.
     - `fastmcp`: A Python framework for building MCP servers with minimal boilerplate.
     - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 

@@ -5,6 +5,10 @@ sidebar_position: 2
 
 # Automations
 
+:::info Research Preview
+Automations are currently in Research Preview. Features, interfaces, and behavior may change as the product evolves.
+:::
+
 An Automation is an agent task that runs on its own, without a human in the loop. You describe what you want done once, pick how you want to trigger it (manually, on a schedule, or from a webhook), and Airbyte runs the task every time the trigger fires. Automations are the right choice when you need the same work to happen repeatedly, reliably, and without someone sitting at a keyboard.
 
 To open Automations, click **Automations** in the left sidebar.
