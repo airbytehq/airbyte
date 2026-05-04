@@ -14,7 +14,7 @@ Airbyte derives AOs from a combination of two factors:
 
 Simple tasks typically make fewer tool calls and require less reasoning, so they consume fewer AOs. Complex tasks that span multiple connectors, require iterative lookups, or produce long responses consume more.
 
-Airbyte does not expose the exact formula that converts tool calls and reasoning into AOs. Use the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page to monitor your consumption.
+Airbyte does not expose the exact formula that converts tool calls and reasoning into AOs. Use the [Usage chart](../admin/billing.md#monitor-usage) on the Billing page to monitor your consumption.
 
 ## What produces agent operations
 
@@ -29,7 +29,7 @@ Any interaction with an agent consumes AOs. The source of the interaction determ
 | **API** | Direct calls to the Airbyte Agents API. | No | Yes |
 | **SDK** | Calls from an agent built with the Airbyte Agents SDK. | No | Yes |
 
-Sources tracked as sessions appear on the [Sessions](../admin/sessions.md) page, where you can review the full conversation and tool calls. Sources that aren't tracked as sessions still consume AOs and appear in the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page. To inspect individual tool calls from MCP, API, or SDK usage, use the [Review tool calls](../admin/tool-calls.md) page.
+Sources tracked as sessions appear on the [Sessions](../admin/sessions.md) page, where you can review the full conversation and tool calls. Sources that aren't tracked as sessions still consume AOs and appear in the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page. To inspect individual tool calls from MCP, API, or SDK usage, use the [Tool calls](../admin/tool-calls.md) page.
 
 ## How AOs relate to billing
 
