@@ -21,6 +21,7 @@ import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -95,8 +96,19 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken;
+    try {
+      initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final Exception e) {
+      if (MongoUtil.isUnauthorizedCommandException(e)) {
+        final String message = databaseNames.size() == 1
+            ? MongoConstants.UNAUTHORIZED_DATABASE_ERROR_MESSAGE
+            : MongoConstants.UNAUTHORIZED_CLUSTER_ERROR_MESSAGE;
+        LOGGER.error("MongoDB user is not authorized to open a change stream on the configured database(s). Original error: {}", e.getMessage(), e);
+        throw new ConfigErrorException(message, e);
+      }
+      throw e;
+    }
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =

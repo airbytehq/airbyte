@@ -59,6 +59,14 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String UNAUTHORIZED_DATABASE_ERROR_MESSAGE =
+      "Not authorized to read change streams on the configured MongoDB database. " +
+          "Grant the MongoDB user the \"find\" and \"changeStream\" privileges on this database (e.g. the built-in \"read\" role).";
+  public static final String UNAUTHORIZED_CLUSTER_ERROR_MESSAGE =
+      "Not authorized to read change streams on the MongoDB cluster. " +
+          "Grant the MongoDB user the \"readAnyDatabase\" role or equivalent privileges that include \"find\" and \"changeStream\" on every configured database.";
+
   private MongoConstants() {}
 
 }
