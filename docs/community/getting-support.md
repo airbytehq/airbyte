@@ -13,7 +13,7 @@ Airbyte offers support for both Data Replication and Airbyte Agents. If you can'
 **For additional help, create a ticket in Airbyte's [Support Center](https://support.airbyte.com/hc/en-us/requests/new).** Support agents are available 7 AM to 7 PM Eastern time. Response times may vary according to your plan and SLAs.
 
 - For account or billing inquiries, [contact sales](https://airbyte.com/talk-to-sales).
-- Sign up for Airbyte Cloud with your company email address. Airbyte Cloud doesn't support personal accounts.
+- We suggest signing up for Airbyte with your company email address, and not a personal one.
 
 ### Core (open source)
 
