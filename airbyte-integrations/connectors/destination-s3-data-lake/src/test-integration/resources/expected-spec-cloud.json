@@ -221,7 +221,8 @@
         "title" : "Flush Batch Size (MB)",
         "examples" : [ 200 ],
         "default" : 200,
-        "order" : 8
+        "order" : 8,
+        "airbyte_hidden" : true
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

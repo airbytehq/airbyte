@@ -79,7 +79,9 @@ class S3DataLakeSpecification :
             "Must be between 1 and 500 MB. Default is 200 MB."
     )
     @get:JsonProperty("flush_batch_size_mb", required = false)
-    @get:JsonSchemaInject(json = """{"examples":[200], "default": 200, "order": 8}""")
+    @get:JsonSchemaInject(
+        json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
+    )
     val flushBatchSizeMb: Long? = null
 }
 
