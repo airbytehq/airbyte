@@ -98,13 +98,23 @@ definitions:
       type: HttpRequester
       url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
       http_method: GET
+      # DO NOT MERGE: pre-release force-fail injection.
+      # The original SelectiveAuthenticator block is preserved below in a
+      # comment so it is trivial to restore. Every requester now uses the
+      # ForceFailAuthenticator custom component, which raises an
+      # AirbyteTracedException(failure_type=system_error) on every HTTP
+      # request — guaranteeing every sync fails.
+      #
+      # authenticator:
+      #   type: SelectiveAuthenticator
+      #   authenticator_selection_path: ["credentials", "credentials"]
+      #   authenticators:
+      #     oauth2.0: "#/definitions/bearer_authenticator"
+      #     oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
+      #     api_token: "#/definitions/basic_authenticator"
       authenticator:
-        type: SelectiveAuthenticator
-        authenticator_selection_path: ["credentials", "credentials"]
-        authenticators:
-          oauth2.0: "#/definitions/bearer_authenticator"
-          oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
-          api_token: "#/definitions/basic_authenticator"
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.ForceFailAuthenticator
       error_handler:
         type: DefaultErrorHandler
         response_filters:
@@ -428,13 +438,20 @@ definitions:
         type: HttpRequester
         url_base: "{{download_target}}"
         http_method: GET
+        # DO NOT MERGE: pre-release force-fail injection. See the
+        # corresponding comment on the primary retriever's authenticator
+        # for details. Original block preserved here for easy restoration.
+        #
+        # authenticator:
+        #   type: SelectiveAuthenticator
+        #   authenticator_selection_path: ["credentials", "credentials"]
+        #   authenticators:
+        #     oauth2.0: "#/definitions/bearer_authenticator"
+        #     oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
+        #     api_token: "#/definitions/basic_authenticator"
         authenticator:
-          type: SelectiveAuthenticator
-          authenticator_selection_path: ["credentials", "credentials"]
-          authenticators:
-            oauth2.0: "#/definitions/bearer_authenticator"
-            oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
-            api_token: "#/definitions/basic_authenticator"
+          type: CustomAuthenticator
+          class_name: source_declarative_manifest.components.ForceFailAuthenticator
       download_target_extractor:
         type: DpathExtractor
         field_path: ["content_url"]
