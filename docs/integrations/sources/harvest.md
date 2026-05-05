@@ -20,9 +20,9 @@ This page contains the setup guide and reference information for the Harvest sou
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
+5. For **Authentication mechanism**, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
+6. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -34,9 +34,9 @@ This page contains the setup guide and reference information for the Harvest sou
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
+5. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
+6. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 8. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -108,7 +108,7 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.37 | 2026-05-05 | [76900](https://github.com/airbytehq/airbyte/pull/76900) | Reorder spec fields so `credentials` appears before `account_id` and `replication_start_date` |
+| 1.2.37 | 2026-05-05 | [77778](https://github.com/airbytehq/airbyte/pull/77778) | Reorder spec fields so `credentials` appears before `account_id` and `replication_start_date` |
 | 1.2.36 | 2026-05-04 | [76217](https://github.com/airbytehq/airbyte/pull/76217) | Declare OAuth2 flow inline via `advanced_auth` and `oauthConnectorInputSpecification` |
 | 1.2.35 | 2026-04-28 | [75371](https://github.com/airbytehq/airbyte/pull/75371) | Update dependencies |
 | 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
