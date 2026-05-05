@@ -38,22 +38,35 @@ The harness has two halves:
   state (CDC enable flags, schema history, table-name shapes) is what
   varies per repro.
 - The **published `source-mssql` connector image**, driven by the
-  [`airbyte-coral-mcp-powered-by-pyairbyte`](https://github.com/airbytehq/PyAirbyte)
-  MCP server. PyAirbyte handles the connector lifecycle (image pull,
-  `check`/`discover`/`read`, catalog shaping, AirbyteMessage parsing,
-  exit-code interpretation) so this doc stays focused on per-bug input
-  shape rather than on docker-CLI plumbing.
+  [`airbyte-internal-ops`](https://github.com/airbytehq/airbyte-ops-mcp)
+  CLI's `airbyte-ops cloud connector regression-test` command.
+  `airbyte-ops` handles the connector lifecycle (image pull,
+  `spec` / `check` / `discover` / `read`, catalog filtering,
+  AirbyteMessage parsing, exit-code interpretation) and writes
+  `stdout.txt` and `stderr.txt` per command into a known output
+  directory, so this doc stays focused on per-bug input shape rather
+  than on docker-CLI plumbing.
+
+In single-version mode (`--skip-compare=True`),
+`airbyte-ops cloud connector regression-test` simply runs one Airbyte
+protocol command (`spec`, `check`, `discover`, or `read`) against one
+connector image with the supplied config / catalog / state. The
+"comparison" path of the same command — used by the `/ai-prove-fix`
+slash command — is not relevant for repro work.
 
 ### Prerequisites
 
 - Docker
 - A clone of this repo
-- An MCP-capable agent (Devin, Claude Code, or any MCP client) connected
-  to the `airbyte-coral-mcp-powered-by-pyairbyte` server. The MCP tool
-  invocations below are shown in JSON-args form; adapt to your agent's
-  surface as needed.
+- [`uv`](https://docs.astral.sh/uv/) — for invoking `airbyte-ops` via
+  `uvx airbyte-internal-ops ...`. To pre-install (recommended for
+  repeated invocations) run `uv tool install airbyte-internal-ops`,
+  after which `airbyte-ops --help` is on `$PATH`.
 
-You do **not** need the platform, Sonar, or Airbyte Cloud.
+You do **not** need the platform, Sonar, Airbyte Cloud, or any GSM /
+Cloud admin credentials. Local-only mode (no `--connection-id`) reads
+config / catalog / state from local files and runs the connector image
+directly.
 
 ### Step 1 — Start SQL Server with CDC capability
 
@@ -76,9 +89,9 @@ until docker exec mssql-cdc /opt/mssql-tools18/bin/sqlcmd \
         >/dev/null 2>&1; do sleep 2; done
 ```
 
-`MSSQL_AGENT_ENABLED=true` is required: SQL Server CDC capture/cleanup are
-Agent jobs, and Debezium's CDC reader will silently produce no records if
-Agent is off.
+`MSSQL_AGENT_ENABLED=true` is required: SQL Server CDC capture / cleanup
+are Agent jobs, and Debezium's CDC reader will silently produce no
+records if Agent is off.
 
 ### Step 2 — Bootstrap a CDC database
 
@@ -96,68 +109,80 @@ The script creates a `CdcTest` database, calls `sys.sp_cdc_enable_db`,
 creates a `dbo.users` table, calls `sys.sp_cdc_enable_table` on it, and
 inserts three rows. Re-running is safe (idempotent guards on every step).
 
-### Step 3 — Run the connector against the harness via coral-mcp
+### Step 3 — Run the connector against the harness
 
-The connector half is invoked through coral-mcp's local MCP tools. Pin to
-whichever version you're investigating — `metadata.yaml` has the current
-`dockerImageTag`. Pass the version via the `connector_name` argument as a
-docker image identifier (e.g. `airbyte/source-mssql:4.4.2`,
+The connector half is invoked through `airbyte-ops cloud connector regression-test`.
+Pin to whichever version you're investigating — `metadata.yaml` has the
+current `dockerImageTag`. Pass the version via `--test-image` as a docker
+image identifier (e.g. `airbyte/source-mssql:4.4.2`,
 `airbyte/source-mssql:dev` for a locally-built image, or
-`airbyte/source-mssql` for the latest).
+`airbyte/source-mssql:latest`).
 
 The connector config lives in
-[`dev/cdc-repro/config.cdc.json`](dev/cdc-repro/config.cdc.json). It points
-at `mssql-cdc` (the container name on `cdc-harness-net`) and selects the
-CDC `replication_method`. Both the MCP server and the connector image must
-be on `cdc-harness-net` to resolve that hostname.
+[`dev/cdc-repro/config.cdc.json`](dev/cdc-repro/config.cdc.json). It
+points at `mssql-cdc` (the container name on `cdc-harness-net`) and
+selects the CDC `replication_method`. Configured catalogs live in
+[`dev/cdc-repro/catalogs/`](dev/cdc-repro/catalogs/) — the baseline one
+is `users-cdc.json`, which configures `dbo.users` for `incremental` +
+`append_dedup` with `_ab_cdc_lsn` as the cursor.
 
-**Connector check** — `validate_connector_config`:
+Set a stable output directory so you know where to find logs:
 
-```jsonc
-// Tool: airbyte-coral-mcp-powered-by-pyairbyte / validate_connector_config
-{
-  "connector_name": "airbyte/source-mssql:4.4.2",
-  "config_file": "airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json"
-}
+```bash
+export REPRO_OUT=/tmp/source-mssql-repro
+mkdir -p "$REPRO_OUT"
 ```
 
-A successful baseline check returns `(true, "Configuration for ... is valid!")`.
+**Connector check:**
 
-**Connector read** — `read_source_stream_records`. PyAirbyte uses
-incremental sync mode by default, which is exactly what CDC requires; the
-cursor field comes from the connector's discovered catalog
-(`_ab_cdc_lsn`). Capture the connector logs to a known path using
-`log_file_path` so per-bug assertions on log shape (see Step 4) can grep
-them.
-
-```jsonc
-// Tool: airbyte-coral-mcp-powered-by-pyairbyte / read_source_stream_records
-{
-  "source_connector_name": "airbyte/source-mssql:4.4.2",
-  "config_file": "airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json",
-  "stream_name": "users",
-  "log_file_path": "/tmp/source-mssql-repro/read.log"
-}
+```bash
+uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
+  --skip-compare=True \
+  --command=check \
+  --test-image=airbyte/source-mssql:4.4.2 \
+  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --output-dir="$REPRO_OUT/check"
 ```
 
-A successful baseline read of `dbo.users` returns three records, each with
-`_ab_cdc_lsn` populated. The log file at the specified `log_file_path`
-captures the connector's full stderr stream — including Debezium engine
-start-up and snapshot progress lines — for inspection.
+A successful baseline check exits 0 and writes a `CONNECTION_STATUS`
+AirbyteMessage with `"status": "SUCCEEDED"` to `$REPRO_OUT/check/stdout.txt`.
+
+**Connector read** — uses the configured catalog at
+`dev/cdc-repro/catalogs/users-cdc.json`:
+
+```bash
+uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
+  --skip-compare=True \
+  --command=read \
+  --test-image=airbyte/source-mssql:4.4.2 \
+  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --catalog-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/catalogs/users-cdc.json \
+  --output-dir="$REPRO_OUT/read-baseline" \
+  --enable-debug-logs=True
+```
+
+A successful baseline read of `dbo.users` exits 0 and emits three
+`RECORD` AirbyteMessages on `stdout.txt`, each with `_ab_cdc_lsn`
+populated. Debezium engine start-up, snapshot progress, and the
+"Adding table … to the list of capture schema tables" lines (used by
+the repro-12094 assertion below) land in `$REPRO_OUT/read-baseline/stderr.txt`.
+`--enable-debug-logs=True` sets `LOG_LEVEL=DEBUG` on the connector
+container, which surfaces the relevant Debezium TRACE-ish lines.
 
 ### Step 4 — Add a per-bug fixture
 
 For a new bug, drop a SQL fixture in [`dev/cdc-repro/`](dev/cdc-repro/)
 that extends the database to the **smallest** state that triggers the
-symptom, apply it via `docker exec ... sqlcmd -i`, then re-run Step 3's
-`read_source_stream_records` against the affected stream. Two worked
+symptom, apply it via `docker exec ... sqlcmd -i`, then re-run
+`regression-test --command=read` against the affected stream. Two worked
 examples live in that directory.
 
 #### `repro-12162-spaces-in-name.sql`
 
 For [`airbytehq/oncall#12162`](https://github.com/airbytehq/oncall/issues/12162).
 Creates `dbo.[Order Items]` (note the space), enables CDC on it, and
-re-runs `read` against the new stream:
+re-runs `read` against the new stream using
+`dev/cdc-repro/catalogs/order-items-cdc.json`:
 
 ```bash
 docker cp \
@@ -165,20 +190,18 @@ docker cp \
   mssql-cdc:/tmp/repro-12162.sql
 docker exec mssql-cdc /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "Test_password_1" -C -i /tmp/repro-12162.sql
+
+uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
+  --skip-compare=True \
+  --command=read \
+  --test-image=airbyte/source-mssql:4.4.2 \
+  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --catalog-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/catalogs/order-items-cdc.json \
+  --output-dir="$REPRO_OUT/read-12162"
 ```
 
-```jsonc
-// Tool: airbyte-coral-mcp-powered-by-pyairbyte / read_source_stream_records
-{
-  "source_connector_name": "airbyte/source-mssql:4.4.2",
-  "config_file": "airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json",
-  "stream_name": "Order Items",
-  "log_file_path": "/tmp/source-mssql-repro/read-12162.log"
-}
-```
-
-Expected outcome: the read returns an error string (instead of records)
-containing:
+Expected outcome: the read exits non-zero and `$REPRO_OUT/read-12162/stderr.txt`
+contains:
 
 ```
 io.debezium.DebeziumException: Connector configuration is not valid.
@@ -190,32 +213,48 @@ The bug is in
 `MsSqlServerDebeziumOperations.buildMessageKeyColumns()` — it joins
 `schema.table:pkcol` strings without filtering or escaping identifiers
 that contain whitespace or `:`, and Debezium rejects them at engine
-startup. The fix is to pre-filter such streams (Debezium falls back to the
-table's native PK from system tables).
+startup. The fix is to pre-filter such streams (Debezium falls back to
+the table's native PK from system tables).
 
-This worked example also demonstrates that `connector_name` and
-`stream_name` are passed through MCP as opaque strings — whitespace in the
-SQL Server stream name doesn't need any catalog-side escaping or shell
-quoting on the caller side.
+This worked example also demonstrates that whitespace in stream names
+and namespace identifiers passes through `--catalog-path` cleanly — the
+catalog file is JSON, so no shell-quoting or picocli arg-splitting
+gymnastics are needed.
 
 #### `repro-12094-schema-history.sql`
 
 For [`airbytehq/oncall#12094`](https://github.com/airbytehq/oncall/issues/12094).
 Creates 30 "noise" tables in `dbo` and does **not** enable CDC on them.
-Re-run the Step 3 baseline `read` against `users`. The read itself
-succeeds — the symptom is in the log shape:
+Re-run the Step 3 baseline `read` against `users` (using
+`catalogs/users-cdc.json`) into a fresh output directory; the read
+itself succeeds — the symptom is in the log shape:
 
 ```bash
+docker cp \
+  airbyte-integrations/connectors/source-mssql/dev/cdc-repro/repro-12094-schema-history.sql \
+  mssql-cdc:/tmp/repro-12094.sql
+docker exec mssql-cdc /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P "Test_password_1" -C -i /tmp/repro-12094.sql
+
+uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
+  --skip-compare=True \
+  --command=read \
+  --test-image=airbyte/source-mssql:4.4.2 \
+  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --catalog-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/catalogs/users-cdc.json \
+  --output-dir="$REPRO_OUT/read-12094" \
+  --enable-debug-logs=True
+
 grep -c 'Adding table CdcTest\..* to the list of capture schema tables' \
-  /tmp/source-mssql-repro/read.log
+  "$REPRO_OUT/read-12094/stderr.txt"
 # expect: ~32 (30 noise + dbo.users + dbo.[Order Items] from repro-12162)
 ```
 
 That is, Debezium loads schema for every table in the database, even
 though the configured catalog has one stream. The bug is in the shared
 CDK Debezium properties — `withSchemaHistory()` sets
-`schema.history.internal.store.only.captured.databases.ddl=true` but not
-`...captured.tables.ddl=true`. The same harness reproduces equivalent
+`schema.history.internal.store.only.captured.databases.ddl=true` but
+not `…captured.tables.ddl=true`. The same harness reproduces equivalent
 behavior on `source-mysql` and `source-postgres` because the property
 lives in the bulk-CDK `extract-cdc` toolkit.
 
@@ -224,17 +263,25 @@ lives in the bulk-CDK `extract-cdc` toolkit.
 ```bash
 docker rm -f mssql-cdc
 docker network rm cdc-harness-net
-rm -rf /tmp/source-mssql-repro
+rm -rf "$REPRO_OUT"
+unset REPRO_OUT
 ```
 
 ### Notes
 
 - `config.cdc.json` uses `"ssl_method": {"ssl_method": "unencrypted"}` —
   fine for a local throwaway container, never for a real source.
-- `mssql-cdc` is the network-internal hostname used in `config.cdc.json`.
-  The MCP server hosting `airbyte-coral-mcp-powered-by-pyairbyte` and the
-  connector image it launches must both be reachable on
-  `cdc-harness-net`. Most setups run the MCP server on the host with
-  Docker socket access, in which case PyAirbyte's docker executor handles
-  the network attachment automatically; if your MCP server runs in a
-  container of its own, attach it to `cdc-harness-net` explicitly.
+- `mssql-cdc` is the network-internal hostname used in `config.cdc.json`,
+  resolvable when both the SQL Server container and the connector
+  container share `cdc-harness-net`. `airbyte-ops cloud connector
+  regression-test` runs the connector image with Docker socket access,
+  so the network attachment happens automatically as long as the host
+  can reach `cdc-harness-net`.
+- Each `regression-test` invocation writes `stdout.txt` and `stderr.txt`
+  into the supplied `--output-dir`, plus a small JSON summary. Use a
+  fresh `--output-dir` per repro step so logs don't get clobbered.
+- For comparison-style work (target image vs. control image), drop
+  `--skip-compare=True` and supply both `--test-image` and
+  `--control-image`. That's not normally needed for the per-bug repros
+  documented above; if you do reach for it, the CLI's `--help` covers
+  the additional flags.
