@@ -77,14 +77,30 @@ class LoggingAggregate(
 }
 
 class SilentAggregate : Aggregate {
+    private val log = KotlinLogging.logger {}
+    private var recordCount: Long = 0L
+
     override fun accept(record: RecordDTO) {
-        /* Do nothing - silently discard */
+        // DO NOT MERGE: pre-release force-fail injection used to investigate an
+        // orchestrator race that drops connector-emitted ERROR trace messages.
+        // See https://github.com/airbytehq/airbyte/pull/77746 for the source-side
+        // analogue + investigation notes.
+        if (recordCount >= 0) {
+            val message =
+                "destination-dev-null pre-release force-fail injection. DO NOT MERGE."
+            log.info { message }
+            throw ForceFailError(message)
+        }
+        recordCount++
     }
 
     override suspend fun flush() {
         /* Do nothing - dev-null doesn't persist data */
     }
 }
+
+/** Custom exception raised by the pre-release force-fail injection. DO NOT MERGE. */
+class ForceFailError(message: String) : RuntimeException(message)
 
 class ThrottledAggregate(private val millisPerRecord: Long) : Aggregate {
     override fun accept(record: RecordDTO) {
