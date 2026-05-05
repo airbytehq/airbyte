@@ -2,28 +2,35 @@
 
 This page contains the setup guide and reference information for the Apple Ads source connector.
 
+## Prerequisites
+
+- An Apple Ads account with an administrator who can invite users with API permissions.
+- Your Apple Ads organization id (`orgId`), shown in the Apple Ads UI. Each Airbyte source syncs data for a single `orgId`.
+- An OAuth client id and client secret generated for an API user (see Step 1 below).
+
 ## Setup guide
 
-### Step 1: Set up Apple Ads
+### Step 1: Create an API user and OAuth credentials in Apple Ads
 
-1. With an administrator account, [create an API user role](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) from the Apple Ads UI.
-2. Then [implement OAuth for your API user](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api) in order to the required Client Secret and Client Id.
+The connector authenticates to the Apple Ads Campaign Management API using OAuth 2 client credentials. An account administrator creates an API user, generates a key pair, and produces a client id and client secret. Apple's full guide is at [Implementing OAuth for the Apple Ads API](https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api). The high-level steps are:
+
+1. From Apple Ads, sign in as an account administrator and go to **Account Settings** → **User Management**.
+2. Click **Invite Users** and assign the user an **API user role**.
+3. Generate a private and public key pair, upload the public key for the API user, and create a client secret.
+4. Note the resulting **Client ID** and **Client Secret**. You'll enter them into Airbyte in Step 2.
 
 ### Step 2: Set up the source connector in Airbyte
 
-#### For Airbyte Open Source
-
-1. Log in to your Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Apple Ads** from the **Source type** dropdown.
-4. Enter a name for your source.
-5. For **Org Id**, enter the Id of your organization (found in the Apple Ads UI).
-6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
-7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
-   earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. For **Time Zone**, select either UTC (Coordinated Universal Time) or ORTZ (Organization Time Zone). The default is UTC.
-9. For **Lookback Window**, enter the number of days (1-30) to re-fetch data during incremental syncs. The default is 30 days, which matches Apple Search Ads' attribution window. You can decrease this value to sync smaller amounts of data on each incremental sync, but this may result in missing late data attributions.
-10. For **Exponential Backoff Factor**, enter a value between 1 and 20 to control the delay between retry attempts when rate limits are encountered. The default is 5. Increase this value when syncing large amounts of data to reduce the chance of synchronization failures.
+1. In Airbyte, click **Sources** and then click **+ New source**.
+2. Select **Apple Ads** from the **Source type** dropdown and enter a name for the source.
+3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
+4. Enter the **Client ID** and **Client Secret** from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads).
+5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple's reporting API limits how far back daily data is available; requests for dates outside the supported window return no data.
+6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
+7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
+8. For **Exponential Backoff Factor**, enter a value between 1 and 20. This controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`500`) errors. The default is 5; increase it for very large accounts that frequently hit rate limits.
+9. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
+10. (Optional) For **Token Refresh Endpoint**, override the default Apple OAuth token endpoint. Use this only if you proxy outbound requests; most users should leave it at the default.
 11. Click **Set up source**.
 
 ## Supported sync modes
@@ -35,35 +42,35 @@ The Apple Ads source connector supports the following [sync modes](https://docs.
 - [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-The Apple Ads source connector supports the following streams. For more information, see the [Apple Ads API](https://developer.apple.com/documentation/apple_search_ads).
+The Apple Ads source connector exposes the following streams. For full schema and field details, see the [Apple Ads API reference](https://developer.apple.com/documentation/apple_ads).
 
-### Base streams
+### Object streams
 
-- [campaigns](https://developer.apple.com/documentation/apple_ads/get-all-campaigns)
-- [adgroups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups)
-- [keywords](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group)
-- [ads](https://developer.apple.com/documentation/apple_ads/get-all-ads)
+- [`campaigns`](https://developer.apple.com/documentation/apple_ads/get-all-campaigns) — all campaigns in the organization.
+- [`adgroups`](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups) — ad groups across all campaigns.
+- [`keywords`](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group) — targeting keywords across all ad groups.
+- [`ads`](https://developer.apple.com/documentation/apple_ads/get-all-ads) — ads across all ad groups.
 
-### Report Streams
+### Daily report streams
+
+The connector requests daily reports from Apple's Reports API, grouped by `countryOrRegion`. Apple [supports](https://developer.apple.com/documentation/apple_ads/reportingrequest) hourly, daily, weekly, and monthly granularity, but this connector only requests daily.
+
+- [`campaigns_report_daily`](https://developer.apple.com/documentation/apple_ads/get-campaign-level-reports) — campaign-level daily metrics.
+- [`adgroups_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports) — ad-group-level daily metrics.
+- [`keywords_report_daily`](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports) — keyword-level daily metrics.
+- [`ads_report_daily`](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports) — ad-level daily metrics.
 
 :::note
-The usual primary keys for reports are `date` and `campaignId`.
-However, there are cases where active fields must be selected as primary keys to ensure data deduplication is correct.
-One example is `countryOrRegion`.
+Report streams use `date` as the cursor field and default to `(date, campaignId)` as the primary key. Because each row is also broken out by `countryOrRegion`, the connector exposes a separate `countryorregion` field. If your account targets multiple countries or regions, add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
 :::
 
-- [campaigns_report_daily](https://developer.apple.com/documentation/apple_ads/get-campaign-level-reports)
-- [adgroups_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports)
-- [keywords_report_daily](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports)
-- [ads_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports)
+## Performance considerations
 
-### Report aggregation
-
-The Apple Ads currently offers [aggregation](https://developer.apple.com/documentation/apple_search_ads/reportingrequest) at hourly, daily, weekly, or monthly level.
-
-However, at this moment and as indicated in the stream names, the connector only offers data with daily aggregation.
+- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` and `500` responses; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
+- For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
+- Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
 
 ## Changelog
 
