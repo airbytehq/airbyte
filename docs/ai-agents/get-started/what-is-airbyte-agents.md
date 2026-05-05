@@ -56,7 +56,7 @@ The platform handles the hard parts:
 
 The [Context Store](../concepts/context-store) indexes and normalizes data from every connected source into one searchable layer.
 
-Instead of making live API calls at query time, agents search pre-indexed context. This means faster answers, lower costs, and reliable cross-system reasoning. A single query can span Salesforce, Zendesk, and Stripe without the agent touching any of those APIs directly.
+Instead of making live API calls at query time, agents search pre-indexed context. This means faster answers, lower costs, and consistent results. Each search targets one connector at a time, but agents combine results from multiple connectors in a single conversation, so you can ask questions that span Salesforce, Zendesk, and Stripe without managing any of those APIs yourself.
 
 ### Act
 
@@ -71,9 +71,9 @@ The interface is the same across every connector and every access path. Whether 
 
 - Ask an agent to find all enterprise customers with open support tickets this week.
 - Update a Jira ticket or send a Slack message based on data from your CRM.
-- Search across Salesforce, Zendesk, and Stripe in a single query.
+- Ask questions that span Salesforce, Zendesk, and Stripe in a single conversation.
 - Build a scheduled automation that summarizes daily pipeline activity.
-- Connect Claude, Cursor, or ChatGPT to your business data with a one-line MCP config.
+- Connect ChatGPT, Claude, or Cursor to your business data with a one-line MCP config.
 
 ## Who Airbyte Agents is for
 
@@ -86,7 +86,7 @@ The interface is the same across every connector and every access path. Whether 
 Airbyte Agents supports four interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
 
 - [**Web app**](../interfaces/ui): Chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
-- [**MCP server**](../interfaces/mcp): Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data. Nothing to install.
+- [**MCP server**](../interfaces/mcp): Connect MCP-capable agents like ChatGPT, Claude, and Cursor to your data. Nothing to install.
 - [**Python SDK**](../interfaces/sdk): Build agents with typed connectors, automatic credential handling, and framework integrations.
 - [**HTTP API**](../interfaces/api): Manage connectors, tokens, and execution from any language or backend.
 
@@ -94,10 +94,10 @@ For help choosing, see [Choose how to use Airbyte Agents](choose-how-to-use).
 
 ## Pricing
 
-Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [agent operations (AOs)](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
+Airbyte Agents offers a free plan with no credit card required. Paid plans scale based on [Agent Operations (AOs)](../concepts/agent-operations), a unit of work derived from tool calls and token usage. For details, see [Billing and pricing](../admin/billing).
 
 ## Next steps
 
 - [Choose how to use Airbyte Agents](choose-how-to-use): Find the right interface for your use case.
 - [Developer Quickstart](developer-quickstart): Explore tutorials and coding-agent skills to start building in minutes.
-- [Core concepts](../concepts): Dive deeper into platform architecture, the Context Store, and agent operations.
+- [Core concepts](../concepts): Dive deeper into platform architecture, the Context Store, and Agent Operations.

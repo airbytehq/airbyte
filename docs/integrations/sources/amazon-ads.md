@@ -160,6 +160,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8.0.2 | 2026-05-01 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Handle HTTP 403 "not authorized to use Amazon Attribution" errors on attribution report performance streams by ignoring unauthorized profiles instead of failing the sync |
 | 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |
 | 8.0.0 | 2026-04-22 | [75490](https://github.com/airbytehq/airbyte/pull/75490) | Use `date` field from API response as cursor and primary key for daily report streams instead of synthetic `reportDate`. Fixes ~96% data loss from incorrect deduplication. |
 | 7.3.19 | 2026-04-21 | [76501](https://github.com/airbytehq/airbyte/pull/76501) | Update dependencies |

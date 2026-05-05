@@ -55,17 +55,17 @@ This connector supports the following entities and actions. For more details, se
 | Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search) |
 | Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Context Store Search](./REFERENCE.md#brands-context-store-search) |
 | Views | [List](./REFERENCE.md#views-list), [Get](./REFERENCE.md#views-get) |
-| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list) |
-| Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get) |
-| Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get) |
+| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list), [Context Store Search](./REFERENCE.md#macros-context-store-search) |
+| Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get), [Context Store Search](./REFERENCE.md#triggers-context-store-search) |
+| Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get), [Context Store Search](./REFERENCE.md#automations-context-store-search) |
 | Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
 | Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search) |
-| Group Memberships | [List](./REFERENCE.md#group-memberships-list) |
-| Organization Memberships | [List](./REFERENCE.md#organization-memberships-list) |
-| Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get) |
+| Group Memberships | [List](./REFERENCE.md#group-memberships-list), [Context Store Search](./REFERENCE.md#group-memberships-context-store-search) |
+| Organization Memberships | [List](./REFERENCE.md#organization-memberships-list), [Context Store Search](./REFERENCE.md#organization-memberships-context-store-search) |
+| Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get), [Context Store Search](./REFERENCE.md#sla-policies-context-store-search) |
 | Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search) |
-| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get) |
-| Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
+| Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get), [Context Store Search](./REFERENCE.md#articles-context-store-search) |
+| Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download), [Context Store Search](./REFERENCE.md#article-attachments-context-store-search) |
 
 
 ## Zendesk-Support API docs
