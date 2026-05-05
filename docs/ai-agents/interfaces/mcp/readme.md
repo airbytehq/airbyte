@@ -97,7 +97,7 @@ On Business, Enterprise, and Education plans, you must be a workspace owner or a
     - **Connector name**: `Airbyte Agents`
     - **Connector URL**: `https://mcp.airbyte.ai/mcp`
 
-7. Click **Create**. ChatGPT connects to the MCP server and detects its tools. The connector appears under **Settings** > **Apps & Connectors**.
+7. Click **Create**. ChatGPT connects to the Airbyte Agent MCP and detects its tools. The connector appears under **Settings** > **Apps & Connectors**.
 
 8. If you're not logged into Airbyte, log in now and grant access.
 
@@ -106,7 +106,7 @@ On Business, Enterprise, and Education plans, you must be a workspace owner or a
 </TabItem>
 <TabItem value="codex" label="Codex">
 
-Add the MCP server to your Codex command line tool.
+Add the Airbyte Agent MCP to your Codex command line tool.
 
 1. Run the following command in your terminal to add the server:
 
@@ -122,7 +122,7 @@ Add the MCP server to your Codex command line tool.
 
 5. Launch Codex with `codex`.
 
-6. Begin using the MCP server.
+6. Begin using the Airbyte Agent MCP.
 
 </TabItem>
 <TabItem value="cursor" label="Cursor">
