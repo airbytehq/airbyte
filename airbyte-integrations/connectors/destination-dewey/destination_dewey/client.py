@@ -32,6 +32,7 @@ def normalize_tag(tag: str) -> str:
     """
     return tag.lower().strip()
 
+
 # Dewey caps batch deletes at 1000 ids and document listing at 500 per page.
 MAX_DELETE_IDS_PER_BATCH = 1000
 MAX_LIST_PAGE_SIZE = 500

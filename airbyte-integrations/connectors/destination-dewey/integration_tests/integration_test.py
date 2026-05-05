@@ -20,6 +20,10 @@ import unittest
 import uuid
 from typing import Any, Dict, List
 
+from destination_dewey.client import PK_TAG_PREFIX, STREAM_TAG_PREFIX, DeweyClient
+from destination_dewey.config import DeweyConfig
+from destination_dewey.destination import DestinationDewey
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -32,10 +36,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
-from destination_dewey.client import PK_TAG_PREFIX, STREAM_TAG_PREFIX, DeweyClient
-from destination_dewey.config import DeweyConfig
-from destination_dewey.destination import DestinationDewey
 
 
 DEFAULT_BASE_URL = os.environ.get("DEWEY_BASE_URL", "https://api.meetdewey.com/v1")
@@ -90,9 +90,7 @@ def _resolve_collection_id(client: DeweyClient) -> str:
         return explicit
     collections = client._request("GET", "/collections")
     if not isinstance(collections, list) or not collections:
-        raise unittest.SkipTest(
-            "No Dewey collections available — set DEWEY_TEST_COLLECTION_ID or create one in your project."
-        )
+        raise unittest.SkipTest("No Dewey collections available — set DEWEY_TEST_COLLECTION_ID or create one in your project.")
     return collections[0]["id"]
 
 
@@ -118,9 +116,7 @@ class DeweySmokeTest(unittest.TestCase):
             "parallelize": False,
             "flush_interval": 50,
         }
-        logging.getLogger("airbyte").info(
-            "Smoke run: collection=%s stream=%s", cls.collection_id, cls.stream_name
-        )
+        logging.getLogger("airbyte").info("Smoke run: collection=%s stream=%s", cls.collection_id, cls.stream_name)
 
     @classmethod
     def tearDownClass(cls):
@@ -197,11 +193,7 @@ class DeweySmokeTest(unittest.TestCase):
     # ---- helpers --------------------------------------------------------------
 
     def _our_docs(self) -> List[Dict[str, Any]]:
-        return [
-            d
-            for d in self.client.list_documents(self.collection_id)
-            if self.stream_tag in (d.get("tags") or [])
-        ]
+        return [d for d in self.client.list_documents(self.collection_id) if self.stream_tag in (d.get("tags") or [])]
 
 
 if __name__ == "__main__":

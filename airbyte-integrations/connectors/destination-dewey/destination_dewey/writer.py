@@ -57,9 +57,7 @@ class DeweyWriter:
         self.parallelize = parallelize
         self.auto_create_collections = auto_create_collections
 
-        self.streams: Dict[str, ConfiguredAirbyteStream] = {
-            _stream_identifier_from_stream(s): s for s in catalog.streams
-        }
+        self.streams: Dict[str, ConfiguredAirbyteStream] = {_stream_identifier_from_stream(s): s for s in catalog.streams}
         self._stream_collections: Dict[str, str] = dict(stream_collections)
 
         self._buffer: List[Dict[str, Any]] = []

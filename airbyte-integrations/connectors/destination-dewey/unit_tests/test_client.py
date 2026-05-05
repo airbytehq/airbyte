@@ -6,7 +6,6 @@ import json
 
 import pytest
 import responses
-
 from destination_dewey.client import DeweyApiError, DeweyClient
 from destination_dewey.config import DeweyConfig
 

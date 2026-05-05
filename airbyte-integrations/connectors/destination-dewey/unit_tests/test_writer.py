@@ -13,6 +13,14 @@ from typing import Any, Dict, List, Mapping, Optional
 from unittest.mock import MagicMock
 
 import pytest
+from destination_dewey.client import (
+    METADATA_NAMESPACE_FIELD,
+    METADATA_PK_FIELD,
+    METADATA_STREAM_FIELD,
+    PK_TAG_PREFIX,
+    STREAM_TAG_PREFIX,
+)
+from destination_dewey.writer import DeweyWriter
 
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
@@ -22,14 +30,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     SyncMode,
 )
-from destination_dewey.client import (
-    METADATA_NAMESPACE_FIELD,
-    METADATA_PK_FIELD,
-    METADATA_STREAM_FIELD,
-    PK_TAG_PREFIX,
-    STREAM_TAG_PREFIX,
-)
-from destination_dewey.writer import DeweyWriter
 
 
 STREAM_NAME = "articles"

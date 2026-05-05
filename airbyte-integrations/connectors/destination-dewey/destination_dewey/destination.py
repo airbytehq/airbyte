@@ -15,7 +15,6 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-
 from destination_dewey.client import DeweyClient
 from destination_dewey.config import DeweyConfig
 from destination_dewey.writer import DeweyWriter

@@ -75,8 +75,7 @@ class DeweyConfig(BaseModel):
         default=[],
         title="Metadata Fields",
         description=(
-            "Dot-path fields to lift into Dewey's per-document `metadata` (filterable at query time). "
-            "Non-existing fields are ignored."
+            "Dot-path fields to lift into Dewey's per-document `metadata` (filterable at query time). " "Non-existing fields are ignored."
         ),
         always_show=True,
         examples=["author", "tags", "published_at"],
@@ -113,4 +112,3 @@ class DeweyConfig(BaseModel):
                 {"id": "performance", "title": "Performance"},
             ],
         }
-
