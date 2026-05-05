@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -548,6 +550,43 @@ class MongoDbCdcInitializerTest {
         () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
             EMITTED_AT,
             MULTIPLE_DB_CONFIG));
+  }
+
+  @Test
+  void testCreateCdcIteratorsTranslatesUnauthorizedChangeStreamIntoConfigError() {
+    setupSingleDatabase();
+    final BsonDocument unauthorizedResponse = BsonDocument.parse(
+        "{ \"ok\": 0.0, \"errmsg\": \"not authorized on test-database to execute command { aggregate: 1 }\","
+            + " \"code\": 13, \"codeName\": \"Unauthorized\" }");
+    final MongoCommandException unauthorizedException =
+        new MongoCommandException(unauthorizedResponse, new ServerAddress("localhost", 27017));
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, SINGLE_DB_CONFIG));
+    assertEquals(MongoDbCdcInitializer.CDC_CHANGE_STREAM_NOT_AUTHORIZED_MESSAGE, thrown.getMessage());
+    // The user-facing message must not leak BSON, cluster identifiers, or the database name.
+    assertTrue(!thrown.getMessage().contains("aggregate"), "User-facing message should not contain BSON pipeline");
+    assertTrue(!thrown.getMessage().contains("test-database"), "User-facing message should not contain database name");
+  }
+
+  @Test
+  void testCreateCdcIteratorsPropagatesNonUnauthorizedMongoCommandException() {
+    setupSingleDatabase();
+    final BsonDocument otherErrorResponse = BsonDocument.parse(
+        "{ \"ok\": 0.0, \"errmsg\": \"some other server error\", \"code\": 26, \"codeName\": \"NamespaceNotFound\" }");
+    final MongoCommandException otherException =
+        new MongoCommandException(otherErrorResponse, new ServerAddress("localhost", 27017));
+    when(changeStreamIterable.cursor()).thenThrow(otherException);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    assertThrows(MongoCommandException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS,
+            stateManager, EMITTED_AT, SINGLE_DB_CONFIG));
   }
 
   @Test
