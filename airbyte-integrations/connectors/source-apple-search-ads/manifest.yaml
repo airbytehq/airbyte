@@ -19,6 +19,11 @@ check:
   stream_names:
     - campaigns
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 20
+
 definitions:
   streams:
     campaigns:

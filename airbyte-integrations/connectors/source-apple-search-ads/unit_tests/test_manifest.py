@@ -98,3 +98,15 @@ def test_ads_report_daily_request_body_slice_keys(manifest):
     assert "stream_slice.end_time" in body["endTime"], (
         f"endTime should use stream_slice.end_time, got: {body['endTime']}"
     )
+
+
+def test_concurrency_level_configured(manifest):
+    """Concurrency must be configured to enable parallel partition processing,
+    which prevents heartbeat timeouts on deeply-nested substreams like ads."""
+    concurrency = manifest.get("concurrency_level")
+    assert concurrency is not None, "manifest must define concurrency_level"
+    assert concurrency["type"] == "ConcurrencyLevel"
+    default = concurrency["default_concurrency"]
+    assert isinstance(default, int) and default > 1, (
+        f"default_concurrency must be > 1, got: {default}"
+    )
