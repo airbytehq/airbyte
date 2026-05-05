@@ -3853,8 +3853,8 @@ schemas:
           - "null"
           - number
       start_date:
-        description: The start date and time of the usage record period.
-        format: date-time
+        description: The start date of the usage record period.
+        format: date
         type:
           - "null"
           - string

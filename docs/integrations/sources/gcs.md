@@ -79,6 +79,12 @@ The Google Cloud Storage (GCS) source connector uses `signed url` to work with f
 This is important to know that File urls are used in the connection state. 
 So if you change authorization type, and you use Incremental sync the next sync will not use old state and reread provided files in Full Refresh mode(like initial sync), next syncs will be Incremental as expected.
 
+#### Sanitize File URLs
+
+When using Service Account authentication, signed URLs contain credential-bearing query parameters such as `X-Goog-Credential` and `X-Goog-Signature`. By default, these are included in the `_ab_source_file_url` field of synced records.
+
+To remove these sensitive parameters from the `_ab_source_file_url` field, enable the **Sanitize File URLs** option in the advanced settings. When enabled, the connector strips query parameters from signed URLs, so only the base URL is stored in records. This option has no effect when using OAuth authentication, since OAuth does not use signed URLs.
+
 ## Path Patterns
 
 \(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
@@ -236,6 +242,7 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.14 | 2026-04-27 | [77033](https://github.com/airbytehq/airbyte/pull/77033) | Add `sanitize_signed_urls` option to strip Service Account credentials from `_ab_source_file_url` signed URL query parameters |
 | 0.10.13 | 2026-04-28 | [77257](https://github.com/airbytehq/airbyte/pull/77257) | Update dependencies |
 | 0.10.12 | 2026-04-21 | [76591](https://github.com/airbytehq/airbyte/pull/76591) | Update dependencies |
 | 0.10.11 | 2026-03-31 | [75690](https://github.com/airbytehq/airbyte/pull/75690) | Update dependencies |

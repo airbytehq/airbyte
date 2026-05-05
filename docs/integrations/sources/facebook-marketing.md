@@ -172,6 +172,12 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 6. (Optional) Multiselect the **Ad Statuses** to include data from Ads for particular statuses.
 </FieldAnchor>
 
+   :::caution Status filtering and missing records
+   When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
+
+   To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
+   :::
+
 <FieldAnchor field="fetch_thumbnail_images">
 7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 </FieldAnchor>
@@ -405,6 +411,20 @@ This response indicates that the Facebook Graph API is refusing a synchronous re
 If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema is identical to `ad_creatives`.
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
+
+### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
+
+If you notice that some campaigns, ad sets, or ads are missing from your synced data, the most common cause is the status filtering configuration.
+
+The Facebook Marketing API excludes records in `ARCHIVED` and `DELETED` states by default. When the **Campaign Statuses**, **AdSet Statuses**, or **Ad Statuses** fields are left empty in the connector configuration, the connector does not override this default, and archived or deleted records are silently omitted.
+
+This is particularly noticeable after a Full Refresh sync: records that were previously synced when they were active will not reappear if they have since been archived. You can verify this by looking up the missing record IDs directly in the Facebook API. Individual record lookups by ID return data regardless of status, but the listing endpoints the connector uses do not.
+
+To resolve this:
+
+1. Go to **Settings > Source > Facebook Marketing**.
+2. For each of **Campaign Statuses**, **AdSet Statuses**, and **Ad Statuses**, select all statuses you want to include. At minimum, add `ARCHIVED` alongside the active statuses.
+3. Trigger a Full Refresh sync to re-fetch the complete dataset.
 
 ### Missing data for 7-day and 28-day view-through attribution windows
 

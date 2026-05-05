@@ -19,6 +19,11 @@ check:
   stream_names:
     - campaigns
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 20
+
 definitions:
   streams:
     campaigns:
@@ -634,11 +639,6 @@ definitions:
             max_retries: 10
             response_filters:
               - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 500
@@ -713,7 +713,7 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date
-              value: "{{ stream_slice.start_date }}"
+              value: "{{ stream_slice.start_time }}"
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -840,6 +840,19 @@ spec:
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
         order: 8
+      num_workers:
+        type: integer
+        description: >-
+          The number of concurrent workers for syncing data. Increase this
+          value to speed up syncs for accounts with many campaigns and ad
+          groups, at the cost of higher API usage. Valid values are 1 to 20.
+        order: 9
+        title: Number of Workers
+        default: 2
+        minimum: 1
+        maximum: 20
+        examples:
+          - 5
     additionalProperties: true
 
 metadata:
