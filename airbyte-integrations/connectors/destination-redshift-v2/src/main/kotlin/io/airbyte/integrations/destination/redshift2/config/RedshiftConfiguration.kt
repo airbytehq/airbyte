@@ -39,7 +39,7 @@ class RedshiftConfigurationFactory :
             jdbcUrlParams = pojo.jdbcUrlParams,
             uploadingMethod = pojo.uploadingMethod,
             tunnelMethod = pojo.getTunnelMethodValue(),
-            dropCascade = pojo.dropCascade,
+            dropCascade = pojo.dropCascade ?: false,
         )
     }
 }
