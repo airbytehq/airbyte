@@ -30,13 +30,30 @@ and
 [`airbytehq/oncall#12094`](https://github.com/airbytehq/oncall/issues/12094).
 Worked examples for both bugs live in [`dev/cdc-repro/`](dev/cdc-repro/).
 
+The harness has two halves:
+
+- A **SQL Server container** with CDC enabled, run by hand using `docker`
+  + `sqlcmd`. This is the source-side environment that the connector
+  connects *to* — it is intentionally hand-rolled because the bug-relevant
+  state (CDC enable flags, schema history, table-name shapes) is what
+  varies per repro.
+- The **published `source-mssql` connector image**, driven by the
+  [`airbyte-coral-mcp-powered-by-pyairbyte`](https://github.com/airbytehq/PyAirbyte)
+  MCP server. PyAirbyte handles the connector lifecycle (image pull,
+  `check`/`discover`/`read`, catalog shaping, AirbyteMessage parsing,
+  exit-code interpretation) so this doc stays focused on per-bug input
+  shape rather than on docker-CLI plumbing.
+
 ### Prerequisites
 
 - Docker
 - A clone of this repo
+- An MCP-capable agent (Devin, Claude Code, or any MCP client) connected
+  to the `airbyte-coral-mcp-powered-by-pyairbyte` server. The MCP tool
+  invocations below are shown in JSON-args form; adapt to your agent's
+  surface as needed.
 
-You do **not** need the platform, Sonar, or Airbyte Cloud. The harness runs
-the published connector image directly against a local SQL Server container.
+You do **not** need the platform, Sonar, or Airbyte Cloud.
 
 ### Step 1 — Start SQL Server with CDC capability
 
@@ -79,80 +96,62 @@ The script creates a `CdcTest` database, calls `sys.sp_cdc_enable_db`,
 creates a `dbo.users` table, calls `sys.sp_cdc_enable_table` on it, and
 inserts three rows. Re-running is safe (idempotent guards on every step).
 
-### Step 3 — Run the connector against the harness
+### Step 3 — Run the connector against the harness via coral-mcp
 
-```bash
-mkdir -p /tmp/source-mssql-repro/{secrets,catalogs,output}
+The connector half is invoked through coral-mcp's local MCP tools. Pin to
+whichever version you're investigating — `metadata.yaml` has the current
+`dockerImageTag`. Pass the version via the `connector_name` argument as a
+docker image identifier (e.g. `airbyte/source-mssql:4.4.2`,
+`airbyte/source-mssql:dev` for a locally-built image, or
+`airbyte/source-mssql` for the latest).
 
-cp airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
-   /tmp/source-mssql-repro/secrets/config.json
+The connector config lives in
+[`dev/cdc-repro/config.cdc.json`](dev/cdc-repro/config.cdc.json). It points
+at `mssql-cdc` (the container name on `cdc-harness-net`) and selects the
+CDC `replication_method`. Both the MCP server and the connector image must
+be on `cdc-harness-net` to resolve that hostname.
 
-# Pin to whichever version you're investigating. metadata.yaml has the
-# current dockerImageTag.
-IMAGE=airbyte/source-mssql:4.4.2
+**Connector check** — `validate_connector_config`:
 
-# 1. spec / check
-docker run --rm --network cdc-harness-net \
-  -v /tmp/source-mssql-repro/secrets:/secrets \
-  $IMAGE check --config /secrets/config.json
-
-# 2. discover -> configured catalog. Build from the discovered catalog so
-#    json_schema types match exactly (the bulk-CDK catalog validator is
-#    strict about INTEGER vs NUMBER, etc.).
-STREAM='users'
-CATALOG_FILE='users.json'   # NEVER use a filename containing whitespace
-                            # — see Step 4 / repro-12162 for why.
-docker run --rm --network cdc-harness-net \
-  -v /tmp/source-mssql-repro/secrets:/secrets \
-  $IMAGE discover --config /secrets/config.json 2>/dev/null \
-  | grep -E '^\{"type":"CATALOG"' \
-  | STREAM="$STREAM" python3 -c "
-import sys, json, os
-catalog = json.loads(sys.stdin.read())['catalog']
-configured = {'streams': []}
-for s in catalog['streams']:
-    if s['name'] != os.environ['STREAM']:
-        continue
-    configured['streams'].append({
-        'stream': s,
-        'sync_mode': 'incremental',
-        'destination_sync_mode': 'append_dedup',
-        'primary_key': s.get('source_defined_primary_key', []),
-        'cursor_field': ['_ab_cdc_lsn'],
-    })
-print(json.dumps(configured, indent=2))
-" > "/tmp/source-mssql-repro/catalogs/$CATALOG_FILE"
-
-# 3. read in CDC mode
-docker run --rm --network cdc-harness-net \
-  -v /tmp/source-mssql-repro/secrets:/secrets \
-  -v /tmp/source-mssql-repro/catalogs:/catalogs \
-  $IMAGE read \
-    --config /secrets/config.json \
-    --catalog "/catalogs/$CATALOG_FILE" \
-  > /tmp/source-mssql-repro/output/read.jsonl 2>&1
-
-echo "exit=$?"
-echo "RECORD: $(grep -c '^{\"type\":\"RECORD\"' /tmp/source-mssql-repro/output/read.jsonl)"
-echo "ERROR : $(grep -c '\"type\":\"TRACE\".*\"type\":\"ERROR\"' /tmp/source-mssql-repro/output/read.jsonl)"
-
-# Quoting matters: `STREAM` is the SQL stream name (which CAN contain
-# whitespace, see repro-12162) and is passed to python3 via env-var so
-# the python source is never reparsed by the shell. `CATALOG_FILE` is
-# the on-disk filename, which MUST be whitespace-free so picocli inside
-# the connector container parses `--catalog /catalogs/<file>` as a
-# single argument.
+```jsonc
+// Tool: airbyte-coral-mcp-powered-by-pyairbyte / validate_connector_config
+{
+  "connector_name": "airbyte/source-mssql:4.4.2",
+  "config_file": "airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json"
+}
 ```
 
-A successful baseline sync of `dbo.users` emits three `RECORD` messages,
-each with `_ab_cdc_lsn` populated, and exits 0.
+A successful baseline check returns `(true, "Configuration for ... is valid!")`.
+
+**Connector read** — `read_source_stream_records`. PyAirbyte uses
+incremental sync mode by default, which is exactly what CDC requires; the
+cursor field comes from the connector's discovered catalog
+(`_ab_cdc_lsn`). Capture the connector logs to a known path using
+`log_file_path` so per-bug assertions on log shape (see Step 4) can grep
+them.
+
+```jsonc
+// Tool: airbyte-coral-mcp-powered-by-pyairbyte / read_source_stream_records
+{
+  "source_connector_name": "airbyte/source-mssql:4.4.2",
+  "config_file": "airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json",
+  "stream_name": "users",
+  "log_file_path": "/tmp/source-mssql-repro/read.log"
+}
+```
+
+A successful baseline read of `dbo.users` returns three records, each with
+`_ab_cdc_lsn` populated. The log file at the specified `log_file_path`
+captures the connector's full stderr stream — including Debezium engine
+start-up and snapshot progress lines — for inspection.
 
 ### Step 4 — Add a per-bug fixture
 
-For a new bug, drop a SQL fixture in [`dev/cdc-repro/`](dev/cdc-repro/) that
-extends the database to the **smallest** state that triggers the symptom,
-and re-run step 3 against the affected stream. Two worked examples live in
-that directory:
+For a new bug, drop a SQL fixture in [`dev/cdc-repro/`](dev/cdc-repro/)
+that extends the database to the **smallest** state that triggers the
+symptom, apply it via `docker exec ... sqlcmd -i`, then re-run Step 3's
+`read_source_stream_records` against the affected stream. Two worked
+examples live in that directory.
 
 #### `repro-12162-spaces-in-name.sql`
 
@@ -166,16 +165,20 @@ docker cp \
   mssql-cdc:/tmp/repro-12162.sql
 docker exec mssql-cdc /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "Test_password_1" -C -i /tmp/repro-12162.sql
-
-# IMPORTANT: STREAM has a space, so CATALOG_FILE MUST NOT mirror it.
-STREAM='Order Items'
-CATALOG_FILE='order-items.json'
-
-# Re-run the discover + python catalog-shaping block from Step 3 with
-# these two variables, then `read` with --catalog "/catalogs/$CATALOG_FILE".
 ```
 
-Expected outcome: exit 1, zero `RECORD`s, and the `read` log contains:
+```jsonc
+// Tool: airbyte-coral-mcp-powered-by-pyairbyte / read_source_stream_records
+{
+  "source_connector_name": "airbyte/source-mssql:4.4.2",
+  "config_file": "airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json",
+  "stream_name": "Order Items",
+  "log_file_path": "/tmp/source-mssql-repro/read-12162.log"
+}
+```
+
+Expected outcome: the read returns an error string (instead of records)
+containing:
 
 ```
 io.debezium.DebeziumException: Connector configuration is not valid.
@@ -187,36 +190,32 @@ The bug is in
 `MsSqlServerDebeziumOperations.buildMessageKeyColumns()` — it joins
 `schema.table:pkcol` strings without filtering or escaping identifiers
 that contain whitespace or `:`, and Debezium rejects them at engine
-startup. Confirms the connector should pre-filter such streams (Debezium
-falls back to the table's native PK from system tables).
+startup. The fix is to pre-filter such streams (Debezium falls back to the
+table's native PK from system tables).
+
+This worked example also demonstrates that `connector_name` and
+`stream_name` are passed through MCP as opaque strings — whitespace in the
+SQL Server stream name doesn't need any catalog-side escaping or shell
+quoting on the caller side.
 
 #### `repro-12094-schema-history.sql`
 
 For [`airbytehq/oncall#12094`](https://github.com/airbytehq/oncall/issues/12094).
 Creates 30 "noise" tables in `dbo` and does **not** enable CDC on them.
-Re-run `read` with the same `STREAM='users'` catalog.
-
-Expected outcome: exit 0, three `RECORD`s. But the `read` log contains:
-
-```
-Snapshot step 2 - Determining captured tables
-Adding table CdcTest.dbo.users to the list of capture schema tables
-Adding table CdcTest.dbo.noise_1 to the list of capture schema tables
-... (29 more) ...
-```
-
-That is, Debezium loads schema for every table in the database, even
-though the configured catalog has one stream. To verify deterministically:
+Re-run the Step 3 baseline `read` against `users`. The read itself
+succeeds — the symptom is in the log shape:
 
 ```bash
 grep -c 'Adding table CdcTest\..* to the list of capture schema tables' \
-  /tmp/source-mssql-repro/output/read.jsonl
-# expect: ~32 (30 noise + dbo.users + any other CDC-enabled tables)
+  /tmp/source-mssql-repro/read.log
+# expect: ~32 (30 noise + dbo.users + dbo.[Order Items] from repro-12162)
 ```
 
-The bug is in the shared CDK Debezium properties — `withSchemaHistory()`
-sets `schema.history.internal.store.only.captured.databases.ddl=true` but
-not `...captured.tables.ddl=true`. The same harness reproduces equivalent
+That is, Debezium loads schema for every table in the database, even
+though the configured catalog has one stream. The bug is in the shared
+CDK Debezium properties — `withSchemaHistory()` sets
+`schema.history.internal.store.only.captured.databases.ddl=true` but not
+`...captured.tables.ddl=true`. The same harness reproduces equivalent
 behavior on `source-mysql` and `source-postgres` because the property
 lives in the bulk-CDK `extract-cdc` toolkit.
 
@@ -233,12 +232,9 @@ rm -rf /tmp/source-mssql-repro
 - `config.cdc.json` uses `"ssl_method": {"ssl_method": "unencrypted"}` —
   fine for a local throwaway container, never for a real source.
 - `mssql-cdc` is the network-internal hostname used in `config.cdc.json`.
-  It only resolves from sibling containers on `cdc-harness-net`. Host-side
-  tools (a local `sqlcmd`, your IDE) connect to `localhost:1433`.
-- A previous `read` will have left state in Debezium's `FileOffsetBackingStore`
-  inside the connector container; because we use `--rm`, that state is
-  discarded between runs and every `read` is a fresh "first sync". To
-  exercise checkpoint/resume behavior, mount a host-side directory at
-  `/tmp/airbyte-debezium-state` so the offset file persists.
-- For schema-change scenarios, run DDL directly via `sqlcmd` between two
-  `read` invocations and inspect the second `read`'s output.
+  The MCP server hosting `airbyte-coral-mcp-powered-by-pyairbyte` and the
+  connector image it launches must both be reachable on
+  `cdc-harness-net`. Most setups run the MCP server on the host with
+  Docker socket access, in which case PyAirbyte's docker executor handles
+  the network attachment automatically; if your MCP server runs in a
+  container of its own, attach it to `cdc-harness-net` explicitly.
