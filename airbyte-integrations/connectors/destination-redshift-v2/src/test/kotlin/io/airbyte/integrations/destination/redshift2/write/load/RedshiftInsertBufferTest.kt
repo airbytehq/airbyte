@@ -258,8 +258,8 @@ internal class RedshiftInsertBufferTest {
     }
 
     @Test
-    fun `default region used when s3BucketRegion is null`() = runTest {
-        val noRegionConfig = s3Config.copy(s3BucketRegion = null)
+    fun `default region used when s3BucketRegion is empty`() = runTest {
+        val noRegionConfig = s3Config.copy(s3BucketRegion = "")
         val noRegionConfiguration = configuration.copy(uploadingMethod = noRegionConfig)
         val noRegionBuffer =
             RedshiftInsertBuffer(tableName, columns, redshiftClient, noRegionConfiguration)
@@ -273,7 +273,7 @@ internal class RedshiftInsertBufferTest {
                 s3Path = any(),
                 accessKeyId = any(),
                 secretAccessKey = any(),
-                region = eq("us-east-1"),
+                region = eq(""),
             )
         }
     }

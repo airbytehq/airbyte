@@ -29,7 +29,9 @@ import org.junit.jupiter.api.assertThrows
 class RedshiftCheckerTest {
 
     private val mapper =
-        ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        ObjectMapper()
+            .findAndRegisterModules()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     private val config = mapper.readTree(Files.readString(Path.of("secrets/config_staging.json")))
 

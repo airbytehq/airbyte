@@ -122,7 +122,7 @@ class RedshiftInsertBuffer(
                 s3Path = s3Path,
                 accessKeyId = s3Config.accessKeyId,
                 secretAccessKey = s3Config.secretAccessKey,
-                region = s3Config.s3BucketRegion!!,
+                region = s3Config.s3BucketRegion,
             )
 
             logger.info {

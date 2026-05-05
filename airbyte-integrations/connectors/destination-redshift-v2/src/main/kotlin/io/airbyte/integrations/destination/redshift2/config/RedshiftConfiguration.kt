@@ -36,7 +36,7 @@ class RedshiftConfigurationFactory :
             username = pojo.username,
             password = pojo.password,
             jdbcUrlParams = pojo.jdbcUrlParams,
-            uploadingMethod = pojo.uploadingMethod,
+            uploadingMethod = pojo.uploadingMethod as? S3StagingConfiguration,
             tunnelMethod = pojo.getTunnelMethodValue(),
         )
     }

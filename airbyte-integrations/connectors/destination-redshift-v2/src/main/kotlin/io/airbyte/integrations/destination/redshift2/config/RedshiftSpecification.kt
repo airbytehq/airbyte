@@ -91,20 +91,22 @@ open class RedshiftSpecification : ConfigurationSpecification() {
         """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
     )
     @get:JsonProperty("jdbc_url_params")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 1}""")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("Uploading Method")
     @get:JsonPropertyDescription("The way data will be uploaded to Redshift.")
     @get:JsonProperty("uploading_method")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "display_type": "radio"}""")
-    val uploadingMethod: S3StagingConfiguration? = null
+    val uploadingMethod: UploadingMethod? = null
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
-    @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
+    @JsonIgnore
+    var tunnelMethodJson: SshTunnelMethodConfiguration? = null
+        private set
 
     @JsonSetter("tunnel_method")
     fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
@@ -116,7 +118,7 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use."
     )
-    @JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
+    @JsonSchemaInject(json = """{"group": "connection", "order": 10}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 }
