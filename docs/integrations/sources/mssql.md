@@ -62,30 +62,28 @@ using an SSH Tunnel.
 
 ## Authentication with Microsoft Entra ID
 
-In addition to standard SQL Server username/password authentication, this connector supports [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/) (formerly Azure Active Directory) authentication using a **service principal**.
-
-When the Entra ID fields (`Entra ID Client ID` and `Entra ID Client Secret`) are configured, the connector uses Entra ID service principal authentication instead of the username and password.
+This connector supports [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/) (formerly Azure Active Directory) authentication using a service principal, as an alternative to SQL Server username and password authentication. This is the recommended authentication mode for Azure SQL Database and Azure SQL Managed Instance.
 
 ### Prerequisites
 
-1. An Azure SQL Database, Azure SQL Managed Instance, or SQL Server configured for Microsoft Entra ID authentication. See the [Microsoft documentation on configuring Microsoft Entra authentication](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure) for setup instructions.
-2. A [registered application (service principal)](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in Microsoft Entra ID with a client secret.
-3. The service principal must be granted access to the database. See [Create Microsoft Entra users using service principals](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal-tutorial) for details.
+1. An Azure SQL Database, Azure SQL Managed Instance, or SQL Server instance that is configured for Microsoft Entra authentication. For setup instructions, see [Configure and manage Microsoft Entra authentication with Azure SQL](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure).
+2. A Microsoft Entra ID [app registration (service principal)](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) with a client secret.
+3. A database user created for the service principal, with `SELECT` access to the tables you want to replicate. For instructions, see [Create Microsoft Entra users using service principals](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal-tutorial).
+4. If you plan to use CDC, the service principal user also needs the CDC-related permissions described in [Setting up CDC for MSSQL](#setting-up-cdc-for-mssql).
 
 ### Configuration
 
-In the Airbyte connector configuration, fill in the following fields under the **Microsoft Entra ID** section:
+In the source configuration form, fill in the following fields under **Microsoft Entra ID**:
 
-| Field | Description | Required |
-| :--- | :--- | :--- |
-| **Entra ID Client ID** | The application (client) ID of the service principal. | Yes |
-| **Entra ID Client Secret** | The client secret generated for the service principal. | Yes |
-| **Entra ID Tenant ID** | The Azure AD tenant ID. Optional — if omitted, the driver infers the tenant from the service principal. | No |
+| Field | Description |
+| :--- | :--- |
+| **Entra ID Client ID** | The application (client) ID of the service principal. |
+| **Entra ID Client Secret** | The client secret generated for the service principal. |
 
-When these fields are provided, the connector authenticates using `ActiveDirectoryServicePrincipal` mode via the Microsoft JDBC driver. The `Username` and `Password` fields are ignored in this case.
+When both fields are provided, the connector authenticates with `ActiveDirectoryServicePrincipal` mode through the Microsoft JDBC driver, and the **Username** and **Password** fields are ignored. If either Entra ID field is empty, the connector falls back to username and password authentication.
 
 :::note
-Entra ID authentication requires an encrypted connection. Make sure the **Encryption** setting is set to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`.
+Entra ID authentication requires an encrypted connection. Set **Encryption** to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`. The connector fails the configuration check if encryption is disabled while Entra ID fields are set.
 :::
 
 ## Change Data Capture \(CDC\)
@@ -471,8 +469,9 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.1       | 2026-04-21 | [76857](https://github.com/airbytehq/airbyte/pull/76857)                                                          | Fix `Invalid column name` error on system-versioned temporal tables by projecting explicit columns in the sampling subquery instead of `SELECT *`. |
-| 4.4.0       | 2026-04-08 | [76143](https://github.com/airbytehq/airbyte/pull/76143)                                                          | Add Microsoft Entra ID service principal authentication for both JDBC and CDC paths.                                                           |
+| 4.4.2       | 2026-04-27 | [77036](https://github.com/airbytehq/airbyte/pull/77036)                                                          | Fix `TABLESAMPLE` failure on views and tables without an ordered column in cursor-incremental syncs.                               |
+| 4.4.1       | 2026-04-23 | [76857](https://github.com/airbytehq/airbyte/pull/76857)                                                          | Fix `Invalid column name` error when sampling system-versioned temporal tables that have `HIDDEN` period columns.                               |
+| 4.4.0       | 2026-04-23 | [76143](https://github.com/airbytehq/airbyte/pull/76143)                                                          | Add Microsoft Entra ID service principal authentication for both JDBC and CDC paths.                                                           |
 | 4.3.6       | 2026-04-02 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                   |
 | 4.3.5       | 2026-02-23 | [73606](https://github.com/airbytehq/airbyte/pull/73606)                                                          | Fix CDC cursor overflow.                                                                                                                        |
 | 4.3.4       | 2026-02-17 | [72935](https://github.com/airbytehq/airbyte/pull/72935)                                                          | Update LSN validation to correctly detect when saved offset has been truncated.                                                                 |

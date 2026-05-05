@@ -1,4 +1,4 @@
-version: 6.44.0
+version: 6.45.1
 
 type: DeclarativeSource
 
@@ -1011,6 +1011,16 @@ definitions:
           type: DpathExtractor
           field_path:
             - rows
+        # Drop rows where Google returned an empty/null searchAppearance value.
+        # These umbrella rows represent traffic without a specific rich-result classification
+        # (e.g., plain organic blue links). If they are kept, SubstreamPartitionRouter emits
+        # a partition with an empty/null `search_appearance` value, which in turn renders a
+        # malformed `dimensionFilterGroups` expression that the Google Search Console API
+        # silently ignores. The API then returns aggregated metrics across ALL appearance
+        # types, producing duplicate "umbrella" rows in the keyword streams.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('keys', [None])[0] not in (None, '') }}"
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['site_urls'] }}"
@@ -1039,7 +1049,15 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        # `site_url` is sourced from the parent slice (the parent
+        # `search_appearances_stream` is already partitioned by `site_url`).
+        # Sourcing it from `parent_slice` — rather than from an additional outer
+        # `ListPartitionRouter` on the child — avoids a cartesian-product
+        # explosion across `site_urls` for multi-site configs, which previously
+        # caused each (site_url, searchAppearance) pair to be fetched N times
+        # where N is the number of configured sites. See `type:` below for the
+        # same pattern already applied to `search_type`.
+        path: "/sites/{{  sanitize_url(stream_partition.get('parent_slice', {}).get('site_url')) }}/searchAnalytics/query"
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
         request_headers:
@@ -1051,7 +1069,11 @@ definitions:
           type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
           aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
-          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
+          # The Google Search Console API spec requires `filters` to be an array of filter
+          # objects. The single-dict form was silently tolerated by the API, but the array
+          # form is the documented / spec-compliant shape. See:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': [{'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}]}] }}"
         error_handler:
           $ref: "#/definitions/search_analytics_error_handler"
       paginator:
@@ -1075,9 +1097,13 @@ definitions:
           field_path:
             - rows
       partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
+        # `site_url` comes from the parent slice — do NOT add an outer
+        # `ListPartitionRouter` for `site_urls` here. The parent
+        # `search_appearances_stream` is already partitioned by `site_url`, so
+        # its slices carry the per-site context. Combining an outer per-site
+        # `ListPartitionRouter` with the parent substream router produces a
+        # cartesian product across all configured sites, which emits duplicate
+        # requests and records for multi-site configs.
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -1113,15 +1139,19 @@ definitions:
       - query
       - page
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
@@ -1167,15 +1197,19 @@ definitions:
       - device
       - query
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
@@ -1217,15 +1251,19 @@ definitions:
       - device
       - query
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
@@ -1909,6 +1947,11 @@ schemas:
         type:
           - "null"
           - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
+        type:
+          - "null"
+          - string
       date:
         description: The date of the search data collected.
         type:
@@ -1975,6 +2018,11 @@ schemas:
         type:
           - "null"
           - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
+        type:
+          - "null"
+          - string
       date:
         description: The date when the search data was recorded.
         type:
@@ -2033,6 +2081,11 @@ schemas:
         description: >-
           The type of search (e.g., web search, image search) that generated the
           analytics data.
+        type:
+          - "null"
+          - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
         type:
           - "null"
           - string

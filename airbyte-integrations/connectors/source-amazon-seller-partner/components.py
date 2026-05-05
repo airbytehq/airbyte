@@ -11,7 +11,7 @@ import time
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
-from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import dateparser
@@ -25,6 +25,8 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -554,6 +556,270 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
             return original_value
 
         return transform_function
+
+
+@dataclass
+class ReportCreationRequester(HttpRequester):
+    """
+    Custom HttpRequester for Amazon SP-API report creation that checks for existing reports
+    before creating new ones. This avoids hitting Amazon's strict per-report-type rate limits
+    (undocumented ~30-minute cooldown) by reusing reports that are already in progress or completed.
+
+    Flow:
+    1. Before creating a new report via POST, call GET /reports to check for existing reports
+       of the same reportType, matching date range, and marketplaceIds.
+    2. If matching reports are found, select the most recently created one (by createdTime).
+       DONE reports older than `max_done_report_age_hours` (from config, default 0) are skipped
+       since their data snapshot may be stale and the report document may have expired. When the
+       config value is 0 (default), DONE reports are never reused. Status filtering (e.g.
+       CANCELLED, FATAL) is NOT done here — the manifest's status_mapping is the single source
+       of truth for which statuses are retryable, skippable, or terminal.
+    3. If no suitable report is found, fall through to super().send_request() to create a new one.
+    """
+
+    request_body_json: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if self.request_options_provider is None:
+            self._request_options_provider = InterpolatedRequestOptionsProvider(
+                config=self.config, parameters=parameters, request_body_json=self.request_body_json
+            )
+        elif isinstance(self.request_options_provider, dict):
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
+        else:
+            self._request_options_provider = self.request_options_provider
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Any] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        # Extract reportType and date range from the request body JSON that would be sent to createReport
+        body_json = self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json)
+        report_type = body_json.get("reportType", "") if body_json else ""
+        requested_start = body_json.get("dataStartTime", "") if body_json else ""
+        requested_end = body_json.get("dataEndTime", "") if body_json else ""
+        requested_marketplace_ids = body_json.get("marketplaceIds", []) if body_json else []
+
+        if report_type:
+            existing_report = self._find_existing_report(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                report_type=report_type,
+                requested_start=requested_start,
+                requested_end=requested_end,
+                requested_marketplace_ids=requested_marketplace_ids,
+            )
+            if existing_report is not None:
+                return existing_report
+
+        # No existing report found — create a new one via the normal POST flow
+        return super().send_request(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
+        )
+
+    def _fetch_reports(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Any],
+        report_type: str,
+        marketplace_ids: List[str],
+    ) -> Tuple[List[Dict[str, Any]], Optional[requests.Response]]:
+        """
+        Query GET /reports to retrieve the list of existing reports for the given reportType
+        and marketplaceIds. Results are sorted by createdTime descending (newest first) by the API.
+        Uses pageSize=100 (max) to get the most complete first page.
+        Returns a tuple of (reports_list, original_response). Returns ([], None) on any error.
+        """
+        try:
+            url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
+            get_url = self._join_url(url_base, "reports/2021-06-30/reports")
+            headers = self._request_headers(stream_state, stream_slice, None, {"content-type": "application/json"})
+            params: Dict[str, Any] = {
+                "reportTypes": report_type,
+                "pageSize": 100,
+            }
+            if marketplace_ids:
+                params["marketplaceIds"] = ",".join(marketplace_ids)
+            _, get_response = self._http_client.send_request(
+                http_method="GET",
+                url=get_url,
+                request_kwargs={"stream": False},
+                headers=headers,
+                params=params,
+            )
+        except Exception:
+            logger.warning(
+                f"Failed to query existing reports for {report_type}. Will create a new report.",
+                exc_info=True,
+            )
+            return [], None
+
+        if not get_response or not get_response.ok:
+            return [], None
+
+        try:
+            data = get_response.json()
+        except (json.JSONDecodeError, ValueError):
+            return [], None
+
+        return data.get("reports", []), get_response
+
+    def _find_existing_report(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Any],
+        report_type: str,
+        requested_start: str,
+        requested_end: str,
+        requested_marketplace_ids: List[str],
+    ) -> Optional[requests.Response]:
+        """
+        Find an existing report matching the given reportType, date range, and marketplaceIds.
+        Returns a synthetic Response wrapping the first matching report if found, or None.
+
+        The API returns reports sorted by createdTime descending (newest first), and we
+        filter by reportType and marketplaceIds in the query params, so the first match
+        in the iteration is the most recently created matching report.
+
+        CANCELLED reports are skipped so that a new report is always created for them.
+        This acts as a retry mechanism: if the data is now available, the new report will
+        succeed; if still no data, the new report will also be CANCELLED and the CDK's
+        SKIPPED status mapping will handle it silently.
+        """
+        reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type, requested_marketplace_ids)
+        if not reports:
+            return None
+
+        for report in reports:
+            if not self._date_ranges_match(requested_start, requested_end, report):
+                continue
+
+            if not self._is_report_fresh(report, report_type):
+                continue
+
+            report_status = report.get("processingStatus", "")
+            if report_status == "CANCELLED":
+                logger.info(
+                    f"Skipping CANCELLED report {report.get('reportId', '')} for {report_type}. "
+                    f"A new report will be created to retry in case data is now available."
+                )
+                continue
+
+            # First matching report is the most recently created (API sorts by createdTime desc)
+            report_id = report.get("reportId", "")
+            report_start = report.get("dataStartTime", "")
+            report_end = report.get("dataEndTime", "")
+            logger.info(
+                f"Found existing report {report_id} (status={report_status}) "
+                f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
+            )
+            return self._build_synthetic_response(report, get_response)
+
+        return None
+
+    def _is_report_fresh(
+        self,
+        report: Dict[str, Any],
+        report_type: str,
+    ) -> bool:
+        """
+        Check whether a DONE report is fresh enough to reuse.
+
+        Reads max_done_report_age_hours from config (default 0).
+        When max_done_report_age_hours is 0 (default), DONE reports are never reused —
+        only IN_QUEUE / IN_PROGRESS reports pass through.
+        When max_done_report_age_hours > 0, DONE reports older than that threshold are skipped.
+        Non-DONE reports (IN_QUEUE, IN_PROGRESS, etc.) are always considered fresh.
+        """
+        report_status = report.get("processingStatus", "")
+        if report_status != "DONE":
+            return True
+
+        max_done_report_age_hours = self.config.get("max_done_report_age_hours", 0)
+        report_id = report.get("reportId", "")
+        if max_done_report_age_hours == 0:
+            logger.info(
+                f"Skipping DONE report {report_id} for {report_type} because max_done_report_age_hours is 0 (always create new reports)."
+            )
+            return False
+
+        created_time_str = report.get("createdTime", "")
+        if created_time_str:
+            try:
+                created_time = ab_datetime_parse(created_time_str)
+                age_hours = (ab_datetime_now() - created_time).total_seconds() / 3600
+                if age_hours > max_done_report_age_hours:
+                    logger.info(
+                        f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
+                        f"for {report_type}. Will look for a newer one."
+                    )
+                    return False
+            except (ValueError, TypeError):
+                pass  # If we can't parse createdTime, don't skip — still usable
+
+        return True
+
+    @staticmethod
+    def _date_ranges_match(
+        requested_start: str,
+        requested_end: str,
+        report: Dict[str, Any],
+    ) -> bool:
+        """
+        Compare requested date range with a report's date range.
+        Extracts dataStartTime/dataEndTime from the report.
+        Both sides use ISO 8601 format from the Amazon SP-API.
+        We compare full datetime values (including hours, minutes, seconds)
+        to ensure exact match of the requested time range.
+        """
+        report_start = report.get("dataStartTime", "")
+        report_end = report.get("dataEndTime", "")
+        if not report_start or not report_end:
+            return False
+        try:
+            req_start_dt = ab_datetime_parse(requested_start) if requested_start else None
+            req_end_dt = ab_datetime_parse(requested_end) if requested_end else None
+            rep_start_dt = ab_datetime_parse(report_start)
+            rep_end_dt = ab_datetime_parse(report_end)
+
+            if req_start_dt is None or req_end_dt is None:
+                return False
+
+            return req_start_dt == rep_start_dt and req_end_dt == rep_end_dt
+        except (ValueError, TypeError):
+            return False
+
+    @staticmethod
+    def _build_synthetic_response(report: Dict[str, Any], original_response: requests.Response) -> requests.Response:
+        """
+        Build a synthetic requests.Response that looks like a createReport response,
+        containing the reportId from the existing report. The polling_requester uses
+        creation_response['reportId'] to poll the report status.
+        """
+        synthetic = requests.Response()
+        synthetic.status_code = 200
+        synthetic.headers.update(original_response.headers)
+        # The createReport response normally returns {"reportId": "..."}.
+        # We return the same structure so the polling_requester can use creation_response['reportId'].
+        synthetic._content = json.dumps({"reportId": report["reportId"]}).encode("utf-8")
+        return synthetic
 
 
 @dataclass

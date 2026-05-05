@@ -84,6 +84,7 @@ The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.11 | 2026-04-28 | [77490](https://github.com/airbytehq/airbyte/pull/77490) | Update dependencies |
 | 1.3.10 | 2026-04-21 | [76846](https://github.com/airbytehq/airbyte/pull/76846) | Bump SDM base image to stable 7.17.2 |
 | 1.3.9 | 2026-03-31 | [75942](https://github.com/airbytehq/airbyte/pull/75942) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 1.3.8 | 2026-03-31 | [75858](https://github.com/airbytehq/airbyte/pull/75858) | Update dependencies |
