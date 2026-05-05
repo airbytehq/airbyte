@@ -55,12 +55,14 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 ## Supported Streams
 
 - [Attachments](https://developers.asana.com/reference/attachments)
+- [Attachments Compact](https://developers.asana.com/reference/attachments)
 - [Custom fields](https://developers.asana.com/reference/custom-fields)
 - [Events](https://developers.asana.com/reference/events)
 - [Organization Exports](https://developers.asana.com/reference/organization-exports)
 - [Portfolio Items](https://developers.asana.com/reference/getitemsforportfolio)
 - [Portfolio Memberships](https://developers.asana.com/reference/portfolio-memberships)
 - [Portfolios](https://developers.asana.com/reference/portfolios)
+- [Portfolios Compact](https://developers.asana.com/reference/portfolios)
 - [Projects](https://developers.asana.com/reference/projects)
 - [Sections](https://developers.asana.com/reference/sections)
 - [Sections Compact](https://developers.asana.com/reference/sections)
@@ -111,6 +113,8 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.6.0-rc.1 | 2026-04-23 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
+| 1.5.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.5.2 | 2026-04-06 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
 | 1.5.1 | 2025-12-09 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
 | 1.5.0 | 2025-05-02 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
