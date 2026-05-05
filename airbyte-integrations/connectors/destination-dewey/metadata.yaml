@@ -1,0 +1,45 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.meetdewey.com
+      - "*.meetdewey.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: vectorstore
+  connectorType: destination
+  definitionId: 8a8b1f3e-9c0e-4d2a-9f7c-7c4d8e5d2bbe
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-dewey
+  githubIssueLabel: destination-dewey
+  icon: dewey.svg
+  license: ELv2
+  name: Dewey
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-destination-dewey
+  releaseDate: 2026-05-04
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/dewey
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DEWEY_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Dewey API documentation
+      url: https://meetdewey.com/docs
+      type: api_reference
+metadataSpecVersion: "1.0"
