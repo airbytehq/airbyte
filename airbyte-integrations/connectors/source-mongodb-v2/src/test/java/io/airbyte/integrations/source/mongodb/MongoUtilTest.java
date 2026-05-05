@@ -444,6 +444,26 @@ public class MongoUtilTest {
             .isEqualTo(100_003);
   }
 
+  @Test
+  void testIsMongoUnauthorizedException() {
+    final BsonDocument unauthorizedResponse = new BsonDocument()
+        .append("code", new org.bson.BsonInt32(MONGO_UNAUTHORIZED_ERROR_CODE))
+        .append("codeName", new org.bson.BsonString("Unauthorized"))
+        .append("errmsg", new org.bson.BsonString("not authorized on test to execute command"));
+    final MongoCommandException unauthorizedException = new MongoCommandException(unauthorizedResponse, new ServerAddress());
+    assertTrue(MongoUtil.isMongoUnauthorizedException(unauthorizedException));
+    assertTrue(MongoUtil.isMongoUnauthorizedException(new RuntimeException("wrapper", unauthorizedException)));
+
+    final BsonDocument otherResponse = new BsonDocument()
+        .append("code", new org.bson.BsonInt32(BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+        .append("codeName", new org.bson.BsonString("BSONObjectTooLarge"));
+    final MongoCommandException otherException = new MongoCommandException(otherResponse, new ServerAddress());
+    assertFalse(MongoUtil.isMongoUnauthorizedException(otherException));
+
+    assertFalse(MongoUtil.isMongoUnauthorizedException(new RuntimeException("not authorized on grid-ai")));
+    assertFalse(MongoUtil.isMongoUnauthorizedException(null));
+  }
+
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
                                                 final boolean isCatalogSchemaEnforcing,
                                                 final boolean isStateSchemaEnforced) {
