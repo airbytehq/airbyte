@@ -7,12 +7,29 @@ import pytest
 import requests
 import responses
 from source_iterable.source import SourceIterable
-from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
+from source_iterable.streams import Campaigns, CampaignsMetrics, IterableStream, Templates
 from source_iterable.utils import dateutil_parse
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+
+
+@pytest.mark.parametrize(
+    "region, expected_url_base",
+    [
+        pytest.param("US", "https://api.iterable.com/api/", id="us_region"),
+        pytest.param("EU", "https://api.eu.iterable.com/api/", id="eu_region"),
+    ],
+)
+def test_url_base_by_region(region, expected_url_base):
+    stream = Campaigns(authenticator=None, region=region)
+    assert stream.url_base == expected_url_base
+
+
+def test_url_base_defaults_to_us():
+    stream = Campaigns(authenticator=None)
+    assert stream.url_base == "https://api.iterable.com/api/"
 
 
 def test_campaigns_metrics_csv():
@@ -155,6 +172,16 @@ def test_campaigns_metric_slicer(config):
     expected = [{"campaign_ids": [1]}]
 
     assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected
+
+
+@responses.activate
+def test_campaigns_metric_slicer_eu_region():
+    responses.get("https://api.eu.iterable.com/api/campaigns", json={"campaigns": [{"id": 2}]})
+
+    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00", region="EU")
+    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+
+    assert slices == [{"campaign_ids": [2]}]
 
 
 def test_templates_parse_response():
