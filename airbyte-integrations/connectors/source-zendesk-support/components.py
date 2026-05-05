@@ -28,16 +28,16 @@ def _force_fail_pre_exit_sleep() -> None:
     production: it delays SourceException long enough for MessageProcessor to drain.
 
     This atexit hook recreates that delay deterministically: flush stdout/stderr so the
-    trace bytes are on the wire, then sleep 2 s so the orchestrator's reader has time to
-    parse them and MessageProcessor has time to call `acceptFromSource(...)` before the
-    pipe closes and SourceException tears down sibling coroutines.
+    trace bytes are on the wire, then sleep so the orchestrator's reader has time to parse
+    them and MessageProcessor has time to call `acceptFromSource(...)` before the pipe
+    closes and SourceException tears down sibling coroutines.
     """
     try:
         sys.stdout.flush()
         sys.stderr.flush()
     except Exception:  # noqa: BLE001 — best-effort flush, never block exit
         pass
-    time.sleep(2)
+    time.sleep(10)
 
 
 atexit.register(_force_fail_pre_exit_sleep)
