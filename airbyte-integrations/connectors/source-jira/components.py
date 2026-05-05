@@ -19,9 +19,7 @@ from airbyte_cdk.sources.declarative.validators import ValidationStrategy
 # (trailing dot), `.atlassian.net` (leading dot), `airbyte..io.com`
 # (consecutive dots), and `airbyte-.com` (label ending in `-`) while still
 # accepting Atlassian custom domains like `tickets.springfield.com`.
-_DOMAIN_HOST_PATTERN = re.compile(
-    r"^([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$"
-)
+_DOMAIN_HOST_PATTERN = re.compile(r"^([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$")
 
 
 @dataclass
