@@ -710,44 +710,9 @@ class MsSqlServerDebeziumOperations(
         return value.source["schema"]?.asText()
     }
 
-    /**
-     * Builds the message.key.columns property value for Debezium. Format:
-     * "schema1.table1:keyCol1,keyCol2;schema2.table2:keyCol1,keyCol2" This replicates the logic
-     * from the old MSSQL connector's getMessageKeyColumnValue method.
-     */
-    private fun buildMessageKeyColumns(streams: List<Stream>): String {
-        return streams
-            .filter { it.configuredPrimaryKey?.isNotEmpty() == true }
-            .joinToString(";") { stream ->
-                val tableId =
-                    "${escapeSpecialChars(stream.namespace)}.${escapeSpecialChars(stream.name)}"
-                val keyCols =
-                    stream.configuredPrimaryKey!!.joinToString(",") { escapeSpecialChars(it.id) }
-                "$tableId:$keyCols"
-            }
-    }
-
-    /**
-     * Escapes special characters for Debezium message key columns. Escapes: comma (,), period (.),
-     * semicolon (;), and colon (:) This replicates the logic from the old MSSQL connector's
-     * escapeSpecialChars method.
-     */
-    private fun escapeSpecialChars(input: String?): String {
-        if (input == null) return ""
-        return input
-            .map { char ->
-                when (char) {
-                    ',',
-                    '.',
-                    ';',
-                    ':' -> "\\${char}"
-                    else -> char.toString()
-                }
-            }
-            .joinToString("")
-    }
-
     companion object {
+        private val log = KotlinLogging.logger {}
+
         const val MSSQL_MAX_UNCOMPRESSED_LENGTH = 1024 * 1024
         const val MSSQL_STATE = "state"
         const val MSSQL_CDC_OFFSET = "mssql_cdc_offset"
@@ -773,5 +738,77 @@ class MsSqlServerDebeziumOperations(
          * `MsSqlServerSourceConfiguration.toDebeziumDatabaseProperties`.
          */
         private val DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS: Set<String> = setOf("user", "password")
+
+        /**
+         * Streams whose name or namespace contain whitespace or ':' cannot be expressed in
+         * Debezium's `message.key.columns` property because Debezium validates each entry against
+         * `^\s*([^\s:]+):([^:\s]+)\s*$`, which rejects whitespace and colons in the schema/table
+         * identifier. There is no quoting or escaping mechanism for whitespace in this property —
+         * see Debezium's `RelationalDatabaseConnectorConfig.MSG_KEY_COLUMNS`.
+         */
+        private val MESSAGE_KEY_COLUMNS_INVALID_IDENTIFIER_CHARS: Regex = Regex("""[\s:]""")
+
+        /**
+         * Builds the `message.key.columns` property value for Debezium. Format:
+         * `schema1.table1:keyCol1,keyCol2;schema2.table2:keyCol1,keyCol2`. This replicates the
+         * logic from the old MSSQL connector's `getMessageKeyColumnValue` method.
+         *
+         * Streams whose name or namespace contain whitespace or `:` are skipped from the override
+         * (see [MESSAGE_KEY_COLUMNS_INVALID_IDENTIFIER_CHARS]). `message.key.columns` is an
+         * override; when an entry is absent, Debezium falls back to discovering the primary key
+         * from the SQL Server system tables, which is the desired behavior for those streams.
+         */
+        internal fun buildMessageKeyColumns(streams: List<Stream>): String {
+            return streams
+                .filter { it.configuredPrimaryKey?.isNotEmpty() == true }
+                .filter { stream ->
+                    val nameInvalid =
+                        stream.name.contains(MESSAGE_KEY_COLUMNS_INVALID_IDENTIFIER_CHARS)
+                    val namespaceInvalid =
+                        stream.namespace?.contains(MESSAGE_KEY_COLUMNS_INVALID_IDENTIFIER_CHARS) ==
+                            true
+                    if (nameInvalid || namespaceInvalid) {
+                        log.warn {
+                            "Skipping message.key.columns override for stream " +
+                                "${stream.namespace}.${stream.name}: identifier contains " +
+                                "characters Debezium's message.key.columns regex rejects " +
+                                "(whitespace or ':'); Debezium will fall back to " +
+                                "auto-detected primary key from SQL Server system tables."
+                        }
+                        false
+                    } else {
+                        true
+                    }
+                }
+                .joinToString(";") { stream ->
+                    val tableId =
+                        "${escapeSpecialChars(stream.namespace)}.${escapeSpecialChars(stream.name)}"
+                    val keyCols =
+                        stream.configuredPrimaryKey!!.joinToString(",") {
+                            escapeSpecialChars(it.id)
+                        }
+                    "$tableId:$keyCols"
+                }
+        }
+
+        /**
+         * Escapes special characters for Debezium message key columns. Escapes: comma (`,`), period
+         * (`.`), semicolon (`;`), and colon (`:`). This replicates the logic from the old MSSQL
+         * connector's `escapeSpecialChars` method.
+         */
+        private fun escapeSpecialChars(input: String?): String {
+            if (input == null) return ""
+            return input
+                .map { char ->
+                    when (char) {
+                        ',',
+                        '.',
+                        ';',
+                        ':' -> "\\${char}"
+                        else -> char.toString()
+                    }
+                }
+                .joinToString("")
+        }
     }
 }
