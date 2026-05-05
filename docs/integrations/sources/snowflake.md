@@ -212,6 +212,7 @@ To read more, please check the official [Snowflake documentation](https://docs.s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.11  | 2026-05-05 | [77760](https://github.com/airbytehq/airbyte/pull/77760) | Update `Field.sql()` extension to `DataField.sql()` to match bulk CDK `SelectColumns` API (no runtime change)                              |
 | 1.0.10  | 2026-03-13 | [74834](https://github.com/airbytehq/airbyte/pull/74834) | Truncate timestamp precision to 6 digits (microseconds) to prevent precision errors in destinations                                       |
 | 1.0.9   | 2025-09-16 | [74081](https://github.com/airbytehq/airbyte/pull/74081) | Security update                                                                                                                           |
 | 1.0.8   | 2025-09-16 | [66311](https://github.com/airbytehq/airbyte/pull/66311) | Change CDK version to 0.1.31                                                                                                              |
