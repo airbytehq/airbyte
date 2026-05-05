@@ -1,5 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import atexit
+import sys
+import time
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping
 
@@ -7,6 +10,37 @@ import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+
+
+def _force_fail_pre_exit_sleep() -> None:
+    """DO NOT MERGE — workaround for an orchestrator race that loses connector trace messages.
+
+    The container orchestrator's MessageProcessor coroutine drains the source-message queue
+    (and is what calls `messageTracker.acceptFromSource`, populating the trace-derived
+    FailureReasons) on a coroutine separate from the SourceReader. When the source process
+    exits non-zero, SourceReader throws SourceException; structured concurrency in
+    `runJobs { coroutineScope { tasks.awaitAll() } }` then cancels MessageProcessor —
+    regardless of whether the queue has been drained. Anything still queued (very often
+    including the ERROR TRACE that was emitted right before exit) is silently dropped.
+
+    The 10-second sleep inside `LocalContainerAirbyteSource.exitValue` (waiting for the
+    exit-code file when the pipe closes first) is what intermittently saves us in
+    production: it delays SourceException long enough for MessageProcessor to drain.
+
+    This atexit hook recreates that delay deterministically: flush stdout/stderr so the
+    trace bytes are on the wire, then sleep 2 s so the orchestrator's reader has time to
+    parse them and MessageProcessor has time to call `acceptFromSource(...)` before the
+    pipe closes and SourceException tears down sibling coroutines.
+    """
+    try:
+        sys.stdout.flush()
+        sys.stderr.flush()
+    except Exception:  # noqa: BLE001 — best-effort flush, never block exit
+        pass
+    time.sleep(2)
+
+
+atexit.register(_force_fail_pre_exit_sleep)
 
 
 class ForceFailError(RuntimeError):
