@@ -71,11 +71,8 @@ directly.
 ### Step 1 — Start SQL Server with CDC capability
 
 ```bash
-docker network create cdc-harness-net 2>/dev/null || true
-
 docker run -d --rm \
   --name mssql-cdc \
-  --network cdc-harness-net \
   -e ACCEPT_EULA=Y \
   -e MSSQL_SA_PASSWORD=Test_password_1 \
   -e MSSQL_AGENT_ENABLED=true \
@@ -88,6 +85,13 @@ until docker exec mssql-cdc /opt/mssql-tools18/bin/sqlcmd \
         -S localhost -U sa -P "Test_password_1" -C -Q "SELECT 1" \
         >/dev/null 2>&1; do sleep 2; done
 ```
+
+The SQL Server container runs on Docker's default `bridge` network so
+that the connector container (also on `bridge`, see Step 3) can reach
+it by IP. `airbyte-ops cloud connector regression-test` does not
+currently expose `--network` (tracked in
+[`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765));
+until it does, both containers must share the default bridge network.
 
 `MSSQL_AGENT_ENABLED=true` is required: SQL Server CDC capture / cleanup
 are Agent jobs, and Debezium's CDC reader will silently produce no
@@ -119,19 +123,30 @@ image identifier (e.g. `airbyte/source-mssql:4.4.2`,
 `airbyte/source-mssql:latest`).
 
 The connector config lives in
-[`dev/cdc-repro/config.cdc.json`](dev/cdc-repro/config.cdc.json). It
-points at `mssql-cdc` (the container name on `cdc-harness-net`) and
+[`dev/cdc-repro/config.cdc.json`](dev/cdc-repro/config.cdc.json) and
 selects the CDC `replication_method`. Configured catalogs live in
 [`dev/cdc-repro/catalogs/`](dev/cdc-repro/catalogs/) — the baseline one
 is `users-cdc.json`, which configures `dbo.users` for `incremental` +
 `append_dedup` with `_ab_cdc_lsn` as the cursor.
 
-Set a stable output directory so you know where to find logs:
+Set a stable output directory so you know where to find logs, and
+render a working `config.cdc.json` that points at the bridge IP that
+Docker assigned to `mssql-cdc`:
 
 ```bash
 export REPRO_OUT=/tmp/source-mssql-repro
-mkdir -p "$REPRO_OUT"
+mkdir -p "$REPRO_OUT/working"
+
+MSSQL_HOST=$(docker inspect mssql-cdc \
+  --format '{{.NetworkSettings.Networks.bridge.IPAddress}}')
+jq --arg h "$MSSQL_HOST" '.host = $h' \
+  airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  > "$REPRO_OUT/working/config.cdc.json"
 ```
+
+The committed `config.cdc.json` carries `"host": "mssql-cdc"` as a
+documentary placeholder; the connector container resolves the source
+by IP, not by container name, until the `--network` flag lands.
 
 **Connector check:**
 
@@ -140,7 +155,7 @@ uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
   --skip-compare=True \
   --command=check \
   --test-image=airbyte/source-mssql:4.4.2 \
-  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --config-path="$REPRO_OUT/working/config.cdc.json" \
   --output-dir="$REPRO_OUT/check"
 ```
 
@@ -155,7 +170,7 @@ uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
   --skip-compare=True \
   --command=read \
   --test-image=airbyte/source-mssql:4.4.2 \
-  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --config-path="$REPRO_OUT/working/config.cdc.json" \
   --catalog-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/catalogs/users-cdc.json \
   --output-dir="$REPRO_OUT/read-baseline" \
   --enable-debug-logs=True
@@ -195,7 +210,7 @@ uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
   --skip-compare=True \
   --command=read \
   --test-image=airbyte/source-mssql:4.4.2 \
-  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --config-path="$REPRO_OUT/working/config.cdc.json" \
   --catalog-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/catalogs/order-items-cdc.json \
   --output-dir="$REPRO_OUT/read-12162"
 ```
@@ -240,7 +255,7 @@ uvx airbyte-internal-ops airbyte-ops cloud connector regression-test \
   --skip-compare=True \
   --command=read \
   --test-image=airbyte/source-mssql:4.4.2 \
-  --config-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/config.cdc.json \
+  --config-path="$REPRO_OUT/working/config.cdc.json" \
   --catalog-path=airbyte-integrations/connectors/source-mssql/dev/cdc-repro/catalogs/users-cdc.json \
   --output-dir="$REPRO_OUT/read-12094" \
   --enable-debug-logs=True
@@ -262,21 +277,28 @@ lives in the bulk-CDK `extract-cdc` toolkit.
 
 ```bash
 docker rm -f mssql-cdc
-docker network rm cdc-harness-net
 rm -rf "$REPRO_OUT"
-unset REPRO_OUT
+unset REPRO_OUT MSSQL_HOST
 ```
 
 ### Notes
 
 - `config.cdc.json` uses `"ssl_method": {"ssl_method": "unencrypted"}` —
   fine for a local throwaway container, never for a real source.
-- `mssql-cdc` is the network-internal hostname used in `config.cdc.json`,
-  resolvable when both the SQL Server container and the connector
-  container share `cdc-harness-net`. `airbyte-ops cloud connector
-  regression-test` runs the connector image with Docker socket access,
-  so the network attachment happens automatically as long as the host
-  can reach `cdc-harness-net`.
+- The connector container is launched by `airbyte-ops cloud connector
+  regression-test` on Docker's default `bridge` network. Until
+  [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765)
+  adds a `--network` flag, both containers must share the default
+  bridge network and the connector resolves the source by IP. The
+  bridge IP is rendered into `$REPRO_OUT/working/config.cdc.json` in
+  Step 3.
+- The committed catalog files in `dev/cdc-repro/catalogs/` include the
+  `is_file_based`, `generation_id`, `minimum_generation_id`, `sync_id`,
+  `destination_object_name`, and `include_files` fields. These are
+  required by the bulk-CDK schema validator on `source-mssql:4.3.x`;
+  on `4.4.x` they default and could be omitted, but keeping them
+  populated lets the same fixtures drive repros across both major
+  versions.
 - Each `regression-test` invocation writes `stdout.txt` and `stderr.txt`
   into the supplied `--output-dir`, plus a small JSON summary. Use a
   fresh `--output-dir` per repro step so logs don't get clobbered.
