@@ -45,18 +45,19 @@ class MySqlSourceDatatypeIntegrationTest {
     /**
      * Regression test for https://github.com/airbytehq/airbyte/discussions/70380.
      *
-     * When the user sets `tinyInt1isBit=false` in the JDBC URL params, MySQL's JDBC driver reports
-     * `TINYINT(1)` columns as TINYINT (a small integer) rather than as BIT. The full-load schema
-     * therefore exposes such columns as integers. The Debezium-based CDC path used to register a
-     * custom converter that unconditionally coerced `TINYINT(1)` values into booleans, producing
-     * `false`/`true` payloads that downstream destinations could not decode as numbers (e.g.
-     * `IllegalArgumentException: invalid number value false`). With the fix in place, the converter
-     * is omitted when the user opts out via `tinyInt1isBit=false`, so CDC emits the same numeric
-     * values as the initial snapshot.
+     * MySQL's JDBC driver reports `TINYINT(1)` columns as BIT/boolean by default. When the user
+     * enables the new `treat_tinyint1_as_integer` connector setting, the connector appends
+     * `tinyInt1isBit=false` to the JDBC URL so the driver reports them as TINYINT (a small
+     * integer); the full-load schema therefore exposes such columns as integers. The Debezium-
+     * based CDC path used to unconditionally register a custom converter that coerced `TINYINT(1)`
+     * values into booleans, producing `false`/`true` payloads that downstream destinations could
+     * not decode as numbers (e.g. `IllegalArgumentException: invalid number value false`). With the
+     * fix in place, the converter is omitted when the new option is enabled, so CDC emits the same
+     * numeric values as the initial snapshot.
      */
     @Test
     @Timeout(300)
-    fun cdcRespectsTinyInt1IsBitFalse() {
+    fun cdcRespectsTreatTinyint1AsInteger() {
         val database = "tinyint1_test"
         val tableName = "tinyint1_tbl"
         val streamName = tableName
@@ -64,7 +65,7 @@ class MySqlSourceDatatypeIntegrationTest {
         fun configSpec(cdc: Boolean): MySqlSourceConfigurationSpecification =
             MySqlContainerFactory.config(dbContainer).apply {
                 this.database = database
-                this.jdbcUrlParams = "tinyInt1isBit=false"
+                this.treatTinyint1AsInteger = true
                 if (cdc) setIncrementalValue(Cdc()) else setIncrementalValue(UserDefinedCursor)
             }
 
@@ -85,8 +86,8 @@ class MySqlSourceDatatypeIntegrationTest {
             }
         }
 
-        // Build a catalog around the TINYINT(1) column. With tinyInt1isBit=false, the column
-        // should be discovered as a Short, not a Boolean.
+        // Build a catalog around the TINYINT(1) column. With treat_tinyint1_as_integer enabled,
+        // the column should be discovered as a Short, not a Boolean.
         fun buildCatalog(
             spec: MySqlSourceConfigurationSpecification,
             cdc: Boolean,
@@ -161,11 +162,13 @@ class MySqlSourceDatatypeIntegrationTest {
             Assertions.assertNotNull(v, "record $record missing 'v' column")
             Assertions.assertFalse(
                 v.isBoolean,
-                "TINYINT(1) value should not be emitted as boolean when tinyInt1isBit=false: $record",
+                "TINYINT(1) value should not be emitted as boolean when " +
+                    "treat_tinyint1_as_integer=true: $record",
             )
             Assertions.assertTrue(
                 v.isNumber,
-                "TINYINT(1) value should be a number when tinyInt1isBit=false: $record",
+                "TINYINT(1) value should be a number when " +
+                    "treat_tinyint1_as_integer=true: $record",
             )
         }
     }

@@ -48,6 +48,7 @@ data class MySqlSourceConfiguration(
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
+    val treatTinyint1AsInteger: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
@@ -148,6 +149,14 @@ constructor(
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
 
+        // When the user opts to treat TINYINT(1) as an integer, add the corresponding JDBC URL
+        // parameter so that the snapshot path discovers the column as an integer rather than as
+        // a bit/boolean.
+        val treatTinyint1AsInteger: Boolean = pojo.treatTinyint1AsInteger ?: false
+        if (treatTinyint1AsInteger) {
+            jdbcProperties["tinyInt1isBit"] = "false"
+        }
+
         // Only validate table filters if schemas are explicitly configured
         val tableFilters = pojo.tableFilters ?: emptyList()
 
@@ -211,6 +220,7 @@ constructor(
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            treatTinyint1AsInteger = treatTinyint1AsInteger,
         )
     }
 
