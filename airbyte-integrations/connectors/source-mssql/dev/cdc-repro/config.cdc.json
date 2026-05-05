@@ -1,0 +1,17 @@
+{
+  "host": "mssql-cdc",
+  "port": 1433,
+  "database": "CdcTest",
+  "username": "sa",
+  "password": "Test_password_1",
+  "schemas": ["dbo"],
+  "ssl_method": {
+    "ssl_method": "unencrypted"
+  },
+  "replication_method": {
+    "method": "CDC",
+    "initial_waiting_seconds": 5,
+    "poll_interval_ms": 500,
+    "initial_load_timeout_hours": 4
+  }
+}
