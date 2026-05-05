@@ -5,31 +5,37 @@ from typing import Any, List, Mapping
 
 import requests
 
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+
+class ForceFailError(RuntimeError):
+    """Plain Python exception raised by `ForceFailExtractor` for pre-release testing.
+
+    DO NOT MERGE — inherits from `RuntimeError` rather than
+    `airbyte_cdk.utils.traced_exception.AirbyteTracedException` so the CDK has
+    to wrap a vanilla Python exception (no curated `failure_type`, no
+    user-facing `message`). This mirrors what the platform sees when a
+    connector hits an unhandled bug in the wild.
+    """
 
 
 @dataclass
 class ForceFailExtractor(RecordExtractor):
-    """Record extractor that force-fails every record extraction with a system error.
+    """Record extractor that force-fails every record extraction.
 
     DO NOT MERGE — this extractor exists solely to produce a pre-release image
     that fails every sync on the read path. The HTTP request, authentication,
     and response are all left intact; the failure is raised when the platform
     asks the connector to extract records from the response. Every stream's
-    `read` therefore fails with `AirbyteTracedException(failure_type=system_error)`.
+    `read` therefore fails with a `ForceFailError` (a plain `RuntimeError`
+    subclass).
     """
 
     parameters: InitVar[Mapping[str, Any]]
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        raise AirbyteTracedException(
-            internal_message="ForceFailExtractor raised intentionally for pre-release testing.",
-            message="source-zendesk-support pre-release force-fail injection. DO NOT MERGE.",
-            failure_type=FailureType.system_error,
-        )
+        raise ForceFailError("source-zendesk-support pre-release force-fail injection. DO NOT MERGE.")
 
 
 class ZendeskSupportExtractorEvents(RecordExtractor):
