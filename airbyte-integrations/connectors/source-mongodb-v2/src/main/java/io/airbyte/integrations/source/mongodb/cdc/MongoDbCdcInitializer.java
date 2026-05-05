@@ -64,9 +64,9 @@ public class MongoDbCdcInitializer {
   private static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
 
   /**
-   * Deterministic, user-facing message emitted when the configured MongoDB user lacks the
-   * privileges required to open a change stream during CDC. Kept short and free of cluster, BSON,
-   * and database identifiers so it is usable as a log aggregation key.
+   * Deterministic, user-facing message emitted when the configured MongoDB user lacks the privileges
+   * required to open a change stream during CDC. Kept short and free of cluster, BSON, and database
+   * identifiers so it is usable as a log aggregation key.
    */
   @VisibleForTesting
   static final String CDC_CHANGE_STREAM_NOT_AUTHORIZED_MESSAGE =
