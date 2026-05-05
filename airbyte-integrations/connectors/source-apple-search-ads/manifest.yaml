@@ -21,7 +21,7 @@ check:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 20
 
 definitions:
@@ -840,6 +840,19 @@ spec:
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
         order: 8
+      num_workers:
+        type: integer
+        description: >-
+          The number of concurrent workers for syncing data. Increase this
+          value to speed up syncs for accounts with many campaigns and ad
+          groups, at the cost of higher API usage. Valid values are 1 to 20.
+        order: 9
+        title: Number of Workers
+        default: 2
+        minimum: 1
+        maximum: 20
+        examples:
+          - 5
     additionalProperties: true
 
 metadata:

@@ -107,6 +107,17 @@ def test_concurrency_level_configured(manifest):
     assert concurrency is not None, "manifest must define concurrency_level"
     assert concurrency["type"] == "ConcurrencyLevel"
     default = concurrency["default_concurrency"]
-    assert isinstance(default, int) and default > 1, (
-        f"default_concurrency must be > 1, got: {default}"
+    assert "config.get('num_workers'" in default or "config['num_workers']" in default, (
+        f"default_concurrency must reference config num_workers, got: {default}"
     )
+
+
+def test_num_workers_spec_field(manifest):
+    """The spec must expose num_workers as a configurable integer field."""
+    properties = manifest["spec"]["connection_specification"]["properties"]
+    assert "num_workers" in properties, "spec must define num_workers property"
+    num_workers = properties["num_workers"]
+    assert num_workers["type"] == "integer"
+    assert num_workers["default"] == 2
+    assert num_workers.get("minimum", 0) >= 1
+    assert num_workers.get("maximum", 999) <= 20
