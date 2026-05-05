@@ -86,8 +86,7 @@ class SilentAggregate : Aggregate {
         // See https://github.com/airbytehq/airbyte/pull/77746 for the source-side
         // analogue + investigation notes.
         if (recordCount >= 0) {
-            val message =
-                "destination-dev-null pre-release force-fail injection. DO NOT MERGE."
+            val message = "destination-dev-null pre-release force-fail injection. DO NOT MERGE."
             log.info { message }
             throw ForceFailError(message)
         }
