@@ -199,6 +199,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.7 | 2026-04-30 | [77628](https://github.com/airbytehq/airbyte/pull/77628) | Improve threads_ignore_no_replies filter to also check thread_ts, reducing unnecessary conversations.replies API calls |
 | 3.2.6 | 2026-04-30 | [77607](https://github.com/airbytehq/airbyte/pull/77607) | Improve error handling for Slack API ok=false responses: add catch-all for unrecognized errors and expand error code coverage |
 | 3.2.5 | 2026-04-29 | [77601](https://github.com/airbytehq/airbyte/pull/77601) | Surface missing OAuth scope as config error instead of silently failing channel joins |
 | 3.2.4 | 2026-04-28 | [77531](https://github.com/airbytehq/airbyte/pull/77531) | Use RATE_LIMITED action for rate-limit filters, add failure_type classification, and remove generic ok=false catch-all in favor of default HTTP status handling |

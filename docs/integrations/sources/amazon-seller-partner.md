@@ -82,7 +82,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-14. Click `Set up source`.
+14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `24` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+15. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -106,7 +107,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-12. Click `Set up source`.
+12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `24` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
+13. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -194,6 +196,30 @@ but with different options for the `sellingProgram` parameter - `FRESH` and `RET
 
 For information about rate limits, see [Usage Plans and Rate Limits in the SP-API](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
 
+### Report reuse
+
+Before creating a new report, the connector checks the Amazon SP-API for an existing report that matches the same report type, date range, and marketplace IDs. If a matching report is found, it is reused instead of calling `createReport`, which reduces API calls and helps avoid 429 rate limit errors.
+
+- **In-progress reports** (IN_QUEUE, IN_PROGRESS) are always reused regardless of age.
+- **Completed reports** (DONE) are reused only if `max_done_report_age_hours` is greater than 0 and the report was created within that time window. With the default value of `0`, a fresh report is always created.
+- **Cancelled reports** (CANCELLED) are reused and silently skipped. The connector does not retry cancelled reports — the sync continues with the next date slice and the cursor state is not advanced, so the same period will be retried on the next sync.
+- **Failed reports** (FATAL) are reused and handled by the connector's retry logic.
+
+If the pre-check fails for any reason (network error, API error), the connector falls back to creating a new report normally.
+
+#### Report cancellation and data loss
+
+According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/reference/getreport), a report can be cancelled in two ways:
+
+1. **Automatic cancellation** — Amazon automatically cancels a report when there is no data to return for the requested parameters. This is normal behavior and no data is lost — there was simply nothing to report for that time period.
+2. **Manual cancellation** — A user or application explicitly cancels a report via the [cancelReport](https://developer-docs.amazon.com/sp-api/reference/cancelreport) API before processing completes.
+
+:::caution
+**If a report is manually cancelled, data for that time period will be skipped.** The connector treats all CANCELLED reports the same way — it skips the report without retrying or fetching records. If you or another application cancels a report that was being processed by the connector, the data for that report's date range will not be synced. The cursor state is not advanced, so the connector will attempt to create a new report for the same period on the next sync, but if the cancelled report is still the most recent match, it will be skipped again until it ages out of the report list.
+
+To avoid data loss, do not manually cancel reports that are being used by Airbyte syncs.
+:::
+
 - Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
   - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.
   - **Daily step sizes** (e.g., `1D`, `7D`) are better for moderate data volumes, balancing sync speed with API efficiency.
@@ -253,9 +279,10 @@ Depending on actual rate limits the Amazon Seller Partner source connector can r
 
 We recommend next steps to overcome the rate limits issue:
 
-1. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
-2. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
-3. Set syncs to run every 24 hours.
+1. **Enable report reuse** by setting **Max Done Report Age (Hours)** to a value between `1` and `24` (e.g., `24`). This is highly recommended if your connection faces rate limit issues. When enabled, the connector reuses recently completed reports instead of creating new ones, significantly reducing the number of `createReport` API calls and helping avoid 429 rate limit errors.
+2. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
+3. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
+4. Set syncs to run every 24 hours.
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
@@ -299,8 +326,10 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.6-rc.1 | 2026-04-28 | [76093](https://github.com/airbytehq/airbyte/pull/76093) | Check for existing reports before creating new ones to avoid hitting Amazon SP-API rate limits |
+| 5.7.5 | 2026-05-04 | [76269](https://github.com/airbytehq/airbyte/pull/76269) | Use 89-day buffer for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE start date to avoid 400 errors caused by network latency near Amazon's 90-day boundary |
 | 5.7.4 | 2026-04-28 | [77521](https://github.com/airbytehq/airbyte/pull/77521) | Restore HTTPAPIBudget that was temporarily commented out in 5.7.4-rc.1; revert default_concurrency back to 2. Concurrency tuning rollout was canceled and is being deferred. |
-| 5.7.4-rc.1 | 2026-04-23 | [76955](https://github.com/airbytehq/airbyte/pull/76955) | Concurrency tuning iteration 1: bump default_concurrency from 2 to 4 and temporarily comment out HTTPAPIBudget to measure empirical concurrency ceiling. |
+| 5.7.4-rc.1 | 2026-04-27 | [76955](https://github.com/airbytehq/airbyte/pull/76955) | Concurrency tuning iteration 1: bump default_concurrency from 2 to 4 and temporarily comment out HTTPAPIBudget to measure empirical concurrency ceiling. |
 | 5.7.3 | 2026-04-21 | [76494](https://github.com/airbytehq/airbyte/pull/76494) | Update dependencies |
 | 5.7.2 | 2026-04-13 | [75143](https://github.com/airbytehq/airbyte/pull/75143) | Fix incorrect URL path for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE stream — add missing `/reports/` segment |
 | 5.7.1 | 2026-04-08 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |

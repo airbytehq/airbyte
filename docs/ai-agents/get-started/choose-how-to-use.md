@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 2
 sidebar_label: Choose how to use Airbyte Agents
 ---
@@ -19,7 +20,7 @@ flowchart TD
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
-    click WEB "#web-app-research-preview"
+    click WEB "#web-app"
     click API "#http-api"
 ```
 
@@ -47,7 +48,7 @@ uv add airbyte-agent-sdk
 - [LangChain tutorial](developer-quickstart/tutorial-langchain)
 - [FastMCP tutorial](developer-quickstart/tutorial-fastmcp)
 
-## Web app (Research Preview)
+## Web app
 
 **Best for:** Non-developers, operations teams, and anyone who wants to explore Airbyte Agents without writing code.
 
@@ -55,8 +56,8 @@ The [web app](../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai) is t
 
 Two primary surfaces:
 
-- **[Chats](../interfaces/ui/chats)** — Interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
-- **[Automations](../interfaces/ui/automations)** — Agent tasks that run on a schedule, on a webhook, or on demand. Use Automations when you need the same work to happen repeatedly without a person in the loop.
+- **[Chats](../interfaces/ui/chats)**: Interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
+- **[Automations](../interfaces/ui/automations)**: Agent tasks that run on a schedule, on a webhook, or on demand. Use Automations when you need the same work to happen repeatedly without a person in the loop.
 
 **Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 

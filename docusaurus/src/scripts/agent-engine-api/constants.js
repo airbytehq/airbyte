@@ -10,10 +10,10 @@ const path = require("path");
 // Get the project root directory (docusaurus folder)
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..");
 
-// Path to the cached Agent Engine API OpenAPI specification
+// Path to the cached Airbyte Agent API OpenAPI specification
 const SPEC_CACHE_PATH = path.join(PROJECT_ROOT, "src", "data", "agent_engine_api_spec.json");
 
-// URL for fetching the latest Agent Engine API specification
+// URL for fetching the latest Airbyte Agent API specification
 const AGENT_ENGINE_API_SPEC_URL = "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json";
 
 // API documentation output directory (relative to project root)

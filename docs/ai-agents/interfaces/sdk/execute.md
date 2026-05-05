@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 3
 ---
 
@@ -8,7 +9,7 @@ Once you've added a connector to your workspace, you can run operations against 
 
 ## Direct execution
 
-The `connect()` factory takes a connector slug and returns an execution object. Call its `execute(entity, action, params)` method to run an operation. When your workspace has exactly one connector of a given type, you don't need to pass a `connector_id` — the SDK resolves the connector by its slug automatically.
+The `connect()` factory takes a connector slug and returns an execution object. Call its `execute(entity, action, params)` method to run an operation. When your workspace has exactly one connector of a given type, you don't need to pass a `connector_id`. The SDK resolves the connector by its slug automatically.
 
 ```python title="agent.py"
 import asyncio
@@ -27,8 +28,8 @@ asyncio.run(main())
 ```
 
 - `entity` is the resource, such as `issues`, `repositories`, or `pull_requests`.
-- `action` is one of the connector's supported actions, such as `list` or `get`. Some connectors support additional actions like `search` or `download`; check the connector's reference page.
-- `params` contains action-specific arguments. The exact keys are connector- and entity-specific — GitHub's `issues.list` accepts `per_page`, for example, while other connectors paginate via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
+- `action` is one of the connector's supported actions, such as `list` or `get`. Some connectors support additional actions like `context_store_search`, `api_search`, or `download`; check the connector's reference page.
+- `params` contains action-specific arguments. The exact keys are connector- and entity-specific. GitHub's `issues.list` accepts `per_page`, for example, while other connectors paginate via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
 - Always wrap the call in `try`/`finally` and `await connector.close()` once you're done to release the underlying HTTP client.
 
 See the connector's page in the [Connectors](../../connectors) reference for the entities and actions it supports.
@@ -39,11 +40,11 @@ For connectors with a generated typed submodule, `connect()` returns a typed con
 
 For every other connector in the bundled registry, `connect()` returns a generic `HostedExecutor` with the same `execute(entity, action, params)` method but without typed shortcuts. The execution behavior is otherwise identical.
 
-`connect()` raises `ValueError` if the slug isn't in the bundled registry (the message lists every supported slug) or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing — YAML-only connectors return a `HostedExecutor`.
+`connect()` raises `ValueError` if the slug isn't in the bundled registry (the message lists every supported slug) or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing. YAML-only connectors return a `HostedExecutor`.
 
 ### Multiple connectors of the same type
 
-If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous. Pass an explicit `connector_id` to `connect()` so the SDK knows which one to target:
+If your workspace has more than one connector of a given type (for example, two separate Stripe accounts), slug resolution is ambiguous. Pass an explicit `connector_id` to `connect()` so the SDK knows which one to target:
 
 ```python title="agent.py"
 stripe_us = connect("stripe", connector_id="<us_account_connector_id>")
@@ -129,7 +130,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     """Execute GitHub operations.
 
     `entity` must be a simple name such as `issues`, `repositories`, or `pull_requests`.
-    `action` must be `list`, `get`, or `search`.
+    `action` must be `list`, `get`, or `context_store_search`.
     Pass owner and repo info in the `params` dict, for example:
     `params={"owner": "airbytehq", "repo": "airbyte"}`.
     """
@@ -140,7 +141,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 Some connectors support a `download` action for binary entities like attachments, audio recordings, and documents. Download responses return a byte stream instead of JSON.
 
-Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here — YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
+Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here. YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
 
 ```python title="agent.py"
 zendesk_support = connect("zendesk-support")

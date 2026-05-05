@@ -381,7 +381,7 @@ definitions:
         $ref: "#/definitions/channel_messages_stream/retriever/record_selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ (record.reply_count or 0) > 0 if config.get('threads_ignore_no_replies', false) else true }}"
+          condition: "{{ (record.get('thread_ts') is not none and (record.get('reply_count') or 0) > 0) if config.get('threads_ignore_no_replies', false) else true }}"
 
   threads_stream:
     $ref: "#/definitions/stream_base"
