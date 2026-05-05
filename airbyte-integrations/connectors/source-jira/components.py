@@ -13,10 +13,15 @@ from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSl
 from airbyte_cdk.sources.declarative.validators import ValidationStrategy
 
 
-# A label, a dot, then a 2+ letter TLD. Catches `airbyteio.` (trailing dot),
-# `.atlassian.net` (leading dot), and similar typos while still accepting
-# Atlassian custom domains like `tickets.springfield.com`.
-_DOMAIN_HOST_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z]{2,}$")
+# One or more RFC 1123 hostname labels separated by single dots, followed by
+# a 2+ letter TLD. Each label starts and ends with an alphanumeric character;
+# hyphens are only allowed between alphanumerics. Catches `airbyteio.`
+# (trailing dot), `.atlassian.net` (leading dot), `airbyte..io.com`
+# (consecutive dots), and `airbyte-.com` (label ending in `-`) while still
+# accepting Atlassian custom domains like `tickets.springfield.com`.
+_DOMAIN_HOST_PATTERN = re.compile(
+    r"^([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$"
+)
 
 
 @dataclass

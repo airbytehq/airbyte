@@ -39,6 +39,10 @@ def test_validate_jira_domain_accepts_valid_hosts(domain, components_module):
         pytest.param("airbyte io.atlassian.net", "whitespace", id="internal_whitespace"),
         pytest.param("airbyteio.", "valid hostname", id="trailing_dot_no_tld"),
         pytest.param(".atlassian.net", "valid hostname", id="leading_dot"),
+        pytest.param("airbyte..io.com", "valid hostname", id="consecutive_dots"),
+        pytest.param("airbyte-.com", "valid hostname", id="label_trailing_hyphen"),
+        pytest.param("-airbyte.com", "valid hostname", id="label_leading_hyphen"),
+        pytest.param("airbyte.123", "valid hostname", id="numeric_tld"),
     ],
 )
 def test_validate_jira_domain_rejects_invalid_hosts(domain, expected_message_fragment, components_module):

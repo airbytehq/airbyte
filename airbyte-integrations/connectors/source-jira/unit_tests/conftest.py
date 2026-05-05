@@ -2,11 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import importlib.util
 import json
 import os
 import sys
-import types
 from pathlib import Path
 
 import responses
@@ -36,32 +34,6 @@ _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
-
-
-def _register_components_module() -> None:
-    """Register the connector's `components.py` under both `components` and
-    `source_declarative_manifest.components` aliases, mirroring the registration
-    performed by `airbyte_cdk.cli.source_declarative_manifest._run` at runtime.
-    Without this, manifests that reference custom components via
-    `source_declarative_manifest.components.<ClassName>` cannot be resolved during
-    unit tests.
-    """
-    components_path = _SOURCE_FOLDER_PATH / "components.py"
-    if not components_path.exists():
-        return
-
-    spec = importlib.util.spec_from_file_location("components", components_path)
-    if spec is None or spec.loader is None:
-        return
-
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["components"] = module
-    sys.modules["source_declarative_manifest"] = types.ModuleType("source_declarative_manifest")
-    sys.modules["source_declarative_manifest.components"] = module
-    spec.loader.exec_module(module)
-
-
-_register_components_module()
 
 
 def get_source(config, state=None) -> YamlDeclarativeSource:
