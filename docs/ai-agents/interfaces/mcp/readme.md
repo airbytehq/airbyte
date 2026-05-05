@@ -28,7 +28,28 @@ Before you begin, make sure you have the following:
 Select your client below for setup instructions. Each client requires you to authenticate with your Airbyte account before you can use the MCP server.
 
 <Tabs>
-<TabItem value="claude-code" label="Claude Code" default>
+<TabItem value="claude-desktop" label="Claude Desktop" default>
+
+Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `claude_desktop_config.json` file, as it only supports local servers.
+
+1. Open Claude Desktop and go to **Settings** > **Connectors**.
+
+2. Click **Add custom connector**.
+
+3. Enter the server name and URL: `https://mcp.airbyte.ai/mcp`
+
+4. Click **Add**.
+
+5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
+
+6. If you're not logged into Airbyte, log in now.
+
+7. Grant access to the Airbyte Agent MCP.
+
+8. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
+
+</TabItem>
+<TabItem value="claude-code" label="Claude Code">
 
 Add the MCP server to your Claude Code command line tool.
 
@@ -51,6 +72,57 @@ Add the MCP server to your Claude Code command line tool.
 7. Grant access to the Airbyte Agent MCP.
 
 8. Return to Claude Code and begin using the MCP server.
+
+</TabItem>
+<TabItem value="chatgpt" label="ChatGPT">
+
+ChatGPT supports remote MCP servers through its [Developer Mode](https://platform.openai.com/docs/guides/developer-mode) feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
+
+:::note Admin access required for Business and Enterprise/Education plans
+On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create connectors. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
+:::
+
+1. Open [ChatGPT](https://chatgpt.com) on the web.
+
+2. Go to **Settings** > **Apps & Connectors** > **Advanced settings** (at the bottom of the page).
+
+3. Toggle **Developer mode** to **ON**.
+
+4. Go back to **Settings** > **Apps & Connectors**.
+
+5. Click **Create App**. This button only appears when Developer Mode is enabled.
+
+6. Enter the connector details:
+
+    - **Connector name**: `Airbyte Agents`
+    - **Connector URL**: `https://mcp.airbyte.ai/mcp`
+
+7. Click **Create**. ChatGPT connects to the Airbyte Agent MCP and detects its tools. The connector appears under **Settings** > **Apps & Connectors**.
+
+8. If you're not logged into Airbyte, log in now and grant access.
+
+9. Open a new conversation to start using the MCP server.
+
+</TabItem>
+<TabItem value="codex" label="Codex">
+
+Add the Airbyte Agent MCP to your Codex command line tool.
+
+1. Run the following command in your terminal to add the server:
+
+    ```bash
+    codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
+    ```
+
+2. Codex detects that the server requires OAuth and opens your browser.
+
+3. If you're not logged into Airbyte, log in now.
+
+4. Grant access to the Airbyte Agent MCP.
+
+5. Launch Codex with `codex`.
+
+6. Begin using the Airbyte Agent MCP.
 
 </TabItem>
 <TabItem value="cursor" label="Cursor">
@@ -194,78 +266,6 @@ Run **MCP: Open User Configuration** from the Command Palette to open your user 
 ```
 
 Save the file. VS Code Insiders detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
-
-</TabItem>
-<TabItem value="claude-desktop" label="Claude Desktop">
-
-Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `claude_desktop_config.json` file, as it only supports local servers.
-
-1. Open Claude Desktop and go to **Settings** > **Connectors**.
-
-2. Click **Add custom connector**.
-
-3. Enter the server name and URL: `https://mcp.airbyte.ai/mcp`
-
-4. Click **Add**.
-
-5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
-
-6. If you're not logged into Airbyte, log in now.
-
-7. Grant access to the Airbyte Agent MCP.
-
-8. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
-
-</TabItem>
-<TabItem value="codex" label="Codex">
-
-Add the MCP server to your Codex command line tool.
-
-1. Run the following command in your terminal to add the server:
-
-    ```bash
-    codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
-    ```
-
-2. Codex detects that the server requires OAuth and opens your browser.
-
-3. If you're not logged into Airbyte, log in now.
-
-4. Grant access to the Airbyte Agent MCP.
-
-5. Launch Codex with `codex`.
-
-6. Begin using the MCP server.
-
-</TabItem>
-<TabItem value="chatgpt" label="ChatGPT">
-
-ChatGPT supports remote MCP servers through its [Developer Mode](https://platform.openai.com/docs/guides/developer-mode) feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
-
-:::note Admin access required for Business and Enterprise/Education plans
-On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create connectors. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
-:::
-
-1. Open [ChatGPT](https://chatgpt.com) on the web.
-
-2. Go to **Settings** > **Apps & Connectors** > **Advanced settings** (at the bottom of the page).
-
-3. Toggle **Developer mode** to **ON**.
-
-4. Go back to **Settings** > **Apps & Connectors**.
-
-5. Click **Create App**. This button only appears when Developer Mode is enabled.
-
-6. Enter the connector details:
-
-    - **Connector name**: `Airbyte Agents`
-    - **Connector URL**: `https://mcp.airbyte.ai/mcp`
-
-7. Click **Create**. ChatGPT connects to the MCP server and detects its tools. The connector appears under **Settings** > **Apps & Connectors**.
-
-8. If you're not logged into Airbyte, log in now and grant access.
-
-9. Open a new conversation to start using the MCP server.
 
 </TabItem>
 <TabItem value="other" label="Other clients">
