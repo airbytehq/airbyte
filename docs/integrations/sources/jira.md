@@ -32,7 +32,7 @@ This page contains the setup guide and reference information for the [Jira](http
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
 8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Changelogs, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Sprint Issues. For other streams it will replicate all data.
 
 <!-- /env:cloud -->
 
@@ -47,7 +47,7 @@ This page contains the setup guide and reference information for the [Jira](http
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
 8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Changelogs, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Sprint Issues. For other streams it will replicate all data.
 
 <!-- /env:oss -->
 
@@ -118,6 +118,7 @@ This connector outputs the following full refresh streams:
 This connector outputs the following incremental streams:
 
 - [Board issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get)
+- [Issue changelogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-changelog-get)
 - [Issue comments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get)
 - [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 - [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
@@ -127,11 +128,13 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Streams on I/O Usage
 
-In the list above, there is a subset of streams which requires to make one HTTP request per issue. Those streams can significantly slow down that a sync given a high number of issues. If you have one or many of those streams and experience slowness, we recommend filtering the list of issues using the list of projects in the configuration or simply removing those streams from the sync.
+The following streams require one HTTP request per issue. These streams can significantly slow down a sync when the number of issues is high. If you sync any of these streams and experience slowness, filter the list of issues using the **Projects** configuration option, or remove these streams from the sync.
+
+* Issue changelogs
 * Issue comments
 * Issue properties
 * Issue remote links
-* Issue transactions
+* Issue transitions
 * Issue votes
 * Issue watchers
 * Issue worklogs
@@ -139,19 +142,8 @@ In the list above, there is a subset of streams which requires to make one HTTP 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
-## Experimental Tables
-
-The following tables depend on undocumented internal Jira API endpoints and are
-therefore subject to stop working if those endpoints undergo major changes.
-While they will not cause a sync to fail, they may not be able to pull any data.
-Use the "Enable Experimental Streams" option when setting up the source to allow
-or disallow these tables to be selected when configuring a connection.
-
-- [Pull Requests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
-
 :::note
-The experimental Pull Requests stream was removed in version 4.0.0 and is no longer available in the catalog.
-If you want to sync data using this stream, you must use version `<= 3.5.4`. This is only possible on self-deployed instances of Airbyte, and this stream is no longer supported on Airbyte Cloud.
+The experimental `pull_requests` stream was removed in version 4.0.0 and is no longer available in the catalog. To sync data from this stream, you must pin the connector to version `3.5.4` or earlier. This is only possible on self-managed Airbyte instances; the `pull_requests` stream is not available on Airbyte Cloud. See the [Jira migration guide](/integrations/sources/jira-migrations) for details.
 :::
 
 ## Troubleshooting
@@ -169,7 +161,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.20 | 2026-04-21 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix |
+| 4.3.20 | 2026-04-22 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix |
 | 4.3.19 | 2026-04-21 | [76631](https://github.com/airbytehq/airbyte/pull/76631) | Update dependencies |
 | 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
