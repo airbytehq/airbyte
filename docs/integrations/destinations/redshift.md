@@ -34,23 +34,40 @@ to create the entities:
 3. Edit the following script to change the password to a more secure password and to change the names of other resources as needed.
 
 ```sql
--- create a Database  for Airbyte data (if it does not already exist)
+-- create a Database for Airbyte data (if it does not already exist)
 CREATE DATABASE airbyte_database;
-       
+```
+
+4. **Switch your connection** to `airbyte_database` in the Query Editor. Redshift does not support switching databases
+   within a session, so you must select `airbyte_database` from the database dropdown before running the remaining
+   statements.
+
+:::tip
+You can verify you are connected to the correct database by running:
+
+```sql
+SELECT CURRENT_DATABASE();
+```
+
+:::
+
+5. Run the following script to create the schema, user, and grants:
+
+```sql
 -- create a schema for Airbyte data (if it does not already exist)
 CREATE SCHEMA IF NOT EXISTS airbyte_schema;
-           
+
 -- create Airbyte user
 CREATE USER airbyte_user PASSWORD 'your_secure_password_here';
-       
+
 -- grant permissions on the database
 GRANT CREATE ON DATABASE airbyte_database TO airbyte_user;
-       
+
 -- grant permissions on the target schema
 GRANT USAGE, CREATE ON SCHEMA airbyte_schema TO airbyte_user;
 ```
 
-4. Run the script in the Query Editor.
+6. Verify the script ran successfully in the Query Editor.
 
 :::note
 Our integration automatically creates the necessary schemas in your Redshift database. To enable
