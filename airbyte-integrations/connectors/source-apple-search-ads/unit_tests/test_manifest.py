@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """
 Unit tests for source-apple-search-ads manifest.yaml.
 
@@ -51,12 +53,8 @@ def test_report_stream_date_field_uses_start_time(manifest, stream_name):
 
     assert date_values, f"{stream_name} must have a 'date' AddedFieldDefinition"
     for val in date_values:
-        assert "stream_slice.start_time" in val, (
-            f"{stream_name}: expected 'stream_slice.start_time', got: {val}"
-        )
-        assert "stream_slice.start_date" not in val, (
-            f"{stream_name}: must NOT use 'stream_slice.start_date': {val}"
-        )
+        assert "stream_slice.start_time" in val, f"{stream_name}: expected 'stream_slice.start_time', got: {val}"
+        assert "stream_slice.start_date" not in val, f"{stream_name}: must NOT use 'stream_slice.start_date': {val}"
 
 
 def test_ads_report_daily_no_keyword_error_predicate(manifest):
@@ -67,9 +65,7 @@ def test_ads_report_daily_no_keyword_error_predicate(manifest):
 
     for f in error_handler.get("response_filters", []):
         predicate = f.get("predicate", "")
-        assert "CAMPAIGN DOES NOT CONTAIN KEYWORD" not in predicate, (
-            "ads_report_daily must not contain keyword-specific error predicate"
-        )
+        assert "CAMPAIGN DOES NOT CONTAIN KEYWORD" not in predicate, "ads_report_daily must not contain keyword-specific error predicate"
 
 
 def test_keywords_report_daily_retains_keyword_predicate(manifest):
@@ -77,13 +73,8 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
     stream = _get_stream_def(manifest, "keywords_report_daily")
     error_handler = stream["retriever"]["requester"].get("error_handler", {})
 
-    has_predicate = any(
-        "CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "")
-        for f in error_handler.get("response_filters", [])
-    )
-    assert has_predicate, (
-        "keywords_report_daily must retain the keyword-specific IGNORE predicate"
-    )
+    has_predicate = any("CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "") for f in error_handler.get("response_filters", []))
+    assert has_predicate, "keywords_report_daily must retain the keyword-specific IGNORE predicate"
 
 
 def test_ads_report_daily_request_body_slice_keys(manifest):
@@ -92,12 +83,8 @@ def test_ads_report_daily_request_body_slice_keys(manifest):
     stream = _get_stream_def(manifest, "ads_report_daily")
     body = stream["retriever"]["requester"]["request_body_json"]
 
-    assert "stream_slice.start_time" in body["startTime"], (
-        f"startTime should use stream_slice.start_time, got: {body['startTime']}"
-    )
-    assert "stream_slice.end_time" in body["endTime"], (
-        f"endTime should use stream_slice.end_time, got: {body['endTime']}"
-    )
+    assert "stream_slice.start_time" in body["startTime"], f"startTime should use stream_slice.start_time, got: {body['startTime']}"
+    assert "stream_slice.end_time" in body["endTime"], f"endTime should use stream_slice.end_time, got: {body['endTime']}"
 
 
 def test_concurrency_level_configured(manifest):
