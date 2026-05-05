@@ -12,8 +12,6 @@ Airbyte's certified MSSQL connector offers the following features:
   [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
-> ⚠️ **Please note the minimum required platform version is v0.58.0 to run source-mssql 4.0.18 and above.**
-
 ## Features
 
 | Feature                       | Supported | Notes              |
@@ -33,32 +31,32 @@ for more details.
 
 ## Getting Started
 
-#### Requirements
+### Requirements
 
 1. MSSQL Server `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`,
    `SQL Server 2022`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`,
-   `PDW 2008R2 AU34`.
-2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
-3. If you want to use CDC, please see [the relevant section below](mssql.md#change-data-capture-cdc)
-   for further setup requirements
+   or `PDW 2008R2 AU34`.
+2. Create a dedicated read-only Airbyte user with access to all tables needed for replication.
+3. If you want to use CDC, see [the relevant section below](mssql.md#change-data-capture-cdc)
+   for further setup requirements.
 
-#### 1. Make sure your database is accessible from the machine running Airbyte
+### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect
 to your MSSQL instance is via the check connection tool in the UI.
 
-#### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
+### 2. Create a dedicated read-only user with access to the relevant tables (recommended but optional)
 
 This step is optional but highly recommended to allow for better permission control and auditing.
 Alternatively, you can use Airbyte with an existing user in your database.
 
-#### 3. Your database user should now be ready for use with Airbyte!
+### 3. Your database user should now be ready for use with Airbyte
 
-#### Airbyte Cloud
+### Airbyte Cloud
 
 On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
-configuration. You may either configure your connection using one of the supported SSL Methods or by
-using an SSH Tunnel.
+configuration. Configure your connection using one of the supported SSL methods or by
+using an SSH tunnel.
 
 ## Authentication with Microsoft Entra ID
 
@@ -144,7 +142,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 - To enable CDC, a SQL Server administrator with the necessary privileges \(_db_owner_ or
   _sysadmin_\) must first run a query to enable CDC at the database level.
 
-  ```text
+  ```sql
   USE {database name}
   GO
   EXEC sys.sp_cdc_enable_db
@@ -153,7 +151,7 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 
 - The administrator must then enable CDC for each table that you want to capture. Here's an example:
 
-  ```text
+  ```sql
   USE {database name}
   GO
 
@@ -194,7 +192,7 @@ For further detail, see the
   your database. To avoid acquiring table locks, Airbyte uses _snapshot isolation_, allowing
   simultaneous writes by other database clients. This must be enabled on the database like so:
 
-  ```text
+  ```sql
   ALTER DATABASE {database name}
     SET ALLOW_SNAPSHOT_ISOLATION ON;
   ```
@@ -206,7 +204,7 @@ For further detail, see the
   [db_datareader](https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver15)
   role:
 
-  ```text
+  ```sql
   USE {database name};
   CREATE LOGIN {user name}
     WITH PASSWORD = '{password}';
@@ -214,27 +212,27 @@ For further detail, see the
   EXEC sp_addrolemember 'db_datareader', '{user name}';
   ```
 
-  - Add the user to the role specified earlier when enabling cdc on the table\(s\):
+  - Add the user to the role specified earlier when enabling CDC on the tables:
 
-    ```text
+    ```sql
     EXEC sp_addrolemember '{role name}', '{user name}';
     ```
 
   - This should be enough access, but if you run into problems, try also directly granting the user
-    `SELECT` access on the cdc schema:
+    `SELECT` access on the CDC schema:
 
-    ```text
+    ```sql
     USE {database name};
     GRANT SELECT ON SCHEMA :: [cdc] TO {user name};
     ```
 
-  - If feasible, granting this user 'VIEW SERVER STATE' permissions will allow Airbyte to check
+  - If feasible, granting this user `VIEW SERVER STATE` permissions will allow Airbyte to check
     whether or not the
     [SQL Server Agent](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#relationship-with-log-reader-agent)
     is running. This is preferred as it ensures syncs will fail if the CDC tables are not being
     updated by the Agent in the source database.
 
-    ```text
+    ```sql
     USE master;
     GRANT VIEW SERVER STATE TO {user name};
     ```
@@ -249,115 +247,72 @@ For further detail, see the
   [sys.sp_cdc_change_job](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-change-job-transact-sql?view=sql-server-ver15)
   as below:
 
-  ```text
+  ```sql
   -- we recommend 14400 minutes (10 days) as retention period
   EXEC sp_cdc_change_job @job_type='cleanup', @retention = {minutes}
   ```
 
 - After making this change, a restart of the cleanup job is required:
 
-```text
+  ```sql
   EXEC sys.sp_cdc_stop_job @job_type = 'cleanup';
 
   EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
-```
+  ```
 
 - If you are using Transaction Replication, the retention has to be changed using the following scripts:
 
-```text
+  ```sql
+  EXEC sp_changedistributiondb
+    @database = 'distribution',
+    @property = 'max_distretention',
+    @value = 14400 -- 14400 minutes (10 days)
 
-EXEC sp_changedistributiondb
-  @database = 'distribution',
-  @property = 'max_distretention',
-  @value = 14400 -- 14400 minutes (10 days)
+  EXEC sp_changedistributiondb
+    @database = 'distribution',
+    @property = 'history_retention',
+    @value = 14400 -- 14400 minutes (10 days)
 
-EXEC sp_changedistributiondb
-  @database = 'distribution',
-  @property = 'history_retention',
-  @value = 14400 -- 14400 minutes (10 days)
-
-USE [msdb]
-GO
-EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
-		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 14400'
-GO
-
-```
+  USE [msdb]
+  GO
+  EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
+      @command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 14400'
+  GO
+  ```
 
 #### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for CDC to work effectively. You can check the status of the SQL Server Agent as follows:
 
-```text
+  ```sql
   EXEC xp_servicecontrol 'QueryState', N'SQLServerAGENT';
-```
+  ```
 
 - If you see something other than 'Running.' please follow the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15) to start the service.
 
 ## Connection to MSSQL via an SSH Tunnel
 
-Airbyte has the ability to connect to a MSSQL instance via an SSH Tunnel. The reason you might want
-to do this because it is not possible \(or against security policy\) to connect to the database
-directly \(e.g. it does not have a public IP address\).
+Airbyte can connect to a MSSQL instance via an SSH tunnel. This is useful when the database is not publicly accessible or when security policy requires it.
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a.
-a bastion server\) that _does_ have direct access to the database. Airbyte connects to the bastion
-and then asks the bastion to connect directly to the server.
+When using an SSH tunnel, Airbyte connects to an intermediate server (a bastion server) that has direct access to the database. Airbyte connects to the bastion, and the bastion connects directly to the database.
 
-Using this feature requires additional configuration, when creating the source. We will talk through
-what each piece of configuration means.
+To configure an SSH tunnel:
 
-1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
-2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use
-   an
-
-   SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
-
-   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
-
-      establishing the SSH Tunnel \(see below for more information on generating this key\).
-
-   2. Choose `Password Authentication` if you will be using a password as your secret for
-      establishing
-
-      the SSH Tunnel.
-
-3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will
-   connect to. This should
-
-   be a hostname or an IP Address.
-
-4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection.
-   The default port for
-
-   SSH connections is `22`, so unless you have explicitly changed something, go with the default.
-
-5. `SSH Login Username` is the username that Airbyte should use when connecting to the bastion
-   server. This is NOT the
-
-   MSSQL username.
-
-6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the
-
-   password of the User from the previous step. If you are using `SSH Key Authentication` leave this
-
-   blank. Again, this is not the MSSQL password, but the password for the OS-user that Airbyte is
-
-   using to perform commands on the bastion.
-
-7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA
-
-   private Key that you are using to create the SSH connection. This should be the full contents of
-
-   the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending
-
-   with `-----END RSA PRIVATE KEY-----`.
+1. Configure all fields for the source as you normally would, except **SSH Tunnel Method**.
+2. **SSH Tunnel Method** defaults to **No Tunnel** (direct connection). To use an SSH tunnel, choose **SSH Key Authentication** or **Password Authentication**.
+   - Choose **Key Authentication** if you will be using an RSA private key as your secret for establishing the SSH tunnel. See below for more information on generating this key.
+   - Choose **Password Authentication** if you will be using a password as your secret for establishing the SSH tunnel.
+3. **SSH Tunnel Jump Server Host** is the hostname or IP address of the bastion server.
+4. **SSH Connection Port** is the port on the bastion server for the SSH connection. The default SSH port is `22`.
+5. **SSH Login Username** is the username that Airbyte uses when connecting to the bastion server. This is not the MSSQL username.
+6. If you are using **Password Authentication**, then **SSH Login Password** should be set to the password of the OS user from the previous step. If you are using **SSH Key Authentication**, leave this blank. This is not the MSSQL password, but the password for the OS user that Airbyte uses on the bastion.
+7. If you are using **SSH Key Authentication**, then **SSH Private Key** should be set to the RSA private key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
 ### Generating an SSH Key Pair
 
 The connector expects an RSA key in PEM format. To generate this key:
 
-```text
+```bash
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
@@ -420,48 +375,6 @@ Version 4.3.0 introduces a migration from the legacy CDK to the new CDK architec
   - `CursorBasedStatus` (cursor-based incremental) → version 3 `cursor_based` state type
 - **Backward Compatibility**: Existing connections will continue to work seamlessly without any manual intervention
 
-## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
-
-There is a backwards incompatible spec change between Microsoft SQL Source connector versions 0.4.17
-and 0.4.18. As part of that spec change `replication_method` configuration parameter was changed to
-`object` from `string`.
-
-In Microsoft SQL source connector versions 0.4.17 and older, `replication_method` configuration
-parameter was saved in the configuration database as follows:
-
-```
-"replication_method": "STANDARD"
-```
-
-Starting with version 0.4.18, `replication_method` configuration parameter is saved as follows:
-
-```
-"replication_method": {
-    "method": "STANDARD"
-}
-```
-
-After upgrading Microsoft SQL Source connector from 0.4.17 or older version to 0.4.18 or newer
-version you need to fix source configurations in the `actor` table in Airbyte database. To do so,
-you need to run two SQL queries. Follow the instructions in
-[Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db)
-to run SQL queries on Airbyte database.
-
-If you have connections with Microsoft SQL Source using _Standard_ replication method, run this SQL:
-
-```sql
-update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)
-WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'STANDARD');
-```
-
-If you have connections with Microsoft SQL Source using _Logical Replication (CDC)_ method, run this
-SQL:
-
-```sql
-update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)
-WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'CDC');
-```
-
 ## Changelog
 
 <details>
@@ -469,7 +382,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.2       | 2026-04-27 | [77036](https://github.com/airbytehq/airbyte/pull/77036)                                                          | Fix `TABLESAMPLE` failure on views and tables without an ordered column in cursor-incremental syncs.                               |
+| 4.4.2       | 2026-04-29 | [77036](https://github.com/airbytehq/airbyte/pull/77036)                                                          | Fix `TABLESAMPLE` failure on views and tables without an ordered column in cursor-incremental syncs.                               |
 | 4.4.1       | 2026-04-23 | [76857](https://github.com/airbytehq/airbyte/pull/76857)                                                          | Fix `Invalid column name` error when sampling system-versioned temporal tables that have `HIDDEN` period columns.                               |
 | 4.4.0       | 2026-04-23 | [76143](https://github.com/airbytehq/airbyte/pull/76143)                                                          | Add Microsoft Entra ID service principal authentication for both JDBC and CDC paths.                                                           |
 | 4.3.6       | 2026-04-02 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                   |
