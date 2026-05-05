@@ -99,17 +99,19 @@ docker run --rm --network cdc-harness-net \
 # 2. discover -> configured catalog. Build from the discovered catalog so
 #    json_schema types match exactly (the bulk-CDK catalog validator is
 #    strict about INTEGER vs NUMBER, etc.).
-STREAM=users
+STREAM='users'
+CATALOG_FILE='users.json'   # NEVER use a filename containing whitespace
+                            # — see Step 4 / repro-12162 for why.
 docker run --rm --network cdc-harness-net \
   -v /tmp/source-mssql-repro/secrets:/secrets \
   $IMAGE discover --config /secrets/config.json 2>/dev/null \
   | grep -E '^\{"type":"CATALOG"' \
-  | python3 -c "
-import sys, json
+  | STREAM="$STREAM" python3 -c "
+import sys, json, os
 catalog = json.loads(sys.stdin.read())['catalog']
 configured = {'streams': []}
 for s in catalog['streams']:
-    if s['name'] != '$STREAM':
+    if s['name'] != os.environ['STREAM']:
         continue
     configured['streams'].append({
         'stream': s,
@@ -119,7 +121,7 @@ for s in catalog['streams']:
         'cursor_field': ['_ab_cdc_lsn'],
     })
 print(json.dumps(configured, indent=2))
-" > /tmp/source-mssql-repro/catalogs/$STREAM.json
+" > "/tmp/source-mssql-repro/catalogs/$CATALOG_FILE"
 
 # 3. read in CDC mode
 docker run --rm --network cdc-harness-net \
@@ -127,12 +129,19 @@ docker run --rm --network cdc-harness-net \
   -v /tmp/source-mssql-repro/catalogs:/catalogs \
   $IMAGE read \
     --config /secrets/config.json \
-    --catalog /catalogs/$STREAM.json \
+    --catalog "/catalogs/$CATALOG_FILE" \
   > /tmp/source-mssql-repro/output/read.jsonl 2>&1
 
 echo "exit=$?"
 echo "RECORD: $(grep -c '^{\"type\":\"RECORD\"' /tmp/source-mssql-repro/output/read.jsonl)"
 echo "ERROR : $(grep -c '\"type\":\"TRACE\".*\"type\":\"ERROR\"' /tmp/source-mssql-repro/output/read.jsonl)"
+
+# Quoting matters: `STREAM` is the SQL stream name (which CAN contain
+# whitespace, see repro-12162) and is passed to python3 via env-var so
+# the python source is never reparsed by the shell. `CATALOG_FILE` is
+# the on-disk filename, which MUST be whitespace-free so picocli inside
+# the connector container parses `--catalog /catalogs/<file>` as a
+# single argument.
 ```
 
 A successful baseline sync of `dbo.users` emits three `RECORD` messages,
@@ -149,7 +158,22 @@ that directory:
 
 For [`airbytehq/oncall#12162`](https://github.com/airbytehq/oncall/issues/12162).
 Creates `dbo.[Order Items]` (note the space), enables CDC on it, and
-re-runs `read` with `STREAM='Order Items'`.
+re-runs `read` against the new stream:
+
+```bash
+docker cp \
+  airbyte-integrations/connectors/source-mssql/dev/cdc-repro/repro-12162-spaces-in-name.sql \
+  mssql-cdc:/tmp/repro-12162.sql
+docker exec mssql-cdc /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P "Test_password_1" -C -i /tmp/repro-12162.sql
+
+# IMPORTANT: STREAM has a space, so CATALOG_FILE MUST NOT mirror it.
+STREAM='Order Items'
+CATALOG_FILE='order-items.json'
+
+# Re-run the discover + python catalog-shaping block from Step 3 with
+# these two variables, then `read` with --catalog "/catalogs/$CATALOG_FILE".
+```
 
 Expected outcome: exit 1, zero `RECORD`s, and the `read` log contains:
 
