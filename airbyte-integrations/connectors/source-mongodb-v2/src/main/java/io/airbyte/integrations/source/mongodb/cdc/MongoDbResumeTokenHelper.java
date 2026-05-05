@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,6 +85,14 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        final String namedDatabases = String.join(", ", databaseNames);
+        LOGGER.error("MongoDB user is not authorized to open a change stream on database(s): {}", namedDatabases, e);
+        throw new ConfigErrorException(
+            String.format(MongoConstants.CHANGE_STREAM_NOT_AUTHORIZED_ERROR_MESSAGE, namedDatabases), e);
+      }
+      throw e;
     }
   }
 
