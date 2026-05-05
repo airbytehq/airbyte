@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
@@ -454,6 +455,16 @@ class MySqlSourceDebeziumOperations(
 
     val commonProperties: Map<String, String> by lazy {
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
+        // Determine which custom converters to register. We omit the boolean converter
+        // when the user has explicitly opted out of MySQL JDBC's tinyInt1isBit behavior,
+        // so that TINYINT(1) values flow through CDC as integers (matching the schema
+        // produced by full-load/initial-sync when tinyInt1isBit=false).
+        val converters: List<Class<out RelationalColumnCustomConverter>> = buildList {
+            if (tinyInt1IsBit) {
+                add(MySqlSourceCdcBooleanConverter::class.java)
+            }
+            add(MySqlSourceCdcTemporalConverter::class.java)
+        }
         val dbzPropertiesBuilder =
             DebeziumPropertiesBuilder()
                 .withDefault()
@@ -489,10 +500,7 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(
-                    MySqlSourceCdcBooleanConverter::class,
-                    MySqlSourceCdcTemporalConverter::class
-                )
+                .withConverters(*converters.toTypedArray())
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }
@@ -500,6 +508,25 @@ class MySqlSourceDebeziumOperations(
 
         dbzPropertiesBuilder.buildMap()
     }
+
+    /**
+     * Reflects the value of the `tinyInt1isBit` MySQL JDBC URL parameter. Defaults to `true` when
+     * unset, matching the upstream MySQL Connector/J default. Recognizes `false`, `no`, `0`, and
+     * `off` (case-insensitive) as disabling values, matching how MySQL Connector/J parses boolean
+     * properties.
+     */
+    private val tinyInt1IsBit: Boolean
+        get() {
+            val raw: String =
+                configuration.jdbcProperties["tinyInt1isBit"]?.trim()?.lowercase() ?: return true
+            return when (raw) {
+                "false",
+                "no",
+                "0",
+                "off" -> false
+                else -> true
+            }
+        }
 
     companion object {
         // Constants defining a range for the random value picked for the database.server.id

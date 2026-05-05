@@ -4,17 +4,33 @@
 
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.discover.DiscoveredStream
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.read.DatatypeTestCase
 import io.airbyte.cdk.read.DatatypeTestOperations
 import io.airbyte.cdk.read.DynamicDatatypeTestFactory
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.CatalogHelpers
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicNode
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
@@ -25,6 +41,134 @@ class MySqlSourceDatatypeIntegrationTest {
     @Timeout(300)
     fun syncTests(): Iterable<DynamicNode> =
         DynamicDatatypeTestFactory(MySqlSourceDatatypeTestOperations).build(dbContainer)
+
+    /**
+     * Regression test for https://github.com/airbytehq/airbyte/discussions/70380.
+     *
+     * When the user sets `tinyInt1isBit=false` in the JDBC URL params, MySQL's JDBC driver reports
+     * `TINYINT(1)` columns as TINYINT (a small integer) rather than as BIT. The full-load schema
+     * therefore exposes such columns as integers. The Debezium-based CDC path used to register a
+     * custom converter that unconditionally coerced `TINYINT(1)` values into booleans, producing
+     * `false`/`true` payloads that downstream destinations could not decode as numbers (e.g.
+     * `IllegalArgumentException: invalid number value false`). With the fix in place, the converter
+     * is omitted when the user opts out via `tinyInt1isBit=false`, so CDC emits the same numeric
+     * values as the initial snapshot.
+     */
+    @Test
+    @Timeout(300)
+    fun cdcRespectsTinyInt1IsBitFalse() {
+        val database = "tinyint1_test"
+        val tableName = "tinyint1_tbl"
+        val streamName = tableName
+
+        fun configSpec(cdc: Boolean): MySqlSourceConfigurationSpecification =
+            MySqlContainerFactory.config(dbContainer).apply {
+                this.database = database
+                this.jdbcUrlParams = "tinyInt1isBit=false"
+                if (cdc) setIncrementalValue(Cdc()) else setIncrementalValue(UserDefinedCursor)
+            }
+
+        val cdcConfigSpec = configSpec(cdc = true)
+        val cdcConfig = MySqlSourceConfigurationFactory().make(cdcConfigSpec)
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use {
+                it.execute("CREATE DATABASE IF NOT EXISTS $database")
+            }
+            connection.createStatement().use { it.execute("USE $database") }
+            connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
+            connection.createStatement().use {
+                it.execute("CREATE TABLE $tableName (k INT PRIMARY KEY, v TINYINT(1))")
+            }
+            connection.createStatement().use {
+                it.execute("INSERT INTO $tableName (k, v) VALUES (1, 0), (2, 1)")
+            }
+        }
+
+        // Build a catalog around the TINYINT(1) column. With tinyInt1isBit=false, the column
+        // should be discovered as a Short, not a Boolean.
+        fun buildCatalog(
+            spec: MySqlSourceConfigurationSpecification,
+            cdc: Boolean,
+        ): ConfiguredAirbyteCatalog {
+            val descriptor = StreamDescriptor().withName(streamName).withNamespace(database)
+            val discoveredStream =
+                DiscoveredStream(
+                    id = StreamIdentifier.Companion.from(descriptor),
+                    columns =
+                        listOf(
+                            Field("k", IntFieldType),
+                            Field("v", ShortFieldType),
+                        ),
+                    primaryKeyColumnIDs = listOf(listOf("k")),
+                )
+            val airbyteStream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(spec),
+                        discoveredStream,
+                    )
+            val configuredStream: ConfiguredAirbyteStream =
+                CatalogHelpers.toDefaultConfiguredStream(airbyteStream)
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
+                    .apply {
+                        if (cdc) {
+                            cursorField = listOf(MySqlSourceCdcMetaFields.CDC_CURSOR.id)
+                        } else {
+                            cursorField = listOf("k")
+                        }
+                    }
+            return ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
+        }
+
+        // Snapshot read produces the initial values via Debezium.
+        val initialOutput =
+            CliRunner.source("read", cdcConfigSpec, buildCatalog(cdcConfigSpec, cdc = true)).run()
+        val initialState: AirbyteStateMessage = initialOutput.states().last()
+        assertVTinyIntValuesAreNumeric(initialOutput.records())
+
+        // Insert another row to produce a binlog event, then verify the converter does not coerce
+        // values into booleans.
+        JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use {
+                it.execute("INSERT INTO $database.$tableName (k, v) VALUES (3, 0)")
+            }
+        }
+        val cdcOutput =
+            CliRunner.source(
+                    "read",
+                    cdcConfigSpec,
+                    buildCatalog(cdcConfigSpec, cdc = true),
+                    listOf(initialState),
+                )
+                .run()
+        assertVTinyIntValuesAreNumeric(cdcOutput.records())
+
+        // Stream-mode (full refresh / cursor-based) read should agree with CDC: numeric values.
+        val streamConfigSpec = configSpec(cdc = false)
+        val streamOutput =
+            CliRunner.source("read", streamConfigSpec, buildCatalog(streamConfigSpec, cdc = false))
+                .run()
+        assertVTinyIntValuesAreNumeric(streamOutput.records())
+    }
+
+    private fun assertVTinyIntValuesAreNumeric(records: List<AirbyteRecordMessage>) {
+        Assertions.assertTrue(records.isNotEmpty(), "expected at least one record")
+        for (record in records) {
+            val v = record.data["v"]
+            Assertions.assertNotNull(v, "record $record missing 'v' column")
+            Assertions.assertFalse(
+                v.isBoolean,
+                "TINYINT(1) value should not be emitted as boolean when tinyInt1isBit=false: $record",
+            )
+            Assertions.assertTrue(
+                v.isNumber,
+                "TINYINT(1) value should be a number when tinyInt1isBit=false: $record",
+            )
+        }
+    }
 
     companion object {
 
