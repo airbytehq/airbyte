@@ -199,9 +199,9 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to translate known MongoDB driver exceptions raised during CDC operations
-   * into {@link ConfigErrorException}(s) with actionable, deterministic error messages. Currently
-   * handles {@code BSONObjectTooLarge} (code 10334) and Unauthorized errors (code 13) on
+   * Wraps an iterator to translate known MongoDB driver exceptions raised during CDC operations into
+   * {@link ConfigErrorException}(s) with actionable, deterministic error messages. Currently handles
+   * {@code BSONObjectTooLarge} (code 10334) and Unauthorized errors (code 13) on
    * {@code $changeStream} aggregates.
    *
    * @param iterator The base iterator to wrap.
