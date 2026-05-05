@@ -58,7 +58,9 @@ class MySqlSourceDatatypeIntegrationTest {
     @Test
     @Timeout(300)
     fun cdcRespectsTreatTinyint1AsInteger() {
-        val database = "tinyint1_test"
+        // Reuse the testcontainer's default `test` database; the test MySQL user only has full
+        // privileges there.
+        val database = "test"
         val tableName = "tinyint1_tbl"
         val streamName = tableName
 
@@ -73,9 +75,6 @@ class MySqlSourceDatatypeIntegrationTest {
         val cdcConfig = MySqlSourceConfigurationFactory().make(cdcConfigSpec)
         JdbcConnectionFactory(cdcConfig).get().use { connection: Connection ->
             connection.isReadOnly = false
-            connection.createStatement().use {
-                it.execute("CREATE DATABASE IF NOT EXISTS $database")
-            }
             connection.createStatement().use { it.execute("USE $database") }
             connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
             connection.createStatement().use {
