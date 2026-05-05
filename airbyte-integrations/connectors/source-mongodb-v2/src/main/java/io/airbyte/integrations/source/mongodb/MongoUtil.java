@@ -434,8 +434,8 @@ public class MongoUtil {
 
   /**
    * Returns true if the given exception (or any wrapped cause) is a MongoDB authorization failure
-   * (error code 13, "Unauthorized") raised when the configured user lacks the `find` +
-   * `changeStream` privileges required to open a change stream.
+   * (error code 13, "Unauthorized") raised when the configured user lacks the `find` + `changeStream`
+   * privileges required to open a change stream.
    *
    * @param exception The exception to check.
    * @return true if the exception is caused by an Unauthorized MongoDB error, false otherwise.
