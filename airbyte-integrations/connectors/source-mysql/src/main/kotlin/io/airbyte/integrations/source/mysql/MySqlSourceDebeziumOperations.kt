@@ -455,16 +455,6 @@ class MySqlSourceDebeziumOperations(
 
     val commonProperties: Map<String, String> by lazy {
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
-        // Determine which custom converters to register. We omit the boolean converter
-        // when the user has opted to treat TINYINT(1) columns as integers, so that CDC
-        // emits the same integer values as the snapshot path (which sets
-        // tinyInt1isBit=false on the JDBC URL when the option is enabled).
-        val converters: List<Class<out RelationalColumnCustomConverter>> = buildList {
-            if (!configuration.treatTinyint1AsInteger) {
-                add(MySqlSourceCdcBooleanConverter::class.java)
-            }
-            add(MySqlSourceCdcTemporalConverter::class.java)
-        }
         val dbzPropertiesBuilder =
             DebeziumPropertiesBuilder()
                 .withDefault()
@@ -500,7 +490,16 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(*converters.toTypedArray())
+                .run {
+                    val converters =
+                        buildList<Class<out RelationalColumnCustomConverter>> {
+                            if (!configuration.treatTinyint1AsInteger) {
+                                add(MySqlSourceCdcBooleanConverter::class.java)
+                            }
+                            add(MySqlSourceCdcTemporalConverter::class.java)
+                        }
+                    withConverters(*converters.toTypedArray())
+                }
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }

@@ -192,11 +192,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":14}""")
     @JsonSchemaDefault("false")
     @JsonPropertyDescription(
-        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans. " +
-            "Leave disabled (the default) if your TINYINT(1) columns store boolean values. " +
-            "Internally this sets the tinyInt1isBit=false JDBC URL parameter for snapshot " +
-            "reads and skips the corresponding CDC type mapping so that snapshot and CDC " +
-            "reads remain consistent.",
+        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans."
     )
     var treatTinyint1AsInteger: Boolean? = false
 

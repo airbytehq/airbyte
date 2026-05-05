@@ -149,9 +149,6 @@ constructor(
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
 
-        // When the user opts to treat TINYINT(1) as an integer, add the corresponding JDBC URL
-        // parameter so that the snapshot path discovers the column as an integer rather than as
-        // a bit/boolean.
         val treatTinyint1AsInteger: Boolean = pojo.treatTinyint1AsInteger ?: false
         if (treatTinyint1AsInteger) {
             jdbcProperties["tinyInt1isBit"] = "false"
