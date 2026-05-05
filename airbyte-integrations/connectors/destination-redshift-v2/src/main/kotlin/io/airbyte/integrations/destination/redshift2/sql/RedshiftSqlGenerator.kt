@@ -88,9 +88,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                 }
                 .joinToString(",\n    ")
 
-        val tableKeyClauses = getTableKeyClauses(stream)
         val createStatement =
-            "CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} ($columnDeclarations) $tableKeyClauses;"
+            "CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} ($columnDeclarations);"
 
         // Only wrap in a transaction when replacing (DROP + CREATE must be atomic).
         return if (replace) {
@@ -588,23 +587,4 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
 
     private fun getCursorColumnNameQuoted(stream: DestinationStream): String? =
         stream.tableSchema.getCursor().firstOrNull()?.let { quoteIdentifier(it) }
-
-    /**
-     * For dedup streams:
-     * - DISTKEY on the first primary key column (Redshift allows only one DISTKEY column)
-     * - COMPOUND SORTKEY on all primary key columns
-     */
-    private fun getTableKeyClauses(stream: DestinationStream): String {
-        val importType = stream.tableSchema.importType
-        if (importType !is Dedupe) {
-            return ""
-        }
-        val pkColumns = getPrimaryKeysColumnNamesQuoted(stream)
-        if (pkColumns.isEmpty()) {
-            return ""
-        }
-        val distKey = " DISTKEY(${pkColumns.first()})"
-        val sortKey = " COMPOUND SORTKEY(${pkColumns.joinToString(", ")})"
-        return "\n$distKey\n$sortKey"
-    }
 }

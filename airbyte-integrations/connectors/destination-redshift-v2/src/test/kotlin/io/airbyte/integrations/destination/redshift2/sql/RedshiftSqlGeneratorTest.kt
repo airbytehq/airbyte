@@ -163,12 +163,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"))
     }
 
-    // ================================================================
-    // DDL: DISTKEY / SORTKEY
-    // ================================================================
-
     @Test
-    fun `createTable for dedup stream with single PK adds DISTKEY and SORTKEY`() {
+    fun `createTable does not include DISTKEY or SORTKEY`() {
         val finalSchema =
             mapOf(
                 "id" to ColumnType("bigint", false),
@@ -184,59 +180,12 @@ internal class RedshiftSqlGeneratorTest {
 
         val sql = sqlGenerator.createTable(stream, tableName, replace = false)
 
-        assertTrue(sql.contains("""DISTKEY("id")"""), "Expected DISTKEY on first PK column")
-        assertTrue(
-            sql.contains("""COMPOUND SORTKEY("id")"""),
-            "Expected COMPOUND SORTKEY on PK columns",
-        )
+        assertFalse(sql.contains("DISTKEY"), "Should not have DISTKEY")
+        assertFalse(sql.contains("SORTKEY"), "Should not have SORTKEY")
     }
 
     @Test
-    fun `createTable for dedup stream with multiple PKs uses first PK as DISTKEY and all PKs as SORTKEY`() {
-        val finalSchema =
-            mapOf(
-                "org_id" to ColumnType("bigint", false),
-                "user_id" to ColumnType("bigint", false),
-                "name" to ColumnType("varchar(65535)", true),
-            )
-        val stream =
-            mockStream(
-                finalSchema = finalSchema,
-                primaryKey = listOf(listOf("org_id"), listOf("user_id")),
-                cursor = listOf("updated_at"),
-            )
-        val tableName = TableName(namespace = "public", name = "org_users")
-
-        val sql = sqlGenerator.createTable(stream, tableName, replace = false)
-
-        assertTrue(
-            sql.contains("""DISTKEY("org_id")"""),
-            "Expected DISTKEY on first PK column",
-        )
-        assertTrue(
-            sql.contains("""COMPOUND SORTKEY("org_id", "user_id")"""),
-            "Expected COMPOUND SORTKEY on all PK columns",
-        )
-    }
-
-    @Test
-    fun `createTable for append stream has no DISTKEY or SORTKEY`() {
-        val finalSchema =
-            mapOf(
-                "id" to ColumnType("bigint", false),
-                "name" to ColumnType("varchar(65535)", true),
-            )
-        val stream = mockAppendStream(finalSchema)
-        val tableName = TableName(namespace = "public", name = "events")
-
-        val sql = sqlGenerator.createTable(stream, tableName, replace = false)
-
-        assertFalse(sql.contains("DISTKEY"), "Append stream should not have DISTKEY")
-        assertFalse(sql.contains("SORTKEY"), "Append stream should not have SORTKEY")
-    }
-
-    @Test
-    fun `createTable for dedup stream with replace preserves DISTKEY and SORTKEY`() {
+    fun `createTable for dedup stream with replace wraps in transaction`() {
         val finalSchema =
             mapOf(
                 "id" to ColumnType("bigint", false),
@@ -254,11 +203,8 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
         assertTrue(sql.contains("DROP TABLE IF EXISTS"))
-        assertTrue(sql.contains("""DISTKEY("id")"""), "Expected DISTKEY in replace mode")
-        assertTrue(
-            sql.contains("""COMPOUND SORTKEY("id")"""),
-            "Expected COMPOUND SORTKEY in replace mode",
-        )
+        assertFalse(sql.contains("DISTKEY"), "Should not have DISTKEY")
+        assertFalse(sql.contains("SORTKEY"), "Should not have SORTKEY")
         assertTrue(sql.contains("COMMIT;"))
     }
 
