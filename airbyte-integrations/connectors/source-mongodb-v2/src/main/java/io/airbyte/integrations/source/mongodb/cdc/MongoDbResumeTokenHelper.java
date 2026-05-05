@@ -33,8 +33,8 @@ public class MongoDbResumeTokenHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
 
   /**
-   * MongoDB error code returned when the authenticated user lacks the privilege required to
-   * execute the requested command. See https://www.mongodb.com/docs/manual/reference/error-codes/.
+   * MongoDB error code returned when the authenticated user lacks the privilege required to execute
+   * the requested command. See https://www.mongodb.com/docs/manual/reference/error-codes/.
    */
   static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
 
@@ -99,9 +99,9 @@ public class MongoDbResumeTokenHelper {
   }
 
   /**
-   * Builds the user-facing error message used when MongoDB rejects the change-stream open with
-   * error code 13 ("Unauthorized"). The string before the period is fixed so that it remains
-   * deterministic and suitable as a log aggregation key.
+   * Builds the user-facing error message used when MongoDB rejects the change-stream open with error
+   * code 13 ("Unauthorized"). The string before the period is fixed so that it remains deterministic
+   * and suitable as a log aggregation key.
    *
    * @param databaseNames The list of database names for which the change stream was being opened.
    * @return The user-facing error message.
