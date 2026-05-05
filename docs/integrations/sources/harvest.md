@@ -108,6 +108,7 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.37 | 2026-05-05 | [76900](https://github.com/airbytehq/airbyte/pull/76900) | Reorder spec fields so `credentials` appears before `account_id` and `replication_start_date` |
 | 1.2.36 | 2026-05-04 | [76217](https://github.com/airbytehq/airbyte/pull/76217) | Declare OAuth2 flow inline via `advanced_auth` and `oauthConnectorInputSpecification` |
 | 1.2.35 | 2026-04-28 | [75371](https://github.com/airbytehq/airbyte/pull/75371) | Update dependencies |
 | 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
