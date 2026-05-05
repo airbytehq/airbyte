@@ -6,26 +6,12 @@ acceptance_tests:
     tests:
       - spec_path: "source_microsoft_dataverse/spec.yaml"
   connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+    bypass_reason: "Community connector — no CI secrets available"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
-        timeout_seconds: 180
+    bypass_reason: "Community connector — no CI secrets available"
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+    bypass_reason: "Community connector — no CI secrets available"
   incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        future_state_path: "integration_tests/abnormal_state.json"
+    bypass_reason: "Community connector — no CI secrets available"
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    bypass_reason: "Community connector — no CI secrets available"
