@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-csv", "load-aws")
+    toolkits = listOf("load-csv")
 }
 
 tasks.withType<JavaCompile> {
@@ -25,7 +25,6 @@ application {
 val hikariCpVersion = "7.0.2"
 val redshiftJdbcVersion = "2.1.0.30"
 val awsSdkV2Version = "2.31.1"
-val testContainersVersion = "1.20.5"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
 
@@ -39,7 +38,7 @@ dependencies {
     // AWS S3 for staging (SDK v2)
     implementation("software.amazon.awssdk:s3:$awsSdkV2Version")
     
-    // Utilities from old CDK (for JDBC URL parsing)
+    // SSH tunnel support (from old CDK)
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
     
     // Test dependencies
@@ -52,14 +51,4 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-
-    // Integration test dependencies
-    integrationTestImplementation("com.amazon.redshift:redshift-jdbc42:$redshiftJdbcVersion")
-    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
-    integrationTestImplementation("org.testcontainers:postgresql:$testContainersVersion") // Redshift is Postgres-compatible
-    integrationTestImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    integrationTestImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    integrationTestRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")
-    integrationTestRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
-    integrationTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
