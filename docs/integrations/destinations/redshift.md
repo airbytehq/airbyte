@@ -13,9 +13,7 @@ This page describes the step-by-step process of setting up the Redshift destinat
 - An [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for staging data
 - AWS IAM credentials with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to the S3 bucket
 
-:::note
-The Redshift destination uses [S3 staging with COPY](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html) as the loading method. This is the recommended approach described by Redshift best practices. Data is uploaded to S3 as multiple files with a manifest file, then loaded into Redshift via the COPY command.
-:::
+NOTE: The Redshift destination uses [S3 staging with COPY](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html) as the loading method. This is the recommended approach described by Redshift best practices. Data is uploaded to S3 as multiple files with a manifest file, then loaded into Redshift via the COPY command.
 
 ## Setup guide
 
@@ -42,14 +40,11 @@ CREATE DATABASE airbyte_database;
    within a session, so you must select `airbyte_database` from the database dropdown before running the remaining
    statements.
 
-:::tip
-You can verify you are connected to the correct database by running:
+TIP: You can verify you are connected to the correct database by running:
 
 ```sql
 SELECT CURRENT_DATABASE();
 ```
-
-:::
 
 5. Run the following script to create the schema, user, and grants:
 
@@ -69,11 +64,7 @@ GRANT USAGE, CREATE ON SCHEMA airbyte_schema TO airbyte_user;
 
 6. Verify the script ran successfully in the Query Editor.
 
-:::note
-Our integration automatically creates the necessary schemas in your Redshift database. To enable
-this, ensure the connection user has `CREATE` privileges on the database. If you prefer to create
-schemas manually, grant `USAGE` and `CREATE` privileges on those schemas to the Airbyte user.
-:::
+NOTE: Our integration automatically creates the necessary schemas in your Redshift database. To enable this, ensure the connection user has `CREATE` privileges on the database. If you prefer to create schemas manually, grant `USAGE` and `CREATE` privileges on those schemas to the Airbyte user.
 
 ### Step 2: Set up S3 staging
 
@@ -90,16 +81,23 @@ configure an S3 bucket and IAM credentials for this purpose.
 4. [Generate an access key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
    for the IAM user.
 
+**Required credentials:**
+
+- **Access Key Id** — See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key. We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the staging bucket.
+- **Secret Access Key** — Corresponding key to the above Access Key Id.
+
+**Optional parameters:**
+
+- **Bucket Path** — The directory within the S3 bucket to place the staging data. For example, if you set this to `yourFavoriteSubdirectory`, the staging data will be placed inside `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
+- **S3 Filename pattern** — The pattern allows you to set the file-name format for the S3 staging file(s). The following placeholder combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Do not use empty spaces or unsupported placeholders, as they won't be recognized.
+- **Purge Staging Data** — Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
+
+NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel supports the SQL connection only. S3 is secured through public HTTPS access only. Subsequent typing and deduping queries on final table are executed over using provided SSH Tunnel configuration.
+
 #### Optional: SSH Bastion Host
 
 This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH
 Tunneling. Enter the bastion host, port, and credentials in the destination configuration.
-
-:::note
-S3 staging does **not** use the SSH Tunnel for copying data. SSH Tunnel supports the SQL connection
-only. S3 is secured through public HTTPS access only. Subsequent queries on final tables are
-executed using the provided SSH Tunnel configuration.
-:::
 
 ### Step 3: Set up Redshift as a destination in Airbyte
 
@@ -158,11 +156,7 @@ The final table contains these fields, in addition to the columns declared in yo
 
 See [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
-:::note
-As of version 4.0.0, the Redshift destination writes data directly to final tables. Raw tables
-(`_airbyte_raw_*`) are no longer created. If you are upgrading from an older version, see the
-[migration guide](redshift-v2-migrations.md) for details.
-:::
+NOTE: As of version 4.0.0, the Redshift destination writes data directly to final tables. Raw tables (`_airbyte_raw_*`) are no longer created. If you are upgrading from an older version, see the [migration guide](redshift-v2-migrations.md) for details.
 
 ### Schema naming
 
