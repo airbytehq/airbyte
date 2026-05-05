@@ -110,6 +110,11 @@ public class MongoDbSource extends BaseConnector implements Source {
             .withStatus(AirbyteConnectionStatus.Status.FAILED);
       } catch (final Exception e) {
         LOGGER.error("Unable to perform source check operation.", e);
+        if (MongoUtil.isUnauthorizedException(e)) {
+          return new AirbyteConnectionStatus()
+              .withMessage(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE)
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
         return new AirbyteConnectionStatus()
             .withMessage(e.getMessage())
             .withStatus(AirbyteConnectionStatus.Status.FAILED);
@@ -193,6 +198,9 @@ public class MongoDbSource extends BaseConnector implements Source {
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to perform sync read operation.", e);
+      if (MongoUtil.isUnauthorizedException(e)) {
+        throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, e);
+      }
       throw e;
     }
   }
@@ -235,6 +243,10 @@ public class MongoDbSource extends BaseConnector implements Source {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isUnauthorizedException(e)) {
+          LOGGER.error("Unauthorized error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
