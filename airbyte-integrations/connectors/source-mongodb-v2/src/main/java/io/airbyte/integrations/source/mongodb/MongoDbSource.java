@@ -201,8 +201,8 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to translate known MongoDB errors raised during CDC operations into
-   * actionable {@link ConfigErrorException}s with user-facing messages.
+   * Wraps an iterator to translate known MongoDB errors raised during CDC operations into actionable
+   * {@link ConfigErrorException}s with user-facing messages.
    *
    * @param iterator The base iterator to wrap.
    * @return A wrapped iterator that catches and translates known MongoDB errors.
