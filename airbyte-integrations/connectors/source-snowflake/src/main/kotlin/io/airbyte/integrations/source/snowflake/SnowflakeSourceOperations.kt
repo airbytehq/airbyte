@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.snowflake
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.DataField
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -149,7 +149,7 @@ class SnowflakeSourceOperations() :
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
-    fun DataField.sql(): String = "\"$id\""
+    fun Field.sql(): String = "\"$id\""
 
     fun FromNode.sql(): String =
         when (this) {
