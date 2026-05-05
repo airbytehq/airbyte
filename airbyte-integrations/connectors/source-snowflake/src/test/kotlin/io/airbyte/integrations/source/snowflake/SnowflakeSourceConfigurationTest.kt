@@ -202,4 +202,79 @@ class SnowflakeSourceConfigurationTest {
             factory.makeWithoutExceptionHandling(spec)
         }
     }
+
+    private fun baseSpec() =
+        SnowflakeSourceConfigurationSpecification().apply {
+            host = "test.snowflakecomputing.com"
+            role = "TEST_ROLE"
+            warehouse = "TEST_WAREHOUSE"
+            database = "TEST_DATABASE"
+            credentials =
+                UsernamePasswordCredentialsSpecification(
+                    username = "testuser",
+                    password = "testpass"
+                )
+        }
+
+    @Test
+    fun testValidStartDate() {
+        val config =
+            factory.makeWithoutExceptionHandling(baseSpec().apply { startDate = "2024-01-01" })
+        assertEquals("2024-01-01", config.startDate)
+    }
+
+    @Test
+    fun testValidEndDate() {
+        val config =
+            factory.makeWithoutExceptionHandling(baseSpec().apply { endDate = "2024-12-31" })
+        assertEquals("2024-12-31", config.endDate)
+    }
+
+    @Test
+    fun testInvalidStartDateFormat() {
+        assertThrows(ConfigErrorException::class.java) {
+            factory.makeWithoutExceptionHandling(baseSpec().apply { startDate = "01-01-2024" })
+        }
+    }
+
+    @Test
+    fun testInvalidEndDateFormat() {
+        assertThrows(ConfigErrorException::class.java) {
+            factory.makeWithoutExceptionHandling(baseSpec().apply { endDate = "not-a-date" })
+        }
+    }
+
+    @Test
+    fun testStartDateAfterEndDateThrows() {
+        assertThrows(ConfigErrorException::class.java) {
+            factory.makeWithoutExceptionHandling(
+                baseSpec().apply {
+                    startDate = "2024-12-31"
+                    endDate = "2024-01-01"
+                }
+            )
+        }
+    }
+
+    @Test
+    fun testStartDateEqualsEndDateIsValid() {
+        val config =
+            factory.makeWithoutExceptionHandling(
+                baseSpec().apply {
+                    startDate = "2024-06-15"
+                    endDate = "2024-06-15"
+                }
+            )
+        assertEquals("2024-06-15", config.startDate)
+        assertEquals("2024-06-15", config.endDate)
+    }
+
+    @Test
+    fun testFullRefreshTemporalColumnPassThrough() {
+        val config =
+            factory.makeWithoutExceptionHandling(
+                baseSpec().apply { fullRefreshTemporalColumn = "updated_at" }
+            )
+        assertEquals("updated_at", config.fullRefreshTemporalColumn)
+    }
 }
