@@ -43,7 +43,7 @@ class ValidateJiraDomain(ValidationStrategy):
         if any(ch.isspace() for ch in value):
             raise ValueError("Domain must not contain whitespace.")
         lowered = value.lower()
-        if lowered.startswith("http://") or lowered.startswith("https://"):
+        if lowered.startswith("http://") or lowered.startswith("https://"):  # ignore-https-check
             raise ValueError("Do not include 'https://'. Enter just the host, e.g. acme.atlassian.net.")
         if any(ch in value for ch in ("/", "?", "#")):
             raise ValueError("Domain must be a hostname only — remove any '/', '?', or '#'.")
