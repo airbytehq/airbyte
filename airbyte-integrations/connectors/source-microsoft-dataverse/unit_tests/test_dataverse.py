@@ -6,7 +6,13 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 import pytest
-from source_microsoft_dataverse.dataverse import AirbyteType, BATCH_SIZE, _parse_batch_response, convert_dataverse_type, get_all_datetime_behaviors
+from source_microsoft_dataverse.dataverse import (
+    BATCH_SIZE,
+    AirbyteType,
+    _parse_batch_response,
+    convert_dataverse_type,
+    get_all_datetime_behaviors,
+)
 
 
 @pytest.mark.parametrize(
@@ -52,7 +58,7 @@ def test_parse_batch_response():
     )
 
     mock_response = MagicMock()
-    mock_response.headers = {"Content-Type": f'multipart/mixed; boundary={boundary}'}
+    mock_response.headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
     mock_response.text = body
 
     result = _parse_batch_response(mock_response, ["contact", "account"])
