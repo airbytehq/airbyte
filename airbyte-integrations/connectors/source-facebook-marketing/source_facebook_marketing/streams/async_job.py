@@ -465,10 +465,20 @@ class InsightAsyncJob(AsyncJob):
                 ) from e
 
             start_ts = ab_datetime_now()
+            status: Optional[str] = None
             while True:
-                id_job = id_job.api_get()
-                status = id_job.get("async_status")
-                percent = id_job.get("async_percent_completion")
+                try:
+                    id_job = id_job.api_get()
+                    status = id_job.get("async_status")
+                    percent = id_job.get("async_percent_completion")
+                except (TypeError, FacebookBadObjectError) as e:
+                    last_status = "PARSE_ERROR"
+                    logger.warning(
+                        f"[Split:{level}] ID-collection attempt {attempt}/{self.MAX_ID_COLLECTION_ATTEMPTS} "
+                        f"received unparseable response from Facebook ({type(e).__name__}); "
+                        f"{'retrying' if attempt < self.MAX_ID_COLLECTION_ATTEMPTS else 'giving up'}."
+                    )
+                    break
                 logger.info(f"[Split:{level}] attempt={attempt}, status={status}, {percent}%")
                 if status == Status.COMPLETED:
                     break

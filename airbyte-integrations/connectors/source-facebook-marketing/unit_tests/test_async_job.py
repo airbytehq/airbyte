@@ -656,6 +656,116 @@ class TestInsightAsyncJob:
         assert exc_info.value.failure_type == FailureType.transient_error
 
     @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_recovers_from_polling_typeerror(self, mocker, api):
+        """
+        When ``id_job.api_get()`` raises TypeError once during polling (e.g. the
+        upstream facebook-business SDK fails to parse an unusual response body),
+        ``_collect_child_ids`` should treat it as a transient parse failure,
+        retry by issuing a fresh insights job, and ultimately return the IDs
+        from the second attempt without surfacing the bare TypeError.
+        """
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # First attempt: api_get() raises TypeError on the first poll.
+        bad_run = mocker.MagicMock(name="bad_run")
+        bad_run.api_get.side_effect = TypeError("string indices must be integers, not 'str'")
+
+        # Second attempt: api_get() returns COMPLETED, get_result yields one row.
+        completed_run = mocker.MagicMock(name="completed_run")
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.return_value = [{"campaign_id": "c1"}, {"campaign_id": "c2"}]
+
+        mocker.patch.object(job._edge_object, "get_insights", side_effect=[bad_run, completed_run])
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        ids = job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert sorted(ids) == ["c1", "c2"]
+        # Ensure the second attempt was actually issued (i.e., we retried).
+        assert job._edge_object.get_insights.call_count == 2
+        bad_run.api_get.assert_called_once()
+        completed_run.api_get.assert_called_once()
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_recovers_from_polling_facebook_bad_object_error(self, mocker, api):
+        """
+        ``FacebookBadObjectError`` raised inside ``id_job.api_get()`` should be
+        treated identically to ``TypeError`` and trigger a retry of the
+        insights job.
+        """
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        bad_run = mocker.MagicMock(name="bad_run")
+        bad_run.api_get.side_effect = FacebookBadObjectError("Bad data to set object data")
+
+        completed_run = mocker.MagicMock(name="completed_run")
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.return_value = [{"campaign_id": "c1"}]
+
+        mocker.patch.object(job._edge_object, "get_insights", side_effect=[bad_run, completed_run])
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        ids = job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert ids == ["c1"]
+        assert job._edge_object.get_insights.call_count == 2
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_polling_typeerror_all_attempts_exhausted(self, mocker, api):
+        """
+        When ``id_job.api_get()`` raises TypeError on every attempt,
+        ``_collect_child_ids`` should exhaust ``MAX_ID_COLLECTION_ATTEMPTS``
+        retries and raise ``AirbyteTracedException`` with ``transient_error``
+        (and a sanitized user-facing message), not the bare TypeError.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        bad_run = mocker.MagicMock(name="bad_run")
+        bad_run.api_get.side_effect = TypeError("string indices must be integers, not 'str'")
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=bad_run)
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        with pytest.raises(
+            AirbyteTracedException, match="Facebook Insights API returned a transient failure during data retrieval"
+        ) as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        # Internal message should record the parse-error sentinel for debuggability.
+        assert "PARSE_ERROR" in (exc_info.value.internal_message or "")
+        # All MAX_ID_COLLECTION_ATTEMPTS were attempted (each issues its own insights job).
+        assert job._edge_object.get_insights.call_count == InsightAsyncJob.MAX_ID_COLLECTION_ATTEMPTS
+
+    @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_result_fetch_failure(self, mocker, api):
         """
         When get_result raises FacebookBadObjectError, _collect_child_ids should
