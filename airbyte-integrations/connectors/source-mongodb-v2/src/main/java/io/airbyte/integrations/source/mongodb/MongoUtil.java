@@ -37,6 +37,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bson.Document;
@@ -430,6 +432,47 @@ public class MongoUtil {
       current = current.getCause();
     }
     return false;
+  }
+
+  private static final Pattern NOT_AUTHORIZED_DB_PATTERN = Pattern.compile("not authorized on (\\S+) to execute");
+
+  /**
+   * Walks the cause chain looking for a {@link MongoCommandException} with error code 13
+   * ("Unauthorized"), which MongoDB returns when the configured user does not have permission to
+   * execute the change stream {@code aggregate} command.
+   *
+   * @param exception The exception to inspect.
+   * @return The matching {@link MongoCommandException}, or null if none is found.
+   */
+  public static MongoCommandException findUnauthorizedChangeStreamException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        return mongoException;
+      }
+      current = current.getCause();
+    }
+    return null;
+  }
+
+  /**
+   * Builds a clean, deterministic user-facing error message for a change stream authorization
+   * failure. When the database that rejected the command can be parsed from the
+   * {@link MongoCommandException}, it is included; otherwise a generic template is returned.
+   *
+   * @param exception The {@link MongoCommandException} returned by the MongoDB driver.
+   * @return A user-facing error message that follows Airbyte's error message guidelines.
+   */
+  public static String buildChangeStreamNotAuthorizedMessage(final MongoCommandException exception) {
+    final String errorMessage = exception.getErrorMessage();
+    if (errorMessage != null) {
+      final Matcher matcher = NOT_AUTHORIZED_DB_PATTERN.matcher(errorMessage);
+      if (matcher.find()) {
+        return String.format(MongoConstants.CHANGE_STREAM_NOT_AUTHORIZED_ERROR_MESSAGE_TEMPLATE, matcher.group(1));
+      }
+    }
+    return MongoConstants.CHANGE_STREAM_NOT_AUTHORIZED_ERROR_MESSAGE;
   }
 
   /**
