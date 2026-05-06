@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_microsoft_dataverse.dataverse import (
-    BATCH_SIZE,
     AirbyteType,
     _parse_batch_response,
     convert_dataverse_type,

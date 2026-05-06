@@ -184,6 +184,7 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
                     behaviors[logical_name] = behavior_obj.get("Value", "")
             result[entity_names[entity_idx]] = behaviors
         except (json.JSONDecodeError, KeyError):
+            # Malformed or unexpected batch parts are skipped so remaining entities can still be parsed.
             pass
 
         entity_idx += 1
