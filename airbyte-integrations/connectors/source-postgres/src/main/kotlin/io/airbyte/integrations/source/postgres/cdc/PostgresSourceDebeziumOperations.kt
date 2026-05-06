@@ -137,6 +137,10 @@ class PostgresSourceDebeziumOperations(
                 }
             }
             .withHeartbeatTimeout(cdcConfig.airbyteHeartbeatTimeout)
+            // Overrides CDK default of 0. Retries are needed for stability for some use cases.
+            // We don't worry as much about slow failures because we validate the replication
+            // slot before invoking Debezium, which should catch most connection issues.
+            .with("errors.max.retries", "10")
     }
 
     override fun startup(offset: DebeziumOffset) {
