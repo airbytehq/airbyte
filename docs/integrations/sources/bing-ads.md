@@ -59,7 +59,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you sync any performance report stream incrementally, set this to cover your conversion attribution window — a value of 7 to 14 days is a reasonable starting point. The default of 0 leaves the connector unable to capture late-arriving data on already-synced days. For details, see [Performance report data finalization](#performance-report-data-finalization-late-arriving-conversions).
 10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
 11. For _Report Name_, enter the name that you want for your custom report.
 12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
@@ -83,7 +83,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you sync any performance report stream incrementally, set this to cover your conversion attribution window — a value of 7 to 14 days is a reasonable starting point. The default of 0 leaves the connector unable to capture late-arriving data on already-synced days. For details, see [Performance report data finalization](#performance-report-data-finalization-late-arriving-conversions).
 10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
 11. For _Report Name_, enter the name that you want for your custom report.
 12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
@@ -300,6 +300,27 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) use the Microsoft Bulk API. In incremental mode, the Bulk API ignores `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download. This means the first sync after a gap of more than 30 days downloads all data regardless of state.
 
+#### Performance report data finalization (late-arriving conversions)
+
+Microsoft Bing Ads does not finalize performance report data immediately. Data for a recent day continues to update for some time as Microsoft processes late-arriving clicks, impressions, and conversions across its attribution window. To signal this, the Bing Ads Reporting API sets `Potential Incomplete Data: true` and returns a `Last Completed Available Day` value in the report header. For details, see the Microsoft documentation on [report headers and incomplete data](https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13).
+
+This connector requests reports with `ReturnOnlyCompleteData: false`, so it accepts data for days that Bing Ads has not yet marked as complete. Performance report streams sync incrementally on `TimePeriod` (or `Date` for budget summary). Once the cursor advances past a given day, that day is not re-fetched on later syncs unless the configured **Lookback window** covers it. With the default of 0 days, late-arriving rows for already-synced days are not picked up and remain missing from the destination.
+
+This affects performance report streams that include conversion or attribution metrics, such as:
+
+- `search_query_performance_report_*`
+- All other `*_performance_report_*` streams (account, ad, ad group, campaign, keyword, geographic, user location, product dimension, and so on)
+- `audience_performance_report_*`
+- `age_gender_audience_report_*`
+
+To avoid silently missing data on these streams, set **Lookback window** to a value that covers your conversion attribution window. A value of 7 to 14 days is a reasonable starting point. The maximum allowed value is 90 days. Larger values increase the volume of data re-fetched on every sync and may slow syncs or hit API limits, so choose the smallest value that covers your attribution window.
+
+:::caution Recovering data already missed
+
+Increasing **Lookback window** only protects data going forward, within the new lookback window. Records for days that have already been finalized by Bing Ads but were not captured by previous syncs will not be backfilled by raising the lookback window alone. To recover those records, raise **Lookback window** in the connection configuration, then perform a stream-level reset (or full historical re-sync) of the affected streams. See [Refreshing your data](https://docs.airbyte.com/cloud/managing-airbyte-cloud/refreshing-your-data) and [Clearing your data](https://docs.airbyte.com/cloud/managing-airbyte-cloud/clearing-your-data) for details.
+
+:::
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
@@ -317,6 +338,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.18 | 2026-06-01 | [77791](https://github.com/airbytehq/airbyte/pull/77791) | Document performance-report data-finalization limitation and clarify `lookback_window` guidance |
 | 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |
 | 2.23.17-rc.2 | 2026-05-27 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
 | 2.23.17-rc.1 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Enable progressive rollout for concurrency tuning |
