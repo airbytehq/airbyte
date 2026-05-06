@@ -105,9 +105,9 @@ def _assert_v2_cursor_pagination(stream_name: str, path: str) -> None:
 
         requests_made = [r for r in mocker.request_history if r.path == path]
 
-    assert len(requests_made) == 2, (
-        f"expected exactly two paginated requests for {stream_name}, got {len(requests_made)}: {[r.url for r in requests_made]}"
-    )
+    assert (
+        len(requests_made) == 2
+    ), f"expected exactly two paginated requests for {stream_name}, got {len(requests_made)}: {[r.url for r in requests_made]}"
 
     first_qs = _parsed_qs(requests_made[0].url)
     assert "cursor" not in first_qs, f"first request to {stream_name} must not include a cursor parameter, got qs={first_qs}"
@@ -115,9 +115,9 @@ def _assert_v2_cursor_pagination(stream_name: str, path: str) -> None:
     assert "start" not in first_qs, f"v2 stream {stream_name} must not send the v1 offset `start` parameter, got qs={first_qs}"
 
     second_qs = _parsed_qs(requests_made[1].url)
-    assert second_qs.get("cursor") == [_NEXT_CURSOR_TOKEN], (
-        f"second request to {stream_name} must inject the cursor token from _links.next, got qs={second_qs}"
-    )
+    assert second_qs.get("cursor") == [
+        _NEXT_CURSOR_TOKEN
+    ], f"second request to {stream_name} must inject the cursor token from _links.next, got qs={second_qs}"
     assert second_qs.get("limit") == ["25"], f"second request to {stream_name} must include limit=25, got qs={second_qs}"
 
     emitted_ids = [record.record.data["id"] for record in output.records]
