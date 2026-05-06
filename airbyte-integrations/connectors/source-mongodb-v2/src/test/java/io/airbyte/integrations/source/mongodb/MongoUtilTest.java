@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +444,59 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionTrueForCode13() {
+    final MongoCommandException exception = newMongoCommandException(MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE, "Unauthorized");
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionTrueWhenWrappedAsCause() {
+    final MongoCommandException cause = newMongoCommandException(MongoConstants.MONGO_UNAUTHORIZED_ERROR_CODE, "Unauthorized");
+    final RuntimeException wrapper = new RuntimeException("wrapped", cause);
+    assertTrue(MongoUtil.isUnauthorizedException(wrapper));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionFalseForOtherCodes() {
+    assertFalse(MongoUtil.isUnauthorizedException(newMongoCommandException(0, "ok")));
+    assertFalse(MongoUtil.isUnauthorizedException(newMongoCommandException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE, "BSONObjectTooLarge")));
+    assertFalse(MongoUtil.isUnauthorizedException(new RuntimeException("not a mongo command exception")));
+    assertFalse(MongoUtil.isUnauthorizedException(null));
+  }
+
+  @Test
+  void testBuildUnauthorizedChangeStreamMessageSingleDatabase() {
+    final String message = MongoUtil.buildUnauthorizedChangeStreamMessage(List.of("orders"));
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream on database \"orders\". "
+            + "Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).",
+        message);
+  }
+
+  @Test
+  void testBuildUnauthorizedChangeStreamMessageMultipleDatabases() {
+    final String message = MongoUtil.buildUnauthorizedChangeStreamMessage(List.of("orders", "inventory"));
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream on database \"orders, inventory\". "
+            + "Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).",
+        message);
+  }
+
+  @Test
+  void testBuildUnauthorizedChangeStreamMessageEmptyDatabaseList() {
+    final String message = MongoUtil.buildUnauthorizedChangeStreamMessage(List.of());
+    assertTrue(message.contains("\"<unknown>\""));
+  }
+
+  private static MongoCommandException newMongoCommandException(final int errorCode, final String errorMessage) {
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonInt32(0))
+        .append("code", new BsonInt32(errorCode))
+        .append("errmsg", new BsonString(errorMessage));
+    return new MongoCommandException(response, new ServerAddress());
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,

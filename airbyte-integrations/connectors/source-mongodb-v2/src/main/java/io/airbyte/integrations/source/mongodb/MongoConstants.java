@@ -49,6 +49,14 @@ public class MongoConstants {
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
+
+  /**
+   * MongoDB server error code 13 — "Unauthorized". Raised by the server when the authenticated user
+   * lacks the privileges required to execute a command (e.g., {@code find} and {@code changeStream}
+   * on a database).
+   */
+  public static final int MONGO_UNAUTHORIZED_ERROR_CODE = 13;
+
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
       "A document in your MongoDB database exceeds the 16MB BSON size limit when processed through CDC (Change Data Capture) change streams. " +
           "This error occurs specifically during incremental/CDC syncs when change stream events become too large. " +
