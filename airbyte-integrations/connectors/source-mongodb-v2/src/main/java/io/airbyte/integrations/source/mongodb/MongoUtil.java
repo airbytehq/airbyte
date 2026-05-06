@@ -434,8 +434,8 @@ public class MongoUtil {
 
   /**
    * Checks if the given exception is caused by MongoDB error code 13 (Unauthorized) raised while
-   * opening a change stream cursor. This indicates the configured user has the {@code find}
-   * privilege but is missing the {@code changeStream} action on the target database.
+   * opening a change stream cursor. This indicates the configured user has the {@code find} privilege
+   * but is missing the {@code changeStream} action on the target database.
    *
    * @param exception The exception to check.
    * @return true if the exception is caused by an unauthorized change-stream operation, false
