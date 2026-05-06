@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,7 +85,20 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(buildChangeStreamUnauthorizedMessage(databaseNames), e);
+      }
+      throw e;
     }
+  }
+
+  private static String buildChangeStreamUnauthorizedMessage(final List<String> databaseNames) {
+    final String scope = databaseNames.size() == 1
+        ? "database \"" + databaseNames.getFirst() + "\""
+        : "the configured databases";
+    return "MongoDB user is not authorized to read change streams on " + scope
+        + ". Grant the changeStream privilege action to the configured MongoDB user.";
   }
 
   /**
