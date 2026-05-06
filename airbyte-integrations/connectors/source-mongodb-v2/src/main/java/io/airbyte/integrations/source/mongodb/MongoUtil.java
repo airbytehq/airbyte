@@ -433,6 +433,28 @@ public class MongoUtil {
   }
 
   /**
+   * Checks if the given exception is a MongoDB authorization error (error code 13). This is used to
+   * detect when the configured MongoDB user lacks the required privileges to execute a command (for
+   * example, opening a change stream requires the {@code changeStream} privilege action).
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by a MongoDB error code 13 (Unauthorized), false
+   *         otherwise.
+   */
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.
