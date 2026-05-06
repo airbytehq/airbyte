@@ -452,6 +452,8 @@ class InsightAsyncJob(AsyncJob):
         }
 
         last_status: Optional[str] = None
+        last_parse_error: Optional[Exception] = None
+        last_report_run_id: Optional[str] = None
         for attempt in range(1, self.MAX_ID_COLLECTION_ATTEMPTS + 1):
             try:
                 id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
@@ -464,9 +466,27 @@ class InsightAsyncJob(AsyncJob):
                     failure_type=FailureType.transient_error,
                 ) from e
 
+            last_report_run_id = id_job.get("id") or last_report_run_id
+            status: Optional[str] = None
             start_ts = ab_datetime_now()
             while True:
-                id_job = id_job.api_get()
+                try:
+                    id_job = id_job.api_get()
+                except (FacebookBadObjectError, TypeError) as e:
+                    # Upstream FB SDK raises TypeError (or FacebookBadObjectError) inside
+                    # ObjectParser.parse_single when the poll response body is not the
+                    # expected JSON object (for example an HTML error page or other
+                    # non-dict response, see facebook/facebook-python-business-sdk#642).
+                    # Treat it like Job Failed/Skipped so the outer attempt loop can
+                    # re-issue the async job.
+                    last_parse_error = e
+                    last_status = type(e).__name__
+                    logger.warning(
+                        f"[Split:{level}] ID-collection attempt {attempt}/{self.MAX_ID_COLLECTION_ATTEMPTS} "
+                        f"failed to parse poll response (report_run_id={last_report_run_id}): {type(e).__name__}; "
+                        f"{'retrying' if attempt < self.MAX_ID_COLLECTION_ATTEMPTS else 'giving up'}."
+                    )
+                    break
                 status = id_job.get("async_status")
                 percent = id_job.get("async_percent_completion")
                 logger.info(f"[Split:{level}] attempt={attempt}, status={status}, {percent}%")
@@ -493,6 +513,18 @@ class InsightAsyncJob(AsyncJob):
             if attempt < self.MAX_ID_COLLECTION_ATTEMPTS:
                 time.sleep(30)
         else:
+            if last_parse_error is not None:
+                raise AirbyteTracedException(
+                    message=(
+                        "Facebook Marketing API returned an unexpected response while polling an Insights job split status."
+                    ),
+                    internal_message=(
+                        f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts; "
+                        f"last poll response could not be parsed (report_run_id={last_report_run_id}, status={last_status}): "
+                        f"{type(last_parse_error).__name__}: {last_parse_error}"
+                    ),
+                    failure_type=FailureType.transient_error,
+                ) from last_parse_error
             raise AirbyteTracedException(
                 message="Facebook Insights API returned a transient failure during data retrieval.",
                 internal_message=f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts: {last_status}",
