@@ -234,7 +234,6 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
         value: Any,
     ) {
         additionalPropertiesMap?.set(name, value)
-
     }
 
     companion object {
