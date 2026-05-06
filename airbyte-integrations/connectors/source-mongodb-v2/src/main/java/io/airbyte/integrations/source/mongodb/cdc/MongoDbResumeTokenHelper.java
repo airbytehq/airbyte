@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,7 +85,30 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final RuntimeException e) {
+      throw translateChangeStreamException(e, databaseNames);
     }
+  }
+
+  /**
+   * Translates exceptions raised when opening a change stream into typed Airbyte exceptions when
+   * possible. The MongoDB Java driver raises a {@link MongoCommandException} with errorCode 13
+   * (Unauthorized) when the configured user lacks the {@code changeStream} privilege on the target
+   * database. Surfacing this as a {@link ConfigErrorException} lets the platform classify it as a
+   * config error and stop unnecessary retries, and keeps the raw driver payload out of the
+   * user-facing message.
+   */
+  private static RuntimeException translateChangeStreamException(final RuntimeException exception, final List<String> databaseNames) {
+    if (MongoUtil.isMongoUnauthorizedException(exception)) {
+      final String databaseSuffix = databaseNames.size() == 1
+          ? " on database \"" + databaseNames.getFirst() + "\""
+          : " on the configured databases";
+      LOGGER.error("MongoDB user is not authorized to open a change stream{}.", databaseSuffix, exception);
+      return new ConfigErrorException(
+          "Source MongoDB user is not authorized to open a change stream" + databaseSuffix + ".",
+          exception);
+    }
+    return exception;
   }
 
   /**
