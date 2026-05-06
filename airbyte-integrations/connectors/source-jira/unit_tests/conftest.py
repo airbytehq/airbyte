@@ -70,7 +70,7 @@ def config():
             "api_token": "token",
             "email": "email@email.com",
         },
-        "domain": "domain",
+        "domain": "airbyteio.atlassian.net",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
         "enable_experimental_streams": True,
