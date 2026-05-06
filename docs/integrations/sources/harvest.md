@@ -4,11 +4,11 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-- A Harvest account
-- Your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/)
+- A Harvest account.
+- Your Harvest Account ID. You can find it in the [Developers](https://id.getharvest.com/developers) section of Harvest ID, listed alongside any Personal Access Tokens you create.
 - One of the following authentication methods:
-  - **OAuth** (Airbyte Cloud): A Harvest developer application with a Client ID, Client Secret, and Refresh Token
-  - **Personal Access Token** (Airbyte Open Source): A [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens) created in the Developers section of Harvest ID
+  - **OAuth** (recommended for Airbyte Cloud). Airbyte Cloud completes the Harvest OAuth flow for you, so no developer application or tokens are required up front. You authorize the connection from the source setup page.
+  - **Personal Access Token** (recommended for Airbyte Open Source). Create a [Personal Access Token](https://id.getharvest.com/developers) from the Developers section of Harvest ID. The token has the `all` scope and grants access to every Harvest account on your user.
 
 ## Setup guide
 
@@ -20,9 +20,9 @@ This page contains the setup guide and reference information for the Harvest sou
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. For **Authentication mechanism**, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
-6. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
+5. For **Authentication mechanism**, select **Authenticate via Harvest (OAuth)** from the dropdown, then click **Authenticate your Harvest account** and authorize the requested account.
+6. Enter your Harvest **Account ID**.
+7. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:mm:ssZ` format. Data created or updated on and after this date is replicated.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -34,9 +34,9 @@ This page contains the setup guide and reference information for the Harvest sou
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
-6. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
+5. For **Authentication mechanism**, select **Authenticate with Personal Access Token** and paste your [Personal Access Token](https://id.getharvest.com/developers).
+6. Enter your Harvest **Account ID**.
+7. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:mm:ssZ` format. Data created or updated on and after this date is replicated.
 8. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -99,7 +99,9 @@ Report streams (Expense Reports, Time Reports, Uninvoiced Report, and Project Bu
 
 ## Limitations and troubleshooting
 
-This connector uses Harvest's granular permission model. If your credentials lack access to a specific resource, the corresponding stream produces zero records instead of failing the sync. If a stream returns no data, verify that your Harvest user has the required permissions for that resource.
+This connector uses Harvest's granular permission model. If your credentials lack access to a specific resource, the corresponding stream produces zero records instead of failing the sync. If a stream returns no data, verify that the Harvest user behind the credentials has the required permissions for that resource.
+
+When authenticating with OAuth, the granted scopes determine which Harvest accounts are reachable through the connection. Personal Access Tokens always have the `all` scope and reach every Harvest account on your user, while OAuth applications can be limited to a single account, depending on how you registered the application.
 
 ## Changelog
 
