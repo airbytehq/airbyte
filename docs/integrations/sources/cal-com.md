@@ -6,7 +6,7 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `orgId` | `string` | Organization ID.  |  |
-| `api_key` | `string` | API Key. API key to use. Find it at https://cal.com/account |  |
+| `api_key` | `string` | API Key. API key to use. Find it at https://app.cal.com/settings/developer/api-keys |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -25,6 +25,7 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-05-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix API key URL in spec and docs |
 | 0.0.48 | 2026-04-28 | [77188](https://github.com/airbytehq/airbyte/pull/77188) | Update dependencies |
 | 0.0.47 | 2026-04-21 | [76540](https://github.com/airbytehq/airbyte/pull/76540) | Update dependencies |
 | 0.0.46 | 2026-03-31 | [75684](https://github.com/airbytehq/airbyte/pull/75684) | Update dependencies |

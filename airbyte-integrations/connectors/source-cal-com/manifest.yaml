@@ -229,7 +229,7 @@ spec:
         title: orgId
       api_key:
         type: string
-        description: API key to use. Find it at https://cal.com/account
+        description: API key to use. Find it at https://app.cal.com/settings/developer/api-keys
         name: api_key
         order: 1
         title: API Key
