@@ -6,7 +6,7 @@
         "name": "transactions"
       },
       "stream_state": {
-        "user_transaction_time": "2023-01-01T00:00:00+0000"
+        "user_transaction_time": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -17,7 +17,7 @@
         "name": "reimbursements"
       },
       "stream_state": {
-        "updated_at": "2023-01-01T00:00:00+0000"
+        "updated_at": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -28,7 +28,7 @@
         "name": "transfers"
       },
       "stream_state": {
-        "created_at": "2023-01-01T00:00:00+0000"
+        "created_at": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -39,7 +39,7 @@
         "name": "cashbacks"
       },
       "stream_state": {
-        "created_at": "2023-01-01T00:00:00+0000"
+        "created_at": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -50,7 +50,7 @@
         "name": "statements"
       },
       "stream_state": {
-        "end_date": "2023-01-01T00:00:00+0000"
+        "end_date": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -61,7 +61,7 @@
         "name": "audit_log_events"
       },
       "stream_state": {
-        "event_time": "2023-01-01T00:00:00+0000"
+        "event_time": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -72,7 +72,7 @@
         "name": "vendor_credits"
       },
       "stream_state": {
-        "created_at": "2023-01-01T00:00:00+0000"
+        "created_at": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -83,7 +83,7 @@
         "name": "trips"
       },
       "stream_state": {
-        "updated_at": "2023-01-01T00:00:00+0000"
+        "start_date": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -94,7 +94,7 @@
         "name": "repayments"
       },
       "stream_state": {
-        "repaid_at": "2023-01-01T00:00:00+0000"
+        "repaid_at": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -105,7 +105,7 @@
         "name": "receipts"
       },
       "stream_state": {
-        "created_at": "2023-01-01T00:00:00+0000"
+        "created_at": "2023-01-01T00:00:00Z"
       }
     }
   },
@@ -116,7 +116,7 @@
         "name": "limits"
       },
       "stream_state": {
-        "created_at": "2023-01-01T00:00:00+0000"
+        "created_at": "2023-01-01T00:00:00Z"
       }
     }
   }

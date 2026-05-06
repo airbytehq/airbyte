@@ -6,13 +6,12 @@ check:
   - users
 definitions:
   authenticator:
-    type: OAuthAuthenticator
+    type: CustomAuthenticator
+    class_name: source_declarative_manifest.components.RampOauthAuthenticator
     grant_type: client_credentials
     client_id: '{{ config[''credentials''][''client_id''] }}'
     client_secret: '{{ config[''credentials''][''client_secret''] }}'
     token_refresh_endpoint: https://{{ 'demo-api' if config.get('use_sandbox') else 'api' }}.ramp.com/developer/v1/token
-    refresh_request_body:
-      grant_type: client_credentials
     scopes:
     - transactions:read
     - reimbursements:read
@@ -5862,6 +5861,21 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ last_record['id'] if last_record else None }}"
+            stop_condition: "{{ last_page_size < 100 }}"
+            page_size: 100
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -6088,7 +6102,7 @@ definitions:
           $schema: http://json-schema.org/draft-07/schema#
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: updated_at
+        cursor_field: start_date
         datetime_format: '%Y-%m-%dT%H:%M:%S%z'
         cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%S%z'

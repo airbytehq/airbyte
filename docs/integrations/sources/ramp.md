@@ -33,7 +33,7 @@ If you are validating a configuration before connecting it to your production da
 
 ## OAuth scopes
 
-Each stream requires the corresponding read scope on your Ramp Developer App. Grant only the scopes for streams you intend to sync.
+Each stream below requires the corresponding read scope on your Ramp Developer App. Because the connector requests every read scope listed below on each token call, the Ramp app must be configured with **all of them** — granting only a subset will cause `invalid_scope` errors at token exchange. To sync only some streams, deselect the others in the Airbyte connection's stream catalog rather than narrowing the app's scopes.
 
 | Stream | Required scope |
 |---|---|
@@ -68,7 +68,13 @@ Most Ramp list endpoints filter records by event date (for example `from_date` f
 
 The `lookback_window_days` setting (default 30 days) compensates by re-fetching the most recent N days on every sync. Tune it to balance API call volume against how long after creation a record's status can change in your workflow. Setting it to `0` disables the lookback.
 
-For the `bills`, `vendors`, `purchase_orders`, `unified_requests`, and `memos` streams, no incremental cursor is available in the response that reliably reflects late edits. These streams use full refresh in v1; expect them to re-fetch every record on every sync.
+For the `bills`, `vendors`, `purchase_orders`, and `memos` streams, no incremental cursor is available in the response that reliably reflects late edits. These streams use full refresh in v1; expect them to re-fetch every record on every sync.
+
+### Per-stream cursor caveats
+
+- **`transactions`** uses `user_transaction_time` (transaction time, not sync time). Status changes (approval, sync to ERP, late settlement) on transactions older than `lookback_window_days` will not be re-emitted. If you rely on status freshness for older transactions, increase the lookback window or use full refresh.
+- **`trips`** uses `start_date` to match Ramp's `from_date` / `to_date` filter, which filters trips by start date with overlap. Trips edited after the lookback window has passed their start date will not be re-emitted. There is no `updated_at` filter exposed by Ramp for this resource.
+- **`reimbursements`** uses `updated_at` with Ramp's `updated_after` filter (a true updated-at filter). The lookback window is applied for safety but is not strictly necessary for completeness.
 
 ## Streams
 
@@ -85,7 +91,7 @@ For the `bills`, `vendors`, `purchase_orders`, `unified_requests`, and `memos` s
 | `vendor_credits` | `id` | Incremental | `created_at` |
 | `purchase_orders` | `id` | Full refresh | — |
 | `unified_requests` | `id` | Full refresh | — |
-| `trips` | `id` | Incremental | `updated_at` |
+| `trips` | `id` | Incremental | `start_date` |
 | `repayments` | `id` | Incremental | `repaid_at` |
 | `memos` | `id` | Full refresh | — |
 | `receipts` | `id` | Incremental | `created_at` |
@@ -110,9 +116,9 @@ The OAuth scope for that stream is not granted to your Developer App. Update the
 
 Ramp's API enforces a 60-second per-request timeout on certain queries. The connector retries on 5xx errors automatically. If timeouts persist for a single stream, narrow the sync window by increasing `start_date` or reducing `lookback_window_days`.
 
-### `unified_requests` returns no records
+### `unified_requests` notes
 
-The `unified_requests` stream is marked unstable by Ramp and returns a raw array (not an envelope) without a stable cursor. Only the first page is returned in v1. File a connector issue if you need full pagination of this stream.
+The `unified_requests` stream is marked unstable by Ramp and returns a raw array (not the standard `{ data, page }` envelope). The connector paginates by injecting `start=<last record id>` and `page_size=100`, stopping when fewer than `page_size` records are returned. The response schema is a discriminator union and may change without notice.
 
 ### Sandbox vs. production
 
@@ -125,6 +131,6 @@ Toggling **Use sandbox** changes both the API host and the OAuth token endpoint 
 
 | Version | Date | Pull Request | Subject |
 |---|---|---|---|
-| 0.1.0 | 2026-05-05 | [TBD](https://github.com/airbytehq/airbyte/pull/0) | Initial release |
+| 0.1.0 | 2026-05-06 | [77803](https://github.com/airbytehq/airbyte/pull/77803) | Initial release |
 
 </details>
