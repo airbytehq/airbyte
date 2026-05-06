@@ -199,7 +199,7 @@ definitions:
           $ref: "#/schemas/space"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config['domain_name'] }}/
+    url_base: "https://{{ config['domain_name'].replace('https://', '').replace('http://', '').rstrip('/') }}/"
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config[\"api_token\"] }}"
@@ -240,9 +240,12 @@ spec:
         airbyte_secret: true
       domain_name:
         type: string
-        description: Your Confluence domain name
-        order: 2
         title: Domain name
+        description: "Your Confluence host (full domain — do not include 'https://' or paths). Example: airbyteio.atlassian.net."
+        pattern_descriptor: "<your-domain>.atlassian.net"
+        examples:
+          - "airbyteio.atlassian.net"
+        order: 2
     additionalProperties: true
 
 metadata:
