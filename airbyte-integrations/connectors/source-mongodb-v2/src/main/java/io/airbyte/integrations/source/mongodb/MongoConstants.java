@@ -59,6 +59,14 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
+  public static final String CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE =
+      "The configured MongoDB user is not authorized to open a change stream on database '%s'. " +
+          "CDC syncs require both `find` and `changeStream` privileges on every database being synced " +
+          "(granting the `readAnyDatabase` role on the `admin` database is the simplest way to cover both on MongoDB Atlas). " +
+          "Update the database user's role and retry the sync. " +
+          "See https://docs.airbyte.com/integrations/sources/mongodb-v2#step-1-create-a-dedicated-read-only-mongodb-user for details.";
+
   private MongoConstants() {}
 
 }

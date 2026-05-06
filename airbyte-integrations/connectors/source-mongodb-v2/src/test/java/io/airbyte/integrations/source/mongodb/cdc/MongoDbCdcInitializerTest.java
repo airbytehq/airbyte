@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -69,6 +71,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -637,6 +640,54 @@ class MongoDbCdcInitializerTest {
 
   private List<AutoCloseableIterator<AirbyteMessage>> filterTraceIterator(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
     return iterators.stream().filter(it -> it instanceof StreamStatusTraceEmitterIterator == false).toList();
+  }
+
+  @Test
+  void testExtractDatabaseFromChangeStreamUnauthorized_parsesDatabaseFromDriverErrmsg() {
+    final String errmsg =
+        "not authorized on grid-ai to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ], cursor: {} }";
+    final MongoCommandException exception = newMongoCommandException(13, errmsg);
+
+    final String result = MongoDbCdcInitializer.extractDatabaseFromChangeStreamUnauthorized(exception, List.of("grid-ai"));
+
+    assertEquals("grid-ai", result);
+  }
+
+  @Test
+  void testExtractDatabaseFromChangeStreamUnauthorized_fallsBackToConfiguredSingleDatabase() {
+    final MongoCommandException exception = newMongoCommandException(13, "Unauthorized failure with no recognizable database name");
+
+    final String result = MongoDbCdcInitializer.extractDatabaseFromChangeStreamUnauthorized(exception, List.of("grid-ai"));
+
+    assertEquals("grid-ai", result);
+  }
+
+  @Test
+  void testExtractDatabaseFromChangeStreamUnauthorized_joinsMultipleConfiguredDatabases() {
+    final MongoCommandException exception = newMongoCommandException(13, "Unauthorized failure with no recognizable database name");
+
+    final String result =
+        MongoDbCdcInitializer.extractDatabaseFromChangeStreamUnauthorized(exception, List.of("db-a", "db-b"));
+
+    assertEquals("db-a, db-b", result);
+  }
+
+  @Test
+  void testExtractDatabaseFromChangeStreamUnauthorized_returnsUnknownWhenNothingAvailable() {
+    final MongoCommandException exception = newMongoCommandException(13, "Unauthorized failure with no recognizable database name");
+
+    final String result = MongoDbCdcInitializer.extractDatabaseFromChangeStreamUnauthorized(exception, List.of());
+
+    assertEquals("<unknown>", result);
+  }
+
+  private static MongoCommandException newMongoCommandException(final int code, final String errmsg) {
+    final BsonDocument response = new BsonDocument();
+    response.put("ok", new BsonInt32(0));
+    response.put("code", new BsonInt32(code));
+    response.put("errmsg", new BsonString(errmsg));
+    response.put("codeName", new BsonString(code == 13 ? "Unauthorized" : "Other"));
+    return new MongoCommandException(response, new ServerAddress());
   }
 
 }

@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -442,6 +444,67 @@ public class MongoUtilTest {
     assertThat(
         MongoUtil.getChunkSizeForCollection(Optional.of(new CollectionStatistics(1_000_000, 10 * QUERY_TARGET_SIZE_GB)), configuredAirbyteStream))
             .isEqualTo(100_003);
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamException_directMatch() {
+    final String errmsg =
+        "not authorized on grid-ai to execute command { aggregate: 1, pipeline: [ { $changeStream: {} }, { $match: {} } ], cursor: {} }";
+    final MongoCommandException exception = newMongoCommandException(13, errmsg);
+
+    final Optional<MongoCommandException> match = MongoUtil.findUnauthorizedChangeStreamException(exception);
+
+    assertTrue(match.isPresent());
+    assertEquals(13, match.get().getErrorCode());
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamException_walksCauseChain() {
+    final String errmsg =
+        "not authorized on grid-ai to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }";
+    final MongoCommandException cause = newMongoCommandException(13, errmsg);
+    final RuntimeException wrapper = new RuntimeException("wrapped failure", cause);
+
+    final Optional<MongoCommandException> match = MongoUtil.findUnauthorizedChangeStreamException(wrapper);
+
+    assertTrue(match.isPresent());
+    assertTrue(match.get().getErrorMessage().contains("$changeStream"));
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamException_doesNotMatchUnrelatedCode13() {
+    final String errmsg = "not authorized on local to execute command { collStats: \"oplog.rs\" }";
+    final MongoCommandException exception = newMongoCommandException(13, errmsg);
+
+    final Optional<MongoCommandException> match = MongoUtil.findUnauthorizedChangeStreamException(exception);
+
+    assertTrue(match.isEmpty(),
+        "code 13 errors that don't reference $changeStream must not be reclassified as a change-stream auth failure");
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamException_doesNotMatchOtherCodes() {
+    final String errmsg = "Pipeline contained $changeStream but the document was too large";
+    final MongoCommandException exception = newMongoCommandException(10334, errmsg);
+
+    final Optional<MongoCommandException> match = MongoUtil.findUnauthorizedChangeStreamException(exception);
+
+    assertTrue(match.isEmpty());
+  }
+
+  @Test
+  void testFindUnauthorizedChangeStreamException_returnsEmptyOnNullCause() {
+    assertTrue(MongoUtil.findUnauthorizedChangeStreamException(null).isEmpty());
+    assertTrue(MongoUtil.findUnauthorizedChangeStreamException(new RuntimeException("nothing here")).isEmpty());
+  }
+
+  private static MongoCommandException newMongoCommandException(final int code, final String errmsg) {
+    final BsonDocument response = new BsonDocument();
+    response.put("ok", new BsonInt32(0));
+    response.put("code", new BsonInt32(code));
+    response.put("errmsg", new BsonString(errmsg));
+    response.put("codeName", new BsonString(code == 13 ? "Unauthorized" : "Other"));
+    return new MongoCommandException(response, new ServerAddress());
   }
 
   private static String formatMismatchException(final boolean isConfigSchemaEnforced,
