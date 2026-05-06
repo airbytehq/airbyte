@@ -233,9 +233,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap.let {
-            additionalPropertiesMap!![name] = value
-        }
+        additionalPropertiesMap?.set(name, value)
 
     }
 
