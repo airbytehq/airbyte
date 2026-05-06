@@ -7,8 +7,18 @@
 USE master;
 GO
 
-IF DB_ID('CdcTest') IS NULL
-    CREATE DATABASE CdcTest;
+-- Drop any prior CdcTest database to guarantee a clean slate. Earlier
+-- worked examples (repro-12094, repro-12162) add tables on top of this
+-- one, so dropping here ensures every run starts from the same baseline
+-- regardless of which fixtures were applied previously.
+IF DB_ID('CdcTest') IS NOT NULL
+BEGIN
+    ALTER DATABASE CdcTest SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE CdcTest;
+END
+GO
+
+CREATE DATABASE CdcTest;
 GO
 
 USE CdcTest;

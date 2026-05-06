@@ -1,5 +1,5 @@
 {
-  "host": "mssql-cdc",
+  "host": "source-mssql-db-backend",
   "port": 1433,
   "database": "CdcTest",
   "username": "sa",
@@ -8,10 +8,12 @@
   "ssl_method": {
     "ssl_method": "unencrypted"
   },
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
   "replication_method": {
     "method": "CDC",
     "initial_waiting_seconds": 5,
-    "poll_interval_ms": 500,
-    "initial_load_timeout_hours": 4
+    "initial_load_timeout_hours": 1
   }
 }
