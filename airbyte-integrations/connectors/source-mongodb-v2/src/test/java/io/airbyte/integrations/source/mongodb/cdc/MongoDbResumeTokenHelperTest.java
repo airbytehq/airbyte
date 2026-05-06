@@ -155,8 +155,9 @@ class MongoDbResumeTokenHelperTest {
         Filters.or(List.of(
             Filters.and(
                 Filters.eq("ns.db", DATABASE),
-                Filters.in("ns.coll", Collections.emptyList())))))), BsonDocument.class))
-                    .thenReturn(changeStreamIterable);
+                Filters.in("ns.coll", Collections.emptyList())))))),
+        BsonDocument.class))
+            .thenReturn(changeStreamIterable);
     when(changeStreamIterable.cursor()).thenReturn(cursor);
     when(cursor.tryNext()).thenThrow(unauthorized);
 
@@ -182,8 +183,9 @@ class MongoDbResumeTokenHelperTest {
         Filters.or(List.of(
             Filters.and(
                 Filters.eq("ns.db", DATABASE),
-                Filters.in("ns.coll", Collections.emptyList())))))), BsonDocument.class))
-                    .thenReturn(changeStreamIterable);
+                Filters.in("ns.coll", Collections.emptyList())))))),
+        BsonDocument.class))
+            .thenReturn(changeStreamIterable);
     when(changeStreamIterable.cursor()).thenThrow(bsonTooLarge);
 
     assertThrows(MongoCommandException.class,

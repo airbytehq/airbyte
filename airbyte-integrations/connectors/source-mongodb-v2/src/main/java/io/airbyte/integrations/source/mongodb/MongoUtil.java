@@ -456,9 +456,9 @@ public class MongoUtil {
 
   /**
    * Builds the user-facing error message for an Unauthorized error when opening a change stream on
-   * the configured database(s). The message names the affected database(s) but does not include
-   * BSON, cluster timestamps, signatures, or any per-event identifiers, so the same failure mode
-   * always produces the same string.
+   * the configured database(s). The message names the affected database(s) but does not include BSON,
+   * cluster timestamps, signatures, or any per-event identifiers, so the same failure mode always
+   * produces the same string.
    *
    * @param databaseNames The database names that the connector attempted to watch.
    * @return A deterministic, user-facing error message.
