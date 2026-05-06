@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
-  dockerImageTag: 0.2.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-microsoft-dataverse
   githubIssueLabel: source-microsoft-dataverse
   icon: microsoftdataverse.svg
@@ -19,7 +19,7 @@ data:
       enabled: true
   releases:
     breakingChanges:
-      0.2.0:
+      1.0.0:
         message: "DateOnly fields now use format 'date' instead of 'date-time'. Streams containing DateOnly fields require a schema refresh and data reset after upgrading."
         upgradeDeadline: "2026-06-05"
   releaseStage: alpha
