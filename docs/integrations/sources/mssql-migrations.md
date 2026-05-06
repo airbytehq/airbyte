@@ -1,16 +1,5 @@
 # Microsoft SQL Server (MSSQL) Migration Guide
 
-## Upgrading to 5.0.0
-
-This change remaps SQL Server `DECIMAL` and `NUMERIC` columns with scale 0 to the Airbyte `integer` type instead of `number`. Customers whose streams contain affected columns must refresh those streams.
-
-For current source-mssql users:
-
-- If your streams do not contain any `DECIMAL` or `NUMERIC` columns with scale 0, your connection will be unaffected. No further action is required from you.
-- If your streams contain at least one `DECIMAL` or `NUMERIC` column with scale 0, the destination column type may change depending on how your destination resolves the Airbyte `integer` and `number` types. For example, in Snowflake, `number` resolves to `FLOAT` while `integer` resolves to `NUMBER`. To pick up the new type, refresh the affected streams.
-
-If refreshing your stream data is an issue, please reach out to Airbyte Cloud support for assistance.
-
 ## Upgrading to 4.0.0
 
 Source MSSQL provides incremental sync that can read unlimited sized tables and can resume if the initial read has failed.
