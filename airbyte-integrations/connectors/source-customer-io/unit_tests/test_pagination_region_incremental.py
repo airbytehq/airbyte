@@ -95,20 +95,14 @@ def test_campaigns_actions_paginates_via_response_next_into_start_param():
         output = _sync("campaigns_actions", _BASE_CONFIG)
 
     emitted_ids = [record.record.data["id"] for record in output.records]
-    assert emitted_ids == ["a-1", "a-2", "a-3"], (
-        f"expected all 3 paginated actions to be emitted, got {emitted_ids}"
-    )
+    assert emitted_ids == ["a-1", "a-2", "a-3"], f"expected all 3 paginated actions to be emitted, got {emitted_ids}"
 
     actions_requests = [r for r in mocker.request_history if r.path == "/v1/campaigns/1/actions"]
-    assert len(actions_requests) == 2, (
-        f"expected 2 paginated requests against /campaigns/1/actions, got {len(actions_requests)}"
-    )
-    assert "start" not in actions_requests[0].qs, (
-        "first request must not include the `start` cursor parameter"
-    )
-    assert actions_requests[1].qs.get("start") == ["page-2-token"], (
-        f"second request must forward the `start` cursor from `response.next`; got {actions_requests[1].qs}"
-    )
+    assert len(actions_requests) == 2, f"expected 2 paginated requests against /campaigns/1/actions, got {len(actions_requests)}"
+    assert "start" not in actions_requests[0].qs, "first request must not include the `start` cursor parameter"
+    assert actions_requests[1].qs.get("start") == [
+        "page-2-token"
+    ], f"second request must forward the `start` cursor from `response.next`; got {actions_requests[1].qs}"
 
 
 def test_newsletters_paginates_via_response_next_into_start_param_with_limit():
@@ -133,12 +127,10 @@ def test_newsletters_paginates_via_response_next_into_start_param_with_limit():
     assert emitted_ids == [1, 2, 3], f"expected all 3 paginated newsletters, got {emitted_ids}"
 
     newsletter_requests = [r for r in mocker.request_history if r.path == "/v1/newsletters"]
-    assert len(newsletter_requests) == 2, (
-        f"expected 2 paginated requests against /newsletters, got {len(newsletter_requests)}"
-    )
-    assert newsletter_requests[0].qs.get("limit") == ["100"], (
-        f"first request must include the `limit` page-size parameter; got {newsletter_requests[0].qs}"
-    )
+    assert len(newsletter_requests) == 2, f"expected 2 paginated requests against /newsletters, got {len(newsletter_requests)}"
+    assert newsletter_requests[0].qs.get("limit") == [
+        "100"
+    ], f"first request must include the `limit` page-size parameter; got {newsletter_requests[0].qs}"
     assert "start" not in newsletter_requests[0].qs
     assert newsletter_requests[1].qs.get("start") == ["next-page-token"]
     assert newsletter_requests[1].qs.get("limit") == ["100"]
@@ -162,9 +154,7 @@ def test_eu_region_uses_api_eu_customer_io_host():
     eu_requests = [r for r in mocker.request_history if r.hostname == "api-eu.customer.io"]
     us_requests = [r for r in mocker.request_history if r.hostname == "api.customer.io"]
     assert eu_requests, "expected at least one request against api-eu.customer.io for EU region"
-    assert not us_requests, (
-        f"expected no requests against the US host when region=EU, got {[r.url for r in us_requests]}"
-    )
+    assert not us_requests, f"expected no requests against the US host when region=EU, got {[r.url for r in us_requests]}"
 
 
 def test_us_region_default_uses_api_customer_io_host():
@@ -180,9 +170,7 @@ def test_us_region_default_uses_api_customer_io_host():
     emitted_ids = [record.record.data["id"] for record in output.records]
     assert emitted_ids == [1]
     eu_requests = [r for r in mocker.request_history if r.hostname == "api-eu.customer.io"]
-    assert not eu_requests, (
-        f"expected no requests against the EU host when region defaults to US, got {[r.url for r in eu_requests]}"
-    )
+    assert not eu_requests, f"expected no requests against the EU host when region defaults to US, got {[r.url for r in eu_requests]}"
 
 
 def test_newsletters_client_side_incremental_drops_records_before_start_date():
@@ -204,9 +192,7 @@ def test_newsletters_client_side_incremental_drops_records_before_start_date():
         output = _sync("newsletters", config)
 
     emitted_ids = sorted(record.record.data["id"] for record in output.records)
-    assert emitted_ids == [2, 3], (
-        f"expected only records with `updated` >= start_date to be emitted, got {emitted_ids}"
-    )
+    assert emitted_ids == [2, 3], f"expected only records with `updated` >= start_date to be emitted, got {emitted_ids}"
 
 
 def test_campaigns_client_side_incremental_drops_records_before_start_date():
