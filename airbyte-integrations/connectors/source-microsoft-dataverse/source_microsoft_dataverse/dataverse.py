@@ -2,8 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import re
+import uuid
 from enum import Enum
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional
 
 import requests
 
@@ -83,18 +86,106 @@ def convert_dataverse_type(dataverse_type: str, datetime_behavior: Optional[str]
     return AirbyteType.String.value
 
 
-def get_datetime_behaviors(config: Mapping[str, Any], entity_name: str) -> Mapping[str, str]:
-    """Query DateTimeAttributeMetadata to get DateTimeBehavior for each DateTime attribute."""
-    path = (
-        f"EntityDefinitions(LogicalName='{entity_name}')"
-        f"/Attributes/Microsoft.Dynamics.CRM.DateTimeAttributeMetadata"
-        f"?$select=LogicalName,DateTimeBehavior"
+BATCH_SIZE = 1000
+
+
+def get_all_datetime_behaviors(config: Mapping[str, Any], entity_names: List[str]) -> Mapping[str, Mapping[str, str]]:
+    """Query DateTimeBehavior for multiple entities using OData $batch requests.
+
+    Returns a mapping of entity_name -> {attribute_logical_name -> behavior_value}.
+    Requests are grouped into batches of up to 1000 per the Dataverse $batch limit.
+    """
+    if not entity_names:
+        return {}
+
+    all_behaviors: dict[str, Mapping[str, str]] = {}
+    for i in range(0, len(entity_names), BATCH_SIZE):
+        batch = entity_names[i : i + BATCH_SIZE]
+        batch_result = _execute_batch_datetime_request(config, batch)
+        all_behaviors.update(batch_result)
+    return all_behaviors
+
+
+def _execute_batch_datetime_request(config: Mapping[str, Any], entity_names: List[str]) -> Mapping[str, Mapping[str, str]]:
+    """Execute a single $batch POST for DateTimeBehavior metadata."""
+    auth = get_auth(config)
+    headers = auth.get_auth_header()
+
+    batch_id = str(uuid.uuid4())
+    boundary = f"batch_{batch_id}"
+    headers["Content-Type"] = f'multipart/mixed; boundary="{boundary}"'
+
+    parts: list[str] = []
+    for entity_name in entity_names:
+        path = (
+            f"EntityDefinitions(LogicalName='{entity_name}')"
+            f"/Attributes/Microsoft.Dynamics.CRM.DateTimeAttributeMetadata"
+            f"?$select=LogicalName,DateTimeBehavior"
+        )
+        parts.append(
+            f"--{boundary}\r\n"
+            f"Content-Type: application/http\r\n"
+            f"Content-Transfer-Encoding: binary\r\n"
+            f"\r\n"
+            f"GET /api/data/v9.2/{path} HTTP/1.1\r\n"
+            f"Accept: application/json\r\n"
+            f"\r\n"
+        )
+
+    body = "".join(parts) + f"--{boundary}--\r\n"
+
+    response = requests.post(
+        config["url"] + "/api/data/v9.2/$batch",
+        headers=headers,
+        data=body,
     )
-    response = do_request(config, path)
-    behaviors: dict[str, str] = {}
-    for attr in response.json().get("value", []):
-        logical_name = attr.get("LogicalName", "")
-        behavior_obj = attr.get("DateTimeBehavior")
-        if behavior_obj and logical_name:
-            behaviors[logical_name] = behavior_obj.get("Value", "")
-    return behaviors
+
+    return _parse_batch_response(response, entity_names)
+
+
+def _parse_batch_response(response: requests.Response, entity_names: List[str]) -> Mapping[str, Mapping[str, str]]:
+    """Parse a $batch multipart response into per-entity DateTimeBehavior mappings."""
+    content_type = response.headers.get("Content-Type", "")
+    boundary_match = re.search(r"boundary=([^\s;]+)", content_type)
+    if not boundary_match:
+        return {}
+
+    boundary = boundary_match.group(1).strip('"')
+    parts = response.text.split(f"--{boundary}")
+
+    result: dict[str, Mapping[str, str]] = {}
+    entity_idx = 0
+
+    for part in parts:
+        stripped = part.strip()
+        if not stripped or stripped == "--":
+            continue
+        if entity_idx >= len(entity_names):
+            break
+
+        # Each part: MIME headers \r\n\r\n HTTP status+headers \r\n\r\n body
+        sections = re.split(r"(?:\r\n\r\n|\n\n)", part, maxsplit=2)
+        if len(sections) < 3:
+            entity_idx += 1
+            continue
+
+        json_body = sections[2].strip()
+        if not json_body.startswith("{"):
+            entity_idx += 1
+            continue
+
+        try:
+            data = json.loads(json_body)
+            behaviors: dict[str, str] = {}
+            for attr in data.get("value", []):
+                logical_name = attr.get("LogicalName", "")
+                behavior_obj = attr.get("DateTimeBehavior")
+                if behavior_obj and logical_name:
+                    behaviors[logical_name] = behavior_obj.get("Value", "")
+            result[entity_names[entity_idx]] = behaviors
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+        entity_idx += 1
+
+    return result

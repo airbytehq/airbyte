@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessa
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .dataverse import convert_dataverse_type, do_request, get_auth, get_datetime_behaviors
+from .dataverse import convert_dataverse_type, do_request, get_all_datetime_behaviors, get_auth
 from .streams import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStream
 
 
@@ -20,14 +20,18 @@ class SourceMicrosoftDataverse(AbstractSource):
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         response = do_request(config, "EntityDefinitions?$expand=Attributes")
         response_json = response.json()
+
+        entities_with_datetime = [
+            entity["LogicalName"]
+            for entity in response_json["value"]
+            if any(attr["AttributeType"] == "DateTime" for attr in entity["Attributes"])
+        ]
+        all_datetime_behaviors = get_all_datetime_behaviors(config, entities_with_datetime)
+
         streams = []
         for entity in response_json["value"]:
             schema = {"properties": {}}
-
-            has_datetime = any(attr["AttributeType"] == "DateTime" for attr in entity["Attributes"])
-            datetime_behaviors: Mapping[str, str] = {}
-            if has_datetime:
-                datetime_behaviors = get_datetime_behaviors(config, entity["LogicalName"])
+            datetime_behaviors = all_datetime_behaviors.get(entity["LogicalName"], {})
 
             for attribute in entity["Attributes"]:
                 dataverse_type = attribute["AttributeType"]
