@@ -106,6 +106,10 @@ This source is capable of syncing the following streams:
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
 
 :::note
+The Attribution report streams (`attribution_report_products`, `attribution_report_performance_adgroup`, `attribution_report_performance_campaign`, and `attribution_report_performance_creative`) require Amazon Attribution access on each Amazon Ads profile. Profiles without Attribution access are silently skipped, and the sync continues with the remaining authorized profiles. If a sync produces no Attribution records, verify that Amazon Attribution is enabled on at least one profile in your account.
+:::
+
+:::note
 As of connector version 5.0.0, the `Sponsored Products Ad Group Bid Recommendations` stream provides bid recommendations and impact metrics for an existing automatic targeting ad group. The stream returns bid recommendations for match types `CLOSE_MATCH`, `LOOSE_MATCH`, `SUBSTITUTES`, and `COMPLEMENTS` per theme. For more detail on theme-based bid recommendations, review Amazon's [Theme-base bid suggestions - Quick-start guide](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-products/bid-suggestions/theme-based-bid-suggestions-quickstart-guide).
 :::
 
@@ -160,7 +164,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8.0.2 | 2026-05-01 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Handle HTTP 403 "not authorized to use Amazon Attribution" errors on attribution report performance streams by ignoring unauthorized profiles instead of failing the sync |
+| 8.0.2 | 2026-05-05 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Skip profiles without Amazon Attribution access on attribution report performance streams instead of failing the sync |
 | 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |
 | 8.0.0 | 2026-04-22 | [75490](https://github.com/airbytehq/airbyte/pull/75490) | Use `date` field from API response as cursor and primary key for daily report streams instead of synthetic `reportDate`. Fixes ~96% data loss from incorrect deduplication. |
 | 7.3.19 | 2026-04-21 | [76501](https://github.com/airbytehq/airbyte/pull/76501) | Update dependencies |
