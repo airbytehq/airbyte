@@ -76,8 +76,8 @@ class MongoDbResumeTokenHelperTest {
         Filters.or(List.of(
             Filters.and(
                 Filters.eq("ns.db", DATABASE),
-                Filters.in("ns.coll", Collections.emptyList())))))
-    ), BsonDocument.class)).thenReturn(changeStreamIterable);
+                Filters.in("ns.coll", Collections.emptyList())))))),
+        BsonDocument.class)).thenReturn(changeStreamIterable);
     when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
 
     final ConfigErrorException thrown = assertThrows(
@@ -102,8 +102,8 @@ class MongoDbResumeTokenHelperTest {
         Filters.or(List.of(
             Filters.and(
                 Filters.eq("ns.db", DATABASE),
-                Filters.in("ns.coll", Collections.emptyList())))))
-    ), BsonDocument.class)).thenReturn(changeStreamIterable);
+                Filters.in("ns.coll", Collections.emptyList())))))),
+        BsonDocument.class)).thenReturn(changeStreamIterable);
     when(changeStreamIterable.cursor()).thenThrow(otherException);
 
     assertThrows(MongoCommandException.class,
