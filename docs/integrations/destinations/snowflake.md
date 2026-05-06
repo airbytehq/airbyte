@@ -151,6 +151,7 @@ username/password or key pair authentication:
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
 | Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
+| Trim Whitespace from Unquoted CSV Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from unquoted CSV fields during data loading. Enabled by default to preserve existing connector behavior. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 
 ### Key pair authentication
