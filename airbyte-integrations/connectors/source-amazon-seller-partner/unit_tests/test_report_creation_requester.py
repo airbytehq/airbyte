@@ -233,8 +233,8 @@ class TestFindExistingReport:
 
         assert result is None
 
-    def test_reuses_fatal_report(self):
-        """FATAL reports should be reused — status_mapping handles the behavior."""
+    def test_skips_fatal_report(self):
+        """FATAL reports should be skipped so a new report is created instead of reusing a permanently failed one."""
         requester = _make_requester()
         fatal_report = _make_report(report_id="rpt-fatal", status="FATAL")
         get_response = _make_get_reports_response([fatal_report])
@@ -249,8 +249,7 @@ class TestFindExistingReport:
             requested_marketplace_ids=["ATVPDKIKX0DER"],
         )
 
-        assert result is not None
-        assert result.json()["reportId"] == "rpt-fatal"
+        assert result is None
 
     def test_returns_first_matching_report(self):
         """API returns reports sorted by createdTime desc, so first match is returned."""
@@ -262,12 +261,12 @@ class TestFindExistingReport:
             status="IN_PROGRESS",
             created_time=(now - timedelta(hours=1)).isoformat(),
         )
-        fatal_report = _make_report(
-            report_id="rpt-fatal",
-            status="FATAL",
+        iq_report = _make_report(
+            report_id="rpt-iq",
+            status="IN_QUEUE",
             created_time=(now - timedelta(hours=2)).isoformat(),
         )
-        get_response = _make_get_reports_response([ip_report, fatal_report])
+        get_response = _make_get_reports_response([ip_report, iq_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester._find_existing_report(
@@ -297,6 +296,35 @@ class TestFindExistingReport:
             created_time=(now - timedelta(hours=2)).isoformat(),
         )
         get_response = _make_get_reports_response([cancelled_report, ip_report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-ip"
+
+    def test_skips_fatal_but_returns_in_progress(self):
+        """When both FATAL and IN_PROGRESS reports exist, FATAL is skipped and IN_PROGRESS is returned."""
+        requester = _make_requester()
+        now = datetime.now(tz=timezone.utc)
+        fatal_report = _make_report(
+            report_id="rpt-fatal",
+            status="FATAL",
+            created_time=(now - timedelta(hours=1)).isoformat(),
+        )
+        ip_report = _make_report(
+            report_id="rpt-ip",
+            status="IN_PROGRESS",
+            created_time=(now - timedelta(hours=2)).isoformat(),
+        )
+        get_response = _make_get_reports_response([fatal_report, ip_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester._find_existing_report(
@@ -729,8 +757,8 @@ class TestSendRequest:
         assert result is not None
         assert result.json()["reportId"] == "rpt-new"
 
-    def test_reuses_fatal_report_in_send_request(self):
-        """FATAL reports should be reused — status_mapping handles the behavior."""
+    def test_creates_new_report_when_only_fatal_exists(self):
+        """FATAL reports should be skipped, causing a new report to be created."""
         requester = _make_requester()
         requester._request_body_json.return_value = {
             "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
@@ -742,10 +770,12 @@ class TestSendRequest:
         get_response = _make_get_reports_response([fatal])
         requester._http_client.send_request.return_value = (None, get_response)
 
-        result = requester.send_request(stream_state=None, stream_slice=None)
+        create_response = _create_response(200, {"reportId": "rpt-new"})
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
+            result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
-        assert result.json()["reportId"] == "rpt-fatal"
+        assert result.json()["reportId"] == "rpt-new"
 
     def test_passes_marketplace_ids_to_fetch_reports(self):
         """Verify that send_request passes marketplaceIds from body_json to _fetch_reports."""
