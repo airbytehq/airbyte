@@ -515,9 +515,7 @@ class InsightAsyncJob(AsyncJob):
         else:
             if last_parse_error is not None:
                 raise AirbyteTracedException(
-                    message=(
-                        "Facebook Marketing API returned an unexpected response while polling an Insights job split status."
-                    ),
+                    message="Facebook Marketing API returned an unexpected response while polling an Insights job split status.",
                     internal_message=(
                         f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts; "
                         f"last poll response could not be parsed (report_run_id={last_report_run_id}, status={last_status}): "
