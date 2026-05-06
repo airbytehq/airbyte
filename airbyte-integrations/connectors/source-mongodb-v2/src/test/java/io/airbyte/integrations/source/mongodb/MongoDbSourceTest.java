@@ -13,9 +13,12 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
@@ -72,10 +75,47 @@ class MongoDbSourceTest {
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    mockChangeStreamProbeSucceeds(mongoDatabase);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, airbyteConnectionStatus.getStatus());
+  }
+
+  @Test
+  void testCheckOperationUnauthorizedChangeStream() throws IOException {
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoDatabase.runCommand(any())).thenReturn(response);
+    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(mongoDatabase.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.batchSize(0)).thenReturn(changeStreamIterable);
+
+    final BsonDocument errorResponse = new BsonDocument()
+        .append("ok", new org.bson.BsonDouble(0.0))
+        .append("errmsg", new org.bson.BsonString("not authorized on " + DB_NAME + " to execute command"))
+        .append("code", new org.bson.BsonInt32(13))
+        .append("codeName", new org.bson.BsonString("Unauthorized"));
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(errorResponse, new ServerAddress()));
+
+    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
+    assertNotNull(airbyteConnectionStatus);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertEquals("MongoDB user is not authorized to open a change stream on database \"" + DB_NAME + "\".",
+        airbyteConnectionStatus.getMessage());
+  }
+
+  private static void mockChangeStreamProbeSucceeds(final MongoDatabase mongoDatabase) {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> changeStreamCursor = mock(MongoChangeStreamCursor.class);
+    when(mongoDatabase.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.batchSize(0)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenReturn(changeStreamCursor);
   }
 
   @Test

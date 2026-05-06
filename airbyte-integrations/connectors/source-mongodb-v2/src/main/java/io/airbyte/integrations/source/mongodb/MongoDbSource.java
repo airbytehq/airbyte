@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitialSnapshotUtils.validateStateSyncMode;
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbResumeTokenHelper.MONGO_UNAUTHORIZED_ERROR_CODE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -29,6 +30,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.bson.BsonDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +104,23 @@ public class MongoDbSource extends BaseConnector implements Source {
           return new AirbyteConnectionStatus()
               .withMessage("Target MongoDB instance is not a replica set cluster.")
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
+        for (final String databaseName : databaseNames) {
+          if (databasesWithoutPermission.contains(databaseName)) {
+            continue;
+          }
+          try (var ignored = mongoClient.getDatabase(databaseName).watch(BsonDocument.class).batchSize(0).cursor()) {
+            LOGGER.info("Verified change stream privileges on database: {}", databaseName);
+          } catch (final MongoCommandException e) {
+            if (e.getErrorCode() == MONGO_UNAUTHORIZED_ERROR_CODE) {
+              LOGGER.error("MongoDB user is not authorized to open a change stream on database \"{}\".", databaseName, e);
+              return new AirbyteConnectionStatus()
+                  .withMessage("MongoDB user is not authorized to open a change stream on database \"" + databaseName + "\".")
+                  .withStatus(AirbyteConnectionStatus.Status.FAILED);
+            }
+            throw e;
+          }
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
