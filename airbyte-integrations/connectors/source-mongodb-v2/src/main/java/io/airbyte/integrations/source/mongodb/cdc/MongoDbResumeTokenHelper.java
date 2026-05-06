@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -29,6 +31,14 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+
+  /**
+   * MongoDB server error code 13 (codeName: {@code Unauthorized}). Indicates the authenticated user
+   * is missing a required action / privilege for the requested command.
+   *
+   * @see <a href="https://www.mongodb.com/docs/manual/reference/error-codes/">MongoDB error codes</a>
+   */
+  private static final int UNAUTHORIZED_ERROR_CODE = 13;
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -82,6 +92,21 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == UNAUTHORIZED_ERROR_CODE) {
+        // The configured MongoDB user lacks the changeStream privilege on the configured database(s).
+        // Surface a clean, deterministic config_error instead of the raw driver exception, which
+        // includes the full BSON pipeline, server hostname, $clusterTime, lsid, and signature hash
+        // and is therefore noisy and non-deterministic.
+        LOGGER.error("MongoDB user is not authorized to open a change stream on database(s): {}. Original error: {}",
+            String.join(", ", databaseNames), e.getMessage(), e);
+        throw new ConfigErrorException(
+            "MongoDB user is not authorized to open a change stream on the configured database(s). " +
+                "Grant the user the changeStream privilege on each configured database (the built-in MongoDB " +
+                "\"read\" / \"readAnyDatabase\" role on MongoDB Atlas includes the required changeStream action).",
+            e);
+      }
+      throw e;
     }
   }
 
