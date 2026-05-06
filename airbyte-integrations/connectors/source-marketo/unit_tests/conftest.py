@@ -11,7 +11,7 @@ import pendulum
 import pytest
 from source_marketo.source import Activities, MarketoAuthenticator, SourceMarketo
 
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.legacy.sources.declarative.declarative_stream import DeclarativeStream
 
 
 START_DATE = pendulum.now().subtract(days=75)
@@ -102,7 +102,7 @@ def file_generator(faker):
 
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> DeclarativeStream:
-    source = SourceMarketo()
+    source = SourceMarketo(config=config)
     matches_by_name = [stream_config for stream_config in source._get_declarative_streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
