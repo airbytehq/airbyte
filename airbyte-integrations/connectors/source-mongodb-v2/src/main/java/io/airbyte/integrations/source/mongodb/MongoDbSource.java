@@ -113,8 +113,8 @@ public class MongoDbSource extends BaseConnector implements Source {
          * Open a change stream cursor against each configured database to verify that the user has the
          * `changeStream` privilege required for incremental/CDC syncs. Without this pre-flight check, a
          * misconfigured user passes `check` and only fails at the start of every sync attempt with a raw
-         * MongoCommandException (errorCode 13). Surfacing the failure here lets the platform classify it
-         * as a config error and stops unnecessary retries.
+         * MongoCommandException (errorCode 13). Surfacing the failure here lets the platform classify it as
+         * a config error and stops unnecessary retries.
          */
         for (String databaseName : databaseNames) {
           final AirbyteConnectionStatus changeStreamStatus = checkChangeStreamPermission(mongoClient, databaseName);
@@ -271,8 +271,8 @@ public class MongoDbSource extends BaseConnector implements Source {
   /**
    * Verifies that the configured user can open a change stream on the given database. Returns
    * {@code null} when the check passes, or a failed {@link AirbyteConnectionStatus} when the user
-   * lacks the {@code changeStream} privilege. Other exceptions are rethrown so the existing
-   * catch-all in {@link #check} can handle them uniformly.
+   * lacks the {@code changeStream} privilege. Other exceptions are rethrown so the existing catch-all
+   * in {@link #check} can handle them uniformly.
    */
   @VisibleForTesting
   AirbyteConnectionStatus checkChangeStreamPermission(final MongoClient mongoClient, final String databaseName) {

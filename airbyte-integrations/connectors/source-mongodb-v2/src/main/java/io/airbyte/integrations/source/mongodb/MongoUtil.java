@@ -408,8 +408,8 @@ public class MongoUtil {
    * Returns the {@link MongoCommandException} in the cause chain of the given throwable, if any.
    *
    * @param exception The exception to inspect.
-   * @return The first {@link MongoCommandException} found in the cause chain, or {@code null} if
-   *         none is present.
+   * @return The first {@link MongoCommandException} found in the cause chain, or {@code null} if none
+   *         is present.
    */
   public static MongoCommandException findMongoCommandException(final Throwable exception) {
     Throwable current = exception;
@@ -423,9 +423,9 @@ public class MongoUtil {
   }
 
   /**
-   * Checks if the given exception is caused by an Unauthorized error (MongoDB error code 13)
-   * surfaced from a change stream / aggregate command. This indicates that the configured MongoDB
-   * user does not have the {@code changeStream} privilege on the target database.
+   * Checks if the given exception is caused by an Unauthorized error (MongoDB error code 13) surfaced
+   * from a change stream / aggregate command. This indicates that the configured MongoDB user does
+   * not have the {@code changeStream} privilege on the target database.
    *
    * @param exception The exception to check.
    * @return true if the exception is caused by an Unauthorized error from MongoDB, false otherwise.
