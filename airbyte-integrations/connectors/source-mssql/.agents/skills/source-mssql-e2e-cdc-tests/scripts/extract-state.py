@@ -1,4 +1,6 @@
 #!/usr/bin/env -S uv run --script
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 # /// script
 # requires-python = ">=3.11"
 # ///
@@ -20,6 +22,7 @@ Usage:
   extract-state.py --all /path/to/stdout.txt > state.json
   extract-state.py < /path/to/stdout.txt > state.json
 """
+
 from __future__ import annotations
 
 import json
