@@ -7,7 +7,7 @@ import pytest
 import requests
 import responses
 from source_iterable.source import SourceIterable
-from source_iterable.streams import Campaigns, CampaignsMetrics, IterableStream, Templates
+from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
 from source_iterable.utils import dateutil_parse
 
 from airbyte_cdk import AirbyteTracedException
