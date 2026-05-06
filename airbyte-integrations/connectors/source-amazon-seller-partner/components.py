@@ -706,7 +706,7 @@ class ReportCreationRequester(HttpRequester):
 
         FATAL reports are also skipped because they represent permanently failed report
         processing by Amazon. Reusing a FATAL report would cause the CDK's status_mapping
-        (which maps FATAL to ``failed``) to trigger a retry, which would find the same
+        (which maps FATAL to `failed`) to trigger a retry, which would find the same
         FATAL report again, creating an infinite loop.
         """
         reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type, requested_marketplace_ids)
