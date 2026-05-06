@@ -356,10 +356,10 @@ public class MongoDbCdcInitializer {
 
   /**
    * Best-effort extraction of the database name from an "Unauthorized" change-stream
-   * {@link MongoCommandException}. The driver's {@code errmsg} typically reads
-   * {@code not authorized on <db> to execute command { aggregate: ... }}; if that pattern is not
-   * present (e.g. because the change stream was opened against the deployment), falls back to the
-   * first configured database name, or {@code "<unknown>"} as a last resort.
+   * {@link MongoCommandException}. The driver's {@code errmsg} typically reads {@code not authorized
+   * on <db> to execute command { aggregate: ... }}; if that pattern is not present (e.g. because the
+   * change stream was opened against the deployment), falls back to the first configured database
+   * name, or {@code "<unknown>"} as a last resort.
    *
    * @param exception The unauthorized {@link MongoCommandException} raised by the driver.
    * @param databaseNames The configured list of database names from the connector source config.
