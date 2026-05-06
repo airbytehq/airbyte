@@ -2,6 +2,11 @@ version: 6.41.5
 
 type: DeclarativeSource
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 25
+
 check:
   type: CheckStream
   stream_names:
@@ -243,6 +248,17 @@ spec:
         description: Your Confluence domain name
         order: 2
         title: Domain name
+      num_workers:
+        type: integer
+        title: Concurrent Workers
+        minimum: 1
+        maximum: 25
+        default: 10
+        order: 3
+        description: >-
+          The number of concurrent workers to use for syncing data. Increasing
+          this may improve sync speed for large Confluence instances but could
+          trigger rate limiting.
     additionalProperties: true
 
 metadata:
