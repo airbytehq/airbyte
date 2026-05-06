@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,7 +85,33 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final RuntimeException e) {
+      throw translateUnauthorizedChangeStreamException(e, databaseNames);
     }
+  }
+
+  /**
+   * If the supplied exception is caused by a MongoDB "Unauthorized" command exception (error code
+   * 13), translates it into a {@link ConfigErrorException} with a single-sentence, deterministic,
+   * user-actionable message that names the configured databases and the privileges to grant.
+   *
+   * <p>
+   * Any other exception is rethrown unchanged so that the existing retry / failure semantics of the
+   * surrounding caller are preserved.
+   */
+  private static RuntimeException translateUnauthorizedChangeStreamException(final RuntimeException e,
+                                                                             final List<String> databaseNames) {
+    final Optional<MongoCommandException> unauthorized = MongoUtil.findUnauthorizedException(e);
+    if (unauthorized.isEmpty()) {
+      return e;
+    }
+    final MongoCommandException cause = unauthorized.get();
+    LOGGER.error("MongoDB user is not authorized to open a change stream on database(s) {}. "
+        + "Underlying server response: {}", databaseNames, cause.getMessage());
+    return new ConfigErrorException(
+        MongoUtil.buildChangeStreamUnauthorizedMessage(databaseNames),
+        e,
+        cause.getMessage());
   }
 
   /**

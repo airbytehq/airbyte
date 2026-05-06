@@ -433,6 +433,59 @@ public class MongoUtil {
   }
 
   /**
+   * Returns the first {@link MongoCommandException} in the cause chain whose server error code is
+   * {@link MongoConstants#UNAUTHORIZED_ERROR_CODE} (13 — "Unauthorized"). The MongoDB Java driver
+   * raises this error when the configured user lacks the privileges required to execute a command,
+   * for example when opening a CDC change stream without {@code find} and {@code changeStream}
+   * privileges on the target database.
+   *
+   * @param exception The exception to inspect.
+   * @return The matching {@link MongoCommandException}, or {@link Optional#empty()} if no
+   *         unauthorized command exception is present in the cause chain.
+   */
+  public static Optional<MongoCommandException> findUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        return Optional.of(mongoException);
+      }
+      current = current.getCause();
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Convenience predicate built on {@link #findUnauthorizedException(Throwable)}.
+   *
+   * @param exception The exception to inspect.
+   * @return true if the cause chain contains a {@link MongoCommandException} with error code 13
+   *         (Unauthorized), false otherwise.
+   */
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    return findUnauthorizedException(exception).isPresent();
+  }
+
+  /**
+   * Builds the actionable user-facing error message used when the configured MongoDB user is not
+   * authorized to open a change stream on the configured database(s). The message names the failing
+   * databases and the specific privileges that need to be granted; it does not embed any
+   * non-deterministic data from the underlying server response (cluster signatures, lsid UUIDs,
+   * timestamps).
+   *
+   * @param databaseNames The configured database names that the connector attempted to watch.
+   * @return A deterministic, user-actionable error message.
+   */
+  public static String buildChangeStreamUnauthorizedMessage(final List<String> databaseNames) {
+    final String formattedDatabases = databaseNames.stream()
+        .map(name -> "\"" + name + "\"")
+        .collect(Collectors.joining(", "));
+    final String label = databaseNames.size() == 1 ? "database" : "databases";
+    return "MongoDB user is not authorized to open a change stream on " + label + " " + formattedDatabases + ". "
+        + "Grant a role with the `find` and `changeStream` privileges (the built-in `readAnyDatabase` role is sufficient).";
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.
