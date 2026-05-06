@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -548,6 +549,62 @@ class MongoDbCdcInitializerTest {
         () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
             EMITTED_AT,
             MULTIPLE_DB_CONFIG));
+  }
+
+  @Test
+  void testChangeStreamUnauthorizedRethrownAsConfigErrorSingleDB() {
+    setupSingleDatabase();
+    final MongoCommandException unauthorized = mock(MongoCommandException.class);
+    when(unauthorized.getErrorCode()).thenReturn(13);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorized);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+    assertTrue(thrown.getMessage().contains("not authorized to open a change stream"),
+        "Expected user-facing message to mention the missing change-stream authorization, got: " + thrown.getMessage());
+    assertTrue(thrown.getMessage().contains(DATABASE),
+        "Expected user-facing message to mention the configured database \"" + DATABASE + "\", got: " + thrown.getMessage());
+    assertTrue(thrown.getMessage().contains("changeStream") && thrown.getMessage().contains("find"),
+        "Expected user-facing message to mention the required \"find\" and \"changeStream\" actions, got: " + thrown.getMessage());
+    assertEquals(unauthorized, thrown.getCause(), "Original MongoCommandException should be preserved as the cause for log/debug context");
+  }
+
+  @Test
+  void testChangeStreamUnauthorizedRethrownAsConfigErrorMultipleDB() {
+    setupMultipleDatabases();
+    final MongoCommandException unauthorized = mock(MongoCommandException.class);
+    when(unauthorized.getErrorCode()).thenReturn(13);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorized);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, MULTIPLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            MULTIPLE_DB_CONFIG));
+    assertTrue(thrown.getMessage().contains("not authorized to open a change stream"),
+        "Expected user-facing message to mention the missing change-stream authorization, got: " + thrown.getMessage());
+    assertTrue(thrown.getMessage().contains("readAnyDatabase"),
+        "Expected multi-database message to mention readAnyDatabase as the recommended role, got: " + thrown.getMessage());
+    assertEquals(unauthorized, thrown.getCause(), "Original MongoCommandException should be preserved as the cause for log/debug context");
+  }
+
+  @Test
+  void testNonUnauthorizedMongoCommandExceptionIsRethrownUnchanged() {
+    setupSingleDatabase();
+    final MongoCommandException other = mock(MongoCommandException.class);
+    // Any non-13 server error (e.g. 26 NamespaceNotFound) should fall through to existing handling.
+    when(other.getErrorCode()).thenReturn(26);
+    when(changeStreamIterable.cursor()).thenThrow(other);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final MongoCommandException thrown = assertThrows(MongoCommandException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+    assertEquals(other, thrown, "Non-Unauthorized MongoCommandExceptions must propagate unchanged so generic handling still applies.");
   }
 
   @Test
