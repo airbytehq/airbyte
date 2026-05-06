@@ -1,13 +1,13 @@
 # High Level
-Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
+Source connector for [Go High Level](https://gohighlevel.com) (Lead Connector) using the official HighLevel API v2. Requires a Private Integration Token.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `location_id` | `string` | Location ID.  |  |
-| `api_key` | `string` | API Key.  |  |
-| `start_date` | `string` | Start date.  |  |
+| `location_id` | `string` | The ID of the HighLevel sub-account (location) to sync data from. |  |
+| `api_key` | `string` | A Private Integration Token generated from your HighLevel sub-account settings under Settings > Integrations > Private Integrations. |  |
+| `start_date` | `string` | Start date. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

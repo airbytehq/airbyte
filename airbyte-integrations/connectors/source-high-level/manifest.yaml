@@ -3,8 +3,8 @@ version: 4.5.4
 type: DeclarativeSource
 
 description: >-
-  Proxy connector for Go High Level (Lead Connector). Requires a paid
-  subscription to the proxy service.
+  Source connector for Go High Level (Lead Connector) using the official
+  HighLevel API v2. Requires a Private Integration Token.
 
 check:
   type: CheckStream
@@ -22,7 +22,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/contacts
+          path: /contacts/
           http_method: GET
           request_parameters:
             locationId: "{{ config['location_id'] }}"
@@ -60,10 +60,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/payments
+          path: /payments/orders
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            altId: "{{ config['location_id'] }}"
+            altType: "location"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -104,7 +105,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/form-submissions
+          path: /forms/submissions
           http_method: GET
           request_parameters:
             locationId: "{{ config['location_id'] }}"
@@ -149,10 +150,8 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/customfields
+          path: /locations/{{ config['location_id'] }}/customFields
           http_method: GET
-          request_parameters:
-            locationId: "{{ config['location_id'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -179,10 +178,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/transactions
+          path: /payments/transactions
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            altId: "{{ config['location_id'] }}"
+            altType: "location"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -223,10 +223,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/invoices
+          path: /invoices/
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            altId: "{{ config['location_id'] }}"
+            altType: "location"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -267,10 +268,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/opportunities
+          path: /opportunities/search
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            location_id: "{{ config['location_id'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -305,7 +306,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/pipelines
+          path: /opportunities/pipelines
           http_method: GET
           request_parameters:
             locationId: "{{ config['location_id'] }}"
@@ -335,10 +336,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/subscriptions
+          path: /payments/subscriptions
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            altId: "{{ config['location_id'] }}"
+            altType: "location"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -379,10 +381,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/orders
+          path: /payments/orders
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            altId: "{{ config['location_id'] }}"
+            altType: "location"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -423,10 +426,11 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/orderId
+          path: "/payments/orders/{{ stream_partition['parent_id'] }}"
           http_method: GET
           request_parameters:
-            locationId: "{{ config['location_id'] }}"
+            altId: "{{ config['location_id'] }}"
+            altType: "location"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -444,10 +448,6 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: _id
-              request_option:
-                type: RequestOption
-                field_name: orderId
-                inject_into: request_parameter
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/Orders"
@@ -475,9 +475,9 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /airbyte/contactSearch
-          http_method: GET
-          request_parameters:
+          path: /contacts/search
+          http_method: POST
+          request_body_json:
             locationId: "{{ config['location_id'] }}"
           error_handler:
             type: CompositeErrorHandler
@@ -501,12 +501,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
+            inject_into: body_json
             field_name: searchAfter
           page_size_option:
             type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            field_name: pageLimit
+            inject_into: body_json
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -525,21 +525,19 @@ definitions:
         start_time_option:
           type: RequestOption
           field_name: startAfter
-          inject_into: request_parameter
+          inject_into: body_json
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Contact Search"
   base_requester:
     type: HttpRequester
-    url_base: https://api.leadconnectorpro.co
+    url_base: https://services.leadconnectorhq.com
     authenticator:
-      type: ApiKeyAuthenticator
+      type: BearerAuthenticator
       api_token: '{{ config["api_key"] }}'
-      inject_into:
-        type: RequestOption
-        field_name: x-api-key
-        inject_into: header
+    request_headers:
+      Version: "2021-07-28"
 
 streams:
   - $ref: "#/definitions/streams/Contacts"
@@ -569,10 +567,16 @@ spec:
         type: string
         order: 0
         title: Location ID
+        description: >-
+          The ID of the HighLevel sub-account (location) to sync data from.
       api_key:
         type: string
         order: 1
-        title: API Key
+        title: Private Integration Token
+        description: >-
+          A Private Integration Token generated from your HighLevel
+          sub-account settings under Settings > Integrations > Private
+          Integrations.
         airbyte_secret: true
       start_date:
         type: string
