@@ -20,6 +20,7 @@ parameter and assert that the connector:
 
 from urllib.parse import parse_qs, urlsplit
 
+import pytest
 import requests_mock
 from _helpers import get_source
 
@@ -46,7 +47,8 @@ _CONFIG = {
 
 _NEXT_CURSOR_TOKEN = "eyJpZCI6IjEyMyIsImxpbWl0IjoyNX0"  # opaque, base64-ish
 
-# Stream-name → (URL path on the Atlassian host, primary-key field)
+# Stream-name → URL path on the Atlassian host. Each entry drives one parametrized
+# pagination test below.
 _V2_STREAMS = {
     "blog_posts": "/wiki/api/v2/blogposts",
     "pages": "/wiki/api/v2/pages",
@@ -124,16 +126,10 @@ def _assert_v2_cursor_pagination(stream_name: str, path: str) -> None:
     assert emitted_ids == ["1", "2", "3", "4"], f"expected records from both pages of {stream_name}, got {emitted_ids}"
 
 
-def test_blog_posts_uses_v2_cursor_pagination():
-    """`blog_posts` reads `_links.next` for the next-page cursor."""
-    _assert_v2_cursor_pagination("blog_posts", "/wiki/api/v2/blogposts")
-
-
-def test_pages_uses_v2_cursor_pagination():
-    """`pages` reads `_links.next` for the next-page cursor."""
-    _assert_v2_cursor_pagination("pages", "/wiki/api/v2/pages")
-
-
-def test_space_uses_v2_cursor_pagination():
-    """`space` reads `_links.next` for the next-page cursor."""
-    _assert_v2_cursor_pagination("space", "/wiki/api/v2/spaces")
+@pytest.mark.parametrize(
+    "stream_name,path",
+    [pytest.param(name, path, id=name) for name, path in _V2_STREAMS.items()],
+)
+def test_v2_stream_uses_cursor_pagination(stream_name: str, path: str):
+    """Each v2 stream reads `_links.next` for the next-page cursor."""
+    _assert_v2_cursor_pagination(stream_name, path)
