@@ -25,10 +25,12 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -269,7 +271,7 @@ class MongoDbSourceTest {
     doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(exception);
 
-    final AirbyteStream stream = new AirbyteStream().withName("testCollection").withNamespace(DB_NAME);
+    final AirbyteStream stream = CatalogHelpers.createAirbyteStream("testCollection", DB_NAME, Field.of(ID_FIELD, JsonSchemaType.STRING));
     final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
         .withStream(stream)
         .withSyncMode(SyncMode.INCREMENTAL)
