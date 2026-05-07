@@ -103,6 +103,7 @@ The connector handles rate limiting automatically by retrying requests when a `4
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
+| 0.2.0 | 2026-05-07 | [77698](https://github.com/airbytehq/airbyte/pull/77698) | Promote to GA: default_concurrency=5 with HTTP API budget (25 req/5s burst). Validated across 3 tuning iterations and Phase 2 Tier 2 rollout with 0% concurrency-related failures and -7.2% source read duration improvement. |
 | 0.2.0-rc.4 | 2026-05-01 | [77698](https://github.com/airbytehq/airbyte/pull/77698) | Revert default_concurrency from 6 to 5 (optimal value from tuning) and add HTTP API budget matching Granola's documented rate limit (25 req/5s burst) |
 | 0.2.0-rc.3 | 2026-04-28 | [77645](https://github.com/airbytehq/airbyte/pull/77645) | Increase default_concurrency from 5 to 6 for concurrency tuning iteration 3 (final) |
 | 0.2.0-rc.2 | 2026-04-29 | [77551](https://github.com/airbytehq/airbyte/pull/77551) | Increase default_concurrency from 4 to 5 for concurrency tuning iteration 2 |
