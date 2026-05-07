@@ -106,11 +106,10 @@ For all streams, the connector retries failed requests with exponential backoff 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.2 | 2026-03-10 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `region` parameter to support Iterable EU data center |
 | 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
 | 0.6.54 | 2026-03-04 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
-| 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
-| 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
 | 0.6.50 | 2025-10-07 | [67361](https://github.com/airbytehq/airbyte/pull/67361) | Update dependencies |
 | 0.6.49 | 2025-09-30 | [66798](https://github.com/airbytehq/airbyte/pull/66798) | Update dependencies |
