@@ -9,17 +9,17 @@ The Zendesk-Chat connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Accounts | [Get](#accounts-get) |
-| Agents | [List](#agents-list), [Get](#agents-get), [Search](#agents-search) |
+| Agents | [List](#agents-list), [Get](#agents-get), [Context Store Search](#agents-context-store-search) |
 | Agent Timeline | [List](#agent-timeline-list) |
 | Bans | [List](#bans-list), [Get](#bans-get) |
-| Chats | [List](#chats-list), [Get](#chats-get), [Search](#chats-search) |
-| Departments | [List](#departments-list), [Get](#departments-get), [Search](#departments-search) |
+| Chats | [List](#chats-list), [Get](#chats-get), [Context Store Search](#chats-context-store-search) |
+| Departments | [List](#departments-list), [Get](#departments-get), [Context Store Search](#departments-context-store-search) |
 | Goals | [List](#goals-list), [Get](#goals-get) |
 | Roles | [List](#roles-list), [Get](#roles-get) |
 | Routing Settings | [Get](#routing-settings-get) |
-| Shortcuts | [List](#shortcuts-list), [Get](#shortcuts-get), [Search](#shortcuts-search) |
+| Shortcuts | [List](#shortcuts-list), [Get](#shortcuts-get), [Context Store Search](#shortcuts-context-store-search) |
 | Skills | [List](#skills-list), [Get](#skills-get) |
-| Triggers | [List](#triggers-list), [Search](#triggers-search) |
+| Triggers | [List](#triggers-list), [Context Store Search](#triggers-context-store-search) |
 
 ## Accounts
 
@@ -183,14 +183,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Agents Search
+### Agents Context Store Search
 
 Search and filter agents records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_chat.agents.search(
+await zendesk_chat.agents.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -203,7 +203,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "agents",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -628,14 +628,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Chats Search
+### Chats Context Store Search
 
 Search and filter chats records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_chat.chats.search(
+await zendesk_chat.chats.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -648,7 +648,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "chats",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -797,14 +797,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Departments Search
+### Departments Context Store Search
 
 Search and filter departments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_chat.departments.search(
+await zendesk_chat.departments.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -817,7 +817,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "departments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -1197,14 +1197,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Shortcuts Search
+### Shortcuts Context Store Search
 
 Search and filter shortcuts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_chat.shortcuts.search(
+await zendesk_chat.shortcuts.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -1217,7 +1217,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "shortcuts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -1400,14 +1400,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Triggers Search
+### Triggers Context Store Search
 
 Search and filter triggers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zendesk_chat.triggers.search(
+await zendesk_chat.triggers.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -1420,7 +1420,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "triggers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }

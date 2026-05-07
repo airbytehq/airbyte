@@ -303,6 +303,10 @@ For an existing Google Ads source, when you are updating or removing Custom GAQL
 :::note
 Custom queries that use `click_view` as the resource are subject to the same limitations as the built-in `click_view` stream: data can only be retrieved for the past 90 days, and syncs are performed one day at a time.
 :::
+
+:::note
+MESSAGE-type fields selected by a custom GAQL query (for example, `change_event.old_resource` and `change_event.new_resource` on the `change_event` resource) are synced as JSON-encoded strings. Parse these values downstream if you need to read individual nested fields.
+:::
 </FieldAnchor>
 
 <HideInUI>
@@ -347,6 +351,12 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.6-rc.2 | 2026-05-01 | [77663](https://github.com/airbytehq/airbyte/pull/77663) | Mount `TimeoutHTTPAdapter` on parent-stream sessions (`customer_client`, `customer_client_non_manager`, `accessible_accounts`) so the 5-minute HTTP socket timeout also covers parent-record fetches |
+| 4.2.6-rc.1 | 2026-04-28 | [77514](https://github.com/airbytehq/airbyte/pull/77514) | Update CDK to pre-release with stderr heartbeat diagnostics and concurrent-source deadlock fix |
+| 4.2.5 | 2026-04-27 | [77037](https://github.com/airbytehq/airbyte/pull/77037) | Promoted release candidate to GA |
+| 4.2.5-rc.1 | 2026-04-27 | [76074](https://github.com/airbytehq/airbyte/pull/76074) | Update CDK to pre-release with deadlock fix, add 5-minute HTTP socket timeout, and retry HTTP 500 (transient internal error) responses from the Google Ads API |
+| 4.2.4 | 2026-04-16 | [76331](https://github.com/airbytehq/airbyte/pull/76331) | Improve UNRECOGNIZED_FIELD error message for custom GAQL queries |
+| 4.2.3 | 2026-04-16 | [75451](https://github.com/airbytehq/airbyte/pull/75451) | Fix NULL values for MESSAGE-type fields (e.g., change_event.old_resource, change_event.new_resource) in custom GAQL queries |
 | 4.2.2 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.2.1 | 2026-03-25 | [75458](https://github.com/airbytehq/airbyte/pull/75458) | Set maxSecondsBetweenMessages to 4 hours |
 | 4.2.0 | 2026-03-19 | [73321](https://github.com/airbytehq/airbyte/pull/73321) | Add new `geographic_view_with_metrics` stream with metrics and dimension fields (geographic_view remains unchanged) |

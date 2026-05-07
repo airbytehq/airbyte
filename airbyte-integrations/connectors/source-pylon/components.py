@@ -12,13 +12,14 @@ class MigrateIssuesCursorFromCreatedAtToUpdatedAt(StateMigration):
     """
     Migrates the issues stream state cursor from created_at to updated_at.
 
-    In v0.0.5 and earlier, issues used GET /issues with created_at as the cursor.
-    In v0.0.6+, issues uses POST /issues/search with updated_at as the cursor.
+    Through v0.0.7, issues used GET /issues with created_at as the cursor.
+    From v0.0.8 onward, issues uses POST /issues/search with updated_at as the cursor.
 
     A 1:1 rename of the cursor value is unsafe: created_at and updated_at describe
     disjoint event timelines, and any issue with created_at < state but updated_at < state
-    would be permanently excluded from incremental syncs after the upgrade. Since v0.0.5
-    never captured updates to existing issues, those updates are exactly what would be missed.
+    would be permanently excluded from incremental syncs after the upgrade. Since prior
+    versions never captured updates to existing issues, those updates are exactly what
+    would be missed.
 
     Instead, this migration rewinds the cursor to the connection's configured start_date
     (or to 30 days ago if start_date is unset, matching the manifest default), forcing the
