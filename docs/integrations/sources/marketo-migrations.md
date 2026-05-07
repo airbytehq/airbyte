@@ -5,7 +5,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 2.0.0
 
 :::note
-This change is only breaking if you are syncing the `leads` stream.
+This change is only breaking if you are syncing the `leads` stream in
+**Incremental** mode. Full refresh syncs of `leads` are not affected, since
+they re-fetch the entire stream on every sync and never relied on the
+cursor/filter relationship.
 :::
 
 This update changes the `leads` stream to filter Marketo's [Bulk Lead Extract](https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/)
@@ -20,10 +23,12 @@ updates to pre-existing leads were therefore never written to the destination.
 With this change, the filter matches the cursor and lead updates are captured
 on every incremental sync.
 
-Users syncing the `leads` stream should refresh the source schema and clear
-data for the `leads` stream after upgrading. Without a clear and resync,
-historical updates that were silently dropped by earlier versions will not
-appear in the destination — the fix only prevents future silent drops.
+Users syncing the `leads` stream in **Incremental** mode should refresh the
+source schema and clear data for the `leads` stream after upgrading. Without a
+clear and resync, historical updates that were silently dropped by earlier
+versions will not appear in the destination — the fix only prevents future
+silent drops. Users syncing the `leads` stream in **Full Refresh** mode do not
+need to take any action.
 
 ### Refresh affected schemas and reset data
 

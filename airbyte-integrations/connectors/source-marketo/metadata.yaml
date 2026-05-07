@@ -25,9 +25,10 @@ data:
           The `leads` stream now filters Marketo's Bulk Lead Extract on `updatedAt`
           instead of `createdAt`, so incremental syncs capture updates to
           pre-existing leads (previously silently dropped). Users syncing the
-          `leads` stream should refresh the source schema and reset the stream
-          after upgrading to backfill historical updates missed by earlier
-          versions. See the migration guide for details.
+          `leads` stream in incremental mode should refresh the source schema
+          and reset the stream after upgrading to backfill historical updates
+          missed by earlier versions. Full refresh syncs of `leads` are not
+          affected. See the migration guide for details.
         upgradeDeadline: "2026-05-22"
         deadlineAction: "auto_upgrade"
         scopedImpact:
