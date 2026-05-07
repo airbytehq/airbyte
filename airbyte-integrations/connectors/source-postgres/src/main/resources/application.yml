@@ -165,6 +165,25 @@ airbyte:
             output: The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
             reference-links: https://github.com/airbytehq/airbyte/issues/41614
 
+          # Postgres SQLState 53300 (too_many_connections): the source database has reached
+          # its configured `max_connections` limit. Classified as transient because this is
+          # almost always a momentary capacity blip on the customer DB.
+          - pattern: (?i).*sorry, too many clients already.*
+            input-example: "org.postgresql.util.PSQLException: FATAL: sorry, too many clients already"
+            error: transient
+            group: Postgres SQL Exception
+            output: Source database has reached its maximum number of allowed connections.
+            reference-links: https://github.com/airbytehq/airbyte-internal-issues/issues/16334
+
+          # Postgres SQLState 53300 variant emitted when `max_connections` has been reached
+          # and the remaining slots are reserved for superusers. Same root cause as above.
+          - pattern: (?i).*remaining connection slots are reserved.*
+            input-example: "org.postgresql.util.PSQLException: FATAL: remaining connection slots are reserved for roles with the SUPERUSER attribute"
+            error: transient
+            group: Postgres SQL Exception
+            output: Source database has reached its maximum number of allowed connections.
+            reference-links: https://github.com/airbytehq/airbyte-internal-issues/issues/16334
+
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
         # Postgres error code [1]. The vendor error code is printed in the exception
