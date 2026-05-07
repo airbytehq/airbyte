@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -29,7 +28,6 @@ class DestinationMessageFactory(
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
-    private val log = KotlinLogging.logger {}
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
@@ -131,17 +129,25 @@ class DestinationMessageFactory(
                                     message.trace.emittedAt?.toLong() ?: 0L,
                                 )
                             }
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
                             // The source declared this stream incomplete (i.e. the source sync
                             // failed). In STDIO mode the orchestrator filters this out before it
                             // reaches the destination; in SPEED mode the destination receives it
-                            // directly. Don't crash — let the sync wind down naturally so the
-                            // failure is attributed to the source, not the destination.
-                            log.warn {
-                                "Received INCOMPLETE stream status for ${descriptor.namespace}:${descriptor.name}. The source sync failed for this stream."
+                            // directly. Surface a typed message so the bookkeeping router can
+                            // mark the stream as ended-but-not-completed and the sync can wind
+                            // down naturally — failure is then attributed to the source, not the
+                            // destination.
+                            if (fileTransferEnabled) {
+                                DestinationFileStreamIncomplete(
+                                    stream,
+                                    message.trace.emittedAt?.toLong() ?: 0L,
+                                )
+                            } else {
+                                DestinationRecordStreamIncomplete(
+                                    stream,
+                                    message.trace.emittedAt?.toLong() ?: 0L,
+                                )
                             }
-                            Ignored
-                        }
                         else -> Undefined
                     }
                 } else {
