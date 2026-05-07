@@ -55,16 +55,31 @@ The Pylon source connector supports the following streams:
 
 ### Stream notes
 
-- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications (not just newly created issues). Data is synced in 30-day windows. Connections upgrading from v0.0.7 or earlier will re-pull all issues from the configured `start_date` on the first sync to backfill updates that the previous `created_at`-based cursor could not detect.
-- **Issue Messages** and **Issue Threads** are child streams of Issues. They retrieve data for each issue returned by the Issues stream, so the Start Date configuration indirectly affects these streams.
+- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. Data is fetched in 30-day windows because Pylon caps the `updated_at` filter at a 30-day range per request.
+- **Issue Messages** and **Issue Threads** are child streams of Issues. They fetch data for each issue returned by the Issues stream, so the Start Date you configure indirectly limits these streams as well.
 - **Knowledge Base Articles** is a child stream of Knowledge Bases.
 - **Custom Fields** queries the Pylon API once for each of the three supported object types: account, issue, and contact.
+
+### Upgrading to 0.0.8
+
+Connector version 0.0.8 switches the Issues stream from `GET /issues` (cursored on `created_at`) to `POST /issues/search` (cursored on `updated_at`) so that incremental syncs capture updates to existing issues, not just newly created ones. Connections upgrading from any earlier version automatically run a one-time state migration that rewinds the issues cursor and re-pulls history starting from:
+
+- the **Start Date** you configured, if it is set, or
+- **30 days before the first sync**, if Start Date is unset.
+
+If you need a longer backfill, set Start Date to the desired date before the first sync on 0.0.8. Subsequent syncs use the new `updated_at` cursor incrementally and do not re-pull history.
 
 ## Limitations & Troubleshooting
 
 ### Rate limiting
 
-The Pylon API enforces per-endpoint rate limits. The Issues endpoint allows 10 requests per minute, while most other endpoints allow 60 requests per minute. The connector handles rate-limited responses (HTTP 429) with exponential backoff and retries up to 3 times.
+The Pylon API enforces per-endpoint rate limits. The endpoints used by this connector are limited as follows:
+
+- `POST /issues/search` (Issues): 20 requests per minute
+- `GET /issues/{id}/messages` (Issue Messages) and `GET /issues/{id}/threads` (Issue Threads): 20 requests per minute each
+- Most other endpoints: 60 requests per minute
+
+The connector handles rate-limited responses (HTTP 429) with exponential backoff and retries up to 3 times.
 
 ## Changelog
 
@@ -73,7 +88,7 @@ The Pylon API enforces per-endpoint rate limits. The Issues endpoint allows 10 r
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.0.8 | 2026-05-07 | [76083](https://github.com/airbytehq/airbyte/pull/76083) | Use POST /issues/search for true incremental sync on `updated_at`. State migration rewinds the issues cursor to the configured `start_date` (or 30 days ago if unset), so the first sync after upgrade re-pulls all issues to capture updates that v0.0.5 could not detect. |
+| 0.0.8 | 2026-05-07 | [76083](https://github.com/airbytehq/airbyte/pull/76083) | Switch the Issues stream to `POST /issues/search` cursored on `updated_at` for true incremental sync. State migration rewinds the issues cursor to the configured Start Date (or 30 days ago if unset) on the first sync after upgrade. |
 | 0.0.7 | 2026-04-28 | [77394](https://github.com/airbytehq/airbyte/pull/77394) | Update dependencies |
 | 0.0.6 | 2026-04-21 | [76721](https://github.com/airbytehq/airbyte/pull/76721) | Update dependencies |
 | 0.0.5 | 2026-03-31 | [75855](https://github.com/airbytehq/airbyte/pull/75855) | Update dependencies |
