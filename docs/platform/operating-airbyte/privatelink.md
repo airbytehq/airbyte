@@ -62,6 +62,8 @@ Airbyte's PrivateLink endpoints are located in `us-east-1` (US) and `eu-west-3` 
 
 Private Links are currently limited to sources and destinations running in AWS. This includes services like Snowflake, Databricks, and PostgreSQL hosted on AWS. If you need to connect to resources outside of AWS, Private Links are not yet available.
 
+Private Links currently support only VPC endpoint services backed by a Network Load Balancer (NLB) that you create and manage in your own AWS account. Airbyte doesn't host the NLB or the underlying service for you.
+
 If you need a PrivateLink for an S3 bucket, [talk to sales](https://airbyte.com/company/talk-to-sales) so we can scope your requirements.
 
 For managed AWS services like RDS or Aurora, additional configuration is required to expose them via AWS PrivateLink. See [Using Private Links with AWS managed services](#using-private-links-with-aws-managed-services) for details.
@@ -131,7 +133,7 @@ Once you accept the request, the connection status changes to **Available** and 
 
 ## Using Private Links with AWS managed services
 
-Managed AWS services like Amazon RDS and Aurora don't natively support VPC endpoint services. To use Private Links with these services, you need to set up additional infrastructure to expose them via a Network Load Balancer.
+Managed AWS services like Amazon RDS and Aurora don't natively support VPC endpoint services. To use Private Links with these services, you need to set up additional infrastructure in your own AWS account to expose them via a Network Load Balancer that you own and manage.
 
 The general approach is almost identical to the steps above. You create an NLB that targets your RDS or Aurora endpoint, then create a VPC endpoint service that points to that NLB.
 
