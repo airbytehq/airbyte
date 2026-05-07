@@ -35,8 +35,8 @@ public class MongoDbResumeTokenHelper {
 
   /**
    * MongoDB server error code 13 ("Unauthorized") returned when the connecting user lacks the
-   * privileges required by the requested command (for example {@code changeStream} or {@code find}
-   * on the target database).
+   * privileges required by the requested command (for example {@code changeStream} or {@code find} on
+   * the target database).
    */
   private static final int MONGO_UNAUTHORIZED_ERROR_CODE = 13;
 
