@@ -7,56 +7,29 @@ check:
   stream_names:
     - tags
 
-# Tier-aware HTTPAPIBudget. The per-minute limit is interpolated from the
-# user-selectable `subscription_tier` spec field so the connector throttles
-# at the rate that actually applies to the account's Zendesk plan, defaulting
-# to the lowest documented tier for unconfigured accounts.
-#
-# Tier -> per-minute limit (Zendesk Support / Suite, see
-# https://developer.zendesk.com/api-reference/introduction/rate-limits/):
-#   essential               -> 10   req/min (Zendesk Support Essential, legacy)
-#   team                    -> 200  req/min (Support Team, Suite Team)
-#   professional            -> 400  req/min (Support Professional, Suite Growth, Suite Professional)
-#   enterprise              -> 700  req/min (Support Enterprise, Suite Enterprise)
-#   high_volume_api_add_on  -> 2500 req/min (any plan with the High Volume API add-on, or Suite Enterprise Plus)
-#
-# The previous endpoint-specific policies (incremental 10/min, search/export
-# 100/min, deleted_tickets 10/min) are kept here as commented YAML for
-# reference. They are tier-independent per the Zendesk endpoint rate-limit
-# docs but are intentionally not enforced because the tier-level budget above
-# already covers all endpoints at the lowest tier (every endpoint cap is
-# bounded by the account's tier cap).
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ ({'essential': 10, 'team': 200, 'professional': 400, 'enterprise': 700, 'high_volume_api_add_on': 2500}).get(config.get('subscription_tier') or 'essential', 10) | int }}"
+        - limit: 10
           interval: PT1M
-      matchers: []
-  status_codes_for_ratelimit_hit: [429]
+      matchers:
+        - url_path_pattern: "^/api/v2/incremental/.*"
 
-# Endpoint-specific policies (kept for reference, not enforced):
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 10
-#           interval: PT1M
-#       matchers:
-#         - url_path_pattern: "^/api/v2/incremental/.*"
-#
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 100
-#           interval: PT1M
-#       matchers:
-#         - url_path_pattern: "^/api/v2/search/export$"
-#
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 10
-#           interval: PT1M
-#       matchers:
-#         - url_path_pattern: "^/api/v2/deleted_tickets$"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/search/export$"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/deleted_tickets$"
 
 definitions:
   bearer_authenticator:
@@ -1574,39 +1547,6 @@ spec:
           [Deprecated] Should the connector read the second and further pages of
           data.
         airbyte_hidden: true
-      subscription_tier:
-        type: string
-        title: Zendesk Plan
-        description: >-
-          The Zendesk subscription plan for this account. Used to scope the
-          connector's per-minute API request rate limit so syncs throttle at
-          the limit that actually applies to the account. Select the value
-          that matches the account's plan:
-          <ul>
-            <li><b>essential</b> &mdash; Zendesk Support Essential (legacy) &mdash; 10 req/min</li>
-            <li><b>team</b> &mdash; Zendesk Support Team or Zendesk Suite Team &mdash; 200 req/min</li>
-            <li><b>professional</b> &mdash; Zendesk Support Professional, Zendesk Suite Growth, or Zendesk Suite Professional &mdash; 400 req/min</li>
-            <li><b>enterprise</b> &mdash; Zendesk Support Enterprise or Zendesk Suite Enterprise &mdash; 700 req/min</li>
-            <li><b>high_volume_api_add_on</b> &mdash; any plan with the High Volume API add-on, or Zendesk Suite Enterprise Plus &mdash; 2500 req/min</li>
-          </ul>
-          See Zendesk's <a href="https://developer.zendesk.com/api-reference/introduction/rate-limits/">rate limit
-          documentation</a> for details. Defaults to the lowest documented tier
-          (<code>essential</code>) so unconfigured accounts are throttled
-          conservatively once the rate-limit policy is enabled in a future
-          release; set this to your actual plan to allow higher throughput.
-        enum:
-          - essential
-          - team
-          - professional
-          - enterprise
-          - high_volume_api_add_on
-        default: essential
-        examples:
-          - team
-          - professional
-          - enterprise
-          - high_volume_api_add_on
-        order: 3
       num_workers:
         type: integer
         title: Number of concurrent threads
@@ -1619,12 +1559,10 @@ spec:
           - 5
           - 10
         description: >-
-          The number of worker threads to use for the sync. The default of 5
-          is tuned to be safe for the lowest documented Zendesk plan; users on
-          higher plans (Team 200 req/min, Professional 400 req/min, Enterprise
-          700 req/min, High Volume API add-on 2500 req/min) can raise this
-          value to fully exploit their plan's rate limit.
-        order: 4
+          The number of worker threads to use for the sync. Higher values can
+          improve sync throughput on large workspaces; lower values reduce load
+          on the source.
+        order: 3
       page_size:
         type: integer
         title: Page Size (ticket_comments)
@@ -1638,7 +1576,7 @@ spec:
         description: >-
           The number of records per page for the ticket_comments stream API requests.
           Lower values may help prevent timeouts on large datasets. The maximum value is 1000.
-        order: 5
+        order: 4
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

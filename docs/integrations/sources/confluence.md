@@ -63,7 +63,8 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.0.22 | 2026-05-05 | [77776](https://github.com/airbytehq/airbyte/pull/77776) | Bump base image to `source-declarative-manifest:7.18.1` so streams without cursors no longer advertise incremental sync |
+| 1.0.23 | 2026-05-07 | [77776](https://github.com/airbytehq/airbyte/pull/77776) | Bump base image to `source-declarative-manifest:7.18.1` so streams without cursors no longer advertise incremental sync |
+| 1.0.22 | 2026-05-06 | [77820](https://github.com/airbytehq/airbyte/pull/77820) | Switch v2 streams (`pages`, `blog_posts`, `space`) to cursor-based pagination |
 | 1.0.21 | 2025-12-19 | [70941](https://github.com/airbytehq/airbyte/pull/70941) | Update dependencies |
 | 1.0.20 | 2025-11-25 | [69919](https://github.com/airbytehq/airbyte/pull/69919) | Update dependencies |
 | 1.0.19 | 2025-10-29 | [66333](https://github.com/airbytehq/airbyte/pull/66333) | Update dependencies |

@@ -3062,7 +3062,7 @@ spec:
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 5
+  default_concurrency: 6
   max_concurrency: 16
 
 # Original single-policy api_budget (pre-tuning). Superseded by the tier-aware
