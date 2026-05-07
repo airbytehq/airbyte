@@ -181,10 +181,11 @@ public class MongoDbSource extends BaseConnector implements Source {
         if (!incrementalStreams.isEmpty()) {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
           try {
-            iterators.addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig)
-                .stream()
-                .map(this::wrapIteratorWithCdcErrorHandling)
-                .toList());
+            iterators
+                .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig)
+                    .stream()
+                    .map(this::wrapIteratorWithCdcErrorHandling)
+                    .toList());
           } catch (final Exception e) {
             throw handlePotentialCdcConfigError(e);
           }
@@ -233,7 +234,7 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithCdcErrorHandling(
-                                                                                final AutoCloseableIterator<AirbyteMessage> iterator) {
+                                                                                 final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
