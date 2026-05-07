@@ -29,10 +29,9 @@ import java.math.BigInteger
 internal val BIGINT_MAX = BigInteger("9223372036854775807")
 internal val BIGINT_MIN = BigInteger("-9223372036854775808")
 internal val BIGINT_RANGE = BIGINT_MIN..BIGINT_MAX
-// Redshift automatically does RoundingMode.HALF_UP, so we ignore the scale check
-// For NUMERIC(38,9) => 38-9 = 29 (9's is the max)
-internal val NUMERIC_MAX = BigDecimal("99999999999999999999999999999")
-internal val NUMERIC_MIN = BigDecimal("-99999999999999999999999999999")
+// For NUMERIC(38,9) the max representable value has 29 integer digits + 9 fractional digits.
+internal val NUMERIC_MAX = BigDecimal("99999999999999999999999999999.999999999")
+internal val NUMERIC_MIN = BigDecimal("-99999999999999999999999999999.999999999")
 internal const val SUPER_LIMIT_BYTES = 16 * 1024 * 1024
 internal const val VARCHAR_MAX_BYTES = 65_535
 
