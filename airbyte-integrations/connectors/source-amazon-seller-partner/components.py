@@ -572,8 +572,9 @@ class ReportCreationRequester(HttpRequester):
        DONE reports older than `max_done_report_age_hours` (from config, default 0) are skipped
        since their data snapshot may be stale and the report document may have expired. When the
        config value is 0 (default), DONE reports are never reused. Status filtering (e.g.
-       CANCELLED, FATAL) is NOT done here — the manifest's status_mapping is the single source
-       of truth for which statuses are retryable, skippable, or terminal.
+       CANCELLED, FATAL) is done here to prevent reuse of reports that should not be reused.
+       The manifest's status_mapping remains the single source of truth for which statuses
+       are retryable, skippable, or terminal once a report is being polled.
     3. If no suitable report is found, fall through to super().send_request() to create a new one.
     """
 
@@ -702,6 +703,11 @@ class ReportCreationRequester(HttpRequester):
         This acts as a retry mechanism: if the data is now available, the new report will
         succeed; if still no data, the new report will also be CANCELLED and the CDK's
         SKIPPED status mapping will handle it silently.
+
+        FATAL reports are also skipped because they represent permanently failed report
+        processing by Amazon. Reusing a FATAL report would cause the CDK's status_mapping
+        (which maps FATAL to `failed`) to trigger a retry, which would find the same
+        FATAL report again, creating an infinite loop.
         """
         reports, get_response = self._fetch_reports(stream_state, stream_slice, report_type, requested_marketplace_ids)
         if not reports:
@@ -719,6 +725,13 @@ class ReportCreationRequester(HttpRequester):
                 logger.info(
                     f"Skipping CANCELLED report {report.get('reportId', '')} for {report_type}. "
                     f"A new report will be created to retry in case data is now available."
+                )
+                continue
+
+            if report_status == "FATAL":
+                logger.info(
+                    f"Skipping FATAL report {report.get('reportId', '')} for {report_type}. "
+                    f"A new report will be created instead of reusing a permanently failed one."
                 )
                 continue
 
