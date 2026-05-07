@@ -433,6 +433,29 @@ public class MongoUtil {
   }
 
   /**
+   * Returns the {@link MongoCommandException} from the cause chain whose error code matches one of
+   * {@code errorCodes}, or {@code null} if no such exception is present.
+   *
+   * @param exception The exception to inspect.
+   * @param errorCodes The MongoDB error codes to match.
+   * @return The matching {@link MongoCommandException}, or {@code null} if none is found.
+   */
+  public static MongoCommandException findMongoCommandExceptionWithErrorCode(final Throwable exception, final int... errorCodes) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        for (final int code : errorCodes) {
+          if (mongoException.getErrorCode() == code) {
+            return mongoException;
+          }
+        }
+      }
+      current = current.getCause();
+    }
+    return null;
+  }
+
+  /**
    * Represents statistics of a MongoDB collection.
    *
    * @param count The number of documents in the collection.

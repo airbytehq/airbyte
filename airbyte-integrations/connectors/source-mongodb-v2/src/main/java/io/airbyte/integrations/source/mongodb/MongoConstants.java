@@ -59,6 +59,15 @@ public class MongoConstants {
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
+  public static final int MONGO_UNAUTHORIZED_ERROR_CODE = 13;
+  public static final int MONGO_AUTHENTICATION_FAILED_ERROR_CODE = 18;
+  public static final String CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE =
+      "MongoDB user is not authorized to open change streams on the configured databases. " +
+          "Grant the \"changeStream\" and \"find\" privileges to the configured user, " +
+          "for example via the \"read\" role on each configured database or the \"readAnyDatabase\" role.";
+  public static final String MONGO_AUTHENTICATION_FAILED_ERROR_MESSAGE =
+      "MongoDB authentication failed for the configured user. Verify the username, password, and authentication source in the source configuration.";
+
   private MongoConstants() {}
 
 }
