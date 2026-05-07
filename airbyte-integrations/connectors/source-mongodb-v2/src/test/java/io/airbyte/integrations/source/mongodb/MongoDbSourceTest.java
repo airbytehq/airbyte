@@ -316,6 +316,7 @@ class MongoDbSourceTest {
     final AirbyteStream stream = new AirbyteStream()
         .withName("test-collection")
         .withNamespace(DB_NAME)
+        .withJsonSchema(Jsons.jsonNode(Map.of("properties", Map.of("field", Map.of("type", "string")))))
         .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL));
     final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
         .withStream(stream)
