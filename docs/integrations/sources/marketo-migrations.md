@@ -1,65 +1,57 @@
 # Marketo Migration Guide
 
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 ## Upgrading to 2.0.0
 
 :::note
-This change only affects users syncing the `leads` stream. Other streams
-(`activities_*`, `campaigns`, `lists`, `programs`, `emails`, `program_tokens`,
-`segmentations`, `activity_types`) are not impacted.
+This change is only breaking if you are syncing the `leads` stream.
 :::
 
-### What changed
+This update changes the `leads` stream to filter Marketo's [Bulk Lead Extract](https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/)
+API on `updatedAt` instead of `createdAt`. The cursor field is unchanged
+(`updatedAt`).
 
-The `leads` stream now filters Marketo's [Bulk Lead Extract](https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/)
-API on `updatedAt` instead of `createdAt`. The cursor field is still `updatedAt`
-(unchanged).
+Marketo's Bulk Lead Extract honors only one date-range filter per export job.
+Earlier versions filtered on `createdAt` while using `updatedAt` as the cursor,
+so any lead whose `createdAt` predated the cursor was silently excluded from
+incremental syncs even when its `updatedAt` advanced into the sync window —
+updates to pre-existing leads were therefore never written to the destination.
+With this change, the filter matches the cursor and lead updates are captured
+on every incremental sync.
 
-### Why
+Users syncing the `leads` stream should refresh the source schema and clear
+data for the `leads` stream after upgrading. Without a clear and resync,
+historical updates that were silently dropped by earlier versions will not
+appear in the destination — the fix only prevents future silent drops.
 
-Marketo's Bulk Lead Extract API honors only one date-range filter per export
-job. In earlier versions, the `leads` stream used `updatedAt` as its cursor but
-filtered exports on `createdAt`, so any lead whose `createdAt` fell before the
-cursor position was silently excluded from incremental syncs — even when its
-`updatedAt` advanced into the sync window. Updates to pre-existing leads were
-therefore never written to the destination.
+### Refresh affected schemas and reset data
 
-With this change, the filter matches the cursor, so updates to pre-existing
-leads are included in every incremental sync.
-
-### Who is affected
-
-Users syncing the `leads` stream in incremental mode. Full-refresh syncs of
-`leads` are not affected. Other streams are not affected.
-
-### Migration steps
-
-After upgrading to 2.0.0:
-
-1. **Refresh the source schema** for the `leads` stream so any dynamic-schema
-   field changes (such as custom Marketo fields) are picked up.
-2. **Clear data for the `leads` stream** and re-sync. This backfills historical
-   updates to pre-existing leads that were silently dropped by earlier
-   versions. Without a clear-and-resync, those missed updates will not appear
-   in the destination — the fix only prevents future silent drops.
-
-#### Refresh schema and clear data
-
-1. In the Airbyte UI, select **Connections** in the main nav.
-2. Select the connection syncing Marketo leads.
-3. On the **Schema** tab, select **Refresh source schema** and save.
-4. Clear data for the `leads` stream so it is re-synced from scratch. Depending
-   on your destination, this may be prompted automatically as part of the
-   schema refresh; otherwise, use the **Clear data** action on the stream.
-5. Start a sync.
+1. Select **Connections** in the main nav bar.
+   1. Select the connection affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
 
 :::note
-Customers syncing a very large `leads` volume may want to coordinate the
-clear-and-resync with their Marketo daily extract quota. The new behavior
-consumes roughly the same quota as before for a given time window.
+Any detected schema changes will be listed for your review.
 :::
 
-## Connector upgrade guide
+3. Select **Save changes** at the top right of the page.
+   1. Ensure the **Reset affected streams** option is checked.
 
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+:::note
+Depending on destination type you may not be prompted to reset your data.
+:::
+
+4. Select **Save connection**.
+
+:::note
+This will reset the data in your destination and initiate a fresh sync.
+:::
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+## Connector upgrade guide
 
 <MigrationGuide />
