@@ -206,7 +206,7 @@ public class MongoDbSource extends BaseConnector implements Source {
    * @return A wrapped iterator that catches known CDC errors.
    */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithCdcErrorHandling(
-                                                                                final AutoCloseableIterator<AirbyteMessage> iterator) {
+                                                                                 final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
