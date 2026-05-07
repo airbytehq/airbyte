@@ -317,7 +317,8 @@ class MongoDbCdcInitializerTest {
 
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
     final ConfigErrorException configErrorException = assertThrows(ConfigErrorException.class,
-        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
+            EMITTED_AT,
             SINGLE_DB_CONFIG));
 
     assertEquals(MongoConstants.CHANGE_STREAM_PERMISSION_ERROR_MESSAGE, configErrorException.getDisplayMessage());
