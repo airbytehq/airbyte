@@ -2427,7 +2427,6 @@ def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock)
     )
     list(read_full_refresh(stream))
     assert any(
-        "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg
-        and "Page size for large streams" in msg
+        "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
         for msg in caplog.messages
     )
