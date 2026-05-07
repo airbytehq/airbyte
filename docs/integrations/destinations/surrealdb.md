@@ -67,7 +67,7 @@ SurrealDB destination forces all identifier \(table, schema and columns\) names 
 
 Airbyte has the ability to connect to a SurrealDB instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion sever\) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion server\) that _does_ have direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the destination. We will talk through what each piece of configuration means.
 

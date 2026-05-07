@@ -86,7 +86,7 @@ to do this because it is not possible \(or against security policy\) to connect 
 directly \(e.g. it does not have a public IP address\).
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a.
-a bastion sever\) that _does_ have direct access to the database. Airbyte connects to the bastion
+a bastion server\) that _does_ have direct access to the database. Airbyte connects to the bastion
 and then asks the bastion to connect directly to the server.
 
 Using this feature requires additional configuration, when creating the source. We will talk through
