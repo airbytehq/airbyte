@@ -201,3 +201,34 @@ def test_discover_dateonly_field(mock_request, mock_behaviors):
     assert catalog.streams[0].json_schema["properties"]["birthday"] == AirbyteType.Date.value
     assert catalog.streams[0].json_schema["properties"]["title"] == AirbyteType.String.value
     mock_behaviors.assert_called_once_with(config_mock, ["stream"])
+
+
+@mock.patch("source_microsoft_dataverse.source.get_all_datetime_behaviors")
+@mock.patch("source_microsoft_dataverse.source.do_request")
+def test_discover_uses_select_projection(mock_request, mock_behaviors):
+    result_json = {
+        "value": [
+            {
+                "LogicalName": "account",
+                "EntitySetName": "accounts",
+                "PrimaryIdAttribute": "accountid",
+                "ChangeTrackingEnabled": False,
+                "CanChangeTrackingBeEnabled": {"Value": False},
+                "Attributes": [{"LogicalName": "name", "AttributeType": "String"}],
+            }
+        ]
+    }
+
+    mock_request.return_value.status.return_value = 200
+    mock_request.return_value.json.return_value = result_json
+    mock_behaviors.return_value = {}
+
+    source = SourceMicrosoftDataverse()
+    logger_mock, config_mock = MagicMock(), MagicMock()
+
+    source.discover(logger_mock, config_mock)
+
+    call_args = mock_request.call_args[0]
+    path = call_args[1]
+    assert "$select=LogicalName,EntitySetName,PrimaryIdAttribute,CanChangeTrackingBeEnabled,ChangeTrackingEnabled" in path
+    assert "$expand=Attributes($select=LogicalName,AttributeType)" in path

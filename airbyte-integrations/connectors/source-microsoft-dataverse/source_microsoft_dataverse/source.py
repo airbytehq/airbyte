@@ -18,7 +18,12 @@ class SourceMicrosoftDataverse(AbstractSource):
         self.catalogs = None
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        response = do_request(config, "EntityDefinitions?$expand=Attributes")
+        response = do_request(
+            config,
+            "EntityDefinitions"
+            "?$select=LogicalName,EntitySetName,PrimaryIdAttribute,CanChangeTrackingBeEnabled,ChangeTrackingEnabled"
+            "&$expand=Attributes($select=LogicalName,AttributeType)",
+        )
         response_json = response.json()
 
         entities_with_datetime = [
@@ -92,7 +97,7 @@ class SourceMicrosoftDataverse(AbstractSource):
 
         streams = []
         for catalog in self.catalogs.streams:
-            response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')")
+            response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')?$select=EntitySetName")
             response_json = response.json()
 
             args = {
