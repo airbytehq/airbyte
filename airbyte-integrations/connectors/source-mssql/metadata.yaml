@@ -27,10 +27,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 4.4.3
+      dockerImageTag: 4.4.2
     oss:
       enabled: true
-      dockerImageTag: 4.4.3
+      dockerImageTag: 4.4.2
   releaseStage: alpha
   supportLevel: certified
   tags:
