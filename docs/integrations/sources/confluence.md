@@ -5,26 +5,44 @@ This page contains the setup guide and reference information for the
 
 ## Prerequisites
 
-- Atlassian API Token
-- Your Confluence domain name
-- Your Confluence login email
+- A Confluence Cloud site, for example `your-domain.atlassian.net`
+- An Atlassian account email for a user who can access the site
+- An Atlassian API token for that account
 
 ## Setup guide
 
-### Step 1: Create an API Token
+### Step 1: Create an API token
 
-For detailed instructions on creating an Atlassian API Token, please refer to the
-[official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+Create an Atlassian API token in your Atlassian account. For detailed instructions,
+see [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+This connector authenticates to your Confluence site URL with HTTP Basic authentication
+using your Atlassian account email and API token. If you create a scoped API token,
+Atlassian requires requests to use `https://api.atlassian.com/ex/confluence/{cloudId}`.
+This connector doesn't support scoped API tokens.
 
 ### Step 2: Set up the Confluence connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. In the **API Token** field, enter your Atlassian API Token.
-5. In the **Domain name** field, enter your Confluence domain name.
-6. In the **Email** field, enter your Confluence login email.
+4. In the **API Token** field, enter your Atlassian API token.
+5. In the **Domain name** field, enter your Confluence Cloud hostname, for example `your-domain.atlassian.net`. Don't include `https://`.
+6. In the **Email** field, enter the Atlassian account email you used to create the API token.
 7. Click **Set up source** and wait for the tests to complete.
+
+## Permissions
+
+The connector can only sync records that the configured Atlassian user can view in
+Confluence.
+
+- The `pages`, `blog_posts`, `space`, and `group` streams require the user to have
+  permission to access the Confluence site.
+- The `pages` and `blog_posts` streams only return content the user can view in the
+  corresponding space.
+- The `space` stream only returns spaces the user can view.
+- The `audit` stream requires the **Confluence Administrator** global permission.
+  The audit log is available only on Standard and Premium Confluence plans.
 
 ## Supported sync modes
 
@@ -44,17 +62,32 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 - [Pages](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
 - [Space](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
 
-:::note
-The `audit` stream requires a Standard or Premium plan.
-:::
-
 ## Data type mapping
 
-The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally: `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`. No type conversions happen as part of this source.
 
 ## Performance considerations
 
-The Confluence connector should not run into Confluence API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Confluence Cloud REST API uses rate limits and quotas. Atlassian doesn't publish
+fixed limits for this API. The connector automatically retries requests that Confluence
+rate limits. If you see rate limit issues that aren't retried successfully, contact
+Airbyte Support or post in the [Airbyte community Slack](https://slack.airbyte.com/).
+
+## Reference
+
+The connector uses these configuration fields for programmatic setup with PyAirbyte,
+Terraform, or the Airbyte API:
+
+- `email`: Atlassian account email for the user whose permissions determine which
+  Confluence records Airbyte can sync.
+- `api_token`: Atlassian API token for the email account. Use an unscoped API token.
+- `domain_name`: Confluence Cloud hostname, for example `your-domain.atlassian.net`.
+  Don't include the protocol.
+
+All streams use Full Refresh sync. Version `1.0.23` fixed a discovery issue that
+incorrectly advertised Incremental sync for streams that don't define cursors. If an
+existing connection selected Incremental sync for this connector, refresh the source
+schema and set the affected streams back to Full Refresh.
 
 ## Changelog
 
