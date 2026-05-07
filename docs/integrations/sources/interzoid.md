@@ -22,6 +22,7 @@ Interzoid is an AI-powered API platform providing data quality, data matching, a
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2026-04-28 | [77278](https://github.com/airbytehq/airbyte/pull/77278) | Update dependencies |
 | 0.0.1 | 2025-11-24 | | Initial release by [@interzoid](https://github.com/interzoid) via Connector Builder |
 
 </details>

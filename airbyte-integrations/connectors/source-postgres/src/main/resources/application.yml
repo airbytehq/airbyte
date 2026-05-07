@@ -21,6 +21,15 @@ airbyte:
         estimated-field-overhead-bytes: 16
         namespace-kind: SCHEMA
         include-pseudo-columns: false
+        ignored-namespaces:
+          - pg_catalog
+          - information_schema
+          - pg_internal
+          - catalog_history
+        ignored-streams:
+          - pg_stat_statements
+          - pg_stat_statements_info
+          - pg_buffercache
     check:
       jdbc:
         queries:

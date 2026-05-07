@@ -73,6 +73,7 @@ Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connec
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.4.9 | 2026-04-28 | [77183](https://github.com/airbytehq/airbyte/pull/77183) | Update dependencies |
 | 0.4.8 | 2026-04-21 | [76490](https://github.com/airbytehq/airbyte/pull/76490) | Update dependencies |
 | 0.4.7 | 2026-03-17 | [74979](https://github.com/airbytehq/airbyte/pull/74979) | Update dependencies |
 | 0.4.6 | 2026-02-10 | [73001](https://github.com/airbytehq/airbyte/pull/73001) | Update dependencies |
