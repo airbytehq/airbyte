@@ -199,8 +199,8 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   /**
    * Wraps an iterator to catch known MongoDB error conditions during CDC operations (e.g.
-   * BSONObjectTooLarge or change stream authorization failures) and convert them into
-   * actionable, user-facing error messages.
+   * BSONObjectTooLarge or change stream authorization failures) and convert them into actionable,
+   * user-facing error messages.
    *
    * @param iterator The base iterator to wrap.
    * @return A wrapped iterator that translates known MongoDB errors into config errors.
