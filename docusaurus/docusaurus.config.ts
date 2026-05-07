@@ -21,6 +21,7 @@ const getRemarkPlugins = () => ({
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
   connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
+  codeBlockTabs: require("./src/remark/codeBlockTabs"),
 });
 
 const plugins = getRemarkPlugins();
@@ -201,6 +202,7 @@ const config: Config = {
           plugins.planInformation,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
+          plugins.codeBlockTabs,
         ],
       },
     ],
@@ -381,6 +383,14 @@ const config: Config = {
         height: 40,
       },
       items: [
+        // "Agents" is a direct link (no dropdown needed)
+        {
+          type: "doc",
+          position: "left",
+          docsPluginId: "ai-agents",
+          docId: "README",
+          label: "Agents",
+        },
         // "Data Replication" dropdown groups the five sub-sections
         // `to` makes the label itself clickable (navigates to Platform)
         {
@@ -408,14 +418,6 @@ const config: Config = {
               label: "Developers",
             },
           ],
-        },
-        // "Airbyte Agents" is a direct link (no dropdown needed)
-        {
-          type: "doc",
-          position: "left",
-          docsPluginId: "ai-agents",
-          docId: "README",
-          label: "Airbyte Agents",
         },
         // "Release notes" and "Community" are tier-one nav items
         {
