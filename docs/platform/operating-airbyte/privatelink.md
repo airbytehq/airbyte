@@ -68,7 +68,7 @@ For managed AWS services like RDS or Aurora, additional configuration is require
 
 ## Prerequisites
 
-Before setting up PrivateLink, ensure you have the following:
+Before setting up a Private Link, ensure you have the following:
 
 - **Airbyte Cloud Private Links add-on enabled**: Private Links is an add-on feature. [Talk to sales](https://airbyte.com/company/talk-to-sales) to enable it for your organization.
 
@@ -86,7 +86,7 @@ Before setting up PrivateLink, ensure you have the following:
   - `elasticloadbalancing:CreateTargetGroup`
   - `elasticloadbalancing:RegisterTargets`
 
-## Set up PrivateLink
+## Set up a Private Link
 
 ### Step 1: Contact Airbyte
 
