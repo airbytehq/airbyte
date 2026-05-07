@@ -45,13 +45,13 @@ Airbyte Cloud is multi-tenant cloud software, regardless of whether you use Priv
 
 ### Availability and supported regions
 
-Private Links is currently available for AWS only. Airbyte doesn't support Azure Private Endpoint or Google Cloud Private Service Connect.
+Private Links is currently available for AWS. If you need Private Links for Azure or GCP, [talk to sales](https://airbyte.com/company/talk-to-sales) so we can scope your requirements.
 
-| Cloud provider | Name                            | Available |
-| -------------- | ------------------------------- | --------- |
-| AWS            | PrivateLink                     | Yes       |
-| Azure          | Private Endpoint / Private Link | No        |
-| GCP            | Private Service Connect         | No        |
+| Cloud provider | Name                            | Available                                                  |
+| -------------- | ------------------------------- | ---------------------------------------------------------- |
+| AWS            | PrivateLink                     | Yes                                                        |
+| Azure          | Private Endpoint / Private Link | [Talk to sales](https://airbyte.com/company/talk-to-sales) |
+| GCP            | Private Service Connect         | [Talk to sales](https://airbyte.com/company/talk-to-sales) |
 
 Airbyte maintains AWS PrivateLink infrastructure in the US (`us-east-1`) and EU (`eu-west-3`). Your service can be in any AWS region. Airbyte uses [cross-region PrivateLink](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cross-region-connectivity-for-aws-privatelink/) to connect to services outside of these regions, so you don't need to relocate your infrastructure.
 
@@ -61,9 +61,9 @@ Airbyte's PrivateLink endpoints are located in `us-east-1` (US) and `eu-west-3` 
 
 ### Limitations
 
-Private Links are currently limited to sources and destinations running in AWS. This includes services like Snowflake, Databricks, and PostgreSQL hosted on AWS. If you need to connect to resources outside of AWS, Private Links are not an option.
+Private Links are currently limited to sources and destinations running in AWS. This includes services like Snowflake, Databricks, and PostgreSQL hosted on AWS. If you need to connect to resources outside of AWS, Private Links are not yet available.
 
-Support for AWS S3 sources and destinations is in development. If you need a Private Link for an S3 bucket, [talk to sales](https://airbyte.com/company/talk-to-sales) so we can scope your requirements.
+Support for AWS S3 buckets is in development. If you need a PrivateLink for an S3 bucket, [talk to sales](https://airbyte.com/company/talk-to-sales) so we can scope your requirements.
 
 For managed AWS services like RDS or Aurora, additional configuration is required to expose them via AWS PrivateLink. See [Using Private Links with managed services](#using-private-links-with-managed-services) for details.
 
