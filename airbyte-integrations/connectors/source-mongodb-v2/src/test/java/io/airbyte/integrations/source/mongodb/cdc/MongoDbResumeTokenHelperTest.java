@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,6 +19,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -29,6 +31,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class MongoDbResumeTokenHelperTest {
 
@@ -59,6 +62,52 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
+  }
+
+  @Test
+  void testUnauthorizedChangeStreamThrowsConfigErrorException() {
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+
+    final BsonDocument errorResponse = new BsonDocument()
+        .append("ok", new org.bson.BsonDouble(0.0))
+        .append("code", new org.bson.BsonInt32(13))
+        .append("codeName", new org.bson.BsonString("Unauthorized"))
+        .append("errmsg", new org.bson.BsonString("not authorized on " + DATABASE + " to execute command"));
+    final MongoCommandException unauthorizedException =
+        new MongoCommandException(errorResponse, new com.mongodb.ServerAddress("localhost", 27017));
+
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoDatabase.watch(Mockito.<List<Bson>>any(), Mockito.eq(BsonDocument.class))).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+
+    assertEquals("Insufficient MongoDB privileges to open a change stream on the configured database.", thrown.getDisplayMessage());
+  }
+
+  @Test
+  void testNonUnauthorizedMongoCommandExceptionIsRethrown() {
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+
+    final BsonDocument errorResponse = new BsonDocument()
+        .append("ok", new org.bson.BsonDouble(0.0))
+        .append("code", new org.bson.BsonInt32(40573))
+        .append("codeName", new org.bson.BsonString("Location40573"))
+        .append("errmsg", new org.bson.BsonString("The $changeStream stage is only supported on replica sets"));
+    final MongoCommandException otherException =
+        new MongoCommandException(errorResponse, new com.mongodb.ServerAddress("localhost", 27017));
+
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoDatabase.watch(Mockito.<List<Bson>>any(), Mockito.eq(BsonDocument.class))).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(otherException);
+
+    assertThrows(MongoCommandException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
   }
 
   @Test

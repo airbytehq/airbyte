@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -29,6 +31,16 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+
+  /**
+   * MongoDB error code returned when the authenticated user lacks the privileges required to run a
+   * command. See <a href="https://www.mongodb.com/docs/manual/reference/error-codes/">MongoDB error
+   * codes</a>.
+   */
+  private static final int MONGO_UNAUTHORIZED_ERROR_CODE = 13;
+
+  private static final String INSUFFICIENT_CHANGE_STREAM_PRIVILEGES_MESSAGE =
+      "Insufficient MongoDB privileges to open a change stream on the configured database.";
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -82,6 +94,12 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MONGO_UNAUTHORIZED_ERROR_CODE) {
+        LOGGER.error("Failed to open MongoDB change stream due to insufficient privileges.", e);
+        throw new ConfigErrorException(INSUFFICIENT_CHANGE_STREAM_PRIVILEGES_MESSAGE, e, e.getErrorMessage());
+      }
+      throw e;
     }
   }
 
