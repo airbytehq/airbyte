@@ -432,6 +432,24 @@ public class MongoUtil {
     return false;
   }
 
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE ||
+            MongoConstants.UNAUTHORIZED_ERROR_CODE_NAME.equals(mongoException.getErrorCodeName())) {
+          return true;
+        }
+      }
+      if (current.getMessage() != null && current.getMessage().contains("error 13") &&
+          current.getMessage().contains(MongoConstants.UNAUTHORIZED_ERROR_CODE_NAME)) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
   /**
    * Represents statistics of a MongoDB collection.
    *
