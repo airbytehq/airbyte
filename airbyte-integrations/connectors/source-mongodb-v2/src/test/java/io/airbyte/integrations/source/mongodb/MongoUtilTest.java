@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -307,6 +309,13 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testIsChangeStreamAuthorizationException() {
+    assertTrue(MongoUtil.isChangeStreamAuthorizationException(mongoCommandException(13, "Unauthorized")));
+    assertTrue(MongoUtil.isChangeStreamAuthorizationException(new RuntimeException(mongoCommandException(18, "AuthenticationFailed"))));
+    assertFalse(MongoUtil.isChangeStreamAuthorizationException(mongoCommandException(10334, "BSONObjectTooLarge")));
+  }
+
+  @Test
   void testGetDebeziumEventQueueSize() {
     final int queueSize = 5000;
     final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(
@@ -453,6 +462,13 @@ public class MongoUtilTest {
     return "Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). "
         .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
         + remedy;
+  }
+
+  private static MongoCommandException mongoCommandException(final int errorCode, final String codeName) {
+    return new MongoCommandException(new BsonDocument()
+        .append("code", new BsonInt32(errorCode))
+        .append("codeName", new BsonString(codeName))
+        .append("errmsg", new BsonString("test")), new ServerAddress());
   }
 
 }

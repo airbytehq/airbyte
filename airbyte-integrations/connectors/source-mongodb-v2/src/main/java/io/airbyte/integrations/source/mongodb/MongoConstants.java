@@ -48,6 +48,12 @@ public class MongoConstants {
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
+  public static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
+  public static final int MONGODB_AUTHENTICATION_FAILED_ERROR_CODE = 18;
+  public static final String CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE =
+      "MongoDB user is not authorized to open a change stream. " +
+          "Grant changeStream/read privileges on the configured database or use readAnyDatabase for multi-database CDC.";
+
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
       "A document in your MongoDB database exceeds the 16MB BSON size limit when processed through CDC (Change Data Capture) change streams. " +
