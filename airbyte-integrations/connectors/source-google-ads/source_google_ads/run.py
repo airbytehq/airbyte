@@ -12,6 +12,7 @@ from orjson import orjson
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch, logger
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from source_google_ads.config_migrations import MigrateCredentialsToOAuth
 from source_google_ads.source import SourceGoogleAds
 
 
@@ -50,5 +51,10 @@ def run() -> None:
     init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
     source = _get_source(_args)
+    if source:
+        MigrateCredentialsToOAuth.migrate(_args, source)
+        # Re-create the source so self._config picks up the migrated config
+        # (discover() uses self._config, not the config passed by launch())
+        source = _get_source(_args)
     if source:
         launch(source, _args)

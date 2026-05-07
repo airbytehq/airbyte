@@ -59,6 +59,7 @@ def read_full_refresh(stream_instance: DefaultStream):
 def test_config():
     config = {
         "credentials": {
+            "auth_type": "oauth2",
             "developer_token": "test_token",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
@@ -95,6 +96,7 @@ def test_config():
 def config_for_custom_query_tests():
     config = {
         "credentials": {
+            "auth_type": "oauth2",
             "developer_token": "test_token",
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
@@ -134,6 +136,22 @@ def additional_customers(config, customers):
 @pytest.fixture
 def customers_manager(config):
     return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]
+
+
+@pytest.fixture(name="service_account_config")
+def test_service_account_config():
+    return {
+        "credentials": {
+            "auth_type": "service_account",
+            "developer_token": "test_token",
+            "service_account_json": '{"type": "service_account", "project_id": "test", "private_key_id": "key123", "private_key": "-----BEGIN RSA PRIVATE KEY-----\\nMIIBogIBAAJBALRiMLAHudeSA/x3hB2f+2NRkJHBq5y3N5WKXD5BXKL6wMB0j1M\\n-----END RSA PRIVATE KEY-----\\n", "client_email": "test@test.iam.gserviceaccount.com", "client_id": "123456789", "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token"}',
+            "impersonated_email": "user@example.com",
+        },
+        "customer_id": "1234567890",
+        "start_date": "2021-01-01",
+        "conversion_window_days": 14,
+        "custom_queries_array": [],
+    }
 
 
 class Obj:

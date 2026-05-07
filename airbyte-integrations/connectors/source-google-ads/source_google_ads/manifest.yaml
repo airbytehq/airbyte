@@ -10,13 +10,21 @@ check:
 definitions:
   # Authenticator Definitions
   authenticator:
-    type: OAuthAuthenticator
-    refresh_request_body: {}
-    token_refresh_endpoint: https://www.googleapis.com/oauth2/v3/token
-    grant_type: refresh_token
-    client_id: '{{ config["credentials"]["client_id"] }}'
-    client_secret: '{{ config["credentials"]["client_secret"] }}'
-    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+    type: SelectiveAuthenticator
+    authenticator_selection_path:
+      - "credentials"
+      - "auth_type"
+    authenticators:
+      oauth2:
+        type: OAuthAuthenticator
+        refresh_request_body: {}
+        token_refresh_endpoint: https://www.googleapis.com/oauth2/v3/token
+        grant_type: refresh_token
+        client_id: '{{ config["credentials"]["client_id"] }}'
+        client_secret: '{{ config["credentials"]["client_secret"] }}'
+        refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+      service_account:
+        type: NoAuth
 
   base_requester:
     type: HttpRequester
