@@ -214,7 +214,7 @@ class RedshiftTableSchemaMapperTest {
                         UnknownType(com.fasterxml.jackson.databind.node.NullNode.instance),
                         false,
                     ),
-                    "super",
+                    "varchar(65535)",
                 ),
             )
     }
