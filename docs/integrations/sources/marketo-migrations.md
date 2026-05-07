@@ -15,13 +15,16 @@ This update changes the `leads` stream to filter Marketo's [Bulk Lead Extract](h
 API on `updatedAt` instead of `createdAt`. The cursor field is unchanged
 (`updatedAt`).
 
-Marketo's Bulk Lead Extract honors only one date-range filter per export job.
-Earlier versions filtered on `createdAt` while using `updatedAt` as the cursor,
-so any lead whose `createdAt` predated the cursor was silently excluded from
-incremental syncs even when its `updatedAt` advanced into the sync window —
-updates to pre-existing leads were therefore never written to the destination.
-With this change, the filter matches the cursor and lead updates are captured
-on every incremental sync.
+Marketo's Bulk Lead Extract only supports a single date-range filter per
+export job. In previous versions, Airbyte filtered records using `createdAt`
+while tracking incremental progress with `updatedAt`. This caused a gap where
+leads created before the cursor window were excluded from future syncs, even
+if they were later updated. As a result, updates to existing leads were never
+replicated to the destination.
+
+With this change, the export filter now uses the same field as the incremental
+cursor (`updatedAt`), ensuring updates to existing leads are correctly
+captured in every incremental sync.
 
 ### Full refresh users
 
@@ -39,17 +42,17 @@ versions will not appear in the destination — the fix only prevents future
 silent drops.
 
 1. Select **Connections** in the main nav bar.
-   1. Select the connection affected by the update.
+   - Select the connection affected by the update.
 2. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   2. Select **OK**.
+   - Select **Refresh source schema**.
+   - Select **OK**.
 
 :::note
 Any detected schema changes will be listed for your review.
 :::
 
 3. Select **Save changes** at the top right of the page.
-   1. Ensure the **Reset affected streams** option is checked.
+   - Ensure the **Reset affected streams** option is checked.
 
 :::note
 Depending on destination type you may not be prompted to reset your data.
