@@ -3022,6 +3022,7 @@ definitions:
 
   basic_async_retriever:
     type: AsyncRetriever
+    failed_retry_wait_time_in_seconds: 1800
     status_mapping:
       failed:
         - FATAL
