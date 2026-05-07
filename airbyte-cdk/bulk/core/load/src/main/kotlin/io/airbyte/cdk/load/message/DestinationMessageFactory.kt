@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -16,6 +15,7 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
@@ -26,6 +26,8 @@ class DestinationMessageFactory(
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
+    private val log = KotlinLogging.logger {}
+
     // In socket mode, multiple sockets can run in parallel, which means that we
     // depend on upstream to associate each record with the appropriate state message.
     private val requireCheckpointIdOnRecordAndKeyOnState =
@@ -81,10 +83,17 @@ class DestinationMessageFactory(
                                 stream,
                                 message.trace.emittedAt?.toLong() ?: 0L,
                             )
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            throw ConfigErrorException(
-                                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
-                            )
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
+                            // The source declared this stream incomplete (i.e. the source sync
+                            // failed). In STDIO mode the orchestrator filters this out before it
+                            // reaches the destination; in SPEED mode the destination receives it
+                            // directly. Don't crash — let the sync wind down naturally so the
+                            // failure is attributed to the source, not the destination.
+                            log.warn {
+                                "Received INCOMPLETE stream status for ${descriptor.namespace}:${descriptor.name}. The source sync failed for this stream."
+                            }
+                            Ignored
+                        }
                         else -> Undefined
                     }
                 } else {
