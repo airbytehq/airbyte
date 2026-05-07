@@ -118,9 +118,9 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableSchema: String? = null
 
-    @get:JsonSchemaTitle("Trim Whitespace from Unquoted CSV Fields")
+    @get:JsonSchemaTitle("Trim Whitespace from String Fields")
     @get:JsonPropertyDescription(
-        """Whether Snowflake should trim leading and trailing whitespace from unquoted CSV fields during data loading. Enabled by default to preserve existing connector behavior. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.""",
+        """Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.""",
     )
     @get:JsonProperty("trim_space")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": true}""")

@@ -138,8 +138,8 @@
       },
       "trim_space" : {
         "type" : "boolean",
-        "description" : "Whether Snowflake should trim leading and trailing whitespace from unquoted CSV fields during data loading. Enabled by default to preserve existing connector behavior. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.",
-        "title" : "Trim Whitespace from Unquoted CSV Fields",
+        "description" : "Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.",
+        "title" : "Trim Whitespace from String Fields",
         "group" : "advanced",
         "order" : 9,
         "default" : true
