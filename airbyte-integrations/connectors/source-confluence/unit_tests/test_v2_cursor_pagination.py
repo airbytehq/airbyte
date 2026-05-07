@@ -133,3 +133,91 @@ def _assert_v2_cursor_pagination(stream_name: str, path: str) -> None:
 def test_v2_stream_uses_cursor_pagination(stream_name: str, path: str):
     """Each v2 stream reads `_links.next` for the next-page cursor."""
     _assert_v2_cursor_pagination(stream_name, path)
+
+
+def _make_single_page_callback() -> dict:
+    """Single-page response: no `_links.next` so pagination must terminate after
+    one request without trying to extract a cursor from a missing field."""
+    return {
+        "results": [_record("1"), _record("2")],
+        "_links": {"base": "https://example.atlassian.net/wiki"},
+    }
+
+
+@pytest.mark.parametrize(
+    "stream_name,path",
+    [pytest.param(name, path, id=name) for name, path in _V2_STREAMS.items()],
+)
+def test_v2_stream_terminates_when_no_next_link(stream_name: str, path: str):
+    """When `_links.next` is absent on the very first response, the connector
+    must stop after a single request rather than looping or erroring on the
+    missing cursor field. This is the common case for small workspaces."""
+    url = f"https://example.atlassian.net{path}"
+    with requests_mock.Mocker() as mocker:
+        mocker.get(url, json=_make_single_page_callback())
+        output = _sync(stream_name, mocker)
+        requests_made = [r for r in mocker.request_history if r.path == path]
+
+    assert len(requests_made) == 1, (
+        f"expected exactly one request for {stream_name} when _links.next is absent, got {len(requests_made)}: "
+        f"{[r.url for r in requests_made]}"
+    )
+
+    only_qs = _parsed_qs(requests_made[0].url)
+    assert "cursor" not in only_qs, f"single-page request to {stream_name} must not include a cursor parameter, got qs={only_qs}"
+    assert only_qs.get("limit") == ["25"], f"single-page request to {stream_name} must include limit=25, got qs={only_qs}"
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == ["1", "2"], f"expected exactly the single-page records for {stream_name}, got {emitted_ids}"
+
+
+def _make_absolute_next_link_callback(path: str):
+    """Page 1 returns `_links.next` as an absolute URL (full origin + path), as
+    Atlassian sometimes does. The `cursor=<token>` regex extraction must work
+    against either shape."""
+
+    def _callback(request, context):
+        qs = _parsed_qs(request.url)
+        cursor = qs.get("cursor", [None])[0]
+        if cursor is None:
+            return {
+                "results": [_record("1"), _record("2")],
+                "_links": {
+                    "next": f"https://example.atlassian.net{path}?limit=25&cursor={_NEXT_CURSOR_TOKEN}",
+                    "base": "https://example.atlassian.net/wiki",
+                },
+            }
+        assert cursor == _NEXT_CURSOR_TOKEN, f"expected cursor={_NEXT_CURSOR_TOKEN!r} on page 2 request, got {cursor!r}"
+        return {
+            "results": [_record("3"), _record("4")],
+            "_links": {"base": "https://example.atlassian.net/wiki"},
+        }
+
+    return _callback
+
+
+@pytest.mark.parametrize(
+    "stream_name,path",
+    [pytest.param(name, path, id=name) for name, path in _V2_STREAMS.items()],
+)
+def test_v2_stream_handles_absolute_next_link(stream_name: str, path: str):
+    """`_links.next` may be returned as an absolute URL rather than a path-relative
+    one. The cursor regex must still pull the token off either shape."""
+    url = f"https://example.atlassian.net{path}"
+    with requests_mock.Mocker() as mocker:
+        mocker.get(url, json=_make_absolute_next_link_callback(path))
+        output = _sync(stream_name, mocker)
+        requests_made = [r for r in mocker.request_history if r.path == path]
+
+    assert len(requests_made) == 2, (
+        f"expected two paginated requests for {stream_name} with absolute _links.next, got {len(requests_made)}: "
+        f"{[r.url for r in requests_made]}"
+    )
+
+    second_qs = _parsed_qs(requests_made[1].url)
+    assert second_qs.get("cursor") == [
+        _NEXT_CURSOR_TOKEN
+    ], f"second request to {stream_name} must inject the cursor token extracted from an absolute _links.next URL, got qs={second_qs}"
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == ["1", "2", "3", "4"], f"expected records from both pages of {stream_name} (absolute next link), got {emitted_ids}"
