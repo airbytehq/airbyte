@@ -50,7 +50,7 @@ public class MongoConstants {
 
   public static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
   public static final String MONGODB_UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE =
-      "MongoDB user is not authorized to open a change stream. Grant the configured user readAnyDatabase access for CDC.";
+      "MongoDB user is not authorized to open a change stream.";
 
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
