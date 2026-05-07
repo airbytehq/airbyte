@@ -8,10 +8,10 @@ The Intercom connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Search](#contacts-search) |
-| Conversations | [List](#conversations-list), [Get](#conversations-get), [Search](#conversations-search) |
-| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Search](#companies-search) |
-| Teams | [List](#teams-list), [Get](#teams-get), [Search](#teams-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Context Store Search](#contacts-context-store-search) |
+| Conversations | [List](#conversations-list), [Get](#conversations-get), [Context Store Search](#conversations-context-store-search) |
+| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Context Store Search](#companies-context-store-search) |
+| Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
 | Admins | [List](#admins-list), [Get](#admins-get) |
 | Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get) |
 | Notes | [Create](#notes-create) |
@@ -445,14 +445,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await intercom.contacts.search(
+await intercom.contacts.context_store_search(
     query={"filter": {"eq": {"android_app_name": "<str>"}}}
 )
 ```
@@ -465,7 +465,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"android_app_name": "<str>"}}}
     }
@@ -751,14 +751,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Conversations Search
+### Conversations Context Store Search
 
 Search and filter conversations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await intercom.conversations.search(
+await intercom.conversations.context_store_search(
     query={"filter": {"eq": {"admin_assignee_id": 0}}}
 )
 ```
@@ -771,7 +771,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "conversations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"admin_assignee_id": 0}}}
     }
@@ -1179,14 +1179,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Companies Search
+### Companies Context Store Search
 
 Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await intercom.companies.search(
+await intercom.companies.context_store_search(
     query={"filter": {"eq": {"app_id": "<str>"}}}
 )
 ```
@@ -1199,7 +1199,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"app_id": "<str>"}}}
     }
@@ -1364,14 +1364,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Teams Search
+### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await intercom.teams.search(
+await intercom.teams.context_store_search(
     query={"filter": {"eq": {"admin_ids": []}}}
 )
 ```
@@ -1384,7 +1384,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "teams",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"admin_ids": []}}}
     }

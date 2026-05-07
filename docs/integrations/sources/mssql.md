@@ -24,6 +24,7 @@ Airbyte's certified MSSQL connector offers the following features:
 | CDC \(Change Data Capture\)   | Yes       |                    |
 | SSL Support                   | Yes       |                    |
 | SSH Tunnel Connection         | Yes       |                    |
+| Microsoft Entra ID Auth       | Yes       | Service principal  |
 | Namespaces                    | Yes       | Enabled by default |
 
 The MSSQL source does not alter the schema present in your database. Depending on the destination
@@ -58,6 +59,32 @@ Alternatively, you can use Airbyte with an existing user in your database.
 On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
 configuration. You may either configure your connection using one of the supported SSL Methods or by
 using an SSH Tunnel.
+
+## Authentication with Microsoft Entra ID
+
+This connector supports [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/) (formerly Azure Active Directory) authentication using a service principal, as an alternative to SQL Server username and password authentication. This is the recommended authentication mode for Azure SQL Database and Azure SQL Managed Instance.
+
+### Prerequisites
+
+1. An Azure SQL Database, Azure SQL Managed Instance, or SQL Server instance that is configured for Microsoft Entra authentication. For setup instructions, see [Configure and manage Microsoft Entra authentication with Azure SQL](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure).
+2. A Microsoft Entra ID [app registration (service principal)](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) with a client secret.
+3. A database user created for the service principal, with `SELECT` access to the tables you want to replicate. For instructions, see [Create Microsoft Entra users using service principals](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal-tutorial).
+4. If you plan to use CDC, the service principal user also needs the CDC-related permissions described in [Setting up CDC for MSSQL](#setting-up-cdc-for-mssql).
+
+### Configuration
+
+In the source configuration form, fill in the following fields under **Microsoft Entra ID**:
+
+| Field | Description |
+| :--- | :--- |
+| **Entra ID Client ID** | The application (client) ID of the service principal. |
+| **Entra ID Client Secret** | The client secret generated for the service principal. |
+
+When both fields are provided, the connector authenticates with `ActiveDirectoryServicePrincipal` mode through the Microsoft JDBC driver, and the **Username** and **Password** fields are ignored. If either Entra ID field is empty, the connector falls back to username and password authentication.
+
+:::note
+Entra ID authentication requires an encrypted connection. Set **Encryption** to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`. The connector fails the configuration check if encryption is disabled while Entra ID fields are set.
+:::
 
 ## Change Data Capture \(CDC\)
 
@@ -442,7 +469,13 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.6       | 2026-04-02 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                   |
+| 4.4.5       | 2026-05-07 | [77843](https://github.com/airbytehq/airbyte/pull/77843)                                                          | Roll back source mssql to 4.4.3 to investigate a potential connection issue.                                                                    |
+| 4.4.4       | 2026-05-01 | [77665](https://github.com/airbytehq/airbyte/pull/77665)                                                          | Fix sampling sync failure on empty tables in Full Refresh mode (NULL upper bound).                                                              |
+| 4.4.3       | 2026-05-05 | [77786](https://github.com/airbytehq/airbyte/pull/77786)                                                          | Make the hidden additional properties fields in spec optional. No functional change.                                                            |
+| 4.4.2       | 2026-04-27 | [77036](https://github.com/airbytehq/airbyte/pull/77036)                                                          | Fix `TABLESAMPLE` failure on views and tables without an ordered column in cursor-incremental syncs.                                            |
+| 4.4.1       | 2026-04-23 | [76857](https://github.com/airbytehq/airbyte/pull/76857)                                                          | Fix `Invalid column name` error when sampling system-versioned temporal tables that have `HIDDEN` period columns.                               |
+| 4.4.0       | 2026-04-23 | [76143](https://github.com/airbytehq/airbyte/pull/76143)                                                          | Add Microsoft Entra ID service principal authentication for both JDBC and CDC paths.                                                            |
+| 4.3.6       | 2026-04-02 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                |
 | 4.3.5       | 2026-02-23 | [73606](https://github.com/airbytehq/airbyte/pull/73606)                                                          | Fix CDC cursor overflow.                                                                                                                        |
 | 4.3.4       | 2026-02-17 | [72935](https://github.com/airbytehq/airbyte/pull/72935)                                                          | Update LSN validation to correctly detect when saved offset has been truncated.                                                                 |
 | 4.3.3       | 2026-02-03 | [71821](https://github.com/airbytehq/airbyte/pull/71821)                                                          | Require a manual refresh when schema history is missing, bump CDK version.                                                                      |

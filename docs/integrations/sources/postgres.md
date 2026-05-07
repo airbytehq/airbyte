@@ -57,7 +57,7 @@ To fill out the required information:
 1. Enter the hostname, port number, and name for your Postgres database.
 </FieldAnchor>
 <FieldAnchor field="schemas">
-2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
+2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
 3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
 4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
@@ -357,6 +357,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version    | Date       | Pull Request                                        | Subject                                                                                                                                                                   |
 |------------|------------|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.0-rc.9 | 2026-05-05 | [77805](https://github.com/airbytehq/airbyte/pull/77805) | Make the hidden additional properties fields in spec optional. No functional change.                                                                                      |
+| 3.8.0-rc.8 | 2026-04-24 | [76991](https://github.com/airbytehq/airbyte/pull/76991) | Empty schema list causes all schemas to be discovered                                                                                                                     |
+| 3.8.0-rc.7 | 2026-04-21 | [76474](https://github.com/airbytehq/airbyte/pull/76474) | Improve SSL enforcement error message on Airbyte Cloud when using insufficient SSL modes without an SSH tunnel                                                            |
 | 3.8.0-rc.6 | 2026-04-16 | [76399](https://github.com/airbytehq/airbyte/pull/76399) | Catalog validation failures result in stream failure                                                                                                                      |
 | 3.8.0-rc.5 | 2026-04-08 | [76166](https://github.com/airbytehq/airbyte/pull/76166) | Fix CDC over SSH tunnels                                                                                                                                                  |
 | 3.8.0-rc.4 | 2026-04-07 | [76129](https://github.com/airbytehq/airbyte/pull/76129) | Fix xmin syncs on Postgres versions < 14.0                                                                                                                                |

@@ -157,6 +157,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.5.9 | 2026-04-28 | [77504](https://github.com/airbytehq/airbyte/pull/77504) | Update dependencies |
 | 0.5.8 | 2026-04-21 | [76809](https://github.com/airbytehq/airbyte/pull/76809) | Update dependencies |
 | 0.5.7 | 2026-03-31 | [75703](https://github.com/airbytehq/airbyte/pull/75703) | Update dependencies |
 | 0.5.6 | 2026-03-17 | [75044](https://github.com/airbytehq/airbyte/pull/75044) | Update dependencies |

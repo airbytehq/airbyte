@@ -242,6 +242,18 @@ spec:
         default: false
         order: 13
         airbyte_hidden: true
+      max_done_report_age_hours:
+        title: "Max Age of Completed Reports to Reuse (Hours)"
+        type: integer
+        description: "When the connector finds an existing completed (DONE) report
+          matching the same date range and marketplace, it can reuse that report
+          instead of creating a new one. This setting controls how old (in hours)
+          a completed report can be and still be reused. Set to 0 to always create
+          new reports. Maximum is 24 hours."
+        default: 0
+        minimum: 0
+        maximum: 24
+        order: 14
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
@@ -2561,10 +2573,11 @@ definitions:
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
         # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
-        # otherwise it will throw a 400 error
+        # otherwise it will throw a 400 error. Using 89 days as a buffer to prevent race conditions
+        # caused by network latency between computing the timestamp and the API receiving the request.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
@@ -3015,8 +3028,15 @@ definitions:
       running:
         - IN_PROGRESS
         - IN_QUEUE
-      timeout:
+      # CANCELLED means the report was either explicitly cancelled by a user/application via cancelReport API,
+      # or automatically cancelled because there is no data to return
+      # (per SP-API docs: https://developer-docs.amazon.com/sp-api/reference/getreport).
+      # We map it to skipped so the CDK silently drops the partition without retrying or fetching records.
+      # WARNING: If a report was manually cancelled (not auto-cancelled), data for that period will be
+      # skipped and not synced. The cursor state is not advanced, so it will be retried on the next sync.
+      skipped:
         - CANCELLED
+      timeout: []
       completed:
         - DONE
     download_target_extractor:
@@ -3034,7 +3054,8 @@ definitions:
       field_path:
         - processingStatus
     creation_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportCreationRequester
       path: reports/2021-06-30/reports
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
@@ -3135,9 +3156,11 @@ definitions:
       # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
       step: "P10Y"
       cursor_granularity: "PT1S"
+      # Using 89 days as a buffer to prevent race conditions caused by network latency
+      # between computing the timestamp and the API receiving the request.
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         field_name: "createdSince"
