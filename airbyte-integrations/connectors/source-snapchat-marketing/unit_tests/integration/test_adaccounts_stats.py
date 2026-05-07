@@ -288,11 +288,7 @@ class TestAdaccountsStatsDailyLegacyStateFormat(TestCase):
         # (no fractional seconds, no timezone offset). This is the exact shape of
         # state values reported in the oncall issue (e.g. `2025-02-03T23:59:57`).
         legacy_state_value = "2024-01-15T23:59:57"
-        state = (
-            StateBuilder()
-            .with_stream_state("adaccounts_stats_daily", {"start_time": legacy_state_value})
-            .build()
-        )
+        state = StateBuilder().with_stream_state("adaccounts_stats_daily", {"start_time": legacy_state_value}).build()
 
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
