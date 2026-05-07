@@ -128,6 +128,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.25 | 2026-04-28 | [77289](https://github.com/airbytehq/airbyte/pull/77289) | Update dependencies |
 | 2.1.24 | 2026-04-21 | [76663](https://github.com/airbytehq/airbyte/pull/76663) | Update dependencies |
 | 2.1.23 | 2026-04-17 | [76453](https://github.com/airbytehq/airbyte/pull/76453) | Promoted release candidate to GA |
 | 2.1.23-rc.4 | 2026-04-13 | [76268](https://github.com/airbytehq/airbyte/pull/76268) | Add HTTPAPIBudget for rate limit enforcement (Phase 2 of concurrency tuning) |
