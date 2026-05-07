@@ -23,14 +23,20 @@ updates to pre-existing leads were therefore never written to the destination.
 With this change, the filter matches the cursor and lead updates are captured
 on every incremental sync.
 
+### Full refresh users
+
+If you sync the `leads` stream in **Full Refresh** mode, you can simply upgrade
+to `2.0.0` — no migration steps are required. Full refresh syncs re-fetch the
+entire stream on every run, so they were never affected by the cursor/filter
+mismatch.
+
+### Incremental users: refresh affected schemas and reset data
+
 Users syncing the `leads` stream in **Incremental** mode should refresh the
 source schema and clear data for the `leads` stream after upgrading. Without a
 clear and resync, historical updates that were silently dropped by earlier
 versions will not appear in the destination — the fix only prevents future
-silent drops. Users syncing the `leads` stream in **Full Refresh** mode do not
-need to take any action.
-
-### Refresh affected schemas and reset data
+silent drops.
 
 1. Select **Connections** in the main nav bar.
    1. Select the connection affected by the update.
