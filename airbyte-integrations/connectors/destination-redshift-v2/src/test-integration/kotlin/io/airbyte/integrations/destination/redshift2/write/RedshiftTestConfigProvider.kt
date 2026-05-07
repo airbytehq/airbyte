@@ -25,8 +25,8 @@ import software.amazon.awssdk.services.s3.S3Client
  */
 object RedshiftTestConfigProvider {
 
-    /** Shared, stateless SQL generator instance. */
-    val sqlGenerator = RedshiftSqlGenerator()
+    /** Creates a SQL generator instance for the given configuration. */
+    fun sqlGenerator(config: RedshiftConfiguration) = RedshiftSqlGenerator(config)
 
     /** No-op S3 client stub for tests that don't need S3 (schema discovery, regression). */
     val noOpS3Client: S3Client by lazy { S3Client.builder().region(Region.US_EAST_1).build() }
@@ -52,6 +52,6 @@ object RedshiftTestConfigProvider {
     fun airbyteClientFrom(spec: ConfigurationSpecification): RedshiftAirbyteClient {
         val config = configFrom(spec)
         val dataSource = RedshiftConnect(config).createDataSource()
-        return RedshiftAirbyteClient(dataSource, sqlGenerator, noOpS3Client)
+        return RedshiftAirbyteClient(dataSource, sqlGenerator(config), noOpS3Client)
     }
 }

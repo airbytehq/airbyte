@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.schema.RedshiftTableSchemaMapper
 import io.airbyte.integrations.destination.redshift2.schema.toRedshiftCompatibleName
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import java.time.ZoneOffset
 
 private val testObjectMapper: ObjectMapper = ObjectMapper()

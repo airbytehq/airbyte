@@ -10,6 +10,7 @@ import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClien
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.airbyte.integrations.destination.redshift2.write.RedshiftTestConfigProvider
 import io.airbyte.integrations.destination.redshift2.write.RedshiftTestDataSourceProvider
 import javax.sql.DataSource
@@ -29,10 +30,8 @@ class RedshiftCheckerTest {
 
     @BeforeAll
     fun setup() {
-        val spec = mapper.treeToValue(config, RedshiftSpecification::class.java)
-        configuration = RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
-        dataSource = RedshiftConnect(configuration).createDataSource()
-        sqlGenerator = RedshiftSqlGenerator(configuration)
+        configuration = RedshiftTestConfigProvider.configFromFile()
+        dataSource = RedshiftTestDataSourceProvider.get()
     }
 
     @Test
@@ -140,7 +139,7 @@ class RedshiftCheckerTest {
         val client =
             RedshiftAirbyteClient(
                 ds,
-                RedshiftTestConfigProvider.sqlGenerator,
+                RedshiftSqlGenerator(config),
                 S3Connect(config).createS3Client(),
             )
         return RedshiftChecker(client, config)
