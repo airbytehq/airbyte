@@ -62,6 +62,10 @@ Confluence.
 - [Pages](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
 - [Space](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
 
+All streams sync in Full Refresh mode. The `pages`, `blog_posts`, and `space`
+streams use Confluence REST API v2 cursor-based pagination. The `audit` and
+`group` streams use Confluence REST API v1 offset-based pagination.
+
 ## Data type mapping
 
 The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally: `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`. No type conversions happen as part of this source.
@@ -69,8 +73,8 @@ The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence
 ## Performance considerations
 
 The Confluence Cloud REST API uses rate limits and quotas. Atlassian doesn't publish
-fixed limits for this API. The connector automatically retries requests that Confluence
-rate limits. If you see rate limit issues that aren't retried successfully, contact
+fixed limits for this API. The connector automatically retries rate-limited
+requests. If you see rate limit issues that aren't retried successfully, contact
 Airbyte Support or post in the [Airbyte community Slack](https://slack.airbyte.com/).
 
 ## Reference
@@ -94,10 +98,10 @@ schema and set the affected streams back to Full Refresh.
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
 | 1.0.23 | 2026-05-07 | [77776](https://github.com/airbytehq/airbyte/pull/77776) | Bump base image to `source-declarative-manifest:7.18.1` so streams without cursors no longer advertise incremental sync |
-| 1.0.22 | 2026-05-06 | [77820](https://github.com/airbytehq/airbyte/pull/77820) | Switch v2 streams (`pages`, `blog_posts`, `space`) to cursor-based pagination |
+| 1.0.22 | 2026-05-07 | [77820](https://github.com/airbytehq/airbyte/pull/77820) | Switch v2 streams (`pages`, `blog_posts`, `space`) to cursor-based pagination |
 | 1.0.21 | 2025-12-19 | [70941](https://github.com/airbytehq/airbyte/pull/70941) | Update dependencies |
 | 1.0.20 | 2025-11-25 | [69919](https://github.com/airbytehq/airbyte/pull/69919) | Update dependencies |
 | 1.0.19 | 2025-10-29 | [66333](https://github.com/airbytehq/airbyte/pull/66333) | Update dependencies |
