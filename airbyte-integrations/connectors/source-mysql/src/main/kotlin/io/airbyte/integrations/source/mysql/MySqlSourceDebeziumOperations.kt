@@ -521,12 +521,12 @@ class MySqlSourceDebeziumOperations(
         const val MAX_SERVER_ID = 6400
 
         /**
-         * Translates JDBC-style SSL properties (consumed by the MySQL JDBC driver during
-         * Debezium's snapshot phase) into the corresponding Debezium MySQL connector SSL
-         * properties used by the embedded binlog client (`mysql-binlog-connector-java`).
-         * Without these, Debezium falls back to its default `preferred` SSL mode and ignores
-         * any configured trust/key stores when connecting to the binlog stream, which breaks
-         * `verify_ca`/`verify_identity` deployments that require X.509 client certificate auth.
+         * Translates JDBC-style SSL properties (consumed by the MySQL JDBC driver during Debezium's
+         * snapshot phase) into the corresponding Debezium MySQL connector SSL properties used by
+         * the embedded binlog client (`mysql-binlog-connector-java`). Without these, Debezium falls
+         * back to its default `preferred` SSL mode and ignores any configured trust/key stores when
+         * connecting to the binlog stream, which breaks `verify_ca`/`verify_identity` deployments
+         * that require X.509 client certificate auth.
          *
          * See
          * https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode

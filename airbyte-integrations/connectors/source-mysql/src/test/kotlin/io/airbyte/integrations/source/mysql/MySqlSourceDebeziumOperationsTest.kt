@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Test
 class MySqlSourceDebeziumOperationsTest {
 
     /**
-     * Regression test for airbytehq/oncall#12344 (and the earlier airbytehq/oncall#7859):
-     * when CDC is configured together with `verify_ca` (or `verify_identity`) SSL and client
-     * certificates, the Debezium binlog client must receive the corresponding `database.ssl.*`
-     * properties, otherwise it silently falls back to `preferred` mode and ignores the
-     * configured trust/key stores. The result is an authentication failure on the binlog
-     * connection while the JDBC snapshot connection works fine.
+     * Regression test for airbytehq/oncall#12344 (and the earlier airbytehq/oncall#7859): when CDC
+     * is configured together with `verify_ca` (or `verify_identity`) SSL and client certificates,
+     * the Debezium binlog client must receive the corresponding `database.ssl.*` properties,
+     * otherwise it silently falls back to `preferred` mode and ignores the configured trust/key
+     * stores. The result is an authentication failure on the binlog connection while the JDBC
+     * snapshot connection works fine.
      */
     @Test
     fun verifyCaWithClientCertProducesDebeziumSslProperties() {
@@ -99,8 +99,8 @@ class MySqlSourceDebeziumOperationsTest {
     }
 
     /**
-     * `required` SSL mode without any certs: only the SSL mode itself should be propagated
-     * to Debezium; no truststore or keystore properties should be set.
+     * `required` SSL mode without any certs: only the SSL mode itself should be propagated to
+     * Debezium; no truststore or keystore properties should be set.
      */
     @Test
     fun requiredSslModeOnlySetsMode() {
