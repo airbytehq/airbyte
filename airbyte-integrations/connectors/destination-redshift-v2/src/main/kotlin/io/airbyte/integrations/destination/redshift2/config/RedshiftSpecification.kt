@@ -84,10 +84,12 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
     val jdbcUrlParams: String? = null
 
-    @get:JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
+    @get:JsonSchemaTitle(
+        "Drop tables and columns with CASCADE. (WARNING! Risk of unrecoverable data loss)"
+    )
     @get:JsonPropertyDescription(
-        "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects " +
-            "(views, etc.). Use with caution. This option is intended for usecases which can " +
+        "WARNING! This will delete all data in all dependent objects " +
+            "(views, etc.) including during schema evolution of columns. Use with caution. This option is intended for usecases which can " +
             "easily rebuild the dependent objects."
     )
     @get:JsonProperty("drop_cascade")

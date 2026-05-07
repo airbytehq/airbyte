@@ -30,7 +30,7 @@ class RedshiftConfigurationFactoryTest {
         jdbcUrlParams: String? = null,
         hasUploadingMethod: Boolean = false,
         tunnelMethodValue: SshTunnelMethodConfiguration? = SshNoTunnelMethod,
-        dropCascade: Boolean = false,
+        dropCascade: Boolean? = false,
     ): RedshiftSpecification = mockk {
         every { this@mockk.host } returns host
         every { this@mockk.port } returns port
@@ -130,6 +130,15 @@ class RedshiftConfigurationFactoryTest {
         assertEquals(2222, tunnel.port)
         assertEquals("tunnel-user", tunnel.user)
         assertEquals("tunnel-pass", tunnel.password)
+    }
+
+    @Test
+    fun `dropCascade defaults to false when null`() {
+        val spec = spec(dropCascade = null)
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        assertEquals(false, config.dropCascade)
     }
 
     @Test

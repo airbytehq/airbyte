@@ -346,22 +346,22 @@ class RedshiftAirbyteClient(
             ) {
                 val message =
                     """
-                    Failed to modify table because other database objects (such as views \
-                    or rules) depend on it. Original error: ${e.message}
+                    Failed to modify table because other database objects (such as views 
+                    or rules) depend on it. Original error: ${e.message} .
 
-                    You can enable the 'Drop tables with CASCADE' option in the destination \
-                    configuration to automatically drop dependent objects during sync. \
-                    WARNING: This will delete all data in dependent objects (views, etc.).
+                    You can enable the 'Drop tables with CASCADE' option in the destination 
+                    configuration to automatically drop dependent objects during sync. 
+                    WARNING: This will delete all data in dependent objects (views, etc.). 
 
-                    Alternatively, you can manually drop the dependent views before running \
-                    the sync, then recreate them afterward. To find dependent views, run:
-                    SELECT dependent_ns.nspname, dependent_view.relname \
-                    FROM pg_depend \
-                    JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid \
-                    JOIN pg_class AS dependent_view \
-                    ON pg_rewrite.ev_class = dependent_view.oid \
-                    JOIN pg_namespace dependent_ns \
-                    ON dependent_view.relnamespace = dependent_ns.oid \
+                    Alternatively, you can manually drop the dependent views before running 
+                    the sync, then recreate them afterward. To find dependent views, run: 
+                    SELECT dependent_ns.nspname, dependent_view.relname 
+                    FROM pg_depend 
+                    JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid 
+                    JOIN pg_class AS dependent_view 
+                    ON pg_rewrite.ev_class = dependent_view.oid 
+                    JOIN pg_namespace dependent_ns 
+                    ON dependent_view.relnamespace = dependent_ns.oid 
                     WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;
                     """.trimIndent()
                 log.error { message }
