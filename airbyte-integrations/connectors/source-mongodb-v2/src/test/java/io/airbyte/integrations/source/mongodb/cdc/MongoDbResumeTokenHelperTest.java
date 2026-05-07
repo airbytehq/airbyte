@@ -7,10 +7,12 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,8 +20,10 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.io.IOException;
 import java.util.Collections;
@@ -59,6 +63,53 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
+  }
+
+  @Test
+  void testRetrievingResumeTokenUnauthorizedThrowsConfigError() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final MongoCommandException unauthorizedException = mock(MongoCommandException.class);
+    when(unauthorizedException.getErrorCode()).thenReturn(MongoConstants.UNAUTHORIZED_ERROR_CODE);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+    assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
+    assertTrue(thrown.getMessage().contains("changeStream"));
+    assertTrue(thrown.getMessage().contains("find"));
+  }
+
+  @Test
+  void testRetrievingResumeTokenOtherCommandExceptionPropagates() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final MongoCommandException otherException = mock(MongoCommandException.class);
+    when(otherException.getErrorCode()).thenReturn(11_000);
+    when(changeStreamIterable.cursor()).thenThrow(otherException);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    assertThrows(MongoCommandException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
   }
 
   @Test
