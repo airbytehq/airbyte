@@ -7,6 +7,7 @@ This page contains the setup guide and reference information for the Iterable so
 To set up the Iterable source connector, you need:
 
 - An Iterable [Server-side API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys) with **Standard** permissions. The key must be created in the Iterable project you want to sync. Mobile, Browser, and other client-side API keys are not supported.
+- The data center your Iterable project is hosted in. Each Iterable project lives in either the US data center (USDC) or the European data center (EDC), and an API key only works against the data center that issued it. If you don't know which data center your project uses, ask an Iterable administrator or check the URL you use to log in to Iterable.
 
 ## Set up the Iterable connector in Airbyte
 
@@ -16,8 +17,9 @@ To set up the Iterable source connector, you need:
 4. Enter a name for the Iterable connector.
 5. For **API Key**, enter your Iterable [Server-side API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys).
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The connector replicates data created on and after this date.
-7. (Optional) For **Lookback Window (Minutes)**, enter the number of minutes to re-read before the current time at the end of each sync window. The default is 5 minutes. This accounts for eventual consistency delays in Iterable's Export API. Increase this value if you observe missing events near the end of sync windows.
-8. Click **Set up source**.
+7. For **Region**, select **US** if your Iterable project is hosted in the US data center, or **EU** if it's hosted in the European data center. The default is **US**. The connector calls `https://api.iterable.com/api/` for **US** and `https://api.eu.iterable.com/api/` for **EU**. The selected region must match the data center that issued your API key.
+8. (Optional) For **Lookback Window (Minutes)**, enter the number of minutes to re-read before the current time at the end of each sync window. The default is 5 minutes. This accounts for eventual consistency delays in Iterable's Export API. Increase this value if you observe missing events near the end of sync windows.
+9. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -77,6 +79,10 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Limitations and considerations
 
+### Data center regions
+
+Iterable hosts each project in either the US data center (USDC) or the European data center (EDC). API keys are scoped to the data center where they were created and can't be used against the other one. Choose the **Region** that matches your project so the connector calls the correct base URL. If a sync fails immediately with authentication errors after a working configuration, confirm that the **Region** still matches the data center that issued your API key.
+
 ### Rate limits
 
 Iterable's Export API limits requests to 4 per minute per project. The connector respects this limit and automatically adjusts the size of date range slices to stay within it. For most other endpoints, Iterable applies a rate limit of 100 requests per second per project. The connector retries rate-limited requests (HTTP 429) with exponential backoff.
@@ -106,10 +112,12 @@ For all streams, the connector retries failed requests with exponential backoff 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.7.2 | 2026-03-10 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `region` parameter to support Iterable EU data center |
+| 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
 | 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
 | 0.6.54 | 2026-03-04 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
+| 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
+| 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
 | 0.6.50 | 2025-10-07 | [67361](https://github.com/airbytehq/airbyte/pull/67361) | Update dependencies |
 | 0.6.49 | 2025-09-30 | [66798](https://github.com/airbytehq/airbyte/pull/66798) | Update dependencies |
