@@ -24,7 +24,7 @@ steps outlined below.
 ### Migration steps
 
 1. Upgrade to version `1.0.0` or later.
-2. Reset and resync the `blog_posts`, `pages`, and `space` streams so Airbyte
+2. Reset and synchronize the `blog_posts`, `pages`, and `space` streams so Airbyte
    discovers the new schemas and refreshes existing records.
 
 For more details, see the [Confluence REST API v2 documentation](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/).

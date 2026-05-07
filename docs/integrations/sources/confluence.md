@@ -24,11 +24,11 @@ This connector doesn't support scoped API tokens.
 ### Step 2: Set up the Confluence connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
-2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+2. From the Airbyte UI, click **Sources**, then click **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. In the **API Token** field, enter your Atlassian API token.
 5. In the **Domain name** field, enter your Confluence Cloud hostname, for example `your-domain.atlassian.net`. Don't include `https://`.
-6. In the **Email** field, enter the Atlassian account email you used to create the API token.
+6. In the **email** field, enter the Atlassian account email you used to create the API token.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Permissions
@@ -84,7 +84,7 @@ Terraform, or the Airbyte API:
 
 - `email`: Atlassian account email for the user whose permissions determine which
   Confluence records Airbyte can sync.
-- `api_token`: Atlassian API token for the email account. Use an unscoped API token.
+- `api_token`: Atlassian API token for the email account. Use an API token without scopes.
 - `domain_name`: Confluence Cloud hostname, for example `your-domain.atlassian.net`.
   Don't include the protocol.
 
