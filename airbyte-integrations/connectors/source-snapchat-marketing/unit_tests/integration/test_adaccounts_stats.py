@@ -9,6 +9,7 @@ from unittest import TestCase
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import AD_ACCOUNT_ID, ORGANIZATION_ID, ConfigBuilder
 from .request_builder import OAuthRequestBuilder, RequestBuilder
@@ -240,8 +241,6 @@ class TestAdaccountsStatsIncremental(TestCase):
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with previous state for stats streams."""
-        from airbyte_cdk.test.state_builder import StateBuilder
-
         previous_state_date = "2024-01-15T00:00:00.000000Z"
         state = StateBuilder().with_stream_state("adaccounts_stats_hourly", {"start_time": previous_state_date}).build()
 
@@ -270,3 +269,45 @@ class TestAdaccountsStatsIncremental(TestCase):
         assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
             record_cursor_value[:10]
         ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+
+
+class TestAdaccountsStatsDailyLegacyStateFormat(TestCase):
+    """Regression test for the state-migration bug introduced in version 1.5.16
+    (PR #63276), where the `*_stats_daily` streams' `datetime_format` was changed
+    from `%Y-%m-%dT%H:%M:%S` to `%Y-%m-%dT00:00:00` without preserving the old
+    format in `cursor_datetime_formats`. State written by older connector versions
+    in the `%Y-%m-%dT%H:%M:%S` format could not be parsed after upgrading,
+    causing `ValueError: No format in [...] matching <state value>`.
+
+    See https://github.com/airbytehq/oncall/issues/12314.
+    """
+
+    @HttpMocker()
+    def test_legacy_state_format_parses_without_error(self, http_mocker: HttpMocker) -> None:
+        # Cursor value in the pre-1.5.16 datetime_format `%Y-%m-%dT%H:%M:%S`
+        # (no fractional seconds, no timezone offset). This is the exact shape of
+        # state values reported in the oncall issue (e.g. `2025-02-03T23:59:57`).
+        legacy_state_value = "2024-01-15T23:59:57"
+        state = (
+            StateBuilder()
+            .with_stream_state("adaccounts_stats_daily", {"start_time": legacy_state_value})
+            .build()
+        )
+
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.adaccounts_stats_endpoint(AD_ACCOUNT_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ACCOUNT_ID, granularity="DAY"),
+        )
+
+        output = _read(
+            config_builder=config(),
+            stream_name="adaccounts_stats_daily",
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+        # Cursor must accept the legacy state format without raising; the sync
+        # should run normally and produce a state message.
+        assert output.errors == [], f"Expected no errors, got: {output.errors}"
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
