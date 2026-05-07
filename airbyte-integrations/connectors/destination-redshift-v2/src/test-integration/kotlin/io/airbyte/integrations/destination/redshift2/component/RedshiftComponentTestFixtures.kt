@@ -35,9 +35,11 @@ object RedshiftComponentTestFixtures {
                 "time_ntz" to ColumnType(RedshiftDataType.TIME.typeName, true),
                 "array" to ColumnType(RedshiftDataType.SUPER.typeName, true),
                 "object" to ColumnType(RedshiftDataType.SUPER.typeName, true),
-                "union" to ColumnType(RedshiftDataType.SUPER.typeName, true),
-                "legacy_union" to ColumnType(RedshiftDataType.SUPER.typeName, true),
-                "unknown" to ColumnType(RedshiftDataType.SUPER.typeName, true),
+                // Union and unknown types are serialized to JSON strings by the coercer
+                // and stored as VARCHAR, not SUPER.
+                "union" to ColumnType(RedshiftDataType.VARCHAR.typeName, true),
+                "legacy_union" to ColumnType(RedshiftDataType.VARCHAR.typeName, true),
+                "unknown" to ColumnType(RedshiftDataType.VARCHAR.typeName, true),
             )
         )
 }

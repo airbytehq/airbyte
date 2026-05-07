@@ -20,7 +20,7 @@ class RedshiftTestDataSourceProvider private constructor() {
                 ?: synchronized(this) {
                     dataSource
                         ?: run {
-                            val config = loadConfig()
+                            val config = RedshiftTestConfigProvider.configFromFile()
                             logger.info { "Creating shared test DataSource" }
                             RedshiftConnect(config).createDataSource().also { dataSource = it }
                         }
