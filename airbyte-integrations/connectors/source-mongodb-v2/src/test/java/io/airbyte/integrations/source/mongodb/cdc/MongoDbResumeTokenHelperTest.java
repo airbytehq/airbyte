@@ -84,9 +84,11 @@ class MongoDbResumeTokenHelperTest {
     final ConfigErrorException exception = assertThrows(ConfigErrorException.class,
         () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
 
-    assertEquals("MongoDB user is not authorized to open a change stream. Grant changeStream/read privileges on the configured database or use readAnyDatabase for multi-database CDC.",
+    assertEquals(
+        "MongoDB user is not authorized to open a change stream. Grant changeStream/read privileges on the configured database or use readAnyDatabase for multi-database CDC.",
         exception.getMessage());
-    assertEquals("Command failed with error 13 (Unauthorized): 'not authorized to execute change stream command' on server localhost:27017. The full response is {\"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized to execute change stream command\"}",
+    assertEquals(
+        "Command failed with error 13 (Unauthorized): 'not authorized to execute change stream command' on server localhost:27017. The full response is {\"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized to execute change stream command\"}",
         exception.getInternalMessage());
   }
 
@@ -131,7 +133,7 @@ class MongoDbResumeTokenHelperTest {
     return new MongoCommandException(new BsonDocument()
         .append("code", new BsonInt32(errorCode))
         .append("codeName", new BsonString(codeName))
-        .append("errmsg", new BsonString("not authorized to execute change stream command")), new ServerAddress());
+        .append("errmsg", new BsonString("not authorized to execute change stream command")), new ServerAddress("localhost", 27017));
   }
 
 }
