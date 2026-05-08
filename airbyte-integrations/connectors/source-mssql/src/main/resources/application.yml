@@ -55,13 +55,17 @@ airbyte:
             output: The sync encountered a database read failure due to a connection timeout, will retry.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
 
+          - pattern: (?i).*the tcp\/ip connection to the host (10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}).*has failed.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host 172.16.12.10, port 1433 has failed.
+            error: config
+            output: SQL Server private network host is unreachable.
+
           - pattern: (?i).*the tcp\/ip connection to the host.*has failed.*
             input-example: >-
               com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed.
             error: transient
-            group: SQL Server Connection Error
-            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
-            reference-links: https://docs.microsoft.com/en-us/sql/connect/jdbc/troubleshooting-connectivity
+            output: SQL Server host is unreachable.
 
           - pattern: (?i).*login failed for user.*
             input-example: >-
@@ -154,9 +158,7 @@ airbyte:
 
           - code: 2
             error: transient
-            output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
-            group: SQL Server Network Error
-            reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-2-database-engine-error
+            output: SQL Server host is unreachable.
 
           - code: 1205
             error: transient
