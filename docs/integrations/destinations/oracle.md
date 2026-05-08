@@ -96,6 +96,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                             |
 | :---------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.1.0 | 2026-02-04 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove strict-encrypt variant; use environment-aware encryption enforcement |
 | 1.0.0       | 2024-04-11 | [\#36048](https://github.com/airbytehq/airbyte/pull/36048) | Removes Normalization, updates to V2 Raw Table Format                                               |
 | 0.2.0       | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.19      | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/)      | Destination Oracle: added custom JDBC parameters support.                                           |
