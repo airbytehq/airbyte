@@ -182,7 +182,8 @@ public class MongoDbSource extends BaseConnector implements Source {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
           try {
             iterators
-                .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+                .addAll(
+                    cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
           } catch (final MongoCommandException e) {
             if (e.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
               throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, e, e.getMessage());
