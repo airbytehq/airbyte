@@ -47,6 +47,7 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.4.1 | 2026-05-08 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Align the manifest runtime image with the CDK 7.18.1 behavior used by Customer.io tests. |
 | 0.4.0   | 2026-05-06 | [16327](https://github.com/airbytehq/airbyte-internal-issues/issues/16327) | Add pagination on `campaigns_actions` and `newsletters`, client-side incremental sync on the `updated` cursor, and a configurable `region` (US/EU) selector |
 | 0.3.19  | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                 |
 | 0.3.18  | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies                         |
