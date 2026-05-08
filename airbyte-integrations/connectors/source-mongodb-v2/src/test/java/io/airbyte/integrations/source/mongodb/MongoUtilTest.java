@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -304,6 +306,20 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     assertThrows(MongoSecurityException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testIsUnauthorizedException() {
+    final MongoCommandException unauthorizedException = new MongoCommandException(
+        new BsonDocument()
+            .append("ok", new BsonInt32(0))
+            .append("code", new BsonInt32(13))
+            .append("codeName", new BsonString("Unauthorized"))
+            .append("errmsg", new BsonString("not authorized")),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException(unauthorizedException)));
+    assertFalse(MongoUtil.isUnauthorizedException(new RuntimeException("test")));
   }
 
   @Test
