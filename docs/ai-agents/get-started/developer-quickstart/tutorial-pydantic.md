@@ -65,7 +65,7 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 
     This command installs:
 
-    - `airbyte-agent-sdk`: The Airbyte Agent SDK, which ships every connector as a typed submodule.
+    - `airbyte-agent-sdk`: The Agent SDK, which ships every connector as a typed submodule.
 
     - `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
 
@@ -123,7 +123,7 @@ Before you can query GitHub data, add a GitHub connector to your Airbyte Agents 
 
 - **API**: Send a `POST` request to create the connector programmatically. See [Add a connector (API)](../../interfaces/api/add-connector) for request examples.
 
-- **MCP**: If you run Airbyte's Agent MCP, you can add a new connector from your existing agent. See [Agent MCP](../../interfaces/mcp) to learn how to use the MCP server.
+- **MCP**: If you run the Agent MCP, you can add a new connector from your existing agent. See [Agent MCP](../../interfaces/mcp) to learn how to use the MCP server.
 
 You only need to add the connector once. After it exists in your workspace, you can skip this step when setting up new agents.
 

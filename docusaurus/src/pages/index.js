@@ -186,7 +186,7 @@ export default function Home() {
     {
       title: 'Core concepts',
       link: '/ai-agents/concepts/',
-      description: 'Understand the building blocks: the Connect-Unify-Act model, agent operations, the Context Store, and system architecture.',
+      description: 'Understand the building blocks: the Connect-Ask-Act model, agent operations, the Context Store, and system architecture.',
       icon: AIAgentsIcon,
     },
     {

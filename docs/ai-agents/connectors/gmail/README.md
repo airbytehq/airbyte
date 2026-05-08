@@ -35,6 +35,9 @@ The Gmail connector is optimized to handle prompts like these.
 - Search for messages matching a query
 - Find emails from a specific sender
 - Show me emails with attachments
+- Show me my latest emails
+- Find recent unread emails about \{topic\}
+- Show the conversation with \{person\} about \{topic\}
 
 ## Unsupported prompts
 
