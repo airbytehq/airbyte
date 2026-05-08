@@ -536,11 +536,7 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['app_api_key'] }}"
+        $ref: "#/definitions/base_requester"
         path: /campaigns
         http_method: GET
       record_selector:
@@ -692,11 +688,7 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['app_api_key'] }}"
+        $ref: "#/definitions/base_requester"
         path: /campaigns/{{ stream_partition.parent_id }}/actions
         http_method: GET
       record_selector:
@@ -729,11 +721,7 @@ streams:
                 retriever:
                   type: SimpleRetriever
                   requester:
-                    type: HttpRequester
-                    url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['app_api_key'] }}"
+                    $ref: "#/definitions/base_requester"
                     path: /campaigns
                     http_method: GET
                   record_selector:
@@ -878,7 +866,6 @@ streams:
         datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
         datetime_format: "%s"
       is_client_side_incremental: true
-      global_substream_cursor: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1001,11 +988,7 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['app_api_key'] }}"
+        $ref: "#/definitions/base_requester"
         path: /newsletters
         http_method: GET
       record_selector:
