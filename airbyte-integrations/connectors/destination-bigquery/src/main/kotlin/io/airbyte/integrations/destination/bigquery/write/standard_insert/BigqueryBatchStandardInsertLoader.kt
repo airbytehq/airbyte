@@ -16,6 +16,7 @@ import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -95,8 +96,16 @@ class BigqueryBatchStandardInsertsLoader(
             switchToWriteChannel()
         }
         writer.close()
-        BigQueryUtils.waitForJobFinish(writer.job)
-        val stats = writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
+        val loadJob =
+            writer.job
+                ?: throw SystemErrorException(
+                    "BigQuery load job is unavailable.",
+                    IllegalStateException(
+                        "TableDataWriteChannel.getJob() returned null after close for table ${writeChannelConfiguration.destinationTable.toPrettyString()}"
+                    )
+                )
+        BigQueryUtils.waitForJobFinish(loadJob)
+        val stats = loadJob.reload().getStatistics<JobStatistics.LoadStatistics>()
         logger.info {
             "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
