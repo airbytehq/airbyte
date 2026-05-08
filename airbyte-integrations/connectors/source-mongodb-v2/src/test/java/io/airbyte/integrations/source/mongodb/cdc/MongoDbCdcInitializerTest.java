@@ -329,7 +329,8 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsWithUnauthorizedChangeStreamErrorThrowsConfigError() {
     setupSingleDatabase();
     final MongoCommandException unauthorizedException = new MongoCommandException(
-        BsonDocument.parse("{\"ok\": 0.0, \"errmsg\": \"not authorized on private_db to execute command\", \"code\": 13, \"codeName\": \"Unauthorized\"}"),
+        BsonDocument
+            .parse("{\"ok\": 0.0, \"errmsg\": \"not authorized on private_db to execute command\", \"code\": 13, \"codeName\": \"Unauthorized\"}"),
         new ServerAddress("private-host.mongodb.net", 27017));
     when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
