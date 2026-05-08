@@ -4,13 +4,17 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -28,6 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MongoDbResumeTokenHelper {
 
+  private static final int UNAUTHORIZED_ERROR_CODE = 13;
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
 
   /**
@@ -82,6 +87,11 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getCode() == UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, e, e.getMessage());
+      }
+      throw e;
     }
   }
 
