@@ -3,6 +3,31 @@
 This is the repository for the Kafka destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/kafka).
 
+## Supported Authentication Methods
+
+The Kafka destination connector supports the following authentication protocols:
+
+- **PLAINTEXT**: No authentication or encryption
+- **SASL_PLAINTEXT**: SASL authentication without encryption
+- **SASL_SSL**: SASL authentication with SSL/TLS encryption
+- **SSL**: Certificate-based mutual TLS authentication (mTLS) without SASL
+
+### SSL Certificate Authentication
+
+The SSL protocol enables secure, certificate-based authentication to your Kafka cluster. This is ideal for production environments where mutual TLS authentication is required.
+
+**Required Configuration:**
+- Client certificate chain (PEM format)
+- Private key for the client certificate (PEM format)
+- CA certificates for server verification (PEM format)
+
+**Optional Configuration:**
+- Keystore password (if the private key is encrypted)
+- Truststore password
+- Endpoint identification algorithm (hostname verification)
+
+See the connector configuration in Airbyte for detailed field descriptions.
+
 ## Local development
 
 #### Building via Gradle

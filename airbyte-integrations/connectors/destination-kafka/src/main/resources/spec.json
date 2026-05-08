@@ -141,6 +141,59 @@
                 "airbyte_secret": true
               }
             }
+          },
+          {
+            "title": "SSL",
+            "required": ["security_protocol"],
+            "properties": {
+              "security_protocol": {
+                "type": "string",
+                "enum": ["SSL"],
+                "default": "SSL"
+              },
+              "ssl_keystore_certificate_chain": {
+                "title": "SSL Keystore Certificate Chain",
+                "description": "Client certificate chain in PEM format. This is used for mutual TLS authentication with the Kafka broker.",
+                "type": "string",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "ssl_keystore_key": {
+                "title": "SSL Keystore Private Key",
+                "description": "Private key in PEM format for the client certificate. This is used for mutual TLS authentication with the Kafka broker.",
+                "type": "string",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "ssl_keystore_password": {
+                "title": "SSL Keystore Password",
+                "description": "Password for the private key. If the private key is not encrypted, this can be left empty.",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              },
+              "ssl_truststore_certificates": {
+                "title": "SSL Truststore Certificates",
+                "description": "Trusted CA certificates in PEM format. These certificates are used to verify the broker's certificate. If not provided, the default system truststore will be used.",
+                "type": "string",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "ssl_truststore_password": {
+                "title": "SSL Truststore Password",
+                "description": "Password for the truststore. If not provided, no password will be used.",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": true
+              },
+              "ssl_endpoint_identification_algorithm": {
+                "title": "SSL Endpoint Identification Algorithm",
+                "description": "The endpoint identification algorithm to validate server hostname using server certificate. Use 'https' to enable hostname verification, or leave empty to disable.",
+                "type": "string",
+                "default": "https",
+                "enum": ["https", ""]
+              }
+            }
           }
         ]
       },
