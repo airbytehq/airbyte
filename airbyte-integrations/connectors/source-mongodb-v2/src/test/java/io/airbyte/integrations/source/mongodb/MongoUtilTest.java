@@ -422,6 +422,34 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testIsUnauthorizedException() {
+    final MongoCommandException exception = new MongoCommandException(
+        BsonDocument.parse("{\"ok\": 0.0, \"errmsg\": \"not authorized\", \"code\": 13, \"codeName\": \"Unauthorized\"}"),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException(exception)));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionWithCodeName() {
+    final MongoCommandException exception = new MongoCommandException(
+        BsonDocument.parse("{\"ok\": 0.0, \"errmsg\": \"not authorized\", \"code\": 8000, \"codeName\": \"Unauthorized\"}"),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionReturnsFalseForDifferentMongoCommandError() {
+    final MongoCommandException exception = new MongoCommandException(
+        BsonDocument.parse("{\"ok\": 0.0, \"errmsg\": \"too large\", \"code\": 10334, \"codeName\": \"BSONObjectTooLarge\"}"),
+        new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedException(exception));
+  }
+
+  @Test
   void testChunkSize() {
     final String collectionName = "test-collection";
     final String databaseName = "test-database";
