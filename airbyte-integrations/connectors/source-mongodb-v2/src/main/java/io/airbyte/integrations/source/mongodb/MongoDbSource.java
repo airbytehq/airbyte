@@ -36,7 +36,7 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
   static final String CDC_CHANGE_STREAM_PERMISSION_ERROR_MESSAGE =
-      "MongoDB user lacks change stream privileges for CDC. Grant changeStream and find privileges to the MongoDB user.";
+      "MongoDB user lacks required change stream privileges for CDC.";
 
   private final MongoDbCdcInitializer cdcInitializer;
 
