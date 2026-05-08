@@ -27,7 +27,7 @@ source-facebook-marketing = "source_facebook_marketing.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6"
 freezegun = "^1.4.0"
-pytest = "^8.0.0"
+pytest = "^9.0.3"
 requests-mock = "^1.9.3"
 
 
