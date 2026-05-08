@@ -4,12 +4,11 @@ from pathlib import Path
 
 import pytest
 import yaml
+from conftest import get_source
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils.mapping_helpers import get_interpolation_context
-
-from conftest import get_source
 
 
 def _load_manifest():
@@ -145,6 +144,7 @@ def test_game_name_propagates_to_parent_stream():
     """Verify the ComponentMappingDefinition field_path can navigate through
     the resolved $ref to set the game_id_resolver's name request parameter."""
     from copy import deepcopy
+
     from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 
     manifest = _load_manifest()
@@ -158,9 +158,7 @@ def test_game_name_propagates_to_parent_stream():
                 game_name_mapping = mapping
                 break
 
-        assert game_name_mapping is not None, (
-            f"No ComponentMappingDefinition found for parent stream name in {ds['name']}"
-        )
+        assert game_name_mapping is not None, f"No ComponentMappingDefinition found for parent stream name in {ds['name']}"
 
         target = template
         for key in game_name_mapping["field_path"][:-1]:
@@ -170,10 +168,7 @@ def test_game_name_propagates_to_parent_stream():
                 target = target[key]
         target[game_name_mapping["field_path"][-1]] = "Minecraft"
 
-        parent_params = (
-            template["retriever"]["partition_router"]["parent_stream_configs"][0]
-            ["stream"]["retriever"]["requester"]["request_parameters"]
-        )
-        assert parent_params["name"] == "Minecraft", (
-            f"Expected name='Minecraft' after mapping, got: {parent_params}"
-        )
+        parent_params = template["retriever"]["partition_router"]["parent_stream_configs"][0]["stream"]["retriever"]["requester"][
+            "request_parameters"
+        ]
+        assert parent_params["name"] == "Minecraft", f"Expected name='Minecraft' after mapping, got: {parent_params}"
