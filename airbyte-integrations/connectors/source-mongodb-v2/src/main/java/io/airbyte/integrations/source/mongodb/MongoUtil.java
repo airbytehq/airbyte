@@ -432,7 +432,6 @@ public class MongoUtil {
     return false;
   }
 
-
   public static boolean isUnauthorizedException(final Throwable exception) {
     Throwable current = exception;
     while (current != null) {
@@ -445,6 +444,7 @@ public class MongoUtil {
     }
     return false;
   }
+
   /**
    * Represents statistics of a MongoDB collection.
    *
