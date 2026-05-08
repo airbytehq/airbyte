@@ -25,13 +25,13 @@ flowchart TD
 
 ## Tutorials
 
-Step-by-step guides that take you from an empty project to a working agent in approximately 15 minutes. Each tutorial uses a different Python framework, but all of them follow the same pattern: create a project, install the Airbyte Agent SDK, connect to a data source, and execute operations.
+Step-by-step guides that take you from an empty project to a working agent in approximately 15 minutes. Each tutorial uses a different Python framework, but all of them follow the same pattern: create a project, install the Agent SDK, connect to a data source, and execute operations.
 
 Pick the framework you use:
 
-- [**Pydantic AI**](tutorial-pydantic): Build an agent with Pydantic AI and the Airbyte Agent SDK.
-- [**LangChain**](tutorial-langchain): Build an agent with LangChain, LangGraph, and the Airbyte Agent SDK.
-- [**FastMCP**](tutorial-fastmcp): Build an MCP server with FastMCP and the Airbyte Agent SDK.
+- [**Pydantic AI**](tutorial-pydantic): Build an agent with Pydantic AI and the Agent SDK.
+- [**LangChain**](tutorial-langchain): Build an agent with LangChain, LangGraph, and the Agent SDK.
+- [**FastMCP**](tutorial-fastmcp): Build an MCP server with FastMCP and the Agent SDK.
 
 ## Skills
 

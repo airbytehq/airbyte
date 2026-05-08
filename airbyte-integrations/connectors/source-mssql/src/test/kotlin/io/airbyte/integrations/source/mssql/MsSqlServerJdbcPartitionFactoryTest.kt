@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.BinaryNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
@@ -267,6 +268,37 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+    }
+
+    @Test
+    fun testColdStartFullRefreshEmptyTable() {
+        val emptyTableStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("empty_table")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldId,
+            )
+
+        val factoryWithEmptyTable =
+            object :
+                MsSqlServerJdbcPartitionFactory(
+                    sharedState,
+                    selectQueryGenerator,
+                    config,
+                    metadataQuerierFactory,
+                ) {
+                // Simulate an empty source table: MAX(orderedColumn) returns NULL.
+                // Overriding here avoids needing a live JDBC connection for the unit test.
+                override fun findPkUpperBound(stream: Stream): JsonNode = Jsons.nullNode()
+            }
+
+        val partition = factoryWithEmptyTable.create(streamFeedBootstrap(emptyTableStream))
+        assertTrue(partition is MsSqlServerJdbcNonResumableSnapshotPartition)
     }
 
     @ParameterizedTest

@@ -58,8 +58,8 @@ Each run of an automation is its own session. If the same automation runs on a s
 Airbyte also processes tool calls from these sources, but doesn't log them as sessions:
 
 - **[MCP](../interfaces/mcp/readme.md)**: Tool calls from agents connected through the Model Context Protocol.
-- **[API](../reference/api/readme.md)**: Direct calls to the Airbyte Agents API.
-- **[SDK](../interfaces/sdk/readme.md)**: Calls made from an agent built with the Airbyte Agent SDK.
+- **[API](../reference/api/readme.md)**: Direct calls to the Agent API.
+- **[SDK](../interfaces/sdk/readme.md)**: Calls made from an agent built with the Agent SDK.
 
 These tool calls still consume AOs and appear in your [Usage panel](./billing.md#monitor-usage), but they don't have a corresponding Sessions row. To review them, open the Usage panel on the Billing page and filter by the **MCP**, **API**, or **SDK** source.
 
