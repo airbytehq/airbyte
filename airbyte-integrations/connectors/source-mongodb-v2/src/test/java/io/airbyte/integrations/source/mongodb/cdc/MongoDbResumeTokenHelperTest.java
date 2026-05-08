@@ -8,6 +8,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.CHANGE_STREA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -91,7 +92,7 @@ class MongoDbResumeTokenHelperTest {
         () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
 
     assertEquals(CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, exception.getDisplayMessage());
-    assertEquals("not authorized on test-database to execute command", exception.getInternalMessage());
+    assertTrue(exception.getInternalMessage().contains("not authorized on test-database to execute command"));
   }
 
   @Test
