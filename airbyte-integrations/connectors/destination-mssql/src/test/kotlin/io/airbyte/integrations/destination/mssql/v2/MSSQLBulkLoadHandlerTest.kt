@@ -105,8 +105,7 @@ class MSSQLBulkLoadHandlerTest {
         // Then
         // Verify that the prepared statement was created with the correct SQL
         val sqlStatements = capturedSqlStatements()
-        val bulkInsertSql =
-            sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
+        val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertTrue(bulkInsertSql.contains("FROM '$dataFilePath'"))
         assertTrue(bulkInsertSql.contains("FORMATFILE = '$formatFilePath'"))
         assertFalse(
@@ -154,9 +153,7 @@ class MSSQLBulkLoadHandlerTest {
         assertTrue(
             sqlStatements.any {
                 it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") &&
-                    it.contains(
-                        "WHERE [${MSSQLQueryBuilder.AIRBYTE_CDC_DELETED_AT}] is not NULL"
-                    )
+                    it.contains("WHERE [${MSSQLQueryBuilder.AIRBYTE_CDC_DELETED_AT}] is not NULL")
             },
             "Expected CDC delete statement to be executed",
         )
@@ -283,8 +280,7 @@ class MSSQLBulkLoadHandlerTest {
         )
 
         val sqlStatements = capturedSqlStatements()
-        val bulkInsertSql =
-            sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
+        val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertTrue(
             bulkInsertSql.contains("ROWS_PER_BATCH = 5000"),
             "Expected ROWS_PER_BATCH clause"
@@ -303,8 +299,7 @@ class MSSQLBulkLoadHandlerTest {
         )
 
         val sqlStatements = capturedSqlStatements()
-        val bulkInsertSql =
-            sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
+        val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertFalse(
             bulkInsertSql.contains("ROWS_PER_BATCH"),
             "Should not contain ROWS_PER_BATCH clause"
