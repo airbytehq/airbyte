@@ -154,7 +154,7 @@ To set up Snowflake with Private Links:
 
 1. Complete [Step 4: Create the Private Link in Airbyte](#step-4-create-the-private-link-in-airbyte) and [Step 5: Accept the connection request](#step-5-accept-the-connection-request).
 2. Run [`SYSTEM$GET_PRIVATELINK_CONFIG`](https://docs.snowflake.com/en/sql-reference/functions/system_get_privatelink_config) in your Snowflake account.
-3. Reach out to Airbyte and share the output, along with the name of the Private Link you created in Step 4, so Airbyte can complete the DNS configuration.
+3. [Talk to sales](https://airbyte.com/company/talk-to-sales) and share the output, along with the name of the Private Link you created in Step 4, so Airbyte can complete the DNS configuration.
 4. Once Airbyte confirms the DNS is in place, the Private Link is ready for use with your Snowflake connector.
 
 For background on the DNS configuration involved, see [How to configure Route 53 to access Snowflake via PrivateLink](https://community.snowflake.com/s/article/How-to-configure-the-AWS-DNS-service-Route-53-to-access-Snowflake-via-a-PrivateLink) in the Snowflake community documentation.
