@@ -134,6 +134,69 @@ class TestBackoff:
 
         assert exception.value.failure_type == FailureType.transient_error
 
+    def test_given_unknown_ads_insights_throttle_header_when_read_then_do_not_raise(self, requests_mock, api, account_id):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",
+            [
+                {
+                    "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}]},
+                    "status_code": 200,
+                    "headers": {"x-fb-ads-insights-throttle": json.dumps({"app_id_util_pct": "unknown", "acc_id_util_pct": 0})},
+                }
+            ],
+        )
+
+        stream = Campaigns(
+            api=api,
+            account_ids=[account_id],
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
+        )
+
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_state={},
+                stream_slice={"account_id": account_id},
+            )
+        )
+
+        assert records == [{"account_id": account_id, "id": 1, "updated_time": "2020-09-25T00:00:00Z"}]
+        assert api.api.ads_insights_throttle == api.api.Throttle(per_application=0.0, per_account=0.0)
+
+    def test_given_invalid_ads_insights_throttle_header_when_read_then_raise_traced_exception(self, requests_mock, api, account_id):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",
+            [
+                {
+                    "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}]},
+                    "status_code": 200,
+                    "headers": {"x-fb-ads-insights-throttle": json.dumps({"app_id_util_pct": "invalid", "acc_id_util_pct": 0})},
+                }
+            ],
+        )
+
+        stream = Campaigns(
+            api=api,
+            account_ids=[account_id],
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
+        )
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
+
+        assert exception.value.message == "Facebook Marketing API throttle header contains an invalid numeric value."
+        assert exception.value.failure_type == FailureType.system_error
+
     def test_batch_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         responses = [

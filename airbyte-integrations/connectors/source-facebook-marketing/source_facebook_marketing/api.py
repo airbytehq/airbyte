@@ -14,6 +14,8 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.streams.common import retry_pattern
 
 
@@ -54,7 +56,25 @@ class MyFacebookAdsApi(FacebookAdsApi):
         return self._ads_insights_throttle
 
     @staticmethod
-    def _parse_call_rate_header(headers):
+    def _parse_header_float(value, header_name, field_name):
+        if value is None:
+            return 0.0
+
+        if isinstance(value, str) and value.lower() == "unknown":
+            logger.warning("Facebook API throttle header %s.%s is unknown; treating it as 0.", header_name, field_name)
+            return 0.0
+
+        try:
+            return float(value)
+        except (TypeError, ValueError) as exc:
+            raise AirbyteTracedException(
+                message="Facebook Marketing API throttle header contains an invalid numeric value.",
+                internal_message=f"Header {header_name}.{field_name} expected a numeric value, got {value!r}: {exc}",
+                failure_type=FailureType.system_error,
+            ) from exc
+
+    @classmethod
+    def _parse_call_rate_header(cls, headers):
         usage = 0
         pause_interval = timedelta()
 
@@ -64,15 +84,18 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         if usage_header_ad_account:
             usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
-            usage = max(usage, float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0)))
+            usage = max(
+                usage,
+                cls._parse_header_float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0), "x-ad-account-usage", "acc_id_util_pct"),
+            )
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
             usage = max(
                 usage,
-                float(usage_header_app_loaded.get("call_count", 0)),
-                float(usage_header_app_loaded.get("total_time", 0)),
-                float(usage_header_app_loaded.get("total_cputime", 0)),
+                cls._parse_header_float(usage_header_app_loaded.get("call_count", 0), "x-app-usage", "call_count"),
+                cls._parse_header_float(usage_header_app_loaded.get("total_time", 0), "x-app-usage", "total_time"),
+                cls._parse_header_float(usage_header_app_loaded.get("total_cputime", 0), "x-app-usage", "total_cputime"),
             )
 
         if usage_header_business:
@@ -81,9 +104,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
                 usage = max(
                     usage,
-                    float(usage_limits.get("call_count", 0)),
-                    float(usage_limits.get("total_cputime", 0)),
-                    float(usage_limits.get("total_time", 0)),
+                    cls._parse_header_float(usage_limits.get("call_count", 0), "x-business-use-case-usage", "call_count"),
+                    cls._parse_header_float(usage_limits.get("total_cputime", 0), "x-business-use-case-usage", "total_cputime"),
+                    cls._parse_header_float(usage_limits.get("total_time", 0), "x-business-use-case-usage", "total_time"),
                 )
                 pause_interval = max(
                     pause_interval,
@@ -142,8 +165,12 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=float(ads_insights_throttle.get("app_id_util_pct", 0)),
-                per_account=float(ads_insights_throttle.get("acc_id_util_pct", 0)),
+                per_application=self._parse_header_float(
+                    ads_insights_throttle.get("app_id_util_pct", 0), "x-fb-ads-insights-throttle", "app_id_util_pct"
+                ),
+                per_account=self._parse_header_float(
+                    ads_insights_throttle.get("acc_id_util_pct", 0), "x-fb-ads-insights-throttle", "acc_id_util_pct"
+                ),
             )
 
     def _should_restore_default_page_size(self, params):

@@ -90,6 +90,28 @@ def test_parse_call_rate_header():
     assert MyFacebookAdsApi._parse_call_rate_header(headers) == (1, timedelta(minutes=1))
 
 
+def test_parse_call_rate_header_ignores_unknown_usage_values():
+    headers = {
+        "x-business-use-case-usage": '{"test":[{"type":"ads_management","call_count":"unknown","total_cputime":1,'
+        '"total_time":1,"estimated_time_to_regain_access":1}]}'
+    }
+    assert MyFacebookAdsApi._parse_call_rate_header(headers) == (1, timedelta(minutes=1))
+
+
+def test_parse_call_rate_header_raises_traced_exception_for_invalid_usage_values():
+    headers = {"x-app-usage": '{"call_count":"invalid","total_time":1,"total_cputime":1}'}
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        MyFacebookAdsApi._parse_call_rate_header(headers)
+
+    assert exc_info.value.message == "Facebook Marketing API throttle header contains an invalid numeric value."
+    assert (
+        exc_info.value.internal_message
+        == "Header x-app-usage.call_count expected a numeric value, got 'invalid': could not convert string to float: 'invalid'"
+    )
+    assert exc_info.value.failure_type == FailureType.system_error
+
+
 @pytest.mark.parametrize(
     "class_name, breakdowns, action_breakdowns",
     [
