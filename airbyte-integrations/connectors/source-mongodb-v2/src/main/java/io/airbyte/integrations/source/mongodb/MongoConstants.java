@@ -62,7 +62,7 @@ public class MongoConstants {
   public static final int UNAUTHORIZED_ERROR_CODE = 13;
   public static final String UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE =
       "MongoDB user is not authorized to open change streams on the configured database. " +
-      "Grant the \"readAnyDatabase\" role or the \"changeStream\" privilege to the database user.";
+          "Grant the \"readAnyDatabase\" role or the \"changeStream\" privilege to the database user.";
 
   private MongoConstants() {}
 
