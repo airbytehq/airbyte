@@ -24,10 +24,11 @@ _BASE_CONFIG = {"app_api_key": "test-api-key"}
 
 
 def _campaign(campaign_id: int, updated: int) -> dict:
+    """Customer.io's App API documents campaign `type` as the campaign trigger enum (e.g. `"segment"`)."""
     return {
         "id": campaign_id,
         "name": f"campaign-{campaign_id}",
-        "type": "triggered",
+        "type": "segment",
         "active": True,
         "created": updated,
         "updated": updated,
@@ -54,15 +55,16 @@ def _action(action_id: int, campaign_id: int, updated: int) -> dict:
 
 
 def _newsletter(newsletter_id: int, updated: int) -> dict:
+    """Customer.io's App API documents newsletter `type` as the channel enum (e.g. `"email"`) and `sent_at` as an integer Unix timestamp."""
     return {
         "id": newsletter_id,
         "name": f"newsletter-{newsletter_id}",
-        "type": "newsletter",
+        "type": "email",
         "created": updated,
         "updated": updated,
         "tags": [],
         "content_ids": [],
-        "sent_at": [],
+        "sent_at": updated,
     }
 
 
