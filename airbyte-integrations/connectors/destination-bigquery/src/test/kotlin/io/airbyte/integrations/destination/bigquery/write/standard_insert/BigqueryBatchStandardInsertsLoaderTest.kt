@@ -31,9 +31,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
             }
         val bigquery =
             mockk<BigQuery> {
-                every {
-                    writer(any<JobId>(), any<WriteChannelConfiguration>())
-                } returns writer
+                every { writer(any<JobId>(), any<WriteChannelConfiguration>()) } returns writer
             }
         val writeChannelConfiguration =
             WriteChannelConfiguration.newBuilder(TableId.of("dataset", "table"))
@@ -48,10 +46,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
                 mockk(),
             )
 
-        val exception =
-            assertThrows<SystemErrorException> {
-                runBlocking { loader.finish() }
-            }
+        val exception = assertThrows<SystemErrorException> { runBlocking { loader.finish() } }
 
         assertEquals("BigQuery load job is unavailable.", exception.message)
     }
