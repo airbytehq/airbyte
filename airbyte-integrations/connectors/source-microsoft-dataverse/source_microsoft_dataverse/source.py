@@ -27,7 +27,14 @@ class SourceMicrosoftDataverse(AbstractSource):
                 dataverse_type = attribute["AttributeType"]
                 if dataverse_type == "Lookup":
                     attribute["LogicalName"] = "_" + attribute["LogicalName"] + "_value"
-                attribute_type = convert_dataverse_type(dataverse_type)
+
+                date_time_behavior = None
+                if dataverse_type == "DateTime":
+                    behavior = attribute.get("DateTimeBehavior")
+                    if behavior:
+                        date_time_behavior = behavior.get("Value")
+
+                attribute_type = convert_dataverse_type(dataverse_type, date_time_behavior)
 
                 if not attribute_type:
                     continue
