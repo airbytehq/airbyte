@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.db.factory.DataSourceFactory
 import io.airbyte.cdk.db.factory.DatabaseDriver
@@ -12,6 +13,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.PropertyNameSimplifyingDataTransformer
@@ -21,6 +23,8 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinat
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
+import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.map.MoreMaps
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
@@ -33,12 +37,13 @@ import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlDestinatio
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlV1V2Migrator
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.sql.SQLSyntaxErrorException
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MySQLDestination :
+class MySQLDestination(private val featureFlags: FeatureFlags = EnvVariableFeatureFlags()) :
     AbstractJdbcDestination<MinimumDestinationState>(
         DRIVER_CLASS,
         MySQLNameTransformer(),
@@ -47,6 +52,25 @@ class MySQLDestination :
     Destination {
     override val configSchemaKey: String
         get() = JdbcUtils.DATABASE_KEY
+
+    private fun cloudDeploymentMode(): Boolean {
+        return AdaptiveSourceRunner.CLOUD_MODE.equals(
+            featureFlags.deploymentMode(),
+            ignoreCase = true
+        )
+    }
+
+    /**
+     * When running in cloud deployment mode, remove the SSL option from the spec to enforce SSL
+     * connections. This replaces the need for a separate strict-encrypt connector.
+     */
+    override fun spec(): ConnectorSpecification {
+        val spec: ConnectorSpecification = Jsons.clone(super.spec())
+        if (cloudDeploymentMode()) {
+            (spec.connectionSpecification["properties"] as ObjectNode).remove(JdbcUtils.SSL_KEY)
+        }
+        return spec
+    }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         val dataSource = getDataSource(config)
@@ -104,7 +128,8 @@ class MySQLDestination :
     }
 
     public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
-        return if (JdbcUtils.useSsl(config)) {
+        // In cloud deployment mode, always use SSL regardless of config
+        return if (cloudDeploymentMode() || JdbcUtils.useSsl(config)) {
             DEFAULT_SSL_JDBC_PARAMETERS
         } else {
             DEFAULT_JDBC_PARAMETERS
