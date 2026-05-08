@@ -49,7 +49,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 | Namespaces        | No         |
 
 ## Supported Streams
@@ -113,6 +113,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.7.0 | 2026-04-21 | [76838](https://github.com/airbytehq/airbyte/pull/76838) | Add incremental sync support for `tasks` stream using `modified_at` cursor |
 | 1.6.0-rc.1 | 2026-04-23 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
 | 1.5.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.5.2 | 2026-04-06 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
