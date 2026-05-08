@@ -413,10 +413,18 @@ public class MongoUtil {
    * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.
    */
   public static boolean isBsonObjectTooLargeException(final Throwable exception) {
+    return hasMongoCommandErrorCode(exception, MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE);
+  }
+
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    return hasMongoCommandErrorCode(exception, MongoConstants.UNAUTHORIZED_ERROR_CODE);
+  }
+
+  private static boolean hasMongoCommandErrorCode(final Throwable exception, final int errorCode) {
     Throwable current = exception;
     while (current != null) {
       if (current instanceof MongoCommandException mongoException) {
-        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
+        if (mongoException.getErrorCode() == errorCode) {
           return true;
         }
       }

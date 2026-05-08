@@ -189,6 +189,12 @@ public class MongoDbSource extends BaseConnector implements Source {
         return wrapIteratorWithBsonErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
+        if (MongoUtil.isUnauthorizedException(e)) {
+          throw new ConfigErrorException(
+              MongoConstants.CHANGE_STREAM_PERMISSION_ERROR_MESSAGE,
+              e,
+              MongoConstants.CHANGE_STREAM_PERMISSION_INTERNAL_MESSAGE);
+        }
         throw e;
       }
     } catch (final Exception e) {
