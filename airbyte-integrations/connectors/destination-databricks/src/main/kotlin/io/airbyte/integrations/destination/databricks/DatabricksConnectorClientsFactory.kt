@@ -35,6 +35,17 @@ object DatabricksConnectorClientsFactory {
         return WorkspaceClient(config)
     }
 
+    // Socket timeout for JDBC read operations (seconds).
+    // Large MERGE / T+D queries can legitimately run for tens of minutes, so we set a generous
+    // ceiling. A value of 0 means "wait forever", which caused the 20+ hour hang in
+    // https://github.com/airbytehq/oncall/issues/11610.
+    private const val SOCKET_TIMEOUT_SECONDS = 3600
+
+    // Maximum time (seconds) the driver will retry connecting to a temporarily-unavailable
+    // warehouse (e.g. auto-paused). Default is 0 (no retry). 300 s (5 min) allows time for
+    // warehouse resume while still failing faster than the platform job deadline.
+    private const val TEMPORARILY_UNAVAILABLE_RETRY_TIMEOUT_SECONDS = 300
+
     fun createDataSource(config: DatabricksConnectorConfig): DataSource {
         val className = Driver::class.java.canonicalName
         Class.forName(className)
@@ -44,8 +55,18 @@ object DatabricksConnectorClientsFactory {
         // EnableArrow=0 flag is undocumented and disables ArrowBuf when reading data
         // Destinations only reads data for metadata or for comparison of actual data in tests. so
         // we don't need it to be optimized.
+        //
+        // SocketTimeout prevents indefinite hangs on long-running queries. See
+        // https://kb.databricks.com/dbsql/
+        //   job-timeout-when-connecting-to-a-sql-endpoint-over-jdbc
+        // TemporarilyUnavailableRetryTimeout caps the time the driver retries
+        // connecting to a paused/resuming warehouse.
         val jdbcUrl =
-            "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath};EnableArrow=0"
+            "jdbc:databricks://${config.hostname}:${config.port}/${config.database}" +
+                ";transportMode=http;httpPath=${config.httpPath};EnableArrow=0" +
+                ";SocketTimeout=$SOCKET_TIMEOUT_SECONDS" +
+                ";TemporarilyUnavailableRetryTimeout=" +
+                "$TEMPORARILY_UNAVAILABLE_RETRY_TIMEOUT_SECONDS"
         when (config.authentication) {
             is BasicAuthentication -> {
                 datasource.setURL(

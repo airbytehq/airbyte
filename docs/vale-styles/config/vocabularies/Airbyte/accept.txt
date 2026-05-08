@@ -8,7 +8,9 @@ abctl
 Airbox
 PyAirbyte
 [Nn]amespace
+Automation Builder
 Connector Builder
+Context Store
 abctl
 Low-Code CDK
 Connection Timeline
@@ -24,6 +26,10 @@ Self-Managed Enterprise
 Elastic License 2.0
 ELv2
 MIT
+[Aa]gent(ic)? [Oo]peration(s)?
+AO
+AOs
+SAML
 
 #
 # Common terms Airbyte uses
@@ -70,6 +76,7 @@ IP[s]
 CDC
 CRM[s]
 FAQ
+MCP
 
 # Airbyte connectors
 
@@ -91,8 +98,16 @@ Zendesk
 Okta
 Entra
 Slack
+Jira
 Fargate
 MinIO
+Pydantic
+LangChain
+LangGraph
+FastMCP
+Supabase
+Lovable
+Deno
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
@@ -144,3 +159,9 @@ workspace's
 :::info
 :::warning
 :::danger
+
+[Dd]ocstring(s)?
+expirations
+httpx
+[Aa]uto-?create(s|d)?
+async

@@ -8,13 +8,13 @@ The Klaviyo connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](#profiles-list), [Get](#profiles-get), [Search](#profiles-search) |
-| Lists | [List](#lists-list), [Get](#lists-get), [Search](#lists-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Events | [List](#events-list), [Search](#events-search) |
-| Metrics | [List](#metrics-list), [Get](#metrics-get), [Search](#metrics-search) |
-| Flows | [List](#flows-list), [Get](#flows-get), [Search](#flows-search) |
-| Email Templates | [List](#email-templates-list), [Get](#email-templates-get), [Search](#email-templates-search) |
+| Profiles | [List](#profiles-list), [Get](#profiles-get), [Context Store Search](#profiles-context-store-search) |
+| Lists | [List](#lists-list), [Get](#lists-get), [Context Store Search](#lists-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Events | [List](#events-list), [Context Store Search](#events-context-store-search) |
+| Metrics | [List](#metrics-list), [Get](#metrics-get), [Context Store Search](#metrics-context-store-search) |
+| Flows | [List](#flows-list), [Get](#flows-get), [Context Store Search](#flows-context-store-search) |
+| Email Templates | [List](#email-templates-list), [Get](#email-templates-get), [Context Store Search](#email-templates-context-store-search) |
 
 ## Profiles
 
@@ -61,6 +61,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attributes` | `object \| null` |  |
 | `links` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
 
 </details>
 
@@ -114,14 +120,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Profiles Search
+### Profiles Context Store Search
 
 Search and filter profiles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.profiles.search(
+await klaviyo.profiles.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -134,7 +140,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "profiles",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -149,7 +155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -169,19 +175,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.segments` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].segments` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -214,7 +219,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `page[size]` | `integer` | No | Number of results per page (max 10) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -230,6 +235,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attributes` | `object \| null` |  |
 | `links` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
 
 </details>
 
@@ -283,14 +294,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Lists Search
+### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.lists.search(
+await klaviyo.lists.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -303,7 +314,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "lists",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -318,7 +329,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -337,18 +348,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -387,7 +397,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `string` | Yes | Filter by channel (email or sms) |
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -403,6 +412,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attributes` | `object \| null` |  |
 | `links` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
 
 </details>
 
@@ -456,14 +471,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.campaigns.search(
+await klaviyo.campaigns.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -476,7 +491,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -491,7 +506,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -510,18 +525,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated_at` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated_at` | `string` |  |
 
 </details>
 
@@ -573,16 +587,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `links` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
+
 </details>
 
-### Events Search
+### Events Context Store Search
 
 Search and filter events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.events.search(
+await klaviyo.events.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -595,7 +615,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -610,7 +630,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -629,18 +649,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.datetime` | `string` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].datetime` | `string` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
 
 </details>
 
@@ -673,7 +692,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `filter` | `string` | No | Filter expression for metrics. Allowed fields are integration.name and integration.category. |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -689,6 +708,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attributes` | `object \| null` |  |
 | `links` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
 
 </details>
 
@@ -742,14 +767,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Metrics Search
+### Metrics Context Store Search
 
 Search and filter metrics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.metrics.search(
+await klaviyo.metrics.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -762,7 +787,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "metrics",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -777,7 +802,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -796,18 +821,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -856,6 +880,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attributes` | `object \| null` |  |
 | `links` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
 
 </details>
 
@@ -909,14 +939,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Flows Search
+### Flows Context Store Search
 
 Search and filter flows records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.flows.search(
+await klaviyo.flows.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -929,7 +959,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "flows",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -944,7 +974,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -963,18 +993,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.relationships` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].relationships` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 
@@ -1007,7 +1036,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `page[size]` | `integer` | No | Number of results per page (max 100) |
+| `page[size]` | `integer` | No | Number of results per page (max 10) |
 | `page[cursor]` | `string` | No | Cursor for pagination |
 
 
@@ -1023,6 +1052,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attributes` | `object \| null` |  |
 | `links` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string \| null` |  |
 
 </details>
 
@@ -1076,14 +1111,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Email Templates Search
+### Email Templates Context Store Search
 
 Search and filter email templates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await klaviyo.email_templates.search(
+await klaviyo.email_templates.context_store_search(
     query={"filter": {"eq": {"attributes": {}}}}
 )
 ```
@@ -1096,7 +1131,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "email_templates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"attributes": {}}}}
     }
@@ -1111,7 +1146,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1129,17 +1164,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.attributes` | `object` |  |
-| `hits[].data.id` | `string` |  |
-| `hits[].data.links` | `object` |  |
-| `hits[].data.type` | `string` |  |
-| `hits[].data.updated` | `string` |  |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].attributes` | `object` |  |
+| `data[].id` | `string` |  |
+| `data[].links` | `object` |  |
+| `data[].type` | `string` |  |
+| `data[].updated` | `string` |  |
 
 </details>
 

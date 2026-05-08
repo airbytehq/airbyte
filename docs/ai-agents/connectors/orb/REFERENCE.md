@@ -8,10 +8,10 @@ The Orb connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Get](#customers-get), [Search](#customers-search) |
-| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Search](#subscriptions-search) |
-| Plans | [List](#plans-list), [Get](#plans-get), [Search](#plans-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [Search](#invoices-search) |
+| Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search) |
+| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Context Store Search](#subscriptions-context-store-search) |
+| Plans | [List](#plans-list), [Get](#plans-get), [Context Store Search](#plans-context-store-search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Context Store Search](#invoices-context-store-search) |
 
 ## Customers
 
@@ -139,14 +139,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Customers Search
+### Customers Context Store Search
 
 Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.customers.search(
+await orb.customers.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -159,7 +159,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -174,7 +174,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -191,36 +191,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `timezone` | `string` | The timezone setting of the customer |
 | `shipping_address` | `object` | The shipping address of the customer |
 | `billing_address` | `object` | The billing address of the customer |
-| `balance` | `string` | The current balance of the customer |
-| `currency` | `string` | The currency of the customer |
-| `auto_collection` | `boolean` | Whether auto collection is enabled |
-| `metadata` | `object` | Additional metadata for the customer |
 
 <details>
 <summary><b>Response Schema</b></summary>
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | The unique identifier of the customer |
-| `hits[].data.external_customer_id` | `string` | The ID of the customer in an external system |
-| `hits[].data.name` | `string` | The name of the customer |
-| `hits[].data.email` | `string` | The email address of the customer |
-| `hits[].data.created_at` | `string` | The date and time when the customer was created |
-| `hits[].data.payment_provider` | `string` | The payment provider used by the customer |
-| `hits[].data.payment_provider_id` | `string` | The ID of the customer in the payment provider's system |
-| `hits[].data.timezone` | `string` | The timezone setting of the customer |
-| `hits[].data.shipping_address` | `object` | The shipping address of the customer |
-| `hits[].data.billing_address` | `object` | The billing address of the customer |
-| `hits[].data.balance` | `string` | The current balance of the customer |
-| `hits[].data.currency` | `string` | The currency of the customer |
-| `hits[].data.auto_collection` | `boolean` | Whether auto collection is enabled |
-| `hits[].data.metadata` | `object` | Additional metadata for the customer |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the customer |
+| `data[].external_customer_id` | `string` | The ID of the customer in an external system |
+| `data[].name` | `string` | The name of the customer |
+| `data[].email` | `string` | The email address of the customer |
+| `data[].created_at` | `string` | The date and time when the customer was created |
+| `data[].payment_provider` | `string` | The payment provider used by the customer |
+| `data[].payment_provider_id` | `string` | The ID of the customer in the payment provider's system |
+| `data[].timezone` | `string` | The timezone setting of the customer |
+| `data[].shipping_address` | `object` | The shipping address of the customer |
+| `data[].billing_address` | `object` | The billing address of the customer |
 
 </details>
 
@@ -359,14 +350,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Subscriptions Search
+### Subscriptions Context Store Search
 
 Search and filter subscriptions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.subscriptions.search(
+await orb.subscriptions.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -379,7 +370,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscriptions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -394,7 +385,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -406,37 +397,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `start_date` | `string` | The date and time when the subscription starts |
 | `end_date` | `string` | The date and time when the subscription ends |
 | `status` | `string` | The current status of the subscription |
-| `customer` | `object` | The customer associated with the subscription |
-| `plan` | `object` | The plan associated with the subscription |
-| `current_billing_period_start_date` | `string` | The start date of the current billing period |
-| `current_billing_period_end_date` | `string` | The end date of the current billing period |
-| `auto_collection` | `boolean` | Whether auto collection is enabled |
-| `net_terms` | `integer` | The net terms for the subscription |
-| `metadata` | `object` | Additional metadata for the subscription |
 
 <details>
 <summary><b>Response Schema</b></summary>
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | The unique identifier of the subscription |
-| `hits[].data.created_at` | `string` | The date and time when the subscription was created |
-| `hits[].data.start_date` | `string` | The date and time when the subscription starts |
-| `hits[].data.end_date` | `string` | The date and time when the subscription ends |
-| `hits[].data.status` | `string` | The current status of the subscription |
-| `hits[].data.customer` | `object` | The customer associated with the subscription |
-| `hits[].data.plan` | `object` | The plan associated with the subscription |
-| `hits[].data.current_billing_period_start_date` | `string` | The start date of the current billing period |
-| `hits[].data.current_billing_period_end_date` | `string` | The end date of the current billing period |
-| `hits[].data.auto_collection` | `boolean` | Whether auto collection is enabled |
-| `hits[].data.net_terms` | `integer` | The net terms for the subscription |
-| `hits[].data.metadata` | `object` | Additional metadata for the subscription |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the subscription |
+| `data[].created_at` | `string` | The date and time when the subscription was created |
+| `data[].start_date` | `string` | The date and time when the subscription starts |
+| `data[].end_date` | `string` | The date and time when the subscription ends |
+| `data[].status` | `string` | The current status of the subscription |
 
 </details>
 
@@ -572,14 +548,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Plans Search
+### Plans Context Store Search
 
 Search and filter plans records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.plans.search(
+await orb.plans.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -592,7 +568,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "plans",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -607,7 +583,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -618,34 +594,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `string` | The date and time when the plan was created |
 | `name` | `string` | The name of the plan |
 | `description` | `string` | A description of the plan |
-| `status` | `string` | The status of the plan |
-| `currency` | `string` | The currency of the plan |
 | `prices` | `array` | The pricing options for the plan |
 | `product` | `object` | The product associated with the plan |
-| `external_plan_id` | `string` | The external plan ID |
-| `metadata` | `object` | Additional metadata for the plan |
 
 <details>
 <summary><b>Response Schema</b></summary>
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | The unique identifier of the plan |
-| `hits[].data.created_at` | `string` | The date and time when the plan was created |
-| `hits[].data.name` | `string` | The name of the plan |
-| `hits[].data.description` | `string` | A description of the plan |
-| `hits[].data.status` | `string` | The status of the plan |
-| `hits[].data.currency` | `string` | The currency of the plan |
-| `hits[].data.prices` | `array` | The pricing options for the plan |
-| `hits[].data.product` | `object` | The product associated with the plan |
-| `hits[].data.external_plan_id` | `string` | The external plan ID |
-| `hits[].data.metadata` | `object` | Additional metadata for the plan |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the plan |
+| `data[].created_at` | `string` | The date and time when the plan was created |
+| `data[].name` | `string` | The name of the plan |
+| `data[].description` | `string` | A description of the plan |
+| `data[].prices` | `array` | The pricing options for the plan |
+| `data[].product` | `object` | The product associated with the plan |
 
 </details>
 
@@ -821,14 +788,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoices Search
+### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.invoices.search(
+await orb.invoices.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -841,7 +808,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -856,7 +823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -878,41 +845,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `hosted_invoice_url` | `string` | The URL to view the hosted invoice |
 | `line_items` | `array` | The line items on the invoice |
 | `subscription` | `object` | The subscription associated with the invoice |
-| `customer` | `object` | The customer associated with the invoice |
-| `currency` | `string` | The currency of the invoice |
-| `invoice_number` | `string` | The invoice number |
-| `metadata` | `object` | Additional metadata for the invoice |
 
 <details>
 <summary><b>Response Schema</b></summary>
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | The unique identifier of the invoice |
-| `hits[].data.created_at` | `string` | The date and time when the invoice was created |
-| `hits[].data.invoice_date` | `string` | The date of the invoice |
-| `hits[].data.due_date` | `string` | The due date for the invoice |
-| `hits[].data.invoice_pdf` | `string` | The URL to download the PDF version of the invoice |
-| `hits[].data.subtotal` | `string` | The subtotal amount of the invoice |
-| `hits[].data.total` | `string` | The total amount of the invoice |
-| `hits[].data.amount_due` | `string` | The amount due on the invoice |
-| `hits[].data.status` | `string` | The current status of the invoice |
-| `hits[].data.memo` | `string` | Any additional notes or comments on the invoice |
-| `hits[].data.paid_at` | `string` | The date and time when the invoice was paid |
-| `hits[].data.issued_at` | `string` | The date and time when the invoice was issued |
-| `hits[].data.hosted_invoice_url` | `string` | The URL to view the hosted invoice |
-| `hits[].data.line_items` | `array` | The line items on the invoice |
-| `hits[].data.subscription` | `object` | The subscription associated with the invoice |
-| `hits[].data.customer` | `object` | The customer associated with the invoice |
-| `hits[].data.currency` | `string` | The currency of the invoice |
-| `hits[].data.invoice_number` | `string` | The invoice number |
-| `hits[].data.metadata` | `object` | Additional metadata for the invoice |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the invoice |
+| `data[].created_at` | `string` | The date and time when the invoice was created |
+| `data[].invoice_date` | `string` | The date of the invoice |
+| `data[].due_date` | `string` | The due date for the invoice |
+| `data[].invoice_pdf` | `string` | The URL to download the PDF version of the invoice |
+| `data[].subtotal` | `string` | The subtotal amount of the invoice |
+| `data[].total` | `string` | The total amount of the invoice |
+| `data[].amount_due` | `string` | The amount due on the invoice |
+| `data[].status` | `string` | The current status of the invoice |
+| `data[].memo` | `string` | Any additional notes or comments on the invoice |
+| `data[].paid_at` | `string` | The date and time when the invoice was paid |
+| `data[].issued_at` | `string` | The date and time when the invoice was issued |
+| `data[].hosted_invoice_url` | `string` | The URL to view the hosted invoice |
+| `data[].line_items` | `array` | The line items on the invoice |
+| `data[].subscription` | `object` | The subscription associated with the invoice |
 
 </details>
 

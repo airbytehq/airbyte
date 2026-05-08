@@ -17,9 +17,7 @@ class RequestBuilder:
     @classmethod
     def auth_endpoint(cls) -> RequestBuilder:
         request_headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        request_body = (
-            f"grant_type=refresh_token&client_id={LWA_APP_ID}&" f"client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
-        )
+        request_body = f"grant_type=refresh_token&client_id={LWA_APP_ID}&client_secret={LWA_CLIENT_SECRET}&refresh_token={REFRESH_TOKEN}"
         return cls("auth/o2/token").with_base_url("https://api.amazon.com").with_headers(request_headers).with_body(request_body)
 
     @classmethod
@@ -31,6 +29,11 @@ class RequestBuilder:
             "dataEndTime": "2023-01-30T00:00:00Z",
         }
         return cls("reports/2021-06-30/reports").with_body(json.dumps(request_body))
+
+    @classmethod
+    def get_reports_endpoint(cls) -> RequestBuilder:
+        """GET /reports/2021-06-30/reports — used by ReportCreationRequester to look up existing reports."""
+        return cls("reports/2021-06-30/reports")
 
     @classmethod
     def check_report_status_endpoint(cls, report_id: str) -> RequestBuilder:

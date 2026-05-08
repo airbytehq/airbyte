@@ -15,6 +15,24 @@ check:
     - issues
 
 definitions:
+  incremental_sync_updated_at:
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%S.000Z')) }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_time_option:
+      type: RequestOption
+      inject_into: body_json
+      field_path:
+        - variables
+        - filter
+        - updatedAt
+        - gte
   streams:
     issues:
       type: DeclarativeStream
@@ -31,7 +49,7 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Issues($after: String) { issues(after: $after, first: 25) {
+              query Issues($after: String, $filter: IssueFilter, $orderBy: PaginationOrderBy) { issues(after: $after, first: 25, filter: $filter, orderBy: $orderBy) {
               nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
               archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
               canceledAt completedAt createdAt creator { id }
@@ -46,6 +64,8 @@ definitions:
               slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
               } } subscribers { nodes { id } } } pageInfo { hasNextPage
               endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -59,15 +79,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.issues.pageInfo.endCursor + '"}'
-              if response.data.issues.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.issues.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -218,11 +241,13 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Customers($after: String) { customers(after: $after, first:
-              50) { nodes { approximateNeedCount archivedAt createdAt domains
+              query Customers($after: String, $filter: CustomerFilter, $orderBy: PaginationOrderBy) { customers(after: $after, first:
+              50, filter: $filter, orderBy: $orderBy) { nodes { approximateNeedCount archivedAt createdAt domains
               externalIds id logoUrl name owner { id } revenue size
               slackChannelId slugId status { id } tier { id } updatedAt }
               pageInfo { endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -236,15 +261,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.customers.pageInfo.endCursor +
-              '"}' if response.data.customers.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.customers.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -285,12 +313,14 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Users($after: String) { users(after: $after, first: 50) {
+              query Users($after: String, $filter: UserFilter, $orderBy: PaginationOrderBy) { users(after: $after, first: 50, filter: $filter, orderBy: $orderBy) {
               nodes { active admin archivedAt avatarBackgroundColor avatarUrl
               calendarHash createdAt createdIssueCount description disableReason
               displayName email guest id initials inviteHash isMe lastSeen name
               statusEmoji statusLabel statusUntilAt teams { nodes { id } }
               timezone updatedAt url } pageInfo { hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -304,15 +334,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.users.pageInfo.endCursor + '"}'
-              if response.data.users.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.users.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.users.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -343,11 +376,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Comments($after: String) { comments(after: $after, first:
-              50) { nodes { archivedAt body bodyData createdAt editedAt id issue
+              query Comments($after: String, $filter: CommentFilter, $orderBy: PaginationOrderBy) { comments(after: $after, first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt body bodyData createdAt editedAt id issue
               { id } parent { id } quotedText resolvedAt resolvingComment { id }
               resolvingUser { id } updatedAt url user { id } } pageInfo {
               hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -361,15 +395,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.comments.pageInfo.endCursor +
-              '"}' if response.data.comments.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.comments.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.comments.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -440,13 +477,15 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Cycles($after: String) { cycles(after: $after, first: 50) {
+              query Cycles($after: String, $filter: CycleFilter, $orderBy: PaginationOrderBy) { cycles(after: $after, first: 50, filter: $filter, orderBy: $orderBy) {
               pageInfo { endCursor hasNextPage } nodes { archivedAt
               autoArchivedAt completedAt completedIssueCountHistory
               completedScopeHistory createdAt description id endsAt
               inProgressScopeHistory inheritedFrom { id } issueCountHistory name
               number progress scopeHistory startsAt team { id }
               uncompletedIssuesUponClose { nodes { id } } updatedAt } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -460,15 +499,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.cycles.pageInfo.endCursor + '"}'
-              if response.data.cycles.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.cycles.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.cycles.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -521,11 +563,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query CustomerNeeds($after: String) { customerNeeds(after: $after,
-              first: 50) { nodes { archivedAt body bodyData comment { id }
+              query CustomerNeeds($after: String, $filter: CustomerNeedFilter, $orderBy: PaginationOrderBy) { customerNeeds(after: $after, first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt body bodyData comment { id }
               createdAt creator { id } customer { id } id issue { id } priority
               project { id } updatedAt attachment { id } } pageInfo {
               hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -539,16 +582,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.customerNeeds.pageInfo.endCursor
-              + '"}' if response.data.customerNeeds.pageInfo.endCursor else ""
-              }}
+            cursor_value: "{{ response.data.customerNeeds.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.customerNeeds.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -629,8 +674,8 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Projects($after: String) { projects(after: $after, first:
-              25) { nodes { archivedAt autoArchivedAt canceledAt color
+              query Projects($after: String, $filter: ProjectFilter, $orderBy: PaginationOrderBy) { projects(after: $after, first:
+              25, filter: $filter, orderBy: $orderBy) { nodes { archivedAt autoArchivedAt canceledAt color
               completedAt completedIssueCountHistory completedScopeHistory
               content contentState convertedFromIssue { id } createdAt creator {
               id } description health healthUpdatedAt icon id
@@ -642,6 +687,8 @@ definitions:
               updateReminderFrequencyInWeeks updateRemindersDay
               updateRemindersHour updatedAt url } pageInfo { endCursor
               hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -655,15 +702,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.projects.pageInfo.endCursor +
-              '"}' if response.data.projects.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.projects.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.projects.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -734,10 +784,11 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query ProjectMilestones($after: String) { projectMilestones(after:
-              $after, first: 50) { nodes { archivedAt createdAt description
+              query ProjectMilestones($after: String, $filter: ProjectMilestoneFilter, $orderBy: PaginationOrderBy) { projectMilestones(after: $after, first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt createdAt description
               descriptionState id name progress project { id } sortOrder status
               targetDate updatedAt } pageInfo { hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -751,18 +802,20 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' +
-              response.data.projectMilestones.pageInfo.endCursor + '"}' if
-              response.data.projectMilestones.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.projectMilestones.pageInfo.endCursor or \"\" }}"
             stop_condition: >-
               {{ response.data.projectMilestones.pageInfo.hasNextPage is false
               }}
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -839,10 +892,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query IssueLabels($after: String) { issueLabels(after: $after,
-              first: 50) { nodes { archivedAt color createdAt creator { id }
+              query IssueLabels($after: String, $filter: IssueLabelFilter, $orderBy: PaginationOrderBy) { issueLabels(after: $after,
+              first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt color createdAt creator { id }
               description id inheritedFrom { id } isGroup name parent { id }
               team { id } updatedAt } pageInfo { endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -856,15 +911,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.issueLabels.pageInfo.endCursor +
-              '"}' if response.data.issueLabels.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.issueLabels.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.issueLabels.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -925,10 +983,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query WorkflowStates($after: String) { workflowStates(after:
-              $after, first: 50) { nodes { archivedAt color createdAt
+              query WorkflowStates($after: String, $filter: WorkflowStateFilter, $orderBy: PaginationOrderBy) { workflowStates(after:
+              $after, first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt color createdAt
               description id inheritedFrom { id } name position team { id } type
               updatedAt } pageInfo { hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -942,16 +1002,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.workflowStates.pageInfo.endCursor
-              + '"}' if response.data.workflowStates.pageInfo.endCursor else ""
-              }}
+            cursor_value: "{{ response.data.workflowStates.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.workflowStates.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -992,7 +1054,7 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Teams($after: String) { teams(after: $after, first: 25) {
+              query Teams($after: String, $filter: TeamFilter, $orderBy: PaginationOrderBy) { teams(after: $after, first: 25, filter: $filter, orderBy: $orderBy) {
               nodes { activeCycle { id } archivedAt autoArchivePeriod
               autoCloseChildIssues autoCloseParentIssues autoClosePeriod
               autoCloseStateId color createdAt cycleCalenderUrl
@@ -1007,6 +1069,8 @@ definitions:
               setIssueSortOrderOnStateChange timezone triageEnabled updatedAt
               upcomingCycleCount triageIssueState { id } } pageInfo { endCursor
               hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -1020,15 +1084,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.teams.pageInfo.endCursor + '"}'
-              if response.data.teams.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.teams.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.teams.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -1099,10 +1166,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Attachments($after: String) { attachments(after: $after,
-              first: 50) { nodes { archivedAt createdAt creator { id }
+              query Attachments($after: String, $filter: AttachmentFilter, $orderBy: PaginationOrderBy) { attachments(after: $after,
+              first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt createdAt creator { id }
               groupBySource id issue { id } sourceType subtitle title updatedAt
               url } pageInfo { endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -1116,15 +1185,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.attachments.pageInfo.endCursor +
-              '"}' if response.data.attachments.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.attachments.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.attachments.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -1351,6 +1423,19 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        description: >-
+          UTC date and time in the ISO 8601 format (e.g.
+          2020-01-01T00:00:00.000Z). Any records updated before this date will
+          not be replicated. Only applies to streams that support incremental
+          sync. If unset, defaults to two years ago.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$
+        examples:
+          - "2020-01-01T00:00:00.000Z"
     additionalProperties: true
 
 metadata:

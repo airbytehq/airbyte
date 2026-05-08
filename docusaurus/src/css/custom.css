@@ -54,6 +54,11 @@
   --color-orange-400: hsl(9, 100%, 60%);
   --modal-overlay-background: hsla(241, 51%, 20%, 50%);
   --icon-background: transparent;
+
+  /* Agents homepage section */
+  --color-ae-bg: hsl(240, 20%, 95%);
+  --color-ae-card-border: var(--ifm-color-primary-lightest);
+  --color-ae-icon-bg: var(--ifm-color-primary-lightest);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -90,6 +95,11 @@ html[data-theme="dark"] {
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
+
+  /* Agents homepage section */
+  --color-ae-bg: hsl(240, 18%, 16%);
+  --color-ae-card-border: hsl(240, 15%, 25%);
+  --color-ae-icon-bg: hsl(240, 20%, 25%);
 }
 
 /* Hide sidebar on the homepage */
@@ -227,6 +237,7 @@ ul.table-of-contents li {
 
 nav.theme-doc-breadcrumbs {
   margin-top: 8px !important;
+  margin-bottom: 0px !important;
 }
 
 ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
@@ -362,6 +373,21 @@ nav a.navbar__link--active {
   border-bottom: 3px solid var(--ifm-color-primary);
 }
 
+/* Active-route indicator for the Data Replication dropdown.
+   The wrapper <div> must stretch to full navbar height so the
+   border-bottom aligns with the Agents link underline. */
+@media (min-width: 996px) {
+  .dropdown--active-route {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-bottom: 3px solid var(--ifm-color-primary);
+  }
+  .dropdown--active-route > .navbar__link {
+    color: var(--ifm-color-primary) !important;
+  }
+}
+
 /* Hide Ask AI button until Osano consent is granted */
 .kapa-ai-hidden {
   display: none !important;
@@ -375,11 +401,18 @@ nav a.navbar__link--active {
 }
 
 .header-with-button h1 {
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 header h1 {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+h1.openapi__heading {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem !important;
 }
 
 article span.theme-doc-version-badge {
@@ -443,19 +476,3 @@ li.api-method.patch .menu__link::before {
   background-color: var(--openapi-code-orange);
 }
 
-/* Mermaid diagram fixes for light mode readability */
-html:not([data-theme="dark"]) .mermaid text {
-  fill: var(--ifm-font-color-base) !important;
-}
-
-html:not([data-theme="dark"]) .mermaid line,
-html:not([data-theme="dark"]) .mermaid path.messageLine0,
-html:not([data-theme="dark"]) .mermaid path.messageLine1,
-html:not([data-theme="dark"]) .mermaid .messageLine0,
-html:not([data-theme="dark"]) .mermaid .messageLine1 {
-  stroke: var(--ifm-font-color-base) !important;
-}
-
-html:not([data-theme="dark"]) .mermaid marker path {
-  fill: var(--ifm-font-color-base) !important;
-}

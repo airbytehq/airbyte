@@ -1,4 +1,4 @@
-# File syncing
+# File Syncing
 
 File syncing enables connectors to download and transfer files from API sources when an API endpoint returns a file. This capability supports all common file formats including documents, images, and structured data.
 
