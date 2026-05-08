@@ -13,7 +13,14 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, RecordBuilder, create_record_builder, create_response_builder, find_template
+from airbyte_cdk.test.mock_http.response_builder import (
+    FieldPath,
+    HttpResponseBuilder,
+    RecordBuilder,
+    create_record_builder,
+    create_response_builder,
+    find_template,
+)
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
@@ -62,9 +69,7 @@ def _invoice_payments_response() -> HttpResponseBuilder:
     )
 
 
-def _read(
-    config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None
-) -> EntrypointOutput:
+def _read(config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
     return read(get_source(config, state), config, catalog, state)
