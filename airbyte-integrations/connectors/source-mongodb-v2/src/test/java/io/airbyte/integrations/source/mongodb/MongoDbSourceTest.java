@@ -27,9 +27,9 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -349,14 +349,15 @@ class MongoDbSourceTest {
   }
 
   private static MongoCommandException unauthorizedChangeStreamException() {
-    final BsonDocument response = BsonDocument.parse("""
-                                                     {
-                                                       "ok": 0.0,
-                                                       "errmsg": "not authorized to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }",
-                                                       "code": 13,
-                                                       "codeName": "Unauthorized"
-                                                     }
-                                                     """);
+    final BsonDocument response =
+        BsonDocument.parse("""
+                           {
+                             "ok": 0.0,
+                             "errmsg": "not authorized to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }",
+                             "code": 13,
+                             "codeName": "Unauthorized"
+                           }
+                           """);
     return new MongoCommandException(response, new ServerAddress("localhost", 27017));
   }
 
