@@ -13,10 +13,12 @@
  * The cache file is cleaned up after the build completes (see cleanup-cache.js).
  */
 const { fetchRegistry } = require("./fetch-registry");
+const { fetchConnectorQualityMetrics } = require("./fetch-connector-metrics");
 
 async function main() {
   try {
     await fetchRegistry();
+    await fetchConnectorQualityMetrics();
   } catch (error) {
     console.error("Error preparing registry cache:", error);
     process.exit(1);
