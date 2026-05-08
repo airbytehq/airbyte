@@ -7,6 +7,7 @@ import logging
 from dataclasses import dataclass
 from datetime import timedelta
 from time import sleep
+from typing import SupportsFloat, SupportsIndex
 
 import backoff
 from facebook_business import FacebookAdsApi
@@ -20,7 +21,7 @@ from source_facebook_marketing.streams.common import retry_pattern
 logger = logging.getLogger("airbyte")
 
 
-def _safe_parse_utilization(value: object) -> float:
+def _safe_parse_utilization(value: str | SupportsFloat | SupportsIndex | None) -> float:
     if value is None:
         return 0.0
     try:
