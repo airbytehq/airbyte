@@ -191,7 +191,18 @@ public class MongoDbSource extends BaseConnector implements Source {
         mongoClient.close();
         throw e;
       }
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        LOGGER.error("MongoDB authorization error during sync read.", e);
+        throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, e);
+      }
+      LOGGER.error("Unable to perform sync read operation.", e);
+      throw e;
     } catch (final Exception e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        LOGGER.error("MongoDB authorization error during sync read.", e);
+        throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, e);
+      }
       LOGGER.error("Unable to perform sync read operation.", e);
       throw e;
     }
@@ -235,6 +246,10 @@ public class MongoDbSource extends BaseConnector implements Source {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isUnauthorizedException(e)) {
+          LOGGER.error("MongoDB authorization error during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE, e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;

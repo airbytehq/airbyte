@@ -432,6 +432,27 @@ public class MongoUtil {
     return false;
   }
 
+
+  /**
+   * Checks if the given exception is caused by a MongoDB authorization error (error code 13).
+   * This occurs when the MongoDB user lacks permissions for the requested operation,
+   * such as opening change streams without the changeStream privilege.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by an unauthorized (error code 13) error, false otherwise.
+   */
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
   /**
    * Represents statistics of a MongoDB collection.
    *
