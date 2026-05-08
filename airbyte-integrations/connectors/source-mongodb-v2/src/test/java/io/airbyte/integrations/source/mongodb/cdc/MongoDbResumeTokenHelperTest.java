@@ -85,7 +85,7 @@ class MongoDbResumeTokenHelperTest {
         ConfigErrorException.class,
         () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
     assertEquals(
-        "MongoDB user lacks permission to open change streams for the configured database. Grant change stream permissions to the configured MongoDB user.",
+        "MongoDB user lacks permission to open change streams for the configured database.",
         exception.getMessage());
   }
 
