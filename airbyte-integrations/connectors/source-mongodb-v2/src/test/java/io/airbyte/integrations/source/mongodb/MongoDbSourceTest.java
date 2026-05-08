@@ -17,6 +17,7 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
@@ -27,9 +28,9 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -264,7 +265,7 @@ class MongoDbSourceTest {
   @Test
   void testReadThrowsConfigErrorForUnauthorizedChangeStream() {
     final BsonDocument unauthorizedResponse = new BsonDocument().append("code", new BsonInt32(UNAUTHORIZED_ERROR_CODE));
-    final MongoCommandException unauthorizedException = new MongoCommandException(unauthorizedResponse, null);
+    final MongoCommandException unauthorizedException = new MongoCommandException(unauthorizedResponse, new ServerAddress());
     final AutoCloseableIterator<AirbyteMessage> iterator = mock(AutoCloseableIterator.class);
     when(iterator.hasNext()).thenThrow(new MongoException("test", unauthorizedException));
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(List.of(iterator));
