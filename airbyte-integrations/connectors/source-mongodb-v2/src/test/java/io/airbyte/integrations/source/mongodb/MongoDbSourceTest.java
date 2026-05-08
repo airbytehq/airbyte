@@ -296,7 +296,8 @@ class MongoDbSourceTest {
             .withStream(new AirbyteStream()
                 .withName("test-collection")
                 .withNamespace(DB_NAME)
-                .withJsonSchema(Jsons.deserialize("{\"type\":\"object\",\"additionalProperties\":true,\"properties\":{\"_id\":{\"type\":\"string\"}}}"))
+                .withJsonSchema(
+                    Jsons.deserialize("{\"type\":\"object\",\"additionalProperties\":true,\"properties\":{\"_id\":{\"type\":\"string\"}}}"))
                 .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL)))
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
