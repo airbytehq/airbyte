@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -43,11 +42,9 @@ class MSSQLQueryBuilderTest {
 
         builder.createTableIfNotExists(connection)
 
-        val sqlSlot = slot<String>()
-        // The first prepareStatement call creates the schema; the second runs the
-        // CREATE TABLE / CREATE INDEX block we want to inspect.
-        verify(atLeast = 2) { connection.prepareStatement(capture(sqlSlot)) }
-        return sqlSlot.captured
+        val sqlStatements = mutableListOf<String>()
+        verify(atLeast = 2) { connection.prepareStatement(capture(sqlStatements)) }
+        return sqlStatements.last { it.contains("CREATE TABLE") }
     }
 
     @Test
