@@ -4,23 +4,30 @@
 
 package io.airbyte.integrations.destination.elasticsearch;
 
+import static co.elastic.clients.elasticsearch.watcher.Input.HTTP;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +35,16 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
+
+  /**
+   * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
+   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(), refactor
+   * to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
+   */
+  private boolean cloudDeploymentMode() {
+    String deploymentMode = System.getenv("DEPLOYMENT_MODE");
+    return "CLOUD".equalsIgnoreCase(deploymentMode);
+  }
 
   public static void main(String[] args) throws Exception {
     final var destination = sshWrappedDestination();
@@ -40,16 +57,50 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     return new SshWrappedDestination(new ElasticsearchDestination(), "endpoint");
   }
 
+  private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
+
+  /**
+   * When running in cloud deployment mode, remove the "None" authentication option from the spec to
+   * enforce authentication. This replaces the need for a separate strict-encrypt connector.
+   */
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (cloudDeploymentMode()) {
+      ArrayNode authMethod =
+          (ArrayNode) spec.getConnectionSpecification()
+              .get("properties")
+              .get("authenticationMethod")
+              .get("oneOf");
+      IntStream.range(0, authMethod.size())
+          .filter(i -> authMethod.get(i).get("title").asText().equals("None"))
+          .findFirst()
+          .ifPresent(authMethod::remove);
+    }
+    return spec;
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
     final ConnectorConfiguration configObject = convertConfig(config);
     if (Objects.isNull(configObject.getEndpoint())) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("endpoint must not be empty");
     }
+
+    // In cloud deployment mode, require HTTPS for secure connections
+    if (cloudDeploymentMode()
+        && new URL(configObject.getEndpoint()).getProtocol().equals(HTTP)) {
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(NON_SECURE_URL_ERR_MSG);
+    }
+
     if (!configObject.getAuthenticationMethod().isValid()) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("authentication options are invalid");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("authentication options are invalid");
     }
 
     final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
