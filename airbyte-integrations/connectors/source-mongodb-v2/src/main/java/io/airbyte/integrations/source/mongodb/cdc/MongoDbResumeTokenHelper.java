@@ -11,6 +11,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,6 +85,14 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final RuntimeException e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        throw new ConfigErrorException(
+            MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE,
+            e,
+            "MongoDB unauthorized error while retrieving the most recent CDC resume token: " + e.getMessage());
+      }
+      throw e;
     }
   }
 

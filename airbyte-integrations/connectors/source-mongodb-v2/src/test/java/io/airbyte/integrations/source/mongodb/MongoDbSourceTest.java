@@ -13,12 +13,14 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
@@ -258,6 +260,18 @@ class MongoDbSourceTest {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode state = mock(JsonNode.class);
     assertThrows(IllegalArgumentException.class, () -> source.read(Jsons.jsonNode(Map.of()), catalog, state));
+  }
+
+  @Test
+  void testReadWrapsUnauthorizedMongoCommandException() {
+    final MongoCommandException exception = mock(MongoCommandException.class);
+    when(exception.getErrorCode()).thenReturn(MongoConstants.UNAUTHORIZED_ERROR_CODE);
+    when(exception.getMessage()).thenReturn("Command failed with error 13 (Unauthorized)");
+
+    final ConfigErrorException configErrorException =
+        assertThrows(ConfigErrorException.class, () -> MongoDbSource.handlePotentialReadConfigurationError(exception));
+    assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, configErrorException.getDisplayMessage());
+    assertTrue(configErrorException.getInternalMessage().contains("MongoDB unauthorized error while opening CDC change stream"));
   }
 
   @Test
