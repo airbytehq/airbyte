@@ -284,7 +284,8 @@ class MongoDbSourceTest {
         new ServerAddress());
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
-            .withStream(new AirbyteStream().withName(COLLECTION_NAME).withNamespace(DB_NAME).withJsonSchema(Jsons.jsonNode(Map.of("properties", Map.of()))))
+            .withStream(
+                new AirbyteStream().withName(COLLECTION_NAME).withNamespace(DB_NAME).withJsonSchema(Jsons.jsonNode(Map.of("properties", Map.of()))))
             .withSyncMode(SyncMode.INCREMENTAL)));
 
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(unauthorizedException);
