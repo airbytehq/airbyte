@@ -12,19 +12,19 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.mongodb.MongoCommandException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
-import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -285,7 +285,8 @@ class MongoDbSourceTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withStream(MongoCatalogHelper.buildAirbyteStream("test_collection", DB_NAME, List.of(new Field(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING))))));
+            .withStream(
+                MongoCatalogHelper.buildAirbyteStream("test_collection", DB_NAME, List.of(new Field(DEFAULT_CURSOR_FIELD, JsonSchemaType.STRING))))));
     final MongoCommandException commandException = new MongoCommandException(
         BsonDocument.parse("{\"ok\": 0.0, \"errmsg\": \"not authorized\", \"code\": 13, \"codeName\": \"Unauthorized\"}"),
         new ServerAddress());
