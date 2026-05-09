@@ -95,10 +95,9 @@ public class MongoDbResumeTokenHelper {
 
   private static String buildChangeStreamUnauthorizedMessage(final List<String> databaseNames) {
     final String scope = databaseNames.size() == 1
-        ? "database \"" + databaseNames.getFirst() + "\""
+        ? "the configured database"
         : "the configured databases";
-    return "MongoDB user is not authorized to read change streams on " + scope
-        + ". Grant the changeStream privilege action to the configured MongoDB user.";
+    return "MongoDB user lacks permission to open change streams for " + scope + ".";
   }
 
   /**

@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mongodb.cdc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.Test;
 class MongoDbResumeTokenHelperTest {
 
   private static final String DATABASE = "test-database";
+  private static final String OTHER_DATABASE = "other-test-database";
 
   @Test
   void testRetrievingResumeToken() {
@@ -84,9 +86,36 @@ class MongoDbResumeTokenHelperTest {
         ConfigErrorException.class,
         () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
     assertEquals(
-        "MongoDB user is not authorized to read change streams on database \"" + DATABASE
-            + "\". Grant the changeStream privilege action to the configured MongoDB user.",
+        "MongoDB user lacks permission to open change streams for the configured database.",
         thrown.getMessage());
+    assertSame(unauthorizedException, thrown.getCause());
+  }
+
+  @Test
+  void testRetrievingResumeTokenThrowsConfigErrorExceptionForUnauthorizedMultipleDatabases() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoCommandException unauthorizedException = mock(MongoCommandException.class);
+
+    when(unauthorizedException.getErrorCode()).thenReturn(13);
+    when(mongoClient.watch(Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList())),
+            Filters.and(
+                Filters.eq("ns.db", OTHER_DATABASE),
+                Filters.in("ns.coll", Collections.emptyList())))))),
+        BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(changeStreamIterable.cursor()).thenThrow(unauthorizedException);
+
+    final ConfigErrorException thrown = assertThrows(
+        ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE, OTHER_DATABASE), List.of(List.of(), List.of())));
+    assertEquals(
+        "MongoDB user lacks permission to open change streams for the configured databases.",
+        thrown.getMessage());
+    assertSame(unauthorizedException, thrown.getCause());
   }
 
   @Test
