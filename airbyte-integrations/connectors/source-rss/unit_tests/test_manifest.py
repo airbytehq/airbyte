@@ -34,20 +34,18 @@ def test_items_stream_path_is_empty_string(manifest):
     the request away from a query-string-bearing feed URL."""
     items = manifest["definitions"]["items_stream"]
     path = items["$parameters"]["path"]
-    assert path == "", (
-        f"items_stream path should be empty string to preserve query-string "
-        f"in user's feed URL (regression for #76196); got {path!r}"
-    )
+    assert (
+        path == ""
+    ), f"items_stream path should be empty string to preserve query-string in user's feed URL (regression for #76196); got {path!r}"
 
 
 def test_url_base_uses_user_url_directly(manifest):
     """`url_base` must be the raw user-provided URL — fix relies on the
     CDK's `_join_url` returning `url_base` unchanged when path is empty."""
     requester = manifest["definitions"]["requester"]
-    assert requester["url_base"] == "{{ config['url'] }}", (
-        f"url_base should pass through config.url verbatim; got "
-        f"{requester['url_base']!r}"
-    )
+    assert (
+        requester["url_base"] == "{{ config['url'] }}"
+    ), f"url_base should pass through config.url verbatim; got {requester['url_base']!r}"
 
 
 # Mirror the CDK's _join_url(empty path) behavior so a reviewer can see, at
@@ -69,9 +67,7 @@ def test_join_url_with_empty_path_preserves_user_url(user_url):
     untouched."""
     path = ""
     # _join_url short-circuit: empty/None path returns url_base verbatim.
-    result = user_url if path == "" or path is None else urljoin(
-        user_url if user_url.endswith("/") else user_url + "/", path
-    )
+    result = user_url if path == "" or path is None else urljoin(user_url if user_url.endswith("/") else user_url + "/", path)
     assert result == user_url
 
 
@@ -83,7 +79,6 @@ def test_join_url_with_slash_path_breaks_query_string():
     # Reproduce the broken pre-fix behavior.
     base = user_url if user_url.endswith("/") else user_url + "/"
     broken = urljoin(base, "/")
-    assert broken == "https://example.com/", (
-        f"Expected the historical bug (urljoin drops query when path=`/`); "
-        f"got {broken!r}. CDK semantics may have changed."
-    )
+    assert (
+        broken == "https://example.com/"
+    ), f"Expected the historical bug (urljoin drops query when path=`/`); got {broken!r}. CDK semantics may have changed."
