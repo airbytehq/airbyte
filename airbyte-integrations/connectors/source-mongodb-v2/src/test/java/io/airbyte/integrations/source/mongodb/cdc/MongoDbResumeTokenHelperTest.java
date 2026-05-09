@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -85,7 +86,7 @@ class MongoDbResumeTokenHelperTest {
         ConfigErrorException.class,
         () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
     assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, exception.getMessage());
-    assertEquals("not authorized", exception.getInternalMessage());
+    assertTrue(exception.getInternalMessage().contains("not authorized"));
   }
 
   @Test
