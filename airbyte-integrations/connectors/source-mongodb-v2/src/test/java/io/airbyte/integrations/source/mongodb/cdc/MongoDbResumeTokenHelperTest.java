@@ -89,6 +89,7 @@ class MongoDbResumeTokenHelperTest {
         "MongoDB user lacks permission to open change streams for the configured database.",
         thrown.getMessage());
     assertSame(unauthorizedException, thrown.getCause());
+    assertEquals(unauthorizedException.toString(), thrown.getInternalMessage());
   }
 
   @Test
@@ -117,6 +118,7 @@ class MongoDbResumeTokenHelperTest {
         "MongoDB user lacks permission to open change streams for the configured databases.",
         thrown.getMessage());
     assertSame(unauthorizedException, thrown.getCause());
+    assertEquals(unauthorizedException.toString(), thrown.getInternalMessage());
   }
 
   @Test

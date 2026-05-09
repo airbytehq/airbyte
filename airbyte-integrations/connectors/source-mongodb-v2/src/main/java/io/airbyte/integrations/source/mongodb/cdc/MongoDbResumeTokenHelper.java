@@ -87,7 +87,7 @@ public class MongoDbResumeTokenHelper {
       return eventStreamCursor.getResumeToken();
     } catch (final MongoCommandException e) {
       if (e.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
-        throw new ConfigErrorException(buildChangeStreamUnauthorizedMessage(databaseNames), e);
+        throw new ConfigErrorException(buildChangeStreamUnauthorizedMessage(databaseNames), e, e.toString());
       }
       throw e;
     }
