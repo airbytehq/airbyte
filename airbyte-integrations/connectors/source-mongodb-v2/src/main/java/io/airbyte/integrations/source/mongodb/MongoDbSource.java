@@ -185,8 +185,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         }
         final AutoCloseableIterator<AirbyteMessage> baseIterator =
             AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
-        return wrapIteratorWithBsonErrorHandling(baseIterator);
+        return wrapIteratorWithCdcErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
@@ -197,15 +196,8 @@ public class MongoDbSource extends BaseConnector implements Source {
     }
   }
 
-  /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
-   * actionable error messages to users.
-   *
-   * @param iterator The base iterator to wrap.
-   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
-   */
-  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
-                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithCdcErrorHandling(
+                                                                                 final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
@@ -213,7 +205,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.hasNext();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialCdcError(e);
         }
       }
 
@@ -222,7 +214,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.next();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialCdcError(e);
         }
       }
 
@@ -231,10 +223,14 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+      private RuntimeException handlePotentialCdcError(final Exception e) {
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (MongoUtil.isUnauthorizedException(e)) {
+          LOGGER.error("Unauthorized error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw MongoUtil.cdcChangeStreamUnauthorizedException(e);
         }
         if (e instanceof RuntimeException) {
           throw (RuntimeException) e;
