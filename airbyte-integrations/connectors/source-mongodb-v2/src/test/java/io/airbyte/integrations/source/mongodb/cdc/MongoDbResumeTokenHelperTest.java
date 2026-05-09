@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -92,7 +93,7 @@ class MongoDbResumeTokenHelperTest {
         .append("ok", new BsonInt32(0))
         .append("code", new BsonInt32(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_CODE))
         .append("codeName", new BsonString("Unauthorized"))
-        .append("errmsg", new BsonString("not authorized")), null);
+        .append("errmsg", new BsonString("not authorized")), new ServerAddress());
   }
 
   @Test

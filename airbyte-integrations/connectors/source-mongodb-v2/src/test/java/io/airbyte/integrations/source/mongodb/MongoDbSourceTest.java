@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
@@ -154,7 +155,7 @@ class MongoDbSourceTest {
         .append("ok", new BsonInt32(0))
         .append("code", new BsonInt32(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_CODE))
         .append("codeName", new BsonString("Unauthorized"))
-        .append("errmsg", new BsonString("not authorized")), null);
+        .append("errmsg", new BsonString("not authorized")), new ServerAddress());
 
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.getDatabase(any())).thenThrow(new MongoSecurityException(
