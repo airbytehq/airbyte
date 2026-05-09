@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -430,6 +431,32 @@ public class MongoUtil {
       current = current.getCause();
     }
     return false;
+  }
+
+  public static boolean isUnauthorizedChangeStreamException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException
+          && mongoException.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE
+          && isChangeStreamExceptionMessage(mongoException.getMessage())) {
+        return true;
+      }
+      if (current.getMessage() != null
+          && current.getMessage().contains("error 13")
+          && isChangeStreamExceptionMessage(current.getMessage())) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  private static boolean isChangeStreamExceptionMessage(final String message) {
+    if (message == null) {
+      return false;
+    }
+    final String normalizedMessage = message.toLowerCase(Locale.ROOT);
+    return normalizedMessage.contains("$changestream") || normalizedMessage.contains("change stream");
   }
 
   /**
