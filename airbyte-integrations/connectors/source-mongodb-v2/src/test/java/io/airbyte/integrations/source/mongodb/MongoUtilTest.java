@@ -307,6 +307,36 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testIsChangeStreamPermissionException() {
+    final MongoCommandException exception = new MongoCommandException(
+        BsonDocument.parse("""
+                           {
+                             "ok": 0,
+                             "code": 13,
+                             "codeName": "Unauthorized",
+                             "errmsg": "not authorized on test-database to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }"
+                           }
+                           """), new ServerAddress());
+
+    assertTrue(MongoUtil.isChangeStreamPermissionException(exception));
+  }
+
+  @Test
+  void testIsChangeStreamPermissionExceptionIgnoresOtherUnauthorizedErrors() {
+    final MongoCommandException exception =
+        new MongoCommandException(BsonDocument.parse("""
+                                                     {
+                                                       "ok": 0,
+                                                       "code": 13,
+                                                       "codeName": "Unauthorized",
+                                                       "errmsg": "not authorized on test-database to execute command { listCollections: 1 }"
+                                                     }
+                                                     """), new ServerAddress());
+
+    assertFalse(MongoUtil.isChangeStreamPermissionException(exception));
+  }
+
+  @Test
   void testGetDebeziumEventQueueSize() {
     final int queueSize = 5000;
     final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(
