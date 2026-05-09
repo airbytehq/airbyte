@@ -11,6 +11,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,6 +85,12 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final Exception e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        LOGGER.error("MongoDB change stream authorization failed during CDC resume token initialization.", e);
+        throw new ConfigErrorException(MongoConstants.MONGODB_CDC_UNAUTHORIZED_ERROR_MESSAGE, e, e.getMessage());
+      }
+      throw e;
     }
   }
 
