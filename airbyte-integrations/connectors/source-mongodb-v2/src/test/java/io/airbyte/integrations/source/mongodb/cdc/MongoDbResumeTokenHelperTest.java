@@ -82,8 +82,8 @@ class MongoDbResumeTokenHelperTest {
     when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(changeStreamIterable.cursor()).thenThrow(new RuntimeException(unauthorizedException()));
 
-    final ConfigErrorException exception = assertThrows(ConfigErrorException.class, () ->
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+    final ConfigErrorException exception = assertThrows(ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
     assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, exception.getMessage());
   }
 
