@@ -76,6 +76,12 @@ public class MongoUtil {
   static final Set<String> SCHEMALESS_FIELDS =
       Set.of(CDC_UPDATED_AT, CDC_DELETED_AT, DEFAULT_CURSOR_FIELD, DEFAULT_PRIMARY_KEY, SCHEMALESS_MODE_DATA_FIELD);
 
+  public static boolean isUnauthorizedException(final Throwable e) {
+    return e instanceof MongoCommandException commandException
+        && commandException.getErrorCode() == MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_CODE
+        || e.getCause() != null && isUnauthorizedException(e.getCause());
+  }
+
   /**
    * Returns the set of collections that the current credentials are authorized to access.
    *

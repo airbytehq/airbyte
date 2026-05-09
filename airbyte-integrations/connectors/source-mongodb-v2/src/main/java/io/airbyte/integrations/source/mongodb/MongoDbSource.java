@@ -105,8 +105,11 @@ public class MongoDbSource extends BaseConnector implements Source {
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
+        final String message = MongoUtil.isUnauthorizedException(e)
+            ? MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE
+            : "Authentication failed.  Please check the source's configured credentials.";
         return new AirbyteConnectionStatus()
-            .withMessage("Authentication failed.  Please check the source's configured credentials.")
+            .withMessage(message)
             .withStatus(AirbyteConnectionStatus.Status.FAILED);
       } catch (final Exception e) {
         LOGGER.error("Unable to perform source check operation.", e);
