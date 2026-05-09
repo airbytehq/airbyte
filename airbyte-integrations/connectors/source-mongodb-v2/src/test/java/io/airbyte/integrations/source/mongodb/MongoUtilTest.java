@@ -307,6 +307,16 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testIsUnauthorizedException() {
+    final BsonDocument response = BsonDocument.parse("{\"ok\": 0.0, \"code\": 13, \"codeName\": \"Unauthorized\", \"errmsg\": \"not authorized\"}");
+    final MongoCommandException exception = new MongoCommandException(response, new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException(exception)));
+    assertFalse(MongoUtil.isUnauthorizedException(new MongoException("test")));
+  }
+
+  @Test
   void testGetDebeziumEventQueueSize() {
     final int queueSize = 5000;
     final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(
