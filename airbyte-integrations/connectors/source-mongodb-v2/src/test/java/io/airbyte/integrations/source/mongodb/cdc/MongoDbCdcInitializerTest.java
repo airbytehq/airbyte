@@ -291,7 +291,6 @@ class MongoDbCdcInitializerTest {
     when(findIterable2.allowDiskUse(anyBoolean())).thenReturn(findIterable2);
   }
 
-
   @Test
   void testCreateCdcIteratorsWithUnauthorizedChangeStreamSingleDB() {
     setupSingleDatabase();

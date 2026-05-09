@@ -197,7 +197,7 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithCdcErrorHandling(
-                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+                                                                                 final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
