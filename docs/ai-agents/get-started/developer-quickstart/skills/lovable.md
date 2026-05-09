@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 3
 sidebar_label: Lovable
 ---
@@ -73,7 +74,7 @@ Returns widget tokens (for connector setup) or scoped tokens (for listing connec
 Create `supabase/functions/airbyte-token/index.ts`:
 
 ```typescript
-// Deno URL import — Edge Functions run on Deno, not Node.
+// Deno URL import. Edge Functions run on Deno, not Node.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const AIRBYTE_API = "https://api.airbyte.ai";
@@ -250,10 +251,10 @@ export function useAirbyteQuery<T = unknown>(
 
 | Action | When to use |
 |--------|-------------|
-| `list` | **Default after widget setup.** Live API — works immediately, no sync needed. |
+| `list` | **Default after widget setup.** Live API. Works immediately, no sync needed. |
 | `context_store_search` | **Default for existing connectors.** Searches synced data with filters/sorting. Requires first sync to complete (automatic, takes a few minutes). Fetch by ID: `{ query: { filter: { eq: { Id: "..." } } }, limit: 1 }` |
-| `get` | Fetch one record by ID — **only if REFERENCE.md lists it.** Params: `{ id: "..." }`. Otherwise use `context_store_search` with `eq`. |
-| `api_search` | Connector-native search (Salesforce SOSL, Jira JQL). Params vary — check REFERENCE.md. |
+| `get` | Fetch one record by ID, **only if REFERENCE.md lists it.** Params: `{ id: "..." }`. Otherwise use `context_store_search` with `eq`. |
+| `api_search` | Connector-native search (Salesforce SOSL, Jira JQL). Params vary. Check REFERENCE.md. |
 | `create` | Create a record. Params: the record fields. |
 | `update` | Update a record. Params: `{ id: "...", ...fields }` |
 | `delete` | Delete a record. Params: `{ id: "..." }` |
@@ -273,7 +274,7 @@ const { data } = useAirbyteQuery(connectorId, "customers", "context_store_search
 });
 ```
 
-**Filter operators**: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like` (SQL `%` wildcards), `fuzzy` (ordered word match), `keyword` (any word present), `in` (value in list). Combine with `and`, `or`, `not`. Advanced operators (`any`, `has`, `contains` for nested/array fields) — see the connector's REFERENCE.md.
+**Filter operators**: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like` (SQL `%` wildcards), `fuzzy` (ordered word match), `keyword` (any word present), `in` (value in list). Combine with `and`, `or`, `not`. Advanced operators (`any`, `has`, `contains` for nested/array fields): see the connector's REFERENCE.md.
 
 ## Write Operations
 
@@ -287,4 +288,4 @@ await supabase.functions.invoke("airbyte-execute", {
 
 ## Source
 
-Airbyte keeps the canonical version of this skill in the [airbytehq/airbyte-agent-sdk](https://github.com/airbytehq/airbyte-agent-sdk) repository at [`docs/airbyte-for-lovable.md`](https://github.com/airbytehq/airbyte-agent-sdk/blob/main/lovable/skills/airbyte-integration.md). Check there for the latest version.
+Airbyte keeps the canonical version of this skill in the [airbytehq/airbyte-agent-sdk](https://github.com/airbytehq/airbyte-agent-sdk) repository in the [`lovable/`](https://github.com/airbytehq/airbyte-agent-sdk/tree/main/lovable) directory. Check there for the latest version.

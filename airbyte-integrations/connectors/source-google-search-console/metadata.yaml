@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
-  dockerImageTag: 1.10.33
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-google-search-console
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   externalDocumentationUrls:
@@ -35,6 +35,20 @@ data:
     oss:
       enabled: true
   releases:
+    breakingChanges:
+      2.0.0:
+        message:
+          "The `search_appearance` field has been appended to the existing primary keys of the `search_analytics_keyword_page_report`,
+          `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams.
+          Users syncing these streams must perform a full refresh after upgrading to ensure correct deduplication.
+          See the [migration guide](https://docs.airbyte.com/integrations/sources/google-search-console-migrations) for details."
+        upgradeDeadline: "2026-05-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "search_analytics_keyword_page_report"
+              - "search_analytics_keyword_site_report_by_page"
+              - "search_analytics_keyword_site_report_by_site"
     rolloutConfiguration:
       enableProgressiveRollout: false
   releaseStage: generally_available

@@ -26,7 +26,6 @@ Self-Managed Enterprise
 Elastic License 2.0
 ELv2
 MIT
-Agent Engine
 [Aa]gent(ic)? [Oo]peration(s)?
 AO
 AOs
