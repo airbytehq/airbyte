@@ -2,23 +2,18 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-"""Tests for concurrency and HTTPAPIBudget rate-limit settings.
-
-These tests verify that:
-- Default concurrency is 4 (not 8) to avoid 429 rate-limit errors on large workspaces.
-- Safety margins are applied to all rate-limit budgets (70 % of GitLab's documented limits).
-- The ``num_workers`` config value correctly overrides the default concurrency.
-"""
+"""Tests for concurrency and HTTPAPIBudget rate-limit settings."""
 
 from pathlib import Path
 
 import yaml
 
+from .conftest import BASE_CONFIG, GROUPS_LIST_URL, get_source
+
 
 def _load_manifest() -> dict:
     manifest_path = Path(__file__).parent.parent / "manifest.yaml"
-    with open(manifest_path) as f:
-        return yaml.safe_load(f)
+    return yaml.safe_load(manifest_path.read_text())
 
 
 def test_default_concurrency_is_four():
@@ -64,7 +59,6 @@ def test_rate_limit_safety_margins():
     for policy in policies:
         matchers = policy.get("matchers", [])
         if not matchers:
-            # Catch-all policy
             assert policy["rates"][0]["limit"] == 1400, "Catch-all budget must be 1400"
             continue
         for matcher in matchers:
@@ -79,12 +73,9 @@ def test_rate_limit_safety_margins():
 
 def test_concurrency_with_custom_num_workers(requests_mock):
     """When a user sets num_workers in config, it overrides the default concurrency."""
-    from .conftest import BASE_CONFIG, GROUPS_LIST_URL, get_source
-
     custom_config = BASE_CONFIG | {"num_workers": 2}
     requests_mock.get(url=GROUPS_LIST_URL, status_code=200)
     source = get_source(config=custom_config)
     migrated_config = source.configure(config=custom_config, temp_dir="/not/a/real/path")
     streams = source.streams(migrated_config)
-    # Source must initialise successfully with a custom (low) concurrency value
     assert len(streams) > 0
