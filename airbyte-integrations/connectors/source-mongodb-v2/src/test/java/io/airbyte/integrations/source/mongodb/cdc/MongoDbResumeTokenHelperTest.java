@@ -70,9 +70,8 @@ class MongoDbResumeTokenHelperTest {
     final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoClient mongoClient = mock(MongoClient.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final BsonDocument unauthorizedResponse = BsonDocument.parse("""
-        {"ok": 0.0, "errmsg": "not authorized", "code": 13, "codeName": "Unauthorized"}
-        """);
+    final BsonDocument unauthorizedResponse =
+        BsonDocument.parse("{\"ok\": 0.0, \"errmsg\": \"not authorized\", \"code\": 13, \"codeName\": \"Unauthorized\"}");
     final MongoCommandException mongoException = new MongoCommandException(unauthorizedResponse, new ServerAddress());
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
