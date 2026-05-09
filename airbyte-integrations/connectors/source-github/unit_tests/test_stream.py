@@ -28,6 +28,7 @@ from source_github.streams import (
     IssueEvents,
     IssueLabels,
     IssueMilestones,
+    IssueReactions,
     Issues,
     IssueTimelineEvents,
     Organizations,
@@ -2354,3 +2355,265 @@ def test_graphql_rate_limit_check_with_valid_rate_limited_body():
     resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMITED"}]})
     result = handler.interpret_response(resp)
     assert result.response_action == ResponseAction.RATE_LIMITED
+
+
+# === Tests for defensive GraphQL parse_response / next_page_token (oncall/issues/12343) ===
+
+
+_GRAPHQL_REPO_ARGS = {"repositories": ["org/repo"], "page_size_for_large_streams": 30}
+_GRAPHQL_STREAM_SLICE = {"repository": "org/repo"}
+
+
+def _make_graphql_response(json_data=None, text=None, status_code=200):
+    """Build a mock GraphQL `requests.Response` with controllable `.json()` and `.text`.
+
+    When `text` is given, `.json()` raises `ValueError` to simulate a non-JSON body
+    (the failure mode described in airbyte/oncall#12343).
+    """
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    if text is not None:
+        resp.text = text
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    elif json_data is not None:
+        resp.text = json.dumps(json_data)
+        resp.json = MagicMock(return_value=json_data)
+    else:
+        resp.text = ""
+        resp.json = MagicMock(side_effect=ValueError("No JSON"))
+    return resp
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_records,expected_token",
+    [
+        pytest.param(
+            {
+                "data": {
+                    "repository": {
+                        "owner": {"login": "org"},
+                        "name": "repo",
+                        "pullRequests": {
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [],
+                        },
+                    }
+                }
+            },
+            None,
+            0,
+            None,
+            id="valid_empty_pull_requests",
+        ),
+        pytest.param(None, "<html>504 Gateway Timeout</html>", 0, None, id="html_body"),
+        pytest.param(None, "Response ended prematurely", 0, None, id="non_json_text_body"),
+        pytest.param(None, "", 0, None, id="empty_body"),
+        pytest.param({"errors": [{"message": "Something went wrong"}]}, None, 0, None, id="errors_only_no_data"),
+        pytest.param({"data": None}, None, 0, None, id="data_is_null"),
+        pytest.param({"data": {"repository": None}}, None, 0, None, id="repository_is_null"),
+        pytest.param([1, 2, 3], None, 0, None, id="top_level_list_instead_of_dict"),
+    ],
+)
+def test_reviews_parse_response_and_next_page_token_defensive(json_data, text, expected_records, expected_token):
+    """Reviews.parse_response and Reviews.next_page_token must not raise when the GraphQL
+    response is malformed or non-JSON; they should yield no records and return no token."""
+    stream = Reviews(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_GRAPHQL_STREAM_SLICE))
+    token = stream.next_page_token(resp)
+    assert len(records) == expected_records
+    assert token == expected_token
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_records,expected_token",
+    [
+        pytest.param(
+            {
+                "data": {
+                    "repository": {
+                        "owner": {"login": "org"},
+                        "name": "repo",
+                        "pullRequests": {
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [],
+                        },
+                    }
+                }
+            },
+            None,
+            0,
+            None,
+            id="valid_empty_pull_requests",
+        ),
+        pytest.param(None, "<html>504 Gateway Timeout</html>", 0, None, id="html_body"),
+        pytest.param(None, "", 0, None, id="empty_body"),
+        pytest.param({"errors": [{"message": "Bad credentials"}]}, None, 0, None, id="errors_only_no_data"),
+        pytest.param({"data": {"repository": None}}, None, 0, None, id="repository_is_null"),
+    ],
+)
+def test_pull_request_stats_parse_response_and_next_page_token_defensive(json_data, text, expected_records, expected_token):
+    stream = PullRequestStats(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_GRAPHQL_STREAM_SLICE))
+    token = stream.next_page_token(resp)
+    assert len(records) == expected_records
+    assert token == expected_token
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_records,expected_token",
+    [
+        pytest.param(
+            {
+                "data": {
+                    "repository": {
+                        "owner": {"login": "org"},
+                        "name": "repo",
+                        "projectsV2": {
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [],
+                        },
+                    }
+                }
+            },
+            None,
+            0,
+            None,
+            id="valid_empty_projects_v2",
+        ),
+        pytest.param(None, "<html>504</html>", 0, None, id="html_body"),
+        pytest.param(None, "", 0, None, id="empty_body"),
+        pytest.param({"errors": [{"message": "boom"}]}, None, 0, None, id="errors_only_no_data"),
+        pytest.param({"data": {"repository": None}}, None, 0, None, id="repository_is_null"),
+    ],
+)
+def test_projects_v2_parse_response_and_next_page_token_defensive(json_data, text, expected_records, expected_token):
+    stream = ProjectsV2(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_GRAPHQL_STREAM_SLICE))
+    token = stream.next_page_token(resp)
+    assert len(records) == expected_records
+    assert token == expected_token
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_records,expected_token",
+    [
+        pytest.param(
+            {
+                "data": {
+                    "repository": {
+                        "owner": {"login": "org"},
+                        "name": "repo",
+                        "issues": {
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [],
+                        },
+                    }
+                }
+            },
+            None,
+            0,
+            None,
+            id="valid_empty_issues",
+        ),
+        pytest.param(None, "<html>Bad Gateway</html>", 0, None, id="html_body"),
+        pytest.param(None, "", 0, None, id="empty_body"),
+        pytest.param({"errors": [{"message": "rate limit"}]}, None, 0, None, id="errors_only_no_data"),
+        pytest.param({"data": {"repository": None}}, None, 0, None, id="repository_is_null"),
+    ],
+)
+def test_issue_reactions_parse_response_and_next_page_token_defensive(json_data, text, expected_records, expected_token):
+    stream = IssueReactions(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_GRAPHQL_STREAM_SLICE))
+    token = stream.next_page_token(resp)
+    assert len(records) == expected_records
+    assert token == expected_token
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_records,expected_token",
+    [
+        pytest.param(
+            {
+                "data": {
+                    "repository": {
+                        "owner": {"login": "org"},
+                        "name": "repo",
+                        "pullRequests": {
+                            "pageInfo": {"hasNextPage": False, "endCursor": None, "totalCount": 0},
+                            "nodes": [],
+                        },
+                    }
+                }
+            },
+            None,
+            0,
+            None,
+            id="valid_empty_pull_requests",
+        ),
+        pytest.param(None, "<html>504 Gateway Timeout</html>", 0, None, id="html_body"),
+        pytest.param(None, "", 0, None, id="empty_body"),
+        pytest.param({"errors": [{"message": "boom"}]}, None, 0, None, id="errors_only_no_data"),
+        pytest.param({"data": {"repository": None, "node": None}}, None, 0, None, id="repository_and_node_null"),
+    ],
+)
+def test_pull_request_comment_reactions_parse_response_and_next_page_token_defensive(json_data, text, expected_records, expected_token):
+    stream = PullRequestCommentReactions(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_GRAPHQL_STREAM_SLICE))
+    token = stream.next_page_token(resp)
+    assert len(records) == expected_records
+    assert token == expected_token
+
+
+@pytest.mark.parametrize(
+    "json_data,text,expected_records,expected_token",
+    [
+        pytest.param(
+            {
+                "data": {
+                    "repository": {
+                        "owner": {"login": "org"},
+                        "name": "repo",
+                        "releases": {
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [],
+                        },
+                    }
+                }
+            },
+            None,
+            0,
+            None,
+            id="valid_empty_releases",
+        ),
+        pytest.param(None, "<html>504</html>", 0, None, id="html_body"),
+        pytest.param(None, "", 0, None, id="empty_body"),
+        pytest.param({"errors": [{"message": "boom"}]}, None, 0, None, id="errors_only_no_data"),
+        pytest.param({"data": {"repository": None}}, None, 0, None, id="repository_is_null"),
+    ],
+)
+def test_releases_parse_response_and_next_page_token_defensive(json_data, text, expected_records, expected_token):
+    stream = Releases(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(json_data=json_data, text=text)
+    records = list(stream.parse_response(resp, stream_slice=_GRAPHQL_STREAM_SLICE))
+    token = stream.next_page_token(resp)
+    assert len(records) == expected_records
+    assert token == expected_token
+
+
+def test_safe_graphql_data_logs_warning_with_text_preview(caplog):
+    """`_safe_graphql_data` must log a warning that includes the stream name, HTTP status,
+    and a preview of the non-JSON body so operators can diagnose upstream regressions."""
+    import logging
+
+    stream = Reviews(**_GRAPHQL_REPO_ARGS)
+    resp = _make_graphql_response(text="<html>504 Gateway Timeout - Response ended prematurely</html>", status_code=200)
+    with caplog.at_level(logging.WARNING, logger=stream.logger.name):
+        result = stream._safe_graphql_data(resp)
+    assert result is None
+    assert any("non-JSON GraphQL response" in record.getMessage() for record in caplog.records)
+    assert any("504" in record.getMessage() for record in caplog.records)

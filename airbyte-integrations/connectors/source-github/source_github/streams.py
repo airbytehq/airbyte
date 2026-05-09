@@ -841,6 +841,46 @@ class GitHubGraphQLStream(GithubStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
+    def _safe_graphql_data(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """Parse a GraphQL response and return the ``data`` payload, or ``None`` on failure.
+
+        GitHub's GraphQL endpoint occasionally returns non-JSON bodies (HTML 504 pages,
+        truncated responses, etc.) with a 200 status that slips past the error handler.
+        Calling ``response.json()["data"][...]`` directly turns those cases into a
+        ``JSONDecodeError``/``KeyError`` that bubbles up as a system error and aborts
+        the sync. This helper logs a warning and returns ``None`` so callers can yield
+        no records / return ``None`` for the next-page token, ending the partition
+        gracefully (mirrors the REST-side ``_safe_json_list`` helper).
+        """
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON GraphQL response (HTTP %s, first 50 chars: %r).",
+                self.name,
+                response.status_code,
+                (response.text or "")[:50],
+            )
+            return None
+        if not isinstance(body, dict):
+            self.logger.warning(
+                "`%s` received GraphQL response with unexpected top-level type %s (HTTP %s).",
+                self.name,
+                type(body).__name__,
+                response.status_code,
+            )
+            return None
+        data = body.get("data")
+        if not isinstance(data, dict):
+            self.logger.warning(
+                "`%s` GraphQL response has missing or invalid `data` key (HTTP %s, top-level keys: %s).",
+                self.name,
+                response.status_code,
+                list(body.keys()),
+            )
+            return None
+        return data
+
 
 class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
     """
@@ -931,7 +971,10 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json().get("data", {}).get("repository")
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return
+        repository = data.get("repository")
         if repository:
             nodes = repository.get("releases", {}).get("nodes", [])
             for record in nodes:
@@ -949,7 +992,10 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json().get("data", {}).get("repository")
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return None
+        repository = data.get("repository")
         if repository:
             page_info = repository.get("releases", {}).get("pageInfo", {})
             if page_info.get("hasNextPage"):
@@ -1000,7 +1046,10 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
         return "desc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return
+        repository = data.get("repository")
         if repository:
             nodes = repository["pullRequests"]["nodes"]
             for record in nodes:
@@ -1013,7 +1062,10 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return None
+        repository = data.get("repository")
         if repository:
             pageInfo = repository["pullRequests"]["pageInfo"]
             if pageInfo["hasNextPage"]:
@@ -1070,7 +1122,10 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
             yield record
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return
+        repository = data.get("repository")
         if repository:
             repository_name = self._get_repository_name(repository)
             if "pullRequests" in repository:
@@ -1080,7 +1135,10 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
                 yield from self._get_records(repository["pullRequest"], repository_name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return None
+        repository = data.get("repository")
         if repository:
             repository_name = self._get_repository_name(repository)
             reviews_cursors = self.reviews_cursors.setdefault(repository_name, {})
@@ -1155,7 +1213,10 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
     is_sorted = "asc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return
+        repository = data.get("repository")
         if repository:
             nodes = repository["projectsV2"]["nodes"]
             for record in nodes:
@@ -1164,7 +1225,10 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return None
+        repository = data.get("repository")
         if repository:
             page_info = repository["projectsV2"]["pageInfo"]
             if page_info["hasNextPage"]:
@@ -1302,7 +1366,10 @@ class IssueReactions(SemiIncrementalMixin, GitHubGraphQLStream):
             yield reaction
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return
+        repository = data.get("repository")
         if repository:
             repository_name = self._get_repository_name(repository)
             if "issues" in repository:
@@ -1312,7 +1379,10 @@ class IssueReactions(SemiIncrementalMixin, GitHubGraphQLStream):
                 yield from self._get_reactions_from_issue(repository["issue"], repository_name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return None
+        repository = data.get("repository")
         if repository:
             repository_name = self._get_repository_name(repository)
             reactions_cursors = self.reactions_cursors.setdefault(repository_name, {})
@@ -1381,7 +1451,9 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
             yield from self._get_reactions_from_pull_request(pull_request, repository)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()["data"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return
         repository = data.get("repository")
         if repository:
             yield from self._get_reactions_from_repository(repository)
@@ -1396,7 +1468,9 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
                 yield from self._get_reactions_from_comment(node, node["repository"])
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        data = response.json()["data"]
+        data = self._safe_graphql_data(response)
+        if data is None:
+            return None
         repository = data.get("repository")
         if repository:
             self._add_cursor(repository, "pullRequests")
