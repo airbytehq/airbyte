@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -69,6 +71,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -303,6 +306,23 @@ class MongoDbCdcInitializerTest {
     assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
         "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+  }
+
+  @Test
+  void testCreateCdcIteratorsWithUnauthorizedChangeStreamThrowsConfigError() {
+    setupSingleDatabase();
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(13))
+            .append("errmsg", new BsonString("not authorized on test-database to execute command")),
+        new ServerAddress()));
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final var thrown = assertThrows(ConfigErrorException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
+            EMITTED_AT, SINGLE_DB_CONFIG));
+    assertEquals("MongoDB user lacks permissions required for CDC change streams.", thrown.getMessage());
   }
 
   @Test
