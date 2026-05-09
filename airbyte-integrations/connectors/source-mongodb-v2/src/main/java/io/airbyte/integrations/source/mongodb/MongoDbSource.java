@@ -226,6 +226,9 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   private static RuntimeException handlePotentialMongoConfigError(final Exception e) {
+    if (e instanceof ConfigErrorException configErrorException) {
+      throw configErrorException;
+    }
     if (MongoUtil.isUnauthorizedException(e)) {
       LOGGER.error("MongoDB authorization error detected during sync read operation. Original error: {}", e.getMessage(), e);
       throw new ConfigErrorException(MongoConstants.CDC_UNAUTHORIZED_ERROR_MESSAGE, e);

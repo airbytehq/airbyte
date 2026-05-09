@@ -270,7 +270,8 @@ class MongoDbSourceTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withStream(new AirbyteStream().withName("testCollection").withNamespace(DB_NAME))));
+            .withStream(new AirbyteStream().withName("testCollection").withNamespace(DB_NAME)
+                .withJsonSchema(Jsons.jsonNode(Map.of("properties", Map.of()))))));
 
     final Throwable throwable = assertThrows(ConfigErrorException.class, () -> source.read(airbyteSourceConfig, catalog, null));
     assertEquals(CDC_UNAUTHORIZED_ERROR_MESSAGE, throwable.getMessage());
