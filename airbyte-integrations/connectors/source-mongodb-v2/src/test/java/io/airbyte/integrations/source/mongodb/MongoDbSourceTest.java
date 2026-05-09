@@ -26,11 +26,16 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -282,8 +287,13 @@ class MongoDbSourceTest {
     final AutoCloseableIterator<AirbyteMessage> iterator = mock(AutoCloseableIterator.class);
     when(iterator.hasNext()).thenThrow(unauthorizedChangeStreamException());
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(List.of(iterator));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(new ConfiguredAirbyteStream()
+        .withStream(
+            MongoCatalogHelper.buildSchemalessAirbyteStream("test", DB_NAME, List.of(Field.of(MongoConstants.ID_FIELD, JsonSchemaType.INTEGER))))
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
-    final AutoCloseableIterator<AirbyteMessage> result = source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
+    final AutoCloseableIterator<AirbyteMessage> result = source.read(airbyteSourceConfigWithoutSchema, catalog, null);
 
     final ConfigErrorException exception = assertThrows(ConfigErrorException.class, result::hasNext);
     assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, exception.getMessage());
