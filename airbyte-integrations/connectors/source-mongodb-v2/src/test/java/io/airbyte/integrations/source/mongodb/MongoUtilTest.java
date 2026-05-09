@@ -53,6 +53,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -304,6 +307,39 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     assertThrows(MongoSecurityException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testIsUnauthorizedException() {
+    final MongoCommandException exception = new MongoCommandException(
+        new BsonDocument("ok", new BsonDouble(0.0))
+            .append("code", new BsonInt32(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE))
+            .append("errmsg", new BsonString("not authorized on database to execute command")),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionNested() {
+    final MongoCommandException exception = new MongoCommandException(
+        new BsonDocument("ok", new BsonDouble(0.0))
+            .append("code", new BsonInt32(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE))
+            .append("errmsg", new BsonString("not authorized on database to execute command")),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException(exception)));
+  }
+
+  @Test
+  void testIsUnauthorizedExceptionFalseForOtherErrorCode() {
+    final MongoCommandException exception = new MongoCommandException(
+        new BsonDocument("ok", new BsonDouble(0.0))
+            .append("code", new BsonInt32(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE))
+            .append("errmsg", new BsonString("BSONObjectTooLarge")),
+        new ServerAddress());
+
+    assertFalse(MongoUtil.isUnauthorizedException(exception));
   }
 
   @Test

@@ -21,6 +21,7 @@ import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -95,8 +96,7 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken = getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
@@ -314,6 +314,23 @@ public class MongoDbCdcInitializer {
           Collections.singletonList(initialSnapshotIterator),
           cdcStreamsCompleteStatusEmitters)
           .flatMap(Collection::stream).toList();
+    }
+  }
+
+  private BsonDocument getMostRecentResumeTokenForDatabases(final MongoClient mongoClient,
+                                                            final List<String> databaseNames,
+                                                            final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+    try {
+      return MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final Exception e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        LOGGER.error("MongoDB unauthorized error detected while retrieving the CDC resume token. Original error: {}", e.getMessage(), e);
+        throw new ConfigErrorException(
+            MongoConstants.MONGODB_CDC_CHANGE_STREAM_PERMISSION_ERROR_MESSAGE,
+            e,
+            e.toString());
+      }
+      throw e;
     }
   }
 
