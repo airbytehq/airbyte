@@ -79,10 +79,10 @@ public class MongoDbResumeTokenHelper {
         eventStream = mongoClient.watch(pipeline, BsonDocument.class);
       }
       try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
-      /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
-       * the call to getResumeToken() will return null!
-       */
+        /*
+         * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+         * the call to getResumeToken() will return null!
+         */
         eventStreamCursor.tryNext();
         return eventStreamCursor.getResumeToken();
       }
