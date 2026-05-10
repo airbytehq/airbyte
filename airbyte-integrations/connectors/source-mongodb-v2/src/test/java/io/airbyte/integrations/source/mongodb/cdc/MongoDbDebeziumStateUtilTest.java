@@ -201,7 +201,8 @@ class MongoDbDebeziumStateUtilTest {
       mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
           .thenReturn(changeStreamIterable);
 
-      assertThrows(MongoCommandException.class, () -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties));
+      assertThrows(MongoCommandException.class,
+          () -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties));
     }
   }
 
