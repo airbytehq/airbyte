@@ -432,6 +432,20 @@ public class MongoUtil {
     return false;
   }
 
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE ||
+            MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE_NAME.equals(mongoException.getErrorCodeName())) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
   /**
    * Represents statistics of a MongoDB collection.
    *
