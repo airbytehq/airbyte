@@ -196,16 +196,16 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var treatTinyint1AsInteger: Boolean? = false
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
