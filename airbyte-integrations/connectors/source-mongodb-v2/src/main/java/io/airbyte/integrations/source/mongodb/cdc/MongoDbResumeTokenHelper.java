@@ -87,7 +87,7 @@ public class MongoDbResumeTokenHelper {
       return eventStreamCursor.getResumeToken();
     } catch (final RuntimeException e) {
       if (MongoUtil.isUnauthorizedException(e)) {
-        throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e);
+        throw new ConfigErrorException(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e, e.getMessage());
       }
       throw e;
     }

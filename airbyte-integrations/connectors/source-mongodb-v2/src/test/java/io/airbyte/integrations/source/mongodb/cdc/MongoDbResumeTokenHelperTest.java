@@ -91,6 +91,7 @@ class MongoDbResumeTokenHelperTest {
         ConfigErrorException.class,
         () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
     assertEquals(MongoConstants.CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
+    assertEquals(mongoCommandException.getMessage(), thrown.getInternalMessage());
   }
 
   @Test
