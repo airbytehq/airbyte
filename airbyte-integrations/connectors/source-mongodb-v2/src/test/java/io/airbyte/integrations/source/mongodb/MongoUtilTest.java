@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -322,6 +324,28 @@ public class MongoUtilTest {
     assertEquals(MIN_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooSmallQueueSizeConfiguration));
     assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooLargeQueueSizeConfiguration));
     assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(missingQueueSizeConfiguration));
+  }
+
+  @Test
+  void testIsChangeStreamUnauthorizedException() {
+    final MongoCommandException exception = new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+            .append("errmsg", new BsonString("not authorized to execute command { aggregate: 1, pipeline: [ { $changeStream: {} } ] }")),
+        new ServerAddress());
+
+    assertTrue(MongoUtil.isChangeStreamUnauthorizedException(exception));
+  }
+
+  @Test
+  void testIsChangeStreamUnauthorizedExceptionIgnoresNonChangeStreamErrors() {
+    final MongoCommandException exception = new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
+            .append("errmsg", new BsonString("not authorized to execute command { find: \"testCollection\" }")),
+        new ServerAddress());
+
+    assertFalse(MongoUtil.isChangeStreamUnauthorizedException(exception));
   }
 
   @Test
