@@ -5,14 +5,16 @@ sidebar_position: 1
 
 # Agent operations
 
-An agent operation (AO) is the unit of work in Airbyte Agents. Every time an agent processes a prompt, reasons about data, or calls a tool, it consumes AOs. AOs measure the processing intensity of a task, not just the number of requests.
+An Agent Operation (AO) is the unit of work in Airbyte Agents. Every time an agent processes a prompt, reasons about data, or calls a tool through Airbyte's hosted platform, it consumes AOs. AOs measure the processing intensity of a task, not just the number of requests. Connector calls made locally through the open-source SDK do not consume AOs.
 
 Airbyte derives AOs from a combination of two factors:
 
 - **Tool calls.** Each action an agent takes against a connector counts as a tool call. Listing records, fetching a single record, searching the Context Store, and writing data back to a source are all tool calls.
-- **Token usage.** The input and output tokens an agent consumes while reasoning about your prompt contribute to the AO count.
+- **Reasoning.** The input and output tokens an agent consumes while reasoning about your prompt contribute to the AO count.
 
-Simple tasks typically make fewer tool calls and use fewer tokens, so they consume fewer AOs. Complex reasoning tasks that span multiple connectors, require iterative lookups, or produce long responses consume more.
+Simple tasks typically make fewer tool calls and require less reasoning, so they consume fewer AOs. Complex tasks that span multiple connectors, require iterative lookups, or produce long responses consume more.
+
+Airbyte does not expose the exact formula that converts tool calls and reasoning into AOs. Use the [Usage chart](../admin/billing.md#monitor-usage) on the Billing page to monitor your consumption.
 
 ## What produces agent operations
 
@@ -24,10 +26,10 @@ Any interaction with an agent consumes AOs. The source of the interaction determ
 | **Automation** | A single run of a scheduled, webhook-triggered, or manually triggered automation. | Yes | Yes |
 | **Automation Builder Chat** | A conversation inside the Automation Builder while designing an automation. | Yes | Yes |
 | **MCP** | Tool calls from agents connected through the Model Context Protocol. | No | Yes |
-| **API** | Direct calls to the Airbyte Agents API. | No | Yes |
-| **SDK** | Calls from an agent built with the Airbyte Agents SDK. | No | Yes |
+| **API** | Direct calls to the Agent API. | No | Yes |
+| **SDK** | Calls from an agent built with the Agent SDK. | No | Yes |
 
-Sources tracked as sessions appear on the [Sessions](../admin/sessions.md) page, where you can review the full conversation and tool calls. Sources that aren't tracked as sessions still consume AOs and appear in the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page.
+Sources tracked as sessions appear on the [Sessions](../admin/sessions.md) page, where you can review the full conversation and tool calls. Sources that aren't tracked as sessions still consume AOs and appear in the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page. To inspect individual tool calls from MCP, API, or SDK usage, use the [Tool calls](../admin/tool-calls.md) page.
 
 ## How AOs relate to billing
 
