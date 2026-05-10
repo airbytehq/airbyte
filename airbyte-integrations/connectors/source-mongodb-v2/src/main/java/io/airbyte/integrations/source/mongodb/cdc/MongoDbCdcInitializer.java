@@ -21,6 +21,7 @@ import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -95,8 +96,12 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken;
+    try {
+      initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final Exception e) {
+      throw handlePotentialChangeStreamAuthorizationError(e);
+    }
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
@@ -327,6 +332,16 @@ public class MongoDbCdcInitializer {
       LOGGER.warn("Failed to parse value JSON: {}", e.getMessage());
     }
     return null;
+  }
+
+  private RuntimeException handlePotentialChangeStreamAuthorizationError(final Exception e) {
+    if (MongoUtil.isUnauthorizedChangeStreamException(e)) {
+      throw new ConfigErrorException(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e, e.getMessage());
+    }
+    if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    }
+    throw new RuntimeException(e);
   }
 
   private boolean hasOldFormatState(List<Map.Entry<String, JsonNode>> stateEntries, String correctNormalizedServerId) {

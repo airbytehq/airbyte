@@ -213,7 +213,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.hasNext();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialCdcError(e);
         }
       }
 
@@ -222,7 +222,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         try {
           return iterator.next();
         } catch (final Exception e) {
-          throw handlePotentialBsonTooLargeError(e);
+          throw handlePotentialCdcError(e);
         }
       }
 
@@ -231,7 +231,11 @@ public class MongoDbSource extends BaseConnector implements Source {
         iterator.close();
       }
 
-      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+      private RuntimeException handlePotentialCdcError(final Exception e) {
+        if (MongoUtil.isUnauthorizedChangeStreamException(e)) {
+          LOGGER.error("MongoDB change stream authorization error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, e, e.getMessage());
+        }
         if (MongoUtil.isBsonObjectTooLargeException(e)) {
           LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
           throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
