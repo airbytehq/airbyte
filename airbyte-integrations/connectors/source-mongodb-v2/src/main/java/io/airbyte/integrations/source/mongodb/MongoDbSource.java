@@ -182,7 +182,8 @@ public class MongoDbSource extends BaseConnector implements Source {
           LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
           try {
             iterators
-                .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+                .addAll(
+                    cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
           } catch (final Exception e) {
             throw handleKnownCdcException(e);
           }
