@@ -14,13 +14,8 @@ definitions:
         username: "{{ config['credentials']['email'] }}"
         password: "{{ config['credentials']['api_token'] }}"
       "OAuth2.0":
-        type: OAuthAuthenticator
-        client_id: "{{ config['credentials']['client_id'] }}"
-        client_secret: "{{ config['credentials']['client_secret'] }}"
-        refresh_token: "{{ config['credentials']['refresh_token'] }}"
-        token_refresh_endpoint: "https://auth.atlassian.com/oauth/token"
-        access_token_name: access_token
-        grant_type: refresh_token
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.JiraOAuthAuthenticator
 
   # Error handler
   error_handler:
@@ -35,13 +30,13 @@ definitions:
   requester:
     type: HttpRequester
     http_method: GET
-    url_base: "https://{{ config['domain'] }}/rest/api/3/"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['domain'] }}/rest/api/3/{% endif %}"
     authenticator: "#/definitions/authenticator"
     error_handler: "#/definitions/error_handler"
 
   requester_v1:
     $ref: "#/definitions/requester"
-    url_base: "https://{{ config['domain'] }}/rest/agile/1.0/"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
 
   # Selector
 
@@ -14651,12 +14646,6 @@ spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/jira
   config_normalization_rules:
     type: ConfigNormalizationRules
-    validations:
-      - type: DpathValidator
-        field_path: ["domain"]
-        validation_strategy:
-          type: CustomValidationStrategy
-          class_name: source_declarative_manifest.components.ValidateJiraDomain
     config_migrations:
       - type: ConfigMigration
         description: Migrate flat api_token/email config to nested credentials structure for OAuth 2.0 support
