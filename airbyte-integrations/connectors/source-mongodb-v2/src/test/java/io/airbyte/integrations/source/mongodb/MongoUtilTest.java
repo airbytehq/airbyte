@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -304,6 +306,25 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
     assertThrows(MongoSecurityException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testIsUnauthorizedException() {
+    final String databaseName = "test-database";
+    final MongoCommandException cause = new MongoCommandException(
+        new BsonDocument()
+            .append("code", new BsonInt32(MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE))
+            .append("codeName", new BsonString("Unauthorized"))
+            .append("errmsg", new BsonString("not authorized on admin to execute command { aggregate: 1 }")),
+        new ServerAddress());
+    final MongoSecurityException mongoSecurityException =
+        new MongoSecurityException(MongoCredential.createCredential("username", databaseName, "password".toCharArray()), "test", cause);
+
+    assertTrue(MongoUtil.isUnauthorizedException(cause));
+    assertTrue(MongoUtil.isUnauthorizedException(mongoSecurityException));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException("Command failed with error 13 (Unauthorized).")));
+    assertTrue(MongoUtil.isUnauthorizedException(new RuntimeException("not authorized on admin to execute command.")));
+    assertFalse(MongoUtil.isUnauthorizedException(new RuntimeException("Command failed with error 14.")));
   }
 
   @Test

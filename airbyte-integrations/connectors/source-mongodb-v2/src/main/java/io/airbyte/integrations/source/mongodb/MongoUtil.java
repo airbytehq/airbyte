@@ -14,6 +14,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_M
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -425,6 +426,26 @@ public class MongoUtil {
           (current.getMessage().contains("BSONObjectTooLarge") ||
               current.getMessage().contains("BSONObj size") ||
               current.getMessage().contains("error 10334"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException &&
+          mongoException.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        return true;
+      }
+      if (current instanceof MongoSecurityException) {
+        return true;
+      }
+      if (current.getMessage() != null &&
+          (current.getMessage().contains("error 13 (Unauthorized)") ||
+              current.getMessage().contains("not authorized"))) {
         return true;
       }
       current = current.getCause();
