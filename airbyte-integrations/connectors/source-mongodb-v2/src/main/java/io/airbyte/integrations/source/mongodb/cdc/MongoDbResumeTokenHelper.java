@@ -5,12 +5,16 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
+import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -82,6 +86,14 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (MongoUtil.isUnauthorizedException(e)) {
+        throw new ConfigErrorException(
+            MongoConstants.MONGODB_CHANGE_STREAM_PERMISSION_ERROR_MESSAGE,
+            e,
+            "MongoDB returned error code 13 while opening a CDC change stream.");
+      }
+      throw e;
     }
   }
 
