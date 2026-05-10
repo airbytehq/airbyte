@@ -413,19 +413,27 @@ public class MongoUtil {
    * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.
    */
   public static boolean isBsonObjectTooLargeException(final Throwable exception) {
+    return hasMongoCommandError(exception, MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE, "BSONObjectTooLarge", "BSONObj size", "error 10334");
+  }
+
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    return hasMongoCommandError(exception, MongoConstants.UNAUTHORIZED_ERROR_CODE, "Unauthorized", "not authorized", "error 13");
+  }
+
+  private static boolean hasMongoCommandError(final Throwable exception, final int errorCode, final String... messageMatches) {
     Throwable current = exception;
     while (current != null) {
       if (current instanceof MongoCommandException mongoException) {
-        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
+        if (mongoException.getErrorCode() == errorCode) {
           return true;
         }
       }
-      // Also check the error message for cases where the error code might not be directly accessible
-      if (current.getMessage() != null &&
-          (current.getMessage().contains("BSONObjectTooLarge") ||
-              current.getMessage().contains("BSONObj size") ||
-              current.getMessage().contains("error 10334"))) {
-        return true;
+      if (current.getMessage() != null) {
+        for (final String messageMatch : messageMatches) {
+          if (current.getMessage().contains(messageMatch)) {
+            return true;
+          }
+        }
       }
       current = current.getCause();
     }
