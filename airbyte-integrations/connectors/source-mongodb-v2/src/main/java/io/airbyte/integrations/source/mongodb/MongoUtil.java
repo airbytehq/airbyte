@@ -413,18 +413,32 @@ public class MongoUtil {
    * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.
    */
   public static boolean isBsonObjectTooLargeException(final Throwable exception) {
+    return hasMongoError(exception, MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) ||
+        hasErrorMessage(exception, "BSONObjectTooLarge", "BSONObj size", "error 10334");
+  }
+
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    return hasMongoError(exception, MongoConstants.UNAUTHORIZED_ERROR_CODE) ||
+        hasErrorMessage(exception, "error 13", "Unauthorized", "not authorized");
+  }
+
+  private static boolean hasMongoError(final Throwable exception, final int errorCode) {
     Throwable current = exception;
     while (current != null) {
       if (current instanceof MongoCommandException mongoException) {
-        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
+        if (mongoException.getErrorCode() == errorCode) {
           return true;
         }
       }
-      // Also check the error message for cases where the error code might not be directly accessible
-      if (current.getMessage() != null &&
-          (current.getMessage().contains("BSONObjectTooLarge") ||
-              current.getMessage().contains("BSONObj size") ||
-              current.getMessage().contains("error 10334"))) {
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  private static boolean hasErrorMessage(final Throwable exception, final String... messageParts) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current.getMessage() != null && Arrays.stream(messageParts).anyMatch(current.getMessage()::contains)) {
         return true;
       }
       current = current.getCause();
