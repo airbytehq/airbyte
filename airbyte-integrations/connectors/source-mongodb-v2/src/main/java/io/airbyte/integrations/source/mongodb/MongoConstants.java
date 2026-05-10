@@ -50,8 +50,7 @@ public class MongoConstants {
 
   public static final int MONGODB_UNAUTHORIZED_ERROR_CODE = 13;
   public static final String CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE =
-      "MongoDB user lacks permission to open change streams for configured collections. " +
-          "Grant change stream access to the configured MongoDB user.";
+      "MongoDB user lacks permission to open change streams for configured collections.";
 
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
