@@ -51,12 +51,14 @@ class JiraOAuthAuthenticator:
 
     def _token_request(self) -> dict:
         creds = self.config.get("credentials", {})
-        data = urllib.parse.urlencode({
-            "grant_type": "refresh_token",
-            "client_id": creds["client_id"],
-            "client_secret": creds["client_secret"],
-            "refresh_token": JiraOAuthAuthenticator._shared_refresh_token or creds["refresh_token"],
-        }).encode()
+        data = urllib.parse.urlencode(
+            {
+                "grant_type": "refresh_token",
+                "client_id": creds["client_id"],
+                "client_secret": creds["client_secret"],
+                "refresh_token": JiraOAuthAuthenticator._shared_refresh_token or creds["refresh_token"],
+            }
+        ).encode()
         req = urllib.request.Request(
             _ATLASSIAN_TOKEN_ENDPOINT,
             data=data,
