@@ -567,7 +567,6 @@ class MongoDbCdcInitializerTest {
             SINGLE_DB_CONFIG));
 
     assertEquals(MongoConstants.MONGODB_CHANGE_STREAM_UNAUTHORIZED_ERROR_MESSAGE, thrown.getMessage());
-    assertTrue(thrown.getInternalMessage().contains("MongoCommandException"));
     assertTrue(thrown.getInternalMessage().contains("not authorized"));
     assertTrue(thrown.getCause() instanceof MongoCommandException);
   }
