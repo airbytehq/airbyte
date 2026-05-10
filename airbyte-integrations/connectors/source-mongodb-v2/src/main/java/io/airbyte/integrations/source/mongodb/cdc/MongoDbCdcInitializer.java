@@ -95,8 +95,16 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
     // calculate the initial resume token for all the collections discovered for the input databases.
-    final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    final BsonDocument initialResumeToken;
+    try {
+      initialResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+    } catch (final RuntimeException e) {
+      final ConfigErrorException configErrorException = MongoUtil.asCdcChangeStreamAuthorizationError(e);
+      if (configErrorException != null) {
+        throw configErrorException;
+      }
+      throw e;
+    }
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =

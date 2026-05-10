@@ -5,10 +5,12 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CDC_CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
@@ -288,6 +291,22 @@ class MongoDbCdcInitializerTest {
     when(findIterable2.sort(any())).thenReturn(findIterable2);
     when(findIterable2.cursor()).thenReturn(findCursor);
     when(findIterable2.allowDiskUse(anyBoolean())).thenReturn(findIterable2);
+  }
+
+  @Test
+  void testCreateCdcIteratorsClassifiesUnauthorizedChangeStreamAsConfigError() {
+    setupSingleDatabase();
+    final MongoCommandException mongoException = mock(MongoCommandException.class);
+    when(mongoException.getErrorCode()).thenReturn(13);
+    when(changeStreamIterable.cursor()).thenThrow(mongoException);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+
+    assertEquals(CDC_CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, thrown.getMessage());
+    assertSame(mongoException, thrown.getCause());
   }
 
   @Test

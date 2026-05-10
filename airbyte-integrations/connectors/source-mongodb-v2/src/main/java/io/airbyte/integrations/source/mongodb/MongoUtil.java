@@ -9,11 +9,14 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConver
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CDC_CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_MODE_DATA_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -425,6 +428,27 @@ public class MongoUtil {
           (current.getMessage().contains("BSONObjectTooLarge") ||
               current.getMessage().contains("BSONObj size") ||
               current.getMessage().contains("error 10334"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  public static ConfigErrorException asCdcChangeStreamAuthorizationError(final Throwable exception) {
+    if (isMongoAuthorizationException(exception)) {
+      return new ConfigErrorException(CDC_CHANGE_STREAM_AUTHORIZATION_ERROR_MESSAGE, exception);
+    }
+    return null;
+  }
+
+  private static boolean isMongoAuthorizationException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException && mongoException.getErrorCode() == MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        return true;
+      }
+      if (current instanceof MongoSecurityException) {
         return true;
       }
       current = current.getCause();
