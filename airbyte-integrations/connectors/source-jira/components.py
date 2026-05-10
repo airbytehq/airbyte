@@ -5,7 +5,7 @@ import re
 import time
 import urllib.parse
 import urllib.request
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from typing import Any, ClassVar, Iterable, List, Mapping, Optional
 
 from requests_cache import Response
