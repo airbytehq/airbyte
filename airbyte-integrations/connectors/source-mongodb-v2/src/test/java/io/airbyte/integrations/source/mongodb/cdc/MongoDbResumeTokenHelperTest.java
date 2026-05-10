@@ -11,6 +11,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -18,6 +20,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -26,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
@@ -59,6 +65,36 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument actualResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of()));
     assertEquals(resumeTokenDocument, actualResumeToken);
+  }
+
+  @Test
+  void testUnauthorizedChangeStreamErrorIsConfigError() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final BsonDocument response = new BsonDocument()
+        .append("ok", new BsonDouble(0.0))
+        .append("errmsg", new BsonString("not authorized on database to execute command"))
+        .append("code", new BsonInt32(13))
+        .append("codeName", new BsonString("Unauthorized"));
+    final MongoCommandException mongoException = new MongoCommandException(response, new ServerAddress());
+
+    when(changeStreamIterable.cursor()).thenThrow(mongoException);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.or(List.of(
+            Filters.and(
+                Filters.eq("ns.db", DATABASE),
+                Filters.in("ns.coll", Collections.emptyList()))))));
+    when(mongoDatabase.watch(pipeline, BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final ConfigErrorException exception = assertThrows(ConfigErrorException.class,
+        () -> MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, List.of(DATABASE), List.of(List.of())));
+
+    assertEquals("MongoDB credentials lack required change stream permissions for incremental syncs.",
+        exception.getDisplayMessage());
+    assertEquals(mongoException.getMessage(), exception.getInternalMessage());
   }
 
   @Test

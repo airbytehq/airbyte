@@ -404,6 +404,10 @@ public class MongoUtil {
     return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
   }
 
+  public static boolean isUnauthorizedException(final Throwable exception) {
+    return hasMongoCommandErrorCode(exception, MongoConstants.UNAUTHORIZED_ERROR_CODE);
+  }
+
   /**
    * Checks if the given exception is caused by a BSONObjectTooLarge error (MongoDB error code 10334).
    * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during CDC
@@ -415,16 +419,25 @@ public class MongoUtil {
   public static boolean isBsonObjectTooLargeException(final Throwable exception) {
     Throwable current = exception;
     while (current != null) {
-      if (current instanceof MongoCommandException mongoException) {
-        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
-          return true;
-        }
+      if (hasMongoCommandErrorCode(current, MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE)) {
+        return true;
       }
       // Also check the error message for cases where the error code might not be directly accessible
       if (current.getMessage() != null &&
           (current.getMessage().contains("BSONObjectTooLarge") ||
               current.getMessage().contains("BSONObj size") ||
               current.getMessage().contains("error 10334"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  private static boolean hasMongoCommandErrorCode(final Throwable exception, final int errorCode) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException && mongoException.getErrorCode() == errorCode) {
         return true;
       }
       current = current.getCause();
