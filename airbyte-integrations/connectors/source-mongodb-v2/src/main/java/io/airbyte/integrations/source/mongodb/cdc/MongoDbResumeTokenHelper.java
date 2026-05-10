@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -29,6 +32,8 @@ import org.slf4j.LoggerFactory;
 public class MongoDbResumeTokenHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbResumeTokenHelper.class);
+  private static final String UNAUTHORIZED_CHANGE_STREAM_MESSAGE =
+      "MongoDB user is not authorized to open change streams. Grant change stream privileges to the configured MongoDB user.";
 
   /**
    * Retrieves the most recent resume token for the specified databases and collections from the
@@ -82,6 +87,11 @@ public class MongoDbResumeTokenHelper {
        */
       eventStreamCursor.tryNext();
       return eventStreamCursor.getResumeToken();
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(UNAUTHORIZED_CHANGE_STREAM_MESSAGE, e, e.getMessage());
+      }
+      throw e;
     }
   }
 
