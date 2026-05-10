@@ -3,6 +3,77 @@
 This is the repository for the Kafka destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/kafka).
 
+## Features
+
+### Partition Routing
+
+The Kafka destination connector supports configurable partition routing using record fields as message keys. This allows related records to be sent to the same Kafka partition, ensuring ordering guarantees for related data.
+
+#### Configuration
+
+Add the `partition_key_field` parameter to your connector configuration:
+
+```json
+{
+  "partition_key_field": "value.user_id"
+}
+```
+
+#### Supported Field Types
+
+- **Single Field**: `"value.user_id"`
+- **Multiple Fields**: `"value.user_id,value.order_id"` (concatenated with "|" delimiter)
+- **Nested Fields**: `"value.user.id"` (dot notation for nested JSON objects)
+- **Mixed**: `"value.user_id,value.user.email,value.order.date"`
+
+#### Behavior
+
+- **Field Present**: Uses the field value(s) as the Kafka message key
+- **Field Missing**: Falls back to random UUID
+- **Null Values**: Treated as missing field, falls back to UUID
+- **Multiple Fields**: Concatenated with "|" delimiter
+
+#### Note on `_airbyte_ab_id` Field
+
+When `partition_key_field` is configured, the `_airbyte_ab_id` field in Kafka messages will contain the partition key value instead of a UUID. This change is opt-in and only applies when partition routing is enabled.
+
+- **Without partition_key_field**: `_airbyte_ab_id` = random UUID (existing behavior)
+- **With partition_key_field**: `_airbyte_ab_id` = partition key value (new behavior)
+
+Downstream consumers should handle both UUID and partition key values when processing messages.
+
+#### Examples
+
+**Single Field Partitioning:**
+```json
+{
+  "partition_key_field": "value.user_id",
+  "topic_pattern": "orders.{stream}"
+}
+```
+Records with the same `user_id` will go to the same partition.
+
+**Composite Key Partitioning:**
+```json
+{
+  "partition_key_field": "value.user_id,value.order_id",
+  "topic_pattern": "orders.{stream}"
+}
+```
+Records with the same combination of `user_id` and `order_id` will go to the same partition.
+
+**Nested Field Partitioning:**
+```json
+{
+  "partition_key_field": "value.user.id",
+  "topic_pattern": "users.{stream}"
+}
+```
+Uses nested `user.id` field from JSON structure as partition key.
+
+**Backward Compatibility:**
+If `partition_key_field` is not specified, the connector uses random UUID keys (existing behavior).
+
 ## Local development
 
 #### Building via Gradle
