@@ -3509,7 +3509,7 @@ spec:
         title: Number of concurrent threads
         minimum: 2
         maximum: 20
-        default: 10
+        default: 12
         examples:
           - 2
           - 3
@@ -3563,11 +3563,11 @@ spec:
 # depending on the time.
 # https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
 #
-# We've set the default to 10 so we can leverage some concurrency, but this can be tuned as we
+# We've set the default to 12 so we can leverage some concurrency, but this can be tuned as we
 # continue to observe.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 12) }}"
   max_concurrency: 20
 
 schemas:
