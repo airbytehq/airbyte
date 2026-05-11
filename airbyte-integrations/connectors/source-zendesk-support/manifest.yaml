@@ -1386,13 +1386,15 @@ streams:
 # Default concurrency is tuned to be safe for the LOWEST documented tier
 # (Path B, scope #3 of the connector concurrency tuning playbook). The
 # low-rate-limit special case (floor(0.17 / 4) = 0) sets starting_concurrency
-# = 4, step = 1; the live tier-aware HTTPAPIBudget above caps the actual
-# request rate per the account's plan. Phase 1 at c=4 was clean (0 failures,
-# wall-time matched or beat the 5.2.6 baseline) so this RC steps to c=5.
-# Customers on higher tiers can raise `num_workers` to fully exploit their plan.
+# = 4, step = 1; the live endpoint-specific HTTPAPIBudget above caps the
+# per-endpoint request rate. Phase 1 at c=4 was wall-time-neutral vs the
+# 5.2.6 baseline; rc.2's c=5 with a tier-aware single-bucket budget caused a
+# 4.9x mean wall-time regression, so rc.4 returns to c=4 with the original
+# endpoint-specific budget LIVE. Customers can raise `num_workers` to fully
+# exploit higher Zendesk plans.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 40
 
 spec:
@@ -1552,11 +1554,11 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 5
+        default: 4
         examples:
           - 1
           - 2
-          - 5
+          - 4
           - 10
         description: >-
           The number of worker threads to use for the sync. Higher values can

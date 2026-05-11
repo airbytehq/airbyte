@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
-  dockerImageTag: 1.2.0-rc.3
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-gong
   documentationUrl: https://docs.airbyte.com/integrations/sources/gong
   githubIssueLabel: source-gong
@@ -22,14 +22,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          "The `extensiveCalls` stream schema has changed: the `context` field type
-          changed from `object` to `array`, and the `value` field within
-          `context.objects.fields` now accepts `string`, `number`, `boolean`,
-          `object`, and `array` types instead of only `object`. Users syncing the
-          `extensiveCalls` stream must refresh the source schema and reset the
-          stream after upgrading. For more information, see the
-          [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
+        message: "The `extensiveCalls` stream schema has changed: the `context` field type changed from `object` to `array`, and the `value` field within `context.objects.fields` now accepts `string`, `number`, `boolean`, `object`, and `array` types instead of only `object`. Users syncing the `extensiveCalls` stream must refresh the source schema and reset the stream after upgrading. For more information, see the [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
         upgradeDeadline: "2026-04-13"
         deadlineAction: "auto_upgrade"
         scopedImpact:
@@ -37,7 +30,7 @@ data:
             impactedScopes:
               - "extensiveCalls"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   releaseStage: alpha
   remoteRegistries:
     pypi:
