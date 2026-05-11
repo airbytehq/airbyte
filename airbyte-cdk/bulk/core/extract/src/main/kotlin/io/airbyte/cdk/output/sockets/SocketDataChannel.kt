@@ -83,7 +83,7 @@ class UnixDomainSocketDataChannel(
         try {
             outputStream?.write(probePacket)
         } catch (e: Exception) {
-            logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
+            logger.warn(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdown()
             socketStatus.set(SOCKET_ERROR)
         }
