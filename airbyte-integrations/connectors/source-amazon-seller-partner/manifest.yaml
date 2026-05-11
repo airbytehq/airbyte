@@ -345,6 +345,7 @@ spec:
         type: integer
         default: 1800
         minimum: 1
+        maximum: 14400
         order: 18
         airbyte_hidden: true
       creation_requester_429_max_retries:
