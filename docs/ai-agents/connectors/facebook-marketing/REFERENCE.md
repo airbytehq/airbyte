@@ -9,13 +9,12 @@ The Facebook-Marketing connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](#current-user-get) |
-| Ad Accounts | [List](#ad-accounts-list), [Context Store Search](#ad-accounts-context-store-search) |
+| Ad Accounts | [List](#ad-accounts-list), [Get](#ad-accounts-get), [Context Store Search](#ad-accounts-context-store-search) |
 | Campaigns | [List](#campaigns-list), [Create](#campaigns-create), [Get](#campaigns-get), [Update](#campaigns-update), [Context Store Search](#campaigns-context-store-search) |
 | Ad Sets | [List](#ad-sets-list), [Create](#ad-sets-create), [Get](#ad-sets-get), [Update](#ad-sets-update), [Context Store Search](#ad-sets-context-store-search) |
 | Ads | [List](#ads-list), [Create](#ads-create), [Get](#ads-get), [Update](#ads-update), [Context Store Search](#ads-context-store-search) |
 | Ad Creatives | [List](#ad-creatives-list), [Context Store Search](#ad-creatives-context-store-search) |
 | Ads Insights | [List](#ads-insights-list), [Context Store Search](#ads-insights-context-store-search) |
-| Ad Account | [Get](#ad-account-get), [Context Store Search](#ad-account-context-store-search) |
 | Custom Conversions | [List](#custom-conversions-list), [Context Store Search](#custom-conversions-context-store-search) |
 | Images | [List](#images-list), [Context Store Search](#images-context-store-search) |
 | Videos | [List](#videos-list), [Context Store Search](#videos-context-store-search) |
@@ -131,6 +130,86 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `after` | `string \| null` |  |
+
+</details>
+
+### Ad Accounts Get
+
+Returns information about the specified ad account including balance and currency
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_accounts.get(
+    account_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_accounts",
+    "action": "get",
+    "params": {
+        "account_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `account_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `account_status` | `integer \| null` |  |
+| `age` | `number \| null` |  |
+| `amount_spent` | `string \| null` |  |
+| `balance` | `string \| null` |  |
+| `business` | `object \| any` |  |
+| `business_city` | `string \| null` |  |
+| `business_country_code` | `string \| null` |  |
+| `business_name` | `string \| null` |  |
+| `business_state` | `string \| null` |  |
+| `business_street` | `string \| null` |  |
+| `business_street2` | `string \| null` |  |
+| `business_zip` | `string \| null` |  |
+| `created_time` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `disable_reason` | `integer \| null` |  |
+| `end_advertiser` | `string \| null` |  |
+| `end_advertiser_name` | `string \| null` |  |
+| `funding_source` | `string \| null` |  |
+| `funding_source_details` | `object \| null` |  |
+| `has_migrated_permissions` | `boolean \| null` |  |
+| `is_personal` | `integer \| null` |  |
+| `is_prepay_account` | `boolean \| null` |  |
+| `is_tax_id_required` | `boolean \| null` |  |
+| `min_campaign_group_spend_cap` | `string \| null` |  |
+| `min_daily_budget` | `integer \| null` |  |
+| `owner` | `string \| null` |  |
+| `spend_cap` | `string \| null` |  |
+| `timezone_id` | `integer \| null` |  |
+| `timezone_name` | `string \| null` |  |
+| `timezone_offset_hours_utc` | `number \| null` |  |
+
 
 </details>
 
@@ -1563,166 +1642,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].date_stop` | `string` | End date of the reporting period |
 | `data[].actions` | `array` | Total number of actions taken |
 | `data[].action_values` | `array` | Action values taken on the ad |
-
-</details>
-
-## Ad Account
-
-### Ad Account Get
-
-Returns information about the specified ad account including balance and currency
-
-#### Python SDK
-
-```python
-await facebook_marketing.ad_account.get(
-    account_id="<str>"
-)
-```
-
-#### API
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-    "entity": "ad_account",
-    "action": "get",
-    "params": {
-        "account_id": "<str>"
-    }
-}'
-```
-
-
-#### Parameters
-
-| Parameter Name | Type | Required | Description |
-|----------------|------|----------|-------------|
-| `account_id` | `string` | Yes | The Facebook Ad Account ID (without act_ prefix) |
-| `fields` | `string` | No | Comma-separated list of fields to return |
-
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | `string` |  |
-| `account_id` | `string \| null` |  |
-| `name` | `string \| null` |  |
-| `account_status` | `integer \| null` |  |
-| `age` | `number \| null` |  |
-| `amount_spent` | `string \| null` |  |
-| `balance` | `string \| null` |  |
-| `business` | `object \| any` |  |
-| `business_city` | `string \| null` |  |
-| `business_country_code` | `string \| null` |  |
-| `business_name` | `string \| null` |  |
-| `business_state` | `string \| null` |  |
-| `business_street` | `string \| null` |  |
-| `business_street2` | `string \| null` |  |
-| `business_zip` | `string \| null` |  |
-| `created_time` | `string \| null` |  |
-| `currency` | `string \| null` |  |
-| `disable_reason` | `integer \| null` |  |
-| `end_advertiser` | `string \| null` |  |
-| `end_advertiser_name` | `string \| null` |  |
-| `funding_source` | `string \| null` |  |
-| `funding_source_details` | `object \| null` |  |
-| `has_migrated_permissions` | `boolean \| null` |  |
-| `is_personal` | `integer \| null` |  |
-| `is_prepay_account` | `boolean \| null` |  |
-| `is_tax_id_required` | `boolean \| null` |  |
-| `min_campaign_group_spend_cap` | `string \| null` |  |
-| `min_daily_budget` | `integer \| null` |  |
-| `owner` | `string \| null` |  |
-| `spend_cap` | `string \| null` |  |
-| `timezone_id` | `integer \| null` |  |
-| `timezone_name` | `string \| null` |  |
-| `timezone_offset_hours_utc` | `number \| null` |  |
-
-
-</details>
-
-### Ad Account Context Store Search
-
-Search and filter ad account records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
-
-#### Python SDK
-
-```python
-await facebook_marketing.ad_account.context_store_search(
-    query={"filter": {"eq": {"id": "<str>"}}}
-)
-```
-
-#### API
-
-```bash
-curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-    "entity": "ad_account",
-    "action": "context_store_search",
-    "params": {
-        "query": {"filter": {"eq": {"id": "<str>"}}}
-    }
-}'
-```
-
-#### Parameters
-
-| Parameter Name | Type | Required | Description |
-|----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
-| `query.filter` | `object` | No | Filter conditions |
-| `query.sort` | `array` | No | Sort conditions |
-| `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
-| `fields` | `array` | No | Field paths to include in results |
-
-#### Searchable Fields
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `id` | `string` | Ad account ID |
-| `account_id` | `string` | Ad account ID (numeric) |
-| `name` | `string` | Ad account name |
-| `balance` | `string` | Current balance of the ad account |
-| `currency` | `string` | Currency used by the ad account |
-| `account_status` | `integer` | Account status |
-| `amount_spent` | `string` | Total amount spent |
-| `business_name` | `string` | Business name |
-| `created_time` | `string` | Account creation time |
-| `spend_cap` | `string` | Spend cap |
-| `timezone_name` | `string` | Timezone name |
-
-<details>
-<summary><b>Response Schema</b></summary>
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `data` | `array` | List of matching records |
-| `meta` | `object` | Pagination metadata |
-| `meta.has_more` | `boolean` | Whether additional pages are available |
-| `meta.cursor` | `string \| null` | Cursor for next page of results |
-| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].id` | `string` | Ad account ID |
-| `data[].account_id` | `string` | Ad account ID (numeric) |
-| `data[].name` | `string` | Ad account name |
-| `data[].balance` | `string` | Current balance of the ad account |
-| `data[].currency` | `string` | Currency used by the ad account |
-| `data[].account_status` | `integer` | Account status |
-| `data[].amount_spent` | `string` | Total amount spent |
-| `data[].business_name` | `string` | Business name |
-| `data[].created_time` | `string` | Account creation time |
-| `data[].spend_cap` | `string` | Spend cap |
-| `data[].timezone_name` | `string` | Timezone name |
 
 </details>
 
