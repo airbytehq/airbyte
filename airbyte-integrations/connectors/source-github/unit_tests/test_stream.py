@@ -1481,6 +1481,22 @@ def test_releases_pagination(requests_mock):
     assert records[1]["tag_name"] == "v2.0"
 
 
+def test_releases_uses_large_stream_page_size():
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 10,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+    stream = Releases(**repository_args)
+
+    query = stream.request_body_json(stream_state={}, stream_slice={"repository": "organization/repository"})["query"]
+
+    assert stream.large_stream
+    assert stream.page_size == 10
+    assert "releases(first: 10" in query
+    assert "releases(first: 100" not in query
+
+
 def test_stream_reviews_incremental_read(requests_mock):
     repository_args_with_start_date = {
         "start_date": "2000-01-01T00:00:00Z",
