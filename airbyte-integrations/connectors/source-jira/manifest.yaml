@@ -14837,8 +14837,17 @@ spec:
       oauth_connector_input_specification:
         scopes:
           - scope: "read:jira-work"
+          - scope: "read:jql:jira"
+          - scope: "read:group:jira"
+          - scope: "read:project-role:jira"
           - scope: "read:issue-details:jira"
+          - scope: "read:status:jira"
           - scope: "read:jira-user"
+          - scope: "read:avatar:jira"
+          - scope: "read:webhook:jira"
+          - scope: "read:project-category:jira"
+          - scope: "read:screenable-field:jira"
+          - scope: "read:screen-field:jira"
           - scope: "offline_access"
           - scope: "read:board-scope:jira-software"
           - scope: "read:project:jira"
