@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import re
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
@@ -9,6 +10,50 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.validators import ValidationStrategy
+
+
+# One or more RFC 1123 hostname labels separated by single dots, followed by
+# a 2+ letter TLD. Each label starts and ends with an alphanumeric character;
+# hyphens are only allowed between alphanumerics. Catches `airbyteio.`
+# (trailing dot), `.atlassian.net` (leading dot), `airbyte..io.com`
+# (consecutive dots), and `airbyte-.com` (label ending in `-`) while still
+# accepting Atlassian custom domains like `tickets.springfield.com`.
+_DOMAIN_HOST_PATTERN = re.compile(r"^([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$")
+
+
+@dataclass
+class ValidateJiraDomain(ValidationStrategy):
+    """Validate the `domain` config field for `source-jira`.
+
+    The Jira connector builds its base URL by formatting `https://{domain}/rest/api/3/`,
+    so `domain` must be a bare hostname like `acme.atlassian.net` (no scheme, path,
+    query, fragment, or whitespace). When the value is invalid, the connector
+    otherwise spends approximately 10 minutes retrying DNS-resolution failures before
+    surfacing a vague backoff error; raising a `ValueError` here surfaces a clear
+    `config_error` immediately via the CDK's normalization pipeline.
+
+    Each failure mode raises a specific, actionable message rather than relying on a
+    single regex, so that customers using Atlassian Premium / JSM Standard custom
+    domains (e.g. `tickets.springfield.com`) are not rejected — the
+    over-restrictive `^[a-zA-Z0-9._-]*\\.atlassian\\.net$` pattern was removed in
+    PR #24636 for this reason.
+    """
+
+    def validate(self, value: Any) -> None:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("Domain cannot be empty.")
+        if any(ch.isspace() for ch in value):
+            raise ValueError("Domain must not contain whitespace.")
+        lowered = value.lower()
+        if lowered.startswith("http://") or lowered.startswith("https://"):  # ignore-https-check
+            raise ValueError("Do not include 'https://'. Enter just the host, e.g. acme.atlassian.net.")
+        if any(ch in value for ch in ("/", "?", "#")):
+            raise ValueError("Domain must be a hostname only — remove any '/', '?', or '#'.")
+        if "." not in value:
+            raise ValueError("Domain must include the full host. Examples: acme.atlassian.net, jira.your-domain.com.")
+        if not _DOMAIN_HOST_PATTERN.match(value):
+            raise ValueError("Domain must be a valid hostname. Examples: acme.atlassian.net, jira.your-domain.com.")
 
 
 @dataclass

@@ -91,6 +91,7 @@ The connector automatically handles rate limiting by respecting `429` responses 
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.0.11 | 2026-04-30 | [77647](https://github.com/airbytehq/airbyte/pull/77647) | Promoted release candidate to GA |
 | 2.0.11-rc.1 | 2026-04-10 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
 | 2.0.10 | 2026-04-07 | [76106](https://github.com/airbytehq/airbyte/pull/76106) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
 | Version | Date       | Pull Request                                             | Subject                                                                     |

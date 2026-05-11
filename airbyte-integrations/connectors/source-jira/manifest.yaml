@@ -14637,6 +14637,14 @@ concurrency_level:
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/jira
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    validations:
+      - type: DpathValidator
+        field_path: ["domain"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateJiraDomain
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Jira Spec
@@ -14658,12 +14666,12 @@ spec:
       domain:
         type: string
         title: Domain
+        pattern_descriptor: "<your-domain>.atlassian.net"
         examples:
         - "<your-domain>.atlassian.net"
         - "<your-domain>.jira.com"
         - jira.<your-domain>.com
-        description: The Domain for your Jira account, e.g. airbyteio.atlassian.net,
-          airbyteio.jira.com, jira.your-domain.com
+        description: "Your Jira host (full domain — do not include 'https://' or paths). Examples: airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com."
         order: 1
       email:
         type: string
