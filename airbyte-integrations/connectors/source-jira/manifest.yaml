@@ -14837,15 +14837,17 @@ spec:
       oauth_connector_input_specification:
         scopes:
           - scope: "read:jira-work"
+          - scope: "read:issue-details:jira"
           - scope: "read:jira-user"
           - scope: "offline_access"
           - scope: "read:board-scope:jira-software"
-          - scope: "read:board-scope.admin:jira-software"
+          - scope: "read:project:jira"
           - scope: "read:sprint:jira-software"
           - scope: "read:application-role:jira"
           - scope: "read:field-configuration:jira"
           - scope: "read:notification-scheme:jira"
           - scope: "read:issue-security-scheme:jira"
+          - scope: "read:issue-security-level:jira"
           - scope: "read:issue-type-scheme:jira"
           - scope: "read:issue-type-screen-scheme:jira"
           - scope: "read:permission-scheme:jira"
