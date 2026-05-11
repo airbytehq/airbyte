@@ -8,7 +8,7 @@ import pytest
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
