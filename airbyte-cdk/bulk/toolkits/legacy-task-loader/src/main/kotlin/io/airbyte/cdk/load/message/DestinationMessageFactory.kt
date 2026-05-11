@@ -130,13 +130,9 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            // The source declared this stream incomplete (i.e. the source sync
-                            // failed). In STDIO mode the orchestrator filters this out before it
-                            // reaches the destination; in SPEED mode the destination receives it
-                            // directly. Surface a typed message so the bookkeeping router can
-                            // mark the stream as ended-but-not-completed and the sync can wind
-                            // down naturally — failure is then attributed to the source, not the
-                            // destination.
+                            // The source declared this stream incomplete (i.e. failed).
+                            // Let the sync end naturally so the failure is attributed to the
+                            // source, not the destination.
                             if (fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
                                     stream,

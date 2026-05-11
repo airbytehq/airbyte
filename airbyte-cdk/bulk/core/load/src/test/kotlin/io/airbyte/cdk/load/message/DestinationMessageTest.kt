@@ -110,9 +110,8 @@ internal class DestinationMessageTest {
 
     @Test
     fun testIgnoreIncompleteStatus() {
-        // INCOMPLETE reaches the destination directly in SPEED mode (the orchestrator filters
-        // it out in STDIO mode). The destination must not crash on it — instead it returns
-        // Ignored so the sync winds down naturally and the source gets blamed for the failure.
+        // Destination must not crash on INCOMPLETE.
+        // Instead it is ignored and the source gets blamed for the failure.
         val converted = assertDoesNotThrow { convert(factory(), incompleteStatusMessage) }
         assertEquals(Ignored, converted)
     }

@@ -74,10 +74,20 @@ class PipelineEventBookkeepingRouter(
 ) : CloseableCoroutine {
     private val log = KotlinLogging.logger {}
     private val clientCount = AtomicInteger(numDataChannels)
-    private val sawEndOfStreamComplete = ConcurrentHashSet<DestinationStream.Descriptor>()
-    private val sawEndOfStreamIncomplete = ConcurrentHashSet<DestinationStream.Descriptor>()
+    private val terminalStreamComplete = ConcurrentHashMap<DestinationStream.Descriptor, Boolean>()
     private val checkpointIndexes = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
     private val unopenedStreams = ConcurrentHashSet(catalog.streams.map { it.mappedDescriptor })
+
+    private fun recordTerminalStatus(
+        descriptor: DestinationStream.Descriptor,
+        complete: Boolean,
+    ) {
+        val previous = terminalStreamComplete.putIfAbsent(descriptor, complete)
+        check(previous == null) {
+            "Source error: Stream $descriptor already received complete status=$previous. " +
+                "Received additional status complete=$complete."
+        }
+    }
 
     init {
         log.info { "Creating bookkeeping router for $numDataChannels data channels" }
@@ -127,17 +137,15 @@ class PipelineEventBookkeepingRouter(
             }
             is DestinationRecordStreamComplete -> {
                 log.info { "Read COMPLETE for stream ${stream.mappedDescriptor}" }
-                sawEndOfStreamComplete.add(stream.mappedDescriptor)
+                recordTerminalStatus(stream.mappedDescriptor, complete = true)
                 if (!markEndOfStreamAtEndOfSync) {
                     manager.markEndOfStream(true)
                 }
                 PipelineEndOfStream(stream.mappedDescriptor)
             }
             is DestinationRecordStreamIncomplete -> {
-                log.warn {
-                    "Read INCOMPLETE for stream ${stream.mappedDescriptor}. The source sync failed for this stream."
-                }
-                sawEndOfStreamIncomplete.add(stream.mappedDescriptor)
+                log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
+                recordTerminalStatus(stream.mappedDescriptor, complete = false)
                 if (!markEndOfStreamAtEndOfSync) {
                     manager.markEndOfStream(false)
                 }
@@ -159,10 +167,7 @@ class PipelineEventBookkeepingRouter(
                 PipelineHeartbeat()
             }
             is DestinationFileStreamIncomplete -> {
-                log.warn {
-                    "Read INCOMPLETE for stream ${stream.mappedDescriptor}. The source sync failed for this stream."
-                }
-                sawEndOfStreamIncomplete.add(stream.mappedDescriptor)
+                log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
                 manager.markEndOfStream(false)
                 fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
                 PipelineHeartbeat()
@@ -300,15 +305,12 @@ class PipelineEventBookkeepingRouter(
         if (clientCount.decrementAndGet() == 0) {
             if (markEndOfStreamAtEndOfSync) {
                 catalog.streams.forEach {
-                    val sawComplete = sawEndOfStreamComplete.contains(it.mappedDescriptor)
-                    val sawIncomplete = sawEndOfStreamIncomplete.contains(it.mappedDescriptor)
                     val manager = syncManager.getStreamManager(it.mappedDescriptor)
-                    when {
-                        sawComplete -> manager.markEndOfStream(true)
-                        sawIncomplete -> manager.markEndOfStream(false)
-                    // No terminal status seen — leave unmarked so
+                    // If absent: no terminal status seen — leave unmarked so
                     // SyncManager.markInputConsumed() surfaces the existing
                     // "neither status reached us" diagnostic.
+                    terminalStreamComplete[it.mappedDescriptor]?.let { complete ->
+                        manager.markEndOfStream(complete)
                     }
                     batchStateUpdateQueue.publish(
                         BatchEndOfStream(
