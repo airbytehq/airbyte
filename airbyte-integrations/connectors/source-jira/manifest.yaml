@@ -14843,6 +14843,7 @@ spec:
           - scope: "read:issue-details:jira"
           - scope: "read:status:jira"
           - scope: "read:jira-user"
+          - scope: "read:user:jira"
           - scope: "read:avatar:jira"
           - scope: "read:webhook:jira"
           - scope: "read:project-category:jira"
