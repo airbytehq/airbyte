@@ -11,11 +11,17 @@ This page contains the setup guide and reference information for the [Linear](ht
 ## Prerequisites
 
 - A Linear account
-- A Linear personal API key
+- One of the following authentication methods:
+  - **API Key**: A Linear personal API key.
+  - **OAuth 2.0**: A Linear OAuth app with a client ID, client secret, and refresh token.
 
 ## Setup guide
 
-### Step 1: Obtain a Linear personal API key
+### Step 1: Choose an authentication method
+
+The Linear source connector supports API key and OAuth 2.0 authentication.
+
+#### API key
 
 1. Log in to your [Linear](https://linear.app/) account.
 2. Navigate to **Settings** by clicking your workspace name in the sidebar.
@@ -26,16 +32,25 @@ This page contains the setup guide and reference information for the [Linear](ht
 
 The API key inherits your user's permissions in the workspace. The connector can only sync data you can see in Linear.
 
-For more information, see the [Linear API documentation](https://developers.linear.app/docs/graphql/working-with-the-graphql-api).
+For more information, see the [Linear GraphQL API documentation](https://linear.app/developers/graphql).
+
+#### OAuth 2.0
+
+Create a Linear OAuth app and configure the redirect callback URL for your Airbyte deployment. The connector requests the `read` and `customer:read` scopes. Linear returns an access token and refresh token after the OAuth flow, and the connector uses the refresh token to refresh access tokens when they expire.
+
+For more information, see the [Linear OAuth 2.0 authentication documentation](https://linear.app/developers/oauth-2-0-authentication).
 
 ### Step 2: Configure the Linear connector in Airbyte
 
 1. In the Airbyte UI, navigate to **Sources** and click **+ New source**.
 2. Select **Linear** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. Enter your **API key** from Step 1.
-5. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
-6. Click **Set up source** and wait for the connection test to complete.
+4. For **Authentication**, choose **API Key** or **OAuth 2.0**.
+5. Enter the required credentials for your authentication method.
+6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
+7. Click **Set up source** and wait for the connection test to complete.
+
+Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.0`.
 
 ## Supported sync modes
 
@@ -48,14 +63,14 @@ The Linear source connector supports the following sync modes:
 
 Streams that support incremental sync use the `updatedAt` field as the cursor. The Start Date you set when configuring the connector is the lower bound for the first incremental sync. Subsequent syncs use the most recent `updatedAt` value from the previous sync as the new lower bound.
 
-The following streams are full-refresh only because Linear's GraphQL API does not expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, and `customer_tiers`.
+The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, and `customer_tiers`.
 
 ## Supported streams
 
 The Linear source connector supports the following streams. Streams marked as incremental use `updatedAt` as the cursor field.
 
 | Stream | Incremental | Description |
-|--------|:-----------:|-------------|
+| ------ | :---------: | ----------- |
 | `attachments` | Yes | File and link attachments on issues. |
 | `comments` | Yes | Comments posted on issues. |
 | `customer_needs` | Yes | Customer needs associated with issues. |
@@ -77,11 +92,28 @@ The Linear source connector supports the following streams. Streams marked as in
 
 ### Rate limiting
 
-Linear's API uses a leaky bucket algorithm for rate limiting. The connector handles rate limiting automatically, but syncs may slow down if you are making many concurrent requests to the Linear API. For more information, see [Linear's rate limiting documentation](https://developers.linear.app/docs/graphql/working-with-the-graphql-api#rate-limiting).
+The Linear API uses a leaky bucket algorithm for rate limiting. The connector handles rate limiting automatically, but syncs may slow down if you are making many concurrent requests to the Linear API.
+
+Linear currently allows up to 2,500 API key requests per user per hour and 5,000 OAuth app requests per user or app user per hour. Linear also applies query complexity limits, including a maximum complexity of 10,000 points for a single query. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
 ### Data availability
 
 The connector retrieves data that the authenticated user has access to. If you cannot see certain teams, projects, or issues in your synced data, verify that your Linear account has the appropriate permissions.
+
+## Reference
+
+This connector uses the [Linear GraphQL API](https://linear.app/developers/graphql). All API requests use the `https://api.linear.app/graphql` endpoint.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `credentials.auth_type` | Yes | Authentication method. Valid values are `API Key` and `OAuth2.0`. |
+| `credentials.api_key` | Required for API key authentication | Linear personal API key. |
+| `credentials.client_id` | Required for OAuth 2.0 authentication | Client ID of your Linear OAuth app. |
+| `credentials.client_secret` | Required for OAuth 2.0 authentication | Client secret of your Linear OAuth app. |
+| `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Linear OAuth flow. |
+| `start_date` | No | UTC date and time in ISO 8601 format. Records updated before this date aren't replicated for streams that support incremental sync. If unset, defaults to two years before the first sync. |
 
 ## Changelog
 
@@ -89,8 +121,8 @@ The connector retrieves data that the authenticated user has access to. If you c
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
-| 0.2.0 | 2026-04-28 | [0](https://github.com/airbytehq/airbyte/pull/0) | Add OAuth 2.0 support with declarative consent URL, token exchange, and config migration |
+| ------- | ---- | ------------ | ------- |
+| 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication support and migrate existing API key configurations to nested credentials |
 | 0.1.2 | 2026-04-28 | [77318](https://github.com/airbytehq/airbyte/pull/77318) | Update dependencies |
 | 0.1.1 | 2026-04-21 | [76654](https://github.com/airbytehq/airbyte/pull/76654) | Update dependencies |
 | 0.1.0 | 2026-04-17 | [76429](https://github.com/airbytehq/airbyte/pull/76429) | Add incremental sync support for 12 streams using the `updatedAt` cursor field |
