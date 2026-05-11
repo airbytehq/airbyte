@@ -115,7 +115,7 @@ Smaller windows increase the number of API requests and are more likely to be ra
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.17.10 | 2026-05-11 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Improve the Twilio Alerts pagination-limit error message. |
+| 0.17.10 | 2026-05-11 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
 | 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
 | 0.17.7 | 2026-04-22 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
