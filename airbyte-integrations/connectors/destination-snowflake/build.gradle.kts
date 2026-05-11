@@ -23,6 +23,7 @@ application {
             "-XX:NativeMemoryTracking=detail",
             "-XX:+UnlockDiagnosticVMOptions",
             "-XX:GCLockerRetryAllocationCount=100",
+            "-Dnet.snowflake.jdbc.enableBouncyCastle=TRUE",
 //            "-XX:NativeMemoryTracking=detail",
 //            "-Djava.rmi.server.hostname=localhost",
 //            "-Dcom.sun.management.jmxremote=true",
