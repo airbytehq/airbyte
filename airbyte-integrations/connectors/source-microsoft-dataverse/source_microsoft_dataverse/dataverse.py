@@ -13,6 +13,7 @@ import requests
 
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -152,7 +153,10 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
     content_type = response.headers.get("Content-Type", "")
     boundary_match = re.search(r"boundary=([^\s;]+)", content_type)
     if not boundary_match:
-        logger.warning("DateTimeBehavior batch response missing multipart boundary in Content-Type: %s. DateOnly detection will be skipped.", content_type)
+        logger.warning(
+            "DateTimeBehavior batch response missing multipart boundary in Content-Type: %s. DateOnly detection will be skipped.",
+            content_type,
+        )
         return {}
 
     boundary = boundary_match.group(1).strip('"')
@@ -182,7 +186,9 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
         status_line = sections[1].strip().split("\r\n")[0] if sections[1].strip() else ""
         if " 200 " not in status_line and " 200\r" not in status_line:
             entity_name = entity_names[entity_idx] if entity_idx < len(entity_names) else "unknown"
-            logger.warning("Non-200 response in batch part for entity '%s': %s. DateOnly detection skipped for this entity.", entity_name, status_line)
+            logger.warning(
+                "Non-200 response in batch part for entity '%s': %s. DateOnly detection skipped for this entity.", entity_name, status_line
+            )
             entity_idx += 1
             continue
 
@@ -198,7 +204,6 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
         except (json.JSONDecodeError, KeyError):
             entity_name = entity_names[entity_idx] if entity_idx < len(entity_names) else "unknown"
             logger.warning("Failed to parse batch response for entity '%s'. DateOnly detection skipped for this entity.", entity_name)
-
 
         entity_idx += 1
 
