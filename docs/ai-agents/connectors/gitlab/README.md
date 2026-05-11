@@ -5,7 +5,7 @@ The Gitlab agent connector is a Python package that equips AI agents to interact
 Connector for the GitLab REST API (v4). Provides access to projects, issues, merge requests, commits, pipelines, groups, branches, releases, tags, members, milestones, and users. Supports both Personal Access Token and OAuth2 authentication.
 
 
-## Example questions
+## Example prompts
 
 The Gitlab connector is optimized to handle prompts like these.
 
@@ -22,7 +22,7 @@ The Gitlab connector is optimized to handle prompts like these.
 - Show merge requests that are still open
 - List projects with the most commits
 
-## Unsupported questions
+## Unsupported prompts
 
 The Gitlab connector isn't currently able to handle prompts like these.
 
@@ -31,230 +31,7 @@ The Gitlab connector isn't currently able to handle prompts like these.
 - Merge a merge request
 - Trigger a pipeline
 
-## Installation
-
-```bash
-uv pip install airbyte-agent-sdk
-```
-
-## Usage
-
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
-
-connector = GitlabConnector(
-    auth_config=GitlabPersonalAccessTokenAuthConfig(
-        access_token="<Log into your GitLab account and generate a personal access token.>"
-    )
-)
-
-@agent.tool_plain
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
-
-connector = GitlabConnector(
-    auth_config=GitlabPersonalAccessTokenAuthConfig(
-        access_token="<Log into your GitLab account and generate a personal access token.>"
-    )
-)
-
-@tool
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Gitlab connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
-
-connector = GitlabConnector(
-    auth_config=GitlabPersonalAccessTokenAuthConfig(
-        access_token="<Log into your GitLab account and generate a personal access token.>"
-    )
-)
-
-mcp = FastMCP("Gitlab Agent")
-
-@mcp.tool()
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Gitlab connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-### Hosted
-
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-The `connect()` factory returns a fully typed `GitlabConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
-
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-
-connector = connect("gitlab", workspace_name="<your_workspace_name>")
-
-@agent.tool_plain
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-
-connector = connect("gitlab", workspace_name="<your_workspace_name>")
-
-@tool
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Gitlab connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk import connect
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-
-connector = connect("gitlab", workspace_name="<your_workspace_name>")
-
-mcp = FastMCP("Gitlab Agent")
-
-@mcp.tool()
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Gitlab connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
-
-**Pydantic AI**
-
-```python title="Pydantic AI"
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = GitlabConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@agent.tool_plain
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
-
-**LangChain**
-
-```python title="LangChain"
-import json
-
-from langchain_core.tools import tool
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = GitlabConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-@tool
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Gitlab connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-**FastMCP**
-
-```python title="FastMCP"
-import json
-
-from fastmcp import FastMCP
-from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
-from airbyte_agent_sdk.types import AirbyteAuthConfig
-
-connector = GitlabConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="<your_workspace_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
-    )
-)
-
-mcp = FastMCP("Gitlab Agent")
-
-@mcp.tool()
-@GitlabConnector.tool_utils
-async def gitlab_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute Gitlab connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return json.dumps(result, default=str)
-```
-
-## Full documentation
-
-### Entities and actions
+## Entities and actions
 
 This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
 
@@ -276,16 +53,309 @@ This connector supports the following entities and actions. For more details, se
 | Project Milestones | [List](./REFERENCE.md#project-milestones-list), [Get](./REFERENCE.md#project-milestones-get), [Context Store Search](./REFERENCE.md#project-milestones-context-store-search) |
 
 
-### Authentication
-
-For all authentication options, see the connector's [authentication documentation](AUTH.md).
-
-### Gitlab API docs
+## Gitlab API docs
 
 See the official [Gitlab API reference](https://docs.gitlab.com/ee/api/rest/).
 
+## SDK installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+## SDK usage
+
+Connectors can run in hosted or open source mode.
+
+### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `GitlabConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+
+connector = connect("gitlab", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+
+connector = connect("gitlab", workspace_name="<your_workspace_name>")
+
+@tool
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+
+connector = connect("gitlab", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GitlabConnector.tool_utils(framework="openai_agents")
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Gitlab Assistant", tools=[gitlab_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+
+connector = connect("gitlab", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Gitlab Agent")
+
+@mcp.tool
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GitlabConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GitlabConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+@tool
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GitlabConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GitlabConnector.tool_utils(framework="openai_agents")
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Gitlab Assistant", tools=[gitlab_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GitlabConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Gitlab Agent")
+
+@mcp.tool
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
+
+connector = GitlabConnector(
+    auth_config=GitlabPersonalAccessTokenAuthConfig(
+        access_token="<Log into your GitLab account and generate a personal access token.>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
+
+connector = GitlabConnector(
+    auth_config=GitlabPersonalAccessTokenAuthConfig(
+        access_token="<Log into your GitLab account and generate a personal access token.>"
+    )
+)
+
+@tool
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
+
+connector = GitlabConnector(
+    auth_config=GitlabPersonalAccessTokenAuthConfig(
+        access_token="<Log into your GitLab account and generate a personal access token.>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GitlabConnector.tool_utils(framework="openai_agents")
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Gitlab Assistant", tools=[gitlab_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.gitlab import GitlabConnector
+from airbyte_agent_sdk.connectors.gitlab.models import GitlabPersonalAccessTokenAuthConfig
+
+connector = GitlabConnector(
+    auth_config=GitlabPersonalAccessTokenAuthConfig(
+        access_token="<Log into your GitLab account and generate a personal access token.>"
+    )
+)
+
+mcp = FastMCP("Gitlab Agent")
+
+@mcp.tool
+@GitlabConnector.tool_utils
+async def gitlab_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Gitlab connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
 ## Version information
 
-- **Package version:** 1.0.4
-- **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 1.0.4

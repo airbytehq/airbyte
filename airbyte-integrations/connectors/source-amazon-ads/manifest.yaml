@@ -1122,6 +1122,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1205,6 +1208,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"
@@ -1288,6 +1294,9 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
+                action: IGNORE
+                error_message: "Profile is not authorized to use Amazon Attribution. This is expected for profiles without Attribution access and can be safely ignored."
               - http_codes: [400]
                 action: IGNORE
                 error_message: "{{ response }}"

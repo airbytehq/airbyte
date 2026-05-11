@@ -25,13 +25,13 @@ flowchart TD
 
 ## Tutorials
 
-Step-by-step guides that take you from an empty project to a working agent in approximately 15 minutes. Each tutorial uses a different Python framework, but all of them follow the same pattern: create a project, install the Airbyte Agent SDK, connect to a data source, and execute operations.
+Step-by-step guides that take you from an empty project to a working agent in approximately 15 minutes. Each tutorial uses a different Python framework, but all of them follow the same pattern: create a project, install the Agent SDK, connect to a data source, and execute operations.
 
 Pick the framework you use:
 
-- [**Pydantic AI**](tutorial-pydantic): Build an agent with Pydantic AI and the Airbyte Agent SDK.
-- [**LangChain**](tutorial-langchain): Build an agent with LangChain, LangGraph, and the Airbyte Agent SDK.
-- [**FastMCP**](tutorial-fastmcp): Build an MCP server with FastMCP and the Airbyte Agent SDK.
+- [**Pydantic AI**](tutorial-pydantic): Build an agent with Pydantic AI and the Agent SDK.
+- [**LangChain**](tutorial-langchain): Build an agent with LangChain, LangGraph, and the Agent SDK.
+- [**FastMCP**](tutorial-fastmcp): Build an MCP server with FastMCP and the Agent SDK.
 
 ## Skills
 
@@ -48,7 +48,7 @@ Pick the coding agent you use:
 Both paths share a few common requirements.
 
 - **An Airbyte Agents account.** Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
-- **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
+- **API credentials.** Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai). See [Manage your user profile](../../admin/profile) for details.
 - **Python 3.10+ and uv** (for tutorials). Skills have their own prerequisites listed on each skill page.
 
 import DocCardList from '@theme/DocCardList';
