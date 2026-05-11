@@ -84,11 +84,9 @@ class DestinationMessageFactory(
                                 message.trace.emittedAt?.toLong() ?: 0L,
                             )
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
-                            // The source declared this stream incomplete (i.e. the source sync
-                            // failed). In STDIO mode the orchestrator filters this out before it
-                            // reaches the destination; in SPEED mode the destination receives it
-                            // directly. Don't crash — let the sync wind down naturally so the
-                            // failure is attributed to the source, not the destination.
+                            // The source declared this stream incomplete (i.e. failed).
+                            // Let the sync end naturally so the failure is attributed to the
+                            // source, not the destination.
                             log.warn {
                                 "Received INCOMPLETE stream status for ${descriptor.namespace}:${descriptor.name}. The source sync failed for this stream."
                             }
