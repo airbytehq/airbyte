@@ -23,8 +23,6 @@ Before you begin, make sure you have the following:
 
 - **Credentials for the connectors you want to use.** Each service requires its own authentication. For example, you need a Linear API key to connect Linear, or Salesforce OAuth credentials to connect Salesforce.
 
-- **ChatGPT app access, if you're using ChatGPT.** You need a logged-in ChatGPT account with access to apps. Some apps with search or deep research capabilities may not be available on Free or Go plans. Business, Enterprise, and Education workspaces can restrict which apps and actions are available.
-
 ## Add the Agent MCP to your agent
 
 Select your client below for setup instructions. Each client requires you to authenticate with your Airbyte account before you can use the MCP server.
@@ -78,64 +76,35 @@ Add the MCP server to your Claude Code command line tool.
 </TabItem>
 <TabItem value="chatgpt" label="ChatGPT">
 
-ChatGPT can connect to the Agent MCP from the ChatGPT app directory. Use the app directory flow if Airbyte is available in your ChatGPT account. If it isn't available, use the Developer Mode flow instead.
+ChatGPT can connect to the Agent MCP from the ChatGPT app directory.
 
 :::note Workspace controls can limit app access
-ChatGPT can disable **Connect** based on your plan, geographic restrictions, or workspace settings. Some apps with search or deep research capabilities may not be available on Free or Go plans. On Business plans, workspace admins can disable apps and control app actions. On Enterprise and Education plans, apps are disabled by default until a workspace owner or admin enables them. Enterprise and Education admins can also use RBAC to restrict who can use each app.
+ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. Some apps with search or deep research capabilities may not be available on Free or Go plans. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
 :::
 
 ### Add Airbyte from the ChatGPT app directory
 
-1. Open [ChatGPT](https://chatgpt.com) on the web.
+1. Open [ChatGPT](https://chatgpt.com) on the web. OpenAI doesn't currently document a separate app directory setup path for the desktop app.
 
-2. Go to **Settings** > **Apps**.
+2. Open the app directory. In the current web UI, click **Apps** in the sidebar. OpenAI's help center also documents the app directory at **Settings** > **Apps**.
 
-3. Search or browse for **Airbyte** in the app directory.
+3. Search or browse for **Airbyte Agent Engine** in the app directory.
 
-4. Open the Airbyte app page and click **Connect**.
+4. Open the **Airbyte Agent Engine** app page and click **Connect**.
 
-5. If you're not logged into Airbyte, log in now and grant access.
+5. Click **Sign in with Airbyte Agent Engine**.
 
-6. Open a new conversation.
+6. If you're not logged into Airbyte, log in now and grant access.
 
-7. Add Airbyte to the conversation. Use `@Airbyte` in your prompt or click **+** > **More** and select Airbyte.
+7. Open a new conversation.
 
-8. Ask ChatGPT to use Airbyte. For example, _"Use Airbyte to find my open Salesforce opportunities."_
-
-### Set up Airbyte manually with Developer Mode
-
-Use Developer Mode if Airbyte doesn't appear in your app directory or if you're testing a custom MCP app. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
-
-:::note Admin access required for Business and Enterprise/Education plans
-On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create custom apps. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
-:::
-
-1. Open [ChatGPT](https://chatgpt.com) on the web.
-
-2. Go to **Settings** > **Apps** > **Advanced settings**.
-
-3. Toggle **Developer mode** to **ON**.
-
-4. Go back to **Settings** > **Apps**.
-
-5. Click **Create App**. This button only appears when Developer Mode is enabled.
-
-6. Enter the connector details:
-
-   - **Connector name**: `Airbyte Agents`
-   - **Connector URL**: `https://mcp.airbyte.ai/mcp`
-
-7. Click **Create**. ChatGPT connects to the Agent MCP and detects its tools. The custom app appears under **Settings** > **Apps**.
-
-8. If you're not logged into Airbyte, log in now and grant access.
-
-9. Open a new conversation to start using the MCP server.
+8. Ask ChatGPT to use Airbyte Agent Engine. For example, _"Use Airbyte Agent Engine to find open Salesforce opportunities."_ You can also explicitly add it to the conversation with `@Airbyte Agent Engine` or from **+** > **More** > **Airbyte Agent Engine**.
 
 ### What ChatGPT can do with Airbyte
 
-After you connect Airbyte, ChatGPT can discover the tools and connectors available to your Airbyte account. It can read and search connected data, use the Context Store when it's available for a connector, and create or update records when the connector supports write actions.
+After you connect Airbyte, ChatGPT can discover the tools and connectors available to your Airbyte account. It can read and search connected data, use the Context Store, and create or update records when the connector supports write actions.
 
-ChatGPT controls whether write actions require confirmation. Workspace admins can also restrict which app actions are available. Airbyte still enforces your Airbyte account permissions and each third-party service's credentials and scopes.
+ChatGPT controls whether write actions require confirmation. Workspace administrators can also restrict which app actions are available. Airbyte still enforces your Airbyte account permissions and each third-party service's credentials and scopes.
 
 </TabItem>
 <TabItem value="codex" label="Codex">
@@ -488,28 +457,15 @@ For the complete list of connectors and their supported entities, see [Agent con
 - Make sure you visited the credential URL the agent provided and completed the form in the browser.
 - If the flow timed out, ask the agent to start a new credential flow.
 
-### ChatGPT doesn't show Airbyte in the app directory
+### ChatGPT connection fails
 
-- Make sure you're using ChatGPT on the web and you're logged in.
-- Go to **Settings** > **Apps** and search the app directory for **Airbyte**.
-- If **Connect** is disabled, check whether your plan, geographic restrictions, or workspace settings limit access.
-- On Enterprise and Education plans, ask a workspace owner or admin to enable Airbyte from **Workspace settings** > **Apps**.
+- If **Connect** is off, check whether your plan, geographic restrictions, or workspace settings limit access.
+- On Enterprise and Education plans, ask a workspace owner or administrator to enable Airbyte Agent Engine from **Workspace settings** > **Apps**.
+- If the OAuth flow doesn't complete, try deleting Airbyte Agent Engine in **Settings** > **Apps** and connecting it again.
 
-### ChatGPT doesn't show the "Create" button
+### ChatGPT doesn't use MCP server tools
 
-- Verify that Developer Mode is toggled on in **Settings** > **Apps** > **Advanced settings**.
-- Make sure your ChatGPT plan supports Developer Mode. It requires Pro, Plus, Business, Enterprise, or Education. Free plans don't have access.
-- After enabling Developer Mode, go back to **Settings** > **Apps**. The **Create App** button appears at the top of the page.
-
-### ChatGPT can't connect to the MCP server
-
-- Confirm the server URL is exactly `https://mcp.airbyte.ai/mcp` with no trailing slash or extra path.
-- If the OAuth flow doesn't complete, try deleting Airbyte in **Settings** > **Apps** and connecting it again.
-- On Business, Enterprise, and Education plans, you must be a workspace owner or admin to create custom apps with Developer Mode. On Pro and Plus plans, any user can enable Developer Mode directly.
-
-### ChatGPT doesn't use the MCP server tools
-
-ChatGPT may not realize it has access to data through the MCP server. If ChatGPT ignores the MCP or tries to answer without using your connected data, instruct it directly. For example: _"Use the Airbyte MCP to discover tools that can help you work with my Salesforce connector."_
+ChatGPT may not realize it has access to data through the MCP server. If ChatGPT ignores the MCP or tries to answer without using your connected data, instruct it directly. For example: _"Use Airbyte Agent Engine to discover tools that can help work with the Salesforce connector."_
 
 ### Queries return unexpected results
 
