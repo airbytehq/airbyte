@@ -122,6 +122,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.1-rc.1 | 2026-05-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Start concurrency tuning at default_concurrency=4 (Path A) and enable progressive rollout |
 | 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication support and migrate existing API key configurations to nested credentials |
 | 0.1.2 | 2026-04-28 | [77318](https://github.com/airbytehq/airbyte/pull/77318) | Update dependencies |
 | 0.1.1 | 2026-04-21 | [76654](https://github.com/airbytehq/airbyte/pull/76654) | Update dependencies |

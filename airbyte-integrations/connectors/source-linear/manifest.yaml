@@ -1422,6 +1422,22 @@ streams:
   - $ref: "#/definitions/streams/customer_statuses"
   - $ref: "#/definitions/streams/customer_tiers"
 
+# Linear API documented rate limits (per-user, per-hour windows):
+# - API key auth: 2,500 requests / hour (approximately 0.69 req/sec).
+# - OAuth app auth: 5,000 requests / hour (approximately 1.39 req/sec).
+# - Workspace OAuth auth: dynamic uplift based on paid seat count.
+# - Source: https://linear.app/developers/rate-limiting
+#
+# Starting concurrency follows the connector concurrency tuning playbook
+# (Path A, tuned against the lowest documented tier — 2,500 req/hr API key):
+# floor((2500/3600) / 4) = 0 ≤ 2 triggers the low-rate-limit special case →
+# starting_concurrency = 4, step = 1. Empirical tuning will adjust against
+# the documented 2,500 req/hr ceiling.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 16
+
 spec:
   type: Spec
   connection_specification:
