@@ -293,7 +293,8 @@ public class MongoDbSource extends BaseConnector implements Source {
                                final Instant emittedAt,
                                final MongoDbSourceConfig sourceConfig) {
     try {
-      iterators.addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+      iterators
+          .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
     } catch (final Exception e) {
       if (MongoUtil.isUnauthorizedException(e)) {
         LOGGER.error("MongoDB authorization error detected while initializing CDC sync. Original error: {}", e.getMessage(), e);

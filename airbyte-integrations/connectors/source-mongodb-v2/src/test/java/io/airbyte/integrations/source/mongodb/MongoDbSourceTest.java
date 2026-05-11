@@ -25,8 +25,8 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcInitializer;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -270,7 +270,8 @@ class MongoDbSourceTest {
     doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(unauthorizedException);
 
-    final ConfigErrorException thrown = assertThrows(ConfigErrorException.class, () -> source.read(airbyteSourceConfig, createIncrementalCatalog(), null));
+    final ConfigErrorException thrown =
+        assertThrows(ConfigErrorException.class, () -> source.read(airbyteSourceConfig, createIncrementalCatalog(), null));
 
     assertEquals(MongoConstants.UNAUTHORIZED_CDC_CHANGE_STREAM_ERROR_MESSAGE, thrown.getMessage());
     verify(mongoClient, times(1)).close();
