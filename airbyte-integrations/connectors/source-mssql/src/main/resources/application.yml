@@ -163,3 +163,8 @@ airbyte:
             output: The sync was aborted due to a deadlock, will retry.
             group: SQL Server Deadlock
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-1205-database-engine-error
+
+          - code: 229
+            error: config
+            output: Database user lacks SELECT permission for one or more selected SQL Server objects.
+            group: SQL Server Permission Error
