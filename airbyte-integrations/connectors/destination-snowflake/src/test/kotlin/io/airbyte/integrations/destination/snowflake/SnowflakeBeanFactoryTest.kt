@@ -53,6 +53,7 @@ internal class SnowflakeBeanFactoryTest {
                 cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
                 legacyRawTablesOnly = false,
                 internalTableSchema = "snowflake",
+                trimSpace = true,
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
             )
@@ -176,6 +177,7 @@ internal class SnowflakeBeanFactoryTest {
                 cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
                 legacyRawTablesOnly = false,
                 internalTableSchema = "snowflake",
+                trimSpace = true,
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
             )
