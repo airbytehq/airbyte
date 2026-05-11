@@ -152,6 +152,14 @@ airbyte:
             group: SQL Server Object Error
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-208-database-engine-error
 
+          - code: 229
+            error: config
+            output: >-
+              Database user lacks SELECT permission for one or more selected SQL Server objects.
+              Grant SELECT access to the configured database user.
+            group: SQL Server Permission Error
+            reference-links: https://learn.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-229-database-engine-error
+
           - code: 2
             error: transient
             output: The sync encountered a network connection issue while connecting to the SQL Server, will retry.
