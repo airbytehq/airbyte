@@ -3022,7 +3022,7 @@ definitions:
 
   basic_async_retriever:
     type: AsyncRetriever
-    failed_retry_wait_time_in_seconds: 1800
+    failed_retry_wait_time_in_seconds: "{{ config.get('failed_retry_wait_time_in_seconds', 1800) }}"
     status_mapping:
       failed:
         - FATAL
@@ -3071,6 +3071,18 @@ definitions:
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+            max_retries: "{{ config.get('creation_requester_429_max_retries', 5) }}"
+            backoff_strategies:
+              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                type: CustomBackoffStrategy
+                header: x-amzn-RateLimit-Limit
+                default_backoff_time: 60
           - type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
