@@ -20,6 +20,15 @@ data:
     - title: Changelog
       url: https://developer.zendesk.com/api-reference/changelog/changelog/
       type: api_release_history
+    - title: Zendesk Talk API
+      url: https://developer.zendesk.com/api-reference/voice/talk-api/introduction/
+      type: api_reference
+    - title: Zendesk OAuth authentication
+      url: https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application
+      type: authentication_guide
+    - title: Zendesk OAuth token expiration
+      url: https://support.zendesk.com/hc/en-us/articles/10212201463962-Announcing-the-required-expiration-of-global-OAuth-access-and-refresh-tokens
+      type: api_deprecations
   githubIssueLabel: source-zendesk-talk
   icon: zendesk-talk.svg
   license: ELv2
