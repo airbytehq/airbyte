@@ -134,7 +134,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
 
-        if (stream.name == "fin_map_repasse_operacao_credito" && flf.getAndSet(true).not()) {
+        if (stream.name in listOf( "snowflake_1tb", "vv100", "caseSen") && flf.getAndSet(true).not()) {
             log.info { "*** throwing an exception" }
             throw SocketTimeoutException()
         }
