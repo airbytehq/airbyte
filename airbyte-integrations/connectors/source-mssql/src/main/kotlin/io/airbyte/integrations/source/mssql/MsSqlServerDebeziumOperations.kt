@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.DoubleCodec
@@ -16,7 +17,6 @@ import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -335,11 +335,13 @@ class MsSqlServerDebeziumOperations(
             try {
                 jdbcConnectionFactory.get().use { connection: Connection ->
                     val captureInstances = getAccessibleCaptureInstances(connection)
-                    val configuredCaptureInstances = validateConfiguredStreamsAreAccessible(captureInstances)
+                    val configuredCaptureInstances =
+                        validateConfiguredStreamsAreAccessible(captureInstances)
                     validateLsnStillAvailable(savedLsn, configuredCaptureInstances)
                 }
             } catch (e: ConfigErrorException) {
-                // Permission/configuration mismatch. Re-throw the config error so CdcPartitionCreator identify this as
+                // Permission/configuration mismatch. Re-throw the config error so
+                // CdcPartitionCreator identify this as
                 // abort as resetting the sync won't help here.
                 throw e
             } catch (e: Exception) {
@@ -466,12 +468,13 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
-     * Running sys.fn_cdc_get_min_lsn(capture_instance) will query for the entire capture instance (also tables that are
-     * not configured). If the current user doesn't have access to one of the tables, this function will return zero LSN
-     * which is invalid.
+     * Running sys.fn_cdc_get_min_lsn(capture_instance) will query for the entire capture instance
+     * (also tables that are not configured). If the current user doesn't have access to one of the
+     * tables, this function will return zero LSN which is invalid.
      *
-     * We are calling sys.sp_cdc_help_change_data_capture which returns all capture instances accessible to the user and
-     * map it to the Airbyte configured catalog to ensure the user have access to all tables.
+     * We are calling sys.sp_cdc_help_change_data_capture which returns all capture instances
+     * accessible to the user and map it to the Airbyte configured catalog to ensure the user have
+     * access to all tables.
      */
     private fun getAccessibleCaptureInstances(connection: Connection): List<CaptureInstance> {
         val results = mutableListOf<CaptureInstance>()
@@ -492,57 +495,70 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
-     * Verifies that the user have access to the configured schemas (tables). This maps the output of the sys.sp_cdc_help_change_data_capture
-     * with ConfiguredAirbyteCatalog. If the list doesn't match, throw ConfiErrorException with the missing tables to
-     * indicate that this is a config error and not a lost LSN.
+     * Verifies that the user have access to the configured schemas (tables). This maps the output
+     * of the sys.sp_cdc_help_change_data_capture with ConfiguredAirbyteCatalog. If the list doesn't
+     * match, throw ConfiErrorException with the missing tables to indicate that this is a config
+     * error and not a lost LSN.
      */
-    private fun validateConfiguredStreamsAreAccessible(captureInstances: List<CaptureInstance>): List<CaptureInstance> {
+    private fun validateConfiguredStreamsAreAccessible(
+        captureInstances: List<CaptureInstance>
+    ): List<CaptureInstance> {
         if (configuredCatalog == null) {
-            log.warn{ "Catalog not available, skipping capture instance validation"}
+            log.warn { "Catalog not available, skipping capture instance validation" }
             return captureInstances
         }
 
-        // Build a captureInstanceSet and configuredStreamsSet to compare and identify any selected tables without CDC access
+        // Build a captureInstanceSet and configuredStreamsSet to compare and identify any selected
+        // tables without CDC access
         val captureInstanceSet: Set<Pair<String, String>> =
             captureInstances.map { it.sourceSchema to it.sourceTable }.toSet()
 
         val configuredStreamsSet: Set<Pair<String, String>> =
-            configuredCatalog.streams.mapNotNull { configuredStream ->
-                if (configuredStream.syncMode != SyncMode.INCREMENTAL) return@mapNotNull null
-                val namespace = configuredStream.stream.namespace ?: return@mapNotNull null
-                val tableName = configuredStream.stream.name ?: return@mapNotNull null
-                namespace to tableName
-            }.toSet()
+            configuredCatalog.streams
+                .mapNotNull { configuredStream ->
+                    if (configuredStream.syncMode != SyncMode.INCREMENTAL) return@mapNotNull null
+                    val namespace = configuredStream.stream.namespace ?: return@mapNotNull null
+                    val tableName = configuredStream.stream.name ?: return@mapNotNull null
+                    namespace to tableName
+                }
+                .toSet()
 
         // for testing
         log.info {
             "Validating CDC access. Configured streams: " +
-                    configuredStreamsSet.joinToString(", ") { (s, t) -> "$s.$t" } +
-                    ". Accessible: " +
-                    captureInstanceSet.joinToString(", ") { (s, t) -> "$s.$t" }
+                configuredStreamsSet.joinToString(", ") { (s, t) -> "$s.$t" } +
+                ". Accessible: " +
+                captureInstanceSet.joinToString(", ") { (s, t) -> "$s.$t" }
         }
 
         val missing = configuredStreamsSet - captureInstanceSet
 
-        if (missing.isNotEmpty()){
+        if (missing.isNotEmpty()) {
             val missingFormatted = missing.joinToString(", ") { (s, t) -> "$s.$t" }
-            throw ConfigErrorException("CDC is not available for the following table(s): $missingFormatted. " +
+            throw ConfigErrorException(
+                "CDC is not available for the following table(s): $missingFormatted. " +
                     "This usually means CDC is not enabled on the table, or the user lacks access. " +
                     "See https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql for setup instructions." +
-                    "After fixing access, refresh the connection to resume the sync.")
+                    "After fixing access, refresh the connection to resume the sync."
+            )
         }
 
         // Return only the capture instances that are configured streams
-        return captureInstances.filter { (it.sourceSchema to it.sourceTable) in configuredStreamsSet }
+        return captureInstances.filter {
+            (it.sourceSchema to it.sourceTable) in configuredStreamsSet
+        }
     }
 
     /**
      * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
      * the LSN is available, false otherwise.
      */
-    private fun validateLsnStillAvailable(lsn: Lsn, configuredCaptureInstances: List<CaptureInstance>): Boolean {
+    private fun validateLsnStillAvailable(
+        lsn: Lsn,
+        configuredCaptureInstances: List<CaptureInstance>
+    ): Boolean {
         if (configuredCaptureInstances.isEmpty()) {
-            log.warn{" No capture instances found, cannot validate LSN."}
+            log.warn { " No capture instances found, cannot validate LSN." }
             return false
         }
 
@@ -552,7 +568,8 @@ class MsSqlServerDebeziumOperations(
             // Check if the LSN is within the available range
             // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
             // sys.fn_cdc_get_max_lsn returns the current maximum LSN
-            // We are running this for each capture instance to avoid zero LSN when the user doesn't have access to
+            // We are running this for each capture instance to avoid zero LSN when the user doesn't
+            // have access to
             // one of the not configured schemas.
             val query =
                 """
@@ -564,9 +581,7 @@ class MsSqlServerDebeziumOperations(
                 """.trimIndent()
 
             connection.prepareStatement(query).use { statement ->
-                instanceNames.forEachIndexed { index, name ->
-                    statement.setString(index + 1, name)
-                }
+                instanceNames.forEachIndexed { index, name -> statement.setString(index + 1, name) }
                 statement.executeQuery().use { resultSet ->
                     if (resultSet.next()) {
                         val minLsnBytes = resultSet.getBytes("min_lsn")
@@ -582,13 +597,15 @@ class MsSqlServerDebeziumOperations(
 
                         log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
 
-                        // The access check in validateConfiguredStreamsAreAccessible should make this impossible
-                        // (the only documented causes of zero are "instance does not exist" or "no permission").
+                        // The access check in validateConfiguredStreamsAreAccessible should make
+                        // this impossible
+                        // (the only documented causes of zero are "instance does not exist" or "no
+                        // permission").
                         // Keeping it here so we never query with zero LSN.
                         if (minLsn == Lsn.ZERO) {
                             log.warn {
                                 "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
-                                        "Treating saved LSN as invalid."
+                                    "Treating saved LSN as invalid."
                             }
                             return false
                         }
@@ -599,7 +616,7 @@ class MsSqlServerDebeziumOperations(
                         if (!isValid) {
                             log.warn {
                                 "Saved LSN '$lsn' is outside the available range [min: $minLsn, max: $maxLsn]. " +
-                                        "Transaction logs may have been truncated."
+                                    "Transaction logs may have been truncated."
                             }
                         }
 
