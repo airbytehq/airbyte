@@ -49,6 +49,7 @@ public class MongoConstants {
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
   public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
+  public static final int UNAUTHORIZED_ERROR_CODE = 13;
   public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
       "A document in your MongoDB database exceeds the 16MB BSON size limit when processed through CDC (Change Data Capture) change streams. " +
           "This error occurs specifically during incremental/CDC syncs when change stream events become too large. " +
@@ -58,6 +59,8 @@ public class MongoConstants {
           "(3) Identify and restructure the large documents in your MongoDB collection to stay under 16MB. " +
           "(4) Deselect streams containing documents that are too large. " +
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
+  public static final String UNAUTHORIZED_CHANGE_STREAM_ERROR_MESSAGE =
+      "MongoDB credentials lack permission to open CDC change streams.";
 
   private MongoConstants() {}
 
