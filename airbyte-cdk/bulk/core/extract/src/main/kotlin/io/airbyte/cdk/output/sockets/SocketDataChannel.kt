@@ -72,7 +72,7 @@ class UnixDomainSocketDataChannel(
     override val isAvailable: Boolean
         @Synchronized
         get() {
-            return socketStatus.get() == SOCKET_READY && socketBound.get().not()
+            return status == SOCKET_READY && socketBound.get().not()
         }
 
     /**
