@@ -109,14 +109,8 @@ class FeedReader(
                     acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory)
                 }
                 log.info { "Attempting bootstrap using ${factory::class}." }
-                return@run withContext(ctx("round-$partitionsCreatorID-create-partitions")) {
-                    try {
-                        factory.make(feedBootstrap)
-                    } finally {
-                        factory.releaseResources()
-                        root.notifyResourceAvailability()
-                    }
-
+                return@run withContext(ctx("round-$partitionsCreatorID-make-partitions-creator")) {
+                    makePartitionsCreatorWithResources(factory)
                 } ?: continue
             }
             throw SystemErrorException(
@@ -164,6 +158,17 @@ class FeedReader(
         log.info {
             "acquired resources to create partitions " +
                 "for '${feed.label}' in round $partitionsCreatorID"
+        }
+    }
+
+    private fun makePartitionsCreatorWithResources(
+        factory: PartitionsCreatorFactory,
+    ): PartitionsCreator? {
+        return try {
+            factory.make(feedBootstrap)
+        } finally {
+            factory.releaseResources()
+            root.notifyResourceAvailability()
         }
     }
 

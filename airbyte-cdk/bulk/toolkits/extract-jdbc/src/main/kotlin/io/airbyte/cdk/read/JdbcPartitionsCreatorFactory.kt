@@ -17,6 +17,7 @@ abstract class JdbcPartitionsCreatorFactory<
 >(
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : PartitionsCreatorFactory {
+
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
         if (feedBootstrap !is StreamFeedBootstrap) return null
         val partition: P = partitionFactory.create(feedBootstrap) ?: return CreateNoPartitions

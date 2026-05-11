@@ -44,6 +44,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 @Primary
@@ -344,6 +345,10 @@ open class PostgresSourceJdbcPartitionFactory(
     }
 
     private fun getStreamFilenode(streamState: JdbcStreamState<*>): Filenode? {
+        /*if (flf.getAndSet(true).not()) {
+            log.info { "*** throwing an exception" }
+            throw IllegalStateException()
+        }*/
         return getStreamFilenode(streamState, connectionFactory)
     }
 

@@ -25,6 +25,10 @@ interface PartitionsCreatorFactory {
      */
     fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator?
 
+    /**
+     * Default implementation is a no-op as most connectors do not require any resource for their
+     * [PartitionsCreatorFactory]. Postgres connector being the exception.
+     */
     fun tryAcquireResources(): TryAcquireResourcesStatus =
         PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN
 

@@ -12,14 +12,12 @@ import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
-import java.net.SocketTimeoutException
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -101,7 +99,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             return
         }
         while (PartitionReader.pendingStates.isNotEmpty()) {
-            var pendingMessage = PartitionReader.pendingStates.poll() ?: break
+            val pendingMessage = PartitionReader.pendingStates.poll() ?: break
             when (pendingMessage) {
                 is AirbyteStateMessage -> {
                     outputMessageRouter.acceptNonRecord(pendingMessage)
@@ -121,11 +119,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
-    private val log = KotlinLogging.logger {}
-    companion object {
-        val flf = AtomicBoolean(false)
-    }
-
     override suspend fun run() {
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
@@ -133,11 +126,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         existing exiting with an exception skips checkpoint(), so any work we
         did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
-
-        if (/*stream.name in listOf( "snowflake_1tb", "vv100", "caseSen") &&*/ flf.getAndSet(true).not()) {
-            log.info { "*** throwing an exception" }
-            throw SocketTimeoutException()
-        }
 
         selectQuerier
             .executeQuery(
@@ -211,7 +199,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
-                        coroutineContext.ensureActive()
+                        currentCoroutineContext().ensureActive()
                     }
                 }
             }

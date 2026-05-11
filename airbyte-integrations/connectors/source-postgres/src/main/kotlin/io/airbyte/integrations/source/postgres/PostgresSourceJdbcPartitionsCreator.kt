@@ -47,6 +47,9 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
     private val acquiredResources = AtomicReference<AcquiredResources>()
 
+    /**
+     * Querying for a table's filenode makes it necessary to acquire a DB connection allowance resource.
+     */
     override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesStatus {
         val acquiredResources: AcquiredResources =
             partitionFactory.sharedState.tryAcquireResourcesForCreatorFactory()
