@@ -27,6 +27,7 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.sql.SQLTransientConnectionException
 import java.sql.Statement
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
@@ -88,6 +89,23 @@ internal class SnowflakeAirbyteClientTest {
             val result = client.countTable(tableName)
             assertEquals(1L, result)
             verify(exactly = 2) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testPrivateKeyConnectionTimeoutIsConfigError() {
+        every { dataSource.connection } throws
+            SQLTransientConnectionException(
+                "HikariPool-1 - Connection is not available, request timed out after 30000ms",
+                SnowflakeSQLException("Private key provided is invalid or not supported: test")
+            )
+
+        runBlocking {
+            val exception =
+                assertThrows<ConfigErrorException> {
+                    client.tableExists(TableName(namespace = "namespace", name = "name"))
+                }
+            assertEquals(SNOWFLAKE_PRIVATE_KEY_ERROR_MESSAGE, exception.message)
         }
     }
 
