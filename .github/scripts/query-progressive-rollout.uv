@@ -1,0 +1,252 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11,<3.13"
+# dependencies = [
+#   "airbyte-internal-ops",
+#   "pyyaml>=6.0,<7.0",
+# ]
+# ///
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+import urllib.request
+from pathlib import Path
+from typing import Mapping
+
+import yaml
+from airbyte_ops_mcp.mcp.prod_db_queries import query_prod_connector_rollouts
+
+
+ACK_MARKER = "ACK: I understand this PR modifies connectors with active progressive rollouts"
+
+
+def mapping_value(mapping: Mapping[str, object], key: str) -> Mapping[str, object]:
+    value = mapping.get(key)
+    if not isinstance(value, Mapping):
+        raise ValueError(f"Metadata field `{key}` must be an object.")
+    return value
+
+
+def string_value(mapping: Mapping[str, object], key: str) -> str:
+    value = mapping.get(key)
+    if not isinstance(value, str) or value == "":
+        raise ValueError(f"Metadata field `{key}` must be a non-empty string.")
+    return value
+
+
+def load_connector_metadata(repo_path: Path, connector: str) -> tuple[str, str, str]:
+    metadata_path = (
+        repo_path / "airbyte-integrations" / "connectors" / connector / "metadata.yaml"
+    )
+    if not metadata_path.exists():
+        raise ValueError(f"Metadata file does not exist for connector `{connector}`.")
+
+    metadata = yaml.safe_load(metadata_path.read_text())
+    if not isinstance(metadata, Mapping):
+        raise ValueError(f"Metadata file is invalid for connector `{connector}`.")
+
+    data = mapping_value(metadata, "data")
+    definition_id = string_value(data, "definitionId")
+    docker_repository = string_value(data, "dockerRepository")
+    docker_image_tag = string_value(data, "dockerImageTag")
+    return definition_id, docker_repository, docker_image_tag
+
+
+def connector_doc_path(repo_path: Path, connector: str) -> Path | None:
+    if connector.startswith("source-"):
+        return (
+            repo_path
+            / "docs"
+            / "integrations"
+            / "sources"
+            / f"{connector.removeprefix('source-')}.md"
+        )
+    if connector.startswith("destination-"):
+        return (
+            repo_path
+            / "docs"
+            / "integrations"
+            / "destinations"
+            / f"{connector.removeprefix('destination-')}.md"
+        )
+    return None
+
+
+def find_rollout_pr_url(repo_path: Path, connector: str, docker_image_tag: str) -> str | None:
+    doc_path = connector_doc_path(repo_path, connector)
+    if doc_path is None or not doc_path.exists():
+        return None
+
+    pr_link_pattern = re.compile(
+        rf"^\|\s*{re.escape(docker_image_tag)}\s*\|.*?\|\s*\[[^\]]+\]\((https://github\.com/airbytehq/airbyte/pull/[0-9]+)\)",
+    )
+    for line in doc_path.read_text().splitlines():
+        match = pr_link_pattern.search(line)
+        if match:
+            return match.group(1)
+    return None
+
+
+def fetch_pr_body(repository: str, pr_number: str, token: str) -> str:
+    if repository == "" or pr_number == "" or token == "":
+        return ""
+
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repository}/pulls/{pr_number}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        response_body = response.read().decode("utf-8")
+
+    payload = json.loads(response_body)
+    if not isinstance(payload, Mapping):
+        return ""
+
+    body = payload.get("body")
+    if isinstance(body, str):
+        return body
+    return ""
+
+
+def is_acknowledged(pr_body: str) -> bool:
+    for line in pr_body.splitlines():
+        if re.search(r"^\s*[-*]\s*\[[xX]\]", line) and ACK_MARKER.lower() in line.lower():
+            return True
+    return False
+
+
+def write_result(output_file: Path, result: Mapping[str, object]) -> None:
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(json.dumps(result, indent=2, sort_keys=True))
+
+
+def check_rollouts(args: argparse.Namespace) -> int:
+    connector = args.connector
+    output_file = Path(args.output_file)
+
+    if connector == "":
+        write_result(output_file, {"connector": connector, "status": "no_connector"})
+        return 0
+
+    repo_path = Path(args.repo_path)
+    credentials_available = os.getenv("GCP_PROD_DB_ACCESS_CREDENTIALS", "") != ""
+    is_fork = os.getenv("IS_FORK", "false") == "true"
+    if not credentials_available:
+        result = {
+            "connector": connector,
+            "status": "skipped",
+            "reason": "GCP credentials are unavailable for this pull request.",
+        }
+        write_result(output_file, result)
+        if is_fork:
+            print("::warning::Skipping progressive rollout lookup for forked PR.")
+            return 0
+        print("::error::GCP credentials are unavailable for progressive rollout lookup.")
+        return 1
+
+    definition_id, docker_repository, docker_image_tag = load_connector_metadata(
+        repo_path,
+        connector,
+    )
+    pr_body = fetch_pr_body(
+        os.getenv("GITHUB_REPOSITORY", ""),
+        os.getenv("PR_NUMBER", ""),
+        os.getenv("GITHUB_TOKEN", ""),
+    )
+    acknowledged = is_acknowledged(pr_body)
+
+    rollouts = query_prod_connector_rollouts(
+        actor_definition_id=definition_id,
+        active_only=True,
+        limit=25,
+    )
+    rollout_results: list[dict[str, object]] = []
+    for rollout in rollouts:
+        rollout_results.append(
+            {
+                "rollout_id": rollout.rollout_id,
+                "state": rollout.state,
+                "actor_definition_id": rollout.actor_definition_id,
+                "initial_rollout_pct": rollout.initial_rollout_pct,
+                "current_target_rollout_pct": rollout.current_target_rollout_pct,
+                "final_target_rollout_pct": rollout.final_target_rollout_pct,
+                "has_breaking_changes": rollout.has_breaking_changes,
+                "rollout_strategy": rollout.rollout_strategy,
+                "workflow_run_id": rollout.workflow_run_id,
+                "tag": rollout.tag,
+                "created_at": rollout.created_at.isoformat() if rollout.created_at else None,
+                "updated_at": rollout.updated_at.isoformat() if rollout.updated_at else None,
+                "expires_at": rollout.expires_at.isoformat() if rollout.expires_at else None,
+                "rc_docker_image_tag": rollout.rc_docker_image_tag,
+                "rc_docker_repository": rollout.rc_docker_repository,
+                "initial_docker_image_tag": rollout.initial_docker_image_tag,
+                "initial_docker_repository": rollout.initial_docker_repository,
+                "customer_tier": rollout.customer_tier,
+                "rollout_pr_url": find_rollout_pr_url(
+                    repo_path,
+                    connector,
+                    rollout.rc_docker_image_tag or "",
+                ),
+            }
+        )
+
+    status = "clear"
+    if rollout_results and acknowledged:
+        status = "acknowledged"
+    if rollout_results and not acknowledged:
+        status = "blocked"
+
+    write_result(
+        output_file,
+        {
+            "connector": connector,
+            "status": status,
+            "acknowledged": acknowledged,
+            "definition_id": definition_id,
+            "docker_repository": docker_repository,
+            "docker_image_tag": docker_image_tag,
+            "rollouts": rollout_results,
+        },
+    )
+
+    if status == "blocked":
+        print(f"::error::Active progressive rollout found for {connector}.")
+        return 1
+    if status == "acknowledged":
+        print(f"::warning::Active progressive rollout acknowledged for {connector}.")
+        return 0
+
+    print(f"No active progressive rollout found for {connector}.")
+    return 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--connector", required=True)
+    parser.add_argument("--repo-path", required=True)
+    parser.add_argument("--output-file", required=True)
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    try:
+        return check_rollouts(args)
+    except ValueError as error:
+        output_file = Path(args.output_file)
+        write_result(output_file, {"status": "error", "error": str(error)})
+        print(f"::error::{error}")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

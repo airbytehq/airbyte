@@ -1,0 +1,234 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11,<3.13"
+# dependencies = []
+# ///
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+import urllib.request
+from pathlib import Path
+from typing import Mapping
+
+
+ACK_LINE = "- [x] ACK: I understand this PR modifies connectors with active progressive rollouts and want to merge anyway."
+ACK_MARKER = "ACK: I understand this PR modifies connectors with active progressive rollouts"
+
+
+def fetch_pr_body(repository: str, pr_number: str, token: str) -> str:
+    if repository == "" or pr_number == "" or token == "":
+        return ""
+
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repository}/pulls/{pr_number}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        response_body = response.read().decode("utf-8")
+
+    payload = json.loads(response_body)
+    if not isinstance(payload, Mapping):
+        return ""
+
+    body = payload.get("body")
+    if isinstance(body, str):
+        return body
+    return ""
+
+
+def is_acknowledged(pr_body: str) -> bool:
+    for line in pr_body.splitlines():
+        if re.search(r"^\s*[-*]\s*\[[xX]\]", line) and ACK_MARKER.lower() in line.lower():
+            return True
+    return False
+
+
+def load_result_files(artifacts_dir: Path) -> list[Mapping[str, object]]:
+    results: list[Mapping[str, object]] = []
+    if not artifacts_dir.exists():
+        return results
+
+    for result_file in sorted(artifacts_dir.glob("**/*.json")):
+        result = json.loads(result_file.read_text())
+        if isinstance(result, Mapping):
+            results.append(result)
+    return results
+
+
+def rollout_items(results: list[Mapping[str, object]]) -> list[tuple[Mapping[str, object], Mapping[str, object]]]:
+    items: list[tuple[Mapping[str, object], Mapping[str, object]]] = []
+    for result in results:
+        rollouts = result.get("rollouts")
+        if not isinstance(rollouts, list):
+            continue
+        for rollout in rollouts:
+            if isinstance(rollout, Mapping):
+                items.append((result, rollout))
+    return items
+
+
+def format_value(value: object) -> str:
+    if value is None or value == "":
+        return "unknown"
+    return str(value)
+
+
+def format_comment(
+    results: list[Mapping[str, object]],
+    active_rollouts: list[tuple[Mapping[str, object], Mapping[str, object]]],
+    acknowledged: bool,
+    run_url: str,
+) -> str:
+    lines = [
+        "<!-- progressive-rollout-gate -->",
+        "> **Progressive rollout gate**",
+        ">",
+    ]
+
+    skipped = [result for result in results if result.get("status") == "skipped"]
+
+    if not active_rollouts and not skipped:
+        lines.extend(
+            [
+                "> No active progressive rollouts were found for modified connectors.",
+                ">",
+                f"> [View workflow run]({run_url})",
+                "",
+            ]
+        )
+        return "\n".join(lines)
+
+    if not active_rollouts:
+        lines.extend(
+            [
+                "> No active progressive rollouts were found for modified connectors that could be checked.",
+                ">",
+            ]
+        )
+
+    if active_rollouts and acknowledged:
+        lines.extend(
+            [
+                "> Active progressive rollouts were found, but this PR is acknowledged in the PR description.",
+                "> The check passes with this warning so the PR can merge intentionally.",
+                ">",
+            ]
+        )
+    if active_rollouts and not acknowledged:
+        lines.extend(
+            [
+                "> Active progressive rollouts were found for modified connectors.",
+                "> This check blocks until the rollout finishes or the PR description includes the ACK checkbox.",
+                ">",
+            ]
+        )
+
+    if active_rollouts:
+        lines.append("> **Active rollouts**")
+        lines.append(">")
+    for result, rollout in active_rollouts:
+        connector = format_value(result.get("connector"))
+        rc_repository = format_value(rollout.get("rc_docker_repository"))
+        rc_tag = format_value(rollout.get("rc_docker_image_tag"))
+        initial_tag = format_value(rollout.get("initial_docker_image_tag"))
+        rollout_pr_url = rollout.get("rollout_pr_url")
+        lines.append(f"> - `{connector}`")
+        lines.append(f">   - Rollout ID: `{format_value(rollout.get('rollout_id'))}`")
+        lines.append(f">   - State: `{format_value(rollout.get('state'))}`")
+        lines.append(f">   - RC image: `{rc_repository}:{rc_tag}`")
+        lines.append(f">   - Initial version: `{initial_tag}`")
+        lines.append(
+            f">   - Target: `{format_value(rollout.get('current_target_rollout_pct'))}%` of `{format_value(rollout.get('final_target_rollout_pct'))}%`"
+        )
+        lines.append(f">   - Customer tier: `{format_value(rollout.get('customer_tier'))}`")
+        if isinstance(rollout_pr_url, str) and rollout_pr_url:
+            lines.append(f">   - Rollout PR: {rollout_pr_url}")
+        lines.append(">")
+
+    if skipped:
+        lines.append("> **Skipped lookups**")
+        lines.append(">")
+        for result in skipped:
+            lines.append(f"> - `{format_value(result.get('connector'))}`: {format_value(result.get('reason'))}")
+        lines.append(">")
+        lines.append("> This gate fails because rollout status could not be verified.")
+        lines.append(">")
+
+    lines.extend(
+        [
+            "> **ACK override**",
+            ">",
+            f"> ACK status: `{'acknowledged' if acknowledged else 'not acknowledged'}`",
+            ">",
+            "> To override this gate, add this exact checked item to the PR description:",
+            ">",
+            f"> `{ACK_LINE}`",
+            ">",
+            "> After the rollout completes or after adding the ACK checkbox, re-run this workflow from the Actions run page.",
+            f"> [View workflow run]({run_url})",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def write_output(name: str, value: str) -> None:
+    github_output = os.getenv("GITHUB_OUTPUT")
+    if github_output is None or github_output == "":
+        print(f"{name}={value}")
+        return
+    output_path = Path(github_output)
+    output_path.write_text(f"{output_path.read_text()}{name}={value}\n")
+
+
+def render(args: argparse.Namespace) -> int:
+    results = load_result_files(Path(args.artifacts_dir))
+    active_rollouts = rollout_items(results)
+    acknowledged = is_acknowledged(
+        fetch_pr_body(
+            os.getenv("GITHUB_REPOSITORY", ""),
+            os.getenv("PR_NUMBER", ""),
+            os.getenv("GITHUB_TOKEN", ""),
+        )
+    )
+    failed_results = [result for result in results if result.get("status") == "error"]
+    skipped_results = [result for result in results if result.get("status") == "skipped"]
+    has_rollouts = len(active_rollouts) > 0
+    matrix_failed = os.getenv("ROLLOUT_MATRIX_RESULT", "") == "failure"
+    result = (
+        "failure"
+        if matrix_failed or failed_results or skipped_results or (has_rollouts and not acknowledged)
+        else "success"
+    )
+
+    run_url = os.getenv("RUN_URL", "")
+    comment_body = format_comment(results, active_rollouts, acknowledged, run_url)
+    comment_body_path = Path(args.comment_body_path)
+    comment_body_path.parent.mkdir(parents=True, exist_ok=True)
+    comment_body_path.write_text(comment_body)
+
+    write_output("has-rollouts", str(has_rollouts).lower())
+    write_output("acked", str(acknowledged).lower())
+    write_output("result", result)
+    write_output("comment-body-path", str(comment_body_path))
+    return 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--artifacts-dir", required=True)
+    parser.add_argument("--comment-body-path", required=True)
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    sys.exit(render(parse_args()))

@@ -7,6 +7,7 @@ on:
       - synchronize
       - reopened
       - ready_for_review
+      - edited
 
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
@@ -42,6 +43,7 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
+  issues: write
 
 jobs:
   generate-matrix:
@@ -479,6 +481,157 @@ jobs:
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
 
+  progressive-rollout-gate:
+    if: github.event.pull_request.draft == false
+    needs: [generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10
+      fail-fast: false
+    name: "${{ matrix.connector || 'No-Op' }} Progressive Rollout Gate"
+    runs-on: ubuntu-24.04
+    env:
+      GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GITHUB_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
+      IS_FORK: ${{ github.event.pull_request.head.repo.fork == true }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 1
+
+      - name: Install uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Cloud SQL Auth Proxy
+        if: matrix.connector
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --location --output cloud-sql-proxy \
+            https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.18.3/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+          sudo mv cloud-sql-proxy /usr/local/bin/
+          cloud-sql-proxy --version
+
+      - name: Start Cloud SQL Auth Proxy
+        if: matrix.connector
+        env:
+          GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          USE_CLOUD_SQL_PROXY: "1"
+          DB_PORT: "15432"
+        run: |
+          set -euo pipefail
+          uvx --from=airbyte-internal-ops airbyte-ops cloud db start-proxy --port 15432
+          for i in {1..30}; do
+            if nc -z localhost 15432 2>/dev/null; then
+              echo "Cloud SQL Proxy is ready on port 15432"
+              break
+            fi
+            echo "Waiting for Cloud SQL Proxy... ($i/30)"
+            sleep 1
+          done
+          if ! nc -z localhost 15432 2>/dev/null; then
+            echo "::error::Cloud SQL Proxy failed to start."
+            exit 1
+          fi
+
+      - name: Query progressive rollouts
+        if: matrix.connector
+        id: rollout-query
+        env:
+          USE_CLOUD_SQL_PROXY: "1"
+          DB_PORT: "15432"
+        run: >
+          ./.github/scripts/query-progressive-rollout.uv
+          --connector "${{ matrix.connector }}"
+          --repo-path "$GITHUB_WORKSPACE"
+          --output-file "progressive-rollout-results/${{ matrix.connector }}.json"
+
+      - name: Upload progressive rollout result
+        if: always() && !cancelled() && matrix.connector
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: progressive-rollout-gate-${{ matrix.connector }}
+          path: progressive-rollout-results/${{ matrix.connector }}.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  progressive-rollout-gate-summary:
+    name: Progressive Rollout Gate Summary
+    if: always() && github.event.pull_request.draft == false
+    needs:
+      - generate-matrix
+      - progressive-rollout-gate
+    runs-on: ubuntu-24.04
+    outputs:
+      result: ${{ steps.render.outputs.result }}
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      ROLLOUT_MATRIX_RESULT: ${{ needs.progressive-rollout-gate.result }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Download progressive rollout results
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          pattern: progressive-rollout-gate-*
+          path: progressive-rollout-results
+          merge-multiple: true
+
+      - name: Render progressive rollout status
+        id: render
+        run: >
+          ./.github/scripts/render-progressive-rollout-gate.uv
+          --artifacts-dir progressive-rollout-results
+          --comment-body-path "$RUNNER_TEMP/progressive-rollout-comment.md"
+
+      - name: Find progressive rollout comment
+        if: github.event_name == 'pull_request'
+        id: find-comment
+        uses: peter-evans/find-comment@c508ad706980ed44e6c7cc5518bd6811bd6a7028 # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- progressive-rollout-gate -->"
+
+      - name: Update progressive rollout comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body-path: ${{ steps.render.outputs.comment-body-path }}
+          edit-mode: replace
+
+      - name: Print ACK warning
+        if: steps.render.outputs.acked == 'true' && steps.render.outputs.has-rollouts == 'true'
+        run: |
+          echo "::warning::Active progressive rollouts were acknowledged in the PR description."
+
+      - name: Fail on unacknowledged rollout
+        if: steps.render.outputs.result != 'success'
+        run: |
+          echo "::error::Active progressive rollout found. Add the ACK checkbox to the PR description or wait for rollout completion."
+          exit 1
+
   # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
   # Runs alongside existing pre-release checks to validate the new ops CLI path.
   # continue-on-error: true ensures this does not block the CI pipeline.
@@ -580,6 +733,7 @@ jobs:
       - jvm-connectors-test
       - non-jvm-connectors-test
       - pre-release-checks
+      - progressive-rollout-gate-summary
       - connectors-lint
     runs-on: ubuntu-24.04
     outputs:
@@ -590,6 +744,7 @@ jobs:
         run: |
           if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
                 "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
+                "${{ needs.progressive-rollout-gate-summary.result }}" != "failure" &&
                 "${{ needs.connectors-lint.result }}" == "success" ]]; then
             echo "result=success" | tee -a $GITHUB_OUTPUT
           else
