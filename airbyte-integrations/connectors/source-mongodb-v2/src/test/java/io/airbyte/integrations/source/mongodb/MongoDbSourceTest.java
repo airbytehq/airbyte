@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
@@ -318,7 +319,7 @@ class MongoDbSourceTest {
             .append("ok", new org.bson.BsonInt32(0))
             .append("code", new org.bson.BsonInt32(MongoConstants.UNAUTHORIZED_ERROR_CODE))
             .append("errmsg", new org.bson.BsonString("not authorized")),
-        null);
+        new ServerAddress());
   }
 
 }
