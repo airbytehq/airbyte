@@ -1506,6 +1506,7 @@ spec:
       oauth_connector_input_specification:
         scopes:
           - scope: "read"
+          - scope: "customer:read"
         consent_url: "https://linear.app/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}&{{scopes_param}}&actor=app&prompt=consent"
         access_token_url: "https://api.linear.app/oauth/token"
         access_token_headers:
