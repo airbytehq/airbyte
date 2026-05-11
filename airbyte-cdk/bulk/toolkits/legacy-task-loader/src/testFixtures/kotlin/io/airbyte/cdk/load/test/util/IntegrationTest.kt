@@ -296,14 +296,15 @@ abstract class IntegrationTest(
 
     enum class UncleanSyncEndBehavior {
         /**
-         * End the sync normally (i.e. by closing stdin), but don't send a COMPLETE status message.
+         * End the sync normally (i.e. by signaling end-of-input on the data channel), but don't
+         * send a COMPLETE status message.
          */
         TERMINATE_WITH_NO_STREAM_STATUS,
 
         /**
-         * Emit a STREAM_STATUS: INCOMPLETE trace for the stream, then close stdin. Simulates a
-         * source that failed mid-sync; in SPEED mode this trace reaches the destination directly
-         * (the orchestrator does not filter it).
+         * Emit a STREAM_STATUS: INCOMPLETE trace for the stream, then signal end-of-input on the
+         * data channel. Simulates a source that failed mid-sync; in SOCKET mode this trace reaches
+         * the destination directly (the orchestrator does not filter it).
          */
         EMIT_STREAM_INCOMPLETE,
 

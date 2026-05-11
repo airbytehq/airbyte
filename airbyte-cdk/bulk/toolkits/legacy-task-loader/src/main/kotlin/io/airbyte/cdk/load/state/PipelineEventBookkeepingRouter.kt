@@ -74,18 +74,18 @@ class PipelineEventBookkeepingRouter(
 ) : CloseableCoroutine {
     private val log = KotlinLogging.logger {}
     private val clientCount = AtomicInteger(numDataChannels)
-    private val terminalStreamComplete = ConcurrentHashMap<DestinationStream.Descriptor, Boolean>()
+    private val terminalStreamStatus = ConcurrentHashMap<DestinationStream.Descriptor, Boolean>()
     private val checkpointIndexes = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
     private val unopenedStreams = ConcurrentHashSet(catalog.streams.map { it.mappedDescriptor })
 
     private fun recordTerminalStatus(
         descriptor: DestinationStream.Descriptor,
-        complete: Boolean,
+        isComplete: Boolean,
     ) {
-        val previous = terminalStreamComplete.putIfAbsent(descriptor, complete)
+        val previous = terminalStreamStatus.putIfAbsent(descriptor, isComplete)
         check(previous == null) {
             "Source error: Stream $descriptor already received complete status=$previous. " +
-                "Received additional status complete=$complete."
+                "Received additional status complete=$isComplete."
         }
     }
 
@@ -137,7 +137,7 @@ class PipelineEventBookkeepingRouter(
             }
             is DestinationRecordStreamComplete -> {
                 log.info { "Read COMPLETE for stream ${stream.mappedDescriptor}" }
-                recordTerminalStatus(stream.mappedDescriptor, complete = true)
+                recordTerminalStatus(stream.mappedDescriptor, isComplete = true)
                 if (!markEndOfStreamAtEndOfSync) {
                     manager.markEndOfStream(true)
                 }
@@ -145,7 +145,7 @@ class PipelineEventBookkeepingRouter(
             }
             is DestinationRecordStreamIncomplete -> {
                 log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
-                recordTerminalStatus(stream.mappedDescriptor, complete = false)
+                recordTerminalStatus(stream.mappedDescriptor, isComplete = false)
                 if (!markEndOfStreamAtEndOfSync) {
                     manager.markEndOfStream(false)
                 }
@@ -309,7 +309,7 @@ class PipelineEventBookkeepingRouter(
                     // If absent: no terminal status seen — leave unmarked so
                     // SyncManager.markInputConsumed() surfaces the existing
                     // "neither status reached us" diagnostic.
-                    terminalStreamComplete[it.mappedDescriptor]?.let { complete ->
+                    terminalStreamStatus[it.mappedDescriptor]?.let { complete ->
                         manager.markEndOfStream(complete)
                     }
                     batchStateUpdateQueue.publish(

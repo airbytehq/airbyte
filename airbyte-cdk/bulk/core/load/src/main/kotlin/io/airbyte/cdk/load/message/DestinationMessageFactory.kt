@@ -88,7 +88,7 @@ class DestinationMessageFactory(
                             // Let the sync end naturally so the failure is attributed to the
                             // source, not the destination.
                             log.warn {
-                                "Received INCOMPLETE stream status for ${descriptor.namespace}:${descriptor.name}. The source sync failed for this stream."
+                                "Received INCOMPLETE stream status for ${descriptor.namespace}:${descriptor.name}. The source read failed for this stream."
                             }
                             Ignored
                         }
