@@ -353,8 +353,8 @@ spec:
         description: >-
           Maximum number of retry attempts when the report creation API returns
           HTTP 429 (Too Many Requests). Each retry uses exponential backoff
-          based on the x-amzn-RateLimit-Limit header. Reduce this value if
-          429 retries delay other streams.
+          based on the x-amzn-RateLimit-Limit header. Reduce this value to
+          avoid exhausting rate limits on retrying requests.
         type: integer
         default: 5
         minimum: 0

@@ -286,6 +286,30 @@ We recommend next steps to overcome the rate limits issue:
 
 This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
 
+### Reports failing with FATAL status
+
+Amazon enforces an undocumented per-report-type cooldown after generating a report. If a new report of the same type is requested before the cooldown expires, Amazon returns a `FATAL` status instead of processing the report. The cooldown duration varies by report type:
+
+- **Near-real-time FBA reports** (for example, `GET_AFN_INVENTORY_DATA`, `GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA`): approximately 30 minutes.
+- **Daily FBA reports** (for example, `GET_FBA_STORAGE_FEE_CHARGES_DATA`, `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA`): approximately 4 hours.
+
+The cooldown applies per seller, per report type, across all applications. Even requests from different apps count toward the same cooldown window.
+
+The connector handles this automatically by deferring retry of FATAL reports. When a report fails with FATAL status, the connector waits the configured cooldown period before retrying, allowing other report streams to continue processing in the meantime.
+
+**Tuning options** (set via connector config API, hidden from UI):
+
+- **Failed Report Retry Wait Time** (`failed_retry_wait_time_in_seconds`): Time in seconds to wait before retrying a FATAL report. Default is `1800` (30 minutes), which covers the most common cooldown. Range: `1`–`14400`. Increase this value to `14400` (4 hours) if you see repeated FATAL errors on daily FBA reports.
+- **Max Done Report Age (Hours)** (`max_done_report_age_hours`): When set to a value between `1` and `24`, the connector reuses recently completed reports instead of creating new ones, reducing the chance of triggering the cooldown in the first place.
+
+### Report creation failing with 429 rate limit errors
+
+When the connector creates report requests, the Amazon SP-API may return HTTP 429 (Too Many Requests) if the account exceeds rate limits. The connector automatically retries these requests with exponential backoff.
+
+**Tuning option** (set via connector config API, hidden from UI):
+
+- **Report Creation 429 Max Retries** (`creation_requester_429_max_retries`): Maximum number of retry attempts for 429 errors during report creation. Default is `5`. Reduce this value to avoid exhausting rate limits on retrying requests. Set to `0` to disable 429 retries entirely.
+
 ### ListFinancialEvents stream incompatible with deduplication on BigQuery
 
 The `ListFinancialEvents` stream does not define a primary key because the Amazon SP-API returns aggregated event lists per time range rather than individual events with unique identifiers. All top-level fields in this stream are arrays, such as `ShipmentEventList` and `RefundEventList`.
