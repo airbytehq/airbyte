@@ -113,6 +113,11 @@ object MsSqlServerDatatypeTestOperations :
                 }
             }
         }
+        // SQL Agent is disabled in the test container, so the CDC capture job never runs.
+        // Without this, fn_cdc_get_min_lsn returns NULL and the validation fails.
+        JdbcConnectionFactory(config).get().use { connection ->
+            connection.createStatement().use { stmt -> stmt.execute("EXEC sys.sp_cdc_scan") }
+        }
     }
 
     override fun populateStreams(config: MsSqlServerSourceConfiguration) {
