@@ -224,7 +224,19 @@ Waiting <some_number> seconds then retrying..."
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
-For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions. Please note that different requests have different limitations.
+For all Shopify GraphQL Bulk API requests, Shopify's [bulk operation limitations](https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions) apply. Different request types can have different limitations.
+
+#### Missing records after bulk stream checkpointing
+
+Version 3.3.3 fixes an issue where some incremental GraphQL Bulk streams could skip parent records after a bulk job checkpointed mid-output. The issue affected these streams:
+
+- `metafield_customers`
+- `metafield_products`
+- `metafield_product_images`
+- `product_images`
+- `customer_address`
+
+If you synced one of these streams on an earlier connector version and suspect missing historical records, clear the affected stream and run a sync to backfill data. Clearing a stream deletes the data Airbyte wrote for that stream in your destination. For more information, see [Clearing your data](/platform/operator-guides/clear).
 
 ### Troubleshooting
 
@@ -243,7 +255,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.3 | 2026-04-24 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix `metafield_customers` silently skipping customers when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
+| 3.3.3 | 2026-05-11 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix some incremental GraphQL Bulk streams silently skipping parent records when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
 | 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
 | 3.3.0 | 2026-04-15 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
