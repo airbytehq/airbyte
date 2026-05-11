@@ -850,6 +850,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     cursor_field = "created_at"
     is_sorted = "asc"
+    large_stream = True
 
     GRAPHQL_REACTION_TO_REST = {
         "THUMBS_UP": "plus_one",
