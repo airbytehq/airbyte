@@ -8,7 +8,7 @@ import pytest
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -220,6 +220,7 @@ class TestIncrementalTwilioStream:
 
         assert not output.records
         assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
 
 
