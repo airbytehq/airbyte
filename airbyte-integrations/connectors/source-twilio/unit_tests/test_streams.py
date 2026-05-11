@@ -15,6 +15,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 BASE = "https://api.twilio.com/2010-04-01"
+MONITOR_BASE = "https://monitor.twilio.com/v1"
 
 ACCOUNTS_JSON = {
     "accounts": [
@@ -203,6 +204,23 @@ class TestIncrementalTwilioStream:
         assert accounts_matcher.called, "Accounts endpoint was not called"
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_pagination_limit_error_message(self, requests_mock):
+        requests_mock.get(
+            f"{MONITOR_BASE}/Alerts",
+            json={
+                "code": 400,
+                "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
+            },
+            status_code=400,
+        )
+
+        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert not output.records
+        assert output.errors
+        assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
 
 
 class TestTwilioNestedStream:
