@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.Collections;
@@ -51,37 +54,44 @@ public class MongoDbResumeTokenHelper {
                                                                   final List<String> databaseNames,
                                                                   final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
 
-    // databaseNames and streamsByDatabase must be the same length
-    List<Bson> orFilters = new ArrayList<>();
-    for (int i = 0; i < databaseNames.size(); i++) {
-      String dbName = databaseNames.get(i);
-      List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
-      List<String> collectionNames = streams.stream()
-          .map(s -> s.getStream().getName())
-          .toList();
-      // Match documents where ns.db == dbName and ns.coll in collectionNames
-      orFilters.add(Filters.and(
-          Filters.eq("ns.db", dbName),
-          Filters.in("ns.coll", collectionNames)));
-    }
+    try {
+      // databaseNames and streamsByDatabase must be the same length
+      List<Bson> orFilters = new ArrayList<>();
+      for (int i = 0; i < databaseNames.size(); i++) {
+        String dbName = databaseNames.get(i);
+        List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
+        List<String> collectionNames = streams.stream()
+            .map(s -> s.getStream().getName())
+            .toList();
+        // Match documents where ns.db == dbName and ns.coll in collectionNames
+        orFilters.add(Filters.and(
+            Filters.eq("ns.db", dbName),
+            Filters.in("ns.coll", collectionNames)));
+      }
 
-    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream;
-    if (databaseNames.size() == 1) {
-      LOGGER.info("Most recent CDC token for a single database.");
-      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
-    } else {
-      LOGGER.info("Most recent CDC token for multiple databases.");
-      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
-    }
+      final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
+      final ChangeStreamIterable<BsonDocument> eventStream;
+      if (databaseNames.size() == 1) {
+        LOGGER.info("Most recent CDC token for a single database.");
+        eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
+      } else {
+        LOGGER.info("Most recent CDC token for multiple databases.");
+        eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+      }
 
-    try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
-      /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
-       * the call to getResumeToken() will return null!
-       */
-      eventStreamCursor.tryNext();
-      return eventStreamCursor.getResumeToken();
+      try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
+        /*
+         * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+         * the call to getResumeToken() will return null!
+         */
+        eventStreamCursor.tryNext();
+        return eventStreamCursor.getResumeToken();
+      }
+    } catch (final MongoCommandException e) {
+      if (e.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
+        throw new ConfigErrorException(MongoConstants.MONGODB_CHANGE_STREAM_PRIVILEGES_ERROR_MESSAGE, e, e.getMessage());
+      }
+      throw e;
     }
   }
 
