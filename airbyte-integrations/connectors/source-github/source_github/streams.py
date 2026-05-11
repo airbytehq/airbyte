@@ -860,9 +860,14 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     cursor_field = "created_at"
     is_sorted = "asc"
-    # The Releases GraphQL query is high-cost: each release fans out to up to
-    # 100 release_assets plus reactions and mentions, so a page_size of 100
-    # frequently causes upstream 504 Gateway Timeouts on large repositories.
+    # The Releases GraphQL query is high-cost on the server side: every node
+    # materializes `description` and `descriptionHTML`, which forces GitHub
+    # to render each release body to HTML. On repositories with long release
+    # notes, a page_size of 100 pushes the resolver past its internal 10s
+    # deadline and returns 504 Gateway Timeout (reproduced deterministically
+    # against nodejs/node: first=100 -> 504 in ~11s; first=10 -> 200 in ~3s).
+    # `releaseAssets` / `reactionGroups` / `mentions` are NOT the cost driver
+    # — stripping them does not fix the timeout, only lowering `first` does.
     # Mark as large_stream so it picks up the smaller default page size.
     large_stream = True
 
