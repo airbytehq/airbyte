@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import re
 import uuid
 from enum import Enum
@@ -11,6 +12,8 @@ from typing import Any, List, Mapping, MutableMapping, Optional
 import requests
 
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
+
+logger = logging.getLogger("airbyte")
 
 
 class MicrosoftOauth2Authenticator(Oauth2Authenticator):
@@ -139,6 +142,7 @@ def _execute_batch_datetime_request(config: Mapping[str, Any], entity_names: Lis
         headers=headers,
         data=body,
     )
+    response.raise_for_status()
 
     return _parse_batch_response(response, entity_names)
 
@@ -148,6 +152,7 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
     content_type = response.headers.get("Content-Type", "")
     boundary_match = re.search(r"boundary=([^\s;]+)", content_type)
     if not boundary_match:
+        logger.warning("DateTimeBehavior batch response missing multipart boundary in Content-Type: %s. DateOnly detection will be skipped.", content_type)
         return {}
 
     boundary = boundary_match.group(1).strip('"')
@@ -174,6 +179,13 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
             entity_idx += 1
             continue
 
+        status_line = sections[1].strip().split("\r\n")[0] if sections[1].strip() else ""
+        if " 200 " not in status_line and " 200\r" not in status_line:
+            entity_name = entity_names[entity_idx] if entity_idx < len(entity_names) else "unknown"
+            logger.warning("Non-200 response in batch part for entity '%s': %s. DateOnly detection skipped for this entity.", entity_name, status_line)
+            entity_idx += 1
+            continue
+
         try:
             data = json.loads(json_body)
             behaviors: dict[str, str] = {}
@@ -184,8 +196,9 @@ def _parse_batch_response(response: requests.Response, entity_names: List[str]) 
                     behaviors[logical_name] = behavior_obj.get("Value", "")
             result[entity_names[entity_idx]] = behaviors
         except (json.JSONDecodeError, KeyError):
-            # Malformed or unexpected batch parts are skipped so remaining entities can still be parsed.
-            pass
+            entity_name = entity_names[entity_idx] if entity_idx < len(entity_names) else "unknown"
+            logger.warning("Failed to parse batch response for entity '%s'. DateOnly detection skipped for this entity.", entity_name)
+
 
         entity_idx += 1
 

@@ -10,6 +10,10 @@ Starting with version 1.0.0, DateOnly fields are correctly mapped to `format: "d
 
 Any stream containing one or more Dataverse columns with `DateTimeBehavior` set to `DateOnly` is affected. Common examples include custom date fields added to entities. Standard timestamp fields such as `createdon` and `modifiedon` use `UserLocal` behavior and are not affected.
 
+### Downstream impact
+
+If you have SQL queries, views, or dashboards that reference affected DateOnly columns as timestamps, you may need to update them to handle `date` values instead of `timestamp with time zone` values after the reset.
+
 ### Steps to upgrade
 
 1. Select **Connections** in the main navbar.

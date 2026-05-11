@@ -8,8 +8,7 @@ This connector currently uses version v9.2 of the API
 
 ### Output schema
 
-This source will automatically discover the schema of the Entities of your Dataverse instance using the API
-`https://<url>/api/data/v9.2/EntityDefinitions?$expand=Attributes`
+This source will automatically discover the schema of the Entities of your Dataverse instance using the [EntityDefinitions](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/entitymetadata) API with `$select` projection to retrieve only the required metadata fields.
 
 ### Data type mapping
 
