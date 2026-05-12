@@ -193,7 +193,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Use a session-scoped TEMP TABLE for deduped rows, then run DELETE, UPDATE, INSERT
         // as separate statements. Temp tables are session-scoped so concurrent syncs on
         // different connections cannot collide.
-        val dedupTempTable = "_airbyte_dedup_${sourceTableName.name}".toRedshiftCompatibleName()
+        val dedupTempTable =
+            "_airbyte_dedup_${sourceTableName.namespace}_${sourceTableName.name}".toRedshiftCompatibleName()
         val dedupRef = quoteIdentifier(dedupTempTable)
 
         val selectDedupedQuery =

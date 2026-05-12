@@ -86,10 +86,4 @@ class RedshiftRegressionTest :
     override fun testTableIdentifierRegressionAppend() {
         super.testTableIdentifierRegressionAppend()
     }
-
-    @ResourceLock("tableIdentifierRegressionTest")
-    @Test
-    override fun testTableIdentifierRegressionDedup() {
-        super.testTableIdentifierRegressionDedup()
-    }
 }
