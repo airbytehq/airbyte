@@ -38,31 +38,32 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
-      - name: Resolve checkout repository
-        id: checkout-repository
-        run: echo "value=${{ inputs.repo || github.event.pull_request.head.repo.full_name || github.repository }}" | tee -a "${GITHUB_OUTPUT}"
-
-      - name: Resolve checkout ref from PR input
-        if: inputs.pr != ''
-        id: checkout-ref-pr
-        run: echo "value=refs/pull/${{ inputs.pr }}/head" | tee -a "${GITHUB_OUTPUT}"
-
-      - name: Resolve checkout ref from gitref input
-        if: inputs.pr == '' && inputs.gitref != ''
-        id: checkout-ref-gitref
-        run: echo "value=${{ inputs.gitref }}" | tee -a "${GITHUB_OUTPUT}"
-
-      - name: Resolve checkout ref from event
-        if: inputs.pr == '' && inputs.gitref == ''
-        id: checkout-ref-event
-        run: echo "value=${{ github.head_ref || github.ref_name }}" | tee -a "${GITHUB_OUTPUT}"
-
       - name: Resolve workflow inputs
         id: vars
+        env:
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_PR: ${{ inputs.pr }}
+          INPUT_GITREF: ${{ inputs.gitref }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          echo "repository=${{ steps.checkout-repository.outputs.value }}" | tee -a "${GITHUB_OUTPUT}"
-          echo "ref=${{ steps.checkout-ref-pr.outputs.value || steps.checkout-ref-gitref.outputs.value || steps.checkout-ref-event.outputs.value }}" | tee -a "${GITHUB_OUTPUT}"
-          echo "is-fork=${{ ! startsWith(steps.checkout-repository.outputs.value, 'airbytehq/') }}" | tee -a "${GITHUB_OUTPUT}"
+          repository="${INPUT_REPO:-${PR_HEAD_REPO:-${GITHUB_REPOSITORY}}}"
+          if [[ -n "${INPUT_PR}" ]]; then
+            ref="refs/pull/${INPUT_PR}/head"
+          elif [[ -n "${INPUT_GITREF}" ]]; then
+            ref="${INPUT_GITREF}"
+          else
+            ref="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          fi
+          is_fork="true"
+          if [[ "${repository}" == airbytehq/* ]]; then
+            is_fork="false"
+          fi
+
+          echo "repository=${repository}" | tee -a "${GITHUB_OUTPUT}"
+          echo "ref=${ref}" | tee -a "${GITHUB_OUTPUT}"
+          echo "is-fork=${is_fork}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Checkout Airbyte
         id: checkout
