@@ -49,6 +49,7 @@ internal class RedshiftAggregateFactoryTest {
             jdbcUrlParams = null,
             uploadingMethod = s3Config,
             tunnelMethod = null,
+            dropCascade = false,
         )
 
     private lateinit var factory: RedshiftAggregateFactory

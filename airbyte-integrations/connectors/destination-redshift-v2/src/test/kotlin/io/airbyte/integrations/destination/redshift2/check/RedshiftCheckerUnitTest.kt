@@ -195,6 +195,7 @@ class RedshiftCheckerUnitTest {
                         secretAccessKey = "secret",
                     ),
                 tunnelMethod = null,
+                dropCascade = false,
             )
     }
 
