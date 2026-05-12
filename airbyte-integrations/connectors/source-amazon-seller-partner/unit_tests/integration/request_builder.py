@@ -91,5 +91,10 @@ class RequestBuilder:
     def _url(self) -> str:
         return f"{self._base_url}/{self._resource}" if self._resource else self._base_url
 
+    def without_amz_date(self) -> RequestBuilder:
+        if isinstance(self._headers, dict) and "x-amz-date" in self._headers:
+            self._headers = {k: v for k, v in self._headers.items() if k != "x-amz-date"}
+        return self
+
     def build(self) -> HttpRequest:
         return HttpRequest(url=self._url(), query_params=self._query_params, headers=self._headers, body=self._body)
