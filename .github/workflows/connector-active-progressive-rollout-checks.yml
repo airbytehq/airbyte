@@ -58,7 +58,6 @@ jobs:
       ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning in the PR comment"
       GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       GITHUB_TOKEN: ${{ github.token }}
-      USE_CLOUD_SQL_PROXY: "1"
       DB_PORT: "15432"
     steps:
       - name: Checkout Airbyte
