@@ -142,6 +142,23 @@ streams:
         path: users
         request_parameters: {}
         request_body_json: {}
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: retry-after
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RATE_LIMITED
+                  http_codes:
+                    - 429
+                - type: HttpResponseFilter
+                  action: FAIL
+                  predicate: "{{ response.get('code') == 'restricted_resource' }}"
+                  error_message: Notion integration lacks read user information for the Users stream. Enable it in Notion or disable the Users stream.
+                  failure_type: config_error
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
       partition_router: []
