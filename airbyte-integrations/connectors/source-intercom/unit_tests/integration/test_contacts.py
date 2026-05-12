@@ -31,16 +31,20 @@ _SECONDS_PER_DAY = 86400
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def _catalog() -> ConfiguredAirbyteCatalog:
-    return CatalogBuilder().with_stream("contacts", SyncMode.incremental).build()
+def _catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
+    return CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
 
 
 def _source(catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any], state: Optional[TState]) -> YamlDeclarativeSource:
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
-def read(config_builder: Optional[ConfigBuilder] = None, state_builder: Optional[StateBuilder] = None) -> EntrypointOutput:
-    catalog = _catalog()
+def read(
+    stream_name: str = "contacts",
+    config_builder: Optional[ConfigBuilder] = None,
+    state_builder: Optional[StateBuilder] = None,
+) -> EntrypointOutput:
+    catalog = _catalog(stream_name)
     config = config_builder.build() if config_builder else ConfigBuilder().build()
     state = state_builder.build() if state_builder else StateBuilder().build()
     return entrypoint_read(_source(catalog, config, state), config, catalog, state)
@@ -48,6 +52,16 @@ def read(config_builder: Optional[ConfigBuilder] = None, state_builder: Optional
 
 class ContactsTest(TestCase):
     def test_search_query_expands_sub_daily_interval_to_day_boundaries(self) -> None:
+        streams = {
+            "contacts": ("contacts/search", "data"),
+            "conversations": ("conversations/search", "conversations"),
+            "tickets": ("tickets/search", "tickets"),
+        }
+        for stream_name, (path, response_field) in streams.items():
+            with self.subTest(stream_name=stream_name):
+                self._assert_search_query_expands_sub_daily_interval_to_day_boundaries(stream_name, path, response_field)
+
+    def _assert_search_query_expands_sub_daily_interval_to_day_boundaries(self, stream_name: str, path: str, response_field: str) -> None:
         state_datetime = datetime.now(timezone.utc) - timedelta(hours=1)
         state_timestamp = int(state_datetime.timestamp())
         observed_bodies: List[Dict[str, Any]] = []
@@ -58,12 +72,12 @@ class ContactsTest(TestCase):
 
         with requests_mock.Mocker() as http_mocker:
             http_mocker.post(
-                "https://api.intercom.io/contacts/search",
+                f"https://api.intercom.io/{path}",
                 additional_matcher=capture_request_body,
                 json={
-                    "data": [
+                    response_field: [
                         {
-                            "id": "contact_1",
+                            "id": f"{stream_name}_1",
                             "updated_at": state_timestamp + 60,
                         }
                     ],
@@ -71,7 +85,10 @@ class ContactsTest(TestCase):
                 },
             )
 
-            output = read(state_builder=StateBuilder().with_stream_state("contacts", {"updated_at": str(state_timestamp)}))
+            output = read(
+                stream_name=stream_name,
+                state_builder=StateBuilder().with_stream_state(stream_name, {"updated_at": str(state_timestamp)}),
+            )
 
         assert len(output.records) == 1
         assert len(observed_bodies) == 1
