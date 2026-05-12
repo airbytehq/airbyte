@@ -103,16 +103,20 @@ jobs:
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
-          echo "json<<EOF" >> $GITHUB_OUTPUT
-          airbyte-ops registry progressive-rollout status "$CONNECTOR_NAME" --repo-path . >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "json<<EOF"
+            airbyte-ops registry progressive-rollout status "${CONNECTOR_NAME}" --repo-path .
+            echo "EOF"
+          } | tee -a "${GITHUB_OUTPUT}"
 
       - name: Get master connector version
         if: matrix.connector
         id: master-version
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
-        run: echo "version=$(airbyte-ops gh connector get-version --name "$CONNECTOR_NAME" --ref master)" | tee -a $GITHUB_OUTPUT
+        run: |
+          VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)
+          echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Detect rollout bypass checkbox
         if: matrix.connector
