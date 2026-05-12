@@ -436,11 +436,10 @@ definitions:
           request_body_json:
             query: >-
               {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
-              {"field" : "updated_at", "operator" : ">", "value" : {{
-              stream_interval['start_time'] }} }, {"field" : "updated_at",
-              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
+              {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              (((stream_interval['end_time'] | int) // 86400) + 1) * 86400 }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
