@@ -100,14 +100,14 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
         pytest.param("ads_report_daily", id="ads_report_daily"),
     ],
 )
-def test_streams_refresh_oauth_token_on_401(manifest, stream_name):
-    """Apple Ads may return 401 for an expired OAuth access token."""
+def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
+    """Apple Ads may return 401 before the CDK's tracked token expiry."""
     stream = _get_stream_def(manifest, stream_name)
     filters = _get_response_filters(stream)
 
     refresh_filters = [f for f in filters if f.get("action") == "REFRESH_TOKEN_THEN_RETRY" and 401 in f.get("http_codes", [])]
 
-    assert refresh_filters, f"{stream_name} must refresh the OAuth token and retry on 401"
+    assert refresh_filters, f"{stream_name} must reactively refresh the OAuth token and retry on 401"
     for f in refresh_filters:
         assert f.get("failure_type") == "transient_error"
         assert f.get("error_message") == "Access token is expired."
