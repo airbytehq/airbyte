@@ -184,12 +184,36 @@ jobs:
         with:
           token: ${{ github.token }}
 
+      - name: Detect rollout bypass checkbox for dispatched PR
+        if: matrix.connector && github.event_name == 'workflow_dispatch' && env.PR_NUMBER != ''
+        id: rollout-bypass-dispatch
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          ROLLOUT_ACK_CHECKBOX_TEXT: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+        with:
+          script: |
+            const pullNumber = Number(process.env.PR_NUMBER);
+            const checkboxText = process.env.ROLLOUT_ACK_CHECKBOX_TEXT;
+            const { owner, repo } = context.repo;
+            const { data: pull } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pullNumber,
+            });
+            const lines = (pull.body || "").split(/\r?\n/).map((line) => line.trim());
+            const checked = lines.some((line) => /^- \[[xX]\]/.test(line) && line.includes(checkboxText));
+            const unchecked = lines.some((line) => line.startsWith("- [ ]") && line.includes(checkboxText));
+
+            core.setOutput("approved", checked.toString());
+            core.setOutput("exists", (checked || unchecked).toString());
+
       - name: Resolve rollout bypass checkbox state
-        if: matrix.connector && github.event_name == 'pull_request'
+        if: matrix.connector
         id: bypass-state
         env:
-          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
-          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || steps.rollout-bypass-dispatch.outputs.approved == 'true' }}
+          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || steps.rollout-bypass-dispatch.outputs.exists == 'true' }}
         run: |
           echo "approved=${APPROVED}" | tee -a $GITHUB_OUTPUT
           echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
@@ -250,6 +274,51 @@ jobs:
             > Active progressive rollout warning for ${{ matrix.connector }}.
 
             - [ ] (Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).
+
+      - name: Add rollout bypass checkbox to dispatched PR description
+        if: >
+          matrix.connector &&
+          github.event_name == 'workflow_dispatch' &&
+          env.PR_NUMBER != '' &&
+          steps.bypass-state.outputs.exists != 'true' &&
+          (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
+           contains(steps.master-version.outputs.version, '-rc.'))
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+          ROLLOUT_ACK_CHECKBOX_TEXT: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
+          ROLLOUT_COMMENT_URL: ${{ steps.rollout-comment.outputs.url }}
+        with:
+          script: |
+            const pullNumber = Number(process.env.PR_NUMBER);
+            const checkboxText = process.env.ROLLOUT_ACK_CHECKBOX_TEXT;
+            const markdown = [
+              "> [!IMPORTANT]",
+              "> Active progressive rollout warning for ${{ matrix.connector }}.",
+              "",
+              `- [ ] ${checkboxText} [here](${process.env.ROLLOUT_COMMENT_URL}).`,
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const { data: pull } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pullNumber,
+            });
+            const body = pull.body || "";
+
+            if (body.includes(checkboxText)) {
+              core.info("Rollout bypass checkbox already exists in PR description.");
+              return;
+            }
+
+            const nextBody = body.trimEnd() ? `${body.trimEnd()}\n\n${markdown}` : markdown;
+            await github.rest.pulls.update({
+              owner,
+              repo,
+              pull_number: pullNumber,
+              body: nextBody,
+            });
 
       - name: Render progressive rollout gate comment
         if: >
