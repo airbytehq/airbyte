@@ -6,7 +6,7 @@ sidebar_label: Choose how to use Airbyte Agents
 
 # Choose how to use Airbyte Agents
 
-Airbyte Agents offers four interfaces. They all share the same platform, the same connectors, and the same [Context Store](../concepts/context-store), so you can start with one and add others as your needs grow.
+Airbyte Agents offers five interfaces. They all share the same platform, the same connectors, and the same [Context Store](../concepts/context-store), so you can start with one and add others as your needs grow.
 
 Use the flowchart below to find the best starting point, then read the section that matches your path.
 
@@ -15,11 +15,13 @@ flowchart TD
     START(["How do you want to use<br/>Airbyte Agents?"])
     START -->|"I already use Claude,<br/>Cursor, or ChatGPT"| MCP["MCP server"]
     START -->|"I'm building a<br/>Python agent"| SDK["Python SDK"]
+    START -->|"I want a shell-first<br/>or agent-harness tool"| CLI["CLI"]
     START -->|"No code needed"| WEB["Web app"]
     START -->|"Non-Python backend<br/>or custom admin"| API["HTTP API"]
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
+    click CLI "#cli"
     click WEB "#web-app"
     click API "#http-api"
 ```
@@ -61,6 +63,18 @@ Two primary surfaces:
 
 **Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 
+## CLI
+
+**Best for:** Shell scripts, CI jobs, and AI-agent harnesses (Claude Code, Codex, and similar) that shell out for tool calls.
+
+The [CLI](../interfaces/cli) (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents as `airbyte-agent <resource> <operation>` with JSON-in, JSON-out, schema introspection via `--describe`, and stable exit codes. Install once, authenticate with the same `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` you use with the SDK, and your agent (or your shell) can immediately run connector operations against any workspace.
+
+```bash
+brew install airbytehq/tap/airbyte-agent
+```
+
+**Get started:** See the [CLI docs](../interfaces/cli) for install, authentication, and the quickstarts for listing workspaces, adding a connector, and executing an action. The bundled [agent skills](../interfaces/cli/using-with-ai-agents#install-the-bundled-skills) can be installed straight into a Claude Code or compatible harness with `npx skills add airbytehq/airbyte-agent-cli`.
+
 ## HTTP API
 
 **Best for:** Backend engineers, non-Python stacks, custom admin flows, and embedding the authentication module in your application.
@@ -71,6 +85,6 @@ The [HTTP API](../interfaces/api) exposes REST endpoints for managing connectors
 
 ## All paths lead to the same data
 
-Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, API, and MCP server. You can mix and match interfaces as your needs evolve.
+Whichever interface you choose, your agents work with the same connectors, the same credentials, and the same Context Store. A connector you add in the web app is immediately available through the SDK, CLI, API, and MCP server. You can mix and match interfaces as your needs evolve.
 
 For a deeper look at how the platform is organized, see [System architecture](../concepts/architecture).
