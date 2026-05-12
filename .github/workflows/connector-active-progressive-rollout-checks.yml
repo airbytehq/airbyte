@@ -412,7 +412,7 @@ jobs:
 
   progressive-rollout-gate-summary:
     name: Connector Active Progressive Rollout Checks Summary
-    if: always()
+    if: ${{ !cancelled() }}
     needs:
       - generate-matrix
       - progressive-rollout-gate
