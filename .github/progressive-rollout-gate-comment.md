@@ -1,11 +1,12 @@
 <!-- progressive-rollout-gate:{{ .connector }} -->
 
-## Detected `{{ .connector }}` Active Rollout: `{{ .active_rollout }}`**
+## Detected `{{ .connector }}` Active Rollout: `{{ .active_rollout }}`
 
 > [!IMPORTANT]
 > Active progressive rollout warning for `{{ .connector }}`.
 >
 > To bypass this warning, click on the matching checkbox in the PR description. Look for the checkbox text:
+>
 > > {{ .ack_checkbox_text }}
 
 - Rollout version: `{{ .rollout_docker_image_tag }}`
@@ -51,7 +52,7 @@ To rerun the check, simply check and uncheck the box, or else modify the PR desc
 
 Alternatively, you can find the Active Progressive Rollout CI workflow and manually rerun it (although this is generally slower than the above methods).
 
------
+---
 
 This comment will be updated as PR and/or rollout status changes.
 
