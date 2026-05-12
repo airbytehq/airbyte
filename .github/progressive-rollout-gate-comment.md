@@ -56,7 +56,7 @@ Alternatively, you can find the Active Progressive Rollout CI workflow and manua
 
 </details>
 
------
+---
 
 This comment will be updated as PR and/or rollout status changes.
 
