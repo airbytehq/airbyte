@@ -347,7 +347,6 @@ spec:
         minimum: 1
         maximum: 14400
         order: 18
-        airbyte_hidden: true
       creation_requester_429_max_retries:
         title: Report Creation 429 Max Retries
         description: >-
@@ -359,7 +358,6 @@ spec:
         default: 5
         minimum: 0
         order: 19
-        airbyte_hidden: true
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
