@@ -813,6 +813,6 @@ jobs:
           name: "Connector CI Checks Summary" # << Name of the 'Required' check
           sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
-          conclusion: ${{ steps.evaluate-status.outputs.result }}
+          conclusion: ${{ steps.evaluate-status.outputs.result || steps.evaluate-failure-status.outputs.result }}
           token: ${{ steps.get-app-token.outputs.token }}
           details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
