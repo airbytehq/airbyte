@@ -74,6 +74,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.22-rc.2 | 2026-05-08 | [78006](https://github.com/airbytehq/airbyte/pull/78006) | Concurrency tuning iteration: bump default_concurrency to 5 |
 | 0.7.22-rc.1 | 2026-05-06 | [77826](https://github.com/airbytehq/airbyte/pull/77826) | Start concurrency tuning at default_concurrency=4 (Path A) and enable progressive rollout |
 | 0.7.21 | 2026-04-28 | [77287](https://github.com/airbytehq/airbyte/pull/77287) | Update dependencies |
 | 0.7.20 | 2026-04-21 | [76637](https://github.com/airbytehq/airbyte/pull/76637) | Update dependencies |
