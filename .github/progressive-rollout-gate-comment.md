@@ -20,11 +20,11 @@
 
 - Bypass checkbox checked: `{{ .bypass_ack_checked }}`
 
-## ℹ️ More Information
+### ℹ️ More Information
 
 <details><summary>Show/hide details...</summary>
 
-### 🤔 What happens if this PR is merged
+#### 🤔 What happens if this PR is merged
 
 Checking the checkbox will allow the PR to merge, but it does not necessarily stop the active rollout by itself. The result of the PR merging depends on what connector version is published.
 
@@ -48,7 +48,7 @@ The merged PR may publish a new release candidate and replace the active RC mark
 
 </details>
 
-### 🔁 How to rerun this check
+#### 🔁 How to rerun this check
 
 To rerun the check, simply check and uncheck the box, or else modify the PR description and/or title in any way.
 
