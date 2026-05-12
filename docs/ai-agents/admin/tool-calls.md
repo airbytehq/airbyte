@@ -17,7 +17,7 @@ Airbyte classifies tool calls as one of the following types:
 - **Direct**: A real-time request to a third-party API. Airbyte routes the call through the connector and returns the live response to the agent. Direct tool calls are useful for operational queries, real-time searches, and actions that change state, like creating a ticket or sending a message.
 - **Search**: A query against data Airbyte has already replicated into the Context Store. Airbyte answers the call from the cache without contacting the upstream API, which makes search tool calls fast and cost-efficient.
 
-Tool calls are the billable unit that most directly reflects the work your agents do. For Airbyte-managed agents, Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For agents you bring through MCP, the API, or the SDK, Airbyte bills hosted tool calls only, not the reasoning your own model performs. For billing details, see [Billing and pricing](./billing.md).
+Tool calls are the billable unit that most directly reflects the work your agents do. For Airbyte-managed agents, Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For agents you bring through the MCP, the API, or the SDK, Airbyte bills tool calls only, not the reasoning your own model performs. For billing details, see [Billing and pricing](./billing.md).
 
 Tool calls can originate from any interface, including Chat, Automation, Automation Builder Chat, MCP, the API, and the SDK. The Tool Calls page shows activity from all sources.
 
