@@ -48,7 +48,7 @@
       },
       "schema" : {
         "type" : "string",
-        "description" : "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
+        "description" : "Enter the name of the default <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_Schemas_and_tables.html\">schema</a> tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
         "title" : "Default Schema",
         "group" : "connection",
         "order" : 6,
@@ -109,7 +109,7 @@
           },
           "file_name_pattern" : {
             "type" : "string",
-            "description" : "The pattern for S3 staging file names.",
+            "description" : "(Optional) The pattern for S3 staging file names. Supported placeholders: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}.",
             "title" : "S3 Filename Pattern"
           },
           "purge_staging_data" : {
