@@ -178,15 +178,22 @@ jobs:
           VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)
           echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
+      - name: Resolve rollout gate state
+        if: matrix.connector
+        id: rollout-gate-state
+        env:
+          REQUIRES_ACK: ${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout || contains(steps.master-version.outputs.version, '-rc.') }}
+        run: echo "requires-ack=${REQUIRES_ACK}" | tee -a "${GITHUB_OUTPUT}"
+
       - name: Detect rollout bypass checkbox
-        if: matrix.connector && github.event_name == 'pull_request'
+        if: matrix.connector && steps.rollout-gate-state.outputs.requires-ack == 'true' && github.event_name == 'pull_request'
         id: rollout-bypass
         uses: AhmedBaset/checklist@ecbf0bacb0d5d1fe41131db29a44984fec266017 # v3
         with:
           token: ${{ github.token }}
 
       - name: Detect rollout bypass checkbox for dispatched PR
-        if: matrix.connector && github.event_name == 'workflow_dispatch' && env.PR_NUMBER != ''
+        if: matrix.connector && steps.rollout-gate-state.outputs.requires-ack == 'true' && github.event_name == 'workflow_dispatch' && env.PR_NUMBER != ''
         id: rollout-bypass-dispatch
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
@@ -210,7 +217,7 @@ jobs:
             core.setOutput("exists", (checked || unchecked).toString());
 
       - name: Resolve rollout bypass checkbox state
-        if: matrix.connector
+        if: matrix.connector && steps.rollout-gate-state.outputs.requires-ack == 'true'
         id: bypass-state
         env:
           APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || steps.rollout-bypass-dispatch.outputs.approved == 'true' }}
@@ -220,7 +227,7 @@ jobs:
           echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
 
       - name: Find progressive rollout gate comment
-        if: matrix.connector && env.PR_NUMBER != ''
+        if: matrix.connector && steps.rollout-gate-state.outputs.requires-ack == 'true' && env.PR_NUMBER != ''
         id: find-rollout-comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         with:
@@ -231,10 +238,9 @@ jobs:
       - name: Create progressive rollout gate placeholder comment
         if: >
           matrix.connector &&
+          steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           env.PR_NUMBER != '' &&
-          steps.find-rollout-comment.outputs.comment-id == '' &&
-          (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
-           contains(steps.master-version.outputs.version, '-rc.'))
+          steps.find-rollout-comment.outputs.comment-id == ''
         id: create-rollout-comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
@@ -249,7 +255,7 @@ jobs:
             > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Resolve rollout comment link
-        if: matrix.connector
+        if: matrix.connector && steps.rollout-gate-state.outputs.requires-ack == 'true'
         id: rollout-comment
         env:
           EXISTING_COMMENT_ID: ${{ steps.find-rollout-comment.outputs.comment-id }}
@@ -263,10 +269,9 @@ jobs:
       - name: Add rollout bypass checkbox to PR description
         if: >
           matrix.connector &&
+          steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           github.event_name == 'pull_request' &&
-          steps.bypass-state.outputs.exists != 'true' &&
-          (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
-           contains(steps.master-version.outputs.version, '-rc.'))
+          steps.bypass-state.outputs.exists != 'true'
         uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
         with:
           github_token: ${{ github.token }}
@@ -279,11 +284,10 @@ jobs:
       - name: Add rollout bypass checkbox to dispatched PR description
         if: >
           matrix.connector &&
+          steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           github.event_name == 'workflow_dispatch' &&
           env.PR_NUMBER != '' &&
-          steps.bypass-state.outputs.exists != 'true' &&
-          (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
-           contains(steps.master-version.outputs.version, '-rc.'))
+          steps.bypass-state.outputs.exists != 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
@@ -324,11 +328,9 @@ jobs:
       - name: Render progressive rollout gate comment
         if: >
           matrix.connector &&
+          steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           env.PR_NUMBER != '' &&
-          steps.rollout-comment.outputs.id != '' &&
-          (steps.find-rollout-comment.outputs.comment-id != '' ||
-           fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
-           contains(steps.master-version.outputs.version, '-rc.'))
+          steps.rollout-comment.outputs.id != ''
         id: rollout-comment-template
         uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
         with:
@@ -348,10 +350,8 @@ jobs:
       - name: Update progressive rollout gate comment
         if: >
           matrix.connector &&
-          steps.rollout-comment.outputs.id != '' &&
-          (steps.find-rollout-comment.outputs.comment-id != '' ||
-           fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
-           contains(steps.master-version.outputs.version, '-rc.'))
+          steps.rollout-gate-state.outputs.requires-ack == 'true' &&
+          steps.rollout-comment.outputs.id != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ steps.rollout-comment.outputs.id }}
