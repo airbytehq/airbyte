@@ -333,6 +333,33 @@ spec:
         minimum: 1
         maximum: 100
         order: 17
+      failed_retry_wait_time_in_seconds:
+        title: Failed Report Retry Wait Time (Seconds)
+        description: >-
+          Time in seconds to wait before retrying a report that returned FATAL
+          status. Amazon enforces per-report-type cooldowns after generating a
+          report. Near-real-time FBA reports have an approximately 30-minute
+          cooldown, daily FBA reports approximately 4 hours. The default of 1800
+          seconds covers the most common cooldown. Increase this value if you
+          see repeated FATAL errors on daily FBA reports.
+        type: integer
+        default: 1800
+        minimum: 1
+        maximum: 14400
+        order: 18
+        airbyte_hidden: true
+      creation_requester_429_max_retries:
+        title: Report Creation 429 Max Retries
+        description: >-
+          Maximum number of retry attempts when the report creation API returns
+          HTTP 429 (Too Many Requests). Each retry uses exponential backoff
+          based on the x-amzn-RateLimit-Limit header. Reduce this value to
+          avoid exhausting rate limits on retrying requests.
+        type: integer
+        default: 5
+        minimum: 0
+        order: 19
+        airbyte_hidden: true
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3022,6 +3049,7 @@ definitions:
 
   basic_async_retriever:
     type: AsyncRetriever
+    failed_retry_wait_time_in_seconds: "{{ config.get('failed_retry_wait_time_in_seconds', 1800) }}"
     status_mapping:
       failed:
         - FATAL
@@ -3070,6 +3098,19 @@ definitions:
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: "Rate limit exceeded for report creation. The request will be retried with backoff."
+            max_retries: "{{ config.get('creation_requester_429_max_retries', 5) }}"
+            backoff_strategies:
+              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                type: CustomBackoffStrategy
+                header: x-amzn-RateLimit-Limit
+                default_backoff_time: 60
           - type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
