@@ -95,6 +95,10 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
 
+### Alerts pagination limit
+
+The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. If the `alerts` stream fails because a time window contains more than 10,000 Alert records, reduce **Slice Step Duration** to sync fewer Alert records per request.
+
 ### Tuning the slice step duration
 
 Incremental streams page the Twilio API in fixed-size time windows between the replication start date and now. The **Slice Step Duration** option controls the size of those windows and lets you trade request count against the amount of data each request returns.
@@ -108,28 +112,43 @@ Incremental streams page the Twilio API in fixed-size time windows between the r
 
 Smaller windows increase the number of API requests and are more likely to be rate limited, but they reduce the amount of data Twilio must return per request. Larger windows reduce request count but can time out on busy accounts. If syncs of the `calls`, `messages`, `recordings`, `message_media`, `conference_participants`, `usage_records`, or `alerts` streams fail with timeouts, lower the slice step duration.
 
+## Reference
+
+This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://chat.twilio.com/v2`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `account_sid` | Yes | Account identifier used as the HTTP Basic authentication username. |
+| `auth_token` | Yes | Auth Token used as the HTTP Basic authentication password. |
+| `start_date` | Yes | Date and time in `YYYY-MM-DDTHH:MM:SSZ` format. Records before this date aren't replicated. |
+| `lookback_window` | No | Number of minutes before the last cursor value to re-fetch on each incremental sync. Defaults to `0`. |
+| `num_worker` | No | Number of concurrent threads to use during a sync. Valid values are `1` through `40`. Defaults to `3`. |
+| `slice_step_duration` | No | Time window size for each incremental stream slice. Valid values are `P1D`, `P1W`, `P1M`, and `P1Y`. Defaults to `P1M`. |
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.17.10 | 2026-05-11 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
 | 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
 | 0.17.7 | 2026-04-22 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
 | 0.17.6 | 2026-04-21 | [76801](https://github.com/airbytehq/airbyte/pull/76801) | Update dependencies |
 | 0.17.5 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 0.17.4 | 2026-01-22 | [72260](https://github.com/airbytehq/airbyte/pull/72260) | Update CDK version from 7.0.1 to 7.6.5 |
-| 0.17.3 | 2025-11-06 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
+| 0.17.3 | 2025-11-14 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
 | 0.17.2 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 0.17.1 | 2025-09-15 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
 | 0.17.0 | 2025-09-05 | [65955](https://github.com/airbytehq/airbyte/pull/65955) | Promoting release candidate 0.17.0-rc.2 to a main version. |
 | 0.17.0-rc.2 | 2025-09-04 | [65936](https://github.com/airbytehq/airbyte/pull/65936) | Fix lookback window |
-| 0.17.0-rc.1 | 2025-08-20 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate to manifest-only |
+| 0.17.0-rc.1 | 2025-08-25 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate to manifest-only |
 | 0.16.0 | 2025-08-28 | [65593](https://github.com/airbytehq/airbyte/pull/65593) | Promoting release candidate 0.16.0-rc.1 to a main version. |
-| 0.16.0-rc.1 | 2025-08-19 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate incremental streams |
+| 0.16.0-rc.1 | 2025-08-25 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate incremental streams |
 | 0.15.0 | 2025-08-19 | [65085](https://github.com/airbytehq/airbyte/pull/65085) | Promoting release candidate 0.15.0-rc.1 to a main version. |
 | 0.15.0-rc.1 | 2025-08-18 | [64918](https://github.com/airbytehq/airbyte/pull/64918) | Migrate nested full refresh streams |
 | 0.14.0 | 2025-08-18 | [65066](https://github.com/airbytehq/airbyte/pull/65066) | Promoting release candidate 0.14.0-rc.1 to a main version. |
