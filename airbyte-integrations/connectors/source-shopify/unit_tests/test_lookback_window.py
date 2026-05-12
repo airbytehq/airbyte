@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_shopify.streams.streams import Orders
+from source_shopify.streams.streams import Orders, TransactionsGraphql
 
 
 def _make_stream(config):
@@ -85,3 +85,14 @@ def test_request_params_with_lookback(lookback_days, stream_state, expected_filt
     else:
         filter_value = params.get(stream.filter_field, "")
         assert expected_filter_substring in filter_value
+
+
+def test_graphql_bulk_stream_slices_apply_lookback_window():
+    """Verify `stream_slices` applies lookback for GraphQL BULK incremental streams."""
+    config = _base_config(lookback_window_in_days=2)
+    stream = TransactionsGraphql(config)
+    stream.job_manager._job_size = 1000
+
+    slices = list(stream.stream_slices(stream_state={"created_at": "2025-03-15T00:00:00Z"}))
+
+    assert slices[0]["start"] == "2025-03-13T00:00:00+00:00"
