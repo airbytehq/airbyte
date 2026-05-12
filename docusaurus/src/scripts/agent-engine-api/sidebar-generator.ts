@@ -66,7 +66,7 @@ export const replaceApiReferenceCategory = (
     ) {
       const categoryProps: any = {
         ...item,
-        label: "Airbyte Agent API Reference",
+        label: "Agent API Reference",
         items: agentEngineApiSidebar.items,
       };
 
