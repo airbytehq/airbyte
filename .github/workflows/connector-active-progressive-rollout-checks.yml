@@ -19,10 +19,6 @@ on:
         description: "The pull request number to inspect and comment on."
         required: true
         type: number
-      connector:
-        description: "Single connector name to check. If omitted, auto-detects from PR changed files."
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -69,30 +65,23 @@ jobs:
           echo "is-fork=${is_fork}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Install uv
-        if: >
-          inputs.connector == '' &&
-          steps.vars.outputs.pr-number != ''
+        if: steps.vars.outputs.pr-number != ''
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           ignore-empty-workdir: true
 
       - name: Install Ops CLI
-        if: >
-          inputs.connector == '' &&
-          steps.vars.outputs.pr-number != ''
+        if: steps.vars.outputs.pr-number != ''
         run: uv tool install 'airbyte-internal-ops>=0.55.0'
 
       - name: Resolve connector matrix
         id: connector-matrix
         env:
-          INPUT_CONNECTOR: ${{ inputs.connector }}
           PR_NUMBER: ${{ steps.vars.outputs.pr-number }}
           PR_REPOSITORY: ${{ steps.vars.outputs.pr-repository }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [[ -n "${INPUT_CONNECTOR}" ]]; then
-            connectors_matrix="{\"connector\":[\"${INPUT_CONNECTOR}\"]}"
-          elif [[ -n "${PR_NUMBER}" ]]; then
+          if [[ -n "${PR_NUMBER}" ]]; then
             repo_owner="${PR_REPOSITORY%%/*}"
             repo_name="${PR_REPOSITORY#*/}"
             connectors_matrix="$(
@@ -105,7 +94,7 @@ jobs:
                 --output-format json-gh-matrix
             )"
           else
-            echo "::error::Auto-detecting modified connectors requires a pull request number or explicit connector input."
+            echo "::error::Auto-detecting modified connectors requires a pull request number."
             exit 1
           fi
           echo "connectors_matrix=${connectors_matrix}" | tee -a "${GITHUB_OUTPUT}"
