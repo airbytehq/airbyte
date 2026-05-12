@@ -29,7 +29,9 @@ See [here](../../platform/understanding-airbyte/airbyte-metadata-fields) for mor
 
 #### Network Access
 
-Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you
+may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 #### **Permissions**
 
