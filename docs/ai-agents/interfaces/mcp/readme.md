@@ -79,7 +79,7 @@ Add the MCP server to your Claude Code command line tool.
 ChatGPT can connect to the Agent MCP from the ChatGPT app directory.
 
 :::note Workspace controls can limit app access
-ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
+The Airbyte Agent Engine app is currently available only in the United States. ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
 :::
 
 1. Open [ChatGPT](https://chatgpt.com) on the web or in the app.
