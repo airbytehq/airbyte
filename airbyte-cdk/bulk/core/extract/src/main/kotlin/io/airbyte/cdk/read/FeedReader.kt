@@ -105,13 +105,16 @@ class FeedReader(
     private suspend fun createPartitions(partitionsCreatorID: Long): List<PartitionReader> {
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
-                withContext(ctx("round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory")) {
-                    acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory)
-                }
+                withContext(
+                    ctx(
+                        "round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory"
+                    )
+                ) { acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory) }
                 log.info { "Attempting bootstrap using ${factory::class}." }
                 return@run withContext(ctx("round-$partitionsCreatorID-make-partitions-creator")) {
                     makePartitionsCreatorWithResources(factory)
-                } ?: continue
+                }
+                    ?: continue
             }
             throw SystemErrorException(
                 "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
@@ -134,7 +137,9 @@ class FeedReader(
     ) {
         while (true) {
             val status: PartitionsCreatorFactory.TryAcquireResourcesStatus =
-                root.resourceAcquisitionMutex.withLock { partitionsCreatorFactory.tryAcquireResources() }
+                root.resourceAcquisitionMutex.withLock {
+                    partitionsCreatorFactory.tryAcquireResources()
+                }
             if (status == PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -380,7 +385,9 @@ class FeedReader(
     }
 
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
-        currentCoroutineContext() + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
+        currentCoroutineContext() +
+            ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") +
+            Dispatchers.IO
 
     // Acquires resources for the OutputMessageRouter and executes the provided action with it
     private fun attemptWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {

@@ -12,8 +12,6 @@ import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
-import java.net.SocketTimeoutException
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
