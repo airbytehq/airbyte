@@ -84,7 +84,7 @@ ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or
 
 1. Open [ChatGPT](https://chatgpt.com) on the web or in the app.
 
-2. Open the app directory. In the web UI, click **Apps** in the sidebar. In the app, click **Settings** > **Apps**.
+2. Open the app directory. In the web UI, click **Apps** in the sidebar. In the app, click **Settings** > **Apps** > **Browse Apps**.
 
 3. Search or browse for **Airbyte Agent Engine** in the app directory.
 
