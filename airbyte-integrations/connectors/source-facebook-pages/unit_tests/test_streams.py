@@ -3,10 +3,12 @@
 #
 
 import logging
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests_mock as rm
+import yaml
 from source_facebook_pages.source import SourceFacebookPages
 
 from airbyte_cdk.models import (
@@ -23,6 +25,7 @@ CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
 PAGE_URL = "https://graph.facebook.com/v24.0/1"
 FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
+MANIFEST_PATH = Path(__file__).parents[1] / "source_facebook_pages" / "manifest.yaml"
 
 
 def _make_catalog(stream_name, selected_fields):
@@ -119,23 +122,12 @@ def test_without_catalog_at_init_requests_all_fields():
 
 
 def test_facebook_app_approval_error_is_config_error():
-    catalog = _make_catalog("page", ["id", "name"])
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
 
-    with rm.Mocker() as m:
-        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
-        m.get(
-            PAGE_URL,
-            json={"error": {"message": "(#100) This application has not been approved to use this API"}},
-            status_code=400,
-        )
-
-        source = SourceFacebookPages(catalog=catalog, config=CONFIG)
-        logger = logging.getLogger("test")
-        output = list(source.read(logger, CONFIG, catalog))
-
-        error = next(message.trace.error for message in output if message.trace and message.trace.error)
-        assert error.failure_type == FailureType.config_error
-        assert (
-            error.message
-            == "Facebook app lacks approval for one or more selected Page fields. Deselect fields that require advanced Facebook permissions or use an approved Facebook app."
-        )
+    assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
+    assert response_filter["failure_type"] == FailureType.config_error.value
+    assert (
+        response_filter["error_message"]
+        == "Facebook app lacks approval for one or more selected Page fields. Deselect fields that require advanced Facebook permissions or use an approved Facebook app."
+    )
