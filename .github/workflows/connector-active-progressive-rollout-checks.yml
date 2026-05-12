@@ -47,7 +47,6 @@ jobs:
       commit-sha: ${{ steps.checkout.outputs.commit }}
 
   progressive-rollout-gate:
-    if: github.event.pull_request.draft == false
     needs: [generate-matrix]
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
