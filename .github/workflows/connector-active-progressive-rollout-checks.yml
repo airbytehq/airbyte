@@ -195,6 +195,29 @@ jobs:
 
             - [ ] (Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).
 
+      - name: Render progressive rollout gate comment
+        if: >
+          matrix.connector &&
+          steps.rollout-comment.outputs.id != '' &&
+          (steps.find-rollout-comment.outputs.comment-id != '' ||
+           fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
+           contains(steps.master-version.outputs.version, '-rc.'))
+        id: rollout-comment-template
+        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+        with:
+          template: .github/progressive-rollout-gate-comment.md
+          vars: |
+            connector: ${{ matrix.connector }}
+            active_rollout: ${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout }}
+            rollout_docker_image_tag: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].rollout_docker_image_tag || 'none' }}
+            rollout_state: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].state || 'none' }}
+            master_version: ${{ steps.master-version.outputs.version }}
+            master_rc_marker: ${{ contains(steps.master-version.outputs.version, '-rc.') }}
+            bypass_ack_checked: ${{ steps.bypass-state.outputs.approved }}
+            ack_checkbox_text: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
+            rollout_comment_url: ${{ steps.rollout-comment.outputs.url }}
+            workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
       - name: Update progressive rollout gate comment
         if: >
           matrix.connector &&
@@ -207,19 +230,7 @@ jobs:
           comment-id: ${{ steps.rollout-comment.outputs.id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
-          body: |
-            <!-- progressive-rollout-gate:${{ matrix.connector }} -->
-            > **Progressive rollout gate for `${{ matrix.connector }}`**
-            >
-            > Active rollout: `${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout }}`
-            > Master version: `${{ steps.master-version.outputs.version }}`
-            > Master RC marker: `${{ contains(steps.master-version.outputs.version, '-rc.') }}`
-            > Bypass ACK checked: `${{ steps.bypass-state.outputs.approved }}`
-            >
-            > To bypass this warning, check this box in the PR description:
-            > `- [ ] (Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).`
-            >
-            > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          body: ${{ steps.rollout-comment-template.outputs.result }}
 
       - name: Fail if active rollout is not acknowledged
         if: matrix.connector && fromJSON(steps.rollout-status.outputs.json).has_active_rollout && steps.bypass-state.outputs.approved != 'true'
