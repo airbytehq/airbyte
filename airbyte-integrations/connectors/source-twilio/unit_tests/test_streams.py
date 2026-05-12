@@ -223,7 +223,7 @@ class TestIncrementalTwilioStream:
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
         assert "in the source configuration" in output.get_formatted_error_message()
-        assert "smaller date windows with fewer records per slice" in output.get_formatted_error_message()
+        assert "fewer Alert records per slice" in output.get_formatted_error_message()
 
 
 class TestTwilioNestedStream:
