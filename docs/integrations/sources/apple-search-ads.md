@@ -87,8 +87,8 @@ For programmatic configuration, use these parameter names:
 | `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
 | `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
 | `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
-| `lookback_window` | No | Number of days to resync on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
-| `backoff_factor` | No | Exponential retry delay factor for retryable Apple Ads API errors. Valid values are `1` through `20`. Defaults to `5`. |
+| `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
+| `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
 | `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
 | `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
@@ -97,8 +97,8 @@ For programmatic configuration, use these parameter names:
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
 | 1.1.4 | 2026-05-12 | [78029](https://github.com/airbytehq/airbyte/pull/78029) | Refresh expired OAuth access tokens before retrying failed Apple Ads API requests |
 | 1.1.3 | 2026-05-05 | [76973](https://github.com/airbytehq/airbyte/pull/76973) | Fix `ads_report_daily` broken incremental sync, remove incorrect keyword error predicate, and enable concurrent partition processing to reduce heartbeat timeouts |
 | 1.1.2 | 2026-04-28 | [77141](https://github.com/airbytehq/airbyte/pull/77141) | Update dependencies |
