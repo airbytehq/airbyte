@@ -1335,6 +1335,10 @@ schemas:
         type:
           - number
           - "null"
+      creatorID:
+        type:
+          - string
+          - "null"
       creatorName:
         type:
           - string
