@@ -38,23 +38,38 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
+      - name: Resolve workflow inputs
+        id: vars
+        env:
+          INPUT_GITREF: ${{ inputs.gitref }}
+          INPUT_PR: ${{ inputs.pr }}
+          INPUT_REPO: ${{ inputs.repo }}
+          PULL_REQUEST_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          DEFAULT_REPOSITORY: ${{ github.repository }}
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          REPOSITORY="${INPUT_REPO:-${PULL_REQUEST_REPO:-${DEFAULT_REPOSITORY}}}"
+          REF="${REF_NAME}"
+          [[ -n "${HEAD_REF}" ]] && REF="${HEAD_REF}"
+          [[ -n "${INPUT_GITREF}" ]] && REF="${INPUT_GITREF}"
+          [[ -n "${INPUT_PR}" ]] && REF="refs/pull/${INPUT_PR}/head"
+
+          echo "repository=${REPOSITORY}" | tee -a "${GITHUB_OUTPUT}"
+          echo "ref=${REF}" | tee -a "${GITHUB_OUTPUT}"
+          echo "is-fork=$([[ "${REPOSITORY}" != airbytehq/* ]] && echo true || echo false)" | tee -a "${GITHUB_OUTPUT}"
+
       - name: Checkout Airbyte
         id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ (inputs.pr != '' && format('refs/pull/{0}/head', inputs.pr)) || inputs.gitref || github.head_ref || github.ref_name }}
+          repository: ${{ steps.vars.outputs.repository }}
+          ref: ${{ steps.vars.outputs.ref }}
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
 
       - name: Add upstream remote (forks only)
-        if: >
-          (inputs.repo != '' &&
-           ! startswith(inputs.repo, 'airbytehq/')
-          ) ||
-          (github.event.pull_request.head.repo.full_name != '' &&
-           ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
-          )
+        if: steps.vars.outputs.is-fork == 'true'
         run: |
           if ! git remote | grep -q upstream; then
             git remote add upstream https://github.com/airbytehq/airbyte.git
@@ -74,6 +89,8 @@ jobs:
     outputs:
       connectors-matrix: ${{ steps.dispatch-matrix.outputs.connectors_matrix || steps.generate-matrix.outputs.connectors_matrix }}
       commit-sha: ${{ steps.checkout.outputs.commit }}
+      checkout-repository: ${{ steps.vars.outputs.repository }}
+      checkout-ref: ${{ steps.vars.outputs.ref }}
 
   progressive-rollout-gate:
     needs: [generate-matrix]
@@ -93,8 +110,8 @@ jobs:
         if: matrix.connector
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ (inputs.pr != '' && format('refs/pull/{0}/head', inputs.pr)) || inputs.gitref || github.head_ref || github.ref_name }}
+          repository: ${{ needs.generate-matrix.outputs.checkout-repository }}
+          ref: ${{ needs.generate-matrix.outputs.checkout-ref }}
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
