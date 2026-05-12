@@ -122,6 +122,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.2-rc.1 | 2026-05-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Resume concurrency tuning at default_concurrency=4 (Path A, 2,500 req/hr API key ceiling); re-enable progressive rollout |
 | 0.2.1 | 2026-05-12 | [78013](https://github.com/airbytehq/airbyte/pull/78013) | Fix API key config migration for existing connections |
 | 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication support and migrate existing API key configurations to nested credentials |
 | 0.1.2 | 2026-04-28 | [77318](https://github.com/airbytehq/airbyte/pull/77318) | Update dependencies |
