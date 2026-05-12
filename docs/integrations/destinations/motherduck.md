@@ -12,12 +12,6 @@ This destination implements [Destinations V2](/release_notes/self-managed/upgrad
 
 Learn more about what's new in Destinations V2 in the [Typing & Deduping guide](/platform/using-airbyte/core-concepts/typing-deduping). Note that [data generations](/platform/operator-guides/refreshes#data-generations) are not currently supported.
 
-## Network access
-
-If you're using Airbyte Cloud and this destination uses IP-based access controls,
-add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your
-allowlist.
-
 ## Supported sync modes
 
 | Sync mode | Supported? |

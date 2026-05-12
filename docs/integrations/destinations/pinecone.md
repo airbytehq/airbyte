@@ -24,9 +24,6 @@ You need the following information to configure the destination:
 - **Pinecone Environment** - The environment for your Pinecone project (for example, `us-east-1-aws`).
 - **Pinecone Index name** - The name of the Pinecone index to load data into.
 
-If you're using Airbyte Cloud and this destination uses IP-based access controls, add
-Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
-
 ## Supported sync modes
 
 | Sync mode | Supported? |
