@@ -82,9 +82,9 @@ ChatGPT can connect to the Agent MCP from the ChatGPT app directory.
 ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
 :::
 
-1. Open [ChatGPT](https://chatgpt.com) on the web. OpenAI doesn't currently document a separate app directory setup path for the desktop app.
+1. Open [ChatGPT](https://chatgpt.com) on the web or in the app.
 
-2. Open the app directory. In the current web UI, click **Apps** in the sidebar. OpenAI's help center also documents the app directory at **Settings** > **Apps**.
+2. Open the app directory. In the web UI, click **Apps** in the sidebar. In the app, click **Settings** > **Apps**.
 
 3. Search or browse for **Airbyte Agent Engine** in the app directory.
 
