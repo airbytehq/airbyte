@@ -185,11 +185,11 @@ jobs:
           token: ${{ github.token }}
 
       - name: Resolve rollout bypass checkbox state
-        if: matrix.connector
+        if: matrix.connector && github.event_name == 'pull_request'
         id: bypass-state
         env:
-          APPROVED: ${{ github.event_name == 'pull_request' && contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
-          EXISTS: ${{ github.event_name == 'pull_request' && (contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT)) }}
+          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
         run: |
           echo "approved=${APPROVED}" | tee -a $GITHUB_OUTPUT
           echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
