@@ -55,7 +55,7 @@ jobs:
     name: ${{ matrix.connector || 'No-Op' }} Progressive Rollout Gate
     runs-on: ubuntu-24.04
     env:
-      ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning in the PR comment"
+      ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning in the PR comment"
       GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       GITHUB_TOKEN: ${{ github.token }}
       USE_CLOUD_SQL_PROXY: "1"
@@ -126,8 +126,8 @@ jobs:
         if: matrix.connector
         id: bypass-state
         env:
-          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ACK_CHECKBOX_TEXT) }}
-          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ACK_CHECKBOX_TEXT) }}
+          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
         run: |
           echo "approved=${APPROVED}" | tee -a $GITHUB_OUTPUT
           echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
