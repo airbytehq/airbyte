@@ -366,7 +366,7 @@ definitions:
     primary_key: "date"
     $parameters:
       name: revenue
-      path: query/engage/revenue
+      path: 2.0/engage/revenue
       extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"

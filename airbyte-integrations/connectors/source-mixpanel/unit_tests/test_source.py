@@ -53,7 +53,7 @@ def test_streams(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
     requests_mock.register_uri(
         "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
@@ -73,7 +73,7 @@ def test_streams_string_date(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
     requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels/list", setup_response(402, {"error": "Payment required"}))
     requests_mock.register_uri(
