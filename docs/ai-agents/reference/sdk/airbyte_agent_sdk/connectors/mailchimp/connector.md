@@ -19,6 +19,37 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: AutomationsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[AutomationsSearchData]`
+    :   Search automations records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AutomationsSearchFilter):
+        - id: A string that uniquely identifies an Automation workflow
+        - create_time: The date and time the Automation was created
+        - start_time: The date and time the Automation was started
+        - status: The current status of the Automation
+        - emails_sent: The total number of emails sent for the Automation
+        - recipients: List settings for the Automation
+        - settings: The settings for the Automation workflow
+        - tracking: The tracking options for the Automation
+        - report_summary: A summary of opens and clicks for sent campaigns
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AutomationsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, count: int | None = None, offset: int | None = None, before_create_time: str | None = None, since_create_time: str | None = None, before_start_time: str | None = None, since_start_time: str | None = None, status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[Automation], AutomationsListResultMeta]`
     :   Get a summary of an account's classic automations
         
@@ -182,6 +213,33 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: InterestCategoriesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[InterestCategoriesSearchData]`
+    :   Search interest_categories records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (InterestCategoriesSearchFilter):
+        - list_id: The unique list id for the category
+        - id: The id for the interest category
+        - title: The text description of this category
+        - display_order: The order that the categories are displayed in the list
+        - type_: Determines how this category's interests appear on signup forms
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            InterestCategoriesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `get(self, list_id: str, interest_category_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.InterestCategory`
     :   Get information about a specific interest category
         
@@ -213,6 +271,34 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: InterestsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[InterestsSearchData]`
+    :   Search interests records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (InterestsSearchFilter):
+        - category_id: The id for the interest category
+        - list_id: The ID for the list that this interest belongs to
+        - id: The ID for the interest
+        - name: The name of the interest
+        - subscriber_count: The number of subscribers associated with this interest
+        - display_order: The display order for interests
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            InterestsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, list_id: str, interest_category_id: str, interest_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.Interest`
     :   Get interests or group names for a specific category
@@ -247,6 +333,55 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ListMembersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[ListMembersSearchData]`
+    :   Search list_members records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ListMembersSearchFilter):
+        - id: The MD5 hash of the lowercase version of the list member's email address
+        - email_address: Email address for a subscriber
+        - unique_email_id: An identifier for the address across all of Mailchimp
+        - contact_id: As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+        - full_name: The contact's full name
+        - web_id: The ID used in the Mailchimp web application
+        - email_type: Type of email this member asked to get
+        - status: Subscriber's current status
+        - unsubscribe_reason: A subscriber's reason for unsubscribing
+        - consents_to_one_to_one_messaging: Indicates whether a contact consents to 1:1 messaging
+        - merge_fields: A dictionary of merge fields where the keys are the merge tags
+        - interests: The key of this object's properties is the ID of the interest in question
+        - stats: Open and click rates for this subscriber
+        - ip_signup: IP address the subscriber signed up from
+        - timestamp_signup: The date and time the subscriber signed up for the list
+        - ip_opt: The IP address the subscriber used to confirm their opt-in status
+        - timestamp_opt: The date and time the subscriber confirmed their opt-in status
+        - member_rating: Star rating for this member, between 1 and 5
+        - last_changed: The date and time the member's info was last changed
+        - language: If set/detected, the subscriber's language
+        - vip: VIP status for subscriber
+        - email_client: The list member's email client
+        - location: Subscriber location information
+        - source: The source from which the subscriber was added to this list
+        - tags_count: The number of tags applied to this member
+        - tags: Returns up to 50 tags applied to this member
+        - list_id: The list id
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ListMembersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, list_id: str, subscriber_hash: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.ListMember`
     :   Get information about a specific list member
@@ -417,41 +552,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'MailchimpAuthConfig'", name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.connector.MailchimpConnector`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A MailchimpConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await MailchimpConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=MailchimpAuthConfig(api_key="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -502,10 +602,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await MailchimpConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -669,6 +765,47 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: SegmentMembersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[SegmentMembersSearchData]`
+    :   Search segment_members records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SegmentMembersSearchFilter):
+        - id: The MD5 hash of the lowercase version of the list member's email address
+        - email_address: Email address for a subscriber
+        - unique_email_id: An identifier for the address across all of Mailchimp
+        - email_type: Type of email this member asked to get
+        - status: Subscriber's current status
+        - merge_fields: A dictionary of merge fields where the keys are the merge tags
+        - interests: The key of this object's properties is the ID of the interest in question
+        - stats: Open and click rates for this subscriber
+        - ip_signup: IP address the subscriber signed up from
+        - timestamp_signup: The date and time the subscriber signed up for the list
+        - ip_opt: The IP address the subscriber used to confirm their opt-in status
+        - timestamp_opt: The date and time the subscriber confirmed their opt-in status
+        - member_rating: Star rating for this member, between 1 and 5
+        - last_changed: The date and time the member's info was last changed
+        - language: If set/detected, the subscriber's language
+        - vip: VIP status for subscriber
+        - email_client: The list member's email client
+        - location: Subscriber location information
+        - list_id: The list id
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SegmentMembersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, list_id: str, segment_id: str, count: int | None = None, offset: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[SegmentMember], SegmentMembersListResultMeta]`
     :   Get information about members in a saved segment
         
@@ -690,6 +827,36 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: SegmentsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[SegmentsSearchData]`
+    :   Search segments records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SegmentsSearchFilter):
+        - id: The unique id for the segment
+        - name: The name of the segment
+        - member_count: The number of active subscribers currently included in the segment
+        - type_: The type of segment
+        - created_at: The date and time the segment was created
+        - updated_at: The date and time the segment was last updated
+        - options: The conditions of the segment
+        - list_id: The list id
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SegmentsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `get(self, list_id: str, segment_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.Segment`
     :   Get information about a specific segment
@@ -728,6 +895,30 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: TagsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[TagsSearchData]`
+    :   Search tags records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TagsSearchFilter):
+        - id: The unique id for the tag
+        - name: The name of the tag
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TagsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
     `list(self, list_id: str, name: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[Tag], TagsListResultMeta]`
     :   Search for tags on a list by name
         
@@ -747,6 +938,37 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: UnsubscribesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[UnsubscribesSearchData]`
+    :   Search unsubscribes records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (UnsubscribesSearchFilter):
+        - email_id: The MD5 hash of the lowercase version of the list member's email address
+        - email_address: Email address for a subscriber
+        - merge_fields: A dictionary of merge fields where the keys are the merge tags
+        - vip: VIP status for subscriber
+        - timestamp: The date and time the member opted-out
+        - reason: If available, the reason listed by the member for unsubscribing
+        - campaign_id: The campaign id
+        - list_id: The list id
+        - list_is_active: The status of the list used
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            UnsubscribesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `list(self, campaign_id: str, count: int | None = None, offset: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[Unsubscribe], UnsubscribesListResultMeta]`
     :   Get information about members who have unsubscribed from a specific campaign

@@ -3021,7 +3021,7 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResult[list[AccessibleCustomer]]
+    * airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResult[list[dict[str, Any]]]
 
     ### Class variables
 
@@ -3063,7 +3063,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `GoogleAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta](**data: Any)`
@@ -3381,7 +3381,7 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GoogleAdsExecuteResult[list[AccessibleCustomer]](**data: Any)`
+`GoogleAdsExecuteResult[list[dict[str, Any]]](**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
