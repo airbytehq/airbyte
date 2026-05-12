@@ -10,8 +10,6 @@ The Customer.io destination connector allows you to sync data to Customer.io, a 
 
 - A Customer.io Account
 - Airbyte version 1.8 or later, or Airbyte Cloud
-- If you're using Airbyte Cloud and this destination uses IP-based access controls, add
-  Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ### S3 prerequisites for rejected records
 
