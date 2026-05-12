@@ -28,7 +28,7 @@ data:
     cloud:
       enabled: true
     oss:
-      enabled: true      
+      enabled: true
   releaseStage: alpha
   supportLevel: certified
   tags:
