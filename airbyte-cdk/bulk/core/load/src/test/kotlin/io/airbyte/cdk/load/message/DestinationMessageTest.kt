@@ -50,7 +50,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class DestinationMessageTest {
-    private val coercer = AirbyteValueCoercer(useFastTimestampParsing = true)
+    private val coercer = AirbyteValueCoercer()
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(

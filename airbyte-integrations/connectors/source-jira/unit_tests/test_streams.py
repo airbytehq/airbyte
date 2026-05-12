@@ -15,7 +15,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 @responses.activate
 def test_application_roles_stream_401_error(config, caplog):
-    config["domain"] = "test_application_domain"
+    config["domain"] = "test-application.atlassian.net"
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", status=401)
 
     stream = find_stream("application_roles", config)
@@ -68,7 +68,7 @@ def test_boards_stream(config, boards_response):
 
 @responses.activate
 def test_board_stream_forbidden(config, boards_response, caplog):
-    config["domain"] = "test_boards_domain"
+    config["domain"] = "test-boards.atlassian.net"
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
