@@ -1012,17 +1012,17 @@ metadata:
     dynamic_configs: true
     dynamic_configs_versions: true
     dynamic_configs_rules: true
-    events: true
-    events_metrics: true
+    events: false
+    events_metrics: false
     experiments: true
     gates: true
     gates_rules: true
     holdouts: true
-    ingestion_status: true
-    ingestion_runs: true
+    ingestion_status: false
+    ingestion_runs: false
     layers: true
     metrics: true
-    metrics_values: true
+    metrics_values: false
     segments: true
     segments_ids: true
     tags: true
@@ -1713,12 +1713,126 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      timestamp:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+      userID:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
   events_metrics:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      directionality:
+        type:
+          - string
+          - "null"
+      isPermanent:
+        type:
+          - boolean
+          - "null"
+      isReadOnly:
+        type:
+          - boolean
+          - "null"
+      isHidden:
+        type:
+          - boolean
+          - "null"
+      isVerified:
+        type:
+          - boolean
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      createdTime:
+        type:
+          - number
+          - "null"
+      creatorName:
+        type:
+          - string
+          - "null"
+      creatorEmail:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      lineage:
+        type:
+          - object
+          - "null"
+        properties:
+          events:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          metrics:
+            type:
+              - array
+              - "null"
+      team:
+        type:
+          - string
+          - "null"
+      funnelCountDistinct:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   experiments:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2226,12 +2340,152 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      ds:
+        type:
+          - string
+          - "null"
+      ingestion_dataset:
+        type:
+          - string
+          - "null"
+      ingestion_source:
+        type:
+          - string
+          - "null"
+      source_name:
+        type:
+          - string
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      error_message:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      rowCount:
+        type:
+          - number
+          - "null"
+      metricCount:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
   ingestion_runs:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      runID:
+        type: string
+      latestStatus:
+        type:
+          - string
+          - "null"
+      lastUpdatedAt:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - string
+          - "null"
+      sources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      dateStamps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      runHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            statusTimestamp:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      granularHistory:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            source:
+              type:
+                - string
+                - "null"
+            latestSourceStatus:
+              type:
+                - string
+                - "null"
+            statusByDate:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  dateStamp:
+                    type:
+                      - string
+                      - "null"
+                  statuses:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        statusTimestamp:
+                          type:
+                            - string
+                            - "null"
+                        status:
+                          type:
+                            - string
+                            - "null"
+    required:
+      - runID
   layers:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2416,7 +2670,39 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      value:
+        type:
+          - number
+          - "null"
+      unitType:
+        type:
+          - string
+          - "null"
+      numerator:
+        type:
+          - number
+          - "null"
+      denominator:
+        type:
+          - number
+          - "null"
+      inputRows:
+        type:
+          - number
+          - "null"
+      metricName:
+        type:
+          - string
+          - "null"
+      metricType:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
   segments:
     type: object
     $schema: http://json-schema.org/schema#
