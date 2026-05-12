@@ -187,7 +187,6 @@ Classes
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[CustomFieldsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[IssuesSearchData]
-    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[MessagesSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]
@@ -262,24 +261,6 @@ Classes
 <a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-<a id="MessagesSearchResult"></a>
-
-`MessagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -517,42 +498,6 @@ Classes
     `type_: str | None`
     :   Type classification of the issue
 
-<a id="MessagesSearchData"></a>
-
-`MessagesSearchData(**data: Any)`
-:   Search result data for messages entity.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `id: str`
-    :   Unique identifier for the message
-
-    `is_private: bool | None`
-    :   Whether the message is an internal note (not visible to the customer)
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `source: str | None`
-    :   Channel the message was sent through (e.g. email, slack)
-
-    `thread_id: str | None`
-    :   Identifier of the thread this message belongs to
-
-    `timestamp: str | None`
-    :   Timestamp the message was posted, in ISO 8601 format
-
 <a id="PylonAuthConfig"></a>
 
 `PylonAuthConfig(**data: Any)`
@@ -630,41 +575,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'PylonAuthConfig'", name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.PylonConnector`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A PylonConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await PylonConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=PylonAuthConfig(api_token="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -715,10 +625,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await PylonConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 

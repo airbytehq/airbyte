@@ -378,6 +378,7 @@ class TestFullRefresh:
         assert len(output.errors) == 0
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
     def test_given_report_status_fatal_when_read_then_exception_raised(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
@@ -385,18 +386,27 @@ class TestFullRefresh:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
-        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
-        http_mocker.get(_get_reports_request().build(), _get_reports_response())
-
-        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        # Use without_amz_date() because tick=True advances time, changing x-amz-date header.
+        # Provide 3 responses each to cover _DEFAULT_MAX_JOB_RETRY = 3 retry cycles.
         http_mocker.get(
-            _check_report_status_request(_REPORT_ID).build(),
-            _check_report_status_response(
-                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
-            ),
+            _get_reports_request().without_amz_date().build(),
+            [_get_reports_response()] * 3,
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * 3,
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+                )
+            ]
+            * 3,
         )
 
-        output = self._read(stream_name, config(), expecting_exception=True)
+        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         config_end_date = CONFIG_END_DATE
         assert (
@@ -967,6 +977,7 @@ class TestVendorSalesReportsFullRefresh:
         assert len(output.errors) == 0
 
     @pytest.mark.parametrize("selling_program", selling_program)
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
     def test_given_report_status_fatal_when_read_then_exception_raised(self, selling_program: str, http_mocker: HttpMocker) -> None:
         http_mocker.clear_all_matchers()
@@ -974,21 +985,27 @@ class TestVendorSalesReportsFullRefresh:
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
 
-        # Mock GET /reports (ReportCreationRequester pre-check) returning empty list
-        http_mocker.get(_get_reports_request().build(), _get_reports_response())
-
+        # Use without_amz_date() because tick=True advances time, changing x-amz-date header.
+        # Provide 3 responses each to cover _DEFAULT_MAX_JOB_RETRY = 3 retry cycles.
+        http_mocker.get(
+            _get_reports_request().without_amz_date().build(),
+            [_get_reports_response()] * 3,
+        )
         http_mocker.post(
-            _create_report_request(stream_name).with_body(create_report_request_body).build(),
-            _create_report_response(_REPORT_ID),
+            _create_report_request(stream_name).with_body(create_report_request_body).without_amz_date().build(),
+            [_create_report_response(_REPORT_ID)] * 3,
         )
         http_mocker.get(
-            _check_report_status_request(_REPORT_ID).build(),
-            _check_report_status_response(
-                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
-            ),
+            _check_report_status_request(_REPORT_ID).without_amz_date().build(),
+            [
+                _check_report_status_response(
+                    stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+                )
+            ]
+            * 3,
         )
 
-        output = self._read(stream_name, config(), expecting_exception=True)
+        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         assert "At least one job could not be completed for slice {}" in output.errors[-1].trace.error.message
 

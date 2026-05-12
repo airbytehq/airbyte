@@ -2429,7 +2429,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `IntercomExecuteResultWithMeta[list[Company], CompaniesListResultMeta](**data: Any)`
