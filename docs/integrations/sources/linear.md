@@ -50,7 +50,7 @@ For more information, see the [Linear OAuth 2.0 authentication documentation](ht
 6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
 7. Click **Set up source** and wait for the connection test to complete.
 
-Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.0`.
+Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.1` or later. If an API key connection was upgraded to `0.2.0` and no longer passes connection checks, upgrade to `0.2.1` or later.
 
 ## Supported sync modes
 
