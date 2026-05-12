@@ -16,7 +16,7 @@ definitions:
         - action: FAIL
           error_message_contains: This application has not been approved to use this API
           failure_type: config_error
-          error_message: Facebook app lacks approval for one or more selected Page fields. Deselect fields that require advanced Facebook permissions or use an approved Facebook app.
+          error_message: Facebook app lacks approval for one or more requested Page fields.
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
@@ -200,7 +200,6 @@ definitions:
       - image_copyrights
       - indexed_videos
       - likes
-      - live_videos
       - photos
       - posts
       - published_posts

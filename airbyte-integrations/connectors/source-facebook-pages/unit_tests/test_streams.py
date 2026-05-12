@@ -17,6 +17,7 @@ from airbyte_cdk.models import (
     FailureType,
     SyncMode,
 )
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 CONFIG = {"page_id": "1", "access_token": "token"}
@@ -113,9 +114,9 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert (
-            len(requested_fields) > 3
-        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        assert len(requested_fields) > 3, (
+            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        )
 
 
 def test_facebook_app_approval_error_is_config_error():
@@ -130,12 +131,24 @@ def test_facebook_app_approval_error_is_config_error():
         )
 
         source = SourceFacebookPages(catalog=catalog, config=CONFIG)
-        logger = logging.getLogger("test")
-        output = list(source.read(logger, CONFIG, catalog))
+        output = read(source, CONFIG, catalog, expecting_exception=True)
 
-        error = next(message.trace.error for message in output if message.trace and message.trace.error)
+        error = output.errors[0].trace.error
         assert error.failure_type == FailureType.config_error
-        assert (
-            error.message
-            == "Facebook app lacks approval for one or more selected Page fields. Deselect fields that require advanced Facebook permissions or use an approved Facebook app."
-        )
+        assert error.message == "Facebook app lacks approval for one or more requested Page fields."
+
+
+def test_page_stream_does_not_request_live_videos_by_default():
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(PAGE_URL, json={"id": "1", "name": "Test Page"})
+
+        source = SourceFacebookPages(config=CONFIG)
+        catalog = _make_catalog("page", ["id"])
+        logger = logging.getLogger("test")
+        list(source.read(logger, CONFIG, catalog))
+
+        raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
+        assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
+        requested_fields = raw_fields.split(",")
+        assert "live_videos" not in requested_fields
