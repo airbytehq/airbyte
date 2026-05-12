@@ -8,6 +8,25 @@ on:
       - reopened
       - edited
       - ready_for_review
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "The repository name"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "The git reference (branch or tag). Ignored when pr is provided."
+        required: false
+        type: string
+      pr:
+        description: "The pull request number to check out and comment on, if applicable."
+        required: false
+        type: number
+      connector:
+        description: "Single connector name to check. If omitted, auto-detects from changed files."
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -23,27 +42,37 @@ jobs:
         id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.head_ref || github.ref_name }}
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ (inputs.pr != '' && format('refs/pull/{0}/head', inputs.pr)) || inputs.gitref || github.head_ref || github.ref_name }}
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
 
       - name: Add upstream remote (forks only)
         if: >
-          github.event.pull_request.head.repo.full_name != '' &&
-          ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
+          (inputs.repo != '' &&
+           ! startswith(inputs.repo, 'airbytehq/')
+          ) ||
+          (github.event.pull_request.head.repo.full_name != '' &&
+           ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
+          )
         run: |
           if ! git remote | grep -q upstream; then
             git remote add upstream https://github.com/airbytehq/airbyte.git
           fi
           git fetch --quiet upstream master
 
+      - name: Generate Connector Matrix from Dispatch Input
+        if: inputs.connector != ''
+        id: dispatch-matrix
+        run: echo "connectors_matrix={\"connector\":[\"${{ inputs.connector }}\"]}" | tee -a $GITHUB_OUTPUT
+
       - name: Generate Connector Matrix from Changes
+        if: inputs.connector == ''
         id: generate-matrix
         run: echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
     outputs:
-      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      connectors-matrix: ${{ steps.dispatch-matrix.outputs.connectors_matrix || steps.generate-matrix.outputs.connectors_matrix }}
       commit-sha: ${{ steps.checkout.outputs.commit }}
 
   progressive-rollout-gate:
@@ -58,13 +87,14 @@ jobs:
       ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment"
       GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       GITHUB_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.head_ref || github.ref_name }}
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ (inputs.pr != '' && format('refs/pull/{0}/head', inputs.pr)) || inputs.gitref || github.head_ref || github.ref_name }}
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
@@ -123,7 +153,7 @@ jobs:
           echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Detect rollout bypass checkbox
-        if: matrix.connector
+        if: matrix.connector && github.event_name == 'pull_request'
         id: rollout-bypass
         uses: AhmedBaset/checklist@ecbf0bacb0d5d1fe41131db29a44984fec266017 # v3
         with:
@@ -133,31 +163,32 @@ jobs:
         if: matrix.connector
         id: bypass-state
         env:
-          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
-          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+          APPROVED: ${{ github.event_name == 'pull_request' && contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+          EXISTS: ${{ github.event_name == 'pull_request' && (contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT)) }}
         run: |
           echo "approved=${APPROVED}" | tee -a $GITHUB_OUTPUT
           echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
 
       - name: Find progressive rollout gate comment
-        if: matrix.connector
+        if: matrix.connector && env.PR_NUMBER != ''
         id: find-rollout-comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ env.PR_NUMBER }}
           comment-author: github-actions[bot]
           body-includes: "<!-- progressive-rollout-gate:${{ matrix.connector }} -->"
 
       - name: Create progressive rollout gate placeholder comment
         if: >
           matrix.connector &&
+          env.PR_NUMBER != '' &&
           steps.find-rollout-comment.outputs.comment-id == '' &&
           (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
            contains(steps.master-version.outputs.version, '-rc.'))
         id: create-rollout-comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ env.PR_NUMBER }}
           edit-mode: replace
           body: |
             <!-- progressive-rollout-gate:${{ matrix.connector }} -->
@@ -174,7 +205,6 @@ jobs:
           EXISTING_COMMENT_ID: ${{ steps.find-rollout-comment.outputs.comment-id }}
           CREATED_COMMENT_ID: ${{ steps.create-rollout-comment.outputs.comment-id }}
           REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMENT_ID="${EXISTING_COMMENT_ID:-${CREATED_COMMENT_ID}}"
           echo "id=${COMMENT_ID}" | tee -a $GITHUB_OUTPUT
@@ -183,6 +213,7 @@ jobs:
       - name: Add rollout bypass checkbox to PR description
         if: >
           matrix.connector &&
+          github.event_name == 'pull_request' &&
           steps.bypass-state.outputs.exists != 'true' &&
           (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
            contains(steps.master-version.outputs.version, '-rc.'))
@@ -198,6 +229,7 @@ jobs:
       - name: Render progressive rollout gate comment
         if: >
           matrix.connector &&
+          env.PR_NUMBER != '' &&
           steps.rollout-comment.outputs.id != '' &&
           (steps.find-rollout-comment.outputs.comment-id != '' ||
            fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
@@ -228,7 +260,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ steps.rollout-comment.outputs.id }}
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ env.PR_NUMBER }}
           edit-mode: replace
           body: ${{ steps.rollout-comment-template.outputs.result }}
 
