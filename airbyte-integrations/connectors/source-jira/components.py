@@ -1,8 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 import re
+import time
+import urllib.parse
+import urllib.request
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, ClassVar, Iterable, List, Mapping, Optional
 
 from requests_cache import Response
 
@@ -20,6 +24,91 @@ from airbyte_cdk.sources.declarative.validators import ValidationStrategy
 # (consecutive dots), and `airbyte-.com` (label ending in `-`) while still
 # accepting Atlassian custom domains like `tickets.springfield.com`.
 _DOMAIN_HOST_PATTERN = re.compile(r"^([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$")
+_ACCESSIBLE_RESOURCES_URL = "https://api.atlassian.com/oauth/token/accessible-resources"
+_ATLASSIAN_TOKEN_ENDPOINT = "https://auth.atlassian.com/oauth/token"
+
+
+@dataclass
+class JiraOAuthAuthenticator:
+    """OAuth2 authenticator that auto-resolves the Jira Cloud ID from the
+    Atlassian accessible-resources API so users don't need to supply it.
+    """
+
+    # Class-level cache — shared across all instances in the same process
+    _shared_access_token: ClassVar[Optional[str]] = None
+    _shared_token_expiry: ClassVar[float] = 0.0
+    _shared_refresh_token: ClassVar[Optional[str]] = None
+
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        creds = self.config.get("credentials", {})
+        if not creds.get("client_id") or not creds.get("client_secret"):
+            return
+        if JiraOAuthAuthenticator._shared_refresh_token is None:
+            JiraOAuthAuthenticator._shared_refresh_token = creds.get("refresh_token")
+        if not creds.get("cloud_id"):
+            self._fetch_token_and_resolve_cloud_id()
+
+    def _token_request(self) -> dict:
+        creds = self.config.get("credentials", {})
+        data = urllib.parse.urlencode(
+            {
+                "grant_type": "refresh_token",
+                "client_id": creds["client_id"],
+                "client_secret": creds["client_secret"],
+                "refresh_token": JiraOAuthAuthenticator._shared_refresh_token or creds["refresh_token"],
+            }
+        ).encode()
+        req = urllib.request.Request(
+            _ATLASSIAN_TOKEN_ENDPOINT,
+            data=data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        with urllib.request.urlopen(req) as resp:
+            token_data = json.load(resp)
+
+        JiraOAuthAuthenticator._shared_access_token = token_data["access_token"]
+        JiraOAuthAuthenticator._shared_token_expiry = time.time() + token_data.get("expires_in", 3600) - 60
+        if "refresh_token" in token_data:
+            JiraOAuthAuthenticator._shared_refresh_token = token_data["refresh_token"]
+            self.config["credentials"]["refresh_token"] = token_data["refresh_token"]
+
+        return token_data
+
+    def _fetch_token_and_resolve_cloud_id(self) -> None:
+        self._token_request()
+
+        domain = self.config["domain"]
+        req = urllib.request.Request(
+            _ACCESSIBLE_RESOURCES_URL,
+            headers={"Authorization": f"Bearer {JiraOAuthAuthenticator._shared_access_token}"},
+        )
+        with urllib.request.urlopen(req) as resp:
+            resources = json.load(resp)
+
+        for resource in resources:
+            if domain in resource.get("url", ""):
+                self.config["credentials"]["cloud_id"] = resource["id"]
+                return
+
+        available = [r.get("url") for r in resources]
+        raise ValueError(f"No Jira Cloud instance found for domain '{domain}'. Available: {available}")
+
+    def get_auth_header(self) -> Mapping[str, str]:
+        if not JiraOAuthAuthenticator._shared_access_token or time.time() >= JiraOAuthAuthenticator._shared_token_expiry:
+            self._token_request()
+        return {"Authorization": f"Bearer {JiraOAuthAuthenticator._shared_access_token}"}
+
+    def get_request_params(self, **kwargs) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(self, **kwargs) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_json(self, **kwargs) -> Mapping[str, Any]:
+        return {}
 
 
 @dataclass
