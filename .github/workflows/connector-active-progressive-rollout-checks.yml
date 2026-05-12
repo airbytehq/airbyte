@@ -38,26 +38,31 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
+      - name: Resolve checkout repository
+        id: checkout-repository
+        run: echo "value=${{ inputs.repo || github.event.pull_request.head.repo.full_name || github.repository }}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Resolve checkout ref from PR input
+        if: inputs.pr != ''
+        id: checkout-ref-pr
+        run: echo "value=refs/pull/${{ inputs.pr }}/head" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Resolve checkout ref from gitref input
+        if: inputs.pr == '' && inputs.gitref != ''
+        id: checkout-ref-gitref
+        run: echo "value=${{ inputs.gitref }}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Resolve checkout ref from event
+        if: inputs.pr == '' && inputs.gitref == ''
+        id: checkout-ref-event
+        run: echo "value=${{ github.head_ref || github.ref_name }}" | tee -a "${GITHUB_OUTPUT}"
+
       - name: Resolve workflow inputs
         id: vars
-        env:
-          INPUT_GITREF: ${{ inputs.gitref }}
-          INPUT_PR: ${{ inputs.pr }}
-          INPUT_REPO: ${{ inputs.repo }}
-          PULL_REQUEST_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-          DEFAULT_REPOSITORY: ${{ github.repository }}
-          HEAD_REF: ${{ github.head_ref }}
-          REF_NAME: ${{ github.ref_name }}
         run: |
-          REPOSITORY="${INPUT_REPO:-${PULL_REQUEST_REPO:-${DEFAULT_REPOSITORY}}}"
-          REF="${REF_NAME}"
-          [[ -n "${HEAD_REF}" ]] && REF="${HEAD_REF}"
-          [[ -n "${INPUT_GITREF}" ]] && REF="${INPUT_GITREF}"
-          [[ -n "${INPUT_PR}" ]] && REF="refs/pull/${INPUT_PR}/head"
-
-          echo "repository=${REPOSITORY}" | tee -a "${GITHUB_OUTPUT}"
-          echo "ref=${REF}" | tee -a "${GITHUB_OUTPUT}"
-          echo "is-fork=$([[ "${REPOSITORY}" != airbytehq/* ]] && echo true || echo false)" | tee -a "${GITHUB_OUTPUT}"
+          echo "repository=${{ steps.checkout-repository.outputs.value }}" | tee -a "${GITHUB_OUTPUT}"
+          echo "ref=${{ steps.checkout-ref-pr.outputs.value || steps.checkout-ref-gitref.outputs.value || steps.checkout-ref-event.outputs.value }}" | tee -a "${GITHUB_OUTPUT}"
+          echo "is-fork=${{ ! startsWith(steps.checkout-repository.outputs.value, 'airbytehq/') }}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Checkout Airbyte
         id: checkout
