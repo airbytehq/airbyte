@@ -15,18 +15,10 @@ on:
         required: false
         default: "airbytehq/airbyte"
         type: string
-      gitref:
-        description: "The git reference (branch or tag). Ignored when pr is provided."
-        required: false
-        type: string
       pr:
-        description: "The pull request number to check out and comment on, if applicable."
-        required: false
+        description: "The pull request number to inspect and comment on."
+        required: true
         type: number
-      connector:
-        description: "Single connector name to check. If omitted, auto-detects from changed files."
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -47,64 +39,69 @@ jobs:
         env:
           INPUT_REPO: ${{ inputs.repo }}
           INPUT_PR: ${{ inputs.pr }}
-          INPUT_GITREF: ${{ inputs.gitref }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          repository="${INPUT_REPO:-${PR_HEAD_REPO:-${GITHUB_REPOSITORY}}}"
+          pr_number="${INPUT_PR:-${EVENT_PR_NUMBER}}"
+          checkout_repository="${INPUT_REPO:-${PR_HEAD_REPO:-${GITHUB_REPOSITORY}}}"
+          pr_repository="${INPUT_REPO:-${GITHUB_REPOSITORY}}"
           if [[ -n "${INPUT_PR}" ]]; then
             ref="refs/pull/${INPUT_PR}/head"
-          elif [[ -n "${INPUT_GITREF}" ]]; then
-            ref="${INPUT_GITREF}"
           else
             ref="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
           fi
           is_fork="true"
-          if [[ "${repository}" == airbytehq/* ]]; then
+          if [[ "${checkout_repository}" == airbytehq/* ]]; then
             is_fork="false"
           fi
 
-          echo "repository=${repository}" | tee -a "${GITHUB_OUTPUT}"
+          echo "pr-number=${pr_number}" | tee -a "${GITHUB_OUTPUT}"
+          echo "pr-repository=${pr_repository}" | tee -a "${GITHUB_OUTPUT}"
+          echo "checkout-repository=${checkout_repository}" | tee -a "${GITHUB_OUTPUT}"
           echo "ref=${ref}" | tee -a "${GITHUB_OUTPUT}"
           echo "is-fork=${is_fork}" | tee -a "${GITHUB_OUTPUT}"
 
-      - name: Checkout Airbyte
-        if: inputs.connector == ''
-        id: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install uv
+        if: steps.vars.outputs.pr-number != ''
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
-          repository: ${{ steps.vars.outputs.repository }}
-          ref: ${{ steps.vars.outputs.ref }}
-          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
-          fetch-depth: 0
+          ignore-empty-workdir: true
 
-      - name: Add upstream remote (forks only)
-        if: >
-          inputs.connector == '' &&
-          steps.vars.outputs.is-fork == 'true'
-        run: |
-          if ! git remote | grep -q upstream; then
-            git remote add upstream https://github.com/airbytehq/airbyte.git
-          fi
-          git fetch --quiet upstream master
+      - name: Install Ops CLI
+        if: steps.vars.outputs.pr-number != ''
+        run: uv tool install 'airbyte-internal-ops>=0.55.0'
 
       - name: Resolve connector matrix
         id: connector-matrix
         env:
-          INPUT_CONNECTOR: ${{ inputs.connector }}
+          PR_NUMBER: ${{ steps.vars.outputs.pr-number }}
+          PR_REPOSITORY: ${{ steps.vars.outputs.pr-repository }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [[ -n "${INPUT_CONNECTOR}" ]]; then
-            connectors_matrix="{\"connector\":[\"${INPUT_CONNECTOR}\"]}"
+          if [[ -n "${PR_NUMBER}" ]]; then
+            repo_owner="${PR_REPOSITORY%%/*}"
+            repo_name="${PR_REPOSITORY#*/}"
+            connectors_matrix="$(
+              airbyte-ops gh connector list \
+                --modified-only \
+                --pr "${PR_NUMBER}" \
+                --owner "${repo_owner}" \
+                --repo "${repo_name}" \
+                --gh-token "${GITHUB_TOKEN}" \
+                --output-format json-gh-matrix
+            )"
           else
-            connectors_matrix="$(./poe-tasks/get-modified-connectors.sh --json)"
+            echo "::error::Auto-detecting modified connectors requires a pull request number."
+            exit 1
           fi
           echo "connectors_matrix=${connectors_matrix}" | tee -a "${GITHUB_OUTPUT}"
 
     outputs:
       connectors-matrix: ${{ steps.connector-matrix.outputs.connectors_matrix }}
-      commit-sha: ${{ steps.checkout.outputs.commit }}
-      checkout-repository: ${{ steps.vars.outputs.repository }}
+      checkout-repository: ${{ steps.vars.outputs.checkout-repository }}
       checkout-ref: ${{ steps.vars.outputs.ref }}
 
   progressive-rollout-gate:
