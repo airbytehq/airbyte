@@ -82,7 +82,7 @@ class ObjectLoaderUploadCompleterTest {
     }
 
     @Test
-    fun `test skipping upload when all parts are empty`() = runTest {
+    fun `test skipping upload when all parts are empty aborts the in-flight upload`() = runTest {
         val upload: StreamingUpload<MockRemoteObject> = mockk(relaxed = true)
 
         val state = completer.start(ObjectKey(streamDescriptor, "key1"), 0)
@@ -98,8 +98,11 @@ class ObjectLoaderUploadCompleterTest {
         assertNull(uploadResult.remoteObject)
         assertEquals(BatchState.PERSISTED, uploadResult.state)
 
-        // complete() should NOT have been called
+        // complete() should NOT have been called, but abort() MUST be called so that the
+        // multipart upload initiated by ObjectLoaderPartLoader.start() is not leaked
+        // server-side.
         coVerify(exactly = 0) { upload.complete() }
+        coVerify(exactly = 1) { upload.abort() }
     }
 
     @Test

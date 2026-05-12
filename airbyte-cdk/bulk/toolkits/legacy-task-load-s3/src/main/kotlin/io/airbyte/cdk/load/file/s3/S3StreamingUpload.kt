@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.s3
 
+import aws.sdk.kotlin.services.s3.model.AbortMultipartUploadRequest
 import aws.sdk.kotlin.services.s3.model.CompleteMultipartUploadRequest
 import aws.sdk.kotlin.services.s3.model.CompletedMultipartUpload
 import aws.sdk.kotlin.services.s3.model.CompletedPart
@@ -27,6 +28,7 @@ class S3StreamingUpload(
     private val log = KotlinLogging.logger {}
     private val uploadedParts = ConcurrentHashSet<CompletedPart>()
     private val isComplete = AtomicBoolean(false)
+    private val isAborted = AtomicBoolean(false)
 
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         log.debug { "Uploading part $index to ${response.key} (uploadId=${response.uploadId}" }
@@ -89,5 +91,39 @@ class S3StreamingUpload(
         }
 
         return S3Object(response.key!!, bucketConfig)
+    }
+
+    override suspend fun abort() {
+        if (isComplete.get()) {
+            log.debug {
+                "abort() called after complete() for ${response.key} (uploadId=${response.uploadId}); ignoring"
+            }
+            return
+        }
+        if (!isAborted.setOnce()) {
+            log.debug {
+                "abort() already invoked for ${response.key} (uploadId=${response.uploadId}); ignoring"
+            }
+            return
+        }
+        try {
+            log.info {
+                "Aborting multipart upload for ${response.key} (uploadId=${response.uploadId})"
+            }
+            client.abortMultipartUpload(
+                AbortMultipartUploadRequest {
+                    uploadId = response.uploadId
+                    bucket = response.bucket
+                    key = response.key
+                }
+            )
+        } catch (e: Exception) {
+            // We never want abort() to throw: it is a best-effort cleanup. S3 lifecycle rules
+            // will eventually clean up the upload if our abort call fails (e.g. transient error,
+            // or the upload was already completed/aborted out-of-band).
+            log.warn(e) {
+                "Failed to abort multipart upload for ${response.key} (uploadId=${response.uploadId}); leaving for S3 lifecycle to clean up"
+            }
+        }
     }
 }

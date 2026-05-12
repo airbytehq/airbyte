@@ -75,9 +75,16 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
                         // object which would lack valid file headers/footers
                         // (e.g. Parquet magic bytes), causing schema mismatch
                         // errors in downstream readers.
+                        //
+                        // ObjectLoaderPartLoader.start() has already initiated the
+                        // streaming upload (e.g. on S3 this is a createMultipartUpload),
+                        // so we must abort() it explicitly to avoid leaking a dangling
+                        // multipart upload server-side. abort() is best-effort and
+                        // never throws.
                         log.info {
-                            "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey} but all parts were empty, skipping upload (state $state)"
+                            "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey} but all parts were empty, aborting upload (state $state)"
                         }
+                        input.upload.await().abort()
                         FinalOutput(UploadResult(objectLoader.stateAfterUpload, null))
                     } else {
                         log.info {

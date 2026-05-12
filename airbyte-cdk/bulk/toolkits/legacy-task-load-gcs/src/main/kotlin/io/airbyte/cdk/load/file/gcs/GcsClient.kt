@@ -77,6 +77,8 @@ class GcsS3Client(
                 s3Upload.uploadPart(part, index)
 
             override suspend fun complete(): GcsBlob = s3Upload.complete().toGcsBlob(config)
+
+            override suspend fun abort() = s3Upload.abort()
         }
     }
 }
