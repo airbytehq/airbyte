@@ -33,6 +33,10 @@ permissions:
   issues: write
   pull-requests: write
 
+concurrency:
+  group: rollout-gate-${{ github.event.pull_request.number || inputs.pr || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-matrix:
     name: Generate Connector Matrix
