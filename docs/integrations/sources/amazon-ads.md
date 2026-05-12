@@ -164,6 +164,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8.0.3-rc.2 | 2026-05-12 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Concurrency tuning iteration 2: bump num_workers default 12 -> 14 (PASS at 12 over 24h, 4 daily+ TIER_2 actors, no 429s observed). |
 | 8.0.3-rc.1 | 2026-05-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Tune default concurrency from 10 to 12 (`num_workers`) for progressive rollout |
 | 8.0.2 | 2026-05-05 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Skip profiles without Amazon Attribution access on attribution report performance streams instead of failing the sync |
 | 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |
