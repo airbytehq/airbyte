@@ -58,7 +58,6 @@ jobs:
       ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning in the PR comment"
       GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       GITHUB_TOKEN: ${{ github.token }}
-      DB_PORT: "15432"
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -95,13 +94,18 @@ jobs:
 
       - name: Start Cloud SQL Proxy
         if: matrix.connector
-        run: airbyte-ops cloud db start-proxy --port 15432
+        env:
+          # Local Cloud SQL Proxy port for prod DB queries.
+          DB_PORT: "15432"
+        run: airbyte-ops cloud db start-proxy --port "${DB_PORT}"
 
       - name: Get rollout status
         if: matrix.connector
         id: rollout-status
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
+          # Local Cloud SQL Proxy port for prod DB queries.
+          DB_PORT: "15432"
         run: |
           {
             echo "json<<EOF"
