@@ -519,7 +519,7 @@ jobs:
       - name: Find progressive rollout gate comment
         if: matrix.connector
         id: find-rollout-comment
-        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aa # v4.0.0
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: github-actions[bot]
