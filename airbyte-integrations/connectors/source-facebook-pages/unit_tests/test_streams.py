@@ -14,6 +14,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
 )
 
@@ -115,3 +116,26 @@ def test_without_catalog_at_init_requests_all_fields():
         assert (
             len(requested_fields) > 3
         ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+
+
+def test_facebook_app_approval_error_is_config_error():
+    catalog = _make_catalog("page", ["id", "name"])
+
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(
+            PAGE_URL,
+            json={"error": {"message": "(#100) This application has not been approved to use this API"}},
+            status_code=400,
+        )
+
+        source = SourceFacebookPages(catalog=catalog, config=CONFIG)
+        logger = logging.getLogger("test")
+        output = list(source.read(logger, CONFIG, catalog))
+
+        error = next(message.trace.error for message in output if message.trace and message.trace.error)
+        assert error.failure_type == FailureType.config_error
+        assert (
+            error.message
+            == "Facebook app lacks approval for one or more selected Page fields. Deselect fields that require advanced Facebook permissions or use an approved Facebook app."
+        )
