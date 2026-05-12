@@ -55,7 +55,7 @@ jobs:
     name: ${{ matrix.connector || 'No-Op' }} Progressive Rollout Gate
     runs-on: ubuntu-24.04
     env:
-      ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning in the PR comment"
+      ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment"
       GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
@@ -191,9 +191,9 @@ jobs:
           github_token: ${{ github.token }}
           add_markdown: |
             > [!IMPORTANT]
-            > Active progressive rollout warning.
+            > Active progressive rollout warning for ${{ matrix.connector }}.
 
-            - [ ] (Click to Approve:) Bypass the active progressive rollout warning in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).
+            - [ ] (Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).
 
       - name: Update progressive rollout gate comment
         if: >
@@ -217,7 +217,7 @@ jobs:
             > Bypass ACK checked: `${{ steps.bypass-state.outputs.approved }}`
             >
             > To bypass this warning, check this box in the PR description:
-            > `- [ ] (Click to Approve:) Bypass the active progressive rollout warning in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).`
+            > `- [ ] (Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).`
             >
             > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
