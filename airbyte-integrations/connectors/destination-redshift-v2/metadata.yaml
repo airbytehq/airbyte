@@ -81,8 +81,18 @@ data:
           '
         upgradeDeadline: "2024-07-31"
       4.0.0:
-        message: "Version 4.0.0 is a full rewrite of the Redshift destination using the new CDK architecture with direct final-table writes (no raw tables). The configuration shape is unchanged, enabling seamless migration. Selecting Upgrade will upgrade all connections using this destination at their next sync."
-        upgradeDeadline: "2026-05-08"
+        message:
+          "Version 4.0.0 is a full rewrite of the Redshift destination using the
+          new CDK architecture. Data is now written directly to final tables (no
+          more `_airbyte_raw_*` tables). Oversized or out-of-range values are
+          nullified before insertion and tracked in `_airbyte_meta`. If you have
+          downstream dbt models or SQL queries referencing `_airbyte_raw_*` tables,
+          update them before upgrading. See the [migration guide](https://docs.airbyte.com/integrations/destinations/redshift-v2-migrations)
+          for details. Selecting `Upgrade` will upgrade **all** connections using
+          this destination at their next sync.
+
+          "
+        upgradeDeadline: "2026-08-31"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
