@@ -398,9 +398,12 @@ class TestFullRefresh:
         )
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).without_amz_date().build(),
-            [_check_report_status_response(
-                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
-            )] * 3,
+            [
+                _check_report_status_response(
+                    stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+                )
+            ]
+            * 3,
         )
 
         output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
@@ -994,9 +997,12 @@ class TestVendorSalesReportsFullRefresh:
         )
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).without_amz_date().build(),
-            [_check_report_status_response(
-                stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
-            )] * 3,
+            [
+                _check_report_status_response(
+                    stream_name, processing_status=ReportProcessingStatus.FATAL, report_document_id=_REPORT_DOCUMENT_ID
+                )
+            ]
+            * 3,
         )
 
         output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
