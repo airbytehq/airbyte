@@ -283,6 +283,20 @@ For example, if you select a report with daily aggregation, the report will cont
 
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Report aggregated using an hourly window.
 
+## Migration
+
+### Upgrading to 3.0.0
+
+Version 3.0.0 expands the primary keys of all report streams so that they include every attribute (dimension) column the connector requests from Microsoft's reporting API. Without this fix, destinations performing incremental append+dedup silently collapsed rows that differed only on an attribute column the connector requested but did not include in the previous (narrower) primary key, causing significant data loss (see [oncall #12253](https://github.com/airbytehq/oncall/issues/12253)).
+
+Because the primary keys of the report streams have changed, users must:
+
+1. Upgrade the Bing Ads source connector to version 3.0.0.
+2. Refresh the source schema for the connection.
+3. Reset (clear) all affected report streams so the destination re-receives previously-collapsed rows under the new primary keys.
+
+Affected streams: all aggregations (`_hourly`, `_daily`, `_weekly`, `_monthly`) of `age_gender_audience_report`, `campaign_performance_report`, `ad_group_performance_report`, `keyword_performance_report`, `ad_group_impression_performance_report`, `audience_performance_report`, `goals_and_funnels_report`, `user_location_performance_report`, `account_performance_report`, `ad_performance_report`, `search_query_performance_report`, `product_search_query_performance_report`, plus `budget_summary_report`.
+
 ## Limitations and troubleshooting
 
 <details>
@@ -313,6 +327,7 @@ Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign 
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0 | 2026-05-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
 | 2.23.16 | 2026-04-21 | [76515](https://github.com/airbytehq/airbyte/pull/76515) | Update dependencies |
 | 2.23.15 | 2026-04-08 | [76165](https://github.com/airbytehq/airbyte/pull/76165) | Promote 2.23.15-rc.3 to GA — fixes SAS token expiry during report downloads |
 | 2.23.15-rc.3 | 2026-04-02 | [76053](https://github.com/airbytehq/airbyte/pull/76053) | Fix SAS token expiry during report downloads by re-polling for fresh URL before each download |

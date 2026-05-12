@@ -556,140 +556,254 @@ definitions:
       - Type: LegacyToPerPartitionStateMigration
 
   report_primary_keys:
+    # Primary keys must include every ATTRIBUTE (dimension) column the stream requests.
+    # Microsoft's reporting API returns one row per unique combination of all requested
+    # attribute columns; if the PK is narrower than that set, the destination silently
+    # collapses rows that differ only on a requested-but-not-in-PK attribute during
+    # incremental append+dedup. See https://github.com/airbytehq/oncall/issues/12253.
+    # Metrics, *Name fields functionally dependent on IDs, and *Status point-in-time
+    # state fields are intentionally excluded.
     base_report_primary_keys:
       - TimePeriod
-      - Network
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - BaseCampaignId
+      - CurrencyCode
+      - AdDistribution
       - DeviceType
+      - Language
+      - Network
+      - CampaignType
+      - AdGroupType
+      - TrackingTemplate
+      - CustomParameters
+      - AdGroupLabels
+      - FinalUrlSuffix
     age_gender_audience:
+      - TimePeriod
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - BaseCampaignId
+      - AdDistribution
       - AgeGroup
       - Gender
-      - TimePeriod
-      - AccountId
-      - CampaignId
       - Language
-      - AdDistribution
+      - Goal
+      - GoalType
     campaign_performance:
+      - TimePeriod
       - AccountId
       - CampaignId
-      - TimePeriod
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Network
       - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
       - BidMatchType
+      - TopVsOther
+      - CampaignType
+      - CampaignLabels
+      - BudgetName
+      - CustomParameters
     ad_group_performance:
+      - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
-      - TimePeriod
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
+      - Language
       - Network
       - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
       - BidMatchType
-      - Language
+      - TopVsOther
+      - CampaignType
+      - AdGroupType
+      - CustomParameters
+      - FinalUrlSuffix
     keyword_performance_report:
+      - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
-      - KeywordId
       - AdId
-      - TimePeriod
+      - KeywordId
+      - Keyword
+      - BaseCampaignId
       - CurrencyCode
-      - DeliveredMatchType
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Language
       - Network
-      - DeviceOS
-      - TopVsOther
+      - DeliveredMatchType
       - BidMatchType
+      - TopVsOther
+      - AdType
+      - KeywordLabels
+      - BidStrategyType
+      - Goal
+      - GoalType
+      - FinalUrl
+      - FinalMobileUrl
+      - FinalAppUrl
+      - FinalUrlSuffix
+      - DestinationUrl
+      - TrackingTemplate
+      - CustomParameters
     geographic_performance_report: None
     campaign_impression_performance: None
     product_dimension_performance: None
     audience_performance:
-      - AudienceId
       - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
+      - BaseCampaignId
+      - AudienceId
+      - AssociationId
+      - AudienceType
+      - AssociationLevel
+      - TargetingSetting
+      - Goal
+      - GoalType
     goals_and_funnels:
-      - GoalId
       - TimePeriod
       - AccountId
       - CampaignId
+      - AdGroupId
+      - KeywordId
+      - Keyword
+      - GoalId
+      - Goal
+      - GoalType
       - DeviceType
       - DeviceOS
-      - AdGroupId
     account_impression_performance: None
     user_location_performance:
+      - TimePeriod
       - AccountId
-      - AdGroupId
       - CampaignId
-      - DeliveredMatchType
-      - DeviceOS
-      - DeviceType
-      - Language
+      - AdGroupId
+      - AssetGroupId
       - LocationId
       - QueryIntentLocationId
-      - TimePeriod
+      - CurrencyCode
+      - AdDistribution
+      - DeviceType
+      - DeviceOS
+      - Language
+      - Network
+      - DeliveredMatchType
+      - BidMatchType
       - TopVsOther
+      - CampaignType
+      - Country
+      - State
+      - MetroArea
+      - City
+      - County
+      - PostalCode
+      - Neighborhood
+      - QueryIntentCountry
+      - QueryIntentState
+      - QueryIntentCity
+      - QueryIntentCounty
+      - QueryIntentPostalCode
+      - QueryIntentNeighborhood
+      - QueryIntentDMA
+      - ProximityTargetLocation
+      - Radius
+      - Goal
+      - GoalType
     budget_summary:
       - Date
+      - AccountId
+      - CampaignId
     account_performance_report:
-      - AccountId
       - TimePeriod
+      - AccountId
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Network
       - DeliveredMatchType
-      - DeviceOS
-      - TopVsOther
       - BidMatchType
+      - TopVsOther
     ad_performance_report:
+      - TimePeriod
       - AccountId
       - CampaignId
       - AdGroupId
       - AdId
-      - TimePeriod
       - CurrencyCode
       - AdDistribution
       - DeviceType
+      - DeviceOS
       - Language
       - Network
-      - DeviceOS
+      - DeliveredMatchType
+      - BidMatchType
       - TopVsOther
+      - CampaignType
+      - DestinationUrl
+      - FinalAppUrl
+      - AdDescription
+      - AdDescription2
+      - CustomParameters
+    search_query_performance:
+      - TimePeriod
+      - CustomerId
+      - AccountId
+      - CampaignId
+      - AdGroupId
+      - AdId
+      - AdGroupCriterionId
+      - KeywordId
+      - Keyword
+      - SearchQuery
+      - AdType
+      - CampaignType
+      - Language
+      - Network
+      - DeviceType
+      - DeviceOS
       - BidMatchType
       - DeliveredMatchType
-    search_query_performance:
-      - SearchQuery
-      - Keyword
-      - TimePeriod
-      - AccountId
-      - CampaignId
-      - Language
-      - DeliveredMatchType
-      - DeviceType
-      - DeviceOS
       - TopVsOther
+      - DestinationUrl
+      - Goal
+      - GoalType
     product_search_query_performance:
-      - AccountId
       - TimePeriod
+      - CustomerId
+      - AccountId
       - CampaignId
-      - AdId
       - AdGroupId
+      - AdId
+      - AdGroupCriterionId
+      - MerchantProductId
+      - AssetGroupId
       - SearchQuery
-      - DeviceType
-      - DeviceOS
+      - Title
+      - ProductGroup
+      - PartitionType
+      - CampaignType
       - Language
       - Network
+      - DeviceType
+      - DeviceOS
+      - ClickTypeId
+      - ClickType
+      - DestinationUrl
+      - Goal
+      - GoalType
 
   report_columns:
     age_gender_audience:
