@@ -1410,13 +1410,16 @@ Classes
 
     ### Class variables
 
-    `blocks: str | None`
+    `blocks: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `channel: str`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool | None`
     :   The type of the None singleton.
 
     `text: str`
@@ -1635,10 +1638,16 @@ Classes
 
     ### Class variables
 
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
     `channel: str`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool | None`
     :   The type of the None singleton.
 
     `reply_broadcast: bool | None`
@@ -1763,6 +1772,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
 
     `channel: str`
     :   The type of the None singleton.
@@ -2133,10 +2145,16 @@ Classes
 
     ### Class variables
 
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
     `channel: str`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool | None`
     :   The type of the None singleton.
 
     `post_at: int`
@@ -2288,7 +2306,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `SlackExecuteResultWithMeta[list[Channel], ChannelsListResultMeta](**data: Any)`
@@ -2519,6 +2537,9 @@ Classes
 
     ### Class variables
 
+    `include_archived_channels: bool`
+    :   Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.
+
     `join_channels: bool`
     :   Whether to automatically join public channels to sync messages.
 
@@ -2530,6 +2551,9 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+    `threads_ignore_no_replies: bool`
+    :   When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.
 
 <a id="SlackTokenAuthenticationAuthConfig"></a>
 

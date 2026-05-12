@@ -2354,3 +2354,79 @@ def test_graphql_rate_limit_check_with_valid_rate_limited_body():
     resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMITED"}]})
     result = handler.interpret_response(resp)
     assert result.response_action == ResponseAction.RATE_LIMITED
+
+
+def test_releases_marked_as_large_stream():
+    """The Releases GraphQL query is high-cost, so the stream must be marked as
+    large_stream so that page_size defaults to the smaller large-stream value."""
+    assert Releases.large_stream is True
+    stream = Releases(
+        repositories=["org/repo"],
+        page_size_for_large_streams=constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
+
+
+@pytest.mark.parametrize("status_code", [requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT])
+def test_graphql_error_handler_502_504_message_includes_stream_name(status_code):
+    """502/504 responses should produce an error message that names the stream and
+    explains that the page size is being reduced — not the generic
+    'Response status code: 504. Retrying...' string."""
+    stream = MagicMock()
+    stream.name = "releases"
+    stream.large_stream = True
+    stream.page_size = 10
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = status_code
+    resp.headers = {}
+    resp.text = ""
+    resp.ok = False
+    resp.json = MagicMock(return_value={})
+    resolution = handler.interpret_response(resp)
+    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.failure_type == FailureType.transient_error
+    assert "`releases`" in resolution.error_message
+    assert str(status_code) in resolution.error_message
+    assert "Reducing GraphQL page size" in resolution.error_message
+
+
+def test_graphql_error_handler_504_floors_page_size_at_one():
+    """The 502/504 page-size halving must never let page_size drop below 1.
+    A page_size of 0 would request no records and stall the stream."""
+    stream = MagicMock()
+    stream.name = "releases"
+    stream.large_stream = True
+    stream.page_size = 1
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = requests.codes.GATEWAY_TIMEOUT
+    resp.headers = {}
+    resp.text = ""
+    resp.ok = False
+    resp.json = MagicMock(return_value={})
+    handler.interpret_response(resp)
+    assert stream.page_size == 1
+
+
+@patch("time.sleep")
+def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock):
+    """After exhausting retries on 504s, the final user-facing log message for the
+    Releases stream should name the stream and mention the page-size remediation —
+    not the bare 'Response status code: 504. Retrying...' string."""
+    stream = Releases(
+        repositories=["org/repo"],
+        page_size_for_large_streams=10,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.post(
+        "https://api.github.com/graphql",
+        status_code=requests.codes.GATEWAY_TIMEOUT,
+        json={"message": "Gateway Timeout"},
+    )
+    list(read_full_refresh(stream))
+    assert any(
+        "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
+        for msg in caplog.messages
+    )

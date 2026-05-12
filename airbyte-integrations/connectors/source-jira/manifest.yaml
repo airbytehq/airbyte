@@ -6,9 +6,16 @@ definitions:
   # Authenticators
 
   authenticator:
-    type: BasicHttpAuthenticator
-    username: "{{ config['email'] }}"
-    password: "{{ config['api_token'] }}"
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      "API Token":
+        type: BasicHttpAuthenticator
+        username: "{{ config['credentials']['email'] }}"
+        password: "{{ config['credentials']['api_token'] }}"
+      "OAuth2.0":
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.JiraOAuthAuthenticator
 
   # Error handler
   error_handler:
@@ -23,13 +30,13 @@ definitions:
   requester:
     type: HttpRequester
     http_method: GET
-    url_base: "https://{{ config['domain'] }}/rest/api/3/"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['domain'] }}/rest/api/3/{% endif %}"
     authenticator: "#/definitions/authenticator"
     error_handler: "#/definitions/error_handler"
 
   requester_v1:
     $ref: "#/definitions/requester"
-    url_base: "https://{{ config['domain'] }}/rest/agile/1.0/"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
 
   # Selector
 
@@ -14639,30 +14646,98 @@ spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/jira
   config_normalization_rules:
     type: ConfigNormalizationRules
-    validations:
-      - type: DpathValidator
-        field_path: ["domain"]
-        validation_strategy:
-          type: CustomValidationStrategy
-          class_name: source_declarative_manifest.components.ValidateJiraDomain
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate flat api_token/email config to nested credentials structure for OAuth 2.0 support
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "API Token"
+            condition: "{{ not config.get('credentials') and config.get('api_token') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['api_token'] }}"
+            condition: "{{ not config.get('credentials', {}).get('api_token') and config.get('api_token') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "email"]
+                value: "{{ config['email'] }}"
+            condition: "{{ not config.get('credentials', {}).get('email') and config.get('email') }}"
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Jira Spec
     type: object
     required:
-    - api_token
+    - credentials
     - domain
-    - email
     additionalProperties: true
     properties:
-      api_token:
-        type: string
-        title: API Token
-        description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
-          for more information on how to generate this key. API Token is used for Authorization
-          to your account by BasicAuth.
-        airbyte_secret: true
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Jira.
         order: 0
+        oneOf:
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+              - email
+            properties:
+              auth_type:
+                type: string
+                const: "API Token"
+                order: 0
+              email:
+                type: string
+                title: Email
+                description: The user email for your Jira account which you used to generate
+                  the API token. This field is used for Authorization to your account by BasicAuth.
+                order: 1
+              api_token:
+                type: string
+                title: API Token
+                description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
+                  for more information on how to generate this key. API Token is used for Authorization
+                  to your account by BasicAuth.
+                airbyte_secret: true
+                order: 2
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: "OAuth2.0"
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Atlassian OAuth application.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Atlassian OAuth application.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The Refresh Token obtained after completing the OAuth flow.
+                airbyte_secret: true
+                order: 3
       domain:
         type: string
         title: Domain
@@ -14673,12 +14748,6 @@ spec:
         - jira.<your-domain>.com
         description: "Your Jira host (full domain — do not include 'https://' or paths). Examples: airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com."
         order: 1
-      email:
-        type: string
-        title: Email
-        description: The user email for your Jira account which you used to generate
-          the API token. This field is used for Authorization to your account by BasicAuth.
-        order: 2
       projects:
         type: array
         title: Projects
@@ -14758,3 +14827,88 @@ spec:
         - 3
         description: The number of worker threads to use for the sync.
         order: 6
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: "OAuth2.0"
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "read:jira-work"
+          - scope: "read:jql:jira"
+          - scope: "read:group:jira"
+          - scope: "read:project-role:jira"
+          - scope: "read:issue-details:jira"
+          - scope: "read:status:jira"
+          - scope: "read:jira-user"
+          - scope: "read:user:jira"
+          - scope: "read:avatar:jira"
+          - scope: "read:webhook:jira"
+          - scope: "read:project-category:jira"
+          - scope: "read:screenable-field:jira"
+          - scope: "read:screen-field:jira"
+          - scope: "offline_access"
+          - scope: "read:board-scope:jira-software"
+          - scope: "read:project:jira"
+          - scope: "read:sprint:jira-software"
+          - scope: "read:application-role:jira"
+          - scope: "read:field-configuration:jira"
+          - scope: "read:notification-scheme:jira"
+          - scope: "read:issue-security-scheme:jira"
+          - scope: "read:issue-security-level:jira"
+          - scope: "read:issue-type-scheme:jira"
+          - scope: "read:issue-type-screen-scheme:jira"
+          - scope: "read:permission-scheme:jira"
+          - scope: "read:screen:jira"
+          - scope: "read:screen-scheme:jira"
+          - scope: "read:screen-tab:jira"
+          - scope: "read:workflow:jira"
+          - scope: "read:workflow-scheme:jira"
+          - scope: "read:project.email:jira"
+          - scope: "read:custom-field-contextual-configuration:jira"
+          - scope: "manage:jira-configuration"
+        consent_url: "https://auth.atlassian.com/authorize?audience=api.atlassian.com&{{client_id_param}}&{{scopes_param}}&{{redirect_uri_param}}&{{state_param}}&response_type=code&prompt=consent"
+        access_token_url: "https://auth.atlassian.com/oauth/token"
+        access_token_headers:
+          Content-Type: "application/json"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret

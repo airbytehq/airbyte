@@ -1,0 +1,269 @@
+name: Connector Active Progressive Rollout Checks
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  generate-matrix:
+    name: Generate Connector Matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 0
+
+      - name: Add upstream remote (forks only)
+        if: >
+          github.event.pull_request.head.repo.full_name != '' &&
+          ! startswith(github.event.pull_request.head.repo.full_name, 'airbytehq/')
+        run: |
+          if ! git remote | grep -q upstream; then
+            git remote add upstream https://github.com/airbytehq/airbyte.git
+          fi
+          git fetch --quiet upstream master
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      commit-sha: ${{ steps.checkout.outputs.commit }}
+
+  progressive-rollout-gate:
+    needs: [generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10
+      fail-fast: false
+    name: ${{ matrix.connector || 'No-Op' }} Progressive Rollout Gate
+    runs-on: ubuntu-24.04
+    env:
+      ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment"
+      GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 1
+
+      - name: Install uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Ops CLI
+        if: matrix.connector
+        run: uv tool install airbyte-internal-ops
+
+      - name: Install Cloud SQL Proxy
+        if: matrix.connector
+        env:
+          CLOUD_SQL_PROXY_VERSION: v2.15.0
+          CLOUD_SQL_PROXY_SHA256: cf3e9d069ea0d09cdfddce77daa36811bb0b963b1169e9c3f1586433ca7325fa
+        run: |
+          set -euo pipefail
+          BINARY_NAME="cloud-sql-proxy.linux.amd64"
+          BASE_URL="https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/${CLOUD_SQL_PROXY_VERSION}"
+
+          curl -fsSLO "${BASE_URL}/${BINARY_NAME}"
+          echo "${CLOUD_SQL_PROXY_SHA256}  ${BINARY_NAME}" | sha256sum -c -
+          chmod +x "${BINARY_NAME}"
+          sudo mv "${BINARY_NAME}" /usr/local/bin/cloud-sql-proxy
+          cloud-sql-proxy --version
+
+      - name: Start Cloud SQL Proxy
+        if: matrix.connector
+        env:
+          # Local Cloud SQL Proxy port for prod DB queries.
+          DB_PORT: "15432"
+        run: airbyte-ops cloud db start-proxy --port "${DB_PORT}"
+
+      - name: Get rollout status
+        if: matrix.connector
+        id: rollout-status
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector }}
+          # Local Cloud SQL Proxy port for prod DB queries.
+          DB_PORT: "15432"
+        run: |
+          {
+            echo "json<<EOF"
+            airbyte-ops registry progressive-rollout status "${CONNECTOR_NAME}" --repo-path .
+            echo "EOF"
+          } | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Get master connector version
+        if: matrix.connector
+        id: master-version
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector }}
+        run: |
+          VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)
+          echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Detect rollout bypass checkbox
+        if: matrix.connector
+        id: rollout-bypass
+        uses: AhmedBaset/checklist@ecbf0bacb0d5d1fe41131db29a44984fec266017 # v3
+        with:
+          token: ${{ github.token }}
+
+      - name: Resolve rollout bypass checkbox state
+        if: matrix.connector
+        id: bypass-state
+        env:
+          APPROVED: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+          EXISTS: ${{ contains(steps.rollout-bypass.outputs.checked, env.ROLLOUT_ACK_CHECKBOX_TEXT) || contains(steps.rollout-bypass.outputs.unchecked, env.ROLLOUT_ACK_CHECKBOX_TEXT) }}
+        run: |
+          echo "approved=${APPROVED}" | tee -a $GITHUB_OUTPUT
+          echo "exists=${EXISTS}" | tee -a $GITHUB_OUTPUT
+
+      - name: Find progressive rollout gate comment
+        if: matrix.connector
+        id: find-rollout-comment
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: github-actions[bot]
+          body-includes: "<!-- progressive-rollout-gate:${{ matrix.connector }} -->"
+
+      - name: Create progressive rollout gate placeholder comment
+        if: >
+          matrix.connector &&
+          steps.find-rollout-comment.outputs.comment-id == '' &&
+          (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
+           contains(steps.master-version.outputs.version, '-rc.'))
+        id: create-rollout-comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- progressive-rollout-gate:${{ matrix.connector }} -->
+            > **Progressive rollout gate for `${{ matrix.connector }}`**
+            >
+            > Checking for active rollouts.
+            >
+            > [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Resolve rollout comment link
+        if: matrix.connector
+        id: rollout-comment
+        env:
+          EXISTING_COMMENT_ID: ${{ steps.find-rollout-comment.outputs.comment-id }}
+          CREATED_COMMENT_ID: ${{ steps.create-rollout-comment.outputs.comment-id }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          COMMENT_ID="${EXISTING_COMMENT_ID:-${CREATED_COMMENT_ID}}"
+          echo "id=${COMMENT_ID}" | tee -a $GITHUB_OUTPUT
+          echo "url=https://github.com/${REPOSITORY}/pull/${PR_NUMBER}#issuecomment-${COMMENT_ID}" | tee -a $GITHUB_OUTPUT
+
+      - name: Add rollout bypass checkbox to PR description
+        if: >
+          matrix.connector &&
+          steps.bypass-state.outputs.exists != 'true' &&
+          (fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
+           contains(steps.master-version.outputs.version, '-rc.'))
+        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        with:
+          github_token: ${{ github.token }}
+          add_markdown: |
+            > [!IMPORTANT]
+            > Active progressive rollout warning for ${{ matrix.connector }}.
+
+            - [ ] (Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment [here](${{ steps.rollout-comment.outputs.url }}).
+
+      - name: Render progressive rollout gate comment
+        if: >
+          matrix.connector &&
+          steps.rollout-comment.outputs.id != '' &&
+          (steps.find-rollout-comment.outputs.comment-id != '' ||
+           fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
+           contains(steps.master-version.outputs.version, '-rc.'))
+        id: rollout-comment-template
+        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+        with:
+          template: .github/progressive-rollout-gate-comment.md
+          vars: |
+            connector: ${{ matrix.connector }}
+            active_rollout: ${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout }}
+            rollout_docker_image_tag: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].rollout_docker_image_tag || 'none' }}
+            rollout_state: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].state || 'none' }}
+            master_version: ${{ steps.master-version.outputs.version }}
+            master_rc_marker: ${{ contains(steps.master-version.outputs.version, '-rc.') }}
+            bypass_ack_checked: ${{ steps.bypass-state.outputs.approved }}
+            ack_checkbox_text: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
+            rollout_comment_url: ${{ steps.rollout-comment.outputs.url }}
+            workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Update progressive rollout gate comment
+        if: >
+          matrix.connector &&
+          steps.rollout-comment.outputs.id != '' &&
+          (steps.find-rollout-comment.outputs.comment-id != '' ||
+           fromJSON(steps.rollout-status.outputs.json).has_active_rollout ||
+           contains(steps.master-version.outputs.version, '-rc.'))
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.rollout-comment.outputs.id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: ${{ steps.rollout-comment-template.outputs.result }}
+
+      - name: Fail if active rollout is not acknowledged
+        if: matrix.connector && fromJSON(steps.rollout-status.outputs.json).has_active_rollout && steps.bypass-state.outputs.approved != 'true'
+        run: |
+          echo "::error::${{ matrix.connector }} has an active progressive rollout. Check the bypass box in the PR description to acknowledge and rerun this workflow."
+          exit 1
+
+      - name: Fail if master has RC marker and is not acknowledged
+        if: matrix.connector && contains(steps.master-version.outputs.version, '-rc.') && steps.bypass-state.outputs.approved != 'true'
+        run: |
+          echo "::error::${{ matrix.connector }} has an RC marker on master (${{ steps.master-version.outputs.version }}). Check the bypass box in the PR description to acknowledge and rerun this workflow."
+          exit 1
+
+  progressive-rollout-gate-summary:
+    name: Connector Active Progressive Rollout Checks Summary
+    if: always()
+    needs:
+      - generate-matrix
+      - progressive-rollout-gate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Evaluate Status
+        if: >
+          needs.generate-matrix.result == 'success' &&
+          (needs.progressive-rollout-gate.result == 'success' ||
+           needs.progressive-rollout-gate.result == 'skipped')
+        run: echo "Progressive rollout checks passed."
+
+      - name: Evaluate Failure Status
+        if: >
+          needs.generate-matrix.result != 'success' ||
+          (needs.progressive-rollout-gate.result != 'success' &&
+           needs.progressive-rollout-gate.result != 'skipped')
+        run: |
+          echo "::error::Progressive rollout checks failed."
+          exit 1
