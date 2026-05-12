@@ -11,7 +11,7 @@ An organization is the top-level container in Airbyte Agents. It represents a si
 
 Each organization has:
 
-- **Platform API credentials**: A `client_id`, `client_secret`, and `organization_id` that authenticate programmatic access through the [API](../../interfaces/api), [SDK](../../interfaces/sdk), and [MCP server](../../interfaces/mcp). Find these on the [Profile page](https://app.airbyte.ai/profile).
+- **Platform API credentials**: A `client_id`, `client_secret`, and `organization_id` that authenticate programmatic access through the [API](../../interfaces/api), [SDK](../../interfaces/sdk), and [MCP server](../../interfaces/mcp). Find these on the Profile page at [app.airbyte.ai](https://app.airbyte.ai).
 - **Workspaces**: Every organization starts with a `default` [workspace](./workspaces), which is all most people need. If you need to isolate credentials across tenants or teams, you can create additional workspaces.
 - **Context Store**: The [Context Store](../context-store) is enabled by default and operates at the organization level. It is always on and requires no configuration.
 - **Billing**: Plans, payment methods, usage limits, and invoices live at the organization level. See [Billing and pricing](../../admin/billing).

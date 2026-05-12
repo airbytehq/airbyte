@@ -1634,10 +1634,13 @@ Classes
 
     ### Class variables
 
-    `blocks: str`
+    `blocks: list[dict[str, typing.Any]]`
     :   The type of the None singleton.
 
     `channel: str`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool`
     :   The type of the None singleton.
 
     `text: str`
@@ -1660,7 +1663,13 @@ Classes
 
     ### Class variables
 
+    `blocks: list[dict[str, typing.Any]]`
+    :   The type of the None singleton.
+
     `channel: str`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool`
     :   The type of the None singleton.
 
     `reply_broadcast: bool`
@@ -1705,6 +1714,9 @@ Classes
     * builtins.dict
 
     ### Class variables
+
+    `blocks: list[dict[str, typing.Any]]`
+    :   The type of the None singleton.
 
     `channel: str`
     :   The type of the None singleton.
@@ -1783,7 +1795,13 @@ Classes
 
     ### Class variables
 
+    `blocks: list[dict[str, typing.Any]]`
+    :   The type of the None singleton.
+
     `channel: str`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool`
     :   The type of the None singleton.
 
     `post_at: int`

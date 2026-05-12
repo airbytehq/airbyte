@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Authenticate
 
-You authenticate with the Airbyte Agent API using your Airbyte Agents client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
+You authenticate with the Agent API using your Airbyte Agents client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
 
 - You authenticate using Airbyte Agents client credentials.
 - Airbyte stores connector credentials securely and handles refresh for you.
@@ -15,7 +15,7 @@ If you're building a Python app, the [SDK](../../sdk/authenticate) handles token
 
 ## Token types
 
-The Airbyte Agent API uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
+The Agent API uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
 
 | Token type        | Use case                                                                          | Scope             |
 | ----------------- | --------------------------------------------------------------------------------- | ----------------- |
@@ -26,7 +26,7 @@ The Airbyte Agent API uses a hierarchical token system. Each token type has a di
 
 The application token provides organization-level access. Use it for administrative operations like managing connectors, listing workspaces, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
 
-To obtain an application token, send your app credentials to the token endpoint. Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents app.
+To obtain an application token, send your app credentials to the token endpoint. Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai).
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
