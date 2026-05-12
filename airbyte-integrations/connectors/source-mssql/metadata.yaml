@@ -24,6 +24,11 @@ data:
       version: "0.0.2"
       supportedSerialization: ["JSONL", "PROTOBUF"]
       supportedTransport: ["SOCKET", "STDIO"]
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true      
   releaseStage: alpha
   supportLevel: certified
   tags:
