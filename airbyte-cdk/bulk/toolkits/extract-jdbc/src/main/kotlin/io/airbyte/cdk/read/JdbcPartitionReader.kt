@@ -121,11 +121,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
-    private val log = KotlinLogging.logger {}
-    companion object {
-        val flf = AtomicBoolean(false)
-    }
-
     override suspend fun run() {
         outputPendingMessages()
         /* Don't start read if we've gone over max duration.
@@ -133,11 +128,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         existing exiting with an exception skips checkpoint(), so any work we
         did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
-
-        if (/*stream.name in listOf( "snowflake_1tb", "vv100", "caseSen") &&*/ flf.getAndSet(true).not()) {
-            log.info { "*** throwing an exception" }
-            throw SocketTimeoutException()
-        }
 
         selectQuerier
             .executeQuery(
