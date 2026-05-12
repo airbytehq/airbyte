@@ -628,11 +628,9 @@ spec:
           client_secret: "{{ client_secret_value }}"
           redirect_uri: "{{ redirect_uri_value }}"
         scopes:
-          - scope: "channels:history"
           - scope: "channels:join"
           - scope: "channels:read"
           - scope: "groups:read"
-          - scope: "groups:history"
           - scope: "users:read"
         scopes_join_strategy: comma
         extract_output:

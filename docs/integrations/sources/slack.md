@@ -38,7 +38,6 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 5. Navigate to **Scopes**. In **Bot Token Scopes**, select the following scopes: 
 
 ```
- channels:history
  channels:join
  channels:read
  files:read

@@ -74,11 +74,9 @@ def test_oauth_scopes_contain_only_used_scopes():
     scopes = [entry["scope"] for entry in oauth_spec["scopes"]]
 
     expected_scopes = [
-        "channels:history",
         "channels:join",
         "channels:read",
         "groups:read",
-        "groups:history",
         "users:read",
     ]
     assert scopes == expected_scopes
