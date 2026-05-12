@@ -35,7 +35,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 2. Click **Create New App**. Select **From Scratch**.
 3. Choose a name for your app and select the name of your Slack workspace. Click **Create App**. 
 4. In the navigation menu, select **OAuth & Permissions**.
-5. Navigate to **Scopes**. In **Bot Token Scopes**, select the following scopes: 
+5. Navigate to **Scopes**. In **Bot Token Scopes**, select the following scopes:
 
 ```
  channels:join
