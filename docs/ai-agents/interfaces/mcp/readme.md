@@ -79,10 +79,8 @@ Add the MCP server to your Claude Code command line tool.
 ChatGPT can connect to the Agent MCP from the ChatGPT app directory.
 
 :::note Workspace controls can limit app access
-ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. Some apps with search or deep research capabilities may not be available on Free or Go plans. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
+ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
 :::
-
-### Add Airbyte from the ChatGPT app directory
 
 1. Open [ChatGPT](https://chatgpt.com) on the web. OpenAI doesn't currently document a separate app directory setup path for the desktop app.
 
@@ -99,10 +97,6 @@ ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or
 7. Open a new conversation.
 
 8. Ask ChatGPT to use Airbyte Agent Engine. For example, _"Use Airbyte Agent Engine to find open Salesforce opportunities."_ You can also explicitly add it to the conversation with `@Airbyte Agent Engine` or from **+** > **More** > **Airbyte Agent Engine**.
-
-### What ChatGPT can do with Airbyte
-
-After you connect Airbyte, ChatGPT can discover the tools and connectors available to your Airbyte account. It can read and search connected data, use the Context Store, and create or update records when the connector supports write actions.
 
 ChatGPT controls whether write actions require confirmation. Workspace administrators can also restrict which app actions are available. Airbyte still enforces your Airbyte account permissions and each third-party service's credentials and scopes.
 
