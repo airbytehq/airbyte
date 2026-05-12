@@ -66,6 +66,7 @@ jobs:
           echo "is-fork=${is_fork}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Checkout Airbyte
+        if: inputs.connector == ''
         id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -75,7 +76,7 @@ jobs:
           fetch-depth: 0
 
       - name: Add upstream remote (forks only)
-        if: steps.vars.outputs.is-fork == 'true'
+        if: inputs.connector == '' && steps.vars.outputs.is-fork == 'true'
         run: |
           if ! git remote | grep -q upstream; then
             git remote add upstream https://github.com/airbytehq/airbyte.git
