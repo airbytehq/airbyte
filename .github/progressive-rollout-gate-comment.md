@@ -5,9 +5,7 @@
 > [!IMPORTANT]
 > Active progressive rollout warning for `{{ .connector }}`.
 >
-> To bypass this warning, click on the matching checkbox in the PR description.
->
-> Checkbox text:
+> To bypass this warning, click on the matching checkbox in the PR description. Look for the checkbox text:
 > > {{ .ack_checkbox_text }}
 
 - Rollout version: `{{ .rollout_docker_image_tag }}`
