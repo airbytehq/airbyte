@@ -164,7 +164,7 @@ See [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-f
 NOTE: As of version 4.0.0, the Redshift destination writes data directly to final tables
 with [direct load](https://docs.airbyte.com/platform/using-airbyte/core-concepts/direct-load-tables). Raw tables (
 `_airbyte_raw_*`) are no longer created. If you are upgrading from an older version, see
-the [migration guide](redshift-v2-migrations.md) for details.
+the [migration guide](redshift-migrations.md) for details.
 
 ### Schema naming
 

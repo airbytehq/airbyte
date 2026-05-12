@@ -2,19 +2,21 @@
 
 ## Upgrading to 4.0.0
 
-Version 4.0.0 is a full rewrite of the Redshift destination using the new CDK architecture. Key changes:
+This version upgrades Destination Redshift to
+the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and
+reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that
+document for more information about how Direct-Load differs from Typing and Deduping.
 
-- **No raw tables** — data is written directly to final tables instead of staging through `_airbyte_raw_*` tables
-- **Same configuration** — the spec is unchanged, so no configuration updates are needed
-- **Improved error handling** — the connection checker now validates the full S3 staging → COPY → Redshift pipeline with clear error messages
+If you do not interact with the raw tables, you can safely upgrade. There is no breakage for this use case. But if you
+interact with the raw tables, follow the migration steps below.
 
 ### Migration steps
 
-1. Upgrade the destination to version 4.0.0
-2. Trigger a full refresh sync for all connections using this destination
+1. Raw tables (`_airbyte_raw_*`) are no longer produced. Update any downstream dbt models or SQL queries to reference
+   the final tables instead.
+2. Upgrade the destination to version 4.0.0
 3. Verify data in the final tables
-4. Update any downstream dbt models or SQL queries that reference `_airbyte_raw_*` tables
-5. Optional: Drop old raw tables (`_airbyte_raw_*`) after verifying the new tables
+4. Optional: Drop old raw tables (`_airbyte_raw_*`) after verifying the new tables
 
 ## Upgrading to 3.0.0
 
