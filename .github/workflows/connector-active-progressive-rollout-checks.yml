@@ -182,8 +182,21 @@ jobs:
         if: matrix.connector
         id: rollout-gate-state
         env:
-          REQUIRES_ACK: ${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout || contains(steps.master-version.outputs.version, '-rc.') }}
-        run: echo "requires-ack=${REQUIRES_ACK}" | tee -a "${GITHUB_OUTPUT}"
+          ROLLOUT_STATUS_JSON: ${{ steps.rollout-status.outputs.json }}
+          MASTER_VERSION: ${{ steps.master-version.outputs.version }}
+        run: |
+          has_active_rollout="$(jq -r '.has_active_rollout' <<< "${ROLLOUT_STATUS_JSON}")"
+          has_master_rc_marker="false"
+          if [[ "${MASTER_VERSION}" == *"-rc."* ]]; then
+            has_master_rc_marker="true"
+          fi
+          requires_ack="false"
+          if [[ "${has_active_rollout}" == "true" || "${has_master_rc_marker}" == "true" ]]; then
+            requires_ack="true"
+          fi
+          echo "has-active-rollout=${has_active_rollout}" | tee -a "${GITHUB_OUTPUT}"
+          echo "has-master-rc-marker=${has_master_rc_marker}" | tee -a "${GITHUB_OUTPUT}"
+          echo "requires-ack=${requires_ack}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Detect rollout bypass checkbox
         if: matrix.connector && steps.rollout-gate-state.outputs.requires-ack == 'true' && github.event_name == 'pull_request'
@@ -360,13 +373,13 @@ jobs:
           body: ${{ steps.rollout-comment-template.outputs.result }}
 
       - name: Fail if active rollout is not acknowledged
-        if: matrix.connector && fromJSON(steps.rollout-status.outputs.json).has_active_rollout && steps.bypass-state.outputs.approved != 'true'
+        if: matrix.connector && steps.rollout-gate-state.outputs.has-active-rollout == 'true' && steps.bypass-state.outputs.approved != 'true'
         run: |
           echo "::error::${{ matrix.connector }} has an active progressive rollout. Check the bypass box in the PR description to acknowledge and rerun this workflow."
           exit 1
 
       - name: Fail if master has RC marker and is not acknowledged
-        if: matrix.connector && contains(steps.master-version.outputs.version, '-rc.') && steps.bypass-state.outputs.approved != 'true'
+        if: matrix.connector && steps.rollout-gate-state.outputs.has-master-rc-marker == 'true' && steps.bypass-state.outputs.approved != 'true'
         run: |
           echo "::error::${{ matrix.connector }} has an RC marker on master (${{ steps.master-version.outputs.version }}). Check the bypass box in the PR description to acknowledge and rerun this workflow."
           exit 1
