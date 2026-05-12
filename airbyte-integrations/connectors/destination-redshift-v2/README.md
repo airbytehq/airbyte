@@ -12,6 +12,9 @@ This connector has a capability to query the database via an SSH Tunnel (bastion
 environments where Redshift has not
 been exposed to the internet.
 
+If you're using Airbyte Cloud, add Airbyte's
+[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Redshift cluster allowlist.
+
 ## Testing
 
 Unit tests are run as usual.
