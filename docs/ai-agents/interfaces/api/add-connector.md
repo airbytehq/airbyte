@@ -32,7 +32,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Content-Type: application/json' \
   --data '{
     "workspace_name": "default",
-    "definition_id": "<github_definition_id>",
+    "definition_id": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "My GitHub Connector",
     "credentials": {
       "option_title": "PAT Credentials",
@@ -56,7 +56,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Content-Type: application/json' \
   --data '{
     "workspace_name": "default",
-    "definition_id": "<hubspot_definition_id>",
+    "definition_id": "36c891d9-4bd9-43ac-bad2-10e12756272c",
     "name": "My HubSpot Connector",
     "credentials": {
       "client_id": "<hubspot_client_id>",

@@ -3,7 +3,7 @@ plan: all
 sidebar_position: 1
 ---
 
-# Web app
+# Web app (Research Preview)
 
 The Airbyte Agents web app at [app.airbyte.ai](https://app.airbyte.ai) is the fastest way to use Airbyte Agents without writing code. Describe what you want in natural language, and Airbyte picks the right connectors, makes the necessary tool calls, and replies with an answer grounded in your data.
 
@@ -14,7 +14,7 @@ Use the web app when you want Airbyte itself to be your agent. For Python agents
 The web app has two primary surfaces for working with an Airbyte agent.
 
 - [**Chats**](./chats): Interactive conversations with an Airbyte agent. Ask a question, iterate on the answer, and explore your data in natural language. Chats are the fastest way to get a one-off answer or prototype an idea.
-- [**Automations**](./automations): Agent tasks that run without a person in the loop. Trigger an Automation manually, on a schedule, or from a webhook. Use Automations when you need the same work to happen repeatedly and reliably.
+- [**Automations**](./automations): Agent tasks that run without a person in the loop. Trigger an Automation manually or on a schedule. Use Automations when you need the same work to happen repeatedly and reliably.
 
 Every Chat and Automation runs against the connectors you've authenticated in your workspace. Manage connectors from the **Connectors** page in the sidebar. For the catalog of available connectors, see [Agent connectors](../../connectors).
 
