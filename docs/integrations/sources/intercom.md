@@ -130,7 +130,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.23 | 2026-05-12 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Improve the Companies stream error message for Intercom scroll concurrency failures. |
+| 0.13.23 | 2026-05-12 | [78017](https://github.com/airbytehq/airbyte/pull/78017) | Improve the Companies stream error message for Intercom scroll concurrency failures. |
 | 0.13.22 | 2026-04-28 | [70464](https://github.com/airbytehq/airbyte/pull/70464) | Update dependencies |
 | 0.13.21 | 2026-04-22 | [76847](https://github.com/airbytehq/airbyte/pull/76847) | Update CDK to 7.17.3 |
 | 0.13.20 | 2026-04-14 | [76316](https://github.com/airbytehq/airbyte/pull/76316) | Promote 0.13.20-rc.1 to stable and disable progressive rollout |
