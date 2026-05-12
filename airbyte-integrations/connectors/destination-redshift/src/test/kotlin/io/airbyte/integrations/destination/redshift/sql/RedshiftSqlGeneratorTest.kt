@@ -468,7 +468,7 @@ internal class RedshiftSqlGeneratorTest {
         val sql = sqlGenerator.upsertTable(stream, source, target)
 
         // Redshift uses separate statements with a session-scoped TEMP TABLE (no namespace prefix)
-        val dedup = """"_airbyte_dedup_staging""""
+        val dedup = """"_airbyte_dedup_ns_staging""""
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
         assertTrue(sql.contains("CREATE TEMP TABLE $dedup AS"))
         assertTrue(sql.contains("ROW_NUMBER() OVER"))
@@ -511,7 +511,7 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
         assertTrue(sql.contains("CREATE TEMP TABLE"))
-        assertTrue(sql.contains("_airbyte_dedup_staging"))
+        assertTrue(sql.contains("_airbyte_dedup_ns_staging"))
         assertFalse(sql.contains("DELETE FROM"))
         assertTrue(sql.contains("UPDATE"))
         assertTrue(sql.contains("INSERT INTO"))
@@ -870,7 +870,7 @@ internal class RedshiftSqlGeneratorTest {
             val sql = cascadeGenerator.upsertTable(stream, source, target)
 
             // The temp table drop should NOT have CASCADE (temp tables can't have dependent views)
-            val dedup = """"_airbyte_dedup_staging""""
+            val dedup = """"_airbyte_dedup_ns_staging""""
             assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
             assertFalse(sql.contains("DROP TABLE IF EXISTS $dedup CASCADE;"))
         }
