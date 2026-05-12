@@ -1586,7 +1586,7 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "api_key"]
                 value: "{{ config['api_key'] }}"
-            condition: "{{ not config.get('credentials') and config.get('api_key') }}"
+            condition: "{{ not config.get('credentials', {}).get('api_key') and config.get('api_key') }}"
 
 
 metadata:
