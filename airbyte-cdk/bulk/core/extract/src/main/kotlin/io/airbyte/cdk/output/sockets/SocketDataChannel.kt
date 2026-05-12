@@ -72,7 +72,7 @@ class UnixDomainSocketDataChannel(
     override val isAvailable: Boolean
         @Synchronized
         get() {
-            return status == SOCKET_READY && socketBound.get().not()
+            return socketStatus.get() == SOCKET_READY && socketBound.get().not()
         }
 
     /**
@@ -83,7 +83,7 @@ class UnixDomainSocketDataChannel(
         try {
             outputStream?.write(probePacket)
         } catch (e: Exception) {
-            logger.warn(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
+            logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdown()
             socketStatus.set(SOCKET_ERROR)
         }
