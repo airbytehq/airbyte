@@ -82,18 +82,20 @@ jobs:
           fi
           git fetch --quiet upstream master
 
-      - name: Generate Connector Matrix from Dispatch Input
-        if: inputs.connector != ''
-        id: dispatch-matrix
-        run: echo "connectors_matrix={\"connector\":[\"${{ inputs.connector }}\"]}" | tee -a $GITHUB_OUTPUT
-
-      - name: Generate Connector Matrix from Changes
-        if: inputs.connector == ''
-        id: generate-matrix
-        run: echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+      - name: Resolve connector matrix
+        id: connector-matrix
+        env:
+          INPUT_CONNECTOR: ${{ inputs.connector }}
+        run: |
+          if [[ -n "${INPUT_CONNECTOR}" ]]; then
+            connectors_matrix="{\"connector\":[\"${INPUT_CONNECTOR}\"]}"
+          else
+            connectors_matrix="$(./poe-tasks/get-modified-connectors.sh --json)"
+          fi
+          echo "connectors_matrix=${connectors_matrix}" | tee -a "${GITHUB_OUTPUT}"
 
     outputs:
-      connectors-matrix: ${{ steps.dispatch-matrix.outputs.connectors_matrix || steps.generate-matrix.outputs.connectors_matrix }}
+      connectors-matrix: ${{ steps.connector-matrix.outputs.connectors_matrix }}
       commit-sha: ${{ steps.checkout.outputs.commit }}
       checkout-repository: ${{ steps.vars.outputs.repository }}
       checkout-ref: ${{ steps.vars.outputs.ref }}
