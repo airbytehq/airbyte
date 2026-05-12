@@ -1445,10 +1445,6 @@ schemas:
         type:
           - string
           - "null"
-      creatorID:
-        type:
-          - string
-          - "null"
       creatorName:
         type:
           - string
