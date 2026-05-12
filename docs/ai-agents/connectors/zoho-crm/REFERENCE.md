@@ -8,17 +8,17 @@ The Zoho-Crm connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Leads | [List](#leads-list), [Get](#leads-get), [Search](#leads-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [Search](#accounts-search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [Search](#deals-search) |
-| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Search](#campaigns-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [Search](#tasks-search) |
-| Events | [List](#events-list), [Get](#events-get), [Search](#events-search) |
-| Calls | [List](#calls-list), [Get](#calls-get), [Search](#calls-search) |
-| Products | [List](#products-list), [Get](#products-get), [Search](#products-search) |
-| Quotes | [List](#quotes-list), [Get](#quotes-get), [Search](#quotes-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [Search](#invoices-search) |
+| Leads | [List](#leads-list), [Create](#leads-create), [Get](#leads-get), [Update](#leads-update), [Context Store Search](#leads-context-store-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Context Store Search](#contacts-context-store-search) |
+| Accounts | [List](#accounts-list), [Create](#accounts-create), [Get](#accounts-get), [Update](#accounts-update), [Context Store Search](#accounts-context-store-search) |
+| Deals | [List](#deals-list), [Create](#deals-create), [Get](#deals-get), [Update](#deals-update), [Context Store Search](#deals-context-store-search) |
+| Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [Context Store Search](#campaigns-context-store-search) |
+| Tasks | [List](#tasks-list), [Create](#tasks-create), [Get](#tasks-get), [Update](#tasks-update), [Context Store Search](#tasks-context-store-search) |
+| Events | [List](#events-list), [Get](#events-get), [Context Store Search](#events-context-store-search) |
+| Calls | [List](#calls-list), [Get](#calls-get), [Context Store Search](#calls-context-store-search) |
+| Products | [List](#products-list), [Get](#products-get), [Context Store Search](#products-context-store-search) |
+| Quotes | [List](#quotes-list), [Get](#quotes-get), [Context Store Search](#quotes-context-store-search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Context Store Search](#invoices-context-store-search) |
 
 ## Leads
 
@@ -99,13 +99,84 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
+
+</details>
+
+### Leads Create
+
+Creates a new lead record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.leads.create(
+    data=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "leads",
+    "action": "create",
+    "params": {
+        "data": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the lead record to create |
+| `data.First_Name` | `string` | No | Lead's first name |
+| `data.Last_Name` | `string` | Yes | Lead's last name (required) |
+| `data.Email` | `string` | No | Lead's email address |
+| `data.Phone` | `string` | No | Lead's phone number |
+| `data.Mobile` | `string` | No | Lead's mobile number |
+| `data.Company` | `string` | No | Company the lead is associated with |
+| `data.Title` | `string` | No | Lead's job title |
+| `data.Lead_Source` | `string` | No | Source from which the lead was generated |
+| `data.Industry` | `string` | No | Industry the lead belongs to |
+| `data.Annual_Revenue` | `number` | No | Annual revenue of the lead's company |
+| `data.No_of_Employees` | `integer` | No | Number of employees in the lead's company |
+| `data.Rating` | `string` | No | Lead rating |
+| `data.Lead_Status` | `string` | No | Current status of the lead |
+| `data.Website` | `string` | No | Lead's website URL |
+| `data.Street` | `string` | No | Street address |
+| `data.City` | `string` | No | City |
+| `data.State` | `string` | No | State or province |
+| `data.Zip_Code` | `string` | No | ZIP/postal code |
+| `data.Country` | `string` | No | Country |
+| `data.Description` | `string` | No | Description or notes about the lead |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
 
 </details>
 
@@ -144,14 +215,93 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Lead ID |
 
 
-### Leads Search
+### Leads Update
+
+Updates an existing lead record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.leads.update(
+    data=[],
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "leads",
+    "action": "update",
+    "params": {
+        "data": [],
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the lead fields to update |
+| `data.First_Name` | `string` | No | Lead's first name |
+| `data.Last_Name` | `string` | No | Lead's last name |
+| `data.Email` | `string` | No | Lead's email address |
+| `data.Phone` | `string` | No | Lead's phone number |
+| `data.Mobile` | `string` | No | Lead's mobile number |
+| `data.Company` | `string` | No | Company the lead is associated with |
+| `data.Title` | `string` | No | Lead's job title |
+| `data.Lead_Source` | `string` | No | Source from which the lead was generated |
+| `data.Industry` | `string` | No | Industry the lead belongs to |
+| `data.Annual_Revenue` | `number` | No | Annual revenue of the lead's company |
+| `data.No_of_Employees` | `integer` | No | Number of employees in the lead's company |
+| `data.Rating` | `string` | No | Lead rating |
+| `data.Lead_Status` | `string` | No | Current status of the lead |
+| `data.Website` | `string` | No | Lead's website URL |
+| `data.Street` | `string` | No | Street address |
+| `data.City` | `string` | No | City |
+| `data.State` | `string` | No | State or province |
+| `data.Zip_Code` | `string` | No | ZIP/postal code |
+| `data.Country` | `string` | No | Country |
+| `data.Description` | `string` | No | Description or notes about the lead |
+| `id` | `string` | Yes | Lead ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
+
+</details>
+
+### Leads Context Store Search
 
 Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.leads.search(
+await zoho_crm.leads.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -164,7 +314,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -323,13 +473,79 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
+
+</details>
+
+### Contacts Create
+
+Creates a new contact record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.contacts.create(
+    data=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "create",
+    "params": {
+        "data": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the contact record to create |
+| `data.First_Name` | `string` | No | Contact's first name |
+| `data.Last_Name` | `string` | Yes | Contact's last name (required) |
+| `data.Email` | `string` | No | Contact's email address |
+| `data.Phone` | `string` | No | Contact's phone number |
+| `data.Mobile` | `string` | No | Contact's mobile number |
+| `data.Title` | `string` | No | Contact's job title |
+| `data.Department` | `string` | No | Department the contact belongs to |
+| `data.Lead_Source` | `string` | No | Source from which the contact was generated |
+| `data.Date_of_Birth` | `string` | No | Contact's date of birth (YYYY-MM-DD) |
+| `data.Mailing_Street` | `string` | No | Mailing street address |
+| `data.Mailing_City` | `string` | No | Mailing city |
+| `data.Mailing_State` | `string` | No | Mailing state or province |
+| `data.Mailing_Zip` | `string` | No | Mailing ZIP/postal code |
+| `data.Mailing_Country` | `string` | No | Mailing country |
+| `data.Description` | `string` | No | Description or notes about the contact |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
 
 </details>
 
@@ -368,14 +584,88 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Contact ID |
 
 
-### Contacts Search
+### Contacts Update
+
+Updates an existing contact record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.contacts.update(
+    data=[],
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "update",
+    "params": {
+        "data": [],
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the contact fields to update |
+| `data.First_Name` | `string` | No | Contact's first name |
+| `data.Last_Name` | `string` | No | Contact's last name |
+| `data.Email` | `string` | No | Contact's email address |
+| `data.Phone` | `string` | No | Contact's phone number |
+| `data.Mobile` | `string` | No | Contact's mobile number |
+| `data.Title` | `string` | No | Contact's job title |
+| `data.Department` | `string` | No | Department the contact belongs to |
+| `data.Lead_Source` | `string` | No | Source from which the contact was generated |
+| `data.Date_of_Birth` | `string` | No | Contact's date of birth (YYYY-MM-DD) |
+| `data.Mailing_Street` | `string` | No | Mailing street address |
+| `data.Mailing_City` | `string` | No | Mailing city |
+| `data.Mailing_State` | `string` | No | Mailing state or province |
+| `data.Mailing_Zip` | `string` | No | Mailing ZIP/postal code |
+| `data.Mailing_Country` | `string` | No | Mailing country |
+| `data.Description` | `string` | No | Description or notes about the contact |
+| `id` | `string` | Yes | Contact ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
+
+</details>
+
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.contacts.search(
+await zoho_crm.contacts.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -388,7 +678,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -539,13 +829,85 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
+
+</details>
+
+### Accounts Create
+
+Creates a new account record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.accounts.create(
+    data=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "create",
+    "params": {
+        "data": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the account record to create |
+| `data.Account_Name` | `string` | Yes | Account/company name (required) |
+| `data.Account_Number` | `string` | No | Account number |
+| `data.Account_Type` | `string` | No | Type of account (e.g., Analyst, Competitor, Customer) |
+| `data.Industry` | `string` | No | Industry the account belongs to |
+| `data.Annual_Revenue` | `number` | No | Annual revenue of the account |
+| `data.Employees` | `integer` | No | Number of employees |
+| `data.Phone` | `string` | No | Account phone number |
+| `data.Website` | `string` | No | Account website URL |
+| `data.Ownership` | `string` | No | Ownership type (e.g., Public, Private) |
+| `data.Rating` | `string` | No | Account rating |
+| `data.Billing_Street` | `string` | No | Billing street address |
+| `data.Billing_City` | `string` | No | Billing city |
+| `data.Billing_State` | `string` | No | Billing state or province |
+| `data.Billing_Code` | `string` | No | Billing ZIP/postal code |
+| `data.Billing_Country` | `string` | No | Billing country |
+| `data.Shipping_Street` | `string` | No | Shipping street address |
+| `data.Shipping_City` | `string` | No | Shipping city |
+| `data.Shipping_State` | `string` | No | Shipping state or province |
+| `data.Shipping_Code` | `string` | No | Shipping ZIP/postal code |
+| `data.Shipping_Country` | `string` | No | Shipping country |
+| `data.Description` | `string` | No | Description or notes about the account |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
 
 </details>
 
@@ -584,14 +946,94 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Account ID |
 
 
-### Accounts Search
+### Accounts Update
+
+Updates an existing account record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.accounts.update(
+    data=[],
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "accounts",
+    "action": "update",
+    "params": {
+        "data": [],
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the account fields to update |
+| `data.Account_Name` | `string` | No | Account/company name |
+| `data.Account_Number` | `string` | No | Account number |
+| `data.Account_Type` | `string` | No | Type of account (e.g., Analyst, Competitor, Customer) |
+| `data.Industry` | `string` | No | Industry the account belongs to |
+| `data.Annual_Revenue` | `number` | No | Annual revenue of the account |
+| `data.Employees` | `integer` | No | Number of employees |
+| `data.Phone` | `string` | No | Account phone number |
+| `data.Website` | `string` | No | Account website URL |
+| `data.Ownership` | `string` | No | Ownership type (e.g., Public, Private) |
+| `data.Rating` | `string` | No | Account rating |
+| `data.Billing_Street` | `string` | No | Billing street address |
+| `data.Billing_City` | `string` | No | Billing city |
+| `data.Billing_State` | `string` | No | Billing state or province |
+| `data.Billing_Code` | `string` | No | Billing ZIP/postal code |
+| `data.Billing_Country` | `string` | No | Billing country |
+| `data.Shipping_Street` | `string` | No | Shipping street address |
+| `data.Shipping_City` | `string` | No | Shipping city |
+| `data.Shipping_State` | `string` | No | Shipping state or province |
+| `data.Shipping_Code` | `string` | No | Shipping ZIP/postal code |
+| `data.Shipping_Country` | `string` | No | Shipping country |
+| `data.Description` | `string` | No | Description or notes about the account |
+| `id` | `string` | Yes | Account ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
+
+</details>
+
+### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.accounts.search(
+await zoho_crm.accounts.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -604,7 +1046,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -743,13 +1185,73 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
+
+</details>
+
+### Deals Create
+
+Creates a new deal record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.deals.create(
+    data=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deals",
+    "action": "create",
+    "params": {
+        "data": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the deal record to create |
+| `data.Deal_Name` | `string` | Yes | Deal name (required) |
+| `data.Amount` | `number` | No | Monetary value of the deal |
+| `data.Stage` | `string` | Yes | Current stage of the deal in the pipeline (required) |
+| `data.Probability` | `integer` | No | Probability of closing the deal (percentage) |
+| `data.Closing_Date` | `string` | Yes | Expected closing date (YYYY-MM-DD) |
+| `data.Type` | `string` | No | Type of deal (e.g., New Business, Existing Business) |
+| `data.Next_Step` | `string` | No | Next step in the deal process |
+| `data.Lead_Source` | `string` | No | Source from which the deal originated |
+| `data.Description` | `string` | No | Description or notes about the deal |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
 
 </details>
 
@@ -788,14 +1290,82 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Deal ID |
 
 
-### Deals Search
+### Deals Update
+
+Updates an existing deal record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.deals.update(
+    data=[],
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deals",
+    "action": "update",
+    "params": {
+        "data": [],
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the deal fields to update |
+| `data.Deal_Name` | `string` | No | Deal name |
+| `data.Amount` | `number` | No | Monetary value of the deal |
+| `data.Stage` | `string` | No | Current stage of the deal in the pipeline |
+| `data.Probability` | `integer` | No | Probability of closing the deal (percentage) |
+| `data.Closing_Date` | `string` | No | Expected closing date (YYYY-MM-DD) |
+| `data.Type` | `string` | No | Type of deal (e.g., New Business, Existing Business) |
+| `data.Next_Step` | `string` | No | Next step in the deal process |
+| `data.Lead_Source` | `string` | No | Source from which the deal originated |
+| `data.Description` | `string` | No | Description or notes about the deal |
+| `id` | `string` | Yes | Deal ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
+
+</details>
+
+### Deals Context Store Search
 
 Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.deals.search(
+await zoho_crm.deals.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -808,7 +1378,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "deals",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -935,13 +1505,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
 
 </details>
 
@@ -980,14 +1545,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Campaign ID |
 
 
-### Campaigns Search
+### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.campaigns.search(
+await zoho_crm.campaigns.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1000,7 +1565,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "campaigns",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1131,13 +1696,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
+
+</details>
+
+### Tasks Create
+
+Creates a new task record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.tasks.create(
+    data=[]
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "create",
+    "params": {
+        "data": []
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the task record to create |
+| `data.Subject` | `string` | Yes | Subject or title of the task (required) |
+| `data.Due_Date` | `string` | No | Due date for the task (YYYY-MM-DD) |
+| `data.Status` | `string` | No | Task status (e.g., Not Started, In Progress, Completed) |
+| `data.Priority` | `string` | No | Priority level (e.g., High, Highest, Low, Lowest, Normal) |
+| `data.Send_Notification_Email` | `boolean` | No | Whether to send a notification email |
+| `data.Description` | `string` | No | Description or notes about the task |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
 
 </details>
 
@@ -1176,14 +1798,79 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Task ID |
 
 
-### Tasks Search
+### Tasks Update
+
+Updates an existing task record in Zoho CRM
+
+#### Python SDK
+
+```python
+await zoho_crm.tasks.update(
+    data=[],
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tasks",
+    "action": "update",
+    "params": {
+        "data": [],
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `data` | `array<object>` | Yes | Array containing the task fields to update |
+| `data.Subject` | `string` | No | Subject or title of the task |
+| `data.Due_Date` | `string` | No | Due date for the task (YYYY-MM-DD) |
+| `data.Status` | `string` | No | Task status (e.g., Not Started, In Progress, Completed) |
+| `data.Priority` | `string` | No | Priority level (e.g., High, Highest, Low, Lowest, Normal) |
+| `data.Send_Notification_Email` | `boolean` | No | Whether to send a notification email |
+| `data.Description` | `string` | No | Description or notes about the task |
+| `id` | `string` | Yes | Task ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array<object>` |  |
+| `data[].code` | `string` |  |
+| `data[].details` | `object` |  |
+| `data[].details.Modified_Time` | `null \| string` |  |
+| `data[].details.Modified_By` | `object \| any` |  |
+| `data[].details.Created_Time` | `null \| string` |  |
+| `data[].details.id` | `string` |  |
+| `data[].details.Created_By` | `object \| any` |  |
+| `data[].message` | `string` |  |
+| `data[].status` | `string` |  |
+
+
+</details>
+
+### Tasks Context Store Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.tasks.search(
+await zoho_crm.tasks.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1196,7 +1883,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1319,13 +2006,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
 
 </details>
 
@@ -1364,14 +2046,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Event ID |
 
 
-### Events Search
+### Events Context Store Search
 
 Search and filter events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.events.search(
+await zoho_crm.events.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1384,7 +2066,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1506,13 +2188,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
 
 </details>
 
@@ -1551,14 +2228,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Call ID |
 
 
-### Calls Search
+### Calls Context Store Search
 
 Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.calls.search(
+await zoho_crm.calls.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1571,7 +2248,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "calls",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1708,13 +2385,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
 
 </details>
 
@@ -1753,14 +2425,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Product ID |
 
 
-### Products Search
+### Products Context Store Search
 
 Search and filter products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.products.search(
+await zoho_crm.products.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1773,7 +2445,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "products",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1921,13 +2593,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
 
 </details>
 
@@ -1966,14 +2633,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Quote ID |
 
 
-### Quotes Search
+### Quotes Context Store Search
 
 Search and filter quotes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.quotes.search(
+await zoho_crm.quotes.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1986,7 +2653,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "quotes",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -2134,13 +2801,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.per_page` | `integer` |  |
-| `pagination.count` | `integer` |  |
-| `pagination.page` | `integer` |  |
-| `pagination.more_records` | `boolean` |  |
-| `pagination.sort_by` | `string` |  |
-| `pagination.sort_order` | `string` |  |
+| `more_records` | `boolean` |  |
+| `page` | `integer` |  |
 
 </details>
 
@@ -2179,14 +2841,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Invoice ID |
 
 
-### Invoices Search
+### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await zoho_crm.invoices.search(
+await zoho_crm.invoices.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -2199,7 +2861,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
