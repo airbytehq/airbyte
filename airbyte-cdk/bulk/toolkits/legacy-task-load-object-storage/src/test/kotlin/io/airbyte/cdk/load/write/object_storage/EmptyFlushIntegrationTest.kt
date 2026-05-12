@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.MockRemoteObject
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.pipeline.FinalOutput
@@ -37,8 +36,7 @@ import org.junit.jupiter.api.Test
  * [MockObjectStorageClient]. This is the integration point that pure-mock unit tests on each
  * component miss: it exercises the fact that [ObjectLoaderPartLoader.start] always initiates a
  * streaming upload before we know whether any non-empty part will arrive, and verifies that
- * [ObjectLoaderUploadCompleter] then explicitly aborts that upload instead of leaving it
- * dangling.
+ * [ObjectLoaderUploadCompleter] then explicitly aborts that upload instead of leaving it dangling.
  */
 class EmptyFlushIntegrationTest {
     private val streamDescriptor = DestinationStream.Descriptor("test", "stream")
@@ -53,8 +51,7 @@ class EmptyFlushIntegrationTest {
         coEvery { catalog.getStream(streamDescriptor) } returns stream
 
         val client = MockObjectStorageClient()
-        val loader =
-            ObjectLoaderPartLoader(client, catalog, UploadsInProgress(), destinationConfig)
+        val loader = ObjectLoaderPartLoader(client, catalog, UploadsInProgress(), destinationConfig)
         return client to loader
     }
 
@@ -66,10 +63,10 @@ class EmptyFlushIntegrationTest {
 
     /**
      * Build a [ObjectLoaderPartFormatter.FormattedPart] using the real [PartFactory] so the
-     * resulting part index matches what the formatter would produce in the empty-flush case.
-     * For zero records, only `nextPart(null, isFinal = true)` is called → partIndex = 0
-     * (`PartFactory` only pre-increments when bytes != null). That `partIndex = 0` is the
-     * invariant `PartBookkeeper.isComplete` relies on: `finalIndex == partIndexes.size == 0`.
+     * resulting part index matches what the formatter would produce in the empty-flush case. For
+     * zero records, only `nextPart(null, isFinal = true)` is called → partIndex = 0 (`PartFactory`
+     * only pre-increments when bytes != null). That `partIndex = 0` is the invariant
+     * `PartBookkeeper.isComplete` relies on: `finalIndex == partIndexes.size == 0`.
      */
     private fun emptyFinalFormattedPart(key: String): ObjectLoaderPartFormatter.FormattedPart {
         val factory = PartFactory(key = key, fileNumber = 0L)
@@ -91,8 +88,8 @@ class EmptyFlushIntegrationTest {
         result: Any?,
     ): ObjectLoaderPartLoader.LoadedPart<MockRemoteObject> {
         assertTrue(result is IntermediateOutput<*, *>, "Loader should emit IntermediateOutput")
-        return (result as IntermediateOutput<*, *>).output as
-            ObjectLoaderPartLoader.LoadedPart<MockRemoteObject>
+        return (result as IntermediateOutput<*, *>).output
+            as ObjectLoaderPartLoader.LoadedPart<MockRemoteObject>
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -100,8 +97,8 @@ class EmptyFlushIntegrationTest {
         result: Any?,
     ): ObjectLoaderUploadCompleter.UploadResult<MockRemoteObject> {
         assertTrue(result is FinalOutput<*, *>, "Completer should emit FinalOutput")
-        return (result as FinalOutput<*, *>).output as
-            ObjectLoaderUploadCompleter.UploadResult<MockRemoteObject>
+        return (result as FinalOutput<*, *>).output
+            as ObjectLoaderUploadCompleter.UploadResult<MockRemoteObject>
     }
 
     /**
@@ -110,11 +107,15 @@ class EmptyFlushIntegrationTest {
      *
      * The expected behavior is:
      * 1. The loader starts the streaming upload (it has to: it doesn't yet know whether a real
+     * ```
      *    part is coming).
+     * ```
      * 2. The loader does NOT call uploadPart (because bytes is null).
      * 3. The loader emits a LoadedPart marked empty=true, isFinal=true.
      * 4. The completer sees the empty final part, recognizes the bookkeeper is complete + empty,
+     * ```
      *    skips complete(), and calls abort() to release the server-side multipart upload.
+     * ```
      * 5. No object is created in storage; downstream receives remoteObject = null.
      */
     @Test
@@ -165,8 +166,8 @@ class EmptyFlushIntegrationTest {
     }
 
     /**
-     * Sanity check: when a non-empty part flows through the same pipeline, the upload IS
-     * completed and abort() is NOT called. This ensures we didn't regress the happy path.
+     * Sanity check: when a non-empty part flows through the same pipeline, the upload IS completed
+     * and abort() is NOT called. This ensures we didn't regress the happy path.
      */
     @Test
     fun `non-empty flush completes the upload and does not abort`() = runTest {
