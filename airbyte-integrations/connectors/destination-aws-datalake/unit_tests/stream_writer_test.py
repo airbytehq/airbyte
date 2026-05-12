@@ -3,7 +3,7 @@
 #
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, Mapping
 
@@ -482,6 +482,38 @@ def test_json_schema_cast_value():
     )
 
 
+def test_json_schema_cast_value_date_format():
+    writer = get_big_schema_writer(get_config())
+    date_schema = {"type": ["null", "string"], "format": "date"}
+
+    assert writer._json_schema_cast_value("2023-01-13", date_schema) == date(2023, 1, 13)
+    assert writer._json_schema_cast_value("not-a-date", date_schema) is None
+    assert writer._json_schema_cast_value(None, date_schema) is None
+    assert writer._json_schema_cast_value("", date_schema) is None
+
+
+def test_json_schema_cast_value_date_inside_object():
+    """
+    `format: date` fields nested inside an object must be cast to `datetime.date`
+    so pyarrow can emit them as Glue `date` (date32[day]) without raising
+    `ArrowTypeError: object of type <class 'str'> cannot be converted to int`.
+    """
+    writer = get_big_schema_writer(get_config())
+    object_schema = {
+        "type": ["null", "object"],
+        "properties": {
+            "created_on": {"type": ["null", "string"], "format": "date"},
+            "name": {"type": ["null", "string"]},
+        },
+    }
+
+    result = writer._json_schema_cast_value(
+        {"created_on": "2024-07-15", "name": "Acme"},
+        object_schema,
+    )
+    assert result == {"created_on": date(2024, 7, 15), "name": "Acme"}
+
+
 def test_json_schema_cast_decimal():
     config = get_config()
     config["glue_catalog_float_as_decimal"] = True
@@ -542,7 +574,7 @@ def test_json_schema_cast_decimal():
         },
         "PrivateNote": None,
         "SyncToken": "2",
-        "TxnDate": "2023-01-13",
+        "TxnDate": date(2023, 1, 13),
         "TaxRateRef": None,
         "TxnTaxDetail": None,
         "airbyte_cursor": "2023-06-15T16:08:39-07:00",
@@ -610,7 +642,7 @@ def test_json_schema_cast():
         },
         "PrivateNote": None,
         "SyncToken": "2",
-        "TxnDate": "2023-01-13",
+        "TxnDate": date(2023, 1, 13),
         "TaxRateRef": None,
         "TxnTaxDetail": None,
         "airbyte_cursor": "2023-06-15T16:08:39-07:00",
