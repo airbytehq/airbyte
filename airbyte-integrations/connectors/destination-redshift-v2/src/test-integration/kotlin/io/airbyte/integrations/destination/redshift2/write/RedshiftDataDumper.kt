@@ -56,7 +56,7 @@ class RedshiftDataDumper(
 
             // Use the TableSchemaMapper to get the correct table name
             val tableName = schemaMapper.toFinalTableName(stream.mappedDescriptor)
-            val sqlGenerator = RedshiftSqlGenerator()
+            val sqlGenerator = RedshiftSqlGenerator(config)
             val quotedTableName = sqlGenerator.getFullyQualifiedName(tableName)
             val existsResultSet = statement.executeQuery(sqlGenerator.tableExists(tableName))
             existsResultSet.next()

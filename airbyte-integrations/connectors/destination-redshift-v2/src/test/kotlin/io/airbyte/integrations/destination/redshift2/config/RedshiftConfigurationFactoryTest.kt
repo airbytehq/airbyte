@@ -30,6 +30,7 @@ class RedshiftConfigurationFactoryTest {
         jdbcUrlParams: String? = null,
         hasUploadingMethod: Boolean = false,
         tunnelMethodValue: SshTunnelMethodConfiguration? = SshNoTunnelMethod,
+        dropCascade: Boolean? = false,
     ): RedshiftSpecification = mockk {
         every { this@mockk.host } returns host
         every { this@mockk.port } returns port
@@ -40,6 +41,7 @@ class RedshiftConfigurationFactoryTest {
         every { this@mockk.jdbcUrlParams } returns jdbcUrlParams
         every { this@mockk.uploadingMethod } returns if (hasUploadingMethod) mockk() else null
         every { getTunnelMethodValue() } returns tunnelMethodValue
+        every { this@mockk.dropCascade } returns dropCascade
     }
 
     @Test
@@ -55,6 +57,7 @@ class RedshiftConfigurationFactoryTest {
                 jdbcUrlParams = "ssl=true&timeout=30",
                 hasUploadingMethod = true,
                 tunnelMethodValue = SshNoTunnelMethod,
+                dropCascade = true,
             )
 
         val config = factory.makeWithoutExceptionHandling(spec)
@@ -68,6 +71,7 @@ class RedshiftConfigurationFactoryTest {
         assertEquals("ssl=true&timeout=30", config.jdbcUrlParams)
         assertNotNull(config.uploadingMethod)
         assertEquals(SshNoTunnelMethod, config.tunnelMethod)
+        assertEquals(true, config.dropCascade)
     }
 
     @Test
@@ -84,6 +88,7 @@ class RedshiftConfigurationFactoryTest {
         assertNull(config.jdbcUrlParams)
         assertNull(config.uploadingMethod)
         assertNull(config.tunnelMethod)
+        assertEquals(false, config.dropCascade)
     }
 
     @Test
@@ -128,6 +133,15 @@ class RedshiftConfigurationFactoryTest {
     }
 
     @Test
+    fun `dropCascade defaults to false when null`() {
+        val spec = spec(dropCascade = null)
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        assertEquals(false, config.dropCascade)
+    }
+
+    @Test
     fun `uses spec default values`() {
         val spec = spec()
 
@@ -135,5 +149,6 @@ class RedshiftConfigurationFactoryTest {
 
         assertEquals(5439, config.port)
         assertEquals("public", config.schema)
+        assertEquals(false, config.dropCascade)
     }
 }

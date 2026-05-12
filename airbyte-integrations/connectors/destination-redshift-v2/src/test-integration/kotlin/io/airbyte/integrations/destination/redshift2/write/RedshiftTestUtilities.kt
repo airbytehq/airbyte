@@ -18,9 +18,6 @@ import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
-import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
@@ -122,18 +119,4 @@ fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
         }
 
     return OutputRecord.Meta(changes = changes, syncId = metaJson["sync_id"].longValue())
-}
-
-/** Loads a [RedshiftConfiguration] from the secrets file. */
-fun loadConfig(): RedshiftConfiguration {
-    val configJson = Files.readString(Path.of(CONFIG_PATH))
-    val mapper =
-        com.fasterxml.jackson.databind
-            .ObjectMapper()
-            .configure(
-                com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                false,
-            )
-    val spec = mapper.readValue(configJson, RedshiftSpecification::class.java)
-    return RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
 }

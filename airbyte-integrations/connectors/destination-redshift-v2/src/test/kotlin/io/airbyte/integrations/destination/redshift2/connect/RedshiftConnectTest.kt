@@ -32,6 +32,7 @@ class RedshiftConnectTest {
             jdbcUrlParams = jdbcUrlParams,
             uploadingMethod = null,
             tunnelMethod = tunnelMethod,
+            dropCascade = false,
         )
 
     @Test

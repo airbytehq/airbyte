@@ -94,11 +94,23 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
     val jdbcUrlParams: String? = null
 
+    @get:JsonSchemaTitle(
+        "Drop tables and columns with CASCADE. (WARNING! Risk of unrecoverable data loss)"
+    )
+    @get:JsonPropertyDescription(
+        "WARNING! This will delete all data in all dependent objects " +
+            "(views, etc.) including during schema evolution of columns. Use with caution. This option is intended for usecases which can " +
+            "easily rebuild the dependent objects."
+    )
+    @get:JsonProperty("drop_cascade")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "default": false}""")
+    val dropCascade: Boolean? = false
+
     @get:JsonSchemaTitle("Uploading Method")
     @get:JsonPropertyDescription("The way data will be uploaded to Redshift.")
     @get:JsonProperty("uploading_method")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "display_type": "radio"}""")
-    val uploadingMethod: UploadingMethod? = null
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 9, "display_type": "radio"}""")
+    val uploadingMethod: S3StagingConfiguration? = null
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")

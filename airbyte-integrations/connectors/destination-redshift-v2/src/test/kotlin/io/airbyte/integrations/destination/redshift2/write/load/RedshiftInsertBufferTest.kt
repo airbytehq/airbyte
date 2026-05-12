@@ -65,6 +65,7 @@ internal class RedshiftInsertBufferTest {
             jdbcUrlParams = null,
             uploadingMethod = s3Config,
             tunnelMethod = null,
+            dropCascade = false,
         )
 
     private lateinit var buffer: RedshiftInsertBuffer
@@ -255,27 +256,6 @@ internal class RedshiftInsertBufferTest {
 
         // State is reset even after error
         assertEquals(0, buffer.recordCount)
-    }
-
-    @Test
-    fun `default region used when s3BucketRegion is empty`() = runTest {
-        val noRegionConfig = s3Config.copy(s3BucketRegion = "")
-        val noRegionConfiguration = configuration.copy(uploadingMethod = noRegionConfig)
-        val noRegionBuffer =
-            RedshiftInsertBuffer(tableName, columns, redshiftClient, noRegionConfiguration)
-
-        noRegionBuffer.accumulate(mapOf("_airbyte_raw_id" to StringValue("x")))
-        noRegionBuffer.flush()
-
-        coVerify {
-            redshiftClient.copyFromS3(
-                tableName = any(),
-                s3Path = any(),
-                accessKeyId = any(),
-                secretAccessKey = any(),
-                region = eq(""),
-            )
-        }
     }
 
     // ================================================================

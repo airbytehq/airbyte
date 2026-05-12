@@ -62,11 +62,19 @@
         "group" : "connection",
         "order" : 7
       },
+      "drop_cascade" : {
+        "type" : "boolean",
+        "description" : "WARNING! This will delete all data in all dependent objects (views, etc.) including during schema evolution of columns. Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
+        "title" : "Drop tables and columns with CASCADE. (WARNING! Risk of unrecoverable data loss)",
+        "group" : "connection",
+        "order" : 8,
+        "default" : false
+      },
       "uploading_method" : {
         "description" : "The way data will be uploaded to Redshift.",
         "title" : "Uploading Method",
         "group" : "connection",
-        "order" : 8,
+        "order" : 9,
         "display_type" : "radio",
         "type" : "object",
         "additionalProperties" : true,
@@ -213,7 +221,7 @@
         "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
         "title" : "SSH Tunnel Method",
         "group" : "connection",
-        "order" : 9,
+        "order" : 10,
         "type" : "object"
       }
     },
