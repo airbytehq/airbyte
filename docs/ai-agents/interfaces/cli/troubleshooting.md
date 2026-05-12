@@ -11,7 +11,7 @@ For every entry: **Symptom → Cause → Fix.**
 
 ## Missing settings on a fresh machine
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -24,17 +24,17 @@ For every entry: **Symptom → Cause → Fix.**
 
 Exit code `2`.
 
-**Cause**
+### Cause
 
 Either `~/.airbyte-agent/settings.json` doesn't exist, or it exists but `client_id`, `client_secret`, or `organization_id` is missing. Environment variables are also unset (or only some of the three are set — env-var resolution requires all three).
 
-**Fix**
+### Fix
 
 Run `airbyte-agent configure` to prompt for the three values and write the settings file. See [Authenticate](./authenticate) for the alternatives.
 
 ## Authentication fails
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -47,11 +47,11 @@ Run `airbyte-agent configure` to prompt for the three values and write the setti
 
 Exit code `2`.
 
-**Cause**
+### Cause
 
 Stale or rotated credentials, a `client_id`/`client_secret` from a different organization, or a typo when you ran `configure`.
 
-**Fix**
+### Fix
 
 1. Re-read your credentials from **Settings > Profile** in the web app.
 2. Re-run `airbyte-agent configure`, or update the env vars.
@@ -59,7 +59,7 @@ Stale or rotated credentials, a `client_id`/`client_secret` from a different org
 
 ## Workspace not found
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -72,17 +72,17 @@ Stale or rotated credentials, a `client_id`/`client_secret` from a different org
 
 Exit code `3`.
 
-**Cause**
+### Cause
 
 Typo in the workspace name, or the workspace was deleted.
 
-**Fix**
+### Fix
 
 Run `airbyte-agent workspaces list --format table` to see the canonical names, then retry the command with the right one. To stop typing it on every call, persist a default with `airbyte-agent workspaces use --json '{"name": "..."}'` — see [List and set workspaces](./workspaces#set-a-default-workspace).
 
 ## Connector not found
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -95,11 +95,11 @@ Run `airbyte-agent workspaces list --format table` to see the canonical names, t
 
 Exit code `3`.
 
-**Cause**
+### Cause
 
 The named connector doesn't exist in that workspace. Often this means it lives in a different workspace, or it was created under a different name.
 
-**Fix**
+### Fix
 
 ```bash
 airbyte-agent connectors list --json '{"workspace": "default"}' --format table
@@ -107,9 +107,9 @@ airbyte-agent connectors list --json '{"workspace": "default"}' --format table
 
 If the connector genuinely doesn't exist yet, create it with [`connectors create`](./add-connector).
 
-## Can't confirm destructive delete on a non-TTY machine
+## Destructive delete on a non-TTY machine
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -122,11 +122,11 @@ If the connector genuinely doesn't exist yet, create it with [`connectors create
 
 Exit code `4`.
 
-**Cause**
+### Cause
 
 `connectors delete` is destructive. On a terminal, it prompts for `"Type 'yes' to confirm:"`. When stdin is piped (an agent harness driving the CLI, a CI job, a script), there's nothing to type, so the command refuses rather than hanging on a prompt that can never resolve.
 
-**Fix**
+### Fix
 
 Grant one-time permission. Either:
 
@@ -138,7 +138,7 @@ AIRBYTE_ALLOW_DESTRUCTIVE=true airbyte-agent connectors delete --json '{"workspa
 
 ## Credential-flow timeout
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -151,11 +151,11 @@ AIRBYTE_ALLOW_DESTRUCTIVE=true airbyte-agent connectors delete --json '{"workspa
 
 Exit code `4`.
 
-**Cause**
+### Cause
 
 [`connectors create`](./add-connector) opens a browser and polls for completion. If you don't finish signing in within 180 seconds (the default), the CLI gives up.
 
-**Fix**
+### Fix
 
 Re-run the command and complete the browser flow faster. For slow flows (corporate SSO, MFA prompts, multi-step OAuth), raise the timeout:
 
@@ -170,15 +170,15 @@ If the browser doesn't open automatically (headless machine, SSH session, restri
 
 ## Large responses
 
-**Symptom**
+### Symptom
 
 `connectors execute` returns a payload that overflows your terminal, your agent's context window, or your shell pipeline.
 
-**Cause**
+### Cause
 
 The default response shape for many connectors includes nested objects and metadata you don't need.
 
-**Fix**
+### Fix
 
 Filter the response with both layers of `select_fields` and `--fields`:
 
@@ -202,21 +202,21 @@ airbyte-agent connectors execute --json '{...}' -o response.json
 
 ## `--describe` returns no `api` block
 
-**Symptom**
+### Symptom
 
 Running `--describe` returns the `params` section but the `api` block is empty or missing.
 
-**Cause**
+### Cause
 
 The OpenAPI schemas in `--describe` are extracted at build time from the CLI's checked-in specs and only cover routes the CLI maps to a public API endpoint. Some operations (for example, internal helpers) don't have a public OpenAPI counterpart, so there's no API shape to print.
 
-**Fix**
+### Fix
 
 No action needed — the `params` section is still authoritative for what the CLI accepts. The missing `api` block only means there's no public REST endpoint to show alongside it.
 
 ## Rate limited
 
-**Symptom**
+### Symptom
 
 ```json
 {
@@ -227,10 +227,10 @@ No action needed — the `params` section is still authoritative for what the CL
 }
 ```
 
-**Cause**
+### Cause
 
 You (or your agent) made too many requests in a short window.
 
-**Fix**
+### Fix
 
 The CLI already retries 429s with exponential backoff (3 attempts, 1s/2s/4s). If you're still hitting the limit, slow down your loop or batch operations. See [Retry behavior](./command-reference#retry-behavior).

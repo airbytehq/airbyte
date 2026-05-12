@@ -20,11 +20,9 @@ For details, see [Manage your user profile](../../admin/profile).
 
 ## Provide credentials
 
-The CLI accepts credentials three ways. Pick whichever fits your environment best. The CLI resolves them in this order:
+The CLI accepts credentials three ways. Pick whichever fits your environment best.
 
-**Environment variables → settings file**
-
-When all three environment variables are set, they take precedence. Otherwise, the CLI falls through to `~/.airbyte-agent/settings.json`.
+The CLI resolves them in this order: environment variables, then the settings file. When all three environment variables are set, they take precedence. Otherwise, the CLI falls through to `~/.airbyte-agent/settings.json`.
 
 ### Recommended: `airbyte-agent configure`
 

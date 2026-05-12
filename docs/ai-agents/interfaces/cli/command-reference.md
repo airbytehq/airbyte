@@ -163,7 +163,7 @@ airbyte-agent connectors delete --json '{"workspace": "default", "name": "old-hu
 | `workspace` | string | with `name` | Workspace the connector lives in. |
 | `id` | string | one of `name`+`workspace` or `id` | Connector ID (UUID). |
 
-Without a TTY (piped input from an agent harness, for example), the prompt can't run. The command refuses with a `validation_error` whose hint tells you to grant one-time permission by setting `"allow_destructive": true` in `~/.airbyte-agent/settings.json` (or `AIRBYTE_ALLOW_DESTRUCTIVE=true` for a single invocation). See [Troubleshooting](./troubleshooting#cant-confirm-destructive-delete-on-a-non-tty-machine).
+Without a TTY (piped input from an agent harness, for example), the prompt can't run. The command refuses with a `validation_error` whose hint tells you to grant one-time permission by setting `"allow_destructive": true` in `~/.airbyte-agent/settings.json` (or `AIRBYTE_ALLOW_DESTRUCTIVE=true` for a single invocation). See [Troubleshooting](./troubleshooting#destructive-delete-on-a-non-tty-machine).
 
 ## Exit codes
 

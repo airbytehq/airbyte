@@ -39,7 +39,7 @@ What happens:
 3. You sign in to the third-party service in the browser. The web app captures the credentials and reports completion back to the CLI.
 4. The CLI polls the session with exponential backoff and, when the browser flow finishes, creates the connector in your workspace with the captured credentials.
 
-When it returns, the response includes the new connector's `id` and `name`. Use either to reference the connector from [`connectors describe`](./describe-connector), [`connectors execute`](./execute), or [`connectors delete`](./troubleshooting#deleting-a-connector).
+When it returns, the response includes the new connector's `id` and `name`. Use either to reference the connector from [`connectors describe`](./describe-connector), [`connectors execute`](./execute), or [`connectors delete`](./command-reference#connectors-delete).
 
 You can also pass the source definition ID directly with `--id` if you already have it:
 
