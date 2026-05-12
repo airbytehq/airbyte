@@ -179,7 +179,7 @@ class RedshiftTableSchemaMapperTest {
                 // Simple types
                 Arguments.of(FieldType(BooleanType, false), "boolean"),
                 Arguments.of(FieldType(IntegerType, true), "bigint"),
-                Arguments.of(FieldType(NumberType, false), "numeric(38,9)"),
+                Arguments.of(FieldType(NumberType, false), "decimal(38,9)"),
                 Arguments.of(FieldType(StringType, true), "varchar(65535)"),
                 // Temporal types
                 Arguments.of(FieldType(DateType, false), "date"),

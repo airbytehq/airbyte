@@ -312,12 +312,12 @@ class RedshiftAirbyteClient(
      * internal type names used in DDL statements. Verified against a real Redshift cluster.
      *
      * Precision/scale/length are ignored: all varchars normalize to `varchar(65535)` and all
-     * numerics normalize to `numeric(38,9)`
+     * numerics normalize to `decimal(38,9)`
      */
     internal fun normalizeRedshiftType(redshiftType: String): String =
         when (redshiftType) {
             "character varying" -> "varchar(65535)"
-            "numeric" -> "numeric(38,9)"
+            "numeric" -> "decimal(38,9)"
             "timestamp without time zone" -> "timestamp"
             "timestamp with time zone" -> "timestamptz"
             "time without time zone" -> "time"
@@ -346,18 +346,22 @@ class RedshiftAirbyteClient(
             ) {
                 val message =
                     """
-                    Failed to modify table because other database objects (such as views \
-                    or rules) depend on it. Original error: ${e.message}
+                    Failed to modify table because other database objects (such as views 
+                    or rules) depend on it. Original error: ${e.message} .
 
-                    You can manually drop the dependent views before running the sync, \
-                    then recreate them afterward. To find dependent views, run:
-                    SELECT dependent_ns.nspname, dependent_view.relname \
-                    FROM pg_depend \
-                    JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid \
-                    JOIN pg_class AS dependent_view \
-                    ON pg_rewrite.ev_class = dependent_view.oid \
-                    JOIN pg_namespace dependent_ns \
-                    ON dependent_view.relnamespace = dependent_ns.oid \
+                    You can enable the 'Drop tables with CASCADE' option in the destination 
+                    configuration to automatically drop dependent objects during sync. 
+                    WARNING: This will delete all data in dependent objects (views, etc.). 
+
+                    Alternatively, you can manually drop the dependent views before running 
+                    the sync, then recreate them afterward. To find dependent views, run: 
+                    SELECT dependent_ns.nspname, dependent_view.relname 
+                    FROM pg_depend 
+                    JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid 
+                    JOIN pg_class AS dependent_view 
+                    ON pg_rewrite.ev_class = dependent_view.oid 
+                    JOIN pg_namespace dependent_ns 
+                    ON dependent_view.relnamespace = dependent_ns.oid 
                     WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;
                     """.trimIndent()
                 log.error { message }

@@ -14,11 +14,16 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.schema.toRedshiftCompatibleName
 import jakarta.inject.Singleton
 
 @Singleton
-class RedshiftSqlGenerator {
+class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
+
+    /** Suffix appended to DROP TABLE / DROP COLUMN when cascade mode is enabled. */
+    private val cascadeSuffix: String
+        get() = if (config.dropCascade) " CASCADE" else ""
 
     companion object {
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
@@ -90,7 +95,7 @@ class RedshiftSqlGenerator {
         return if (replace) {
             """
                 |BEGIN TRANSACTION;
-                |DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};
+                |DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$cascadeSuffix;
                 |$createStatement
                 |COMMIT;
             """.trimMargin()
@@ -100,7 +105,7 @@ class RedshiftSqlGenerator {
     }
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};"
+        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$cascadeSuffix;"
 
     fun addColumn(tableName: TableName, columnName: String, columnType: String): String =
         "ALTER TABLE ${getFullyQualifiedName(tableName)} ADD COLUMN ${quoteIdentifier(columnName)} $columnType;"
@@ -153,7 +158,7 @@ class RedshiftSqlGenerator {
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
         return """
             |BEGIN TRANSACTION;
-            |DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)};
+            |DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)}$cascadeSuffix;
             |ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
             |COMMIT;
         """.trimMargin()
@@ -421,7 +426,7 @@ class RedshiftSqlGenerator {
 
         // Remove columns
         columnsToRemove.forEach { (name, _) ->
-            clauses.add("ALTER TABLE $fqn DROP COLUMN ${quoteIdentifier(name)};")
+            clauses.add("ALTER TABLE $fqn DROP COLUMN ${quoteIdentifier(name)}$cascadeSuffix;")
         }
 
         // Modify column types via 4-step rename pattern
@@ -489,7 +494,7 @@ class RedshiftSqlGenerator {
                 )
             )
             // Step 4: Drop the original column
-            add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN $quotedName;")
+            add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN $quotedName$cascadeSuffix;")
             // Step 5: Rename temp column to the original name
             add("ALTER TABLE $fullyQualifiedTableName RENAME COLUMN $tempColumn TO $quotedName;")
         }

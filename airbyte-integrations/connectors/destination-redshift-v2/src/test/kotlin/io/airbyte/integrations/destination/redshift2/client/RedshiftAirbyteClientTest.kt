@@ -352,6 +352,7 @@ internal class RedshiftAirbyteClientTest {
 
         val thrown = assertThrows<ConfigErrorException> { client.execute("DROP TABLE something") }
         assertTrue(thrown.message!!.contains("other database objects"))
+        assertTrue(thrown.message!!.contains("Drop tables with CASCADE"))
         assertTrue(thrown.message!!.contains("pg_depend"))
     }
 
@@ -362,6 +363,7 @@ internal class RedshiftAirbyteClientTest {
 
         val thrown = assertThrows<ConfigErrorException> { client.execute("ALTER TABLE something") }
         assertTrue(thrown.message!!.contains("other database objects"))
+        assertTrue(thrown.message!!.contains("Drop tables with CASCADE"))
     }
 
     @Test
@@ -564,7 +566,7 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `normalizeRedshiftType maps numeric`() {
-        assertEquals("numeric(38,9)", client.normalizeRedshiftType("numeric"))
+        assertEquals("decimal(38,9)", client.normalizeRedshiftType("numeric"))
     }
 
     @Test
