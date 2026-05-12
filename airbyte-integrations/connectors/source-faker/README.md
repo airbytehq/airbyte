@@ -1,6 +1,7 @@
 # Faker source connector
 
 This is the repository for the Faker source connector, written in Python.
+This temporary test-only edit validates the progressive rollout gate on a connector without an active rollout.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/faker).
 
 ## Local development
