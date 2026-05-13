@@ -48,8 +48,13 @@ import java.util.Base64
 
 private val log = KotlinLogging.logger {}
 
-private fun LocalDateTime.formatWithNecessaryPrecision(): String =
-    toString().trimEnd('0').removeSuffix(".")
+private fun LocalDateTime.formatWithNecessaryPrecision(): String {
+    val base = MsSqlServerJdbcPartitionFactory.timestampWithoutFractionalSecondFormatter.format(this)
+    if (nano == 0) {
+        return base
+    }
+    return "$base.${nano.toString().padStart(9, '0').trimEnd('0')}"
+}
 
 private fun EmittedField.toCursorUpperBoundField(): EmittedField =
     if (type is MsSqlSourceOperations.MsSqlServerLocalDateTimeFieldType) {

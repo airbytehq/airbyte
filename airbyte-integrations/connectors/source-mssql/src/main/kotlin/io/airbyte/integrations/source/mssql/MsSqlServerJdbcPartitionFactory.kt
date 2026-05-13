@@ -501,10 +501,12 @@ open class MsSqlServerJdbcPartitionFactory(
         val outputDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN)
 
         val TIMESTAMP_WITHOUT_FRACT_SECOND_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
+        val timestampWithoutFractionalSecondFormatter: DateTimeFormatter =
+            DateTimeFormatter.ofPattern(TIMESTAMP_WITHOUT_FRACT_SECOND_PATTERN)
         // Parser for timestamps without timezone info
         val timestampWithoutTimezoneParser: DateTimeFormatter =
             DateTimeFormatterBuilder()
-                .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+                .append(timestampWithoutFractionalSecondFormatter)
                 .optionalStart()
                 .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
                 .optionalEnd()
