@@ -170,3 +170,6 @@ expirations
 httpx
 [Aa]uto-?create(s|d)?
 async
+Automations
+enum
+uv
