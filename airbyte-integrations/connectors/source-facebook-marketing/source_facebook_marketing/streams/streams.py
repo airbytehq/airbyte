@@ -16,6 +16,7 @@ from facebook_business.exceptions import FacebookRequestError
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
@@ -141,6 +142,11 @@ class AdCreativesFromAds(FBMarketingStream):
         except (FacebookRequestError, TypeError) as e:
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
+        except AirbyteTracedException as e:
+            if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
+                logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+                return None
+            raise
 
     def read_records(
         self,
@@ -333,7 +339,13 @@ class AdAccount(FBMarketingStream):
         fields = self.fields(account_id=account_id)
         try:
             return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
-        except FacebookRequestError as e:
+        except (FacebookRequestError, AirbyteTracedException) as e:
+            # The backoff give_up handler may convert FacebookRequestError to AirbyteTracedException
+            # before this except block can catch it. Extract the wrapped FacebookRequestError if present.
+            if isinstance(e, AirbyteTracedException):
+                if not isinstance(e._exception, FacebookRequestError):
+                    raise
+                e = e._exception
             # This is a workaround for cases when account seem to have all the required permissions
             # but despite that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":

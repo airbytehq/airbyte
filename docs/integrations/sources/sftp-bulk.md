@@ -61,7 +61,7 @@ For more information on SSH key pair authentication, please refer to the
 
 ### Set up the SFTP Bulk connector in Airbyte
 
-### For Airbyte Cloud
+### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -70,7 +70,7 @@ For more information on SSH key pair authentication, please refer to the
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the SSH Key Authentication Setup section below for detailed instructions.
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the [SSH Key Authentication Setup](#ssh-key-authentication-setup) section below for detailed instructions.
 9. In the section titled `The list of streams to sync`, enter a **Stream Name**. This is the name of the stream that is created in your destination. Add additional streams by clicking **Add**.
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
@@ -91,6 +91,13 @@ For more information on SSH key pair authentication, please refer to the
     An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
 
 14. Click **Set up source** to complete setup. A test runs to verify the configuration.
+
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
+4. Enter a name for the SFTP Bulk connector.
 
 #### SSH Key Authentication Setup
 
@@ -120,13 +127,6 @@ Once uploaded, Airbyte uses this file to authenticate securely with your SFTP se
 :::note
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
 :::
-
-### For Airbyte Open Source
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
-4. Enter a name for the SFTP Bulk connector.
 
 ## Delivery Method
 
@@ -184,9 +184,11 @@ For more information about delivery methods and their limitations, see the [Deli
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.9.2 | 2026-04-06 | [76108](https://github.com/airbytehq/airbyte/pull/76108) | Catch `struct.error` during private key parsing and re-raise `AirbyteTracedException` instead of swallowing config errors as warnings |
+| 1.9.1 | 2026-04-01 | [75967](https://github.com/airbytehq/airbyte/pull/75967) | Support non-RSA private key types (Ed25519, ECDSA, DSS) for SSH authentication |
 | 1.9.0 | 2026-01-08 | [71225](https://github.com/airbytehq/airbyte/pull/71225) | Promoting release candidate 1.9.0-rc.2 to a main version. |
-| 1.9.0-rc.2 | 2026-01-05 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic                    |
-| 1.9.0-rc.1 | 2025-12-09 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version                                                                                                                           |
+| 1.9.0-rc.2 | 2026-01-05 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic |
+| 1.9.0-rc.1 | 2025-12-09 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version |
 | 1.8.9      | 2025-11-24 | | Increase `maxSecondsBetweenMessages` to 3 hours                                                                                                                          |
 | 1.8.8      | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit                                                                                                                      |
 | 1.8.6 | 2025-10-14 | [67923](https://github.com/airbytehq/airbyte/pull/67923) | Update dependencies |

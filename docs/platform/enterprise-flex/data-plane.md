@@ -23,7 +23,7 @@ This separation of duties is what allows a single Airbyte deployment to ensure y
 
 By default, Airbyte has a single data plane that any workspace in the organization can access, and it's automatically tied to the default workspace when Airbyte first starts. To configure additional data planes and regions, complete these steps.
 
-If you have not already, ensure you have the [required infrastructure](https://docs.airbyte.com/platform/enterprise-flex/getting-started) to run your data plane.
+If you have not already, ensure you have the [required infrastructure](getting-started) to run your data plane.
 
 1. [Create a region](#step-1).
 2. [Create a data plane](#step-2) in that region.
@@ -251,13 +251,12 @@ You can also use `kubectl` to create the secret directly from the command-line t
 
 ```bash
 kubectl create secret generic airbyte-config-secrets \
-  --from-literal=license-key='' \
-  --from-literal=data_plane_client_id='' \
-  --from-literal=data_plane_client_secret='' \
-  --from-literal=s3-access-key-id='' \
-  --from-literal=s3-secret-access-key='' \
-  --from-literal=aws-secret-manager-access-key-id='' \
-  --from-literal=aws-secret-manager-secret-access-key='' \
+  --from-literal=DATA_PLANE_CLIENT_ID='' \
+  --from-literal=DATA_PLANE_CLIENT_SECRET='' \
+  --from-literal=S3_ACCESS_KEY_ID='' \
+  --from-literal=S3_SECRET_ACCESS_KEY='' \
+  --from-literal=AWS_SECRET_MANAGER_ACCESS_KEY_ID='' \
+  --from-literal=AWS_SECRET_MANAGER_SECRET_ACCESS_KEY='' \
   --namespace airbyte
 ```
 
