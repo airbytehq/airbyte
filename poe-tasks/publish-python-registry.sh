@@ -121,16 +121,13 @@ if [[ -z "$PYPI_TOKEN" ]]; then
 fi
 
 
-# Navigate to connector directory
 CONNECTOR_DIR="airbyte-integrations/connectors/$CONNECTOR_NAME"
 if [[ ! -d "$CONNECTOR_DIR" ]]; then
     echo "Error: Connector directory not found: $CONNECTOR_DIR" >&2
     exit 1
 fi
 
-cd "$CONNECTOR_DIR"
-
-METADATA_FILE="metadata.yaml"
+METADATA_FILE="$CONNECTOR_DIR/metadata.yaml"
 if [[ ! -f "$METADATA_FILE" ]]; then
     echo "Error: metadata.yaml not found in $CONNECTOR_DIR" >&2
     exit 1
@@ -151,7 +148,18 @@ if [[ -z "$PACKAGE_NAME" ]]; then
     echo "⚠️ Error: Package name not found in metadata.yaml, skipping PyPI publishing." >&2
     exit 0
 fi
-BASE_VERSION=$(poe -qq get-version)
+BASE_VERSION=$(cd "$CONNECTOR_DIR" && poe -qq get-version)
+
+STAGING_DIR=$(mktemp -d)
+cleanup() {
+    rm -rf "$STAGING_DIR"
+}
+trap cleanup EXIT
+
+STAGED_CONNECTOR_DIR="$STAGING_DIR/$CONNECTOR_NAME"
+mkdir -p "$STAGED_CONNECTOR_DIR"
+cp -aL "$CONNECTOR_DIR/." "$STAGED_CONNECTOR_DIR/"
+cd "$STAGED_CONNECTOR_DIR"
 
 # Determine version to use
 if [[ -n "$VERSION_OVERRIDE" ]]; then
@@ -190,19 +198,9 @@ fi
 if [[ -f "pyproject.toml" ]]; then
     echo "Detected Poetry project"
 
-    # runs automatically on script error or exit
-    cleanup() {
-        if [[ -f pyproject.toml.bak ]]; then
-            mv pyproject.toml.bak pyproject.toml
-            echo "Restored original pyproject.toml"
-        fi
-    }
-    trap cleanup EXIT   
-
     # to support overriding the package name and the version when publishing to PyPI, the script modifies the pyproject.toml file 
-    # we keep a backup at pyproject.toml.bak that is used to restore the initial state at the end
     # TODO: figure out if we can do this in a less hacky way and reevaluate whether to continue defining PyPI package information in metadata.yaml
-    sed -i.bak -E \
+    sed -i -E \
         "s/^([[:space:]]*name[[:space:]]*=[[:space:]]*\").*(\".*)$/\\1${PACKAGE_NAME}\\2/;
         s/^([[:space:]]*version[[:space:]]*=[[:space:]]*\").*(\".*)$/\\1${VERSION}\\2/" \
         pyproject.toml
