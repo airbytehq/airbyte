@@ -9,7 +9,7 @@ Airbyte Agents is a cloud platform that gives AI agents authenticated, structure
 
 You can interact with the platform through four interfaces. They all connect to the same service, so credentials you configure through one interface are available to all of them.
 
-- [**Web app**](../../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai): Talk to an Airbyte-hosted agent in Chats, or define Automations that run on a schedule or webhook.
+- [**Web app**](../../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai): Talk to an Airbyte-hosted agent in Chats, or define Automations that run manually or on a schedule.
 - [**API**](../../interfaces/api): HTTP endpoints for managing connectors, tokens, and executing operations from any language.
 - [**SDK**](../../interfaces/sdk): Python SDK for building agents that authenticate, connect, and execute operations in your own code.
 - [**MCP server**](../../interfaces/mcp): A remote Model Context Protocol server that connects MCP-capable agents like Claude, Cursor, and ChatGPT to your data.
