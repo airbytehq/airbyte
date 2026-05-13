@@ -11,5 +11,3 @@ For Kotlin CDK API reference, see the [Kotlin CDK docs](https://airbyte-kotlin-c
 ## Contributing
 
 If this connector has connector-specific guidance, troubleshooting tips, or test suggestions, see [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-For contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).

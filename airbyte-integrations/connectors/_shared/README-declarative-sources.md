@@ -10,6 +10,4 @@ For local development and testing, see [Developing Connectors Locally](https://d
 
 ## Contributing
 
-For connector-specific guidance and gotchas, see [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-For contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).
+If this connector has connector-specific guidance, troubleshooting tips, or test suggestions, see [CONTRIBUTING.md](./CONTRIBUTING.md).
