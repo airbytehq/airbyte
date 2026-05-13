@@ -9,6 +9,7 @@ Visit the [Twitch Helix API Reference](https://dev.twitch.tv/docs/api/reference/
 ## Authentication setup
 
 Source Twitch uses OAuth 2.0 for authentication. You need a Twitch application registered in the [Twitch Developer Console](https://dev.twitch.tv/console/apps).
+The connector requests no Twitch authorization scopes; it uses OAuth only to obtain a valid token for read-only Helix endpoints.
 
 1. Go to [Twitch Developer Console](https://dev.twitch.tv/console/apps) and register a new application.
 2. Set the **OAuth Redirect URL** to `https://cloud.airbyte.com/auth_flow`.

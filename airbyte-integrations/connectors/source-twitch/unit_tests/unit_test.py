@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 from conftest import get_source
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.types import StreamSlice
@@ -14,6 +15,11 @@ from airbyte_cdk.utils.mapping_helpers import get_interpolation_context
 def _load_manifest():
     with open(Path(__file__).parent.parent / "manifest.yaml", "r") as manifest_file:
         return yaml.safe_load(manifest_file)
+
+
+def _get_auth_config():
+    manifest = _load_manifest()
+    return manifest["spec"]["advanced_auth"]["oauth_config_specification"]
 
 
 def _evaluate_request_parameters(definition_name, components_values, stream_slice):
@@ -58,6 +64,48 @@ def test_config_validations(config_gen):
     with pytest.raises(ValueError) as excinfo_invalid_enum:
         get_source(config_invalid_enum).streams(config=config_invalid_enum)
     assert "JSON schema validation error: 'popular' is not one of ['time', 'trending', 'views']" in str(excinfo_invalid_enum.value)
+
+
+def test_oauth_config_uses_hidden_refresh_token_and_no_authorization_scopes():
+    manifest = _load_manifest()
+    oauth_config = _get_auth_config()
+    refresh_token_property = manifest["spec"]["connection_specification"]["properties"]["client_refresh_token"]
+    consent_url = oauth_config["oauth_connector_input_specification"]["consent_url"]
+
+    assert refresh_token_property["airbyte_hidden"] is True
+    assert refresh_token_property["airbyte_secret"] is True
+    assert oauth_config["complete_oauth_output_specification"]["properties"]["refresh_token"]["path_in_connector_config"] == [
+        "client_refresh_token"
+    ]
+    assert "scope=" in consent_url
+    assert "channel:" not in consent_url
+    assert "analytics:" not in consent_url
+    assert "moderator:" not in consent_url
+
+
+def test_connection_spec_marks_credentials_as_secrets(config):
+    manifest = _load_manifest()
+    connection_specification = manifest["spec"]["connection_specification"]
+    properties = connection_specification["properties"]
+
+    assert properties["client_id"]["airbyte_secret"] is True
+    assert properties["client_secret"]["airbyte_secret"] is True
+    assert properties["client_refresh_token"]["airbyte_secret"] is True
+    assert Draft7Validator(connection_specification).is_valid(config)
+
+
+def test_oauth_token_exchange_posts_credentials_in_form_body():
+    oauth_input = _get_auth_config()["oauth_connector_input_specification"]
+
+    assert oauth_input["access_token_url"] == "https://id.twitch.tv/oauth2/token"
+    assert oauth_input["access_token_headers"] == {"Content-Type": "application/x-www-form-urlencoded"}
+    assert oauth_input["access_token_params"] == {
+        "client_id": "{{ client_id_value }}",
+        "client_secret": "{{ client_secret_value }}",
+        "code": "{{ auth_code_value }}",
+        "grant_type": "authorization_code",
+        "redirect_uri": "{{ redirect_uri_value }}",
+    }
 
 
 def test_streams_with_custom_reports(config):

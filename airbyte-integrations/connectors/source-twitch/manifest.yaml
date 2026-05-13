@@ -12,11 +12,19 @@ spec:
             path_in_connector_config:
             - client_refresh_token
       oauth_connector_input_specification:
-        consent_url: https://id.twitch.tv/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&state={{state}}&response_type=code&scope=channel:read:goals+channel:read:polls+channel:manage:polls+channel:read:predictions+channel:read:redemptions+channel:read:charity+user:read:broadcast+analytics:read:extensions+analytics:read:games+bits:read+moderator:read:followers+moderator:read:chatters+moderator:read:unban_requests
+        consent_url: https://id.twitch.tv/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&response_type=code&scope=
         extract_output:
         - access_token
         - refresh_token
-        access_token_url: https://id.twitch.tv/oauth2/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}&grant_type=authorization_code&redirect_uri={{redirect_uri_value}}
+        access_token_url: https://id.twitch.tv/oauth2/token
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          client_id: '{{ client_id_value }}'
+          client_secret: '{{ client_secret_value }}'
+          code: '{{ auth_code_value }}'
+          grant_type: authorization_code
+          redirect_uri: '{{ redirect_uri_value }}'
       complete_oauth_server_input_specification:
         required:
         - client_id
@@ -257,8 +265,7 @@ streams:
           http_codes:
           - 401
           failure_type: config_error
-          error_message: ' 401. Error: Unauthorized. Please ensure you are authenticated
-            correctly.'
+          error_message: Authentication credentials are invalid.
         backoff_strategies: []
       request_headers:
         $ref: '#/definitions/linked/HttpRequester/request_headers'
