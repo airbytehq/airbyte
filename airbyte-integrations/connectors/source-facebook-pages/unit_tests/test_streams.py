@@ -146,6 +146,5 @@ def test_facebook_bad_request_fails_without_retrying():
         assert page_request.call_count == 1
         assert output.errors
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
-        assert "Facebook API rejected the request." in output.get_formatted_error_message()
-        assert "access token permissions" in output.get_formatted_error_message()
+        assert "Facebook API request contains invalid Page fields, metrics, or permissions." in output.get_formatted_error_message()
         assert "Bad request" in output.errors[0].trace.error.internal_message

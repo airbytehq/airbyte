@@ -22,11 +22,11 @@ definitions:
         - error_message_contains: Please reduce the amount of data you're asking for, then retry your request
           action: FAIL
           failure_type: config_error
-          error_message: Facebook API response data exceeds the request limit. Decrease Page Size or deselect fields for the affected stream.
+          error_message: Facebook API response data exceeds the request limit.
         - http_codes: [400]
           action: FAIL
           failure_type: config_error
-          error_message: Facebook API rejected the request. Verify the Page ID, access token permissions, selected fields, and selected metrics.
+          error_message: Facebook API request contains invalid Page fields, metrics, or permissions.
 
     authenticator:
       type: CustomAuthenticator
