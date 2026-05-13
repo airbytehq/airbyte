@@ -1647,7 +1647,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `GithubExecuteResultWithMeta[list[dict[str, Any]], BranchesListResultMeta](**data: Any)`
@@ -2934,6 +2934,9 @@ Classes
 
     `repositories: str`
     :   List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for all repositories from organization
+
+    `start_date: str`
+    :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
 
 <a id="IssueCreateParams"></a>
 

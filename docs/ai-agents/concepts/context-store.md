@@ -94,8 +94,6 @@ The Context Store is always on and requires no configuration. It benefits most w
 - Prompts like "find all X where Y" run as a single search instead of a live API crawl.
 - Search behavior is consistent across connectors, including connectors whose APIs don't offer their own search endpoint.
 
-If you already maintain your own copy of the relevant data and prefer to expose it through your own tools, or if you only need to read or write a small number of records at a time and don't need to search across a dataset, agents still fall back to direct API requests automatically.
-
 ## Limitations
 
 - **Data freshness.** The Context Store is not real-time. Airbyte refreshes data on a schedule that depends on your plan, ranging from hourly to daily. See [Billing and pricing](../admin/billing) for refresh cadence by plan.

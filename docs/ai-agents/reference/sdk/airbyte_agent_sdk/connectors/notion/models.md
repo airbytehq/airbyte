@@ -63,6 +63,7 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[BlocksSearchData]
+    * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[CommentsSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[DataSourcesSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[UsersSearchData]
@@ -102,6 +103,45 @@ Classes
 <a id="BlocksSearchResult"></a>
 
 `BlocksSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[CommentsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="CommentsSearchResult"></a>
+
+`CommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -1362,6 +1402,51 @@ Classes
     `next_cursor: str | None`
     :   The type of the None singleton.
 
+<a id="CommentsSearchData"></a>
+
+`CommentsSearchData(**data: Any)`
+:   Search result data for comments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_by: dict[str, typing.Any] | None`
+    :   User who created the comment.
+
+    `created_time: str | None`
+    :   Date and time when the comment was created.
+
+    `discussion_id: str | None`
+    :   Discussion thread ID.
+
+    `id: str | None`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: str | None`
+    :   Date and time when the comment was last edited.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   Always comment.
+
+    `parent: dict[str, typing.Any] | None`
+    :   Parent of the comment.
+
+    `rich_text: list[typing.Any] | None`
+    :   Content of the comment as rich text.
+
 <a id="DataSource"></a>
 
 `DataSource(**data: Any)`
@@ -1761,7 +1846,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `NotionExecuteResultWithMeta[list[Block], BlocksListResultMeta](**data: Any)`
