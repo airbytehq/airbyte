@@ -197,9 +197,9 @@ jobs:
             echo "- Aliases: ${DEPLOYMENT_ALIASES:-none returned by Vercel API}"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Summarize inspector URL
+      - name: Summarize deploy status URL
         if: steps.deploy.outputs.inspector-url != ''
         env:
-          INSPECTOR_URL: ${{ steps.deploy.outputs.inspector-url }}
+          DEPLOY_STATUS_URL: ${{ steps.deploy.outputs.inspector-url }}
         run: |
-          echo "- Inspector URL: ${INSPECTOR_URL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Deploy Status URL: ${DEPLOY_STATUS_URL}" >> "$GITHUB_STEP_SUMMARY"
