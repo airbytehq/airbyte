@@ -64,7 +64,7 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          repositories: "airbyte,ai-skills"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
@@ -154,6 +154,7 @@ jobs:
           comment-id: ${{ steps.resolve.outputs.comment_id }}
           issue-number: ${{ steps.resolve.outputs.issue_number }}
           playbook-macro: ${{ steps.resolve.outputs.dev_macro }}
+          playbook-source-ref: refs/pull/${{ steps.resolve.outputs.pr_number }}/head
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
