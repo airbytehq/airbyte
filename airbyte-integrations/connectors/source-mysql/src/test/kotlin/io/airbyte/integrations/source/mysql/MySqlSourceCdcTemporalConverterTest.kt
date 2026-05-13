@@ -43,11 +43,7 @@ class MySqlSourceCdcTemporalConverterTest {
         assertEquals(Converted("1970-01-01"), handler.partialConverters.first().maybeConvert(null))
     }
 
-    private fun column(
-        typeName: String,
-        isOptional: Boolean,
-        length: Int = 0
-    ): RelationalColumn =
+    private fun column(typeName: String, isOptional: Boolean, length: Int = 0): RelationalColumn =
         mockk {
             every { this@mockk.typeName() } returns typeName
             every { this@mockk.isOptional } returns isOptional
