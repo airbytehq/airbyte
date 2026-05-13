@@ -1,17 +1,6 @@
 # destination-snowflake: Contributor notes
 
-## Test credentials
-
-If you're a community contributor, follow the integration documentation to create a Snowflake warehouse, database, schema, user, and role. Then create `secrets/config.json`.
-
-If you're an Airbyte employee, copy these LastPass secrets into matching files under `secrets`:
-
-- `destination snowflake - test creds (secrets/config.json)` -> `secrets/config.json`
-- `destination snowflake - internal staging test creds (secrets/internal_staging_config.json)` -> `secrets/internal_staging_config.json`
-
-The query timeout for inserting data into a table has been changed from 30 minutes to 3 hours.
-
-## Setting up an integration user
+## Setting up integration test resources
 
 Run this SQL as `ACCOUNTADMIN` to create an integration test environment. Replace the placeholder password and bucket name before running it.
 
