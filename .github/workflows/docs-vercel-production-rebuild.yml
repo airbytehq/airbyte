@@ -125,6 +125,7 @@ jobs:
             core.setOutput('inspector-url', deployment.inspectorUrl || '');
 
       - name: Wait for Vercel deployment
+        id: wait
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           DEPLOYMENT_ID: ${{ steps.deploy.outputs.deployment-id }}
@@ -154,6 +155,14 @@ jobs:
               core.info(`Deployment ${process.env.DEPLOYMENT_ID} state: ${state || 'unknown'}`);
 
               if (state === 'READY') {
+                if (deployment.target !== 'production') {
+                  core.setFailed(`Vercel deployment target is ${deployment.target || 'unknown'}, expected production.`);
+                  return;
+                }
+
+                const aliases = Array.isArray(deployment.alias) ? deployment.alias : [];
+                core.setOutput('deployment-target', deployment.target);
+                core.setOutput('deployment-aliases', aliases.join(', '));
                 return;
               }
 
@@ -172,6 +181,8 @@ jobs:
         env:
           DEPLOYMENT_ID: ${{ steps.deploy.outputs.deployment-id }}
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOYMENT_TARGET: ${{ steps.wait.outputs.deployment-target }}
+          DEPLOYMENT_ALIASES: ${{ steps.wait.outputs.deployment-aliases }}
           INSPECTOR_URL: ${{ steps.deploy.outputs.inspector-url }}
           SOURCE_DEPLOYMENT_ID: ${{ steps.source-deployment.outputs.deployment-id }}
         run: |
@@ -182,6 +193,8 @@ jobs:
             echo "- Source deployment: \`${SOURCE_DEPLOYMENT_ID}\`"
             echo "- Deployment: \`${DEPLOYMENT_ID}\`"
             echo "- Deployment URL: ${DEPLOYMENT_URL}"
+            echo "- Vercel target: ${DEPLOYMENT_TARGET}"
+            echo "- Aliases: ${DEPLOYMENT_ALIASES:-none returned by Vercel API}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Summarize inspector URL
