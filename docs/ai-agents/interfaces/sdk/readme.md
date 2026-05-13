@@ -16,6 +16,8 @@ This section walks through authenticate, add a connector, and execute operations
 
 <SdkVsApi />
 
+For the no-code option, see the [web app](../ui); for MCP-capable clients, see the [MCP server](../mcp).
+
 ## Log in and sign up
 
 Log in or sign up at [app.airbyte.ai](https://app.airbyte.ai/).

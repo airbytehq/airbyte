@@ -29,6 +29,8 @@ Any interaction with an agent consumes AOs. The source of the interaction determ
 | **API**                     | Direct calls to the Agent API.                                              | No                    | Yes                 |
 | **SDK**                     | Calls from an agent built with the Agent SDK.                               | No                    | Yes                 |
 
+Calls from the [CLI](../interfaces/cli/readme.md) (`airbyte-agent`) consume AOs the same way other API clients do; the CLI is a thin wrapper over the Agent API, so its tool calls are tracked under the **API** source rather than as a separate row.
+
 Sources tracked as sessions appear on the [Sessions](../admin/sessions.md) page, where you can review the full conversation and tool calls. Sources that aren't tracked as sessions still consume AOs and appear in the [Usage panel](../admin/billing.md#monitor-usage) on the Billing page. To inspect individual tool calls from MCP, API, or SDK usage, use the [Tool calls](../admin/tool-calls.md) page.
 
 ## How AOs relate to billing

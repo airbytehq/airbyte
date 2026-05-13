@@ -54,7 +54,7 @@ Airbyte Agents uses a two-layer credential model.
 
 ### Platform credentials
 
-Platform credentials identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For programmatic access through the API, SDK, or MCP server, your organization's `client_id`, `client_secret`, and `organization_id` (available on the [Profile page](../../admin/profile)) serve the same purpose. The platform uses these to issue short-lived tokens.
+Platform credentials identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For programmatic access through the API, SDK, CLI, or MCP server, your organization's `client_id`, `client_secret`, and `organization_id` (available on the [Profile page](../../admin/profile)) serve the same purpose. The platform uses these to issue short-lived tokens.
 
 | Token type | Scope | Lifetime | Use case |
 | --- | --- | --- | --- |
@@ -74,7 +74,7 @@ Airbyte stores all connector credentials securely. You provide them once, and Ai
 
 ### Add once, use everywhere
 
-Credentials you add through one interface are available to all of them. A connector configured in the web app works through the API, SDK, or MCP server without re-entering credentials. This applies to every interface in the platform.
+Credentials you add through one interface are available to all of them. A connector configured in the web app works through the API, SDK, CLI, or MCP server without re-entering credentials. This applies to every interface in the platform.
 
 ## Security
 

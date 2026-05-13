@@ -16,7 +16,7 @@ A session is a single agent run, from the moment an agent starts working to the 
 - The input and output tokens the agent consumed.
 - The resulting AOs charged to your plan.
 
-Airbyte logs sessions for work initiated in the web app. Work initiated through [MCP](../interfaces/mcp/readme.md), the [API](../reference/api/readme.md), or the [SDK](../interfaces/sdk/readme.md) is billed by tool call but isn't logged as a session. See [Session types](#session-types) for details.
+Airbyte logs sessions for work initiated in the web app. Work initiated through [MCP](../interfaces/mcp/readme.md), the [API](../reference/api/readme.md), the [SDK](../interfaces/sdk/readme.md), or the [CLI](../interfaces/cli/readme.md) is billed by tool call but isn't logged as a session. See [Session types](#session-types) for details.
 
 ## How to understand the Sessions table
 
@@ -60,6 +60,7 @@ Airbyte also processes tool calls from these sources, but doesn't log them as se
 - **[MCP](../interfaces/mcp/readme.md)**: Tool calls from agents connected through the Model Context Protocol.
 - **[API](../reference/api/readme.md)**: Direct calls to the Agent API.
 - **[SDK](../interfaces/sdk/readme.md)**: Calls made from an agent built with the Agent SDK.
+- **[CLI](../interfaces/cli/readme.md)**: Calls made from `airbyte-agent`. Because the CLI is a thin wrapper over the Agent API, these tool calls appear under the **API** source in the Usage panel.
 
 These tool calls still consume AOs and appear in your [Usage panel](./billing.md#monitor-usage), but they don't have a corresponding Sessions row. To review them, open the Usage panel on the Billing page and filter by the **MCP**, **API**, or **SDK** source.
 

@@ -15,6 +15,8 @@ This section walks through the four operations most apps need: authenticate, add
 
 <SdkVsApi />
 
+For the no-code option, see the [web app](../ui); for MCP-capable clients, see the [MCP server](../mcp).
+
 ## Base URL
 
 All API requests use the base URL `https://api.airbyte.ai`.

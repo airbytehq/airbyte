@@ -7,14 +7,15 @@ sidebar_position: 3
 
 Airbyte Agents is a cloud platform that gives AI agents authenticated, structured access to third-party SaaS data. It stores credentials, manages token refresh, and exposes a uniform execution interface so agents can read, search, and write data across dozens of services.
 
-You can interact with the platform through four interfaces. They all connect to the same service, so credentials you configure through one interface are available to all of them.
+You can interact with the platform through five interfaces. They all connect to the same service, so credentials you configure through one interface are available to all of them.
 
 - [**Web app**](../../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai): Talk to an Airbyte-hosted agent in Chats, or define Automations that run manually or on a schedule.
 - [**API**](../../interfaces/api): HTTP endpoints for managing connectors, tokens, and executing operations from any language.
 - [**SDK**](../../interfaces/sdk): Python SDK for building agents that authenticate, connect, and execute operations in your own code.
+- [**CLI**](../../interfaces/cli): A single Go binary (`airbyte-agent`) that wraps the API for shell scripts, CI jobs, and AI-agent harnesses.
 - [**MCP server**](../../interfaces/mcp): A remote Model Context Protocol server that connects MCP-capable agents like Claude, Cursor, and ChatGPT to your data.
 
-![System architecture diagram showing Interfaces (Web app, API, SDK, MCP server) connecting to Airbyte Agents (Authentication and token management, Execution engine with Search and Direct modes, Context Store) which interacts with Third-party services (CRM, Support desk, Analytics, and more).](/img/ai-agents-system-architecture.svg)
+![System architecture diagram showing Interfaces (Web app, API, SDK, CLI, MCP server) connecting to Airbyte Agents (Authentication and token management, Execution engine with Search and Direct modes, Context Store) which interacts with Third-party services (CRM, Support desk, Analytics, and more).](/img/ai-agents-system-architecture.svg)
 
 ## Resource hierarchy
 
@@ -41,7 +42,7 @@ flowchart TB
 
 Airbyte Agents uses a two-layer credential model.
 
-- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, and MCP server, your organization's `client_id` and `client_secret` (available on the Profile page at [app.airbyte.ai](https://app.airbyte.ai)) serve the same purpose.
+- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, CLI, and MCP server, your organization's `client_id` and `client_secret` (available on the Profile page at [app.airbyte.ai](https://app.airbyte.ai)) serve the same purpose.
 - **Connector credentials** authenticate with each third-party service. When you add a connector, you provide the service's API key, OAuth tokens, or other credentials. Airbyte stores them securely and handles token refresh at execution time.
 
 Add credentials once through any interface and every other interface can use them. For details, see [Connectors and credentials](./connectors-and-credentials).

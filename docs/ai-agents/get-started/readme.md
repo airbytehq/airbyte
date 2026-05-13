@@ -21,6 +21,8 @@ New to Airbyte Agents? Start here. Learn what the product is, choose the right i
 
 <CardWithIcon title="MCP server" description="Connect MCP-capable agents like Claude, Cursor, and ChatGPT to your data." ctaText="MCP server" ctaLink="/ai-agents/interfaces/mcp/" icon="fa-plug" />
 
+<CardWithIcon title="CLI" description="Shell out to airbyte-agent from scripts, CI, and AI-agent harnesses." ctaText="CLI" ctaLink="/ai-agents/interfaces/cli/" icon="fa-terminal" />
+
 <CardWithIcon title="API" description="Integrate Airbyte Agents into any language or framework over HTTP." ctaText="API" ctaLink="/ai-agents/interfaces/api/" icon="fa-code" />
 
 </Grid>

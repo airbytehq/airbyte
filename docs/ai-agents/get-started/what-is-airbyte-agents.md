@@ -8,7 +8,7 @@ sidebar_label: What is Airbyte Agents?
 
 Airbyte Agents gives AI agents reliable, real-time access to your business data. It connects agents to the tools your organization runs on, unifies that data into one searchable layer, and lets agents read, search, and write across every connected system.
 
-You get managed connectors, secure credential storage, and a pre-indexed Context Store that agents can query in milliseconds. Whether you use the web app, the Agent MCP, the Agent SDK, or the Agent API, your agents work with the same data, the same connectors, and the same permissions.
+You get managed connectors, secure credential storage, and a pre-indexed Context Store that agents can query in milliseconds. Whether you use the web app, the Agent MCP, the Agent SDK, the Agent CLI, or the Agent API, your agents work with the same data, the same connectors, and the same permissions.
 
 Sign up for free at [app.airbyte.ai](https://app.airbyte.ai).
 
@@ -92,15 +92,17 @@ The interface is the same across every connector and every access path. Airbyte 
 
 - **Operations teams and individual users** who want their AI tools to work with real business data, no coding required.
 
-## Four ways to use it
+## Five ways to use it
 
-Airbyte Agents supports four interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
+Airbyte Agents supports five interfaces. They all connect to the same platform, so connectors and credentials you configure through one interface are available to all of them.
 
 - [**Web app**](../interfaces/ui): Chat with an Airbyte-hosted agent or build scheduled Automations. No code required.
 
 - [**MCP server**](../interfaces/mcp): Connect MCP-capable agents like ChatGPT, Claude, and Cursor to your data. Nothing to install.
 
 - [**Python SDK**](../interfaces/sdk): Build agents with typed connectors, automatic credential handling, and framework integrations.
+
+- [**CLI**](../interfaces/cli): A single Go binary (`airbyte-agent`) for shell scripts, CI jobs, and AI-agent harnesses that prefer shelling out for tool calls.
 
 - [**Agent API**](../interfaces/api): Manage connectors, tokens, and execution from any language or backend.
 
