@@ -83,8 +83,8 @@ class PipelineEventBookkeepingRouter(
         isComplete: Boolean,
     ) {
         val previous = terminalStreamStatus.putIfAbsent(descriptor, isComplete)
-        check(previous == null) {
-            "Source error: Stream $descriptor already received complete status=$previous. " +
+        check(previous == null || previous == isComplete) {
+            "Source error: Stream $descriptor already received status complete=$previous. " +
                 "Received additional status complete=$isComplete."
         }
     }
