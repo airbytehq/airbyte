@@ -69,11 +69,30 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
                     )
                 state.partBookkeeper.add(part)
                 if (state.partBookkeeper.isComplete) {
-                    log.info {
-                        "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey}, finishing (state $state)"
+                    if (state.partBookkeeper.isEmpty) {
+                        // All parts were empty (no data was ever uploaded).
+                        // Skip completing the upload to avoid creating a 0-byte
+                        // object which would lack valid file headers/footers
+                        // (e.g. Parquet magic bytes), causing schema mismatch
+                        // errors in downstream readers.
+                        //
+                        // ObjectLoaderPartLoader.start() has already initiated the
+                        // streaming upload (e.g. on S3 this is a createMultipartUpload),
+                        // so we must abort() it explicitly to avoid leaking a dangling
+                        // multipart upload server-side. abort() is best-effort and
+                        // never throws.
+                        log.info {
+                            "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey} but all parts were empty, aborting upload (state $state)"
+                        }
+                        input.upload.await().abort()
+                        FinalOutput(UploadResult(objectLoader.stateAfterUpload, null))
+                    } else {
+                        log.info {
+                            "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey}, finishing (state $state)"
+                        }
+                        val obj = input.upload.await().complete()
+                        FinalOutput(UploadResult(objectLoader.stateAfterUpload, obj))
                     }
-                    val obj = input.upload.await().complete()
-                    FinalOutput(UploadResult(objectLoader.stateAfterUpload, obj))
                 } else {
                     log.debug {
                         "After loaded part ${input.partIndex} (isFinal=${input.isFinal}), ${state.objectKey} still incomplete, not finishing (state $state)"

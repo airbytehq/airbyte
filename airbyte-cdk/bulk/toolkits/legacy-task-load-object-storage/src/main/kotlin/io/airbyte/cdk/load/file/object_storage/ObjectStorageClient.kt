@@ -41,4 +41,20 @@ interface StreamingUpload<T : RemoteObject<*>> {
      * This is a temporary hack to support empty files.
      */
     suspend fun complete(): T
+
+    /**
+     * Aborts an in-progress upload, releasing any server-side state (e.g. an S3 multipart upload
+     * initiated by [ObjectStorageClient.startStreamingUpload]).
+     *
+     * Should be called when no parts will be (or have been) uploaded and [complete] will not be
+     * invoked, to avoid leaking dangling multipart uploads. Idempotent and safe to call after
+     * [complete]; implementations should swallow non-fatal errors (such as the upload no longer
+     * existing) and only log them.
+     *
+     * Default implementation is a no-op for backends that do not require explicit cancellation
+     * (e.g. file-based or fully-buffered backends).
+     */
+    suspend fun abort() {
+        // no-op by default
+    }
 }

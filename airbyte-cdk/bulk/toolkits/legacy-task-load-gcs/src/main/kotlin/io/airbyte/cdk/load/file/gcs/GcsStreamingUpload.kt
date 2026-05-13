@@ -31,6 +31,7 @@ class GcsStreamingUpload(
 
     private val log = KotlinLogging.logger {}
     private val isComplete = AtomicBoolean(false)
+    private val isAborted = AtomicBoolean(false)
     private val uploadId = generateUploadId()
 
     /**
@@ -95,6 +96,29 @@ class GcsStreamingUpload(
         cleanupParts()
 
         return GcsBlob(key, config)
+    }
+
+    /**
+     * Aborts the in-progress upload by deleting any temporary part blobs that were created. The GCS
+     * native upload model writes each part as a standalone blob until [complete] composes them into
+     * the final object, so the cleanup needed is the same as [cleanupParts]. Best-effort and never
+     * throws.
+     */
+    override suspend fun abort() {
+        if (isComplete.get()) {
+            log.debug {
+                "abort() called after complete() for gs://${config.gcsBucketName}/$key; ignoring"
+            }
+            return
+        }
+        if (!isAborted.setOnce()) {
+            log.debug { "abort() already invoked for gs://${config.gcsBucketName}/$key; ignoring" }
+            return
+        }
+        log.info {
+            "Aborting upload for gs://${config.gcsBucketName}/$key, cleaning up ${parts.size} part blobs"
+        }
+        cleanupParts()
     }
 
     /**

@@ -30,16 +30,27 @@ class MockObjectStreamingUpload(
     private val metadata: Map<String, String>,
 ) : StreamingUpload<MockRemoteObject> {
     private val parts: MutableList<Pair<Int, ByteArray>> = mutableListOf()
+    var completeCalled: Boolean = false
+        private set
+    var abortCalled: Boolean = false
+        private set
+
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         parts.add(index to part)
         updateRemoteStorage()
     }
 
     override suspend fun complete(): MockRemoteObject {
+        completeCalled = true
         updateRemoteStorage()
         return client.get(key).also {
             logger.info { "Writing $key to MockObjectStorage\n${it.data.decodeToString()}" }
         }
+    }
+
+    override suspend fun abort() {
+        abortCalled = true
+        logger.info { "Aborting upload of $key on MockObjectStorage" }
     }
 
     private suspend fun updateRemoteStorage() {
