@@ -178,7 +178,15 @@ jobs:
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
-          VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)
+          if VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master 2>get-version-error.log); then
+            :
+          elif grep -qi "Metadata file not found" get-version-error.log; then
+            echo "::notice::${CONNECTOR_NAME} does not exist on master; treating it as a new connector."
+            VERSION=""
+          else
+            cat get-version-error.log >&2
+            exit 1
+          fi
           echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Resolve rollout gate state
