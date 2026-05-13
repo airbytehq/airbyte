@@ -35,6 +35,11 @@ on:
         required: false
         default: false
         type: boolean
+      metadata-only:
+        description: "Only generate and publish registry metadata artifacts. Skips connector image/package publishing."
+        required: false
+        default: false
+        type: boolean
       pr:
         description: "Pull request number that triggered this workflow (used for Slack notifications and run URL linking)."
         required: false
@@ -111,6 +116,9 @@ jobs:
             if [[ "${{ github.event_name }}" == "push" ]]; then
               # On merge to master, use exact version (no suffix)
               SEMVER_SUFFIX="none"
+            elif [[ "${{ inputs.metadata-only || 'false' }}" == "true" ]]; then
+              # Metadata-only publishes use the exact version already declared in metadata.yaml.
+              SEMVER_SUFFIX="none"
             else
               # On manual trigger, use preview suffix
               SEMVER_SUFFIX="preview"
@@ -118,6 +126,24 @@ jobs:
           fi
 
           echo "with-semver-suffix=$SEMVER_SUFFIX" | tee -a $GITHUB_OUTPUT
+      - name: Validate metadata-only options
+        if: inputs.metadata-only == true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+            echo "metadata-only publishes are only supported from workflow_dispatch."
+            exit 1
+          fi
+          CONNECTOR_COUNT=$(echo '${{ steps.list-connectors-manual.outputs.connectors-to-publish }}' | jq '.connector | length')
+          if [[ "$CONNECTOR_COUNT" -eq 0 ]]; then
+            echo "metadata-only publishes require at least one connector."
+            exit 1
+          fi
+          if [[ "${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}" != "none" ]]; then
+            echo "metadata-only publishes must use with-semver-suffix=none or default."
+            exit 1
+          fi
       - name: Resolve publish-java-tars
         id: resolve-publish-java-tars
         shell: bash
@@ -138,6 +164,8 @@ jobs:
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
       # dry-run mode skips all uploads but runs all logic
       dry-run: ${{ inputs.dry-run || 'false' }}
+      # metadata-only skips connector image/package publishing but still publishes registry artifacts
+      metadata-only: ${{ inputs.metadata-only || 'false' }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -287,7 +315,7 @@ jobs:
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none' && needs.publish_options.outputs.metadata-only != 'true'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -296,13 +324,13 @@ jobs:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: "[DRY-RUN] Skip Publish to Python Registry"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none' && needs.publish_options.outputs.metadata-only != 'true'
         run: |
           echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.metadata-only != 'true'
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -311,7 +339,7 @@ jobs:
 
       - name: "[DRY-RUN] Build JVM connectors images (no publish)"
         id: build-JVM-connectors-images-dry-run
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.metadata-only != 'true'
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -321,7 +349,7 @@ jobs:
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run != 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.metadata-only != 'true'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
@@ -331,13 +359,13 @@ jobs:
         continue-on-error: true
 
       - name: "[DRY-RUN] Skip Publish JVM connectors tar file"
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.metadata-only != 'true'
         run: |
           echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
-        if: steps.connector-metadata.outputs.connector-language != 'java'
+        if: steps.connector-metadata.outputs.connector-language != 'java' && needs.publish_options.outputs.metadata-only != 'true'
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
@@ -469,6 +497,10 @@ jobs:
           else
             RELEASE_TYPE="Pre-release"
             EMOJI="🔵"
+          fi
+          if [[ "${{ needs.publish_options.outputs.metadata-only }}" == "true" ]]; then
+            RELEASE_TYPE="Metadata-only registry artifact"
+            EMOJI="🟡"
           fi
 
           # Build URLs for hyperlinks
