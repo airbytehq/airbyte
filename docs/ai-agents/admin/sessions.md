@@ -49,7 +49,7 @@ Chats you hold inside the Automation Builder, while designing or editing an auto
 
 ### Automation {#automation}
 
-An Automation session is one run of an automation. The session starts when you start a manual run or when its schedule fires, and ends when the automation finishes. Automations don't have a user in the loop, so their sessions are typically a sequence of tool calls and internal reasoning rather than a back-and-forth conversation.
+An Automation session is one run of an automation. The session starts when you start a manual run or when scheduled, and ends when the automation finishes. Automations don't have a user in the loop, so their sessions are typically a sequence of tool calls and internal reasoning rather than a back-and-forth conversation.
 
 Each run of an automation is its own session. If the same automation runs on a schedule, each scheduled run appears as a separate row in the Sessions table.
 
