@@ -21,17 +21,17 @@ The Zendesk-Support connector supports the following entities and actions.
 | Ticket Fields | [List](#ticket-fields-list), [Get](#ticket-fields-get), [Context Store Search](#ticket-fields-context-store-search) |
 | Brands | [List](#brands-list), [Get](#brands-get), [Context Store Search](#brands-context-store-search) |
 | Views | [List](#views-list), [Get](#views-get) |
-| Macros | [Get](#macros-get), [List](#macros-list) |
-| Triggers | [List](#triggers-list), [Get](#triggers-get) |
-| Automations | [List](#automations-list), [Get](#automations-get) |
+| Macros | [Get](#macros-get), [List](#macros-list), [Context Store Search](#macros-context-store-search) |
+| Triggers | [List](#triggers-list), [Get](#triggers-get), [Context Store Search](#triggers-context-store-search) |
+| Automations | [List](#automations-list), [Get](#automations-get), [Context Store Search](#automations-context-store-search) |
 | Tags | [List](#tags-list), [Context Store Search](#tags-context-store-search) |
 | Satisfaction Ratings | [List](#satisfaction-ratings-list), [Get](#satisfaction-ratings-get), [Context Store Search](#satisfaction-ratings-context-store-search) |
-| Group Memberships | [List](#group-memberships-list) |
-| Organization Memberships | [List](#organization-memberships-list) |
-| Sla Policies | [List](#sla-policies-list), [Get](#sla-policies-get) |
+| Group Memberships | [List](#group-memberships-list), [Context Store Search](#group-memberships-context-store-search) |
+| Organization Memberships | [List](#organization-memberships-list), [Context Store Search](#organization-memberships-context-store-search) |
+| Sla Policies | [List](#sla-policies-list), [Get](#sla-policies-get), [Context Store Search](#sla-policies-context-store-search) |
 | Ticket Forms | [List](#ticket-forms-list), [Get](#ticket-forms-get), [Context Store Search](#ticket-forms-context-store-search) |
-| Articles | [List](#articles-list), [Get](#articles-get) |
-| Article Attachments | [List](#article-attachments-list), [Get](#article-attachments-get), [Download](#article-attachments-download) |
+| Articles | [List](#articles-list), [Get](#articles-get), [Context Store Search](#articles-context-store-search) |
+| Article Attachments | [List](#article-attachments-list), [Get](#article-attachments-get), [Download](#article-attachments-download), [Context Store Search](#article-attachments-context-store-search) |
 
 ## Tickets
 
@@ -3151,6 +3151,84 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Macros Context Store Search
+
+Search and filter macros records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.macros.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "macros",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Automatically assigned when the macro is created |
+| `url` | `string` | A URL to access the macro's details |
+| `title` | `string` | The title of the macro |
+| `active` | `boolean` | Useful for determining if the macro should be displayed |
+| `position` | `integer` | The position of the macro |
+| `description` | `string` | The description of the macro |
+| `actions` | `array` | Actions to perform when macro is applied |
+| `restriction` | `object` | Who may access this macro |
+| `raw_title` | `string` | The dynamic content placeholder for title |
+| `created_at` | `string` | The time the macro was created |
+| `updated_at` | `string` | The time the macro was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Automatically assigned when the macro is created |
+| `data[].url` | `string` | A URL to access the macro's details |
+| `data[].title` | `string` | The title of the macro |
+| `data[].active` | `boolean` | Useful for determining if the macro should be displayed |
+| `data[].position` | `integer` | The position of the macro |
+| `data[].description` | `string` | The description of the macro |
+| `data[].actions` | `array` | Actions to perform when macro is applied |
+| `data[].restriction` | `object` | Who may access this macro |
+| `data[].raw_title` | `string` | The dynamic content placeholder for title |
+| `data[].created_at` | `string` | The time the macro was created |
+| `data[].updated_at` | `string` | The time the macro was last updated |
+
+</details>
+
 ## Triggers
 
 ### Triggers List
@@ -3277,6 +3355,86 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Triggers Context Store Search
+
+Search and filter triggers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.triggers.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "triggers",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Automatically assigned when created |
+| `url` | `string` | The URL of the trigger |
+| `title` | `string` | The title of the trigger |
+| `active` | `boolean` | Whether the trigger is active |
+| `position` | `integer` | Position of the trigger |
+| `description` | `string` | The description of the trigger |
+| `conditions` | `object` | An object that describes the conditions under which the trigger will execute |
+| `actions` | `array` | An array of actions |
+| `raw_title` | `string` | The dynamic content placeholder for title |
+| `category_id` | `string` | The ID of the category the trigger belongs to |
+| `created_at` | `string` | The time the trigger was created |
+| `updated_at` | `string` | The time the trigger was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Automatically assigned when created |
+| `data[].url` | `string` | The URL of the trigger |
+| `data[].title` | `string` | The title of the trigger |
+| `data[].active` | `boolean` | Whether the trigger is active |
+| `data[].position` | `integer` | Position of the trigger |
+| `data[].description` | `string` | The description of the trigger |
+| `data[].conditions` | `object` | An object that describes the conditions under which the trigger will execute |
+| `data[].actions` | `array` | An array of actions |
+| `data[].raw_title` | `string` | The dynamic content placeholder for title |
+| `data[].category_id` | `string` | The ID of the category the trigger belongs to |
+| `data[].created_at` | `string` | The time the trigger was created |
+| `data[].updated_at` | `string` | The time the trigger was last updated |
+
+</details>
+
 ## Automations
 
 ### Automations List
@@ -3395,6 +3553,80 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `string` |  |
 | `updated_at` | `string` |  |
 
+
+</details>
+
+### Automations Context Store Search
+
+Search and filter automations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.automations.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "automations",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Automatically assigned when created |
+| `title` | `string` | The title of the automation |
+| `active` | `boolean` | Whether the automation is active |
+| `position` | `integer` | The position of the automation |
+| `conditions` | `object` | An object that describes the conditions under which the automation will execute |
+| `actions` | `array` | An array of actions |
+| `raw_title` | `string` | The dynamic content placeholder for title |
+| `created_at` | `string` | The time the automation was created |
+| `updated_at` | `string` | The time the automation was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Automatically assigned when created |
+| `data[].title` | `string` | The title of the automation |
+| `data[].active` | `boolean` | Whether the automation is active |
+| `data[].position` | `integer` | The position of the automation |
+| `data[].conditions` | `object` | An object that describes the conditions under which the automation will execute |
+| `data[].actions` | `array` | An array of actions |
+| `data[].raw_title` | `string` | The dynamic content placeholder for title |
+| `data[].created_at` | `string` | The time the automation was created |
+| `data[].updated_at` | `string` | The time the automation was last updated |
 
 </details>
 
@@ -3778,6 +4010,76 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Group Memberships Context Store Search
+
+Search and filter group memberships records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.group_memberships.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "group_memberships",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Automatically assigned upon creation |
+| `url` | `string` | The API url of this record |
+| `user_id` | `integer` | The id of an agent |
+| `group_id` | `integer` | The id of a group |
+| `default` | `boolean` | If true, tickets assigned directly to the agent will assume this membership's group |
+| `created_at` | `string` | When the group membership was created |
+| `updated_at` | `string` | When the group membership was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Automatically assigned upon creation |
+| `data[].url` | `string` | The API url of this record |
+| `data[].user_id` | `integer` | The id of an agent |
+| `data[].group_id` | `integer` | The id of a group |
+| `data[].default` | `boolean` | If true, tickets assigned directly to the agent will assume this membership's group |
+| `data[].created_at` | `string` | When the group membership was created |
+| `data[].updated_at` | `string` | When the group membership was last updated |
+
+</details>
+
 ## Organization Memberships
 
 ### Organization Memberships List
@@ -3836,6 +4138,80 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `next_page` | `string \| null` |  |
 | `previous_page` | `string \| null` |  |
 | `count` | `integer` |  |
+
+</details>
+
+### Organization Memberships Context Store Search
+
+Search and filter organization memberships records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.organization_memberships.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "organization_memberships",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Automatically assigned when the membership is created |
+| `url` | `string` | The API url of this membership |
+| `user_id` | `integer` | The ID of the user for whom this memberships belongs |
+| `organization_id` | `integer` | The ID of the organization associated with this user |
+| `default` | `boolean` | If true, this is the default organization for the user |
+| `organization_name` | `string` | The name of the organization |
+| `view_tickets` | `boolean` | If true, this user can view tickets from this organization |
+| `created_at` | `string` | When the membership was created |
+| `updated_at` | `string` | When the membership was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Automatically assigned when the membership is created |
+| `data[].url` | `string` | The API url of this membership |
+| `data[].user_id` | `integer` | The ID of the user for whom this memberships belongs |
+| `data[].organization_id` | `integer` | The ID of the organization associated with this user |
+| `data[].default` | `boolean` | If true, this is the default organization for the user |
+| `data[].organization_name` | `string` | The name of the organization |
+| `data[].view_tickets` | `boolean` | If true, this user can view tickets from this organization |
+| `data[].created_at` | `string` | When the membership was created |
+| `data[].updated_at` | `string` | When the membership was last updated |
 
 </details>
 
@@ -3952,6 +4328,80 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `string` |  |
 | `updated_at` | `string` |  |
 
+
+</details>
+
+### Sla Policies Context Store Search
+
+Search and filter sla policies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.sla_policies.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sla_policies",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Automatically assigned when the SLA policy is created |
+| `url` | `string` | URL of the SLA policy |
+| `title` | `string` | The title of the SLA policy |
+| `description` | `string` | The description of the SLA policy |
+| `position` | `integer` | Position of the SLA policy |
+| `filter` | `object` | Filter for the SLA policy |
+| `policy_metrics` | `array` | Array of policy metrics |
+| `created_at` | `string` | When the SLA policy was created |
+| `updated_at` | `string` | When the SLA policy was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Automatically assigned when the SLA policy is created |
+| `data[].url` | `string` | URL of the SLA policy |
+| `data[].title` | `string` | The title of the SLA policy |
+| `data[].description` | `string` | The description of the SLA policy |
+| `data[].position` | `integer` | Position of the SLA policy |
+| `data[].filter` | `object` | Filter for the SLA policy |
+| `data[].policy_metrics` | `array` | Array of policy metrics |
+| `data[].created_at` | `string` | When the SLA policy was created |
+| `data[].updated_at` | `string` | When the SLA policy was last updated |
 
 </details>
 
@@ -4311,6 +4761,94 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Articles Context Store Search
+
+Search and filter articles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.articles.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "articles",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | The unique ID of the article |
+| `url` | `string` | The API URL of the article |
+| `html_url` | `string` | The public URL of the article |
+| `title` | `string` | The title of the article |
+| `body` | `string` | The body content of the article (HTML) |
+| `locale` | `string` | The locale of the article |
+| `author_id` | `integer` | The ID of the user who created the article |
+| `section_id` | `integer` | The ID of the section the article belongs to |
+| `created_at` | `string` | The time the article was created |
+| `updated_at` | `string` | The time the article was last updated |
+| `vote_sum` | `integer` | Sum of upvotes and downvotes |
+| `vote_count` | `integer` | Number of votes |
+| `label_names` | `array` | List of label names associated with the article |
+| `draft` | `boolean` | Whether the article is a draft |
+| `promoted` | `boolean` | Whether the article is promoted |
+| `position` | `integer` | Position of the article in the section |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique ID of the article |
+| `data[].url` | `string` | The API URL of the article |
+| `data[].html_url` | `string` | The public URL of the article |
+| `data[].title` | `string` | The title of the article |
+| `data[].body` | `string` | The body content of the article (HTML) |
+| `data[].locale` | `string` | The locale of the article |
+| `data[].author_id` | `integer` | The ID of the user who created the article |
+| `data[].section_id` | `integer` | The ID of the section the article belongs to |
+| `data[].created_at` | `string` | The time the article was created |
+| `data[].updated_at` | `string` | The time the article was last updated |
+| `data[].vote_sum` | `integer` | Sum of upvotes and downvotes |
+| `data[].vote_count` | `integer` | Number of votes |
+| `data[].label_names` | `array` | List of label names associated with the article |
+| `data[].draft` | `boolean` | Whether the article is a draft |
+| `data[].promoted` | `boolean` | Whether the article is promoted |
+| `data[].position` | `integer` | Position of the article in the section |
+
+</details>
+
 ## Article Attachments
 
 ### Article Attachments List
@@ -4476,4 +5014,80 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `attachment_id` | `integer` | Yes | The unique ID of the attachment |
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
+
+### Article Attachments Context Store Search
+
+Search and filter article attachments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.article_attachments.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "article_attachments",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | The unique ID of the attachment |
+| `url` | `string` | The API URL of the attachment |
+| `article_id` | `integer` | The ID of the article this attachment belongs to |
+| `file_name` | `string` | The name of the attached file |
+| `content_type` | `string` | The MIME type of the attachment |
+| `content_url` | `string` | The URL to download the attachment |
+| `size` | `integer` | The size of the attachment in bytes |
+| `inline` | `boolean` | Whether the attachment is displayed inline |
+| `created_at` | `string` | The time the attachment was created |
+| `updated_at` | `string` | The time the attachment was last updated |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique ID of the attachment |
+| `data[].url` | `string` | The API URL of the attachment |
+| `data[].article_id` | `integer` | The ID of the article this attachment belongs to |
+| `data[].file_name` | `string` | The name of the attached file |
+| `data[].content_type` | `string` | The MIME type of the attachment |
+| `data[].content_url` | `string` | The URL to download the attachment |
+| `data[].size` | `integer` | The size of the attachment in bytes |
+| `data[].inline` | `boolean` | Whether the attachment is displayed inline |
+| `data[].created_at` | `string` | The time the attachment was created |
+| `data[].updated_at` | `string` | The time the attachment was last updated |
+
+</details>
 

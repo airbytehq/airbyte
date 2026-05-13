@@ -7,7 +7,7 @@ power of a database. This connector provides access to bases, tables, and record
 data analysis and workflow automation.
 
 
-## Example questions
+## Example prompts
 
 The Airtable connector is optimized to handle prompts like these.
 
@@ -21,7 +21,7 @@ The Airtable connector is optimized to handle prompts like these.
 - Find records created last week in table tblXXX
 - Show me records updated in the last 30 days in base appXXX
 
-## Unsupported questions
+## Unsupported prompts
 
 The Airtable connector isn't currently able to handle prompts like these.
 
@@ -31,60 +31,122 @@ The Airtable connector isn't currently able to handle prompts like these.
 - Create a new table
 - Modify table schema
 
-## Installation
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Bases | [List](./REFERENCE.md#bases-list), [Context Store Search](./REFERENCE.md#bases-context-store-search) |
+| Tables | [List](./REFERENCE.md#tables-list), [Context Store Search](./REFERENCE.md#tables-context-store-search) |
+| Records | [List](./REFERENCE.md#records-list), [Get](./REFERENCE.md#records-get) |
+
+
+## Airtable API docs
+
+See the official [Airtable API reference](https://airtable.com/developers/web/api/introduction).
+
+## SDK installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## Usage
+## SDK usage
 
-Connectors can run in open source or hosted mode.
-
-### Open source
-
-In open source mode, you provide API credentials directly to the connector.
-
-```python
-from airbyte_agent_sdk.connectors.airtable import AirtableConnector
-from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
-
-connector = AirtableConnector(
-    auth_config=AirtableAuthConfig(
-        personal_access_token="<Airtable Personal Access Token. See https://airtable.com/developers/web/guides/personal-access-tokens>"
-    )
-)
-
-@agent.tool_plain # assumes you're using Pydantic AI
-@AirtableConnector.tool_utils
-async def airtable_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
-```
+Connectors can run in hosted or open source mode.
 
 ### Hosted
 
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
 
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
 The `connect()` factory returns a fully typed `AirtableConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
-```python
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.airtable import AirtableConnector
 
 connector = connect("airtable", workspace_name="<your_workspace_name>")
 
-@agent.tool_plain # assumes you're using Pydantic AI
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @AirtableConnector.tool_utils
 async def airtable_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+
+connector = connect("airtable", workspace_name="<your_workspace_name>")
+
+@tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+
+connector = connect("airtable", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AirtableConnector.tool_utils(framework="openai_agents")
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Airtable Assistant", tools=[airtable_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+
+connector = connect("airtable", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Airtable Agent")
+
+@mcp.tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
-```python
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.airtable import AirtableConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -97,35 +159,192 @@ connector = AirtableConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @AirtableConnector.tool_utils
 async def airtable_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-## Full documentation
+**LangChain**
 
-### Entities and actions
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
-This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+connector = AirtableConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
 
-| Entity | Actions |
-|--------|---------|
-| Bases | [List](./REFERENCE.md#bases-list), [Context Store Search](./REFERENCE.md#bases-context-store-search) |
-| Tables | [List](./REFERENCE.md#tables-list), [Context Store Search](./REFERENCE.md#tables-context-store-search) |
-| Records | [List](./REFERENCE.md#records-list), [Get](./REFERENCE.md#records-get) |
+@tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
 
+**OpenAI Agents**
 
-### Authentication
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AirtableConnector.tool_utils(framework="openai_agents")
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Airtable Assistant", tools=[airtable_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Airtable Agent")
+
+@mcp.tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirtableAuthConfig(
+        personal_access_token="<Airtable Personal Access Token. See https://airtable.com/developers/web/guides/personal-access-tokens>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirtableAuthConfig(
+        personal_access_token="<Airtable Personal Access Token. See https://airtable.com/developers/web/guides/personal-access-tokens>"
+    )
+)
+
+@tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirtableAuthConfig(
+        personal_access_token="<Airtable Personal Access Token. See https://airtable.com/developers/web/guides/personal-access-tokens>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@AirtableConnector.tool_utils(framework="openai_agents")
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Airtable Assistant", tools=[airtable_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.airtable import AirtableConnector
+from airbyte_agent_sdk.connectors.airtable.models import AirtableAuthConfig
+
+connector = AirtableConnector(
+    auth_config=AirtableAuthConfig(
+        personal_access_token="<Airtable Personal Access Token. See https://airtable.com/developers/web/guides/personal-access-tokens>"
+    )
+)
+
+mcp = FastMCP("Airtable Agent")
+
+@mcp.tool
+@AirtableConnector.tool_utils
+async def airtable_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Airtable connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-### Airtable API docs
-
-See the official [Airtable API reference](https://airtable.com/developers/web/api/introduction).
-
 ## Version information
 
-- **Package version:** 1.0.8
-- **Connector version:** 1.0.8
-- **Generated with Connector SDK commit SHA:** unknown
+**Connector version:** 1.0.8

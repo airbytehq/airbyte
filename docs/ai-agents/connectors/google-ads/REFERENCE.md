@@ -44,19 +44,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 
 
-<details>
-<summary><b>Response Schema</b></summary>
-
-#### Records
-
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `customer_id` | `string` |  |
-| `resource_name` | `string` |  |
-
-
-</details>
-
 ## Accounts
 
 ### Accounts List
