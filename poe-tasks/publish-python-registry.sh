@@ -46,10 +46,12 @@ function get_pypi_package_name() {
     yq eval '.data.remoteRegistries.pypi.packageName' "$1"
 }
 
+# Read a metadata.yaml value and return an empty string when the key is absent.
 function get_metadata_value() {
     yq eval "$1 // \"\"" "$2"
 }
 
+# Map a published Airbyte docs URL back to the corresponding local docs markdown file.
 function get_local_docs_path() {
     local documentation_url="$1"
     local repo_root="$2"
@@ -74,6 +76,7 @@ function get_local_docs_path() {
     fi
 }
 
+# Create the temporary PyPI long description from connector docs content.
 function write_docs_pypi_readme() {
     local docs_file="$1"
     local readme_file="$2"
