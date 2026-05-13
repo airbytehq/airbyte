@@ -10,4 +10,6 @@ For Python CDK API reference, see the [Python CDK docs](https://airbytehq.github
 
 ## Contributing
 
+For connector-specific guidance and gotchas, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 For contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).
