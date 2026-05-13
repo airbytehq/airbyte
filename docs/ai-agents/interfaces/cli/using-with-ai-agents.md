@@ -15,7 +15,7 @@ The CLI was designed to be driven by AI agent harnesses (Claude Code, Codex, Cur
 
 ## Install the bundled skills
 
-The CLI ships with per-command [skill](https://github.com/vercel-labs/skills) documents — small markdown files with YAML frontmatter that tell an agent how and when to call each command. They live in the `skills/` directory of [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli) and are designed to be consumed by skill-aware agent harnesses.
+The CLI ships with per-command [skill](https://github.com/vercel-labs/skills) documents: small markdown files with YAML frontmatter that tell an agent how and when to call each command. They live in the `skills/` directory of [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli) and are designed to be consumed by skill-aware agent harnesses.
 
 Install them with `npx skills add`:
 
@@ -57,11 +57,11 @@ Per-parameter flags (`--workspace`, `--name`, and so on) exist for human conveni
 - **Replayable.** The same payload can be saved to a file and re-run with `--json @file.json`.
 - **Less prone to shell quoting bugs.** Nested objects (like `params` on [`connectors execute`](./execute)) can only be passed via JSON anyway.
 
-The two modes are mutually exclusive — mixing them is an error.
+The two modes are mutually exclusive; mixing them is an error.
 
 ### 3. Never ask the user for connector credentials
 
-If your agent decides a new connector is needed, it must run [`connectors create`](./add-connector), which opens a browser tab for the user to sign in directly. The CLI does not accept third-party credentials inline, on stdin, or in any other channel. An agent that asks a user to paste an API key into chat is doing the wrong thing — that key would end up in transcripts, logs, and possibly training data.
+If your agent decides a new connector is needed, it must run [`connectors create`](./add-connector), which opens a browser tab for the user to sign in directly. The CLI does not accept third-party credentials inline, on stdin, or in any other channel. An agent that asks a user to paste an API key into chat is doing the wrong thing. That key would end up in transcripts, logs, and possibly training data.
 
 If a user volunteers credentials anyway, decline politely and run `connectors create` instead.
 

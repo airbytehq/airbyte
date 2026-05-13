@@ -23,14 +23,14 @@ These flags are available on every operation.
 
 | Flag | Description | Default |
 | --- | --- | --- |
-| `--json` | Inline JSON parameters. Pass `@filename` to load from a file. Mutually exclusive with per-parameter flags. | — |
+| `--json` | Inline JSON parameters. Pass `@filename` to load from a file. Mutually exclusive with per-parameter flags. | (none) |
 | `--format` | Output format: `json` or `table`. | `json` |
 | `--describe` | Print the operation's parameter schema (plus OpenAPI shape) and exit without executing. | `false` |
-| `--output`, `-o` | Write stdout to a file instead of the terminal. | — |
+| `--output`, `-o` | Write stdout to a file instead of the terminal. | (none) |
 | `--verbose`, `-v` | Enable debug logging on stderr. | `false` |
-| `--fields` | Client-side response filter. Comma-separated dot paths (for example, `data.id,data.name`). Errors are not filtered. | — |
+| `--fields` | Client-side response filter. Comma-separated dot paths (for example, `data.id,data.name`). Errors are not filtered. | (none) |
 
-Per-parameter flags are generated from each operation's schema. Snake_case parameter names become kebab-case flags — for example, `select_fields` is exposed as `--select-fields`.
+Per-parameter flags are generated from each operation's schema. Snake_case parameter names become kebab-case flags. For example, `select_fields` is exposed as `--select-fields`.
 
 ## `organizations`
 
@@ -145,13 +145,13 @@ airbyte-agent connectors execute --json '{
 | `id` | string | one of `name`+`workspace` or `id` | Connector ID (UUID). |
 | `entity` | string | yes | Entity to act on (for example, `contacts`). |
 | `action` | string | yes | Action to run (for example, `read`, `context_store_search`, `get`). |
-| `params` | object | no | Action-specific arguments. Shape depends on entity and action — run `connectors describe` for the schema. |
+| `params` | object | no | Action-specific arguments. Shape depends on entity and action; run `connectors describe` for the schema. |
 | `select_fields` | string[] | no | Allowlist of fields the source connector should return. |
 | `exclude_fields` | string[] | no | Blocklist of fields the source connector should omit. `select_fields` wins if both are passed. |
 
 ### `connectors delete`
 
-Delete a connector. Destructive — prompts for `"Type 'yes' to confirm:"` on a TTY.
+Delete a connector. This is destructive, so on a TTY it prompts for `"Type 'yes' to confirm:"`.
 
 ```bash
 airbyte-agent connectors delete --json '{"workspace": "default", "name": "old-hubspot"}'

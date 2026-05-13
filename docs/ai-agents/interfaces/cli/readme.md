@@ -7,7 +7,7 @@ import DocCardList from '@theme/DocCardList';
 
 # CLI
 
-The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Every command takes JSON in (`--json`), returns JSON out, supports schema introspection via `--describe`, and exits with stable error codes — which makes it safe to script from a shell and easy for AI agents to discover and call at runtime.
+The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Every command takes JSON in (`--json`), returns JSON out, supports schema introspection via `--describe`, and exits with stable error codes, so it's safe to script from a shell and easy for AI agents to discover and call at runtime.
 
 The CLI is the right interface when you want:
 
@@ -81,7 +81,7 @@ There are three resources today:
 | `workspaces` | `list`, `use` | List workspaces, and persist a default in `~/.airbyte-agent/settings.json`. |
 | `connectors` | `list`, `list-available`, `describe`, `create`, `execute`, `delete` | Manage and run connectors in a workspace. |
 
-For the full command surface — params, flags, and exit codes — see the [Command reference](./command-reference).
+For the full command surface, including params, flags, and exit codes, see the [Command reference](./command-reference).
 
 ### JSON in, JSON out
 
@@ -108,7 +108,7 @@ To load a long JSON payload from a file, use `--json @path/to/file.json`.
 
 ### Discover before you execute
 
-`--describe` returns the schema for an operation — parameters, types, and the underlying OpenAPI request and response shapes — without running it. Use it whenever you're unsure what an operation accepts:
+`--describe` returns the schema for an operation (parameters, types, and the underlying OpenAPI request and response shapes) without running it. Use it whenever you're unsure what an operation accepts:
 
 ```bash
 airbyte-agent connectors execute --describe

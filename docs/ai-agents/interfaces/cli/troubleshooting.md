@@ -26,7 +26,7 @@ Exit code `2`.
 
 ### Cause
 
-Either `~/.airbyte-agent/settings.json` doesn't exist, or it exists but `client_id`, `client_secret`, or `organization_id` is missing. Environment variables are also unset (or only some of the three are set — env-var resolution requires all three).
+Either `~/.airbyte-agent/settings.json` doesn't exist, or it exists but `client_id`, `client_secret`, or `organization_id` is missing. Environment variables are also unset, or only some of the three are set (env-var resolution requires all three).
 
 ### Fix
 
@@ -78,7 +78,7 @@ Typo in the workspace name, or the workspace was deleted.
 
 ### Fix
 
-Run `airbyte-agent workspaces list --format table` to see the canonical names, then retry the command with the right one. To stop typing it on every call, persist a default with `airbyte-agent workspaces use --json '{"name": "..."}'` — see [List and set workspaces](./workspaces#set-a-default-workspace).
+Run `airbyte-agent workspaces list --format table` to see the canonical names, then retry the command with the right one. To stop typing it on every call, persist a default with `airbyte-agent workspaces use --json '{"name": "..."}'`. See [List and set workspaces](./workspaces#set-a-default-workspace).
 
 ## Connector not found
 
@@ -192,7 +192,7 @@ airbyte-agent connectors execute --json '{
 }' --fields data.id,data.email,data.name
 ```
 
-`select_fields` (and `exclude_fields`) is API-side — the source connector doesn't emit columns you don't need. `--fields` is client-side — it trims what the CLI prints to stdout. They're complementary. See [Filter the response](./execute#filter-the-response).
+`select_fields` (and `exclude_fields`) is API-side; the source connector doesn't emit columns you don't need. `--fields` is client-side; it trims what the CLI prints to stdout. They're complementary. See [Filter the response](./execute#filter-the-response).
 
 For very large responses, also write the output to a file:
 
@@ -212,7 +212,7 @@ The OpenAPI schemas in `--describe` are extracted at build time from the CLI's c
 
 ### Fix
 
-No action needed — the `params` section is still authoritative for what the CLI accepts. The missing `api` block only means there's no public REST endpoint to show alongside it.
+No action needed. The `params` section is still authoritative for what the CLI accepts. The missing `api` block only means there's no public REST endpoint to show alongside it.
 
 ## Rate limited
 

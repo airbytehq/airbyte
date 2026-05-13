@@ -5,7 +5,7 @@ sidebar_position: 5
 
 # Execute operations
 
-`connectors execute` runs an action against an entity on a connector. It's the workhorse command — every actual read, search, or write happens through it.
+`connectors execute` runs an action against an entity on a connector. It's the workhorse command: every read, search, or write happens through it.
 
 ```bash
 airbyte-agent connectors execute --json '{
@@ -38,11 +38,11 @@ Most connectors expose a baseline set of actions. The authoritative list for a g
 | `create` | Write a new entity. | N/A. |
 | `update` | Modify an existing entity. | N/A. |
 
-For reads, prefer `context_store_search` unless you specifically need real-time data — the indexed store is faster and supports richer filtering. Fall back to `list` when search returns empty and you suspect indexing lag.
+For reads, prefer `context_store_search` unless you specifically need real-time data. The indexed store is faster and supports richer filtering. Fall back to `list` when search returns empty and you suspect indexing lag.
 
 ## Pass action-specific parameters
 
-Action-specific arguments go under `params`. The shape is entity- and action-dependent — `describe` is authoritative:
+Action-specific arguments go under `params`. The shape is entity- and action-dependent, and `describe` is authoritative:
 
 ```bash
 airbyte-agent connectors execute --json '{
@@ -60,7 +60,7 @@ airbyte-agent connectors execute --json '{
 
 ## Filter the response
 
-Unfiltered responses can be large. The CLI gives you two layers of filtering — use both whenever you know which fields you need.
+Unfiltered responses can be large. The CLI gives you two layers of filtering, and you should use both whenever you know which fields you need.
 
 ### `select_fields` and `exclude_fields` (API-side)
 
@@ -82,7 +82,7 @@ airbyte-agent connectors execute --json '{
 }'
 ```
 
-API-side filtering reduces upstream work — the source connector doesn't emit columns you don't need.
+API-side filtering reduces upstream work; the source connector doesn't emit columns you don't need.
 
 ### `--fields` (client-side)
 
@@ -101,7 +101,7 @@ airbyte-agent organizations list --fields data.id,data.organization_name
 
 Both forms work. The CLI auto-broadcasts when no path matches a top-level key.
 
-The two layers are complementary. Pass `select_fields` to reduce upstream work and `--fields` to keep stdout clean for human consumption. Errors are never filtered — you always see the full error payload.
+The two layers are complementary. Pass `select_fields` to reduce upstream work and `--fields` to keep stdout clean for human consumption. Errors are never filtered; you always see the full error payload.
 
 ## Long payloads
 

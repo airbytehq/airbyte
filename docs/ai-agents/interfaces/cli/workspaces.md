@@ -5,7 +5,7 @@ sidebar_position: 2
 
 # List and set workspaces
 
-A **workspace** in Airbyte Agents is a container inside your organization that holds connectors and credentials. Every organization starts with a single `default` workspace. **Additional workspaces require a Team plan or higher** — orgs on the free or individual plan have only the one, so most CLI users can skip the rest of this page and rely on the default.
+A **workspace** in Airbyte Agents is a container inside your organization that holds connectors and credentials. Every organization starts with a single `default` workspace. **Additional workspaces require a Team plan or higher.** If you're on the free or individual plan, you have only the one, so you can skip the rest of this page and rely on the default.
 
 Use additional workspaces when you need to isolate credentials across tenants, teams, or environments.
 
@@ -17,7 +17,7 @@ The CLI lets you list workspaces and persist a default in your settings file so 
 airbyte-agent workspaces list
 ```
 
-`workspaces list` paginates automatically — the response includes every workspace in your organization. Common filters:
+`workspaces list` paginates automatically; the response includes every workspace in your organization. Common filters:
 
 ```bash
 # Filter by substring (case-insensitive)
@@ -50,7 +50,7 @@ airbyte-agent workspaces list --fields id,name,status
 airbyte-agent workspaces use --json '{"name": "Production"}'
 ```
 
-`name` is required and is matched case-insensitively against the workspace's actual `name` field. The CLI verifies that the workspace exists before writing, and persists the canonical-cased name from the API — so typing `production` saves `Production` if that's how it's stored.
+`name` is required and is matched case-insensitively against the workspace's actual `name` field. The CLI verifies that the workspace exists before writing, and persists the canonical-cased name from the API. For example, typing `production` saves `Production` if that's how it's stored.
 
 This is typically the second step in onboarding, right after [`configure`](./authenticate#recommended-airbyte-agent-configure). Run it again whenever you switch projects.
 

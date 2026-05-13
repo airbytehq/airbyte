@@ -19,7 +19,7 @@ The CLI deliberately doesn't accept third-party credentials (API keys, OAuth tok
 airbyte-agent connectors list-available --format table
 ```
 
-The output lists every connector the CLI can create. Each row has a name (for example, `hubspot`, `linear`, `stripe`) — that's the value you pass as `name` when you create the connector.
+The output lists every connector the CLI can create. Each row has a name like `hubspot`, `linear`, or `stripe`; that's the value you pass as `name` when you create the connector.
 
 If you already know the connector type, you can skip this step.
 
@@ -70,4 +70,4 @@ airbyte-agent connectors list --json '{"workspace": "default"}' --format table
 
 ## Next steps
 
-Once the connector exists, run [`connectors describe`](./describe-connector) to see which entities and actions it exposes — that's the contract for every [`connectors execute`](./execute) call against it.
+Once the connector exists, run [`connectors describe`](./describe-connector) to see which entities and actions it exposes. That's the contract for every [`connectors execute`](./execute) call against it.

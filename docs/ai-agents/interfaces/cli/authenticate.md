@@ -8,7 +8,7 @@ sidebar_position: 1
 The CLI authenticates with Airbyte Agents using an `AIRBYTE_CLIENT_ID`, an `AIRBYTE_CLIENT_SECRET`, and an `AIRBYTE_ORGANIZATION_ID`. After you provide those three values once, the CLI obtains a short-lived OAuth token on first use, caches it locally, and refreshes it automatically before it expires. You never manage tokens yourself.
 
 :::note Two sets of credentials
-The credentials on this page authenticate *your machine* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you provide when you [add a connector](./add-connector). The two are independent — rotating one doesn't affect the other. The CLI also never accepts per-connector credentials inline; those always go through the browser flow.
+The credentials on this page authenticate *your machine* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you provide when you [add a connector](./add-connector). The two are independent, and rotating one doesn't affect the other. The CLI also never accepts per-connector credentials inline; those always go through the browser flow.
 :::
 
 ## Get your credentials
@@ -94,7 +94,7 @@ After authenticating, list your organizations to confirm the CLI can reach the A
 airbyte-agent organizations list
 ```
 
-A successful response is a JSON array of organizations. Authentication failures exit with code `2` and return a structured error on stderr — see [Troubleshooting](./troubleshooting#authentication-fails) for the most common causes.
+A successful response is a JSON array of organizations. Authentication failures exit with code `2` and return a structured error on stderr. See [Troubleshooting](./troubleshooting#authentication-fails) for the most common causes.
 
 ## Token refresh
 

@@ -7,7 +7,7 @@ sidebar_position: 4
 
 `connectors describe` returns the contract for a connector: every entity it exposes, every action valid on each entity, and the parameter schema each action accepts. It's the source of truth for what a specific connector supports, and the first thing you should call before running [`connectors execute`](./execute) against an unfamiliar connector.
 
-Entity and action names vary by connector type. Don't guess them — every guess is an avoidable round trip and, for write actions, a possible mistake.
+Entity and action names vary by connector type. Don't guess them. Every guess is an avoidable round trip, and for write actions, a possible mistake.
 
 ## Describe by name
 
@@ -70,4 +70,4 @@ airbyte-agent connectors describe --json '{"workspace": "default", "name": "hubs
 
 ## When entities or actions look wrong
 
-If `describe` returns an unexpected schema — missing entities, unexpected required params — the underlying connector definition may have changed. Re-run `connectors list-available` to make sure the connector is still available, and check the connector's [reference page](../../connectors) for the canonical entity list.
+If `describe` returns an unexpected schema (missing entities, or unexpected required params), the underlying connector definition may have changed. Re-run `connectors list-available` to make sure the connector is still available, and check the connector's [reference page](../../connectors) for the canonical entity list.
