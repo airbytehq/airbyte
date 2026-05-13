@@ -7,10 +7,12 @@ package io.airbyte.integrations.source.postgres.cdc
 import io.airbyte.cdk.read.querySingleValue
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.debezium.connector.postgresql.connection.Lsn
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.time.Instant
 
 @Singleton
+@Requires(condition = CdcCondition::class)
 class StartupState(connectionFactory: PostgresSourceJdbcConnectionFactory) {
     val txId: Long
     val lsn: Long

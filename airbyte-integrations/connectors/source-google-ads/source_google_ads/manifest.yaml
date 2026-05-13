@@ -50,7 +50,7 @@ definitions:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
-        action: FAIL
+        action: RETRY
         http_codes:
           - 500
         error_message: >-
@@ -425,6 +425,8 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.SerializeMessageFieldsTransformation"
       - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields

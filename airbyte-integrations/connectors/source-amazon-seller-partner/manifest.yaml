@@ -234,14 +234,26 @@ spec:
                     type: string
                     order: 1
       wait_to_avoid_fatal_errors:
-        title: Wait between requests to avoid fatal statuses in reports
+        title: "[Deprecated] Wait between requests to avoid fatal statuses in reports"
         type: boolean
-        description: For report based streams with known amount of requests per time
-          period, this option will use waiting time between requests to avoid fatal
-          statuses in reports. See <a href="https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting"
-          target="_blank">Troubleshooting</a> section for more details
+        description: "Deprecated - this option is no longer functional and will be
+          removed in a future version. Rate limiting is now handled automatically
+          by the connector."
         default: false
         order: 13
+        airbyte_hidden: true
+      max_done_report_age_hours:
+        title: "Max Age of Completed Reports to Reuse (Hours)"
+        type: integer
+        description: "When the connector finds an existing completed (DONE) report
+          matching the same date range and marketplace, it can reuse that report
+          instead of creating a new one. This setting controls how old (in hours)
+          a completed report can be and still be reused. Set to 0 to always create
+          new reports. Maximum is 24 hours."
+        default: 0
+        minimum: 0
+        maximum: 24
+        order: 14
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
@@ -321,6 +333,33 @@ spec:
         minimum: 1
         maximum: 100
         order: 17
+      failed_retry_wait_time_in_seconds:
+        title: Failed Report Retry Wait Time (Seconds)
+        description: >-
+          Time in seconds to wait before retrying a report that returned FATAL
+          status. Amazon enforces per-report-type cooldowns after generating a
+          report. Near-real-time FBA reports have an approximately 30-minute
+          cooldown, daily FBA reports approximately 4 hours. The default of 1800
+          seconds covers the most common cooldown. Increase this value if you
+          see repeated FATAL errors on daily FBA reports.
+        type: integer
+        default: 1800
+        minimum: 1
+        maximum: 14400
+        order: 18
+        airbyte_hidden: true
+      creation_requester_429_max_retries:
+        title: Report Creation 429 Max Retries
+        description: >-
+          Maximum number of retry attempts when the report creation API returns
+          HTTP 429 (Too Many Requests). Each retry uses exponential backoff
+          based on the x-amzn-RateLimit-Limit header. Reduce this value to
+          avoid exhausting rate limits on retrying requests.
+        type: integer
+        default: 5
+        minimum: 0
+        order: 19
+        airbyte_hidden: true
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2561,10 +2600,11 @@ definitions:
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
         # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
-        # otherwise it will throw a 400 error
+        # otherwise it will throw a 400 error. Using 89 days as a buffer to prevent race conditions
+        # caused by network latency between computing the timestamp and the API receiving the request.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
@@ -2578,7 +2618,7 @@ definitions:
               incremental_dependency: true
         requester:
           type: HttpRequester
-          path: "reports/2021-06-30/{{ stream_slice['reportId'] }}"
+          path: "reports/2021-06-30/reports/{{ stream_slice['reportId'] }}"
           url_base: "{{ config['endpoint'] }}"
           http_method: GET
           authenticator: "#/definitions/authenticator"
@@ -3009,14 +3049,22 @@ definitions:
 
   basic_async_retriever:
     type: AsyncRetriever
+    failed_retry_wait_time_in_seconds: "{{ config.get('failed_retry_wait_time_in_seconds', 1800) }}"
     status_mapping:
       failed:
         - FATAL
       running:
         - IN_PROGRESS
         - IN_QUEUE
-      timeout:
+      # CANCELLED means the report was either explicitly cancelled by a user/application via cancelReport API,
+      # or automatically cancelled because there is no data to return
+      # (per SP-API docs: https://developer-docs.amazon.com/sp-api/reference/getreport).
+      # We map it to skipped so the CDK silently drops the partition without retrying or fetching records.
+      # WARNING: If a report was manually cancelled (not auto-cancelled), data for that period will be
+      # skipped and not synced. The cursor state is not advanced, so it will be retried on the next sync.
+      skipped:
         - CANCELLED
+      timeout: []
       completed:
         - DONE
     download_target_extractor:
@@ -3034,7 +3082,8 @@ definitions:
       field_path:
         - processingStatus
     creation_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.ReportCreationRequester
       path: reports/2021-06-30/reports
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
@@ -3049,6 +3098,19 @@ definitions:
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: "Rate limit exceeded for report creation. The request will be retried with backoff."
+            max_retries: "{{ config.get('creation_requester_429_max_retries', 5) }}"
+            backoff_strategies:
+              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                type: CustomBackoffStrategy
+                header: x-amzn-RateLimit-Limit
+                default_backoff_time: 60
           - type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
@@ -3135,9 +3197,11 @@ definitions:
       # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
       step: "P10Y"
       cursor_granularity: "PT1S"
+      # Using 89 days as a buffer to prevent race conditions caused by network latency
+      # between computing the timestamp and the API receiving the request.
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P90D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         field_name: "createdSince"

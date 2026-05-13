@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Publish a Python connector to PyPI registry
-# Extracted from airbyte-ci publish pipeline for GitHub Actions integration
+# Publish script for GitHub Actions integration
 #
 
 set -euo pipefail
