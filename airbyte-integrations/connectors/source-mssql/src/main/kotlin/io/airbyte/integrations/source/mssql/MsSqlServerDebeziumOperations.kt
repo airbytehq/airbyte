@@ -515,13 +515,12 @@ class MsSqlServerDebeziumOperations(
 
         val configuredStreamsSet: Set<Pair<String, String>> =
             configuredCatalog.streams
-                .mapNotNull { configuredStream ->
-                    if (configuredStream.syncMode != SyncMode.INCREMENTAL) return@mapNotNull null
-                    val namespace = configuredStream.stream.namespace ?: return@mapNotNull null
-                    val tableName = configuredStream.stream.name ?: return@mapNotNull null
+                .filter { it.syncMode == SyncMode.INCREMENTAL }
+                .mapNotNullTo(mutableSetOf()) {
+                    val namespace = it.stream.namespace ?: return@mapNotNullTo null
+                    val tableName = it.stream.name ?: return@mapNotNullTo null
                     namespace to tableName
                 }
-                .toSet()
 
         // for testing
         log.info {
