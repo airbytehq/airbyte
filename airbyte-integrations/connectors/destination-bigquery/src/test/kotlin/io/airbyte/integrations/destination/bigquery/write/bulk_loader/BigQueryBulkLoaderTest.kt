@@ -34,19 +34,21 @@ class BigQueryBulkLoaderTest {
     @Test
     fun `allows nullable fields to be added during append load jobs`() = runBlocking {
         var configuration: LoadJobConfiguration? = null
-        val bigQueryClient = mockk<BigQuery> {
-            every {
-                create(
-                    match<JobInfo> { jobInfo ->
-                        configuration = jobInfo.getConfiguration<LoadJobConfiguration>()
-                        true
-                    },
-                    *anyVararg()
-                )
-            } returns job()
-        }
+        val bigQueryClient =
+            mockk<BigQuery> {
+                every {
+                    create(
+                        match<JobInfo> { jobInfo ->
+                            configuration = jobInfo.getConfiguration<LoadJobConfiguration>()
+                            true
+                        },
+                        *anyVararg()
+                    )
+                } returns job()
+            }
         val storageClient = mockk<GcsClient>(relaxed = true)
-        val schema = Schema.of(com.google.cloud.bigquery.Field.of("new_field", StandardSQLTypeName.STRING))
+        val schema =
+            Schema.of(com.google.cloud.bigquery.Field.of("new_field", StandardSQLTypeName.STRING))
         val tableId = TableId.of("dataset", "table")
         val storageConfig =
             GcsClientConfiguration(
@@ -95,10 +97,11 @@ class BigQueryBulkLoaderTest {
     }
 
     private fun job(): Job {
-        val stats = mockk<JobStatistics.LoadStatistics> {
-            every { outputRows } returns 1L
-            every { badRecords } returns 0
-        }
+        val stats =
+            mockk<JobStatistics.LoadStatistics> {
+                every { outputRows } returns 1L
+                every { badRecords } returns 0
+            }
         return mockk {
             every { jobId } returns JobId.of("project", "job")
             every { status } returns mockk { every { error } returns null }
