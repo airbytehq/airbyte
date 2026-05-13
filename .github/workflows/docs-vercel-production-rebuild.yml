@@ -154,6 +154,11 @@ jobs:
             echo ""
             echo "- Deployment: \`${DEPLOYMENT_ID}\`"
             echo "- Deployment URL: ${DEPLOYMENT_URL}"
-            [[ -n "${INSPECTOR_URL}" ]] \
-              && echo "- Inspector URL: ${INSPECTOR_URL}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Summarize inspector URL
+        if: steps.deploy.outputs.inspector-url != ''
+        env:
+          INSPECTOR_URL: ${{ steps.deploy.outputs.inspector-url }}
+        run: |
+          echo "- Inspector URL: ${INSPECTOR_URL}" >> "$GITHUB_STEP_SUMMARY"
