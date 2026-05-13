@@ -1798,11 +1798,11 @@ streams:
 #
 # Starting concurrency followed the connector concurrency tuning playbook:
 # floor(5 / 4) = 1 ≤ 2 triggered the low-rate-limit special case →
-# starting_concurrency = 4, step = 1. Empirical tuning iterates upward
-# in steps of 1 against the documented 5 req/sec ceiling.
+# starting_concurrency = 4, step = 1. Empirical tuning adjusts by 1
+# against the documented 5 req/sec ceiling.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 5
+  default_concurrency: 3
   max_concurrency: 16
 
 spec:

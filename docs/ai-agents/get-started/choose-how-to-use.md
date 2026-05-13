@@ -12,16 +12,16 @@ Use the flowchart below to find the best starting point, then read the section t
 
 ```mermaid
 flowchart TD
-    START(["How do you want to use<br/>Airbyte Agents?"])
-    START -->|"I already use Claude,<br/>Cursor, or ChatGPT"| MCP["MCP server"]
-    START -->|"I'm building a<br/>Python agent"| SDK["Python SDK"]
+    START(["How do you want to use Airbyte Agents?"])
+    START -->|"I already use Claude, Cursor, or ChatGPT"| MCP["MCP server"]
+    START -->|"I'm building a Python agent"| SDK["Python SDK"]
     START -->|"No code needed"| WEB["Web app"]
-    START -->|"Non-Python backend<br/>or custom admin"| API["HTTP API"]
+    START -->|"Non-Python backend or custom admin"| API["Agent API"]
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
     click WEB "#web-app"
-    click API "#http-api"
+    click API "#agent-api"
 ```
 
 ## MCP server
@@ -30,7 +30,7 @@ flowchart TD
 
 The [MCP server](../interfaces/mcp) is a remote, Airbyte-hosted server that gives MCP-capable agents authenticated access to your connected data. You have nothing to install. Add the server URL to your agent's MCP configuration, authenticate with your Airbyte account, and your agent can immediately read and write data across every connector in your workspace.
 
-**Get started:** See the [MCP server docs](../interfaces/mcp) for setup instructions for Claude Code, Cursor, VS Code, Claude Desktop, ChatGPT, and other clients.
+**Get started:** see the [MCP server docs](../interfaces/mcp) for setup instructions for Claude Code, Cursor, VS Code, Claude Desktop, ChatGPT, and other clients.
 
 ## Python SDK
 
@@ -42,10 +42,12 @@ The [Python SDK](../interfaces/sdk) (`airbyte-agent-sdk`) gives you typed connec
 uv add airbyte-agent-sdk
 ```
 
-**Get started:** Follow one of the step-by-step tutorials in the [Developer Quickstart](developer-quickstart):
+**Get started:** follow one of the step-by-step tutorials in the [Developer Quickstart](developer-quickstart):
 
 - [Pydantic AI tutorial](developer-quickstart/tutorial-pydantic)
+
 - [LangChain tutorial](developer-quickstart/tutorial-langchain)
+
 - [FastMCP tutorial](developer-quickstart/tutorial-fastmcp)
 
 ## Web app
@@ -57,17 +59,18 @@ The [web app](../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai) is t
 Two primary surfaces:
 
 - **[Chats](../interfaces/ui/chats)**: Interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
+
 - **[Automations](../interfaces/ui/automations)**: Agent tasks that run on a schedule, on a webhook, or on demand. Use Automations when you need the same work to happen repeatedly without a person in the loop.
 
 **Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 
-## HTTP API
+## Agent API
 
-**Best for:** Backend engineers, non-Python stacks, custom admin flows, and embedding the authentication module in your application.
+**Best for:** backend engineers, non-Python stacks, custom admin flows, and embedding the authentication module in your application.
 
-The [HTTP API](../interfaces/api) exposes REST endpoints for managing connectors, tokens, and executing operations from any language or backend service. Use it when you need programmatic control over Airbyte Agents from a stack that isn't Python, or when you're building a custom integration layer.
+The [Agent API](../interfaces/api) exposes REST endpoints for managing connectors, tokens, and executing operations from any language or backend service. Use it when you need programmatic control over Airbyte Agents from a stack that isn't Python, or when you're building a custom integration layer.
 
-**Get started:** See the [API docs](../interfaces/api) for authentication, connector management, and execution endpoints. The [Developer Quickstart](developer-quickstart) also covers common patterns.
+**Get started:** see the [API docs](../interfaces/api) for authentication, connector management, and execution endpoints. The [Developer Quickstart](developer-quickstart) also covers common patterns.
 
 ## All paths lead to the same data
 

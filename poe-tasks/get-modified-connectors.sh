@@ -89,7 +89,7 @@ return_empty_json() {
 }
 
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})" || true)
 if [ -z "$filtered" ]; then
   echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
   return_empty_json
