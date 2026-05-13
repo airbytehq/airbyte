@@ -31,16 +31,41 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
     override val handlers: List<RelationalColumnCustomConverter.Handler> =
         listOf(
-            DatetimeMillisHandler,
-            DatetimeMicrosHandler,
-            DateHandler,
+            DatetimeMillisHandler(),
+            DatetimeMicrosHandler(),
+            DateHandler(),
             TimeHandler,
             TimestampHandler
         )
 
-    data object DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
+    private abstract class ColumnAwareTemporalHandler : RelationalColumnCustomConverter.Handler {
+        private var currentColumn: RelationalColumn? = null
 
-        override fun matches(column: RelationalColumn): Boolean =
+        override fun matches(column: RelationalColumn): Boolean {
+            val matches = matchesType(column)
+            if (matches) {
+                currentColumn = column
+            }
+            return matches
+        }
+
+        protected abstract fun matchesType(column: RelationalColumn): Boolean
+
+        protected fun zeroDateNullConverter(defaultValue: String): PartialConverter {
+            val column = currentColumn
+            return PartialConverter {
+                if (it == null) {
+                    if (column?.isOptional == false) Converted(defaultValue) else Converted(null)
+                } else {
+                    NoConversion
+                }
+            }
+        }
+    }
+
+    class DatetimeMillisHandler : ColumnAwareTemporalHandler() {
+
+        override fun matchesType(column: RelationalColumn): Boolean =
             column.typeName().equals("DATETIME", ignoreCase = true) &&
                 column.length().orElse(0) <= 3
 
@@ -48,7 +73,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                zeroDateNullConverter(EPOCH_DATETIME),
                 PartialConverter {
                     if (it is LocalDateTime) {
                         Converted(it.format(LocalDateTimeCodec.formatter))
@@ -71,16 +96,16 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             )
     }
 
-    data object DatetimeMicrosHandler : RelationalColumnCustomConverter.Handler {
+    class DatetimeMicrosHandler : ColumnAwareTemporalHandler() {
 
-        override fun matches(column: RelationalColumn): Boolean =
+        override fun matchesType(column: RelationalColumn): Boolean =
             column.typeName().equals("DATETIME", ignoreCase = true) && column.length().orElse(0) > 3
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                zeroDateNullConverter(EPOCH_DATETIME),
                 PartialConverter {
                     if (it is LocalDateTime) {
                         Converted(it.format(LocalDateTimeCodec.formatter))
@@ -103,16 +128,16 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             )
     }
 
-    data object DateHandler : RelationalColumnCustomConverter.Handler {
+    class DateHandler : ColumnAwareTemporalHandler() {
 
-        override fun matches(column: RelationalColumn): Boolean =
+        override fun matchesType(column: RelationalColumn): Boolean =
             column.typeName().equals("DATE", ignoreCase = true)
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                zeroDateNullConverter(EPOCH_DATE),
                 PartialConverter {
                     if (it is LocalDate) {
                         Converted(it.format(LocalDateCodec.formatter))
@@ -130,6 +155,13 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     }
                 }
             )
+    }
+
+    companion object {
+        private val EPOCH_DATE: String = LocalDate.ofEpochDay(0).format(LocalDateCodec.formatter)
+        private val EPOCH_DATETIME: String =
+            LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                .format(LocalDateTimeCodec.formatter)
     }
 
     data object TimeHandler : RelationalColumnCustomConverter.Handler {
