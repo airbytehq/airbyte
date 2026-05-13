@@ -186,7 +186,7 @@ The HTTP client retries transient failures automatically:
 - **Strategy:** Up to 3 retries with exponential backoff (1s, 2s, 4s).
 - **Per-request timeout:** 30 seconds.
 
-For long-running operations that exceed 30 seconds, run them via a job (for example, the [HTTP API](../api/execute) async endpoints) and poll for the result.
+For long-running operations that exceed 30 seconds, run them via a job (for example, the [Agent API](../api/execute) async endpoints) and poll for the result.
 
 ## Environment variables
 

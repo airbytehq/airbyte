@@ -17,13 +17,13 @@ flowchart TD
     START -->|"I'm building a<br/>Python agent"| SDK["Python SDK"]
     START -->|"I want a shell-first<br/>or agent-harness tool"| CLI["CLI"]
     START -->|"No code needed"| WEB["Web app"]
-    START -->|"Non-Python backend<br/>or custom admin"| API["HTTP API"]
+    START -->|"Non-Python backend<br/>or custom admin"| API["Agent API"]
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
     click CLI "#cli"
     click WEB "#web-app"
-    click API "#http-api"
+    click API "#agent-api"
 ```
 
 ## MCP server
@@ -75,11 +75,11 @@ brew install airbytehq/tap/airbyte-agent
 
 **Get started:** See the [CLI docs](../interfaces/cli) for install, authentication, and the quickstarts for listing workspaces, adding a connector, and executing an action. The bundled [agent skills](../interfaces/cli/using-with-ai-agents#install-the-bundled-skills) can be installed straight into a Claude Code or compatible harness with `npx skills add airbytehq/airbyte-agent-cli`.
 
-## HTTP API
+## Agent API
 
 **Best for:** Backend engineers, non-Python stacks, custom admin flows, and embedding the authentication module in your application.
 
-The [HTTP API](../interfaces/api) exposes REST endpoints for managing connectors, tokens, and executing operations from any language or backend service. Use it when you need programmatic control over Airbyte Agents from a stack that isn't Python, or when you're building a custom integration layer.
+The [Agent API](../interfaces/api) exposes REST endpoints for managing connectors, tokens, and executing operations from any language or backend service. Use it when you need programmatic control over Airbyte Agents from a stack that isn't Python, or when you're building a custom integration layer.
 
 **Get started:** See the [API docs](../interfaces/api) for authentication, connector management, and execution endpoints. The [Developer Quickstart](developer-quickstart) also covers common patterns.
 

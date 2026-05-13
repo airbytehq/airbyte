@@ -5,7 +5,9 @@ sidebar_position: 2
 
 # List and set workspaces
 
-A **workspace** in Airbyte Agents is a container inside your organization that holds connectors and credentials. Every organization starts with a `default` workspace, and most users stay there. Use additional workspaces when you need to isolate credentials across tenants, teams, or environments.
+A **workspace** in Airbyte Agents is a container inside your organization that holds connectors and credentials. Every organization starts with a single `default` workspace. **Additional workspaces require a Team plan or higher** — orgs on the free or individual plan have only the one, so most CLI users can skip the rest of this page and rely on the default.
+
+Use additional workspaces when you need to isolate credentials across tenants, teams, or environments.
 
 The CLI lets you list workspaces and persist a default in your settings file so you don't have to pass `workspace` on every command.
 
@@ -56,4 +58,4 @@ To clear the default and fall back to `"default"`, edit `~/.airbyte-agent/settin
 
 ## Workspace creation and admin operations
 
-The CLI doesn't expose workspace creation, renaming, or deletion. For those administrative operations, use the [HTTP API](../api/workspaces). Once a workspace exists, the CLI can use it.
+The CLI doesn't expose workspace creation, renaming, or deletion. For those administrative operations, use the [Agent API](../api/workspaces). Once a workspace exists, the CLI can use it.

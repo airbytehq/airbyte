@@ -11,7 +11,7 @@ Airbyte Agents supports five interfaces for working with your data and your agen
 - [**MCP server**](mcp): A remote, Airbyte-hosted Model Context Protocol server that connects MCP-capable agents (like Claude, Cursor, and ChatGPT) to your data. Best for conversational agents that use off-the-shelf clients.
 - [**SDK**](sdk): Python SDK for building, authenticating, and executing agent connectors directly in your Python applications. Best for Python-based agents you build and host yourself.
 - [**CLI**](cli): A single Go binary that exposes Airbyte Agents as `airbyte-agent <resource> <operation>`. Best for shell scripts, CI jobs, and AI-agent harnesses that shell out for tool calls.
-- [**API**](api): HTTP API for managing connectors, tokens, and executing operations from any language or backend service. Best for non-Python backends, custom admin flows, and embedding the authentication module in your app.
+- [**API**](api): REST endpoints for managing connectors, tokens, and executing operations from any language or backend service. Best for non-Python backends, custom admin flows, and embedding the authentication module in your app.
 
 import DocCardList from '@theme/DocCardList';
 

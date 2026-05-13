@@ -13,7 +13,7 @@ The CLI is the right interface when you want:
 
 - A shell-first way to talk to Airbyte Agents (scripts, CI jobs, ad-hoc terminal use).
 - A non-Python tool an AI-agent harness (Claude Code, Codex, and similar) can shell out to.
-- A portable single-binary alternative to the [Python SDK](../sdk) or the [HTTP API](../api).
+- A portable single-binary alternative to the [Python SDK](../sdk) or the [Agent API](../api).
 
 Source code, releases, and bundled agent skills live at [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli).
 
