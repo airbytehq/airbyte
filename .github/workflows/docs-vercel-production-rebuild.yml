@@ -1,0 +1,156 @@
+name: Force Docs Production Rebuild
+
+run-name: Force docs production rebuild by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment-id-or-url:
+        description: "Optional production Vercel deployment ID or URL. Defaults to the latest ready production deployment."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-vercel-production-rebuild
+  cancel-in-progress: false
+
+jobs:
+  trigger-rebuild:
+    name: Trigger Vercel production redeploy
+    runs-on: ubuntu-24.04
+    environment:
+      name: docs-production
+      url: ${{ steps.redeploy.outputs.deployment-url }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Redeploy production without build cache
+        id: redeploy
+        env:
+          DEPLOYMENT_ID_OR_URL: ${{ inputs['deployment-id-or-url'] }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${VERCEL_ORG_ID}" ]]; then
+            echo "::error::VERCEL_ORG_ID is required."
+            exit 1
+          fi
+
+          if [[ -z "${VERCEL_PROJECT_ID}" ]]; then
+            echo "::error::VERCEL_PROJECT_ID is required."
+            exit 1
+          fi
+
+          if [[ -z "${VERCEL_TOKEN}" ]]; then
+            echo "::error::VERCEL_TOKEN is required."
+            exit 1
+          fi
+
+          urlencode() {
+            python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$1"
+          }
+
+          team_query="teamId=$(urlencode "${VERCEL_ORG_ID}")"
+
+          vercel_get() {
+            curl --fail --show-error --silent \
+              --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+              --header "Content-Type: application/json" \
+              "https://api.vercel.com$1"
+          }
+
+          if [[ -n "${DEPLOYMENT_ID_OR_URL}" ]]; then
+            encoded_deployment="$(urlencode "${DEPLOYMENT_ID_OR_URL}")"
+            deployment_json="$(vercel_get "/v13/deployments/${encoded_deployment}?${team_query}")"
+            deployment_id="$(jq -r '.id // .uid // empty' <<< "${deployment_json}")"
+            deployment_name="$(jq -r '.name // empty' <<< "${deployment_json}")"
+            deployment_target="$(jq -r '.target // empty' <<< "${deployment_json}")"
+
+            if [[ "${deployment_target}" != "production" ]]; then
+              echo "::error::The provided deployment must be a production deployment."
+              exit 1
+            fi
+          else
+            encoded_project="$(urlencode "${VERCEL_PROJECT_ID}")"
+            deployments_json="$(vercel_get "/v6/deployments?projectId=${encoded_project}&target=production&state=READY&limit=1&${team_query}")"
+            deployment_id="$(jq -r '.deployments[0].uid // empty' <<< "${deployments_json}")"
+            deployment_name="$(jq -r '.deployments[0].name // empty' <<< "${deployments_json}")"
+          fi
+
+          if [[ -z "${deployment_id}" || -z "${deployment_name}" ]]; then
+            echo "::error::Could not find a production deployment to redeploy."
+            exit 1
+          fi
+
+          payload="$(jq -n \
+            --arg deploymentId "${deployment_id}" \
+            --arg name "${deployment_name}" \
+            '{
+              deploymentId: $deploymentId,
+              name: $name,
+              target: "production",
+              meta: {
+                action: "redeploy",
+                source: "github-actions",
+                workflow: "docs-vercel-production-rebuild"
+              }
+            }')"
+
+          redeploy_json="$(curl --fail --show-error --silent \
+            --request POST \
+            --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "${payload}" \
+            "https://api.vercel.com/v13/deployments?forceNew=1&${team_query}")"
+
+          new_deployment_id="$(jq -r '.id // .uid // empty' <<< "${redeploy_json}")"
+          new_deployment_url="$(jq -r '.url // empty' <<< "${redeploy_json}")"
+          inspector_url="$(jq -r '.inspectorUrl // empty' <<< "${redeploy_json}")"
+
+          if [[ -z "${new_deployment_id}" || -z "${new_deployment_url}" ]]; then
+            echo "::error::Vercel did not return a deployment ID and URL."
+            jq . <<< "${redeploy_json}"
+            exit 1
+          fi
+
+          echo "deployment-url=https://${new_deployment_url}" >> "${GITHUB_OUTPUT}"
+          echo "inspector-url=${inspector_url}" >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "Triggered Vercel production redeploy without build cache."
+            echo ""
+            echo "- Source deployment: \`${deployment_id}\`"
+            echo "- New deployment: \`${new_deployment_id}\`"
+            echo "- Deployment URL: https://${new_deployment_url}"
+            if [[ -n "${inspector_url}" ]]; then
+              echo "- Inspector URL: ${inspector_url}"
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          for attempt in {1..180}; do
+            status_json="$(vercel_get "/v13/deployments/${new_deployment_id}?${team_query}")"
+            ready_state="$(jq -r '.readyState // .state // empty' <<< "${status_json}")"
+
+            echo "Deployment ${new_deployment_id} state: ${ready_state:-unknown}"
+
+            case "${ready_state}" in
+              READY)
+                exit 0
+                ;;
+              ERROR|CANCELED)
+                echo "::error::Vercel deployment finished with state ${ready_state}."
+                exit 1
+                ;;
+            esac
+
+            sleep 10
+          done
+
+          echo "::error::Timed out waiting for Vercel deployment ${new_deployment_id}."
+          exit 1
