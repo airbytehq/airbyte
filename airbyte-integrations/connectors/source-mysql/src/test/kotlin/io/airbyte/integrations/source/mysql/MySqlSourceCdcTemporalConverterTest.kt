@@ -71,7 +71,11 @@ class MySqlSourceCdcTemporalConverterTest {
 
         @JvmStatic
         fun nullableDateAndDatetimeZeroDateCases(): List<Arguments> =
-            listOf(Arguments.of("DATE", 0), Arguments.of("DATETIME", 0), Arguments.of("DATETIME", 6))
+            listOf(
+                Arguments.of("DATE", 0),
+                Arguments.of("DATETIME", 0),
+                Arguments.of("DATETIME", 6)
+            )
 
         @JvmStatic
         fun dateAndDatetimeValueCases(): List<Arguments> =

@@ -177,14 +177,13 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         private fun nonOptionalNullConverter(
             column: RelationalColumn?,
             fallback: String,
-        ): PartialConverter =
-            PartialConverter {
-                if (it == null && column?.isOptional == false) {
-                    Converted(fallback)
-                } else {
-                    NoConversion
-                }
+        ): PartialConverter = PartialConverter {
+            if (it == null && column?.isOptional == false) {
+                Converted(fallback)
+            } else {
+                NoConversion
             }
+        }
     }
 
     data object TimeHandler : RelationalColumnCustomConverter.Handler {
