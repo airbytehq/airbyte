@@ -29,6 +29,9 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-twitch
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   registryOverrides:
     cloud:
       enabled: true
