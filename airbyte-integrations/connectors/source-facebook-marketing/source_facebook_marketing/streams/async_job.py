@@ -514,7 +514,8 @@ class InsightAsyncJob(AsyncJob):
 
     def _split_by_fields_parent(self) -> ParentAsyncJob:
         all_fields: List[str] = list(self._params.get("fields", []))
-        split_candidates = [f for f in all_fields if f not in self._primary_key]
+        primary_key_fields = [field for field in self._primary_key if field in all_fields]
+        split_candidates = [f for f in all_fields if f not in primary_key_fields]
         if len(split_candidates) <= 1:
             raise AirbyteTracedException(
                 message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
@@ -526,9 +527,9 @@ class InsightAsyncJob(AsyncJob):
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = primary_key_fields + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = primary_key_fields + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,

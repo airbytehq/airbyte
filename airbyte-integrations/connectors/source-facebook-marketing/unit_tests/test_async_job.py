@@ -3,7 +3,9 @@
 #
 
 import copy
+import importlib
 import time
+import typing
 from datetime import date, datetime, timedelta
 
 import freezegun
@@ -15,10 +17,13 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
+from source_facebook_marketing.streams.async_job_manager import APILimit
 from source_facebook_marketing.utils import DateInterval
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -485,13 +490,11 @@ class TestInsightAsyncJob:
             ["ad_id", "c1", "c2", "c3", "c4"],  # 4 non-PK -> mid=2
         ],
     )
-    def test_split_job_by_fields_parent_creates_children(self, mocker, api, fields):
+    def test_split_job_by_fields_parent_creates_children(self, api, fields):
         """
         When the edge is Ad, _split_job() should return a list with a single ParentAsyncJob
         that contains two child InsightAsyncJobs whose fields are split (PK + half/half).
         """
-        from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
-
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": [], "fields": fields}
         pk = ["ad_id"]
@@ -540,8 +543,6 @@ class TestInsightAsyncJob:
         """
         If there are <=1 non-PK fields, splitting by fields is impossible and should raise.
         """
-        from source_facebook_marketing.streams.async_job import InsightAsyncJob
-
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": [], "fields": fields}
         pk = ["ad_id"]
@@ -558,9 +559,32 @@ class TestInsightAsyncJob:
         with pytest.raises(AirbyteTracedException, match="Unable to split the Facebook Insights request") as exc_info:
             job._split_job()
 
-        from airbyte_cdk.models import FailureType
-
         assert exc_info.value.failure_type == FailureType.system_error
+
+    def test_split_job_by_fields_parent_does_not_add_missing_breakdown_pk_fields(self, api):
+        interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
+        params = {"time_increment": 1, "breakdowns": ["age", "gender"], "fields": ["ad_id", "clicks", "impressions"]}
+        pk = ["date_start", "account_id", "ad_id", "age", "gender"]
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad(1),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+        )
+
+        parent = job._split_job()[0]
+
+        fields_a = parent._jobs[0]._params["fields"]
+        fields_b = parent._jobs[1]._params["fields"]
+        assert fields_a == ["ad_id", "clicks"]
+        assert fields_b == ["ad_id", "impressions"]
+        assert "age" not in fields_a
+        assert "gender" not in fields_a
+        assert "age" not in fields_b
+        assert "gender" not in fields_b
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_start_failure_generic(self, mocker, api):
@@ -568,8 +592,6 @@ class TestInsightAsyncJob:
         When get_insights raises a non-FacebookRequestError exception,
         _collect_child_ids should wrap it in AirbyteTracedException with transient_error.
         """
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -591,12 +613,6 @@ class TestInsightAsyncJob:
         delegate to traced_exception() to preserve the correct FailureType classification
         (e.g. config_error for invalid tokens, transient_error for rate limits).
         """
-        from unittest.mock import PropertyMock
-
-        from facebook_business.exceptions import FacebookRequestError
-
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -627,8 +643,6 @@ class TestInsightAsyncJob:
         When every attempt returns Job Failed, _collect_child_ids should raise
         AirbyteTracedException with transient_error after exhausting all retries.
         """
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -661,8 +675,6 @@ class TestInsightAsyncJob:
         When get_result raises FacebookBadObjectError, _collect_child_ids should
         wrap it in AirbyteTracedException with transient_error.
         """
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -695,8 +707,6 @@ class TestInsightAsyncJob:
         When _collect_child_ids returns an empty list, _split_by_edge_class should
         raise AirbyteTracedException with system_error.
         """
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -729,8 +739,6 @@ class TestInsightAsyncJob:
         When job polling exceeds the timeout, _collect_child_ids should raise
         AirbyteTracedException with transient_error.
         """
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -942,11 +950,6 @@ class TestAPILimitTypeAnnotation:
     def test_start_method_apilimit_annotation_resolves(self, cls_name):
         """The 'APILimit' string annotation on <cls>.start() must resolve
         to the real class when the proper namespace is provided."""
-        import importlib
-        import typing
-
-        from source_facebook_marketing.streams.async_job_manager import APILimit
-
         mod = importlib.import_module("source_facebook_marketing.streams.async_job")
         cls = getattr(mod, cls_name)
         # Provide the module globals + APILimit so get_type_hints can resolve the forward ref,
