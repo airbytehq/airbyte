@@ -56,5 +56,9 @@ class ConfigBuilder:
         self._config["failed_retry_wait_time_in_seconds"] = seconds
         return self
 
+    def as_vendor_account(self) -> ConfigBuilder:
+        self._config["account_type"] = "Vendor"
+        return self
+
     def build(self) -> Dict[str, str]:
         return self._config

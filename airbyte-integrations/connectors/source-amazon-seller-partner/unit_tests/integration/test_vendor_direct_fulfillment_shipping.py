@@ -82,7 +82,7 @@ class TestFullRefresh:
             _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -105,7 +105,7 @@ class TestFullRefresh:
             .build(),
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.records) == 3
 
     @HttpMocker()
@@ -131,7 +131,7 @@ class TestFullRefresh:
             _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(end_date))
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(end_date))
         assert len(output.records) == 2
 
     @HttpMocker()
@@ -145,7 +145,7 @@ class TestFullRefresh:
             ],
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -156,7 +156,7 @@ class TestFullRefresh:
             response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE), expecting_exception=True)
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
 
@@ -182,7 +182,7 @@ class TestIncremental:
             _vendor_direct_fulfillment_shipping_response().with_record(_shipping_label_record()).build(),
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE))
         expected_cursor_value = _END_DATE.strftime(TIME_FORMAT)
         assert output.records[0].record.data[_CURSOR_FIELD] == expected_cursor_value
 
@@ -197,7 +197,7 @@ class TestIncremental:
             .build(),
         )
 
-        output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
+        output = self._read(config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.state_messages) == 2
 
         cursor_value_from_latest_record = output.records[-1].record.data.get(_CURSOR_FIELD)
@@ -221,7 +221,7 @@ class TestIncremental:
         )
 
         output = self._read(
-            config_=config().with_start_date(_START_DATE).with_end_date(_END_DATE),
+            config_=config().as_vendor_account().with_start_date(_START_DATE).with_end_date(_END_DATE),
             state=StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_value}).build(),
         )
         assert output.most_recent_state.stream_state.__dict__ == {_CURSOR_FIELD: _END_DATE.strftime(TIME_FORMAT)}
