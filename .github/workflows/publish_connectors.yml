@@ -127,7 +127,8 @@ jobs:
 
           echo "with-semver-suffix=$SEMVER_SUFFIX" | tee -a $GITHUB_OUTPUT
       - name: Validate registry-refresh-only options
-        if: inputs.registry-refresh-only == true
+        if: >
+          inputs.registry-refresh-only == true
         shell: bash
         run: |
           set -euo pipefail
@@ -315,7 +316,11 @@ jobs:
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none' && needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: >
+          steps.connector-metadata.outputs.connector-language == 'python' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.with-semver-suffix == 'none' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -325,7 +330,10 @@ jobs:
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: >
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -334,7 +342,10 @@ jobs:
 
       - name: "[DRY-RUN] Build JVM connectors images (no publish)"
         id: build-JVM-connectors-images-dry-run
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: >
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.dry-run == 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         env:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -344,7 +355,11 @@ jobs:
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: >
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.publish-java-tars == 'true' &&
+          needs.publish_options.outputs.dry-run != 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
@@ -354,13 +369,19 @@ jobs:
         continue-on-error: true
 
       - name: "[DRY-RUN] Skip Publish JVM connectors tar file"
-        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: >
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.publish-java-tars == 'true' &&
+          needs.publish_options.outputs.dry-run == 'true' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         run: |
           echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
-        if: steps.connector-metadata.outputs.connector-language != 'java' && needs.publish_options.outputs.registry-refresh-only != 'true'
+        if: >
+          steps.connector-metadata.outputs.connector-language != 'java' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
