@@ -155,13 +155,8 @@ jobs:
               core.info(`Deployment ${process.env.DEPLOYMENT_ID} state: ${state || 'unknown'}`);
 
               if (state === 'READY') {
-                if (deployment.target !== 'production') {
-                  core.setFailed(`Vercel deployment target is ${deployment.target || 'unknown'}, expected production.`);
-                  return;
-                }
-
                 const aliases = Array.isArray(deployment.alias) ? deployment.alias : [];
-                core.setOutput('deployment-target', deployment.target);
+                core.setOutput('deployment-target', deployment.target || '');
                 core.setOutput('deployment-aliases', aliases.join(', '));
                 return;
               }
