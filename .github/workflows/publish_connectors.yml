@@ -393,6 +393,15 @@ jobs:
 
       # --- Registry artifact generation and publishing ---
 
+      - name: Pull existing connector image for registry refresh
+        if: >
+          needs.publish_options.outputs.registry-refresh-only == 'true'
+        shell: bash
+        run: |
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          docker pull "${DOCKER_IMAGE}"
+
       - name: Enable progressive rollout for RC builds
         if: needs.publish_options.outputs.with-semver-suffix == 'rc'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -433,7 +442,6 @@ jobs:
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
           DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
-          docker pull "${DOCKER_IMAGE}"
           airbyte-ops \
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
