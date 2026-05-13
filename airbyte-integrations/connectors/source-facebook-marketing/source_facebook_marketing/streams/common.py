@@ -36,6 +36,7 @@ FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
+FACEBOOK_INVALID_PARAMETER_ERROR_CODE = 100
 DEFAULT_SLEEP_INTERVAL = timedelta(minutes=1)
 
 logger = logging.getLogger("airbyte")
@@ -188,6 +189,13 @@ def traced_exception(fb_exception: FacebookRequestError):
             "with all required permissions."
         )
 
+    elif (
+        fb_exception.api_error_code() == FACEBOOK_INVALID_PARAMETER_ERROR_CODE
+        and "not valid for fields param" in msg
+        and "ads-insights" in msg
+    ):
+        failure_type = FailureType.system_error
+        friendly_msg = "Facebook Insights request contains breakdown dimensions in the fields parameter."
     elif "An unknown error occurred" in msg and "error_user_title" in fb_exception._error:
         msg = fb_exception._error["error_user_title"]
         if "profile is not linked to delegate page" in msg or "el perfil no est" in msg:

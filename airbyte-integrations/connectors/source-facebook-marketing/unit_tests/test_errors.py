@@ -49,6 +49,23 @@ ad_creative_data = [
         "updated_time": "2023-03-22T22:33:56-0700",
     },
 ]
+SYSTEM_ERRORS = [
+    (
+        "error_100_breakdown_field_in_insights_fields_param",
+        "Facebook Insights request contains breakdown dimensions in the fields parameter.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "(#100) country is not valid for fields param. please check https://developers.facebook.com/docs/marketing-api/reference/ads-insights/ for all valid values.",
+                    "type": "OAuthException",
+                    "code": 100,
+                    "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
+            },
+        },
+    ),
+]
 ad_creative_response = {
     "json": {
         "data": ad_creative_data,
@@ -537,6 +554,32 @@ class TestRealErrors:
             assert isinstance(error, AirbyteTracedException)
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
+
+    @freezegun.freeze_time("2011-12-31")
+    @pytest.mark.parametrize("name, friendly_msg, system_error_response", SYSTEM_ERRORS)
+    def test_system_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, system_error_response):
+        """System error raised during actual nodes read"""
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "country"],
+            breakdowns=["country"],
+            insights_lookback_window=28,
+        )
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        requests_mock.register_uri("GET", f"{act_url}insights", [system_error_response, system_error_response])
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            slice_ = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_, stream_state={}))
+
+        error = exc_info.value
+        assert error.failure_type == FailureType.system_error
+        assert error.message == friendly_msg
+        assert error.internal_message == system_error_response["json"]["error"]["message"]
 
     @freezegun.freeze_time("2011-12-31")
     def test_retry_for_cannot_include_error(self, requests_mock):
