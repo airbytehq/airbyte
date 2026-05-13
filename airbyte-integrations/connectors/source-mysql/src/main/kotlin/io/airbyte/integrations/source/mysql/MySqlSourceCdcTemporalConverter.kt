@@ -38,7 +38,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             TimestampHandler
         )
 
-    private abstract class ColumnAwareTemporalHandler : RelationalColumnCustomConverter.Handler {
+    abstract class ColumnAwareTemporalHandler : RelationalColumnCustomConverter.Handler {
         private var currentColumn: RelationalColumn? = null
 
         override fun matches(column: RelationalColumn): Boolean {
@@ -71,29 +71,30 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
-        override val partialConverters: List<PartialConverter> =
-            listOf(
-                zeroDateNullConverter(EPOCH_DATETIME),
-                PartialConverter {
-                    if (it is LocalDateTime) {
-                        Converted(it.format(LocalDateTimeCodec.formatter))
-                    } else {
-                        NoConversion
+        override val partialConverters: List<PartialConverter>
+            get() =
+                listOf(
+                    zeroDateNullConverter(EPOCH_DATETIME),
+                    PartialConverter {
+                        if (it is LocalDateTime) {
+                            Converted(it.format(LocalDateTimeCodec.formatter))
+                        } else {
+                            NoConversion
+                        }
+                    },
+                    PartialConverter {
+                        // Required for default values.
+                        if (it is Number) {
+                            val delta: Duration = Duration.ofMillis(it.toLong())
+                            val instant: Instant = Instant.EPOCH.plus(delta)
+                            val localDateTime: LocalDateTime =
+                                LocalDateTime.ofInstant(instant, ZoneOffset.UTC)
+                            Converted(localDateTime.format(LocalDateTimeCodec.formatter))
+                        } else {
+                            NoConversion
+                        }
                     }
-                },
-                PartialConverter {
-                    // Required for default values.
-                    if (it is Number) {
-                        val delta: Duration = Duration.ofMillis(it.toLong())
-                        val instant: Instant = Instant.EPOCH.plus(delta)
-                        val localDateTime: LocalDateTime =
-                            LocalDateTime.ofInstant(instant, ZoneOffset.UTC)
-                        Converted(localDateTime.format(LocalDateTimeCodec.formatter))
-                    } else {
-                        NoConversion
-                    }
-                }
-            )
+                )
     }
 
     class DatetimeMicrosHandler : ColumnAwareTemporalHandler() {
@@ -103,29 +104,30 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
-        override val partialConverters: List<PartialConverter> =
-            listOf(
-                zeroDateNullConverter(EPOCH_DATETIME),
-                PartialConverter {
-                    if (it is LocalDateTime) {
-                        Converted(it.format(LocalDateTimeCodec.formatter))
-                    } else {
-                        NoConversion
+        override val partialConverters: List<PartialConverter>
+            get() =
+                listOf(
+                    zeroDateNullConverter(EPOCH_DATETIME),
+                    PartialConverter {
+                        if (it is LocalDateTime) {
+                            Converted(it.format(LocalDateTimeCodec.formatter))
+                        } else {
+                            NoConversion
+                        }
+                    },
+                    PartialConverter {
+                        // Required for default values.
+                        if (it is Number) {
+                            val delta: Duration = Duration.of(it.toLong(), ChronoUnit.MICROS)
+                            val instant: Instant = Instant.EPOCH.plus(delta)
+                            val localDateTime: LocalDateTime =
+                                LocalDateTime.ofInstant(instant, ZoneOffset.UTC)
+                            Converted(localDateTime.format(LocalDateTimeCodec.formatter))
+                        } else {
+                            NoConversion
+                        }
                     }
-                },
-                PartialConverter {
-                    // Required for default values.
-                    if (it is Number) {
-                        val delta: Duration = Duration.of(it.toLong(), ChronoUnit.MICROS)
-                        val instant: Instant = Instant.EPOCH.plus(delta)
-                        val localDateTime: LocalDateTime =
-                            LocalDateTime.ofInstant(instant, ZoneOffset.UTC)
-                        Converted(localDateTime.format(LocalDateTimeCodec.formatter))
-                    } else {
-                        NoConversion
-                    }
-                }
-            )
+                )
     }
 
     class DateHandler : ColumnAwareTemporalHandler() {
@@ -135,26 +137,27 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
-        override val partialConverters: List<PartialConverter> =
-            listOf(
-                zeroDateNullConverter(EPOCH_DATE),
-                PartialConverter {
-                    if (it is LocalDate) {
-                        Converted(it.format(LocalDateCodec.formatter))
-                    } else {
-                        NoConversion
+        override val partialConverters: List<PartialConverter>
+            get() =
+                listOf(
+                    zeroDateNullConverter(EPOCH_DATE),
+                    PartialConverter {
+                        if (it is LocalDate) {
+                            Converted(it.format(LocalDateCodec.formatter))
+                        } else {
+                            NoConversion
+                        }
+                    },
+                    PartialConverter {
+                        // Required for default values.
+                        if (it is Number) {
+                            val localDate: LocalDate = LocalDate.ofEpochDay(it.toLong())
+                            Converted(localDate.format(LocalDateCodec.formatter))
+                        } else {
+                            NoConversion
+                        }
                     }
-                },
-                PartialConverter {
-                    // Required for default values.
-                    if (it is Number) {
-                        val localDate: LocalDate = LocalDate.ofEpochDay(it.toLong())
-                        Converted(localDate.format(LocalDateCodec.formatter))
-                    } else {
-                        NoConversion
-                    }
-                }
-            )
+                )
     }
 
     companion object {
