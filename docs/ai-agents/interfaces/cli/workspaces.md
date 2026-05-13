@@ -30,16 +30,10 @@ airbyte-agent workspaces list --json '{"status": "active"}'
 airbyte-agent workspaces list --json '{"limit": 5}'
 ```
 
-For a human-readable view, pass `--format table`:
-
-```bash
-airbyte-agent workspaces list --format table
-```
-
 To trim the response to just the fields you need, pass `--fields`:
 
 ```bash
-airbyte-agent workspaces list --fields id,name,status
+airbyte-agent workspaces list --fields data.id,data.name,data.status
 ```
 
 ## Set a default workspace

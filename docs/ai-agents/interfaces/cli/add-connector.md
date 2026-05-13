@@ -16,7 +16,7 @@ The CLI deliberately doesn't accept third-party credentials (API keys, OAuth tok
 ## Find an available connector
 
 ```bash
-airbyte-agent connectors list-available --format table
+airbyte-agent connectors list-available
 ```
 
 The output lists every connector the CLI can create. Each row has a name like `hubspot`, `linear`, or `stripe`; that's the value you pass as `name` when you create the connector.
@@ -52,7 +52,7 @@ airbyte-agent connectors create --json '{
 
 ## Timeouts and re-tries
 
-The default credential-flow timeout is 180 seconds. If the browser tab idles too long, the CLI returns a `validation_error` and you can re-run the command. Raise the timeout for slow flows:
+The default credential-flow timeout is 180 seconds. If the browser tab idles too long, the command returns successfully with a result like `{"error": "timeout", "message": "Credential flow timed out after 3m0s", "session_id": "..."}` and exit code `0`, and you can re-run it. Raise the timeout for slow flows:
 
 ```bash
 AIRBYTE_CREDENTIAL_TIMEOUT=300 airbyte-agent connectors create --json '{...}'
@@ -65,7 +65,7 @@ If the browser doesn't open automatically (for example, on a headless machine), 
 After creating a connector, confirm it's in the workspace:
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --format table
+airbyte-agent connectors list --json '{"workspace": "default"}'
 ```
 
 ## Next steps

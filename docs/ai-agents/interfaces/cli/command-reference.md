@@ -11,7 +11,7 @@ Every command on the CLI follows the same shape:
 airbyte-agent <resource> <operation> [flags]
 ```
 
-Run `airbyte-agent --help` to list resources, `airbyte-agent <resource> --help` to list operations, and `airbyte-agent <resource> <operation> --describe` to print the parameter schema and the underlying OpenAPI request and response shapes without executing the call. This page summarizes that surface in one place.
+Run `airbyte-agent --help` to list resources, `airbyte-agent <resource> --help` to list operations, and `airbyte-agent <resource> <operation> --describe` to print the parameter schema (plus the underlying OpenAPI request and response shapes when the operation maps to a public API route) without executing the call. This page summarizes that surface in one place.
 
 :::note Single source of truth
 If anything on this page disagrees with `--describe` output, `--describe` wins. Run it whenever you need the canonical parameter list for a command.
@@ -24,13 +24,24 @@ These flags are available on every operation.
 | Flag | Description | Default |
 | --- | --- | --- |
 | `--json` | Inline JSON parameters. Pass `@filename` to load from a file. Mutually exclusive with per-parameter flags. | (none) |
-| `--format` | Output format: `json` or `table`. | `json` |
-| `--describe` | Print the operation's parameter schema (plus OpenAPI shape) and exit without executing. | `false` |
+| `--format` | Output format: `json` or `table`. `table` works best on operations whose response is a flat array of records; responses wrapped in `{ "data": [...], "meta": {...} }` render with the array under a `DATA` column. When in doubt, stick with `json` and use `--fields` to trim it. | `json` |
+| `--describe` | Print the operation's parameter schema (and OpenAPI shape, when the operation maps to a public API route) and exit without executing. Operations backed by internal-only routes return `{"type": "not_supported", ...}` on stderr with exit code `3`; use `--help` instead. | `false` |
 | `--output`, `-o` | Write stdout to a file instead of the terminal. | (none) |
 | `--verbose`, `-v` | Enable debug logging on stderr. | `false` |
 | `--fields` | Client-side response filter. Comma-separated dot paths (for example, `data.id,data.name`). Errors are not filtered. | (none) |
 
 Per-parameter flags are generated from each operation's schema. Snake_case parameter names become kebab-case flags. For example, `select_fields` is exposed as `--select-fields`.
+
+## Top-level commands
+
+A few commands live at the top level rather than under a resource:
+
+| Command | Description |
+| --- | --- |
+| `airbyte-agent configure` | Prompt for `client_id`, `client_secret`, `organization_id`, and a default workspace, then write `~/.airbyte-agent/settings.json` with `0600` permissions. See [Authenticate](./authenticate). |
+| `airbyte-agent configure show` | Print the saved settings (with `client_secret` obfuscated). Useful for `--verbose` debugging and for sharing a redacted dump in bug reports. |
+| `airbyte-agent version` | Print version, commit, and build date as JSON. |
+| `airbyte-agent schema <resource> <operation>` | Equivalent to `<resource> <operation> --describe`, but discoverable as a top-level command. Returns `{"type": "not_supported", ...}` (exit `3`) for operations backed by internal-only API routes. |
 
 ## `organizations`
 
@@ -40,7 +51,7 @@ List the organizations you belong to.
 
 ```bash
 airbyte-agent organizations list
-airbyte-agent organizations list --format table --fields id,organization_name
+airbyte-agent organizations list --fields data.id,data.organization_name
 ```
 
 No required parameters.
@@ -92,7 +103,7 @@ airbyte-agent connectors list --json '{"workspace": "default"}'
 List the connectors you can create. No required parameters.
 
 ```bash
-airbyte-agent connectors list-available --format table
+airbyte-agent connectors list-available
 ```
 
 ### `connectors describe`

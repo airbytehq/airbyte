@@ -60,10 +60,10 @@ airbyte-agent version
 After [authenticating](./authenticate), list the workspaces in your organization:
 
 ```bash
-airbyte-agent workspaces list --format table
+airbyte-agent workspaces list
 ```
 
-The CLI prints JSON to stdout by default. Pass `--format table` for a human-readable table, or `--fields` to keep only the columns you want. See [Execute operations](./execute) for the full output-filtering rules.
+The CLI prints JSON to stdout by default. Pass `--fields` to keep only the columns you want, or `--format table` for a human-readable rendering of array-of-record responses. See [Execute operations](./execute) for the full output-filtering rules.
 
 ## Command model
 
@@ -108,13 +108,15 @@ To load a long JSON payload from a file, use `--json @path/to/file.json`.
 
 ### Discover before you execute
 
-`--describe` returns the schema for an operation (parameters, types, and the underlying OpenAPI request and response shapes) without running it. Use it whenever you're unsure what an operation accepts:
+`--describe` returns the schema for an operation (parameters, types, and, when the operation maps to a public API route, the underlying OpenAPI request and response shapes) without running it. Use it whenever you're unsure what an operation accepts:
 
 ```bash
 airbyte-agent connectors execute --describe
 ```
 
 For connector-specific entities and actions, [`connectors describe`](./describe-connector) is the authoritative source. Never guess what a connector supports; ask `describe` first.
+
+A handful of operations are backed by internal-only API routes (currently `organizations list`) and return `{"type": "not_supported", ...}` on stderr with exit code `3` when introspected via `--describe`. Use `airbyte-agent <resource> <operation> --help` for those. `airbyte-agent schema <resource> <operation>` is an alias for `--describe` and behaves the same way.
 
 ### Exit codes and errors
 

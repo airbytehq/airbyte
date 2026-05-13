@@ -15,8 +15,8 @@ For every entry: **Symptom → Cause → Fix.**
 
 ```json
 {
-  "type": "authentication_error",
-  "message": "no credentials found",
+  "type": "auth_error",
+  "message": "no credentials configured: set AIRBYTE_CLIENT_ID and AIRBYTE_CLIENT_SECRET environment variables, or create ~/.airbyte-agent/credentials",
   "status_code": 401,
   "retryable": false
 }
@@ -26,7 +26,9 @@ Exit code `2`.
 
 ### Cause
 
-Either `~/.airbyte-agent/settings.json` doesn't exist, or it exists but `client_id`, `client_secret`, or `organization_id` is missing. Environment variables are also unset, or only some of the three are set (env-var resolution requires all three).
+Either `~/.airbyte-agent/settings.json` doesn't exist, or it exists but `client_id`, `client_secret`, or `organization_id` is missing. Environment variables are also unset, or only some of `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID` are set (env-var resolution requires all three).
+
+The error text refers to a legacy `~/.airbyte-agent/credentials` path and only the two OAuth env vars. The current settings file is `~/.airbyte-agent/settings.json` and resolution requires the organization ID as well. The fix below is what to actually do.
 
 ### Fix
 
@@ -38,7 +40,7 @@ Run `airbyte-agent configure` to prompt for the three values and write the setti
 
 ```json
 {
-  "type": "authentication_error",
+  "type": "unauthorized",
   "message": "invalid client credentials",
   "status_code": 401,
   "retryable": false
@@ -78,7 +80,7 @@ Typo in the workspace name, or the workspace was deleted.
 
 ### Fix
 
-Run `airbyte-agent workspaces list --format table` to see the canonical names, then retry the command with the right one. To stop typing it on every call, persist a default with `airbyte-agent workspaces use --json '{"name": "..."}'`. See [List and set workspaces](./workspaces#set-a-default-workspace).
+Run `airbyte-agent workspaces list` to see the canonical names, then retry the command with the right one. To stop typing it on every call, persist a default with `airbyte-agent workspaces use --json '{"name": "..."}'`. See [List and set workspaces](./workspaces#set-a-default-workspace).
 
 ## Connector not found
 
@@ -102,7 +104,7 @@ The named connector doesn't exist in that workspace. Often this means it lives i
 ### Fix
 
 ```bash
-airbyte-agent connectors list --json '{"workspace": "default"}' --format table
+airbyte-agent connectors list --json '{"workspace": "default"}'
 ```
 
 If the connector genuinely doesn't exist yet, create it with [`connectors create`](./add-connector).
@@ -114,9 +116,9 @@ If the connector genuinely doesn't exist yet, create it with [`connectors create
 ```json
 {
   "type": "validation_error",
-  "message": "destructive operation requires explicit permission on non-TTY",
+  "message": "destructive action requires confirmation but no TTY is available",
   "status_code": 400,
-  "hint": "set \"allow_destructive\": true in ~/.airbyte-agent/settings.json (or AIRBYTE_ALLOW_DESTRUCTIVE=true)"
+  "hint": "set \"allow_destructive\": true in ~/.airbyte-agent/settings.json (or AIRBYTE_ALLOW_DESTRUCTIVE=true) to allow non-interactive destructive operations"
 }
 ```
 
@@ -140,20 +142,21 @@ AIRBYTE_ALLOW_DESTRUCTIVE=true airbyte-agent connectors delete --json '{"workspa
 
 ### Symptom
 
+[`connectors create`](./add-connector) returns successfully (exit code `0`) and prints a result object to stdout with an `error` field:
+
 ```json
 {
-  "type": "validation_error",
-  "message": "credential flow timed out after 180 seconds",
-  "status_code": 408,
-  "retryable": false
+  "error": "timeout",
+  "message": "Credential flow timed out after 3m0s",
+  "session_id": "<session-uuid>"
 }
 ```
 
-Exit code `4`.
+This is not a structured CLI error (`type` / `status_code` / exit code 4). It's the success-path payload of the create command, indicating the polling loop expired before the browser flow completed.
 
 ### Cause
 
-[`connectors create`](./add-connector) opens a browser and polls for completion. If you don't finish signing in within 180 seconds (the default), the CLI gives up.
+`connectors create` opens a browser and polls for completion. If you don't finish signing in within 180 seconds (the default), the polling loop exits and returns the timeout result.
 
 ### Fix
 
@@ -200,19 +203,34 @@ For very large responses, also write the output to a file:
 airbyte-agent connectors execute --json '{...}' -o response.json
 ```
 
-## `--describe` returns no `api` block
+## `--describe` returns no `api` block or `not_supported`
 
 ### Symptom
 
-Running `--describe` returns the `params` section but the `api` block is empty or missing.
+One of two things happens when you run `--describe` (or the equivalent `airbyte-agent schema <resource> <operation>`):
+
+1. The response includes `params` but the `api` block is empty or missing.
+2. The response is an error on stderr with exit code `3`:
+
+   ```json
+   {
+     "type": "not_supported",
+     "message": "no published schema for \"list\"; run `airbyte-agent organizations list --help` for argument details"
+   }
+   ```
 
 ### Cause
 
-The OpenAPI schemas in `--describe` are extracted at build time from the CLI's checked-in specs and only cover routes the CLI maps to a public API endpoint. Some operations (for example, internal helpers) don't have a public OpenAPI counterpart, so there's no API shape to print.
+The OpenAPI schemas in `--describe` are extracted at build time from the CLI's checked-in specs and only cover routes the CLI maps to a public API endpoint.
+
+- Case 1 happens when the operation maps to a route that exists in the public spec but isn't bundled, leaving `params` populated but `api` empty.
+- Case 2 happens when the operation maps to an internal-only route (any path starting with `/api/v1/internal/`). The schema lookup deliberately refuses these. Today this affects `organizations list`; the same shape applies to any future operation backed by an internal route.
 
 ### Fix
 
-No action needed. The `params` section is still authoritative for what the CLI accepts. The missing `api` block only means there's no public REST endpoint to show alongside it.
+For case 1, no action needed. `params` is authoritative for what the CLI accepts. The missing `api` block only means there's no public REST endpoint to show alongside it.
+
+For case 2, run `airbyte-agent <resource> <operation> --help` instead. The Cobra-generated help text lists the flags the CLI exposes.
 
 ## Rate limited
 
