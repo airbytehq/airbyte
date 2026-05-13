@@ -8,6 +8,6 @@ For user-facing documentation and setup guides, see the connector's page on [doc
 
 For local development and testing, see [Developing Connectors Locally](https://docs.airbyte.com/connector-development/local-connector-development).
 
-## Contributing
+## Connector-Specific Guidance
 
-If this connector has connector-specific guidance, troubleshooting tips, or test suggestions, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Connectors may have connector-specific troubleshooting and testing guidance documented within `CONTRIBUTING.md` files. To review or append to these guides, please see [`CONTRIBUTING.md`](./CONTRIBUTING.md) within this connector's directory.
