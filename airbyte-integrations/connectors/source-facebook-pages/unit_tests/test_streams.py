@@ -14,8 +14,10 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
 )
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
 
 CONFIG = {"page_id": "1", "access_token": "token"}
@@ -112,6 +114,36 @@ def test_without_catalog_at_init_requests_all_fields():
         raw_fields = _get_fields_from_request(m.request_history, "/v24.0/1")
         assert raw_fields is not None, "Expected a request to /v24.0/1 with fields parameter"
         requested_fields = raw_fields.split(",")
-        assert (
-            len(requested_fields) > 3
-        ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        assert len(requested_fields) > 3, (
+            f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+        )
+
+
+def test_generic_400_fails_with_facebook_error_message():
+    catalog = _make_catalog("page", ["id"])
+
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(
+            PAGE_URL,
+            status_code=400,
+            json={
+                "error": {
+                    "message": "Invalid OAuth access token.",
+                    "type": "OAuthException",
+                    "code": 190,
+                    "error_subcode": 460,
+                }
+            },
+        )
+
+        source = SourceFacebookPages(catalog=catalog, config=CONFIG)
+        stream = source.streams(CONFIG)[0]
+        partition = next(iter(stream.generate_partitions()))
+
+        with pytest.raises(MessageRepresentationAirbyteTracedErrors) as exc_info:
+            list(partition.read())
+
+        assert str(exc_info.value) == "Facebook API rejected the request. Error: Invalid OAuth access token."
+        assert exc_info.value.failure_type == FailureType.config_error
+        assert m.call_count == 2
