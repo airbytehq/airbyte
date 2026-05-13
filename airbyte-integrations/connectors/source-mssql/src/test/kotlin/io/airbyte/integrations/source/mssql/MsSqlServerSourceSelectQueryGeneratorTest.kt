@@ -54,6 +54,22 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     }
 
     @Test
+    fun testSelectMaxDatetime2CursorPreservesSourcePrecision() {
+        SelectQuerySpec(
+                SelectColumnMaxValue(
+                    EmittedField(
+                        "updated_at",
+                        MsSqlSourceOperations.MsSqlServerLocalDateTimeCursorUpperBoundFieldType
+                    )
+                ),
+                From("orders", "dbo"),
+            )
+            .assertSqlEquals(
+                """SELECT MAX(CONVERT(varchar(33), [updated_at], 126)) FROM [dbo].[orders]"""
+            )
+    }
+
+    @Test
     fun testSelectForNonResumableInitialSync() {
         SelectQuerySpec(
                 SelectColumns(

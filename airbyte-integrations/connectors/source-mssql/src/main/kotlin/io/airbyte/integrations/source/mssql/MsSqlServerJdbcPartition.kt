@@ -48,6 +48,16 @@ import java.util.Base64
 
 private val log = KotlinLogging.logger {}
 
+private fun LocalDateTime.formatWithNecessaryPrecision(): String =
+    toString().trimEnd('0').removeSuffix(".")
+
+private fun EmittedField.toCursorUpperBoundField(): EmittedField =
+    if (type is MsSqlSourceOperations.MsSqlServerLocalDateTimeFieldType) {
+        EmittedField(id, MsSqlSourceOperations.MsSqlServerLocalDateTimeCursorUpperBoundFieldType)
+    } else {
+        this
+    }
+
 /**
  * Determines the effective cursor checkpoint value by comparing cursor cutoff time with upper
  * bound. Returns cutoff time if it's less than upper bound, otherwise returns upper bound (or
@@ -94,17 +104,18 @@ fun stateValueToJsonNode(field: EmittedField, stateValue: String?): JsonNode {
                     Jsons.valueToTree<BinaryNode>(ba)
                 }
                 LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
+                    if (stateValue == null || stateValue.isEmpty() || stateValue == "null") {
+                        return Jsons.nullNode()
+                    }
                     try {
-                        val parsedDate =
+                        Jsons.valueToTree(
                             LocalDateTime.parse(
-                                stateValue,
-                                MsSqlServerJdbcPartitionFactory.inputDateFormatter
-                            )
-                        val dateAsString =
-                            parsedDate.format(MsSqlServerJdbcPartitionFactory.outputDateFormatter)
-                        Jsons.textNode(dateAsString)
+                                    stateValue,
+                                    MsSqlServerJdbcPartitionFactory.timestampWithoutTimezoneParser
+                                )
+                                .formatWithNecessaryPrecision()
+                        )
                     } catch (e: DateTimeParseException) {
-                        // Resolve to use the new format.
                         Jsons.valueToTree(stateValue)
                     }
                 }
@@ -207,12 +218,12 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
             if (cursorCutoffTime != null) {
                 // When excluding today's data, apply cutoff constraint to upper bound query too
                 SelectQuerySpec(
-                    SelectColumnMaxValue(cursor),
+                    SelectColumnMaxValue(cursor.toCursorUpperBoundField()),
                     from,
                     Where(Lesser(cursor, cursorCutoffTime))
                 )
             } else {
-                SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+                SelectQuerySpec(SelectColumnMaxValue(cursor.toCursorUpperBoundField()), from)
             }
 
     override val nonResumableQuerySpec: SelectQuerySpec
@@ -264,12 +275,12 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
             if (cursorCutoffTime != null) {
                 // When excluding today's data, apply cutoff constraint to upper bound query too
                 SelectQuerySpec(
-                    SelectColumnMaxValue(cursor),
+                    SelectColumnMaxValue(cursor.toCursorUpperBoundField()),
                     from,
                     Where(Lesser(cursor, cursorCutoffTime))
                 )
             } else {
-                SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+                SelectQuerySpec(SelectColumnMaxValue(cursor.toCursorUpperBoundField()), from)
             }
 
     override val nonResumableQuerySpec: SelectQuerySpec
@@ -476,12 +487,12 @@ sealed class MsSqlServerJdbcCursorPartition(
             if (cursorCutoffTime != null) {
                 // When excluding today's data, apply cutoff constraint to upper bound query too
                 SelectQuerySpec(
-                    SelectColumnMaxValue(cursor),
+                    SelectColumnMaxValue(cursor.toCursorUpperBoundField()),
                     from,
                     Where(Lesser(cursor, cursorCutoffTime))
                 )
             } else {
-                SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+                SelectQuerySpec(SelectColumnMaxValue(cursor.toCursorUpperBoundField()), from)
             }
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {

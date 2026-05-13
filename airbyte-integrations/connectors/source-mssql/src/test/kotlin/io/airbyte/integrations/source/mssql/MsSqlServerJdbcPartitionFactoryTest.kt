@@ -17,7 +17,6 @@ import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.DataChannelFormat
@@ -132,7 +131,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
-        val datetimeFieldId = EmittedField("datetime_col", LocalDateTimeFieldType)
+        val datetimeFieldId =
+            EmittedField("datetime_col", MsSqlSourceOperations.MsSqlServerLocalDateTimeFieldType)
 
         val datetimeStream =
             Stream(
@@ -329,8 +329,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     "created_at"
                   ],
                   "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -360,8 +360,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     "datetime_col"
                   ],
                   "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 
@@ -372,8 +372,43 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
 
         assertEquals(
-            Jsons.valueToTree("2025-01-20T10:30:45.123000"),
+            Jsons.valueToTree("2025-01-20T10:30:45.123"),
             (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+        )
+    }
+
+    @Test
+    fun testResumeFromCompletedCursorBasedReadPreservesDatetime2Precision() {
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+                  "cursor": "2026-04-23T12:54:31.6933333",
+                  "version": 3,
+                  "state_type": "cursor_based",
+                  "stream_name": "datetime_table",
+                  "cursor_field": [
+                    "datetime_col"
+                  ],
+                  "stream_namespace": "dbo",
+                  "cursor_record_count": 1
+              }
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(
+                streamFeedBootstrap(datetimeStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        assertEquals(
+            Jsons.valueToTree("2026-04-23T12:54:31.6933333"),
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+        )
+        assertEquals(
+            listOf(Jsons.textNode("2026-04-23T12:54:31.6933333")),
+            jdbcPartition.nonResumableQuery.bindings.map { it.value }
         )
     }
 
@@ -454,8 +489,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     "binary_col"
                   ],
                   "stream_namespace": "dbo",
-                  "cursor_record_count": 1 
-              } 
+                  "cursor_record_count": 1
+              }
         """.trimIndent()
             )
 

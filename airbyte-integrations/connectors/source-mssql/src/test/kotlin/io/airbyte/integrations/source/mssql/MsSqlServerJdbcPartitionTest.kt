@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -109,5 +110,15 @@ class MsSqlServerJdbcPartitionTest {
 
         assertNotNull(result)
         assert(result.isNull) { "Expected null node for string 'null'" }
+    }
+
+    @Test
+    fun `test stateValueToJsonNode preserves datetime2 7 digit cursor precision`() {
+        val field =
+            EmittedField("updated_at", MsSqlSourceOperations.MsSqlServerLocalDateTimeFieldType)
+
+        val result = stateValueToJsonNode(field, "2026-04-23T12:54:31.6933333")
+
+        assertEquals(Jsons.textNode("2026-04-23T12:54:31.6933333"), result)
     }
 }

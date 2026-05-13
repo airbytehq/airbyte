@@ -149,6 +149,13 @@ class MsSqlSourceOperations :
             LocalDateTimeCodec,
         )
 
+    data object MsSqlServerLocalDateTimeCursorUpperBoundFieldType :
+        SymmetricJdbcFieldType<String>(
+            LeafAirbyteSchemaType.STRING,
+            StringAccessor,
+            TextCodec,
+        )
+
     data object MsSqlServerFloatAccessor : JdbcAccessor<Float> {
         override fun get(
             rs: ResultSet,
@@ -327,7 +334,12 @@ class MsSqlSourceOperations :
     fun String.quoted(): String = "[${this.replace("]", "]]")}]"
 
     fun DataField.sql(): String =
-        if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
+        when (type) {
+            is MsSqlServerHierarchyFieldType -> "${id.quoted()}.ToString()"
+            is MsSqlServerLocalDateTimeCursorUpperBoundFieldType ->
+                "CONVERT(varchar(33), ${id.quoted()}, 126)"
+            else -> id.quoted()
+        }
 
     fun FromNode.sql(outerSelect: SelectNode): String =
         when (this) {
