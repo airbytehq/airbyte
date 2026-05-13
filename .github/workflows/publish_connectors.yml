@@ -471,7 +471,7 @@ jobs:
 
       - name: Build success notification context
         id: success-context
-        if: success() && needs.publish_options.outputs.dry-run != 'true'
+        if: success() && steps.check-release-block.outputs.blocked != 'true' && needs.publish_options.outputs.dry-run != 'true'
         run: |
           CONNECTOR="${{ matrix.connector }}"
           DOCKER_TAG="${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
@@ -512,7 +512,7 @@ jobs:
           echo "pr-text=$PR_TEXT" >> $GITHUB_OUTPUT
 
       - name: Notify Slack on connector publish success
-        if: success() && needs.publish_options.outputs.dry-run != 'true' && steps.success-context.outcome == 'success'
+        if: success() && steps.check-release-block.outputs.blocked != 'true' && needs.publish_options.outputs.dry-run != 'true' && steps.success-context.outcome == 'success'
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
           payload: |
