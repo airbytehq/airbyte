@@ -1,5 +1,5 @@
 ---
-plan: all
+plan: team, custom
 sidebar_position: 2
 ---
 
