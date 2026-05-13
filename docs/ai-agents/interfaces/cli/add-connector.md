@@ -13,13 +13,13 @@ The CLI creates connectors through `connectors create`, which opens a browser ta
 The CLI deliberately doesn't accept third-party credentials (API keys, OAuth tokens, passwords) as parameters or on stdin. If an agent or script needs a new connector, it must run `connectors create` and let the browser flow handle the credential exchange. This keeps secrets out of shell history, prompt logs, and agent transcripts.
 :::
 
-## Find an available connector template
+## Find an available connector
 
 ```bash
 airbyte-agent connectors list-available --format table
 ```
 
-The output lists every connector template the CLI can create. Each row has a name (for example, `hubspot`, `linear`, `stripe`) — that's the value you pass as `name` when you create the connector.
+The output lists every connector the CLI can create. Each row has a name (for example, `hubspot`, `linear`, `stripe`) — that's the value you pass as `name` when you create the connector.
 
 If you already know the connector type, you can skip this step.
 
@@ -34,8 +34,8 @@ airbyte-agent connectors create --json '{
 
 What happens:
 
-1. The CLI resolves the template by name and mints a short-lived widget token for the web app.
-2. It opens a browser tab against the Airbyte web app's credential bridge for that template.
+1. The CLI resolves the connector by name and mints a short-lived widget token for the web app.
+2. It opens a browser tab against the Airbyte web app's credential bridge for that connector.
 3. You sign in to the third-party service in the browser. The web app captures the credentials and reports completion back to the CLI.
 4. The CLI polls the session with exponential backoff and, when the browser flow finishes, creates the connector in your workspace with the captured credentials.
 

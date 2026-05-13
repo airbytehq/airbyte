@@ -89,7 +89,7 @@ airbyte-agent connectors list --json '{"workspace": "default"}'
 
 ### `connectors list-available`
 
-List the connector templates you can create from. No required parameters.
+List the connectors you can create. No required parameters.
 
 ```bash
 airbyte-agent connectors list-available --format table
@@ -121,7 +121,7 @@ airbyte-agent connectors create --json '{"workspace": "default", "name": "hubspo
 | Param | Type | Required | Description |
 | --- | --- | --- | --- |
 | `workspace` | string | yes | Workspace to create the connector in. |
-| `name` | string | one of `name` or `id` | Connector template name (for example, `hubspot`). |
+| `name` | string | one of `name` or `id` | Connector name (for example, `hubspot`). |
 | `id` | string | one of `name` or `id` | Source definition ID. Alternative to `name`. |
 
 ### `connectors execute`

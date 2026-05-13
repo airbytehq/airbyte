@@ -70,4 +70,4 @@ airbyte-agent connectors describe --json '{"workspace": "default", "name": "hubs
 
 ## When entities or actions look wrong
 
-If `describe` returns an unexpected schema — missing entities, unexpected required params — the underlying connector definition may have changed. Re-run `connectors list-available` to make sure the template is still present, and check the connector's [reference page](../../connectors) for the canonical entity list.
+If `describe` returns an unexpected schema — missing entities, unexpected required params — the underlying connector definition may have changed. Re-run `connectors list-available` to make sure the connector is still available, and check the connector's [reference page](../../connectors) for the canonical entity list.
