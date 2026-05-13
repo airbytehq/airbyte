@@ -466,7 +466,16 @@ class InsightAsyncJob(AsyncJob):
 
             start_ts = ab_datetime_now()
             while True:
-                id_job = id_job.api_get()
+                try:
+                    id_job = id_job.api_get()
+                except FacebookRequestError as e:
+                    raise traced_exception(e) from e
+                except (FacebookBadObjectError, TypeError) as e:
+                    raise AirbyteTracedException(
+                        message="Facebook Insights API returned an invalid response.",
+                        internal_message=f"Failed to poll ID-collection job at level={level}: {e}",
+                        failure_type=FailureType.transient_error,
+                    ) from e
                 status = id_job.get("async_status")
                 percent = id_job.get("async_percent_completion")
                 logger.info(f"[Split:{level}] attempt={attempt}, status={status}, {percent}%")

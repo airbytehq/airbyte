@@ -638,6 +638,25 @@ class TestInsightAsyncJob:
         assert exc_info.value.failure_type == FailureType.config_error
 
     @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_polling_type_error(self, mocker, api):
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+        malformed_run = mocker.MagicMock()
+        malformed_run.api_get.side_effect = TypeError("string indices must be integers, not 'str'")
+        mocker.patch.object(job._edge_object, "get_insights", return_value=malformed_run)
+
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API returned an invalid response") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        assert "Failed to poll ID-collection job" in exc_info.value.internal_message
+
+    @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_all_attempts_exhausted(self, mocker, api):
         """
         When every attempt returns Job Failed, _collect_child_ids should raise

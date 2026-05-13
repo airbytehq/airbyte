@@ -673,11 +673,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         )
         self._fields = list(schema.get("properties", {}).keys())
 
-        for removable_key in self._fields_excluded_from_api_request():
-            try:
-                self._fields.remove(removable_key)
-            except ValueError:
-                pass
+        excluded_fields = self._fields_excluded_from_api_request()
+        self._fields = [field for field in self._fields if field not in excluded_fields]
 
         return self._fields
 
