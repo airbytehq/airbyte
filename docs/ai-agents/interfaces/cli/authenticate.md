@@ -104,7 +104,7 @@ A successful response is a JSON object with two keys, `organizations` (an array)
 ```json
 {
   "organizations": [
-    { "organization_id": "...", "organization_name": "...", ... }
+    { "id": "...", "organization_name": "...", "first_workspace_id": "..." }
   ],
   "is_instance_admin": false
 }

@@ -77,7 +77,7 @@ airbyte-agent workspaces list --json '{"name_contains": "prod", "status": "activ
 | --- | --- | --- | --- |
 | `name_contains` | string | no | Filter by case-insensitive substring match against `name`. |
 | `status` | string | no | Filter by workspace status (for example, `active`). |
-| `limit` | integer | no | Cap the result count. |
+| `limit` | integer | no | Page size hint passed to the API. The CLI auto-paginates and returns every matching workspace regardless of `limit`; it does not cap the final result count. To narrow the response, use `name_contains` or `status`. |
 
 ### `workspaces use`
 
@@ -153,7 +153,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "default",
   "name": "hubspot",
   "entity": "contacts",
-  "action": "read",
+  "action": "context_store_search",
   "select_fields": ["id", "email"]
 }'
 ```
@@ -164,7 +164,7 @@ airbyte-agent connectors execute --json '{
 | `workspace` | string | with `name` | Workspace the connector lives in. |
 | `id` | string | one of `name`+`workspace` or `id` | Connector ID (UUID). |
 | `entity` | string | yes | Entity to act on (for example, `contacts`). |
-| `action` | string | yes | Action to run (for example, `read`, `context_store_search`, `get`). |
+| `action` | string | yes | Action to run. Baseline: `context_store_search`, `list`, `get`, `api_search`, `create`, `update`. Run `connectors describe` for the connector's actual supported set. |
 | `params` | object | no | Action-specific arguments. Shape depends on entity and action; run `connectors describe` for the schema. |
 | `select_fields` | string[] | no | Allowlist of fields the source connector should return. |
 | `exclude_fields` | string[] | no | Blocklist of fields the source connector should omit. `select_fields` wins if both are passed. |

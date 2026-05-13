@@ -25,10 +25,9 @@ airbyte-agent workspaces list --json '{"name_contains": "prod"}'
 
 # Filter by status
 airbyte-agent workspaces list --json '{"status": "active"}'
-
-# Cap the result count
-airbyte-agent workspaces list --json '{"limit": 5}'
 ```
+
+`limit` is a page size hint that gets forwarded to the API. The CLI auto-paginates and returns every matching workspace, so setting `limit` doesn't cap the final result count. To narrow the response, use `name_contains` or `status`.
 
 To trim the response to just the fields you need, pass `--fields`:
 

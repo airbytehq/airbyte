@@ -12,8 +12,8 @@ airbyte-agent connectors execute --json '{
   "workspace": "default",
   "name": "hubspot",
   "entity": "contacts",
-  "action": "read",
-  "select_fields": ["id", "email", "name"]
+  "action": "context_store_search",
+  "select_fields": ["id", "email", "firstName"]
 }'
 ```
 
@@ -21,7 +21,7 @@ Required fields:
 
 - `name` (with `workspace`) or `id`: which connector to run against.
 - `entity`: the resource, such as `contacts`, `issues`, `repositories`.
-- `action`: an action the connector supports on that entity, such as `list`, `get`, `context_store_search`, or `read`.
+- `action`: an action the connector supports on that entity. The baseline set is `context_store_search`, `list`, `get`, `api_search`, `create`, and `update`; the authoritative list for a specific connector comes from `connectors describe`.
 
 Always run [`connectors describe`](./describe-connector) before the first execute on a connector. Entity and action names vary per connector and aren't guessable.
 
@@ -67,18 +67,18 @@ Unfiltered responses can be large. The CLI gives you two layers of filtering, an
 Both belong inside the JSON payload and are forwarded to the source connector. `select_fields` is an allowlist; `exclude_fields` is a blocklist. They support dot notation for nested fields. If both are passed, `select_fields` wins.
 
 ```bash
-# Keep only id, email, name
+# Keep only id, email, firstName
 airbyte-agent connectors execute --json '{
   "workspace": "default", "name": "hubspot",
-  "entity": "contacts", "action": "read",
-  "select_fields": ["id", "email", "name"]
+  "entity": "contacts", "action": "context_store_search",
+  "select_fields": ["id", "email", "firstName"]
 }'
 
 # Drop heavy fields
 airbyte-agent connectors execute --json '{
-  "workspace": "default", "name": "hubspot",
-  "entity": "messages", "action": "read",
-  "exclude_fields": ["body_html", "attachments"]
+  "workspace": "default", "name": "slack",
+  "entity": "messages", "action": "list",
+  "exclude_fields": ["blocks", "attachments"]
 }'
 ```
 

@@ -95,14 +95,14 @@ airbyte-agent connectors execute --json '{
   "workspace": "default",
   "name": "hubspot",
   "entity": "contacts",
-  "action": "read",
+  "action": "context_store_search",
   "select_fields": ["id", "email"]
 }'
 
 # Flags
 airbyte-agent connectors execute \
   --workspace default --name hubspot \
-  --entity contacts --action read \
+  --entity contacts --action context_store_search \
   --select-fields id,email
 ```
 
