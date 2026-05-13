@@ -63,15 +63,17 @@ After [authenticating](./authenticate), list the workspaces in your organization
 airbyte-agent workspaces list
 ```
 
-The CLI prints JSON to stdout by default. Pass `--fields` to keep only the columns you want, or `--format table` for a human-readable rendering of array-of-record responses. See [Execute operations](./execute) for the full output-filtering rules.
+The CLI prints JSON to stdout by default. Pass `--fields` to keep only the columns you want. `--format table` works best on responses that are a flat array of records; wrapped responses (`{"data": [...]}`, `{"workspaces": [...]}`, and so on) render with the array under a single `DATA` column containing JSON, so for those `json` plus `--fields` is usually more readable. See [Execute operations](./execute) for the full output-filtering rules.
 
 ## Command model
 
-Every command follows the same shape:
+Resource commands follow the same shape:
 
 ```bash
 airbyte-agent <resource> <operation> [flags]
 ```
+
+A few top-level commands (`configure`, `configure show`, `version`, and `schema <resource> <operation>`) sit outside this pattern and don't take `--json`; see the [Command reference](./command-reference) for details.
 
 There are three resources today:
 

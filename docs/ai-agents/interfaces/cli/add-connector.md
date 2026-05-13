@@ -50,7 +50,7 @@ airbyte-agent connectors create --json '{
 }'
 ```
 
-## Timeouts and re-tries
+## Timeouts and retries
 
 The default credential-flow timeout is 180 seconds. If the browser tab idles too long, the command returns successfully with a result like `{"error": "timeout", "message": "Credential flow timed out after 3m0s", "session_id": "..."}` and exit code `0`, and you can re-run it. Raise the timeout for slow flows:
 
