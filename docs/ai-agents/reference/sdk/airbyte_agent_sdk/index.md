@@ -62,7 +62,7 @@ connector.close()` in a `finally` block.
 ## Workspace operations
 
 - [`Workspace`](#Workspace) — async context manager for workspace-level
-  operations (list/create/delete connectors, workflows, and automations).
+  operations (list/delete connectors, workflows, and automations).
 - [`HostedExecutor`](#HostedExecutor) — fallback executor returned by
   [`connect()`](#connect) when no typed connector package exists.
 
@@ -771,20 +771,26 @@ Classes
     
     Initialize hosted executor.
     
-    Either provide connector_id directly OR (workspace_name + connector_definition_id)
-    for lookup.
+    Either provide `connector_id` directly OR (`workspace_name` +
+    `connector_definition_id`) for lookup. When neither `connector_id`
+    nor `workspace_name` is provided, `workspace_name` defaults to
+    `"default"`, so the lookup resolves against the workspace literally
+    named "default" as long as `connector_definition_id` is supplied.
     
     Args:
         airbyte_client_id: Airbyte client ID for authentication
         airbyte_client_secret: Airbyte client secret for authentication
         connector_id: Direct connector/source ID (skips lookup if provided)
-        workspace_name: Workspace name for connector lookup
+        workspace_name: Workspace name for connector lookup. Defaults to
+            `"default"` when neither this nor `connector_id` is provided.
         connector_definition_id: Connector definition ID (for lookup)
         organization_id: Optional Airbyte organization ID for multi-org request routing
         model: Optional ConnectorModel for health check operation selection
     
     Raises:
-        ValueError: If neither connector_id nor (workspace_name + connector_definition_id) provided
+        ValueError: If neither `connector_id` nor `connector_definition_id` is provided
+            (a missing `workspace_name` alone no longer raises, since it now
+            defaults to `"default"`).
     
     Example:
         # With explicit connector_id (no lookup)
@@ -996,7 +1002,7 @@ Classes
 `Workspace(*, client_id: str | None = None, client_secret: str | None = None, workspace_name: str | None = None, organization_id: str | None = None)`
 :   Top-level entry point for Airbyte hosted-mode workspace operations.
     
-    Provides workspace-level methods: list/create/delete connectors, get a
+    Provides workspace-level methods: list/delete connectors, get a
     connector executor, and workflow/automation CRUD. Use `Workspace` when
     you want to operate against a whole workspace (many connectors,
     workflows, automations); use [`connect()`](#connect) when you already
@@ -1038,9 +1044,6 @@ Classes
 
     `create_automation(self, workflow_id: str, *, trigger_type: str = 'schedule', enabled: bool = True, cron_expression: str | None = None, timezone: str | None = None, completion_webhook_url: str | None = None) ‑> airbyte_agent_sdk.executor.models.AutomationInfo`
     :   Create an automation on a workflow.
-
-    `create_connector(self, *, definition_id: str, credentials: dict[str, Any] | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Create a new connector, returns the connector ID.
 
     `create_workflow(self, name: str, *, tasks: list[dict[str, Any]] | None = None) ‑> airbyte_agent_sdk.executor.models.WorkflowInfo`
     :   Create a workflow in this workspace.
