@@ -77,28 +77,7 @@ jobs:
 
           if [[ ${BLOCKED_COUNT} -gt 0 ]]; then
             echo "has-blocked=true" >> $GITHUB_OUTPUT
-
-            # Build the full comment body in a file to preserve formatting
-            {
-              echo "<!-- block-release-check -->"
-              echo "## ⚠️ Release Blocked for Modified Connectors"
-              echo ""
-              echo "@${{ github.event.pull_request.user.login }} — the following connector(s) modified in this PR are **blocked from release**. Publishing will be skipped for these connectors when this PR is merged."
-              echo ""
-              echo "| Connector | Reason | Yanked Version |"
-              echo "|-----------|--------|----------------|"
-              printf '%s' "${BLOCKED_TABLE}"
-              echo ""
-              echo "<details>"
-              echo "<summary>What does this mean?</summary>"
-              echo ""
-              echo 'A `block-release.yaml` marker file exists in the connector directory, which prevents the publish pipeline from releasing the connector. This is typically because a previous version was yanked due to a bug, and the broken code still lives on master.'
-              echo ""
-              echo '**To unblock:** Fix the underlying issue, then remove the `block-release.yaml` file (either manually in a PR or via the "unblock-release" workflow).'
-              echo ""
-              echo '**If your PR fixes the issue:** Include the removal of `block-release.yaml` in this PR to unblock publishing.'
-              echo "</details>"
-            } > /tmp/comment-body.md
+            printf '%s' "${BLOCKED_TABLE}" > /tmp/blocked-table.md
           else
             echo "has-blocked=false" >> $GITHUB_OUTPUT
           fi
@@ -109,6 +88,25 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-includes: "<!-- block-release-check -->"
+
+      - name: Render blocked-connector warning comment
+        if: steps.check-blocks.outputs.has-blocked == 'true'
+        shell: bash
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          python3 <<'PY'
+          import os
+          from pathlib import Path
+
+          template = Path(".github/block-release-check-comment.md").read_text()
+          blocked_table = Path("/tmp/blocked-table.md").read_text()
+          rendered = (
+              template.replace("{{PR_AUTHOR}}", os.environ["PR_AUTHOR"])
+              .replace("{{BLOCKED_TABLE}}", blocked_table)
+          )
+          Path("/tmp/comment-body.md").write_text(rendered)
+          PY
 
       # Post or update comment when blocked connectors are found
       - name: Post blocked-connector warning comment
@@ -129,8 +127,4 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
-          body: |
-            <!-- block-release-check -->
-            ## ✅ Release Blocks Cleared
-
-            All previously blocked connectors in this PR have been unblocked. Publishing will proceed normally when this PR is merged.
+          body-path: .github/block-release-check-cleared-comment.md
