@@ -141,6 +141,10 @@ jobs:
             echo "registry-refresh-only publishes require at least one connector."
             exit 1
           fi
+          if [[ "$CONNECTOR_COUNT" -gt 1 ]]; then
+            echo "registry-refresh-only publishes currently support exactly one connector."
+            exit 1
+          fi
           if [[ "${{ steps.resolve-semver-suffix.outputs.with-semver-suffix }}" != "none" ]]; then
             echo "registry-refresh-only publishes must use with-semver-suffix=none or default."
             exit 1
@@ -167,6 +171,8 @@ jobs:
       dry-run: ${{ inputs.dry-run || 'false' }}
       # registry-refresh-only skips connector image/package publishing but still publishes registry artifacts
       registry-refresh-only: ${{ inputs.registry-refresh-only || 'false' }}
+      # registry-refresh-only is validated to exactly one connector, so this is safe to pass to scoped registry compile.
+      registry-refresh-connector-name: ${{ fromJson(steps.list-connectors-manual.outputs.connectors-to-publish || '{"connector":[""]}').connector[0] }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -567,6 +573,8 @@ jobs:
     uses: ./.github/workflows/generate-connector-registries.yml
     with:
       pr: ${{ inputs.pr }}
+      force: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' }}
+      connector-name: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' && needs.publish_options.outputs.registry-refresh-connector-name || '' }}
     secrets: inherit
 
   notify-failure-slack-channel:
