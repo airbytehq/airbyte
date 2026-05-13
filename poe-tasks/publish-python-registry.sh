@@ -46,65 +46,19 @@ function get_pypi_package_name() {
     yq eval '.data.remoteRegistries.pypi.packageName' "$1"
 }
 
-# Read a metadata.yaml value and return an empty string when the key is absent.
-function get_metadata_value() {
-    yq eval "$1 // \"\"" "$2"
-}
-
-# Map a published Airbyte docs URL back to the corresponding local docs markdown file.
-function get_local_docs_path() {
-    local documentation_url="$1"
-    local repo_root="$2"
-    local docs_path=""
-
-    if [[ "$documentation_url" == "https://docs.airbyte.com/integrations/"* ]]; then
-        docs_path="${documentation_url#https://docs.airbyte.com/}"
-        docs_path="${docs_path%%#*}"
-        docs_path="${docs_path%%\?*}"
-        docs_path="${docs_path%/}"
-        docs_path="$repo_root/docs/$docs_path.md"
-    fi
-
-    if [[ -n "$docs_path" && -f "$docs_path" ]]; then
-        echo "$docs_path"
-    elif [[ -n "$docs_path" ]]; then
-        echo "Error: Connector documentation file not found: $docs_path" >&2
-        return 1
-    else
-        echo "Error: Connector documentation URL must point to docs.airbyte.com/integrations: $documentation_url" >&2
-        return 1
-    fi
-}
-
-# Create the temporary PyPI long description from connector docs content.
-function write_docs_pypi_readme() {
-    local docs_file="$1"
+# Create the temporary PyPI long description used during package builds.
+function write_pypi_readme() {
+    local connector_title="$1"
     local readme_file="$2"
-    local documentation_url="$3"
 
-    awk '
-        /^## Changelog[[:space:]]*$/ { exit }
-        /^<HideInUI>[[:space:]]*$/ { in_hidden_block = 1; next }
-        /^<\/HideInUI>[[:space:]]*$/ { in_hidden_block = 0; next }
-        in_hidden_block { next }
-        /^import .* from / { next }
-        /^export const / { next }
-        /^<!--/ { next }
-        /^<FieldAnchor[ >]/ { next }
-        /^<\/FieldAnchor>/ { next }
-        { print }
-    ' "$docs_file" > "$readme_file"
+    cat > "$readme_file" << EOF
+# $connector_title
 
-    if [[ ! -s "$readme_file" ]]; then
-        return 1
-    fi
+This package contains the Airbyte $connector_title connector.
 
-    cat >> "$readme_file" << EOF
+Airbyte is open-source data movement for ELT pipelines and AI agents. It moves data from APIs, databases, and files to warehouses, lakes, and AI applications.
 
----
-
-For the latest connector documentation, see the [Airbyte docs]($documentation_url).
-For PyAirbyte usage, see the [PyAirbyte documentation](https://docs.airbyte.com/developers/pyairbyte).
+Airbyte provides a catalog of 600+ connectors for APIs, databases, data warehouses, data lakes, and AI applications. Use this package with [PyAirbyte](https://docs.airbyte.com/developers/pyairbyte) to run the connector from Python.
 EOF
 }
 
@@ -190,7 +144,6 @@ fi
 
 
 # Navigate to connector directory
-REPO_ROOT=$(pwd)
 CONNECTOR_DIR="airbyte-integrations/connectors/$CONNECTOR_NAME"
 if [[ ! -d "$CONNECTOR_DIR" ]]; then
     echo "Error: Connector directory not found: $CONNECTOR_DIR" >&2
@@ -220,8 +173,7 @@ if [[ -z "$PACKAGE_NAME" ]]; then
     echo "⚠️ Error: Package name not found in metadata.yaml, skipping PyPI publishing." >&2
     exit 0
 fi
-DOCUMENTATION_URL=$(get_metadata_value '.data.documentationUrl' "$METADATA_FILE")
-LOCAL_DOCS_PATH=$(get_local_docs_path "$DOCUMENTATION_URL" "$REPO_ROOT")
+CONNECTOR_TITLE=$(yq eval '.data.name' "$METADATA_FILE")
 BASE_VERSION=$(poe -qq get-version)
 
 # Determine version to use
@@ -280,8 +232,8 @@ if [[ -f "pyproject.toml" ]]; then
     }
     trap cleanup EXIT   
 
-    write_docs_pypi_readme "$LOCAL_DOCS_PATH" "$PYPI_README_FILE" "$DOCUMENTATION_URL"
-    echo "Using connector docs for PyPI README: $LOCAL_DOCS_PATH"
+    write_pypi_readme "$CONNECTOR_TITLE" "$PYPI_README_FILE"
+    echo "Using generated PyPI README for $CONNECTOR_TITLE"
 
     # to support overriding the package name and the version when publishing to PyPI, the script modifies the pyproject.toml file 
     # we keep a backup at pyproject.toml.bak that is used to restore the initial state at the end
