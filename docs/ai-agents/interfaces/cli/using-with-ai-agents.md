@@ -10,7 +10,7 @@ The CLI was designed to be driven by AI agent harnesses (Claude Code, Codex, Cur
 - A uniform `<resource> <operation>` surface that doesn't change between connectors.
 - Schema introspection via `--describe` on resource operations, so the agent can plan without round-tripping documentation. A few operations are backed by internal-only routes and return `{"type": "not_supported", ...}`; use `--help` on those instead.
 - Stable JSON-in, JSON-out payloads suitable for tool calls.
-- Stable exit codes (`0`, `1`, `2`, `3`, `4`) that map cleanly onto retry policies for most commands. One exception: [`connectors create`](./add-connector) reports a credential-flow timeout as a success-path payload (`{"error": "timeout", ...}` with exit code `0`), so an agent driving that command must inspect the result body, not just the exit code. See [Inspect `connectors create` for timeouts](#inspect-connectors-create-for-timeouts).
+- Stable exit codes (`0`, `1`, `2`, `3`, `4`) for **server-side** failures (auth, not found, validation, rate limits). Client-side validation failures (bad UUIDs, unreachable hosts, malformed payloads) can surface as a generic `{"type": "error", ...}` with exit `1`, so agents should always parse the stderr JSON and branch on `type` rather than dispatching on exit code alone. The full taxonomy and one important exception (`connectors create` reports timeouts as a `0` success payload) are covered below.
 - A credential model that keeps third-party secrets out of agent transcripts entirely.
 
 ## Install the bundled skills
@@ -35,11 +35,17 @@ npx skills add airbytehq/airbyte-agent-cli -g
 
 Target a specific agent with `--agent claude-code` (or another supported agent). See the [`skills` CLI docs](https://github.com/vercel-labs/skills) for the full flag set.
 
+`npx skills add` writes to the harness's default skill directory (typically `~/.agents/skills/<skill>/` for a global install, or `.agents/skills/<skill>/` inside the current project). It does not honor a custom destination flag, so don't pass `--target` expecting it to redirect the install; if you need a non-default location, copy or symlink the installed directory afterwards.
+
 If your harness doesn't support `npx skills`, copy or symlink the `skills/<command>/` directories into the agent's skill directory directly (for example, `~/.claude/skills/` for Claude Code).
 
-## Three rules for agents
+## Rules for agents
 
-Every skill document repeats some version of these three rules. They're worth restating because they materially affect whether an agent's calls succeed.
+Every skill document repeats some version of these rules. They're worth restating because they materially affect whether an agent's calls succeed. Rule 0 takes precedence over the others; it's how an agent figures out whether any of them just got violated.
+
+### 0. Parse stderr JSON; don't dispatch on exit code alone
+
+The exit codes documented in the [command reference](./command-reference#exit-codes) are stable for server-side failures, but client-side validation can return a generic `{"type": "error", ...}` with exit `1` even when the underlying problem is auth- or validation-shaped. Read the stderr JSON, branch on the `type` field (`auth_error`, `unauthorized`, `not_found`, `validation_error`, `rate_limited`, `error`, `not_supported`), and treat the exit code as a coarse fallback.
 
 ### 1. Always run `connectors describe` before the first execute
 

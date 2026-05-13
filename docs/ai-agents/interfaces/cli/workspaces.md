@@ -48,6 +48,10 @@ airbyte-agent workspaces use --json '{"name": "Production"}'
 
 This is typically the second step in onboarding, right after [`configure`](./authenticate#recommended-airbyte-agent-configure). Run it again whenever you switch projects.
 
+:::note Prerequisite
+`workspaces use` writes to `~/.airbyte-agent/settings.json` and needs that file to already exist. On a fresh machine, run `airbyte-agent configure` first so the file gets created; `workspaces use` won't bootstrap a settings file from environment variables alone. If you're using env vars exclusively and don't want a settings file, pass `--workspace <name>` (or set `AIRBYTE_WORKSPACE`) on each command instead.
+:::
+
 To clear the default and fall back to `"default"`, edit `~/.airbyte-agent/settings.json` and remove the `workspace` key.
 
 ## Workspace creation and admin operations

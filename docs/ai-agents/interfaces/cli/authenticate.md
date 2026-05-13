@@ -14,9 +14,9 @@ The credentials on this page authenticate *your machine* with Airbyte Agents. Th
 ## Get your credentials
 
 1. Sign in to [app.airbyte.ai](https://app.airbyte.ai/).
-2. Open the **Profile** page and copy your `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID`.
+2. Find the **Your API Credentials** card in the app and copy your `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID` from there. New accounts see this card on the onboarding screen; if you've already finished onboarding, it's available alongside your other account details.
 
-For details, see [Manage your user profile](../../admin/profile).
+If the card isn't visible, copy the organization ID from the URL of any organization page (the UUID after `/organizations/`).
 
 ## Provide credentials
 
@@ -99,7 +99,18 @@ After authenticating, list your organizations to confirm the CLI can reach the A
 airbyte-agent organizations list
 ```
 
-A successful response is a JSON array of organizations. Authentication failures exit with code `2` and return a structured error on stderr. See [Troubleshooting](./troubleshooting#authentication-fails) for the most common causes.
+A successful response is a JSON object with two keys, `organizations` (an array) and `is_instance_admin` (a boolean):
+
+```json
+{
+  "organizations": [
+    { "organization_id": "...", "organization_name": "...", ... }
+  ],
+  "is_instance_admin": false
+}
+```
+
+Authentication failures exit with code `2` and return a structured error on stderr. See [Troubleshooting](./troubleshooting#authentication-fails) for the most common causes.
 
 ## Token refresh
 

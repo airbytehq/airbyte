@@ -22,7 +22,7 @@ Source code, releases, and bundled agent skills live at [`airbytehq/airbyte-agen
 Before you install the CLI, make sure you have:
 
 - An Airbyte Agents account. [Sign up at app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
-- An `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID`. You can read these from **Settings > Profile** in the web app. See [Manage your user profile](../../admin/profile) for details.
+- An `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID`. Sign in to [app.airbyte.ai](https://app.airbyte.ai/) and find the **Your API Credentials** card to copy them. See [Authenticate](./authenticate#get-your-credentials) for the full walkthrough.
 - For [`connectors create`](./add-connector), a browser on the machine running the CLI. The credential flow opens a browser tab so you can authenticate with the third-party service.
 
 ## Install

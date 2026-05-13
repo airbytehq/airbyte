@@ -55,7 +55,7 @@ Stale or rotated credentials, a `client_id`/`client_secret` from a different org
 
 ### Fix
 
-1. Re-read your credentials from **Settings > Profile** in the web app.
+1. Re-read your credentials from the **Your API Credentials** card in the web app. See [Authenticate](./authenticate#get-your-credentials) if you can't find it.
 2. Re-run `airbyte-agent configure`, or update the env vars.
 3. If you switched orgs, also update `AIRBYTE_ORGANIZATION_ID`.
 
