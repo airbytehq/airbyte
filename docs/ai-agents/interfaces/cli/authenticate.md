@@ -24,12 +24,12 @@ The CLI accepts credentials three ways. Pick whichever fits your environment bes
 
 The CLI resolves them in this order: environment variables, then the settings file. Environment variables take precedence only when all three (`AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID`) are set. If any one is missing, the CLI ignores the env vars entirely and reads `~/.airbyte-agent/settings.json` instead.
 
-### Recommended: `airbyte-agent configure`
+### Recommended: `airbyte-agent login`
 
-`configure` prompts for the three values, verifies them by listing organizations, and writes them to `~/.airbyte-agent/settings.json` with `0600` permissions:
+`login` prompts for the three values, verifies them by listing organizations, and writes them to `~/.airbyte-agent/settings.json` with `0600` permissions. The `client_secret` prompt is masked on a terminal:
 
 ```bash
-airbyte-agent configure
+airbyte-agent login
 ```
 
 It also prompts for a default workspace name. You can press Enter to keep `default`, or set one later with [`workspaces use`](./workspaces#set-a-default-workspace).
@@ -64,7 +64,7 @@ AIRBYTE_ORGANIZATION_ID=<other_org_id> \
 
 ### Settings file
 
-You can also write `~/.airbyte-agent/settings.json` directly. `configure` writes the same shape:
+You can also write `~/.airbyte-agent/settings.json` directly. `login` writes the same shape:
 
 ```json title="~/.airbyte-agent/settings.json"
 {

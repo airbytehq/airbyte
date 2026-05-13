@@ -7,7 +7,7 @@ import DocCardList from '@theme/DocCardList';
 
 # CLI
 
-The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Resource operations accept JSON in (`--json`), return JSON out, and support schema introspection via `--describe`. Every command exits with a stable code, so it's safe to script from a shell and easy for AI agents to discover and call at runtime. A few top-level commands (`configure`, `version`, `schema`) sit outside the resource model and don't take `--json`.
+The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Resource operations accept JSON in (`--json`), return JSON out, and support schema introspection via `--describe`. Every command exits with a stable code, so it's safe to script from a shell and easy for AI agents to discover and call at runtime. A few top-level commands (`login`, `version`, `schema`) sit outside the resource model and don't take `--json`.
 
 The CLI is the right interface when you want:
 
@@ -73,7 +73,7 @@ Resource commands follow the same shape:
 airbyte-agent <resource> <operation> [flags]
 ```
 
-A few top-level commands (`configure`, `configure show`, `version`, and `schema <resource> <operation>`) sit outside this pattern and don't take `--json`; see the [Command reference](./command-reference) for details.
+A few top-level commands (`login`, `login show`, `version`, and `schema <resource> <operation>`) sit outside this pattern and don't take `--json`; see the [Command reference](./command-reference) for details.
 
 There are three resources today:
 

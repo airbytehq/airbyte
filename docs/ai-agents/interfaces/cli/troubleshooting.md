@@ -32,7 +32,7 @@ The error text refers to a legacy `~/.airbyte-agent/credentials` path and only t
 
 ### Fix
 
-Run `airbyte-agent configure` to prompt for the three values and write the settings file. See [Authenticate](./authenticate) for the alternatives.
+Run `airbyte-agent login` to prompt for the three values and write the settings file. See [Authenticate](./authenticate) for the alternatives.
 
 ## Authentication fails
 
@@ -51,12 +51,12 @@ Exit code `2`.
 
 ### Cause
 
-Stale or rotated credentials, a `client_id`/`client_secret` from a different organization, or a typo when you ran `configure`.
+Stale or rotated credentials, a `client_id`/`client_secret` from a different organization, or a typo when you ran `login`.
 
 ### Fix
 
 1. Re-read your credentials from the **Your API Credentials** card in the web app. See [Authenticate](./authenticate#get-your-credentials) if you can't find it.
-2. Re-run `airbyte-agent configure`, or update the env vars.
+2. Re-run `airbyte-agent login`, or update the env vars.
 3. If you switched orgs, also update `AIRBYTE_ORGANIZATION_ID`.
 
 ## Workspace not found

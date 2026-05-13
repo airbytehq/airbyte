@@ -32,7 +32,7 @@ These flags are exposed on every resource operation:
 
 Per-parameter flags are generated from each operation's schema. Snake_case parameter names become kebab-case flags. For example, `select_fields` is exposed as `--select-fields`.
 
-The flags above don't all apply to the top-level commands (`configure`, `configure show`, `version`, `schema`). `--json` in particular isn't a valid flag on those: `airbyte-agent version --json '{}'` exits `1` because the flag is unknown to that command.
+The flags above don't all apply to the top-level commands (`login`, `login show`, `version`, `schema`). `--json` in particular isn't a valid flag on those: `airbyte-agent version --json '{}'` exits `1` because the flag is unknown to that command.
 
 `--fields`, `--format`, and `--output` (`-o`) are silently accepted on top-level commands but don't do anything. `version --format table` still prints JSON, `version --fields version` still prints every field, and `version -o out.json` exits `0` without writing `out.json`. Treat top-level commands as JSON-to-stdout only, and use shell tools (`jq`, redirection) if you need to post-process the result.
 
@@ -42,8 +42,8 @@ A few commands live at the top level rather than under a resource:
 
 | Command | Description |
 | --- | --- |
-| `airbyte-agent configure` | Prompt for `client_id`, `client_secret`, `organization_id`, and a default workspace, then write `~/.airbyte-agent/settings.json` with `0600` permissions. See [Authenticate](./authenticate). |
-| `airbyte-agent configure show` | Print the saved settings (with `client_secret` obfuscated). Useful for `--verbose` debugging and for sharing a redacted dump in bug reports. |
+| `airbyte-agent login` | Prompt for `client_id`, `client_secret`, `organization_id`, and a default workspace, then write `~/.airbyte-agent/settings.json` with `0600` permissions. The `client_secret` prompt is masked on a terminal. See [Authenticate](./authenticate). |
+| `airbyte-agent login show` | Print the saved settings (with `client_secret` obfuscated). Useful for `--verbose` debugging and for sharing a redacted dump in bug reports. |
 | `airbyte-agent version` | Print version, commit, and build date as JSON. |
 | `airbyte-agent schema <resource> <operation>` | Equivalent to `<resource> <operation> --describe`, but discoverable as a top-level command. Returns `{"type": "not_supported", ...}` (exit `3`) for operations backed by internal-only API routes. |
 | `airbyte-agent completion <shell>` | Cobra-generated shell-completion script for `bash`, `zsh`, `fish`, or `powershell`. Pipe the output into your shell's completion directory. Run `airbyte-agent completion --help` for installation steps. |
@@ -91,7 +91,7 @@ airbyte-agent workspaces use --json '{"name": "Production"}'
 | --- | --- | --- | --- |
 | `name` | string | yes | Workspace name (case-insensitive match). The canonical-cased name is what gets persisted. |
 
-Requires an existing `~/.airbyte-agent/settings.json`. Run `airbyte-agent configure` first on a fresh machine; `workspaces use` doesn't bootstrap a settings file from environment variables alone.
+Requires an existing `~/.airbyte-agent/settings.json`. Run `airbyte-agent login` first on a fresh machine; `workspaces use` doesn't bootstrap a settings file from environment variables alone.
 
 ## `connectors`
 
