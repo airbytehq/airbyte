@@ -323,11 +323,6 @@ jobs:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
-      - name: "[DRY-RUN] Skip Publish to Python Registry"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none' && needs.publish_options.outputs.metadata-only != 'true'
-        run: |
-          echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
-
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.metadata-only != 'true'
