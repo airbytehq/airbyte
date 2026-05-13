@@ -3,6 +3,10 @@ name: Docs Vercel Production Rebuild (on demand)
 run-name: Docs Vercel production rebuild (on demand) by @${{ github.actor }}
 
 on:
+  # TK-TODO: Remove this push trigger before merging; it only exists to test this workflow from the PR branch.
+  push:
+    branches:
+      - devin/1778691570-docs-vercel-production-rebuild
   workflow_dispatch:
 
 permissions:
