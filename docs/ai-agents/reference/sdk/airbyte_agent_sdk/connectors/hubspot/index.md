@@ -262,6 +262,24 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Object containing all property values for the company
 
+    `properties_createdate: str | None`
+    :   Date the company was created
+
+    `properties_domain: str | None`
+    :   Company domain name
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the company
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this company
+
+    `properties_name: str | None`
+    :   Company name
+
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
@@ -284,16 +302,16 @@ Classes
     ### Class variables
 
     `archived: bool | None`
-    :   Boolean flag indicating whether the contact has been archived or deleted.
+    :   Boolean flag indicating whether the contact has been archived or deleted
 
     `companies: list[typing.Any] | None`
-    :   Associated company records linked to this contact.
+    :   Associated company records linked to this contact
 
     `created_at: str | None`
-    :   Timestamp indicating when the contact was first created in the system.
+    :   Timestamp indicating when the contact was first created in the system
 
     `id: str | None`
-    :   Unique identifier for the contact record.
+    :   Unique identifier for the contact record
 
     `model_config`
     :   The type of the None singleton.
@@ -301,8 +319,32 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Key-value object storing all contact properties and their values.
 
+    `properties_associatedcompanyid: str | None`
+    :   ID of the associated company
+
+    `properties_createdate: str | None`
+    :   Date the contact was created
+
+    `properties_email: str | None`
+    :   Contact email address
+
+    `properties_firstname: str | None`
+    :   Contact first name
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this contact
+
+    `properties_lastmodifieddate: str | None`
+    :   Last modified date of the contact
+
+    `properties_lastname: str | None`
+    :   Contact last name
+
     `updated_at: str | None`
-    :   Timestamp indicating when the contact record was last modified.
+    :   Timestamp indicating when the contact record was last modified
 
 <a id="DealsSearchData"></a>
 
@@ -345,6 +387,33 @@ Classes
 
     `properties: dict[str, typing.Any]`
     :   Key-value object containing all deal properties and custom fields
+
+    `properties_amount: str | None`
+    :   Deal amount
+
+    `properties_closedate: str | None`
+    :   Expected close date of the deal
+
+    `properties_createdate: str | None`
+    :   Date the deal was created
+
+    `properties_dealname: str | None`
+    :   Deal name
+
+    `properties_dealstage: str | None`
+    :   Current deal stage
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the deal
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this deal
+
+    `properties_pipeline: str | None`
+    :   Deal pipeline
 
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
@@ -402,129 +471,6 @@ Classes
 
     ### Static methods
 
-    `configure_oauth_app_parameters(*, airbyte_config: AirbyteAuthConfig, credentials: HubspotOAuthCredentials | None) ‑> None`
-    :   Configure or remove OAuth app credentials for your organization.
-        
-        When credentials are provided, replaces the default Airbyte-managed OAuth
-        app credentials with your own. After calling this, all OAuth flows for
-        this connector in your organization will use the provided credentials.
-        
-        When credentials are None, removes any existing override so the
-        organization reverts to the default Airbyte-managed OAuth app.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials.
-            credentials: Your OAuth app credentials (HubspotOAuthCredentials), or None to remove the override.
-        
-        Example:
-            await HubspotConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=HubspotOAuthCredentials(
-                    client_id="...",
-                    client_secret="...",
-                ),
-            )
-        
-            await HubspotConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=None,
-            )
-
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'HubspotAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A HubspotConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await HubspotConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=HubspotAuthConfig(client_id="...", client_secret="...", refresh_token="...", access_token="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await HubspotConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await HubspotConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Hubspot Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -575,10 +521,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await HubspotConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -716,7 +658,34 @@ Classes
     :   The type of the None singleton.
 
     `properties: dict[str, typing.Any]`
-    :   Key-value object containing all ticket properties and custom fields
+    :   Object containing all property values for the ticket
+
+    `properties_content: str | None`
+    :   Ticket content/description
+
+    `properties_createdate: str | None`
+    :   Date the ticket was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the ticket
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_pipeline: str | None`
+    :   Ticket pipeline
+
+    `properties_hs_pipeline_stage: str | None`
+    :   Current pipeline stage of the ticket
+
+    `properties_hs_ticket_category: str | None`
+    :   Ticket category
+
+    `properties_hs_ticket_priority: str | None`
+    :   Ticket priority level
+
+    `properties_subject: str | None`
+    :   Ticket subject line
 
     `updated_at: str | None`
     :   Timestamp when the ticket record was last modified
