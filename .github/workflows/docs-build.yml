@@ -101,7 +101,7 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy-vercel
-        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4 # v41.1.4
+        uses: amondnet/vercel-action@4b810e26f7bb2a331c698af186f890cbf20d5f72 # v42.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
