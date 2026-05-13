@@ -35,11 +35,6 @@ on:
         required: false
         default: false
         type: boolean
-      metadata-only:
-        description: "Only generate and publish registry metadata artifacts. Skips connector image/package publishing."
-        required: false
-        default: false
-        type: boolean
       pr:
         description: "Pull request number that triggered this workflow (used for Slack notifications and run URL linking)."
         required: false
@@ -75,6 +70,11 @@ on:
         type: boolean
       dry-run:
         description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
+        required: false
+        default: false
+        type: boolean
+      metadata-only:
+        description: "Only generate and publish registry metadata artifacts. Skips connector image/package publishing."
         required: false
         default: false
         type: boolean
