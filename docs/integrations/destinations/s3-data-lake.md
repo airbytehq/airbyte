@@ -16,6 +16,9 @@ The S3 Data Lake connector requires two things.
     - Nessie
     - Polaris
 
+If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
+
 ## Setup guide
 
 Follow these steps to set up your S3 storage and Iceberg catalog permissions.

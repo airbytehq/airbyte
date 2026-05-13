@@ -31,7 +31,7 @@ import javax.inject.Singleton
 
 @Primary
 @Singleton
-class MsSqlServerJdbcPartitionFactory(
+open class MsSqlServerJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: MsSqlSourceOperations,
     val config: MsSqlServerSourceConfiguration,
@@ -71,7 +71,7 @@ class MsSqlServerJdbcPartitionFactory(
         return listOf(orderedColumn)
     }
 
-    private fun findPkUpperBound(stream: Stream): JsonNode {
+    protected open fun findPkUpperBound(stream: Stream): JsonNode {
         // find upper bound using maxPk query
         // Use the ordered column for sync (prefers clustered index for SQL Server performance)
         val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id)!!
@@ -102,6 +102,8 @@ class MsSqlServerJdbcPartitionFactory(
         val orderedColumns = getOrderedColumnAsList(stream)
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+            // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
+            // which skip the sampling step entirely
             if (isView || orderedColumns == null) {
                 return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
@@ -110,6 +112,24 @@ class MsSqlServerJdbcPartitionFactory(
             }
 
             val upperBound = findPkUpperBound(stream)
+
+            // A null upper bound from MAX(orderedColumn) means the table is empty.
+            // Skip sampling and use a non-resumable partition to read the (empty) table in one
+            // pass.
+            if (upperBound.isNull) {
+                log.info {
+                    "Upper bound is null, indicating that the table is empty. Using non-resumable snapshot."
+                }
+                // Note: MsSqlServerJdbcNonResumableSnapshotPartition.completeState always emits
+                // MsSqlServerJdbcStreamStateValue.snapshotCompleted, even in CDC (global) mode.
+                // If a future change makes CDC empty tables emit a different sentinel, that check
+                // will silently stop terminating round 2.
+                return MsSqlServerJdbcNonResumableSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                )
+            }
+
             return if (sharedState.configuration.global) {
                 MsSqlServerJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
@@ -212,12 +232,19 @@ class MsSqlServerJdbcPartitionFactory(
         val isView = isView(stream)
         val orderedColumns = getOrderedColumnAsList(stream)
 
-        // Views cannot use TABLESAMPLE, so use non-resumable partitions
-        if (
-            stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH &&
-                (isView || orderedColumns == null)
-        ) {
-            return handleFullRefreshWithoutPk(streamState)
+        // Two full-refresh cases need special handling:
+        // 1. View / no ordered column - call handleFullRefreshWithoutPk(), which builds
+        //    a non-resumable partition (or returns null if a previous run already completed).
+        // 2. snapshotCompleted state - a previous run finished a non-resumable snapshot for
+        //    this stream (e.g. an empty-PK table from coldStart). Nothing more to read.
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+            if (isView || orderedColumns == null) {
+                return handleFullRefreshWithoutPk(streamState)
+            }
+            if (opaqueStateValue == MsSqlServerJdbcStreamStateValue.snapshotCompleted) {
+                log.info { "Snapshot already complete for stream ${stream.name}, nothing to sync" }
+                return null
+            }
         }
 
         // CDC sync
@@ -391,6 +418,10 @@ class MsSqlServerJdbcPartitionFactory(
                 MsSqlServerJdbcStreamStateValue.snapshotCompleted
         ) {
             return null
+        }
+        log.info {
+            "Stream ${streamState.stream.name} is a view or has no ordered column. " +
+                "Using non-resumable snapshot."
         }
         return MsSqlServerJdbcNonResumableSnapshotPartition(
             selectQueryGenerator,
