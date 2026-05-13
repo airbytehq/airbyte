@@ -19,7 +19,7 @@ WORKDIR /airbyte/integration_code
 
 COPY . ./
 
-# Replace a potentially broken symlinked README before Poetry installs the connector package.
+# Replace potentially symlinked `README.md` before `poetry install`
 RUN if [ -L README.md ] && [ ! -e README.md ]; then \
         rm README.md; \
     fi; \
