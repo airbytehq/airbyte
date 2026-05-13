@@ -57,7 +57,7 @@ If you want to contribute changes to `source-twitch`, here's how you can do that
 1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
 2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-twitch test`
 3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
-    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `dockerImageTag` value in `metadata.yaml`
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/twitch.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.

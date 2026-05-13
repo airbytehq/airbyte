@@ -347,7 +347,7 @@ streams:
         $ref: '#/definitions/linked/HttpRequester/request_headers'
       request_parameters:
         ended_at: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        started_at: '{{config[''start_date''].strftime(''%Y-%m-%dT%H:%M:%SZ'')}}'
+        started_at: '{{ config[''start_date''] }}'
         broadcaster_id: '{{ stream_partition[''parent_broadcaster_id''] }}'
     record_selector:
       type: RecordSelector
@@ -585,7 +585,7 @@ streams:
       type: MinMaxDatetime
       datetime: '{{ config[''start_date'']}}'
       datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    datetime_format: '%Y-%m-%d %H:%M:%S'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
     cursor_datetime_formats:
     - '%Y-%m-%dT%H:%M:%SZ'
     is_client_side_incremental: true
