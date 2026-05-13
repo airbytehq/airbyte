@@ -22,7 +22,7 @@ For details, see [Manage your user profile](../../admin/profile).
 
 The CLI accepts credentials three ways. Pick whichever fits your environment best.
 
-The CLI resolves them in this order: environment variables, then the settings file. When all three environment variables are set, they take precedence. Otherwise, the CLI falls through to `~/.airbyte-agent/settings.json`.
+The CLI resolves them in this order: environment variables, then the settings file. Environment variables take precedence only when all three (`AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID`) are set. If any one is missing, the CLI ignores the env vars entirely and reads `~/.airbyte-agent/settings.json` instead.
 
 ### Recommended: `airbyte-agent configure`
 
@@ -51,10 +51,15 @@ export $(grep -v '^#' .env | xargs)
 airbyte-agent workspaces list
 ```
 
-Environment variables override the settings file when all three are present, so you can flip orgs for a single invocation without editing any files:
+Environment-variable resolution is all-or-nothing: the CLI uses env vars only when **all three** of `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID` are set. If any one is missing, it falls back to `~/.airbyte-agent/settings.json` and the env values are ignored. There's no partial override: setting only `AIRBYTE_ORGANIZATION_ID` alongside a populated settings file will use the file's org ID, not the env var.
+
+To flip orgs for a single invocation, pass all three:
 
 ```bash
-AIRBYTE_ORGANIZATION_ID=<other_org_id> airbyte-agent organizations list
+AIRBYTE_CLIENT_ID=<other_client_id> \
+AIRBYTE_CLIENT_SECRET=<other_client_secret> \
+AIRBYTE_ORGANIZATION_ID=<other_org_id> \
+  airbyte-agent organizations list
 ```
 
 ### Settings file

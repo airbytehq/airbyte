@@ -19,7 +19,7 @@ The CLI deliberately doesn't accept third-party credentials (API keys, OAuth tok
 airbyte-agent connectors list-available
 ```
 
-The output lists every connector the CLI can create. Each row has a name like `hubspot`, `linear`, or `stripe`; that's the value you pass as `name` when you create the connector.
+The output is a wrapped list (`{"data": [...]}`) where each row has both a display `name` (for example, `HubSpot`, `Google Drive`, `GitHub`) and a slugified `connector_name` (for example, `hubspot`, `google-drive`, `github`). The CLI matches the value you pass as `name` to `connectors create` against the display `name` field, case-insensitively, so `"HubSpot"`, `"hubspot"`, and `"HUBSPOT"` all resolve to the same connector. Display names with spaces (`"Google Drive"`) must be passed verbatim, including the space.
 
 If you already know the connector type, you can skip this step.
 
@@ -28,7 +28,7 @@ If you already know the connector type, you can skip this step.
 ```bash
 airbyte-agent connectors create --json '{
   "workspace": "default",
-  "name": "hubspot"
+  "name": "HubSpot"
 }'
 ```
 

@@ -8,9 +8,9 @@ sidebar_position: 6
 The CLI was designed to be driven by AI agent harnesses (Claude Code, Codex, Cursor, and similar) as much as by humans. Compared to writing a custom MCP server or wiring a Python SDK call, shelling out to `airbyte-agent` gives an agent:
 
 - A uniform `<resource> <operation>` surface that doesn't change between connectors.
-- Self-describing schemas via `--describe` so the agent can plan without round-tripping documentation.
+- Schema introspection via `--describe` on resource operations, so the agent can plan without round-tripping documentation. A few operations are backed by internal-only routes and return `{"type": "not_supported", ...}`; use `--help` on those instead.
 - Stable JSON-in, JSON-out payloads suitable for tool calls.
-- Stable exit codes (`0`, `1`, `2`, `3`, `4`) that map cleanly onto retry policies.
+- Stable exit codes (`0`, `1`, `2`, `3`, `4`) that map cleanly onto retry policies for most commands. One exception: [`connectors create`](./add-connector) reports a credential-flow timeout as a success-path payload (`{"error": "timeout", ...}` with exit code `0`), so an agent driving that command must inspect the result body, not just the exit code. See [Inspect `connectors create` for timeouts](#inspect-connectors-create-for-timeouts).
 - A credential model that keeps third-party secrets out of agent transcripts entirely.
 
 ## Install the bundled skills
@@ -64,6 +64,20 @@ The two modes are mutually exclusive; mixing them is an error.
 If your agent decides a new connector is needed, it must run [`connectors create`](./add-connector), which opens a browser tab for the user to sign in directly. The CLI does not accept third-party credentials inline, on stdin, or in any other channel. An agent that asks a user to paste an API key into chat is doing the wrong thing. That key would end up in transcripts, logs, and possibly training data.
 
 If a user volunteers credentials anyway, decline politely and run `connectors create` instead.
+
+## Inspect `connectors create` for timeouts
+
+Most CLI failures show up as a non-zero exit code with a structured error on stderr, which makes retry logic straightforward. [`connectors create`](./add-connector) is the exception. If the browser credential flow doesn't complete within `AIRBYTE_CREDENTIAL_TIMEOUT` seconds (default `180`), the command exits `0` and prints the timeout as a normal stdout payload:
+
+```json
+{
+  "error": "timeout",
+  "message": "Credential flow timed out after 3m0s",
+  "session_id": "<session-uuid>"
+}
+```
+
+An agent that retries only on non-zero exit will silently treat this as a successful create. When driving `connectors create`, parse the stdout JSON and check for `error == "timeout"` before claiming success.
 
 ## Output discipline
 

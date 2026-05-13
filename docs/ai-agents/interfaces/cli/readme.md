@@ -7,7 +7,7 @@ import DocCardList from '@theme/DocCardList';
 
 # CLI
 
-The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Every command takes JSON in (`--json`), returns JSON out, supports schema introspection via `--describe`, and exits with stable error codes, so it's safe to script from a shell and easy for AI agents to discover and call at runtime.
+The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Resource operations accept JSON in (`--json`), return JSON out, and support schema introspection via `--describe`. Every command exits with a stable code, so it's safe to script from a shell and easy for AI agents to discover and call at runtime. A few top-level commands (`configure`, `version`, `schema`) sit outside the resource model and don't take `--json`.
 
 The CLI is the right interface when you want:
 

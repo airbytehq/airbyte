@@ -19,7 +19,7 @@ If anything on this page disagrees with `--describe` output, `--describe` wins. 
 
 ## Common flags
 
-These flags are available on every operation.
+These flags are exposed on every resource operation:
 
 | Flag | Description | Default |
 | --- | --- | --- |
@@ -28,9 +28,11 @@ These flags are available on every operation.
 | `--describe` | Print the operation's parameter schema (and OpenAPI shape, when the operation maps to a public API route) and exit without executing. Operations backed by internal-only routes return `{"type": "not_supported", ...}` on stderr with exit code `3`; use `--help` instead. | `false` |
 | `--output`, `-o` | Write stdout to a file instead of the terminal. | (none) |
 | `--verbose`, `-v` | Enable debug logging on stderr. | `false` |
-| `--fields` | Client-side response filter. Comma-separated dot paths (for example, `data.id,data.name`). Errors are not filtered. | (none) |
+| `--fields` | Client-side response filter. Comma-separated dot paths (for example, `organizations.id,organizations.organization_name`). Errors are not filtered. | (none) |
 
 Per-parameter flags are generated from each operation's schema. Snake_case parameter names become kebab-case flags. For example, `select_fields` is exposed as `--select-fields`.
+
+The flags above don't all apply to the top-level commands (`configure`, `configure show`, `version`, `schema`). `--json` in particular isn't a valid flag on those: `airbyte-agent version --json '{}'` exits `1` because the flag is unknown to that command. Top-level commands write their output directly to stdout, so `--fields`, `--format`, and `--output` are also no-ops there; use shell tools (`jq`, redirection) if you need to post-process the result.
 
 ## Top-level commands
 
@@ -51,8 +53,10 @@ List the organizations you belong to.
 
 ```bash
 airbyte-agent organizations list
-airbyte-agent organizations list --fields data.id,data.organization_name
+airbyte-agent organizations list --fields organizations.id,organizations.organization_name
 ```
+
+The response is wrapped under an `organizations` key (`{"organizations": [...], "is_instance_admin": ...}`), so `--fields` paths start with `organizations.` rather than `data.`.
 
 No required parameters.
 
@@ -174,7 +178,7 @@ airbyte-agent connectors delete --json '{"workspace": "default", "name": "old-hu
 | `workspace` | string | with `name` | Workspace the connector lives in. |
 | `id` | string | one of `name`+`workspace` or `id` | Connector ID (UUID). |
 
-Without a TTY (piped input from an agent harness, for example), the prompt can't run. The command refuses with a `validation_error` whose hint tells you to grant one-time permission by setting `"allow_destructive": true` in `~/.airbyte-agent/settings.json` (or `AIRBYTE_ALLOW_DESTRUCTIVE=true` for a single invocation). See [Troubleshooting](./troubleshooting#destructive-delete-on-a-non-tty-machine).
+If you type something other than `yes` (or just press Enter), the command exits `4` with `"destructive action cancelled by user"`. Without a TTY (piped input from an agent harness, for example), the prompt can't run at all and the command refuses with `"destructive action requires confirmation but no TTY is available"`. Grant one-time permission to skip the prompt by setting `"allow_destructive": true` in `~/.airbyte-agent/settings.json` (or `AIRBYTE_ALLOW_DESTRUCTIVE=true` for a single invocation). See [Troubleshooting](./troubleshooting#destructive-delete-refused).
 
 ## Exit codes
 

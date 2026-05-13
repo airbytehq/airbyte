@@ -109,9 +109,24 @@ airbyte-agent connectors list --json '{"workspace": "default"}'
 
 If the connector genuinely doesn't exist yet, create it with [`connectors create`](./add-connector).
 
-## Destructive delete on a non-TTY machine
+## Destructive delete refused
 
 ### Symptom
+
+`connectors delete` exits with code `4` and one of two `validation_error` payloads on stderr.
+
+**Cancelled at the TTY prompt** (you ran the command in a terminal and typed something other than `yes`, or pressed Enter):
+
+```json
+{
+  "type": "validation_error",
+  "message": "destructive action cancelled by user",
+  "status_code": 400,
+  "hint": "re-run the command and type 'yes' to confirm, or set \"allow_destructive\": true in settings.json"
+}
+```
+
+**No TTY available** (an agent harness, CI job, or script piped stdin, so there's no terminal to read from):
 
 ```json
 {
@@ -122,15 +137,13 @@ If the connector genuinely doesn't exist yet, create it with [`connectors create
 }
 ```
 
-Exit code `4`.
-
 ### Cause
 
-`connectors delete` is destructive. On a terminal, it prompts for `"Type 'yes' to confirm:"`. When stdin is piped (an agent harness driving the CLI, a CI job, a script), there's nothing to type, so the command refuses rather than hanging on a prompt that can never resolve.
+`connectors delete` is destructive. On a terminal, it prompts for `"Type 'yes' to confirm:"` and only proceeds when you type `yes`. Anything else is treated as a cancellation. Without a TTY, the prompt can't run at all, so the command refuses rather than hanging on input that never arrives.
 
 ### Fix
 
-Grant one-time permission. Either:
+Re-run and type `yes` at the prompt, or grant one-time permission to skip it:
 
 ```bash
 AIRBYTE_ALLOW_DESTRUCTIVE=true airbyte-agent connectors delete --json '{"workspace": "default", "name": "old-hubspot"}'
