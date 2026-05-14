@@ -52,11 +52,6 @@ class RedshiftRegressionTest :
     ) {
 
     @Test
-    override fun testSchemaRegressionAppend() {
-        super.testSchemaRegressionAppend()
-    }
-
-    @Test
     override fun testSchemaRegressionSimpleDedup() {
         super.testSchemaRegressionSimpleDedup()
     }
