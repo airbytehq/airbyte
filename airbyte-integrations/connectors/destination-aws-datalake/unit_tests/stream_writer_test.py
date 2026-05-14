@@ -356,7 +356,7 @@ def test_get_glue_dtypes_from_json_schema():
     assert result == {
         "airbyte_type_array": "array<bigint>",
         "airbyte_type_object": "bigint",
-        "airbyte_type_array_not_integer": "array<string>",
+        "airbyte_type_array_not_integer": "array<timestamp>",
         "airbyte_type_object_not_integer": "timestamp",
         "answers": "array<string>",
         "answers_nested_bad": "string",
@@ -490,6 +490,41 @@ def test_json_schema_cast_value_date_format():
     assert writer._json_schema_cast_value("not-a-date", date_schema) is None
     assert writer._json_schema_cast_value(None, date_schema) is None
     assert writer._json_schema_cast_value("", date_schema) is None
+
+
+def test_get_glue_dtypes_for_arrays_of_dates():
+    """
+    Arrays of `format: date` and `format: date-time` strings must infer to
+    `array<date>` and `array<timestamp>` respectively. The value-cast path
+    already converts these items to `date`/`Timestamp`, so the inferred
+    Glue type must match or pyarrow will fail.
+    """
+    connector_config = ConnectorConfig(**get_config())
+    aws_handler = AwsHandler(connector_config, DestinationAwsDatalake())
+    schema = {
+        "date_array": {"type": ["null", "array"], "items": {"type": ["null", "string"], "format": "date"}},
+        "datetime_array": {"type": ["null", "array"], "items": {"type": ["null", "string"], "format": "date-time"}},
+        "plain_string_array": {"type": ["null", "array"], "items": {"type": ["null", "string"]}},
+    }
+    writer = StreamWriter(
+        aws_handler,
+        connector_config,
+        ConfiguredAirbyteStream(
+            stream=AirbyteStream(
+                name="t",
+                json_schema={"type": "object", "properties": schema},
+                supported_sync_modes=[SyncMode.full_refresh],
+            ),
+            sync_mode=SyncMode.full_refresh,
+            destination_sync_mode=DestinationSyncMode.overwrite,
+        ),
+    )
+    result, _ = writer._get_glue_dtypes_from_json_schema(writer._schema)
+    assert result == {
+        "date_array": "array<date>",
+        "datetime_array": "array<timestamp>",
+        "plain_string_array": "array<string>",
+    }
 
 
 def test_json_schema_cast_value_date_inside_object():

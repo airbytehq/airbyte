@@ -365,7 +365,13 @@ class StreamWriter:
 
                 # array with single type
                 elif item_type and not self._json_schema_type_has_mixed_types(raw_item_type):
-                    result_typ = f"array<{type_mapper[item_type]}>"
+                    item_format = items.get("format")
+                    if item_type == "string" and item_format == "date-time":
+                        result_typ = "array<timestamp>"
+                    elif item_type == "string" and item_format == "date":
+                        result_typ = "array<date>"
+                    else:
+                        result_typ = f"array<{type_mapper[item_type]}>"
 
             if result_typ is None:
                 result_typ = type_mapper.get(col_typ, "string")
