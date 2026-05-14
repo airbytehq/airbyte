@@ -283,19 +283,9 @@ For example, if you select a report with daily aggregation, the report will cont
 
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Report aggregated using an hourly window.
 
-## Migration
+## Upgrading
 
-### Upgrading to 3.0.0
-
-Version 3.0.0 expands the primary keys of all report streams so that they include every attribute (dimension) column the connector requests from Microsoft's reporting API. Without this fix, destinations performing incremental append+dedup silently collapsed rows that differed only on an attribute column the connector requested but did not include in the previous (narrower) primary key, causing significant data loss (see [oncall #12253](https://github.com/airbytehq/oncall/issues/12253)).
-
-Because the primary keys of the report streams have changed, users must:
-
-1. Upgrade the Bing Ads source connector to version 3.0.0.
-2. Refresh the source schema for the connection.
-3. Reset (clear) all affected report streams so the destination re-receives previously-collapsed rows under the new primary keys.
-
-Affected streams: all aggregations (`_hourly`, `_daily`, `_weekly`, `_monthly`) of `age_gender_audience_report`, `campaign_performance_report`, `ad_group_performance_report`, `keyword_performance_report`, `ad_group_impression_performance_report`, `audience_performance_report`, `goals_and_funnels_report`, `user_location_performance_report`, `account_performance_report`, `ad_performance_report`, `search_query_performance_report`, `product_search_query_performance_report`, plus `budget_summary_report`.
+For information on breaking changes and migration steps, see the [Bing Ads Migration Guide](./bing-ads-migrations.md).
 
 ## Limitations and troubleshooting
 
