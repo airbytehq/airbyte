@@ -327,16 +327,11 @@ jobs:
       # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
       - name: Check for release block
         id: check-release-block
+        if: needs.publish_options.outputs.with-semver-suffix == 'none'
         shell: bash
         run: |
           BLOCK_FILE="airbyte-integrations/connectors/${{ matrix.connector }}/block-release.yaml"
-          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
-          if [[ -f "$BLOCK_FILE" && "$SEMVER_SUFFIX" == "preview" ]]; then
-            REASON=$(cat "$BLOCK_FILE" | head -1 | sed 's/^reason: *//' | tr -d '"')
-            echo "::notice::Release block found for ${{ matrix.connector }}, but pre-release publishing is allowed: ${REASON}"
-            echo "blocked=false" >> $GITHUB_OUTPUT
-            cat "$BLOCK_FILE"
-          elif [[ -f "$BLOCK_FILE" ]]; then
+          if [[ -f "$BLOCK_FILE" ]]; then
             REASON=$(cat "$BLOCK_FILE" | head -1 | sed 's/^reason: *//' | tr -d '"')
             echo "::warning::⚠️ Release BLOCKED for ${{ matrix.connector }}: ${REASON}"
             echo "::warning::Skipping all publish steps. Remove block-release.yaml to unblock."
