@@ -14668,6 +14668,21 @@ spec:
                 path: ["credentials", "email"]
                 value: "{{ config['email'] }}"
             condition: "{{ not config.get('credentials', {}).get('email') and config.get('email') }}"
+      - type: ConfigMigration
+        description: Normalize domain by stripping protocol prefix and trailing slashes
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["domain"]
+                value: "{{ config['domain'].replace('https://', '').replace('http://', '').rstrip('/') }}"
+            condition: "{{ config.get('domain') and (config['domain'].startswith('http') or config['domain'].endswith('/')) }}"
+    validations:
+      - type: DpathValidator
+        field_path: ["domain"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateJiraDomain
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Jira Spec
