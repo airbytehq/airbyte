@@ -275,8 +275,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /timeoff/requests/changes
           http_method: GET
-          request_parameters:
-            includePending: "{{ config.get('include_pending_time_off_requests', false) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,12 +375,6 @@ spec:
         examples:
           - "2024-01-01T00:00:00Z"
         order: 3
-      include_pending_time_off_requests:
-        type: boolean
-        title: Include pending time off requests
-        description: Toggle on to include requests changed to pending status in the time off request changes stream.
-        default: false
-        order: 4
 
 metadata:
   autoImportSchema:
