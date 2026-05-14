@@ -25,6 +25,7 @@ urllib3 = "<2"
 airbyte-cdk = {extras = ["file-based"], version = "^7.0.0"}
 pendulum = "^3.0.0"
 psutil = "^7.0.0"
+numpy = ">=2.2.6,<3"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
