@@ -70,7 +70,14 @@ These streams are generated from the `custom_reports` configuration. Each resolv
 | Stream Name Pattern | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |---------------------|-------------|------------|---------------------|----------------------|
 | `custom_clips_<name>` | `id` | DefaultPaginator | ✅ | ✅ |
-| `custom_videos_<name>` | `id` | DefaultPaginator | ✅ | ❌ |
+| `custom_videos_<name>` | `id` | No pagination | ✅ | ❌ |
+
+## Limitations and troubleshooting
+
+- Twitch limits clip pagination to approximately 1,000 results per time window. The connector uses one-hour incremental slices for clip streams to reduce the chance of hitting this cap, but very active categories or broadcasters can still exceed it.
+- Custom report `game_name` values must exactly match Twitch category names because the connector resolves them through the Twitch `/helix/games` endpoint before reading records.
+- Custom video report streams are full-refresh-only and request the first 100 videos for the resolved game/category. Twitch does not support cursor pagination for `/helix/videos` requests filtered only by `game_id`.
+- Twitch API rate limits are communicated through `Ratelimit-*` response headers. The connector treats HTTP 429 responses as retryable and backs off before retrying.
 
 ## Changelog
 
@@ -79,6 +86,6 @@ These streams are generated from the `custom_reports` configuration. Each resolv
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.0 | 2026-05-08 | | Initial release |
+| 0.1.0 | 2026-05-08 | [77904](https://github.com/airbytehq/airbyte/pull/77904) | Initial release |
 
 </details>

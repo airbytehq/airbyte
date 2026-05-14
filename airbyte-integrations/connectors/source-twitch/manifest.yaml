@@ -57,6 +57,11 @@ spec:
     properties:
       login:
         type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: string
+          minLength: 1
         order: 3
         title: Twitch Username(s)
         description: Enter a list of twitch usernames you want to sync data for. Note,
@@ -174,6 +179,18 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     validations:
+    - type: DpathValidator
+      field_path:
+      - login
+      validation_strategy:
+        type: ValidateAdheresToSchema
+        base_schema:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
     - type: DpathValidator
       field_path:
       - custom_reports
@@ -353,8 +370,8 @@ streams:
       request_headers:
         $ref: '#/definitions/linked/HttpRequester/request_headers'
       request_parameters:
-        ended_at: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        started_at: '{{ config[''start_date''] }}'
+        ended_at: '{{ stream_interval[''end_time''] }}'
+        started_at: '{{ stream_interval[''start_time''] }}'
         broadcaster_id: '{{ stream_partition[''parent_broadcaster_id''] }}'
     record_selector:
       type: RecordSelector
@@ -728,23 +745,6 @@ definitions:
             type: string
           name:
             type: string
-  custom_clips_stream:
-    retriever:
-      requester:
-        request_parameters:
-          game_id: '{{ stream_partition["game_id"] }}'
-          started_at: '{{ stream_interval["start_time"] }}'
-          ended_at: '{{ stream_interval["end_time"] }}'
-          is_featured: '{{ components_values.get("is_featured") }}'
-  custom_videos_stream:
-    retriever:
-      requester:
-        request_parameters:
-          game_id: '{{ stream_partition["game_id"] }}'
-          sort: '{{ components_values.get("sort") }}'
-          type: '{{ components_values.get("type") }}'
-          period: '{{ components_values.get("period") }}'
-          language: '{{ components_values.get("language") }}'
 dynamic_streams:
 - name: custom_clips_template
   type: DynamicDeclarativeStream
@@ -771,6 +771,7 @@ dynamic_streams:
           game_id: '{{ stream_partition[''game_id''] }}'
           ended_at: '{{ stream_interval[''end_time''] }}'
           started_at: '{{ stream_interval[''start_time''] }}'
+          is_featured: ''
       record_selector:
         type: RecordSelector
         extractor:
@@ -786,18 +787,18 @@ dynamic_streams:
           parent_key: id
           partition_field: game_id
           lazy_read_pointer: []
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
+        - id
         - created_at
         properties:
           id:
-            type:
-            - string
-            - 'null'
+            type: string
           url:
             type:
             - string
@@ -911,7 +912,8 @@ dynamic_streams:
       - requester
       - request_parameters
       - is_featured
-      value: '{{ components_values.get(''is_featured'') }}'
+      value: '{{ components_values.get(''is_featured'') | string | lower }}'
+      value_type: string
       create_or_update: true
       condition: '{{ components_values.get(''is_featured'') is not none }}'
 - name: custom_videos_template
@@ -924,7 +926,7 @@ dynamic_streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: '#/definitions/linked/SimpleRetriever/paginator'
+        type: NoPagination
       requester:
         url: https://api.twitch.tv/helix/videos
         type: HttpRequester
@@ -937,6 +939,7 @@ dynamic_streams:
           $ref: '#/definitions/linked/HttpRequester/request_headers'
         request_parameters:
           game_id: '{{ stream_partition[''game_id''] }}'
+          first: '100'
       record_selector:
         type: RecordSelector
         extractor:
