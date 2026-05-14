@@ -14675,8 +14675,8 @@ spec:
             fields:
               - type: AddedFieldDefinition
                 path: ["domain"]
-                value: "{{ config['domain'].replace('https://', '').replace('http://', '').rstrip('/') }}"
-            condition: "{{ config.get('domain') and (config['domain'].startswith('http') or config['domain'].endswith('/')) }}"
+                value: "{{ (config['domain'][8:] if config['domain'][:8].lower() == 'https://' else (config['domain'][7:] if config['domain'][:7].lower() == 'http://' else config['domain'])).rstrip('/') }}"
+            condition: "{{ config.get('domain') and (config['domain'][:8].lower() == 'https://' or config['domain'][:7].lower() == 'http://' or config['domain'].endswith('/')) }}"
     validations:
       - type: DpathValidator
         field_path: ["domain"]
