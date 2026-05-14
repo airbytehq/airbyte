@@ -44,7 +44,7 @@ class JiraOAuthAuthenticator:
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         creds = self.config.get("credentials", {})
-        if not creds.get("client_id") or not creds.get("client_secret"):
+        if creds.get("auth_type") != "OAuth2.0":
             return
         if JiraOAuthAuthenticator._shared_refresh_token is None:
             JiraOAuthAuthenticator._shared_refresh_token = creds.get("refresh_token")
@@ -66,7 +66,7 @@ class JiraOAuthAuthenticator:
             data=data,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             token_data = json.load(resp)
 
         JiraOAuthAuthenticator._shared_access_token = token_data["access_token"]
@@ -85,7 +85,7 @@ class JiraOAuthAuthenticator:
             _ACCESSIBLE_RESOURCES_URL,
             headers={"Authorization": f"Bearer {JiraOAuthAuthenticator._shared_access_token}"},
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             resources = json.load(resp)
 
         for resource in resources:

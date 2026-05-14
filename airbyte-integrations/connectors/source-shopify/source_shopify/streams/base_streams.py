@@ -817,7 +817,28 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def emit_checkpoint_message(self) -> None:
         if self.job_manager._job_adjust_slice_from_checkpoint:
-            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")
+            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._effective_checkpoint_cursor()}`.")
+
+    def _effective_checkpoint_cursor(self) -> Optional[Union[str, int]]:
+        """Return the cursor value to use when advancing the next slice after
+        a bulk job checkpointed mid-output.
+
+        For streams with a `parent_stream_class`, the bulk query filters on
+        the parent's cursor (e.g., `customers.updated_at`) while emitted
+        records carry the child's cursor (e.g., `metafield.updated_at`).
+        Using `self._checkpoint_cursor` here — which tracks the child's
+        cursor — lets the next slice skip arbitrarily far ahead whenever an
+        emitted child has a timestamp later than the slice window. Prefer
+        the parent cursor tracked by the bulk record producer, which is
+        bounded by the current slice's upper bound.
+        """
+        if self.parent_stream_class:
+            parent_state = self.job_manager.record_producer.get_parent_stream_state()
+            if parent_state:
+                parent_cursor = parent_state.get(self.parent_stream_cursor)
+                if parent_cursor:
+                    return parent_cursor
+        return self._checkpoint_cursor
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -831,7 +852,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.emit_slice_message(start, slice_end)
                 yield {"start": start.to_rfc3339_string(), "end": slice_end.to_rfc3339_string()}
                 # increment the end of the slice or reduce the next slice
-                start = self.job_manager.get_adjusted_job_end(start, slice_end, self._checkpoint_cursor, self._filter_checkpointed_cursor)
+                start = self.job_manager.get_adjusted_job_end(
+                    start, slice_end, self._effective_checkpoint_cursor(), self._filter_checkpointed_cursor
+                )
         else:
             # for the streams that don't support filtering
             yield {}

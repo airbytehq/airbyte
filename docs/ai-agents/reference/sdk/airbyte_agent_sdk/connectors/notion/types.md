@@ -1019,6 +1019,240 @@ Classes
     `video: str`
     :   Represents a video block.
 
+<a id="CommentsAndCondition"></a>
+
+`CommentsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="CommentsAnyCondition"></a>
+
+`CommentsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.notion.types.CommentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsAnyValueFilter"></a>
+
+`CommentsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_by: Any`
+    :   User who created the comment.
+
+    `created_time: Any`
+    :   Date and time when the comment was created.
+
+    `discussion_id: Any`
+    :   Discussion thread ID.
+
+    `id: Any`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: Any`
+    :   Date and time when the comment was last edited.
+
+    `object_: Any`
+    :   Always comment.
+
+    `parent: Any`
+    :   Parent of the comment.
+
+    `rich_text: Any`
+    :   Content of the comment as rich text.
+
+<a id="CommentsContainsCondition"></a>
+
+`CommentsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.notion.types.CommentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsEqCondition"></a>
+
+`CommentsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.notion.types.CommentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsFuzzyCondition"></a>
+
+`CommentsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsGtCondition"></a>
+
+`CommentsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.notion.types.CommentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsGteCondition"></a>
+
+`CommentsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.notion.types.CommentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsInCondition"></a>
+
+`CommentsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.notion.types.CommentsInFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsInFilter"></a>
+
+`CommentsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_by: list[dict[str, typing.Any]]`
+    :   User who created the comment.
+
+    `created_time: list[str]`
+    :   Date and time when the comment was created.
+
+    `discussion_id: list[str]`
+    :   Discussion thread ID.
+
+    `id: list[str]`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: list[str]`
+    :   Date and time when the comment was last edited.
+
+    `object_: list[str]`
+    :   Always comment.
+
+    `parent: list[dict[str, typing.Any]]`
+    :   Parent of the comment.
+
+    `rich_text: list[list[typing.Any]]`
+    :   Content of the comment as rich text.
+
+<a id="CommentsKeywordCondition"></a>
+
+`CommentsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsLikeCondition"></a>
+
+`CommentsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CommentsListParams"></a>
 
 `CommentsListParams(*args, **kwargs)`
@@ -1038,6 +1272,214 @@ Classes
 
     `start_cursor: str`
     :   The type of the None singleton.
+
+<a id="CommentsLtCondition"></a>
+
+`CommentsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.notion.types.CommentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsLteCondition"></a>
+
+`CommentsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.notion.types.CommentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsNeqCondition"></a>
+
+`CommentsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.notion.types.CommentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CommentsNotCondition"></a>
+
+`CommentsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="CommentsOrCondition"></a>
+
+`CommentsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="CommentsSearchFilter"></a>
+
+`CommentsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering comments search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_by: dict[str, typing.Any] | None`
+    :   User who created the comment.
+
+    `created_time: str | None`
+    :   Date and time when the comment was created.
+
+    `discussion_id: str | None`
+    :   Discussion thread ID.
+
+    `id: str | None`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: str | None`
+    :   Date and time when the comment was last edited.
+
+    `object_: str | None`
+    :   Always comment.
+
+    `parent: dict[str, typing.Any] | None`
+    :   Parent of the comment.
+
+    `rich_text: list[typing.Any] | None`
+    :   Content of the comment as rich text.
+
+<a id="CommentsSearchQuery"></a>
+
+`CommentsSearchQuery(*args, **kwargs)`
+:   Search query for comments entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.notion.types.CommentsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="CommentsSortFilter"></a>
+
+`CommentsSortFilter(*args, **kwargs)`
+:   Available fields for sorting comments search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_by: Literal['asc', 'desc']`
+    :   User who created the comment.
+
+    `created_time: Literal['asc', 'desc']`
+    :   Date and time when the comment was created.
+
+    `discussion_id: Literal['asc', 'desc']`
+    :   Discussion thread ID.
+
+    `id: Literal['asc', 'desc']`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: Literal['asc', 'desc']`
+    :   Date and time when the comment was last edited.
+
+    `object_: Literal['asc', 'desc']`
+    :   Always comment.
+
+    `parent: Literal['asc', 'desc']`
+    :   Parent of the comment.
+
+    `rich_text: Literal['asc', 'desc']`
+    :   Content of the comment as rich text.
+
+<a id="CommentsStringFilter"></a>
+
+`CommentsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_by: str`
+    :   User who created the comment.
+
+    `created_time: str`
+    :   Date and time when the comment was created.
+
+    `discussion_id: str`
+    :   Discussion thread ID.
+
+    `id: str`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: str`
+    :   Date and time when the comment was last edited.
+
+    `object_: str`
+    :   Always comment.
+
+    `parent: str`
+    :   Parent of the comment.
+
+    `rich_text: str`
+    :   Content of the comment as rich text.
 
 <a id="DataSourcesAndCondition"></a>
 

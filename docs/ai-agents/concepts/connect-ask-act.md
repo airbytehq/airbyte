@@ -50,7 +50,7 @@ This pattern is the same across every connector and every interface. Whether an 
 Airbyte Agents act through two modes:
 
 - **[Chats](../interfaces/ui/chats).** Interactive, conversational sessions where an agent responds to prompts in real time.
-- **[Automations](../interfaces/ui/automations).** Scheduled or webhook-triggered flows that run without human intervention.
+- **[Automations](../interfaces/ui/automations).** Manual or scheduled flows that run without human intervention.
 
 Airbyte logs every action an agent takes. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.
 

@@ -82,6 +82,7 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.1 | 2026-05-07 | [77858](https://github.com/airbytehq/airbyte/pull/77858) | Expose num_workers config field for user-configurable concurrency |
 | 1.2.0 | 2026-05-07 | [77859](https://github.com/airbytehq/airbyte/pull/77859) | Promoted release candidate to GA |
 | 1.2.0-rc.3 | 2026-05-05 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Revert default_concurrency from 5 to 4 based on Phase 2 results |
 | 1.2.0-rc.2 | 2026-04-28 | [77049](https://github.com/airbytehq/airbyte/pull/77049) | Increase default_concurrency from 4 to 5 based on Phase 1 health check results |

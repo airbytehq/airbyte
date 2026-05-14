@@ -25,6 +25,8 @@ abstract class JdbcPartitionsCreatorFactory<
     }
 
     abstract fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P>
+
+    fun interface AcquiredResources : AutoCloseable
 }
 
 /** Sequential JDBC implementation of [PartitionsCreatorFactory]. */
