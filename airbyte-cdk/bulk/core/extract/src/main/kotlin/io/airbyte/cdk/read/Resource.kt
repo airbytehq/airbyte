@@ -33,7 +33,7 @@ enum class ResourceType {
  * or null if any resource acquisition fails.
  */
 @Singleton
-class ResourceAcquirer(val acquierers: List<Resource<*>>) {
+class ResourceAcquirer(val acquirers: List<Resource<*>>) {
     @Inject
     constructor(
         cr: ConcurrencyResource,
@@ -49,18 +49,27 @@ class ResourceAcquirer(val acquierers: List<Resource<*>>) {
         val acquired = mutableMapOf<ResourceType, Resource.Acquired>()
         // We need a run {} to be able to break out of the forEach loop if any resource acquisition
         // fails.
-        run {
-            requested.forEach { resourceType ->
-                val res = acquierers.first { acq -> acq.type == resourceType }.tryAcquire()
-                res?.apply { acquired[resourceType] = this } ?: return@run
+        try {
+            run {
+                requested.forEach { resourceType ->
+                    val res = acquirers.first { acq -> acq.type == resourceType }.tryAcquire()
+                    res?.apply { acquired[resourceType] = this } ?: return@run
+                }
             }
+        } catch (e: Exception) {
+            releaseAll(acquired)
+            throw e
         }
 
         if (acquired.size != requested.size) {
-            acquired.values.forEach { acq -> acq.close() }
+            releaseAll(acquired)
             return null
         }
         return acquired
+    }
+
+    private fun releaseAll(acquired: Map<ResourceType, Resource.Acquired>) {
+        acquired.values.forEach { it.close() }
     }
 
     // convenience method to acquire a single resource of a specific type

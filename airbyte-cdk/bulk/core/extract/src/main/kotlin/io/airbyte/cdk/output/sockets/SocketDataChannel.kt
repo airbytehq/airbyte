@@ -21,6 +21,7 @@ import java.nio.channels.SocketChannel
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Singleton
+import kotlin.properties.Delegates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -56,23 +57,36 @@ interface SocketDataChannel {
  */
 class UnixDomainSocketDataChannel(
     private val socketFilePath: String,
-    private val probePacket: ProbePacket
+    private val probePacket: ProbePacket,
+    private val onStatusChange: (() -> Unit)? = null,
 ) : SocketDataChannel {
 
-    private var socketStatus = AtomicReference(SOCKET_CLOSED)
+    /*private var socketStatus: AtomicReference<SocketDataChannel.SocketStatus> by Delegates.observable (AtomicReference(SOCKET_CLOSED)) { _, _, newStatus ->
+        onStatusChange?.invoke(newStatus.get())
+    }*/
+
+    private var _socketStatus: AtomicReference<SocketDataChannel.SocketStatus> = AtomicReference(SOCKET_CLOSED)
+
+    private var socketStatus: SocketDataChannel.SocketStatus
+    get() = _socketStatus.get()
+    set(value) {
+        _socketStatus.set(value)
+        onStatusChange?.invoke()
+    }
+
     private var socketBound = AtomicBoolean(false)
 
     override var outputStream: OutputStream? = null
     override val status: SocketDataChannel.SocketStatus
         @Synchronized
         get() {
-            if (socketStatus.get() == SOCKET_READY && socketBound.get().not()) ensureSocketState()
-            return socketStatus.get()
+            if (socketStatus == SOCKET_READY && socketBound.get().not()) ensureSocketState()
+            return socketStatus
         }
     override val isAvailable: Boolean
         @Synchronized
         get() {
-            return socketStatus.get() == SOCKET_READY && socketBound.get().not()
+            return status == SOCKET_READY && socketBound.get().not()
         }
 
     /**
@@ -83,9 +97,9 @@ class UnixDomainSocketDataChannel(
         try {
             outputStream?.write(probePacket)
         } catch (e: Exception) {
-            logger.debug(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
+            logger.warn(e) { "Failed writing to socket $socketFilePath. Marking SOCKET_ERROR" }
             shutdown()
-            socketStatus.set(SOCKET_ERROR)
+            socketStatus = SOCKET_ERROR
         }
     }
 
@@ -106,7 +120,7 @@ class UnixDomainSocketDataChannel(
         val serverSocketChannel: ServerSocketChannel =
             ServerSocketChannel.open(StandardProtocolFamily.UNIX)
         serverSocketChannel.bind(socketAddress)
-        socketStatus.set(SOCKET_INITIALIZED)
+        socketStatus = SOCKET_INITIALIZED
         // Socket is initialized and waiting for a listener to connect.
         // In order to let the outer RunBlocking {} to exit immediately,
         // we launch a coroutine as an independent Job() on the IO dispatcher.
@@ -115,13 +129,13 @@ class UnixDomainSocketDataChannel(
                 Dispatchers.IO +
                 Job()
         ) {
-            socketStatus.set(SOCKET_WAITING_LISTENER)
+            socketStatus = SOCKET_WAITING_LISTENER
             logger.info { "Waiting to connect..." }
             // accept blocks until a listener connects
             val socketChannel: SocketChannel = serverSocketChannel.accept()
             // close the server socket channel after accepting a connection
             serverSocketChannel.close()
-            socketStatus.set(SOCKET_READY)
+            socketStatus = SOCKET_READY
             outputStream = Channels.newOutputStream(socketChannel)
             logger.info { "Connected to server socket" }
         }
@@ -129,7 +143,7 @@ class UnixDomainSocketDataChannel(
     }
 
     override fun shutdown() {
-        socketStatus.set(SOCKET_CLOSED)
+        socketStatus = SOCKET_CLOSED
         outputStream?.close()
         outputStream = null
         unbind()
@@ -145,14 +159,14 @@ class UnixDomainSocketDataChannel(
 }
 
 interface SocketDataChannelFactory {
-    fun makeSocket(socketFilePath: String): SocketDataChannel
+    fun makeSocket(socketFilePath: String, onStatusChange: (() -> Unit)?): SocketDataChannel
 }
 
 @Singleton
 class DefaultSocketDataChannelFactory(private val probePacket: ProbePacket) :
     SocketDataChannelFactory {
-    override fun makeSocket(socketFilePath: String): SocketDataChannel =
-        UnixDomainSocketDataChannel(socketFilePath, probePacket)
+    override fun makeSocket(socketFilePath: String, onStatusChange: (() -> Unit)?): SocketDataChannel =
+        UnixDomainSocketDataChannel(socketFilePath, probePacket, onStatusChange)
 }
 
 private typealias ProbePacket = ByteArray
