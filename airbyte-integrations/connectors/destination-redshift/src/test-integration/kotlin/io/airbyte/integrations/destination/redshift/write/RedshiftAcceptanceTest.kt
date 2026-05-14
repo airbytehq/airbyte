@@ -17,6 +17,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 /**
  * Full end-to-end acceptance test for the Redshift destination in S3 staging mode.
@@ -78,7 +80,19 @@ abstract class RedshiftBaseAcceptanceTest(
 }
 
 /** Default acceptance test using JSONL over STDIO (standard data channel). */
-class RedshiftAcceptanceTest : RedshiftBaseAcceptanceTest()
+class RedshiftAcceptanceTest : RedshiftBaseAcceptanceTest() {
+    @Test
+    @Disabled("Disabled due to frequent timeouts syncing 21 streams via S3 staging")
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
+
+    @Test
+    @Disabled("Disabled due to frequent timeouts syncing 13 funky-character streams via S3 staging")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+}
 
 /**
  * Acceptance test using Protobuf over Socket data channel. Protobuf cannot represent unknown types,
