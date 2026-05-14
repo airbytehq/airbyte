@@ -443,13 +443,64 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         Making call to check "action_breakdowns" and "breakdowns" combinations
         https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+
+        Uses a three-tier fallback to avoid blocking setup when a high-cardinality
+        breakdown (for example `product_id`) trips Facebook's synchronous data-volume
+        limit ("Please reduce the amount of data you're asking for"):
+
+        1. First attempt uses the default params (no `time_range`) — preserves the
+           original validation behavior for every user who is not affected by the bug.
+        2. On a "reduce the amount of data" error, retry constrained to a single day
+           (`today`) so Facebook still validates the breakdown combination itself.
+        3. If the second call also returns "reduce the amount of data", log a warning
+           and return. Real syncs use async jobs with per-day slicing and handle large
+           result sets fine, so a volume-limited validation call must not block setup.
+
+        Any other `FacebookRequestError` is re-raised so truly invalid breakdown
+        combinations still fail the connection check.
         """
         params = {
             "action_breakdowns": self.action_breakdowns,
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
         }
-        self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+        try:
+            self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+            return
+        except FacebookRequestError as e:
+            if not self._is_reduce_data_error(e):
+                raise
+
+        today = date.today().strftime("%Y-%m-%d")
+        retry_params = {**params, "time_range": {"since": today, "until": today}}
+        try:
+            self._api.get_account(account_id=account_id).get_insights(params=retry_params, is_async=False)
+        except FacebookRequestError as e:
+            if not self._is_reduce_data_error(e):
+                raise
+            logger.warning(
+                "Breakdown validation exceeded Facebook API data-volume limit for account %s even after "
+                "constraining to a single day. This is expected for high-cardinality breakdowns (e.g. "
+                "product_id) and does not indicate an invalid breakdown combination. The actual sync uses "
+                "async jobs which handle large result sets.",
+                account_id,
+            )
+
+    @staticmethod
+    def _is_reduce_data_error(error: FacebookRequestError) -> bool:
+        """Match Facebook's synchronous-call data-volume-limit error by message.
+
+        Facebook does not publish a stable `error_subcode` for this case, and the real
+        payloads observed in the oncall issue (airbytehq/oncall#11482) and the public
+        issue airbytehq/airbyte#38025 contain only `code: 1` / `code: 100` with no
+        subcode. The message text is what every affected user actually sees, so we
+        match on it. If Facebook ever introduces a stable subcode, add it here.
+
+        Extracts the message via `api_error_message()` with `get_message()` as a fallback,
+        consistent with how `streams/common.py` and `streams/streams.py` read error text.
+        """
+        message = error.api_error_message() or error.get_message() or ""
+        return "reduce the amount of data" in message.lower()
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
