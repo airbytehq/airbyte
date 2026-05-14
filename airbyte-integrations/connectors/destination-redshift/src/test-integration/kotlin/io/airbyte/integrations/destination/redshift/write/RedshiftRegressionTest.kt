@@ -31,7 +31,7 @@ class RedshiftRegressionTest :
                 TableName("column", "column"),
                 TableName("create", "create"),
                 TableName("delete", "delete"),
-                // funky chars: é,./<>?'";[]\:{}|`~!@#$%^&*()_+-=
+                // funky chars : é,./<>?'";[]\:{}|`~!@#$%^&*()_+-= \
                 // After NFKD normalize + strip combining marks + replace non-alnum with _:
                 // é -> e, all special chars -> _
                 TableName("e________________________________", "e________________________________"),
