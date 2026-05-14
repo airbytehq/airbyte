@@ -4,7 +4,11 @@
 
 package io.airbyte.cdk.output.sockets
 
-import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.*
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_CLOSED
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_ERROR
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_INITIALIZED
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_READY
+import io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_WAITING_LISTENER
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -21,7 +25,6 @@ import java.nio.channels.SocketChannel
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Singleton
-import kotlin.properties.Delegates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -60,10 +63,6 @@ class UnixDomainSocketDataChannel(
     private val probePacket: ProbePacket,
     private val onStatusChange: (() -> Unit)? = null,
 ) : SocketDataChannel {
-
-    /*private var socketStatus: AtomicReference<SocketDataChannel.SocketStatus> by Delegates.observable (AtomicReference(SOCKET_CLOSED)) { _, _, newStatus ->
-        onStatusChange?.invoke(newStatus.get())
-    }*/
 
     private var _socketStatus: AtomicReference<SocketDataChannel.SocketStatus> = AtomicReference(SOCKET_CLOSED)
 
