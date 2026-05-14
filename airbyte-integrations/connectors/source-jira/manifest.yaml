@@ -14675,8 +14675,8 @@ spec:
             fields:
               - type: AddedFieldDefinition
                 path: ["domain"]
-                value: "{{ config['domain'].split('://', 1)[-1].rstrip('/') }}"
-            condition: "{{ config.get('domain') and ('://' in config['domain'] or config['domain'].endswith('/')) }}"
+                value: "{{ config.get('domain', '').split('://', 1)[-1].rstrip('/') }}"
+            condition: "{{ config.get('domain') and ('://' in config.get('domain', '') or config.get('domain', '').endswith('/')) }}"
     validations:
       - type: DpathValidator
         field_path: ["domain"]
