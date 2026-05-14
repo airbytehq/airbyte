@@ -26,7 +26,6 @@ import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
-import java.sql.SQLTransientConnectionException
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
@@ -34,10 +33,6 @@ internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 internal const val DESCRIBE_TABLE_COLUMN_TYPE_FIELD = "data_type"
 
 private val log = KotlinLogging.logger {}
-internal const val SNOWFLAKE_PRIVATE_KEY_ERROR_MESSAGE =
-    "Snowflake private key is invalid or unsupported."
-internal const val SNOWFLAKE_PRIVATE_KEY_ERROR_PATTERN =
-    "Private key provided is invalid or not supported"
 
 @Singleton
 @SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
@@ -53,7 +48,7 @@ class SnowflakeAirbyteClient(
         if (!tableExists(tableName)) {
             return null
         }
-        return connection().use { connection ->
+        return dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             statement.use {
                 val resultSet = it.executeQuery(sqlGenerator.countTable(tableName))
@@ -68,7 +63,7 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun tableExists(table: TableName): Boolean =
-        connection().use { connection ->
+        dataSource.connection.use { connection ->
             val statement =
                 connection.prepareStatement(
                     """
@@ -82,7 +77,7 @@ class SnowflakeAirbyteClient(
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
-        return connection().use { connection ->
+        return dataSource.connection.use { connection ->
             val statement =
                 connection.prepareStatement(
                     """
@@ -253,7 +248,7 @@ class SnowflakeAirbyteClient(
                     schemaName = tableName.namespace,
                     tableName = tableName.name
                 )
-            connection().use { connection ->
+            dataSource.connection.use { connection ->
                 val statement = connection.createStatement()
                 return statement.use {
                     val rs: ResultSet = it.executeQuery(sql)
@@ -283,7 +278,7 @@ class SnowflakeAirbyteClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
-            connection().use { connection ->
+            dataSource.connection.use { connection ->
                 val statement = connection.createStatement()
                 statement.use {
                     val resultSet = it.executeQuery(sqlGenerator.getGenerationId(tableName))
@@ -324,7 +319,7 @@ class SnowflakeAirbyteClient(
 
     fun describeTable(tableName: TableName): LinkedHashMap<String, String> =
         try {
-            connection().use { connection ->
+            dataSource.connection.use { connection ->
                 val statement = connection.createStatement()
                 return statement.use {
                     val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
@@ -377,25 +372,9 @@ class SnowflakeAirbyteClient(
             }
         }
     }
-
-    private fun connection() =
-        try {
-            dataSource.connection
-        } catch (e: SQLTransientConnectionException) {
-            if (e.cause?.message?.contains(SNOWFLAKE_PRIVATE_KEY_ERROR_PATTERN) == true) {
-                throw ConfigErrorException(SNOWFLAKE_PRIVATE_KEY_ERROR_MESSAGE, e)
-            }
-            throw e
-        }
 }
 
 fun DataSource.execute(query: String): ResultSet =
-    try {
-            this.connection
-        } catch (e: SQLTransientConnectionException) {
-            if (e.cause?.message?.contains(SNOWFLAKE_PRIVATE_KEY_ERROR_PATTERN) == true) {
-                throw ConfigErrorException(SNOWFLAKE_PRIVATE_KEY_ERROR_MESSAGE, e)
-            }
-            throw e
-        }
-        .use { connection -> connection.createStatement().use { it.executeQuery(query) } }
+    this.connection.use { connection ->
+        connection.createStatement().use { it.executeQuery(query) }
+    }
