@@ -155,6 +155,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.6.0 | 2026-05-14 | [78096](https://github.com/airbytehq/airbyte/pull/78096) | Promoted release candidate to GA |
 | 1.6.0-rc.2 | 2026-05-14 | [78082](https://github.com/airbytehq/airbyte/pull/78082) | Fix projects stream HTTP 400 after CDK v7 upgrade |
 | 1.6.0-rc.1 | 2026-04-27 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
 | 1.5.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
