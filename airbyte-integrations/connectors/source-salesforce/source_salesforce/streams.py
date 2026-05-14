@@ -1117,15 +1117,25 @@ class Describe(Stream):
     name = "Describe"
     primary_key = "name"
 
-    def __init__(self, sf_api: Salesforce, catalog: ConfiguredAirbyteCatalog = None, **kwargs):
+    def __init__(
+        self,
+        sf_api: Salesforce,
+        catalog: ConfiguredAirbyteCatalog = None,
+        sobjects_to_describe: Optional[Iterable[str]] = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
-        if catalog:
+        if sobjects_to_describe is not None:
+            self.sobjects_to_describe = list(sobjects_to_describe)
+        elif catalog:
             self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
+        else:
+            self.sobjects_to_describe = []
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
-        Yield describe response of SObjects defined in catalog as streams only.
+        Yield describe response of selected SObjects.
         """
         for sobject in self.sobjects_to_describe:
             yield self.sf_api.describe(sobject=sobject)
