@@ -44,7 +44,7 @@ class JiraOAuthAuthenticator:
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         creds = self.config.get("credentials", {})
-        if not creds.get("client_id") or not creds.get("client_secret"):
+        if creds.get("auth_type") != "OAuth2.0":
             return
         if JiraOAuthAuthenticator._shared_refresh_token is None:
             JiraOAuthAuthenticator._shared_refresh_token = creds.get("refresh_token")
