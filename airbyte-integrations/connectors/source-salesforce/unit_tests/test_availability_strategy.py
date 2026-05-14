@@ -19,7 +19,7 @@ class SalesforceAvailabilityStrategyTest(TestCase):
         self._logger = Mock()
         self._error = HTTPError(response=Mock(spec=Response))
 
-    def test_given_status_code_is_not_forbidden_or_bad_request_when_handle_http_error_then_raise_error(self) -> None:
+    def test_given_status_code_is_not_forbidden_bad_request_or_not_found_when_handle_http_error_then_raise_error(self) -> None:
         availability_strategy = SalesforceAvailabilityStrategy()
         self._error.response.status_code = 401
 
@@ -55,3 +55,17 @@ class SalesforceAvailabilityStrategyTest(TestCase):
 
         assert is_available
         assert reason is None
+
+    def test_given_not_found_when_handle_http_error_then_is_not_available_with_specific_reason(self) -> None:
+        availability_strategy = SalesforceAvailabilityStrategy()
+        self._stream.name = "MissingObject"
+        self._error.response.status_code = 404
+        self._error.response.json.return_value = [{"errorCode": "NOT_FOUND", "message": "The requested resource does not exist"}]
+
+        is_available, reason = availability_strategy.handle_http_error(self._stream, self._logger, _NO_SOURCE, self._error)
+
+        assert not is_available
+        assert (
+            reason
+            == 'Salesforce object "MissingObject" not found in this Salesforce instance. Remove the stream from the catalog or refresh the schema.'
+        )

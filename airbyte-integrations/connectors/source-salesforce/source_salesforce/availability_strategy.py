@@ -11,6 +11,8 @@ from requests import HTTPError, JSONDecodeError, codes
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
+from .rate_limiting import salesforce_object_not_found_message
+
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -28,12 +30,14 @@ class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
              And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
              we cannot filter out these streams, so we check for them before reading from the streams.
         """
-        if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+        if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST, codes.NOT_FOUND]:
             try:
                 error_data = error.response.json()[0]
             except JSONDecodeError as json_error:
                 raise error from json_error
             error_code = error_data.get("errorCode", "")
+            if error.response.status_code == codes.NOT_FOUND and error_code == "NOT_FOUND":
+                return False, salesforce_object_not_found_message(stream.name)
             if error_code != "REQUEST_LIMIT_EXCEEDED":
                 return False, f"Cannot receive data for stream '{stream.name}', error message: '{error_data.get('message')}'"
             return True, None

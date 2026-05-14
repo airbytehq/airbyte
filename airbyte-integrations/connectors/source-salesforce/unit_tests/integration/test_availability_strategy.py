@@ -72,6 +72,22 @@ class AvailabilityStrategyTest(TestCase):
 
         assert output == (False, f"Cannot receive data for stream '{_STREAM_NAME}', error message: 'OTHER_ERROR_MESSAGE'")
 
+    def test_handle_http_error_with_not_found_error_code_then_return_tuple(self) -> None:
+        mock_response = Mock()
+        mock_response.json.return_value = [{"errorCode": "NOT_FOUND", "message": "The requested resource does not exist"}]
+        http_error = exceptions.HTTPError(response=mock_response)
+        http_error.response.status_code = 404
+
+        stream = Mock()
+        stream.name = _STREAM_NAME
+
+        output = self._strategy.handle_http_error(stream, Mock(), Mock(), http_error)
+
+        assert output == (
+            False,
+            f'Salesforce object "{_STREAM_NAME}" not found in this Salesforce instance. Remove the stream from the catalog or refresh the schema.',
+        )
+
     def test_handle_http_error_with_server_error_code_then_raise_exception(self) -> None:
         mock_response = Mock()
         http_error = exceptions.HTTPError(response=mock_response)
