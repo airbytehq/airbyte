@@ -38,7 +38,7 @@ This is the right choice on a developer laptop or any machine where the credenti
 
 ### Environment variables
 
-Useful for CI, containers, and one-off overrides. All three must be set; if any is missing, the CLI falls through to the settings file.
+Environment variables are the preferred way to authenticate whenever the CLI runs somewhere there's no browser and no persistent settings file: agent sandboxes, scheduled jobs, container deployments, and serverless platforms like Modal, AWS Lambda, or Cloud Run. They also work for CI and one-off overrides on a developer machine. All three must be set; if any is missing, the CLI falls through to the settings file.
 
 ```bash title=".env"
 AIRBYTE_CLIENT_ID=<your_client_id>
@@ -49,6 +49,40 @@ AIRBYTE_ORGANIZATION_ID=<your_organization_id>
 ```bash
 export $(grep -v '^#' .env | xargs)
 airbyte-agent workspaces list
+```
+
+In a sandbox or any other long-lived deployment, supply the three values through whatever secret mechanism your platform offers (a `modal.Secret`, GitHub Actions secrets, Kubernetes secrets, AWS Secrets Manager, and so on). Once the values land in the process environment, the CLI picks them up automatically.
+
+#### Example: scheduled job on Modal
+
+On [Modal](https://modal.com/), bake the binary into the image and attach a `modal.Secret` to the function so the three values are present at runtime. The same pattern (image + secret) applies to most container and serverless platforms.
+
+```python
+import subprocess
+
+import modal
+
+image = (
+    modal.Image.debian_slim()
+    .apt_install("curl", "ca-certificates")
+    .run_commands(
+        # Install the latest linux_amd64 build of airbyte-agent.
+        "curl -sL https://api.github.com/repos/airbytehq/airbyte-agent-cli/releases/latest "
+        "| grep 'browser_download_url.*linux_amd64.tar.gz' | cut -d '\"' -f 4 "
+        "| xargs curl -sL | tar -xz -C /usr/local/bin airbyte-agent",
+    )
+)
+
+app = modal.App("airbyte-agent-sync")
+
+@app.function(
+    image=image,
+    schedule=modal.Period(hours=1),
+    # Secret holds AIRBYTE_CLIENT_ID, AIRBYTE_CLIENT_SECRET, AIRBYTE_ORGANIZATION_ID.
+    secrets=[modal.Secret.from_name("airbyte-agent")],
+)
+def list_workspaces() -> None:
+    subprocess.run(["airbyte-agent", "workspaces", "list"], check=True)
 ```
 
 Environment-variable resolution is all-or-nothing: the CLI uses env vars only when **all three** of `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID` are set. If any one is missing, it falls back to `~/.airbyte-agent/settings.json` and the env values are ignored. There's no partial override: setting only `AIRBYTE_ORGANIZATION_ID` alongside a populated settings file will use the file's org ID, not the env var.
