@@ -1,13 +1,13 @@
 reason: Devin release-block workflow validation only; do not merge
 yanked_version: 0.0.46
-blocked_at: '2026-05-14T17:33:53Z'
+blocked_at: "2026-05-14T17:33:53Z"
 blocked_by: aj@airbyte.io
-instructions: 'This connector''s release is blocked due to a known issue.
+instructions: "This connector's release is blocked due to a known issue.
 
   The broken code from the yanked version still lives on master.
 
-  To unblock, use the ''block-release.yml'' workflow with action=unblock
+  To unblock, use the 'block-release.yml' workflow with action=unblock
 
   or merge a PR that deletes this file.
 
-  '
+  "
