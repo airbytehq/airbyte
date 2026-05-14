@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift.client
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.directload.DirectLoadTableStatus
@@ -27,10 +28,8 @@ internal class RedshiftInitialStatusGathererTest {
 
     private fun mockStream(): DestinationStream {
         val tableNames = TableNames(finalTableName = realTable, tempTableName = tempTable)
-        return mockk {
-            every { tableSchema } returns
-                mockk { every { this@mockk.tableNames } returns tableNames }
-        }
+        val schema = mockk<StreamTableSchema> { every { this@mockk.tableNames } returns tableNames }
+        return mockk { every { tableSchema } returns schema }
     }
 
     private fun buildGatherer(

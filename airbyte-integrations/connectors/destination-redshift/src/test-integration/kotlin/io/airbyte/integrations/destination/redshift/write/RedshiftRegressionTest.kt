@@ -31,7 +31,7 @@ class RedshiftRegressionTest :
                 TableName("column", "column"),
                 TableName("create", "create"),
                 TableName("delete", "delete"),
-                // funky chars: é,./<>?'";[]\:{}|`~!@#$%^&*()_+-=
+                // funky chars : é,./<>?'";[]\:{}|`~!@#$%^&*()_+-= \
                 // After NFKD normalize + strip combining marks + replace non-alnum with _:
                 // é -> e, all special chars -> _
                 TableName("e________________________________", "e________________________________"),
@@ -50,11 +50,6 @@ class RedshiftRegressionTest :
                 TableName("mixed_case", "mixed_case"),
             ),
     ) {
-
-    @Test
-    override fun testSchemaRegressionAppend() {
-        super.testSchemaRegressionAppend()
-    }
 
     @Test
     override fun testSchemaRegressionSimpleDedup() {
@@ -85,11 +80,5 @@ class RedshiftRegressionTest :
     @Test
     override fun testTableIdentifierRegressionAppend() {
         super.testTableIdentifierRegressionAppend()
-    }
-
-    @ResourceLock("tableIdentifierRegressionTest")
-    @Test
-    override fun testTableIdentifierRegressionDedup() {
-        super.testTableIdentifierRegressionDedup()
     }
 }

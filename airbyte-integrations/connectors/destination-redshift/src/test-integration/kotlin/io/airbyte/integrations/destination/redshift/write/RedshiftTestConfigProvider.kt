@@ -39,7 +39,9 @@ object RedshiftTestConfigProvider {
     fun configFromFile(): RedshiftConfiguration {
         val configJson = Files.readString(Path.of(CONFIG_PATH))
         val mapper =
-            ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            ObjectMapper()
+                .findAndRegisterModules()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         val spec = mapper.readValue(configJson, RedshiftSpecification::class.java)
         return RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
     }
