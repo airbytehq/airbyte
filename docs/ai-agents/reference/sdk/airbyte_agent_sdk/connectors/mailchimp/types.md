@@ -33,6 +33,246 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="AutomationsAndCondition"></a>
+
+`AutomationsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="AutomationsAnyCondition"></a>
+
+`AutomationsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsAnyValueFilter"></a>
+
+`AutomationsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `create_time: Any`
+    :   The date and time the Automation was created
+
+    `emails_sent: Any`
+    :   The total number of emails sent for the Automation
+
+    `id: Any`
+    :   A string that uniquely identifies an Automation workflow
+
+    `recipients: Any`
+    :   List settings for the Automation
+
+    `report_summary: Any`
+    :   A summary of opens and clicks for sent campaigns
+
+    `settings: Any`
+    :   The settings for the Automation workflow
+
+    `start_time: Any`
+    :   The date and time the Automation was started
+
+    `status: Any`
+    :   The current status of the Automation
+
+    `tracking: Any`
+    :   The tracking options for the Automation
+
+<a id="AutomationsContainsCondition"></a>
+
+`AutomationsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsEqCondition"></a>
+
+`AutomationsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsFuzzyCondition"></a>
+
+`AutomationsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStringFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsGtCondition"></a>
+
+`AutomationsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsGteCondition"></a>
+
+`AutomationsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsInCondition"></a>
+
+`AutomationsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsInFilter"></a>
+
+`AutomationsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `create_time: list[str]`
+    :   The date and time the Automation was created
+
+    `emails_sent: list[int]`
+    :   The total number of emails sent for the Automation
+
+    `id: list[str]`
+    :   A string that uniquely identifies an Automation workflow
+
+    `recipients: list[dict[str, typing.Any]]`
+    :   List settings for the Automation
+
+    `report_summary: list[dict[str, typing.Any]]`
+    :   A summary of opens and clicks for sent campaigns
+
+    `settings: list[dict[str, typing.Any]]`
+    :   The settings for the Automation workflow
+
+    `start_time: list[str]`
+    :   The date and time the Automation was started
+
+    `status: list[str]`
+    :   The current status of the Automation
+
+    `tracking: list[dict[str, typing.Any]]`
+    :   The tracking options for the Automation
+
+<a id="AutomationsKeywordCondition"></a>
+
+`AutomationsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStringFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsLikeCondition"></a>
+
+`AutomationsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AutomationsListParams"></a>
 
 `AutomationsListParams(*args, **kwargs)`
@@ -64,6 +304,223 @@ Classes
 
     `status: str`
     :   The type of the None singleton.
+
+<a id="AutomationsLtCondition"></a>
+
+`AutomationsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsLteCondition"></a>
+
+`AutomationsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsNeqCondition"></a>
+
+`AutomationsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AutomationsNotCondition"></a>
+
+`AutomationsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="AutomationsOrCondition"></a>
+
+`AutomationsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="AutomationsSearchFilter"></a>
+
+`AutomationsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering automations search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `create_time: str | None`
+    :   The date and time the Automation was created
+
+    `emails_sent: int | None`
+    :   The total number of emails sent for the Automation
+
+    `id: str`
+    :   A string that uniquely identifies an Automation workflow
+
+    `recipients: dict[str, typing.Any] | None`
+    :   List settings for the Automation
+
+    `report_summary: dict[str, typing.Any] | None`
+    :   A summary of opens and clicks for sent campaigns
+
+    `settings: dict[str, typing.Any] | None`
+    :   The settings for the Automation workflow
+
+    `start_time: str | None`
+    :   The date and time the Automation was started
+
+    `status: str | None`
+    :   The current status of the Automation
+
+    `tracking: dict[str, typing.Any] | None`
+    :   The tracking options for the Automation
+
+<a id="AutomationsSearchQuery"></a>
+
+`AutomationsSearchQuery(*args, **kwargs)`
+:   Search query for automations entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="AutomationsSortFilter"></a>
+
+`AutomationsSortFilter(*args, **kwargs)`
+:   Available fields for sorting automations search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `create_time: Literal['asc', 'desc']`
+    :   The date and time the Automation was created
+
+    `emails_sent: Literal['asc', 'desc']`
+    :   The total number of emails sent for the Automation
+
+    `id: Literal['asc', 'desc']`
+    :   A string that uniquely identifies an Automation workflow
+
+    `recipients: Literal['asc', 'desc']`
+    :   List settings for the Automation
+
+    `report_summary: Literal['asc', 'desc']`
+    :   A summary of opens and clicks for sent campaigns
+
+    `settings: Literal['asc', 'desc']`
+    :   The settings for the Automation workflow
+
+    `start_time: Literal['asc', 'desc']`
+    :   The date and time the Automation was started
+
+    `status: Literal['asc', 'desc']`
+    :   The current status of the Automation
+
+    `tracking: Literal['asc', 'desc']`
+    :   The tracking options for the Automation
+
+<a id="AutomationsStringFilter"></a>
+
+`AutomationsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `create_time: str`
+    :   The date and time the Automation was created
+
+    `emails_sent: str`
+    :   The total number of emails sent for the Automation
+
+    `id: str`
+    :   A string that uniquely identifies an Automation workflow
+
+    `recipients: str`
+    :   List settings for the Automation
+
+    `report_summary: str`
+    :   A summary of opens and clicks for sent campaigns
+
+    `settings: str`
+    :   The settings for the Automation workflow
+
+    `start_time: str`
+    :   The date and time the Automation was started
+
+    `status: str`
+    :   The current status of the Automation
+
+    `tracking: str`
+    :   The tracking options for the Automation
 
 <a id="CampaignsAndCondition"></a>
 
@@ -1273,6 +1730,118 @@ Classes
     `url: str`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="InterestCategoriesAndCondition"></a>
+
+`InterestCategoriesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesAnyCondition"></a>
+
+`InterestCategoriesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesAnyValueFilter"></a>
+
+`InterestCategoriesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `display_order: Any`
+    :   The order that the categories are displayed in the list
+
+    `id: Any`
+    :   The id for the interest category
+
+    `list_id: Any`
+    :   The unique list id for the category
+
+    `title: Any`
+    :   The text description of this category
+
+    `type_: Any`
+    :   Determines how this category's interests appear on signup forms
+
+<a id="InterestCategoriesContainsCondition"></a>
+
+`InterestCategoriesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesEqCondition"></a>
+
+`InterestCategoriesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesFuzzyCondition"></a>
+
+`InterestCategoriesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="InterestCategoriesGetParams"></a>
 
 `InterestCategoriesGetParams(*args, **kwargs)`
@@ -1288,6 +1857,110 @@ Classes
     :   The type of the None singleton.
 
     `list_id: str`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesGtCondition"></a>
+
+`InterestCategoriesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesGteCondition"></a>
+
+`InterestCategoriesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesInCondition"></a>
+
+`InterestCategoriesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesInFilter"></a>
+
+`InterestCategoriesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `display_order: list[int]`
+    :   The order that the categories are displayed in the list
+
+    `id: list[str]`
+    :   The id for the interest category
+
+    `list_id: list[str]`
+    :   The unique list id for the category
+
+    `title: list[str]`
+    :   The text description of this category
+
+    `type_: list[str]`
+    :   Determines how this category's interests appear on signup forms
+
+<a id="InterestCategoriesKeywordCondition"></a>
+
+`InterestCategoriesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStringFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesLikeCondition"></a>
+
+`InterestCategoriesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStringFilter`
     :   The type of the None singleton.
 
 <a id="InterestCategoriesListParams"></a>
@@ -1310,6 +1983,302 @@ Classes
     `offset: int`
     :   The type of the None singleton.
 
+<a id="InterestCategoriesLtCondition"></a>
+
+`InterestCategoriesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesLteCondition"></a>
+
+`InterestCategoriesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesNeqCondition"></a>
+
+`InterestCategoriesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesNotCondition"></a>
+
+`InterestCategoriesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesOrCondition"></a>
+
+`InterestCategoriesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesSearchFilter"></a>
+
+`InterestCategoriesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering interest_categories search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `display_order: int | None`
+    :   The order that the categories are displayed in the list
+
+    `id: str`
+    :   The id for the interest category
+
+    `list_id: str | None`
+    :   The unique list id for the category
+
+    `title: str | None`
+    :   The text description of this category
+
+    `type_: str | None`
+    :   Determines how this category's interests appear on signup forms
+
+<a id="InterestCategoriesSearchQuery"></a>
+
+`InterestCategoriesSearchQuery(*args, **kwargs)`
+:   Search query for interest_categories entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesSortFilter"></a>
+
+`InterestCategoriesSortFilter(*args, **kwargs)`
+:   Available fields for sorting interest_categories search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `display_order: Literal['asc', 'desc']`
+    :   The order that the categories are displayed in the list
+
+    `id: Literal['asc', 'desc']`
+    :   The id for the interest category
+
+    `list_id: Literal['asc', 'desc']`
+    :   The unique list id for the category
+
+    `title: Literal['asc', 'desc']`
+    :   The text description of this category
+
+    `type_: Literal['asc', 'desc']`
+    :   Determines how this category's interests appear on signup forms
+
+<a id="InterestCategoriesStringFilter"></a>
+
+`InterestCategoriesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `display_order: str`
+    :   The order that the categories are displayed in the list
+
+    `id: str`
+    :   The id for the interest category
+
+    `list_id: str`
+    :   The unique list id for the category
+
+    `title: str`
+    :   The text description of this category
+
+    `type_: str`
+    :   Determines how this category's interests appear on signup forms
+
+<a id="InterestsAndCondition"></a>
+
+`InterestsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="InterestsAnyCondition"></a>
+
+`InterestsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsAnyValueFilter"></a>
+
+`InterestsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `category_id: Any`
+    :   The id for the interest category
+
+    `display_order: Any`
+    :   The display order for interests
+
+    `id: Any`
+    :   The ID for the interest
+
+    `list_id: Any`
+    :   The ID for the list that this interest belongs to
+
+    `name: Any`
+    :   The name of the interest
+
+    `subscriber_count: Any`
+    :   The number of subscribers associated with this interest
+
+<a id="InterestsContainsCondition"></a>
+
+`InterestsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsEqCondition"></a>
+
+`InterestsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.InterestsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsFuzzyCondition"></a>
+
+`InterestsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.InterestsStringFilter`
+    :   The type of the None singleton.
+
 <a id="InterestsGetParams"></a>
 
 `InterestsGetParams(*args, **kwargs)`
@@ -1328,6 +2297,113 @@ Classes
     :   The type of the None singleton.
 
     `list_id: str`
+    :   The type of the None singleton.
+
+<a id="InterestsGtCondition"></a>
+
+`InterestsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.InterestsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsGteCondition"></a>
+
+`InterestsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.InterestsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsInCondition"></a>
+
+`InterestsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.InterestsInFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsInFilter"></a>
+
+`InterestsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `category_id: list[str]`
+    :   The id for the interest category
+
+    `display_order: list[int]`
+    :   The display order for interests
+
+    `id: list[str]`
+    :   The ID for the interest
+
+    `list_id: list[str]`
+    :   The ID for the list that this interest belongs to
+
+    `name: list[str]`
+    :   The name of the interest
+
+    `subscriber_count: list[str]`
+    :   The number of subscribers associated with this interest
+
+<a id="InterestsKeywordCondition"></a>
+
+`InterestsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.InterestsStringFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsLikeCondition"></a>
+
+`InterestsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.InterestsStringFilter`
     :   The type of the None singleton.
 
 <a id="InterestsListParams"></a>
@@ -1353,6 +2429,374 @@ Classes
     `offset: int`
     :   The type of the None singleton.
 
+<a id="InterestsLtCondition"></a>
+
+`InterestsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.InterestsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsLteCondition"></a>
+
+`InterestsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.InterestsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsNeqCondition"></a>
+
+`InterestsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.InterestsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="InterestsNotCondition"></a>
+
+`InterestsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="InterestsOrCondition"></a>
+
+`InterestsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="InterestsSearchFilter"></a>
+
+`InterestsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering interests search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `category_id: str | None`
+    :   The id for the interest category
+
+    `display_order: int | None`
+    :   The display order for interests
+
+    `id: str`
+    :   The ID for the interest
+
+    `list_id: str | None`
+    :   The ID for the list that this interest belongs to
+
+    `name: str | None`
+    :   The name of the interest
+
+    `subscriber_count: str | None`
+    :   The number of subscribers associated with this interest
+
+<a id="InterestsSearchQuery"></a>
+
+`InterestsSearchQuery(*args, **kwargs)`
+:   Search query for interests entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="InterestsSortFilter"></a>
+
+`InterestsSortFilter(*args, **kwargs)`
+:   Available fields for sorting interests search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `category_id: Literal['asc', 'desc']`
+    :   The id for the interest category
+
+    `display_order: Literal['asc', 'desc']`
+    :   The display order for interests
+
+    `id: Literal['asc', 'desc']`
+    :   The ID for the interest
+
+    `list_id: Literal['asc', 'desc']`
+    :   The ID for the list that this interest belongs to
+
+    `name: Literal['asc', 'desc']`
+    :   The name of the interest
+
+    `subscriber_count: Literal['asc', 'desc']`
+    :   The number of subscribers associated with this interest
+
+<a id="InterestsStringFilter"></a>
+
+`InterestsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `category_id: str`
+    :   The id for the interest category
+
+    `display_order: str`
+    :   The display order for interests
+
+    `id: str`
+    :   The ID for the interest
+
+    `list_id: str`
+    :   The ID for the list that this interest belongs to
+
+    `name: str`
+    :   The name of the interest
+
+    `subscriber_count: str`
+    :   The number of subscribers associated with this interest
+
+<a id="ListMembersAndCondition"></a>
+
+`ListMembersAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ListMembersAnyCondition"></a>
+
+`ListMembersAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersAnyValueFilter"></a>
+
+`ListMembersAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `consents_to_one_to_one_messaging: Any`
+    :   Indicates whether a contact consents to 1:1 messaging
+
+    `contact_id: Any`
+    :   As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+
+    `email_address: Any`
+    :   Email address for a subscriber
+
+    `email_client: Any`
+    :   The list member's email client
+
+    `email_type: Any`
+    :   Type of email this member asked to get
+
+    `full_name: Any`
+    :   The contact's full name
+
+    `id: Any`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: Any`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: Any`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: Any`
+    :   IP address the subscriber signed up from
+
+    `language: Any`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: Any`
+    :   The date and time the member's info was last changed
+
+    `list_id: Any`
+    :   The list id
+
+    `location: Any`
+    :   Subscriber location information
+
+    `member_rating: Any`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: Any`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `source: Any`
+    :   The source from which the subscriber was added to this list
+
+    `stats: Any`
+    :   Open and click rates for this subscriber
+
+    `status: Any`
+    :   Subscriber's current status
+
+    `tags: Any`
+    :   Returns up to 50 tags applied to this member
+
+    `tags_count: Any`
+    :   The number of tags applied to this member
+
+    `timestamp_opt: Any`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: Any`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: Any`
+    :   An identifier for the address across all of Mailchimp
+
+    `unsubscribe_reason: Any`
+    :   A subscriber's reason for unsubscribing
+
+    `vip: Any`
+    :   VIP status for subscriber
+
+    `web_id: Any`
+    :   The ID used in the Mailchimp web application
+
+<a id="ListMembersContainsCondition"></a>
+
+`ListMembersContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersEqCondition"></a>
+
+`ListMembersEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersFuzzyCondition"></a>
+
+`ListMembersFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStringFilter`
+    :   The type of the None singleton.
+
 <a id="ListMembersGetParams"></a>
 
 `ListMembersGetParams(*args, **kwargs)`
@@ -1368,6 +2812,176 @@ Classes
     :   The type of the None singleton.
 
     `subscriber_hash: str`
+    :   The type of the None singleton.
+
+<a id="ListMembersGtCondition"></a>
+
+`ListMembersGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersGteCondition"></a>
+
+`ListMembersGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersInCondition"></a>
+
+`ListMembersInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersInFilter"></a>
+
+`ListMembersInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `consents_to_one_to_one_messaging: list[bool]`
+    :   Indicates whether a contact consents to 1:1 messaging
+
+    `contact_id: list[str]`
+    :   As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+
+    `email_address: list[str]`
+    :   Email address for a subscriber
+
+    `email_client: list[str]`
+    :   The list member's email client
+
+    `email_type: list[str]`
+    :   Type of email this member asked to get
+
+    `full_name: list[str]`
+    :   The contact's full name
+
+    `id: list[str]`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: list[dict[str, typing.Any]]`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: list[str]`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: list[str]`
+    :   IP address the subscriber signed up from
+
+    `language: list[str]`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: list[str]`
+    :   The date and time the member's info was last changed
+
+    `list_id: list[str]`
+    :   The list id
+
+    `location: list[dict[str, typing.Any]]`
+    :   Subscriber location information
+
+    `member_rating: list[int]`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: list[dict[str, typing.Any]]`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `source: list[str]`
+    :   The source from which the subscriber was added to this list
+
+    `stats: list[dict[str, typing.Any]]`
+    :   Open and click rates for this subscriber
+
+    `status: list[str]`
+    :   Subscriber's current status
+
+    `tags: list[list[typing.Any]]`
+    :   Returns up to 50 tags applied to this member
+
+    `tags_count: list[int]`
+    :   The number of tags applied to this member
+
+    `timestamp_opt: list[str]`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: list[str]`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: list[str]`
+    :   An identifier for the address across all of Mailchimp
+
+    `unsubscribe_reason: list[str]`
+    :   A subscriber's reason for unsubscribing
+
+    `vip: list[bool]`
+    :   VIP status for subscriber
+
+    `web_id: list[int]`
+    :   The ID used in the Mailchimp web application
+
+<a id="ListMembersKeywordCondition"></a>
+
+`ListMembersKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStringFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersLikeCondition"></a>
+
+`ListMembersLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStringFilter`
     :   The type of the None singleton.
 
 <a id="ListMembersListParams"></a>
@@ -1428,6 +3042,385 @@ Classes
 
     `vip_only: bool`
     :   The type of the None singleton.
+
+<a id="ListMembersLtCondition"></a>
+
+`ListMembersLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersLteCondition"></a>
+
+`ListMembersLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersNeqCondition"></a>
+
+`ListMembersNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="ListMembersNotCondition"></a>
+
+`ListMembersNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition`
+    :   The type of the None singleton.
+
+<a id="ListMembersOrCondition"></a>
+
+`ListMembersOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="ListMembersSearchFilter"></a>
+
+`ListMembersSearchFilter(*args, **kwargs)`
+:   Available fields for filtering list_members search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `consents_to_one_to_one_messaging: bool | None`
+    :   Indicates whether a contact consents to 1:1 messaging
+
+    `contact_id: str | None`
+    :   As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+
+    `email_address: str | None`
+    :   Email address for a subscriber
+
+    `email_client: str | None`
+    :   The list member's email client
+
+    `email_type: str | None`
+    :   Type of email this member asked to get
+
+    `full_name: str | None`
+    :   The contact's full name
+
+    `id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: dict[str, typing.Any] | None`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: str | None`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: str | None`
+    :   IP address the subscriber signed up from
+
+    `language: str | None`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: str | None`
+    :   The date and time the member's info was last changed
+
+    `list_id: str | None`
+    :   The list id
+
+    `location: dict[str, typing.Any] | None`
+    :   Subscriber location information
+
+    `member_rating: int | None`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: dict[str, typing.Any] | None`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `source: str | None`
+    :   The source from which the subscriber was added to this list
+
+    `stats: dict[str, typing.Any] | None`
+    :   Open and click rates for this subscriber
+
+    `status: str | None`
+    :   Subscriber's current status
+
+    `tags: list[typing.Any] | None`
+    :   Returns up to 50 tags applied to this member
+
+    `tags_count: int | None`
+    :   The number of tags applied to this member
+
+    `timestamp_opt: str | None`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: str | None`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: str | None`
+    :   An identifier for the address across all of Mailchimp
+
+    `unsubscribe_reason: str | None`
+    :   A subscriber's reason for unsubscribing
+
+    `vip: bool | None`
+    :   VIP status for subscriber
+
+    `web_id: int | None`
+    :   The ID used in the Mailchimp web application
+
+<a id="ListMembersSearchQuery"></a>
+
+`ListMembersSearchQuery(*args, **kwargs)`
+:   Search query for list_members entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSortFilter]`
+    :   The type of the None singleton.
+
+<a id="ListMembersSortFilter"></a>
+
+`ListMembersSortFilter(*args, **kwargs)`
+:   Available fields for sorting list_members search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `consents_to_one_to_one_messaging: Literal['asc', 'desc']`
+    :   Indicates whether a contact consents to 1:1 messaging
+
+    `contact_id: Literal['asc', 'desc']`
+    :   As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+
+    `email_address: Literal['asc', 'desc']`
+    :   Email address for a subscriber
+
+    `email_client: Literal['asc', 'desc']`
+    :   The list member's email client
+
+    `email_type: Literal['asc', 'desc']`
+    :   Type of email this member asked to get
+
+    `full_name: Literal['asc', 'desc']`
+    :   The contact's full name
+
+    `id: Literal['asc', 'desc']`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: Literal['asc', 'desc']`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: Literal['asc', 'desc']`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: Literal['asc', 'desc']`
+    :   IP address the subscriber signed up from
+
+    `language: Literal['asc', 'desc']`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: Literal['asc', 'desc']`
+    :   The date and time the member's info was last changed
+
+    `list_id: Literal['asc', 'desc']`
+    :   The list id
+
+    `location: Literal['asc', 'desc']`
+    :   Subscriber location information
+
+    `member_rating: Literal['asc', 'desc']`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: Literal['asc', 'desc']`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `source: Literal['asc', 'desc']`
+    :   The source from which the subscriber was added to this list
+
+    `stats: Literal['asc', 'desc']`
+    :   Open and click rates for this subscriber
+
+    `status: Literal['asc', 'desc']`
+    :   Subscriber's current status
+
+    `tags: Literal['asc', 'desc']`
+    :   Returns up to 50 tags applied to this member
+
+    `tags_count: Literal['asc', 'desc']`
+    :   The number of tags applied to this member
+
+    `timestamp_opt: Literal['asc', 'desc']`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: Literal['asc', 'desc']`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: Literal['asc', 'desc']`
+    :   An identifier for the address across all of Mailchimp
+
+    `unsubscribe_reason: Literal['asc', 'desc']`
+    :   A subscriber's reason for unsubscribing
+
+    `vip: Literal['asc', 'desc']`
+    :   VIP status for subscriber
+
+    `web_id: Literal['asc', 'desc']`
+    :   The ID used in the Mailchimp web application
+
+<a id="ListMembersStringFilter"></a>
+
+`ListMembersStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `consents_to_one_to_one_messaging: str`
+    :   Indicates whether a contact consents to 1:1 messaging
+
+    `contact_id: str`
+    :   As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+
+    `email_address: str`
+    :   Email address for a subscriber
+
+    `email_client: str`
+    :   The list member's email client
+
+    `email_type: str`
+    :   Type of email this member asked to get
+
+    `full_name: str`
+    :   The contact's full name
+
+    `id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: str`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: str`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: str`
+    :   IP address the subscriber signed up from
+
+    `language: str`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: str`
+    :   The date and time the member's info was last changed
+
+    `list_id: str`
+    :   The list id
+
+    `location: str`
+    :   Subscriber location information
+
+    `member_rating: str`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: str`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `source: str`
+    :   The source from which the subscriber was added to this list
+
+    `stats: str`
+    :   Open and click rates for this subscriber
+
+    `status: str`
+    :   Subscriber's current status
+
+    `tags: str`
+    :   Returns up to 50 tags applied to this member
+
+    `tags_count: str`
+    :   The number of tags applied to this member
+
+    `timestamp_opt: str`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: str`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: str`
+    :   An identifier for the address across all of Mailchimp
+
+    `unsubscribe_reason: str`
+    :   A subscriber's reason for unsubscribing
+
+    `vip: str`
+    :   VIP status for subscriber
+
+    `web_id: str`
+    :   The ID used in the Mailchimp web application
 
 <a id="ListsAndCondition"></a>
 
@@ -2870,6 +4863,306 @@ Classes
     `unsubscribed: str`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="SegmentMembersAndCondition"></a>
+
+`SegmentMembersAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersAnyCondition"></a>
+
+`SegmentMembersAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersAnyValueFilter"></a>
+
+`SegmentMembersAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email_address: Any`
+    :   Email address for a subscriber
+
+    `email_client: Any`
+    :   The list member's email client
+
+    `email_type: Any`
+    :   Type of email this member asked to get
+
+    `id: Any`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: Any`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: Any`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: Any`
+    :   IP address the subscriber signed up from
+
+    `language: Any`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: Any`
+    :   The date and time the member's info was last changed
+
+    `list_id: Any`
+    :   The list id
+
+    `location: Any`
+    :   Subscriber location information
+
+    `member_rating: Any`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: Any`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `stats: Any`
+    :   Open and click rates for this subscriber
+
+    `status: Any`
+    :   Subscriber's current status
+
+    `timestamp_opt: Any`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: Any`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: Any`
+    :   An identifier for the address across all of Mailchimp
+
+    `vip: Any`
+    :   VIP status for subscriber
+
+<a id="SegmentMembersContainsCondition"></a>
+
+`SegmentMembersContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersEqCondition"></a>
+
+`SegmentMembersEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersFuzzyCondition"></a>
+
+`SegmentMembersFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStringFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersGtCondition"></a>
+
+`SegmentMembersGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersGteCondition"></a>
+
+`SegmentMembersGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersInCondition"></a>
+
+`SegmentMembersInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersInFilter"></a>
+
+`SegmentMembersInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email_address: list[str]`
+    :   Email address for a subscriber
+
+    `email_client: list[str]`
+    :   The list member's email client
+
+    `email_type: list[str]`
+    :   Type of email this member asked to get
+
+    `id: list[str]`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: list[dict[str, typing.Any]]`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: list[str]`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: list[str]`
+    :   IP address the subscriber signed up from
+
+    `language: list[str]`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: list[str]`
+    :   The date and time the member's info was last changed
+
+    `list_id: list[str]`
+    :   The list id
+
+    `location: list[dict[str, typing.Any]]`
+    :   Subscriber location information
+
+    `member_rating: list[int]`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: list[dict[str, typing.Any]]`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `stats: list[dict[str, typing.Any]]`
+    :   Open and click rates for this subscriber
+
+    `status: list[str]`
+    :   Subscriber's current status
+
+    `timestamp_opt: list[str]`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: list[str]`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: list[str]`
+    :   An identifier for the address across all of Mailchimp
+
+    `vip: list[bool]`
+    :   VIP status for subscriber
+
+<a id="SegmentMembersKeywordCondition"></a>
+
+`SegmentMembersKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStringFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersLikeCondition"></a>
+
+`SegmentMembersLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStringFilter`
+    :   The type of the None singleton.
+
 <a id="SegmentMembersListParams"></a>
 
 `SegmentMembersListParams(*args, **kwargs)`
@@ -2893,6 +5186,434 @@ Classes
     `segment_id: str`
     :   The type of the None singleton.
 
+<a id="SegmentMembersLtCondition"></a>
+
+`SegmentMembersLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersLteCondition"></a>
+
+`SegmentMembersLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersNeqCondition"></a>
+
+`SegmentMembersNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersNotCondition"></a>
+
+`SegmentMembersNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersOrCondition"></a>
+
+`SegmentMembersOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersSearchFilter"></a>
+
+`SegmentMembersSearchFilter(*args, **kwargs)`
+:   Available fields for filtering segment_members search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email_address: str | None`
+    :   Email address for a subscriber
+
+    `email_client: str | None`
+    :   The list member's email client
+
+    `email_type: str | None`
+    :   Type of email this member asked to get
+
+    `id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: dict[str, typing.Any] | None`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: str | None`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: str | None`
+    :   IP address the subscriber signed up from
+
+    `language: str | None`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: str | None`
+    :   The date and time the member's info was last changed
+
+    `list_id: str | None`
+    :   The list id
+
+    `location: dict[str, typing.Any] | None`
+    :   Subscriber location information
+
+    `member_rating: int | None`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: dict[str, typing.Any] | None`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `stats: dict[str, typing.Any] | None`
+    :   Open and click rates for this subscriber
+
+    `status: str | None`
+    :   Subscriber's current status
+
+    `timestamp_opt: str | None`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: str | None`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: str | None`
+    :   An identifier for the address across all of Mailchimp
+
+    `vip: bool | None`
+    :   VIP status for subscriber
+
+<a id="SegmentMembersSearchQuery"></a>
+
+`SegmentMembersSearchQuery(*args, **kwargs)`
+:   Search query for segment_members entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSortFilter]`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersSortFilter"></a>
+
+`SegmentMembersSortFilter(*args, **kwargs)`
+:   Available fields for sorting segment_members search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email_address: Literal['asc', 'desc']`
+    :   Email address for a subscriber
+
+    `email_client: Literal['asc', 'desc']`
+    :   The list member's email client
+
+    `email_type: Literal['asc', 'desc']`
+    :   Type of email this member asked to get
+
+    `id: Literal['asc', 'desc']`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: Literal['asc', 'desc']`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: Literal['asc', 'desc']`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: Literal['asc', 'desc']`
+    :   IP address the subscriber signed up from
+
+    `language: Literal['asc', 'desc']`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: Literal['asc', 'desc']`
+    :   The date and time the member's info was last changed
+
+    `list_id: Literal['asc', 'desc']`
+    :   The list id
+
+    `location: Literal['asc', 'desc']`
+    :   Subscriber location information
+
+    `member_rating: Literal['asc', 'desc']`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: Literal['asc', 'desc']`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `stats: Literal['asc', 'desc']`
+    :   Open and click rates for this subscriber
+
+    `status: Literal['asc', 'desc']`
+    :   Subscriber's current status
+
+    `timestamp_opt: Literal['asc', 'desc']`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: Literal['asc', 'desc']`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: Literal['asc', 'desc']`
+    :   An identifier for the address across all of Mailchimp
+
+    `vip: Literal['asc', 'desc']`
+    :   VIP status for subscriber
+
+<a id="SegmentMembersStringFilter"></a>
+
+`SegmentMembersStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email_address: str`
+    :   Email address for a subscriber
+
+    `email_client: str`
+    :   The list member's email client
+
+    `email_type: str`
+    :   Type of email this member asked to get
+
+    `id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: str`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: str`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: str`
+    :   IP address the subscriber signed up from
+
+    `language: str`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: str`
+    :   The date and time the member's info was last changed
+
+    `list_id: str`
+    :   The list id
+
+    `location: str`
+    :   Subscriber location information
+
+    `member_rating: str`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: str`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `stats: str`
+    :   Open and click rates for this subscriber
+
+    `status: str`
+    :   Subscriber's current status
+
+    `timestamp_opt: str`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: str`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: str`
+    :   An identifier for the address across all of Mailchimp
+
+    `vip: str`
+    :   VIP status for subscriber
+
+<a id="SegmentsAndCondition"></a>
+
+`SegmentsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SegmentsAnyCondition"></a>
+
+`SegmentsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsAnyValueFilter"></a>
+
+`SegmentsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Any`
+    :   The date and time the segment was created
+
+    `id: Any`
+    :   The unique id for the segment
+
+    `list_id: Any`
+    :   The list id
+
+    `member_count: Any`
+    :   The number of active subscribers currently included in the segment
+
+    `name: Any`
+    :   The name of the segment
+
+    `options: Any`
+    :   The conditions of the segment
+
+    `type_: Any`
+    :   The type of segment
+
+    `updated_at: Any`
+    :   The date and time the segment was last updated
+
+<a id="SegmentsContainsCondition"></a>
+
+`SegmentsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsEqCondition"></a>
+
+`SegmentsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsFuzzyCondition"></a>
+
+`SegmentsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SegmentsGetParams"></a>
 
 `SegmentsGetParams(*args, **kwargs)`
@@ -2908,6 +5629,119 @@ Classes
     :   The type of the None singleton.
 
     `segment_id: str`
+    :   The type of the None singleton.
+
+<a id="SegmentsGtCondition"></a>
+
+`SegmentsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsGteCondition"></a>
+
+`SegmentsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsInCondition"></a>
+
+`SegmentsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsInFilter"></a>
+
+`SegmentsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: list[str]`
+    :   The date and time the segment was created
+
+    `id: list[int]`
+    :   The unique id for the segment
+
+    `list_id: list[str]`
+    :   The list id
+
+    `member_count: list[int]`
+    :   The number of active subscribers currently included in the segment
+
+    `name: list[str]`
+    :   The name of the segment
+
+    `options: list[dict[str, typing.Any]]`
+    :   The conditions of the segment
+
+    `type_: list[str]`
+    :   The type of segment
+
+    `updated_at: list[str]`
+    :   The date and time the segment was last updated
+
+<a id="SegmentsKeywordCondition"></a>
+
+`SegmentsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsLikeCondition"></a>
+
+`SegmentsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStringFilter`
     :   The type of the None singleton.
 
 <a id="SegmentsListParams"></a>
@@ -2945,6 +5779,412 @@ Classes
     `type: str`
     :   The type of the None singleton.
 
+<a id="SegmentsLtCondition"></a>
+
+`SegmentsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsLteCondition"></a>
+
+`SegmentsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsNeqCondition"></a>
+
+`SegmentsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsNotCondition"></a>
+
+`SegmentsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="SegmentsOrCondition"></a>
+
+`SegmentsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SegmentsSearchFilter"></a>
+
+`SegmentsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering segments search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   The date and time the segment was created
+
+    `id: int`
+    :   The unique id for the segment
+
+    `list_id: str | None`
+    :   The list id
+
+    `member_count: int | None`
+    :   The number of active subscribers currently included in the segment
+
+    `name: str | None`
+    :   The name of the segment
+
+    `options: dict[str, typing.Any] | None`
+    :   The conditions of the segment
+
+    `type_: str | None`
+    :   The type of segment
+
+    `updated_at: str | None`
+    :   The date and time the segment was last updated
+
+<a id="SegmentsSearchQuery"></a>
+
+`SegmentsSearchQuery(*args, **kwargs)`
+:   Search query for segments entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="SegmentsSortFilter"></a>
+
+`SegmentsSortFilter(*args, **kwargs)`
+:   Available fields for sorting segments search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: Literal['asc', 'desc']`
+    :   The date and time the segment was created
+
+    `id: Literal['asc', 'desc']`
+    :   The unique id for the segment
+
+    `list_id: Literal['asc', 'desc']`
+    :   The list id
+
+    `member_count: Literal['asc', 'desc']`
+    :   The number of active subscribers currently included in the segment
+
+    `name: Literal['asc', 'desc']`
+    :   The name of the segment
+
+    `options: Literal['asc', 'desc']`
+    :   The conditions of the segment
+
+    `type_: Literal['asc', 'desc']`
+    :   The type of segment
+
+    `updated_at: Literal['asc', 'desc']`
+    :   The date and time the segment was last updated
+
+<a id="SegmentsStringFilter"></a>
+
+`SegmentsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   The date and time the segment was created
+
+    `id: str`
+    :   The unique id for the segment
+
+    `list_id: str`
+    :   The list id
+
+    `member_count: str`
+    :   The number of active subscribers currently included in the segment
+
+    `name: str`
+    :   The name of the segment
+
+    `options: str`
+    :   The conditions of the segment
+
+    `type_: str`
+    :   The type of segment
+
+    `updated_at: str`
+    :   The date and time the segment was last updated
+
+<a id="TagsAndCondition"></a>
+
+`TagsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="TagsAnyCondition"></a>
+
+`TagsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TagsAnyValueFilter"></a>
+
+`TagsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: Any`
+    :   The unique id for the tag
+
+    `name: Any`
+    :   The name of the tag
+
+<a id="TagsContainsCondition"></a>
+
+`TagsContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TagsEqCondition"></a>
+
+`TagsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.TagsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TagsFuzzyCondition"></a>
+
+`TagsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.TagsStringFilter`
+    :   The type of the None singleton.
+
+<a id="TagsGtCondition"></a>
+
+`TagsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.TagsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TagsGteCondition"></a>
+
+`TagsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.TagsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TagsInCondition"></a>
+
+`TagsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.TagsInFilter`
+    :   The type of the None singleton.
+
+<a id="TagsInFilter"></a>
+
+`TagsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: list[int]`
+    :   The unique id for the tag
+
+    `name: list[str]`
+    :   The name of the tag
+
+<a id="TagsKeywordCondition"></a>
+
+`TagsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.TagsStringFilter`
+    :   The type of the None singleton.
+
+<a id="TagsLikeCondition"></a>
+
+`TagsLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.TagsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TagsListParams"></a>
 
 `TagsListParams(*args, **kwargs)`
@@ -2960,6 +6200,400 @@ Classes
     :   The type of the None singleton.
 
     `name: str`
+    :   The type of the None singleton.
+
+<a id="TagsLtCondition"></a>
+
+`TagsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.TagsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TagsLteCondition"></a>
+
+`TagsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.TagsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TagsNeqCondition"></a>
+
+`TagsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.TagsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="TagsNotCondition"></a>
+
+`TagsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="TagsOrCondition"></a>
+
+`TagsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="TagsSearchFilter"></a>
+
+`TagsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering tags search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: int`
+    :   The unique id for the tag
+
+    `name: str | None`
+    :   The name of the tag
+
+<a id="TagsSearchQuery"></a>
+
+`TagsSearchQuery(*args, **kwargs)`
+:   Search query for tags entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="TagsSortFilter"></a>
+
+`TagsSortFilter(*args, **kwargs)`
+:   Available fields for sorting tags search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: Literal['asc', 'desc']`
+    :   The unique id for the tag
+
+    `name: Literal['asc', 'desc']`
+    :   The name of the tag
+
+<a id="TagsStringFilter"></a>
+
+`TagsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The unique id for the tag
+
+    `name: str`
+    :   The name of the tag
+
+<a id="UnsubscribesAndCondition"></a>
+
+`UnsubscribesAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesAnyCondition"></a>
+
+`UnsubscribesAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesAnyValueFilter"></a>
+
+`UnsubscribesAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `campaign_id: Any`
+    :   The campaign id
+
+    `email_address: Any`
+    :   Email address for a subscriber
+
+    `email_id: Any`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `list_id: Any`
+    :   The list id
+
+    `list_is_active: Any`
+    :   The status of the list used
+
+    `merge_fields: Any`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `reason: Any`
+    :   If available, the reason listed by the member for unsubscribing
+
+    `timestamp: Any`
+    :   The date and time the member opted-out
+
+    `vip: Any`
+    :   VIP status for subscriber
+
+<a id="UnsubscribesContainsCondition"></a>
+
+`UnsubscribesContainsCondition(*args, **kwargs)`
+:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesEqCondition"></a>
+
+`UnsubscribesEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesFuzzyCondition"></a>
+
+`UnsubscribesFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStringFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesGtCondition"></a>
+
+`UnsubscribesGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesGteCondition"></a>
+
+`UnsubscribesGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesInCondition"></a>
+
+`UnsubscribesInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesInFilter"></a>
+
+`UnsubscribesInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `campaign_id: list[str]`
+    :   The campaign id
+
+    `email_address: list[str]`
+    :   Email address for a subscriber
+
+    `email_id: list[str]`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `list_id: list[str]`
+    :   The list id
+
+    `list_is_active: list[bool]`
+    :   The status of the list used
+
+    `merge_fields: list[dict[str, typing.Any]]`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `reason: list[str]`
+    :   If available, the reason listed by the member for unsubscribing
+
+    `timestamp: list[str]`
+    :   The date and time the member opted-out
+
+    `vip: list[bool]`
+    :   VIP status for subscriber
+
+<a id="UnsubscribesKeywordCondition"></a>
+
+`UnsubscribesKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStringFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesLikeCondition"></a>
+
+`UnsubscribesLikeCondition(*args, **kwargs)`
+:   Partial string match with % wildcards.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `like: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStringFilter`
     :   The type of the None singleton.
 
 <a id="UnsubscribesListParams"></a>
@@ -2981,3 +6615,220 @@ Classes
 
     `offset: int`
     :   The type of the None singleton.
+
+<a id="UnsubscribesLtCondition"></a>
+
+`UnsubscribesLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesLteCondition"></a>
+
+`UnsubscribesLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesNeqCondition"></a>
+
+`UnsubscribesNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSearchFilter`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesNotCondition"></a>
+
+`UnsubscribesNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesOrCondition"></a>
+
+`UnsubscribesOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesSearchFilter"></a>
+
+`UnsubscribesSearchFilter(*args, **kwargs)`
+:   Available fields for filtering unsubscribes search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `campaign_id: str | None`
+    :   The campaign id
+
+    `email_address: str | None`
+    :   Email address for a subscriber
+
+    `email_id: str | None`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `list_id: str | None`
+    :   The list id
+
+    `list_is_active: bool | None`
+    :   The status of the list used
+
+    `merge_fields: dict[str, typing.Any] | None`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `reason: str | None`
+    :   If available, the reason listed by the member for unsubscribing
+
+    `timestamp: str | None`
+    :   The date and time the member opted-out
+
+    `vip: bool | None`
+    :   VIP status for subscriber
+
+<a id="UnsubscribesSearchQuery"></a>
+
+`UnsubscribesSearchQuery(*args, **kwargs)`
+:   Search query for unsubscribes entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLikeCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSortFilter]`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesSortFilter"></a>
+
+`UnsubscribesSortFilter(*args, **kwargs)`
+:   Available fields for sorting unsubscribes search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `campaign_id: Literal['asc', 'desc']`
+    :   The campaign id
+
+    `email_address: Literal['asc', 'desc']`
+    :   Email address for a subscriber
+
+    `email_id: Literal['asc', 'desc']`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `list_id: Literal['asc', 'desc']`
+    :   The list id
+
+    `list_is_active: Literal['asc', 'desc']`
+    :   The status of the list used
+
+    `merge_fields: Literal['asc', 'desc']`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `reason: Literal['asc', 'desc']`
+    :   If available, the reason listed by the member for unsubscribing
+
+    `timestamp: Literal['asc', 'desc']`
+    :   The date and time the member opted-out
+
+    `vip: Literal['asc', 'desc']`
+    :   VIP status for subscriber
+
+<a id="UnsubscribesStringFilter"></a>
+
+`UnsubscribesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (like, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `campaign_id: str`
+    :   The campaign id
+
+    `email_address: str`
+    :   Email address for a subscriber
+
+    `email_id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `list_id: str`
+    :   The list id
+
+    `list_is_active: str`
+    :   The status of the list used
+
+    `merge_fields: str`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `reason: str`
+    :   If available, the reason listed by the member for unsubscribing
+
+    `timestamp: str`
+    :   The date and time the member opted-out
+
+    `vip: str`
+    :   VIP status for subscriber

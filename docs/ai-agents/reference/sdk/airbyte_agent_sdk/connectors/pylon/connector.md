@@ -539,33 +539,6 @@ Classes
 
     ### Methods
 
-    `context_store_search(self, query: MessagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[MessagesSearchData]`
-    :   Search messages records from Airbyte cache.
-        
-        This operation searches cached data from Airbyte syncs.
-        Only available in hosted execution mode.
-        
-        Available filter fields (MessagesSearchFilter):
-        - id: Unique identifier for the message
-        - timestamp: Timestamp the message was posted, in ISO 8601 format
-        - is_private: Whether the message is an internal note (not visible to the customer)
-        - source: Channel the message was sent through (e.g. email, slack)
-        - thread_id: Identifier of the thread this message belongs to
-        
-        Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
-            limit: Maximum results to return (default 1000)
-            cursor: Pagination cursor from previous response's meta.cursor
-            fields: Field paths to include in results. Each path is a list of keys for nested access.
-                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
-        
-        Returns:
-            MessagesSearchResult with typed records, pagination metadata, and optional search metadata
-        
-        Raises:
-            NotImplementedError: If called in local execution mode
-
     `list(self, id: str | None = None, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.pylon.models.PylonExecuteResultWithMeta[list[Message], MessagesListResultMeta]`
     :   Returns all messages on an issue (customer-facing replies and internal notes)
         
@@ -699,41 +672,6 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'PylonAuthConfig'", name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> airbyte_agent_sdk.connectors.pylon.connector.PylonConnector`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A PylonConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await PylonConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=PylonAuthConfig(api_token="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -784,10 +722,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await PylonConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 

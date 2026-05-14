@@ -51,6 +51,12 @@ definitions:
                   - type: ExponentialBackoffStrategy
                 response_filters:
                   - type: HttpResponseFilter
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    http_codes:
+                      - 401
+                    failure_type: transient_error
+                    error_message: Access token is expired.
+                  - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
                       - 500
@@ -104,6 +110,12 @@ definitions:
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    http_codes:
+                      - 401
+                    failure_type: transient_error
+                    error_message: Access token is expired.
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
@@ -168,6 +180,12 @@ definitions:
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    http_codes:
+                      - 401
+                    failure_type: transient_error
+                    error_message: Access token is expired.
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
@@ -238,6 +256,12 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    http_codes:
+                      - 401
+                    failure_type: transient_error
+                    error_message: Access token is expired.
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
@@ -347,6 +371,12 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 10
                 response_filters:
+                  - type: HttpResponseFilter
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    http_codes:
+                      - 401
+                    failure_type: transient_error
+                    error_message: Access token is expired.
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
@@ -469,6 +499,12 @@ definitions:
                   {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
                   response.error.errors[0].message }}
               - type: HttpResponseFilter
+                action: REFRESH_TOKEN_THEN_RETRY
+                http_codes:
+                  - 401
+                failure_type: transient_error
+                error_message: Access token is expired.
+              - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 500
@@ -577,6 +613,12 @@ definitions:
                   - type: ExponentialBackoffStrategy
                 response_filters:
                   - type: HttpResponseFilter
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    http_codes:
+                      - 401
+                    failure_type: transient_error
+                    error_message: Access token is expired.
+                  - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
                       - 500
@@ -638,6 +680,12 @@ definitions:
             type: DefaultErrorHandler
             max_retries: 10
             response_filters:
+              - type: HttpResponseFilter
+                action: REFRESH_TOKEN_THEN_RETRY
+                http_codes:
+                  - 401
+                failure_type: transient_error
+                error_message: Access token is expired.
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:

@@ -8,8 +8,7 @@ This connector currently uses version v9.2 of the API
 
 ### Output schema
 
-This source will automatically discover the schema of the Entities of your Dataverse instance using the API
-`https://<url>/api/data/v9.2/EntityDefinitions?$expand=Attributes`
+This source will automatically discover the schema of the Entities of your Dataverse instance using the [EntityDefinitions](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/entitymetadata) API with `$select` projection to retrieve only the required metadata fields.
 
 ### Data type mapping
 
@@ -17,7 +16,8 @@ This source will automatically discover the schema of the Entities of your Datav
 | :----------------- | :------------------------ | :-------------------- |
 | `String`           | `string`                  |                       |
 | `UniqueIdentifier` | `string`                  |                       |
-| `DateTime`         | `timestamp with timezone` |                       |
+| `DateTime` (DateOnly) | `date`               | Fields with DateTimeBehavior=DateOnly |
+| `DateTime` (other)  | `timestamp with timezone` | UserLocal and TimeZoneIndependent |
 | `Integer`          | `integer`                 |                       |
 | `BigInt`           | `integer`                 |                       |
 | `Money`            | `number`                  |                       |
@@ -64,6 +64,7 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 1.0.0 | 2026-05-06 | [77565](https://github.com/airbytehq/airbyte/pull/77565) | Map DateOnly fields to `date` format instead of `date-time`. Add `$select` projection to discovery to reduce metadata payload size. Streams with DateOnly fields require a schema refresh and data reset. |
 | 0.1.32 | 2025-05-10 | [60052](https://github.com/airbytehq/airbyte/pull/60052) | Update dependencies |
 | 0.1.31 | 2025-05-03 | [59292](https://github.com/airbytehq/airbyte/pull/59292) | Update dependencies |
 | 0.1.30 | 2025-04-26 | [58830](https://github.com/airbytehq/airbyte/pull/58830) | Update dependencies |
