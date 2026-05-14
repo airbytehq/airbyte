@@ -2723,25 +2723,7 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-  config_normalization_rules:
-    type: ConfigNormalizationRules
-    config_migrations:
-      - type: ConfigMigration
-        description: Migrate legacy access_token root-level config to nested credentials structure
-        transformations:
-          - type: ConfigAddFields
-            fields:
-              - type: AddedFieldDefinition
-                path: ["credentials", "personal_access_token"]
-                value: "{{ config['access_token'] }}"
-              - type: AddedFieldDefinition
-                path: ["credentials", "option_title"]
-                value: "PAT Credentials"
-            condition: "{{ config.get('access_token') and not config.get('credentials') }}"
-          - type: ConfigRemoveFields
-            field_pointers:
-              - ["access_token"]
-            condition: "{{ config.get('access_token') and config.get('credentials') }}"
+
 metadata:
   autoImportSchema:
     projects: false
