@@ -21,8 +21,8 @@ By default, Snowflake allows users to connect to the service from any computer o
 A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
 policy to allow or deny access to a single IP address or a list of addresses.
 
-If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses
-is on the allowed list
+If you're using Airbyte Cloud, add Airbyte's
+[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Snowflake network policy allowlist.
 
 To determine whether a network policy is set on your account or for a specific user, execute the
 _SHOW PARAMETERS_ command.

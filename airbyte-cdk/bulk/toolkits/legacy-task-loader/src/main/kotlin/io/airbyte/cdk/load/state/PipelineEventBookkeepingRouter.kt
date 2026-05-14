@@ -13,8 +13,10 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
+import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
@@ -72,9 +74,20 @@ class PipelineEventBookkeepingRouter(
 ) : CloseableCoroutine {
     private val log = KotlinLogging.logger {}
     private val clientCount = AtomicInteger(numDataChannels)
-    private val sawEndOfStreamComplete = ConcurrentHashSet<DestinationStream.Descriptor>()
+    private val terminalStreamStatus = ConcurrentHashMap<DestinationStream.Descriptor, Boolean>()
     private val checkpointIndexes = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
     private val unopenedStreams = ConcurrentHashSet(catalog.streams.map { it.mappedDescriptor })
+
+    private fun recordTerminalStatus(
+        descriptor: DestinationStream.Descriptor,
+        isComplete: Boolean,
+    ) {
+        val previous = terminalStreamStatus.putIfAbsent(descriptor, isComplete)
+        check(previous == null || previous == isComplete) {
+            "Source error: Stream $descriptor already received status complete=$previous. " +
+                "Received additional status complete=$isComplete."
+        }
+    }
 
     init {
         log.info { "Creating bookkeeping router for $numDataChannels data channels" }
@@ -124,9 +137,17 @@ class PipelineEventBookkeepingRouter(
             }
             is DestinationRecordStreamComplete -> {
                 log.info { "Read COMPLETE for stream ${stream.mappedDescriptor}" }
-                sawEndOfStreamComplete.add(stream.mappedDescriptor)
+                recordTerminalStatus(stream.mappedDescriptor, isComplete = true)
                 if (!markEndOfStreamAtEndOfSync) {
                     manager.markEndOfStream(true)
+                }
+                PipelineEndOfStream(stream.mappedDescriptor)
+            }
+            is DestinationRecordStreamIncomplete -> {
+                log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
+                recordTerminalStatus(stream.mappedDescriptor, isComplete = false)
+                if (!markEndOfStreamAtEndOfSync) {
+                    manager.markEndOfStream(false)
                 }
                 PipelineEndOfStream(stream.mappedDescriptor)
             }
@@ -142,6 +163,12 @@ class PipelineEventBookkeepingRouter(
             }
             is DestinationFileStreamComplete -> {
                 manager.markEndOfStream(true)
+                fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
+                PipelineHeartbeat()
+            }
+            is DestinationFileStreamIncomplete -> {
+                log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
+                manager.markEndOfStream(false)
                 fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
                 PipelineHeartbeat()
             }
@@ -278,10 +305,12 @@ class PipelineEventBookkeepingRouter(
         if (clientCount.decrementAndGet() == 0) {
             if (markEndOfStreamAtEndOfSync) {
                 catalog.streams.forEach {
-                    val sawComplete = sawEndOfStreamComplete.contains(it.mappedDescriptor)
                     val manager = syncManager.getStreamManager(it.mappedDescriptor)
-                    if (sawComplete) {
-                        manager.markEndOfStream(true)
+                    // If absent: no terminal status seen — leave unmarked so
+                    // SyncManager.markInputConsumed() surfaces the existing
+                    // "neither status reached us" diagnostic.
+                    terminalStreamStatus[it.mappedDescriptor]?.let { complete ->
+                        manager.markEndOfStream(complete)
                     }
                     batchStateUpdateQueue.publish(
                         BatchEndOfStream(
