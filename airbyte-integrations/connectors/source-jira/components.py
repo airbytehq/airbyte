@@ -66,7 +66,7 @@ class JiraOAuthAuthenticator:
             data=data,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             token_data = json.load(resp)
 
         JiraOAuthAuthenticator._shared_access_token = token_data["access_token"]
@@ -85,7 +85,7 @@ class JiraOAuthAuthenticator:
             _ACCESSIBLE_RESOURCES_URL,
             headers={"Authorization": f"Bearer {JiraOAuthAuthenticator._shared_access_token}"},
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             resources = json.load(resp)
 
         for resource in resources:
