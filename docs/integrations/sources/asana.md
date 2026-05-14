@@ -8,7 +8,14 @@ This page contains the setup guide and reference information for the [Asana](htt
 
 ## Prerequisites
 
-This connector supports **OAuth** and **Personal Access Tokens**. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
+To use the Asana source connector, you need:
+
+- An Asana account with access to the workspaces, projects, tasks, portfolios, and other resources you want to sync.
+- One of the following authentication methods:
+  - **OAuth**. Recommended for Airbyte Cloud.
+  - **Personal Access Token**. To create a token, follow Asana's [personal access token instructions](https://developers.asana.com/docs/personal-access-token).
+
+The connector can only sync data the authenticated Asana user can access. If the authenticated user has a view-only license or limited project access in Asana, the connector has the same limitations.
 
 ## Setup guide
 
@@ -17,14 +24,13 @@ This connector supports **OAuth** and **Personal Access Tokens**. Please follow 
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. Set the name for your source.
-4. Authenticate using OAuth (recommended) or enter your `personal_access_token`.
-5. Click **Set up source**.
-
-#### Syncing Multiple Projects
-
-If you have access to multiple projects, Airbyte will sync data related to all projects you have access to. The ability to filter to specific projects is not available at this time.
+2. In the left navigation bar, click **Sources**.
+3. Click **+ New source**.
+4. Select **Asana** from the list of available sources.
+5. Enter a **Source name**.
+6. Authenticate using OAuth, or enter a personal access token.
+7. Optionally, enter **Organization Export IDs** if you want to sync specific organization exports.
+8. Click **Set up source**.
 
 <!-- /env:cloud -->
 
@@ -33,10 +39,13 @@ If you have access to multiple projects, Airbyte will sync data related to all p
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. Set the name for your source.
-4. Enter your `personal_access_token`.
-5. Click **Set up source**.
+2. In the left navigation bar, click **Sources**.
+3. Click **+ New source**.
+4. Select **Asana** from the list of available sources.
+5. Enter a **Source name**.
+6. Enter a personal access token.
+7. Optionally, enter **Organization Export IDs** if you want to sync specific organization exports.
+8. Click **Set up source**.
 
 <!-- /env:oss -->
 
@@ -46,34 +55,38 @@ If you have access to multiple projects, Airbyte will sync data related to all p
 
 The Asana source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
-| Namespaces        | No         |
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | No |
+| Namespaces | No |
 
-## Supported Streams
+## Supported streams
 
-- [Attachments](https://developers.asana.com/reference/attachments)
-- [Attachments Compact](https://developers.asana.com/reference/attachments)
-- [Custom fields](https://developers.asana.com/reference/custom-fields)
-- [Events](https://developers.asana.com/reference/events)
-- [Organization Exports](https://developers.asana.com/reference/organization-exports)
-- [Portfolio Items](https://developers.asana.com/reference/getitemsforportfolio)
-- [Portfolio Memberships](https://developers.asana.com/reference/portfolio-memberships)
-- [Portfolios](https://developers.asana.com/reference/portfolios)
-- [Portfolios Compact](https://developers.asana.com/reference/portfolios)
-- [Projects](https://developers.asana.com/reference/projects)
-- [Sections](https://developers.asana.com/reference/sections)
-- [Sections Compact](https://developers.asana.com/reference/sections)
-- [Stories](https://developers.asana.com/reference/stories)
-- [Stories Compact](https://developers.asana.com/reference/stories)
-- [Tags](https://developers.asana.com/reference/tags)
-- [Tasks](https://developers.asana.com/reference/tasks)
-- [Team Memberships](https://developers.asana.com/reference/team-memberships)
-- [Teams](https://developers.asana.com/reference/teams)
-- [Users](https://developers.asana.com/reference/users)
-- [Workspaces](https://developers.asana.com/reference/workspaces)
+The Asana source connector supports these streams:
+
+| Stream | Description |
+| :--- | :--- |
+| [`attachments`](https://developers.asana.com/reference/attachments) | Attachment details for attachments on synced projects and tasks. |
+| [`attachments_compact`](https://developers.asana.com/reference/attachments) | Compact attachment records for synced projects and tasks. |
+| [`custom_fields`](https://developers.asana.com/reference/custom-fields) | Custom field definitions in each accessible workspace. |
+| [`events`](https://developers.asana.com/reference/events) | Events for synced projects and tasks. |
+| [`organization_exports`](https://developers.asana.com/reference/organization-exports) | Organization export requests for the export IDs you provide in the source configuration. |
+| [`portfolio_items`](https://developers.asana.com/reference/getitemsforportfolio) | Projects and portfolios contained in each synced portfolio. |
+| [`portfolios`](https://developers.asana.com/reference/portfolios) | Portfolio details for synced portfolios. |
+| [`portfolios_compact`](https://developers.asana.com/reference/portfolios) | Compact portfolio records for each synced workspace and user. |
+| [`portfolios_memberships`](https://developers.asana.com/reference/portfolio-memberships) | Portfolio memberships for synced portfolios. |
+| [`projects`](https://developers.asana.com/reference/projects) | Projects in each accessible workspace. |
+| [`sections`](https://developers.asana.com/reference/sections) | Section details for synced project sections. |
+| [`sections_compact`](https://developers.asana.com/reference/sections) | Compact section records for synced projects. |
+| [`stories`](https://developers.asana.com/reference/stories) | Story details for synced task stories. |
+| [`stories_compact`](https://developers.asana.com/reference/stories) | Compact story records for synced tasks. |
+| [`tags`](https://developers.asana.com/reference/tags) | Tags in each accessible workspace. |
+| [`tasks`](https://developers.asana.com/reference/tasks) | Tasks in synced projects. |
+| [`team_memberships`](https://developers.asana.com/reference/team-memberships) | Team membership records for synced teams. |
+| [`teams`](https://developers.asana.com/reference/teams) | Teams in each accessible organization workspace. |
+| [`users`](https://developers.asana.com/reference/users) | Users in each accessible workspace. |
+| [`workspaces`](https://developers.asana.com/reference/workspaces) | Workspaces the authenticated user can access. |
 
 ## Data type map
 
@@ -97,29 +110,58 @@ Expand to see details about Asana connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The connector is restricted by [Asana rate limits](https://developers.asana.com/docs/rate-limits).
+Asana applies rate limits per authorization token. Asana's standard limit is 150 requests per minute for free domains and 1,500 requests per minute for paid domains. The connector retries `429 Too Many Requests` responses using Asana's `Retry-After` header.
+
+If you continue to see rate limit errors, reduce the **Number of concurrent threads** in the source configuration.
+
+#### Syncing multiple projects
+
+Airbyte syncs data from all Asana projects the authenticated user can access. The connector doesn't support filtering to specific projects.
+
+#### Organization exports
+
+The `organization_exports` stream syncs only the organization export IDs listed in the source configuration. To sync this stream, first create organization export requests in Asana and then enter the returned export IDs in **Organization Export IDs**.
+
+Asana's organization export endpoints are only available to Enterprise organization service accounts. To sync organization exports, authenticate with an Asana service account token.
 
 ### Troubleshooting
 
-- If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.com/docs/oauth).
-- Check out common troubleshooting issues for the Asana source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- If you encounter access errors while using OAuth, make sure your Asana OAuth app is configured correctly. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
+- If the connector returns permissions errors for some streams, confirm that the authenticated Asana user can view those resources in Asana.
+- For other troubleshooting topics, see the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
+
+## Reference
+
+This connector uses the [Asana REST API](https://developers.asana.com/reference/rest-api-reference). All API requests use the `https://app.asana.com/api/1.0` endpoint.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `credentials.option_title` | Yes | Authentication method. Valid values are `OAuth Credentials` and `PAT Credentials`. |
+| `credentials.client_id` | Required for OAuth | Client ID for the Asana OAuth app. |
+| `credentials.client_secret` | Required for OAuth | Client secret for the Asana OAuth app. |
+| `credentials.refresh_token` | Required for OAuth | Refresh token returned by the Asana OAuth flow. |
+| `credentials.personal_access_token` | Required for personal access token authentication | Asana personal access token. For organization exports, use an Asana service account token. |
+| `organization_export_ids` | No | List of Asana organization export IDs to sync in the `organization_exports` stream. |
+| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `25`. Defaults to `10`. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                             |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
 | 1.6.0-rc.2 | 2026-05-14 | [78082](https://github.com/airbytehq/airbyte/pull/78082) | Fix projects stream HTTP 400 after CDK v7 upgrade |
-| 1.6.0-rc.1 | 2026-04-23 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
+| 1.6.0-rc.1 | 2026-04-27 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
 | 1.5.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
-| 1.5.2 | 2026-04-06 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
-| 1.5.1 | 2025-12-09 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
-| 1.5.0 | 2025-05-02 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
-| 1.4.0 | 2025-04-25 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
+| 1.5.2 | 2026-04-07 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
+| 1.5.1 | 2025-12-08 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
+| 1.5.0 | 2025-05-05 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
+| 1.4.0 | 2025-04-24 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
 | 1.3.10 | 2025-02-15 | [53891](https://github.com/airbytehq/airbyte/pull/53891) | Update dependencies |
 | 1.3.9 | 2025-02-08 | [53394](https://github.com/airbytehq/airbyte/pull/53394) | Update dependencies |
 | 1.3.8 | 2025-02-01 | [52882](https://github.com/airbytehq/airbyte/pull/52882) | Update dependencies |
