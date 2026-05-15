@@ -50,7 +50,7 @@ For more information, see the [Linear OAuth 2.0 authentication documentation](ht
 6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
 7. Click **Set up source** and wait for the connection test to complete.
 
-Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.0`.
+Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.1` or later. If you upgraded an API key connection to `0.2.0` and it no longer passes connection checks, upgrade to `0.2.1` or later.
 
 ## Supported sync modes
 
@@ -122,6 +122,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.2-rc.1 | 2026-05-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Resume concurrency tuning at default_concurrency=4 (Path A, 2,500 req/hr API key ceiling); re-enable progressive rollout |
+| 0.2.1 | 2026-05-12 | [78013](https://github.com/airbytehq/airbyte/pull/78013) | Fix API key config migration for existing connections |
 | 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication support and migrate existing API key configurations to nested credentials |
 | 0.1.2 | 2026-04-28 | [77318](https://github.com/airbytehq/airbyte/pull/77318) | Update dependencies |
 | 0.1.1 | 2026-04-21 | [76654](https://github.com/airbytehq/airbyte/pull/76654) | Update dependencies |
