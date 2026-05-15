@@ -9,6 +9,7 @@ from unittest import TestCase
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import AD_ACCOUNT_ID, ORGANIZATION_ID, ConfigBuilder
 from .request_builder import OAuthRequestBuilder, RequestBuilder
@@ -125,6 +126,29 @@ class TestAdaccountsStatsDaily(TestCase):
         assert len(output.records) == 1  # Daily: step P1M = 1 monthly slice
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
+
+
+class TestAdaccountsStatsDailyLegacyStateFormat(TestCase):
+    @HttpMocker()
+    def test_legacy_state_format_parses_without_error(self, http_mocker: HttpMocker) -> None:
+        legacy_state_value = "2024-01-15T23:59:57"
+        state = StateBuilder().with_stream_state("adaccounts_stats_daily", {"start_time": legacy_state_value}).build()
+
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.adaccounts_stats_endpoint(AD_ACCOUNT_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ACCOUNT_ID, granularity="DAY"),
+        )
+
+        output = _read(
+            config_builder=config(),
+            stream_name="adaccounts_stats_daily",
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+        assert output.errors == [], f"Expected no errors, got: {output.errors}"
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
 
 
 class TestAdaccountsStatsLifetime(TestCase):
