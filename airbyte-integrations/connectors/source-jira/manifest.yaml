@@ -30,13 +30,13 @@ definitions:
   requester:
     type: HttpRequester
     http_method: GET
-    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['domain'] }}/rest/api/3/{% endif %}"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' or config.get('credentials', {}).get('cloud_id') %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['domain'] }}/rest/api/3/{% endif %}"
     authenticator: "#/definitions/authenticator"
     error_handler: "#/definitions/error_handler"
 
   requester_v1:
     $ref: "#/definitions/requester"
-    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' or config.get('credentials', {}).get('cloud_id') %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
 
   # Selector
 
@@ -14721,6 +14721,15 @@ spec:
                   to your account by BasicAuth.
                 airbyte_secret: true
                 order: 2
+              cloud_id:
+                type: string
+                title: Cloud ID
+                description: Optional Jira Cloud ID. Set this field when using an Atlassian Service Account API token that requires the api.atlassian.com gateway.
+                pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                pattern_descriptor: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                examples:
+                  - "12345678-1234-1234-1234-123456789abc"
+                order: 3
           - type: object
             title: OAuth2.0
             required:

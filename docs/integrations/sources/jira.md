@@ -11,6 +11,7 @@ This page contains the setup guide and reference information for the [Jira](http
 - API Token
 - Domain
 - Email
+- Cloud ID, if you're using an Atlassian Service Account API token
 
 ## Setup guide
 
@@ -31,8 +32,9 @@ This page contains the setup guide and reference information for the [Jira](http
 5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+8. If you're using an Atlassian Service Account API token, enter the **Cloud ID** for your Jira site. Leave this field empty for standard user API tokens.
+9. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
+10. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 
 <!-- /env:cloud -->
 
@@ -46,10 +48,17 @@ This page contains the setup guide and reference information for the [Jira](http
 5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+8. If you're using an Atlassian Service Account API token, enter the **Cloud ID** for your Jira site. Leave this field empty for standard user API tokens.
+9. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
+10. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 
 <!-- /env:oss -->
+
+### Use Atlassian Service Account API tokens
+
+Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, keep **Authentication** set to **API Token** and also enter the **Cloud ID** for your Jira site. When **Cloud ID** is set, Airbyte routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/`.
+
+Use the service account's email in the **Email** field and the service account API token in the **API Token** field. The token must include the Jira scopes and project permissions required for the streams you sync. The Cloud ID is different from your Atlassian Organization ID.
 
 ## Supported sync modes
 
@@ -169,6 +178,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.2 | 2026-05-15 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add support for Atlassian Service Account API tokens with Jira Cloud ID routing |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
 | 4.4.0 | 2026-05-06 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |
 | 4.3.21 | 2026-05-04 | [77751](https://github.com/airbytehq/airbyte/pull/77751) | Add input validation for `domain` field |
