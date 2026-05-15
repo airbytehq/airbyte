@@ -4,7 +4,9 @@
 
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from urllib.parse import parse_qs, urlparse
 
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
@@ -13,9 +15,25 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 @dataclass
 class EventsSimpleRetriever(SimpleRetriever):
+    record_selector: RecordSelector
+
     def __post_init__(self, parameters: Mapping[str, Any]):
+        if self.record_selector.transformations and isinstance(self.record_selector.transformations[0], dict):
+            self.record_selector.transformations = []
         super().__post_init__(parameters)
         self.cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
+
+    def _request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        params = super()._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if next_page_token:
+            encoded_params = parse_qs(urlparse(self._paginator_path() or "").query)
+            return {key: value for key, value in params.items() if key not in encoded_params}
+        return params
 
     def request_params(
         self,
