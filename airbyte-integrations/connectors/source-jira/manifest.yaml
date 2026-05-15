@@ -14762,4 +14762,4 @@ spec:
         - 2
         - 3
         description: The number of worker threads to use for the sync.
-        order: 6
+        order: 7
