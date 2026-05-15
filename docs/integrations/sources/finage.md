@@ -44,6 +44,14 @@ This connector can be used to extract data from various APIs such as symbol-list
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-04-28 | [77246](https://github.com/airbytehq/airbyte/pull/77246) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76601](https://github.com/airbytehq/airbyte/pull/76601) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75763](https://github.com/airbytehq/airbyte/pull/75763) | Update dependencies |
+| 0.0.48 | 2026-03-17 | [74638](https://github.com/airbytehq/airbyte/pull/74638) | Update dependencies |
+| 0.0.47 | 2026-02-24 | [73748](https://github.com/airbytehq/airbyte/pull/73748) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73373](https://github.com/airbytehq/airbyte/pull/73373) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73145](https://github.com/airbytehq/airbyte/pull/73145) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72562](https://github.com/airbytehq/airbyte/pull/72562) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71985](https://github.com/airbytehq/airbyte/pull/71985) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71645](https://github.com/airbytehq/airbyte/pull/71645) | Update dependencies |
 | 0.0.41 | 2025-12-18 | [70536](https://github.com/airbytehq/airbyte/pull/70536) | Update dependencies |

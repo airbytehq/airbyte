@@ -9,13 +9,8 @@
       "time": "2009-07-20T22:55:29Z"
     }
   ],
-  "meta": {
-    "has_more": false,
-    "after_cursor": "after-cursor",
-    "before_cursor": "before-cursor"
-  },
-  "links": {
-    "next": null,
-    "prev": null
-  }
+  "count": 1,
+  "end_of_stream": true,
+  "end_time": 1248130529,
+  "next_page": null
 }

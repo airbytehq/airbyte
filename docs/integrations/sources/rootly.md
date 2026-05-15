@@ -52,6 +52,15 @@ Documentation: https://rootly.com/api#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-04-28 | [77412](https://github.com/airbytehq/airbyte/pull/77412) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76735](https://github.com/airbytehq/airbyte/pull/76735) | Update dependencies |
+| 0.0.51 | 2026-03-31 | [75852](https://github.com/airbytehq/airbyte/pull/75852) | Update dependencies |
+| 0.0.50 | 2026-03-17 | [74970](https://github.com/airbytehq/airbyte/pull/74970) | Update dependencies |
+| 0.0.49 | 2026-03-10 | [74690](https://github.com/airbytehq/airbyte/pull/74690) | Update dependencies |
+| 0.0.48 | 2026-02-24 | [73742](https://github.com/airbytehq/airbyte/pull/73742) | Update dependencies |
+| 0.0.47 | 2026-02-17 | [73487](https://github.com/airbytehq/airbyte/pull/73487) | Update dependencies |
+| 0.0.46 | 2026-02-10 | [73159](https://github.com/airbytehq/airbyte/pull/73159) | Update dependencies |
+| 0.0.45 | 2026-02-03 | [72565](https://github.com/airbytehq/airbyte/pull/72565) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [72105](https://github.com/airbytehq/airbyte/pull/72105) | Update dependencies |
 | 0.0.43 | 2026-01-14 | [71514](https://github.com/airbytehq/airbyte/pull/71514) | Update dependencies |
 | 0.0.42 | 2025-12-18 | [70738](https://github.com/airbytehq/airbyte/pull/70738) | Update dependencies |

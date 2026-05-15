@@ -37,6 +37,14 @@ To get a Private Token:
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.51 | 2026-04-28 | [77199](https://github.com/airbytehq/airbyte/pull/77199) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76556](https://github.com/airbytehq/airbyte/pull/76556) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75778](https://github.com/airbytehq/airbyte/pull/75778) | Update dependencies |
+| 0.0.48 | 2026-03-24 | [74468](https://github.com/airbytehq/airbyte/pull/74468) | Update dependencies |
+| 0.0.47 | 2026-02-24 | [73906](https://github.com/airbytehq/airbyte/pull/73906) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73456](https://github.com/airbytehq/airbyte/pull/73456) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73002](https://github.com/airbytehq/airbyte/pull/73002) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72602](https://github.com/airbytehq/airbyte/pull/72602) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71881](https://github.com/airbytehq/airbyte/pull/71881) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71587](https://github.com/airbytehq/airbyte/pull/71587) | Update dependencies |
 | 0.0.41 | 2025-12-18 | [70582](https://github.com/airbytehq/airbyte/pull/70582) | Update dependencies |

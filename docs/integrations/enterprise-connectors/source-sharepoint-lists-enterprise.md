@@ -85,7 +85,7 @@ The Site ID is required to identify which SharePoint site to sync from. You can 
 | `site_id` | Yes | SharePoint Site ID in format: `hostname,site-guid,web-guid` |
 | `list_name_filter` | No | Regular expression pattern to filter which lists to sync (for example, `Perdue.*` to match lists starting with "Perdue") |
 | `skip_document_libraries` | No | Skip document library lists (default: `true`) |
-| `num_workers` | No | Number of concurrent workers for parallel processing (default: `10`, range: 1-20) |
+| `num_workers` | No | Number of concurrent threads for parallel processing (default: `10`, range: 1-20) |
 
 ## Streams
 

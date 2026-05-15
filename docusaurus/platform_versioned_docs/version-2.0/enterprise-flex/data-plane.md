@@ -243,8 +243,8 @@ You can also use `kubectl` to create the secret directly from the command-line t
 ```bash
 kubectl create secret generic airbyte-config-secrets \
   --from-literal=license-key='' \
-  --from-literal=data_plane_client_id='' \
-  --from-literal=data_plane_client_secret='' \
+  --from-literal=DATA_PLANE_CLIENT_ID='' \
+  --from-literal=DATA_PLANE_CLIENT_SECRET='' \
   --from-literal=s3-access-key-id='' \
   --from-literal=s3-secret-access-key='' \
   --from-literal=aws-secret-manager-access-key-id='' \
@@ -307,11 +307,11 @@ secretsManager:
 In your command-line tool, deploy the data plane using `helm upgrade`. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
 
 ```bash title="Example using the default namespace in your cluster"
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.8.1 --values values.yaml
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.0.1 --values values.yaml
 ```
 
 ```bash title="Example using or creating a namespace called 'airbyte-dataplane'"
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.8.1 -n airbyte-dataplane --create-namespace --values values.yaml
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.0.1 -n airbyte-dataplane --create-namespace --values values.yaml
 ```
 
 ## 6. Associate a region to a workspace {#step-6}

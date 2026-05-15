@@ -15,8 +15,6 @@ import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
@@ -24,16 +22,15 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
-import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.LinkedHashMap
 import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
@@ -45,7 +42,6 @@ import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.data.GenericRecord
-import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 
 private val logger = KotlinLogging.logger {}
@@ -53,20 +49,11 @@ private val logger = KotlinLogging.logger {}
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 @Singleton
-class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
-    class InvalidFormatException(message: String) : Exception(message)
-
-    private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
-
+class IcebergUtil(
+    private val tableIdGenerator: TableIdGenerator,
+    private val coercer: AirbyteValueCoercer,
+) {
     private val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-
-    fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
-        if (!generationIdRegex.matches(generationId)) {
-            throw InvalidFormatException(
-                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
-            )
-        }
-    }
 
     fun constructGenerationIdSuffix(stream: DestinationStream): String {
         return constructGenerationIdSuffix(stream.generationId)
@@ -148,30 +135,6 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         }
     }
 
-    /**
-     * Converts an Airbyte [EnrichedDestinationRecordAirbyteValue] into an Iceberg [Record]. The
-     * converted record will be wrapped to include [Operation] information, which is used by the
-     * writer to determine how to write the data to the underlying Iceberg files.
-     *
-     * @param record The Airbyte [EnrichedDestinationRecordAirbyteValue] record to be converted for
-     * writing by Iceberg.
-     * @param stream The Airbyte [DestinationStream] that contains information about the stream.
-     * @param tableSchema The Iceberg [Table] [Schema].
-     * @return An Iceberg [Record] representation of the [EnrichedDestinationRecordAirbyteValue].
-     */
-    fun toRecord(
-        record: EnrichedDestinationRecordAirbyteValue,
-        stream: DestinationStream,
-        tableSchema: Schema,
-    ): Record {
-        record.declaredFields.forEach { (_, value) -> this.mungeForIceberg(value) }
-
-        return RecordWrapper(
-            delegate = record.allTypedFields.toIcebergRecord(tableSchema),
-            operation = getOperation(record = record, importType = stream.importType),
-        )
-    }
-
     fun mungeForIceberg(value: EnrichedAirbyteValue) =
         value.transformValueRecursingIntoArrays { element, elementType ->
             when (elementType) {
@@ -189,7 +152,6 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                         StringValue(element.serializeToString()),
                         changeDescription = null,
                     )
-
                 // otherwise, don't change anything
                 else -> null
             }
@@ -210,12 +172,14 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     fun toIcebergSchema(stream: DestinationStream): Schema {
+        val importType = stream.tableSchema.importType
         val primaryKeys =
-            when (stream.importType) {
-                is Dedupe -> (stream.importType as Dedupe).primaryKey
+            when (importType) {
+                is Dedupe -> importType.primaryKey
                 else -> emptyList()
             }
-        return stream.schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
@@ -223,21 +187,6 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         schema.identifierFieldNames().forEach { builder.asc(it) }
         return builder.build()
     }
-
-    fun getOperation(
-        record: EnrichedDestinationRecordAirbyteValue,
-        importType: ImportType,
-    ): Operation =
-        if (
-            record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.abValue !is NullValue
-        ) {
-            Operation.DELETE
-        } else if (importType is Dedupe) {
-            Operation.UPDATE
-        } else {
-            Operation.INSERT
-        }
 
     fun getOperation(
         fields: Map<String, AirbyteValue>,
@@ -253,66 +202,70 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         } else {
             Operation.INSERT
         }
-}
 
-/**
- * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
- *
- * This function applies a function to every non-array-typed value, recursing into arrays as needed.
- * [transformer] may assume that the AirbyteValue is a valid value for the AirbyteType. For example,
- * if [transformer] is called with a [NumberType], it is safe to cast the value to [NumberValue].
- */
-fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
-    transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
-): EnrichedAirbyteValue {
     /**
-     * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue as
-     * needed, then apply [transformer]. If [transformer] returns a [ChangedValue], modify the
-     * original ArrayValue's element (and populate [EnrichedAirbyteValue.changes] if needed).
+     * RB: I just moved this inside the class. I do not take ownership of this code.
+     *
+     * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
+     *
+     * This function applies a function to every non-array-typed value, recursing into arrays as
+     * needed. [transformer] may assume that the AirbyteValue is a valid value for the AirbyteType.
+     * For example, if [transformer] is called with a [NumberType], it is safe to cast the value to
+     * [NumberValue].
      */
-    fun recurseArray(
-        currentValue: AirbyteValue,
-        currentType: AirbyteType,
-        path: String,
-    ): AirbyteValue {
-        if (currentValue == NullValue) {
-            return NullValue
-        } else if (currentType is ArrayType) {
-            // If the type is another array, we recurse deeper.
-            val coercedArray = AirbyteValueCoercer.coerceArray(currentValue)
-            if (coercedArray == null) {
-                changes.add(
-                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
-                )
+    fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
+        transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
+    ): EnrichedAirbyteValue {
+        /**
+         * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue
+         * as needed, then apply [transformer]. If [transformer] returns a [ChangedValue], modify
+         * the original ArrayValue's element (and populate [EnrichedAirbyteValue.changes] if
+         * needed).
+         */
+        fun recurseArray(
+            currentValue: AirbyteValue,
+            currentType: AirbyteType,
+            path: String,
+        ): AirbyteValue {
+            if (currentValue == NullValue) {
                 return NullValue
-            }
-            return ArrayValue(
-                coercedArray.values.mapIndexed { index, element ->
-                    val newPath = "$path.$index"
-                    recurseArray(element, currentType.items.type, newPath)
-                },
-            )
-        } else {
-            // If we're at a leaf node, call the transformer.
-            val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
-            if (coercedValue == null) {
-                changes.add(
-                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+            } else if (currentType is ArrayType) {
+                // If the type is another array, we recurse deeper.
+                val coercedArray = coercer.coerceArray(currentValue)
+                if (coercedArray == null) {
+                    changes.add(
+                        Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    )
+                    return NullValue
+                }
+                return ArrayValue(
+                    coercedArray.values.mapIndexed { index, element ->
+                        val newPath = "$path.$index"
+                        recurseArray(element, currentType.items.type, newPath)
+                    },
                 )
-                return NullValue
+            } else {
+                // If we're at a leaf node, call the transformer.
+                val coercedValue = coercer.coerce(currentValue, currentType)
+                if (coercedValue == null) {
+                    changes.add(
+                        Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                    )
+                    return NullValue
+                }
+                val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
+                val (newValue, changeDescription) = transformedValue
+                changeDescription?.let { (change, reason) ->
+                    changes.add(Meta.Change(path, change, reason))
+                }
+                return newValue
             }
-            val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
-            val (newValue, changeDescription) = transformedValue
-            changeDescription?.let { (change, reason) ->
-                changes.add(Meta.Change(path, change, reason))
-            }
-            return newValue
         }
+
+        abValue = recurseArray(abValue, type, name)
+
+        return this
     }
-
-    abValue = recurseArray(abValue, type, name)
-
-    return this
 }
 
 data class ChangeDescription(val change: Change, val reason: Reason)

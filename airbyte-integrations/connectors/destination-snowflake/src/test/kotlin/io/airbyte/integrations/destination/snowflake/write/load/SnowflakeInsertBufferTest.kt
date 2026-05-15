@@ -27,6 +27,7 @@ import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -207,6 +208,58 @@ internal class SnowflakeInsertBufferTest {
                 }
             }
             assertEquals(1, lines.size)
+            file.delete()
+        }
+    }
+
+    @Test
+    fun testCsvFieldsWithTrailingWhitespaceUseExistingUnquotedCsvBehaviorByDefault() {
+        val tableName = TableName(namespace = "test", name = "table")
+        val column = "columnName"
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("VARCHAR", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
+        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        val record =
+            mapOf(
+                column.uppercase() to StringValue("hello   "),
+                Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
+                Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id-1"),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234567890),
+                Meta.COLUMN_NAME_AB_META to StringValue("meta-data-foo"),
+            )
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
+                flushLimit = 1,
+            )
+        runBlocking {
+            buffer.accumulate(record)
+            val filepath = buffer.csvFilePath
+            assertNotNull(filepath)
+            val file = filepath!!.toFile()
+            buffer.csvWriter?.close()
+
+            val lines = mutableListOf<String>()
+            GZIPInputStream(file.inputStream()).use { gzip ->
+                BufferedReader(InputStreamReader(gzip)).use { bufferedReader ->
+                    bufferedReader.forEachLine { line -> lines.add(line) }
+                }
+            }
+
+            assertEquals(1, lines.size)
+            assertTrue(
+                lines[0].endsWith(",hello   "),
+                "Default CSV output should stay unquoted so existing Snowflake TRIM_SPACE behavior is unchanged"
+            )
             file.delete()
         }
     }

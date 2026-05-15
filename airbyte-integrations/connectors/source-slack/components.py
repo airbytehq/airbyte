@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import requests
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import (
     NoAuth,
@@ -18,7 +19,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import (
     InterpolatedString,
 )
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
@@ -66,11 +66,20 @@ class JoinChannelsStream(HttpStream):
         Override to simply indicate that the specific channel was joined successfully.
         This method should not return any data, but should return an empty iterable.
         """
-        is_ok = response.json().get("ok", False)
+        response_json = response.json()
+        is_ok = response_json.get("ok", False)
         if is_ok:
             self.logger.info(f"Successfully joined channel: {stream_slice['channel_name']}")
         else:
-            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response.json()}")
+            error_code = response_json.get("error", "")
+            if error_code == "missing_scope":
+                needed = response_json.get("needed", "unknown")
+                raise AirbyteTracedException(
+                    message=f"OAuth scope '{needed}' is required but not granted.",
+                    internal_message=f"conversations.join for channel '{stream_slice['channel_name']}' returned missing_scope: needed={needed}, response={response_json}",
+                    failure_type=FailureType.config_error,
+                )
+            self.logger.info(f"Unable to joined channel: {stream_slice['channel_name']}. Reason: {response_json}")
         return []
 
     def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
@@ -107,6 +116,8 @@ class ChannelsRetriever(SimpleRetriever):
         The `is_member` property indicates whether the API Bot is already assigned / joined to the channel.
         https://api.slack.com/types/conversation#booleans
         """
+        if record.get("is_archived"):
+            return False  # Slack API rejects conversations.join for archived channels
         return config["join_channels"] and not record.get("is_member")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -138,23 +149,15 @@ class ChannelsRetriever(SimpleRetriever):
 
         record_generator = partial(
             self._parse_records,
-            stream_state=self.state or {},
             stream_slice=_slice,
             records_schema=records_schema,
         )
 
-        for stream_data in self._read_pages(record_generator, self.state, _slice):
-            # joining channel logic
+        for stream_data in self._read_pages(record_generator, _slice):
             if self.should_join_to_channel(self.config, stream_data):
                 self.join_channel(self.config, stream_data)
 
-            current_record = self._extract_record(stream_data, _slice)
-            if self.cursor and current_record:
-                self.cursor.observe(_slice, current_record)
-
             yield stream_data
-
-        return
 
 
 class ThreadsStateMigration(StateMigration):
@@ -201,12 +204,20 @@ class ThreadsStateMigration(StateMigration):
 
 
 MESSAGES_AND_THREADS_RATE = Rate(limit=1, interval=timedelta(seconds=60))
+RECOVERY_THRESHOLD = 5
 
 
 class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
     """
-    Switches to MovingWindowCallRatePolicy 1 request per minute if rate limits were exceeded.
+    Temporarily switches to MovingWindowCallRatePolicy (1 req/60s) after an
+    HTTP 429, then recovers to UnlimitedCallRatePolicy after a streak of
+    successful responses.
     """
+
+    def __init__(self, policies: list, maximum_attempts_to_acquire: int = 100000) -> None:
+        super().__init__(policies=policies, maximum_attempts_to_acquire=maximum_attempts_to_acquire)
+        self._original_policies = deepcopy(policies)
+        self._success_counter: int = 0
 
     def update_from_response(self, request: Any, response: Any) -> None:
         current_policy = self.get_matching_policy(request)
@@ -218,6 +229,17 @@ class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
                     rates=[MESSAGES_AND_THREADS_RATE],
                 )
             ]
+            self._success_counter = 0
+        elif response.status_code == 429 and isinstance(current_policy, MovingWindowCallRatePolicy):
+            self._success_counter = 0
+        elif isinstance(current_policy, MovingWindowCallRatePolicy):
+            if 200 <= response.status_code < 300 and response.json().get("ok", True) is not False:
+                self._success_counter += 1
+                if self._success_counter >= RECOVERY_THRESHOLD:
+                    self._policies = deepcopy(self._original_policies)
+                    self._success_counter = 0
+            else:
+                self._success_counter = 0
 
 
 @dataclass

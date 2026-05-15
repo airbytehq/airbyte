@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.write
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -17,6 +18,9 @@ import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
 import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import org.postgresql.util.PGobject
+
+// ObjectMapper without USE_BIG_DECIMAL_FOR_FLOATS to avoid precision issues in test comparisons
+private val testObjectMapper: ObjectMapper = ObjectMapper()
 
 class PostgresDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
@@ -59,8 +63,7 @@ class PostgresDataDumper(
 
         // Build reverse mapping from sanitized column names back to original names
         val reverseMapping = mutableMapOf<String, String>()
-        (stream.schema as? io.airbyte.cdk.load.data.ObjectType)?.properties?.keys?.forEach {
-            originalName ->
+        stream.tableSchema.columnSchema.inputSchema.keys.forEach { originalName ->
             val sanitizedName = sanitizeColumnName(originalName)
             reverseMapping[sanitizedName] = originalName
         }
@@ -168,16 +171,15 @@ class PostgresDataDumper(
             is java.sql.Timestamp -> value.toLocalDateTime()
             // JSONB and JSON types
             is PGobject -> {
-                val jsonNode = io.airbyte.commons.json.Jsons.deserialize(value.value!!)
+                val jsonNode = testObjectMapper.readTree(value.value!!)
                 // JSONB can contain objects, arrays, or primitives (strings, numbers, booleans,
                 // null)
                 // Try to convert to Map if it's an object, otherwise return the primitive value
                 when {
                     jsonNode.isObject ->
-                        io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java) as Any
+                        testObjectMapper.convertValue(jsonNode, Map::class.java) as Any
                     jsonNode.isArray ->
-                        io.airbyte.commons.json.Jsons.convertValue(jsonNode, List::class.java)
-                            as Any
+                        testObjectMapper.convertValue(jsonNode, List::class.java) as Any
                     jsonNode.isTextual -> jsonNode.asText() ?: ""
                     jsonNode.isNumber ->
                         when {

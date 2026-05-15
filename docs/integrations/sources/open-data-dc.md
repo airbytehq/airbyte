@@ -43,6 +43,10 @@ MARID is the Master Address Repository ID associated with all addresses within t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.48 | 2026-04-28 | [77327](https://github.com/airbytehq/airbyte/pull/77327) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [75663](https://github.com/airbytehq/airbyte/pull/75663) | Update dependencies |
+| 0.0.46 | 2026-03-17 | [74238](https://github.com/airbytehq/airbyte/pull/74238) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73075](https://github.com/airbytehq/airbyte/pull/73075) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [71657](https://github.com/airbytehq/airbyte/pull/71657) | Update dependencies |
 | 0.0.43 | 2025-12-18 | [70499](https://github.com/airbytehq/airbyte/pull/70499) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [70085](https://github.com/airbytehq/airbyte/pull/70085) | Update dependencies |

@@ -57,7 +57,7 @@ class SnowflakeWriter(
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
         return when (stream.minimumGenerationId) {
             0L ->
-                when (stream.importType) {
+                when (stream.tableSchema.importType) {
                     is Dedupe ->
                         if (!snowflakeConfiguration.legacyRawTablesOnly) {
                             DirectLoadTableDedupStreamLoader(
@@ -95,7 +95,7 @@ class SnowflakeWriter(
                         )
                 }
             stream.generationId ->
-                when (stream.importType) {
+                when (stream.tableSchema.importType) {
                     is Dedupe ->
                         if (!snowflakeConfiguration.legacyRawTablesOnly) {
                             DirectLoadTableDedupTruncateStreamLoader(

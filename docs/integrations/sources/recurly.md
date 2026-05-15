@@ -66,6 +66,14 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.49 | 2026-04-28 | [77376](https://github.com/airbytehq/airbyte/pull/77376) | Update dependencies |
+| 1.3.48 | 2026-04-21 | [76720](https://github.com/airbytehq/airbyte/pull/76720) | Update dependencies |
+| 1.3.47 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 1.3.46 | 2026-03-24 | [75379](https://github.com/airbytehq/airbyte/pull/75379) | Update dependencies |
+| 1.3.45 | 2026-03-10 | [74639](https://github.com/airbytehq/airbyte/pull/74639) | Update dependencies |
+| 1.3.44 | 2026-03-03 | [73886](https://github.com/airbytehq/airbyte/pull/73886) | Update dependencies |
+| 1.3.43 | 2026-02-17 | [73522](https://github.com/airbytehq/airbyte/pull/73522) | Update dependencies |
+| 1.3.42 | 2026-02-03 | [72656](https://github.com/airbytehq/airbyte/pull/72656) | Update dependencies |
 | 1.3.41 | 2026-01-20 | [72016](https://github.com/airbytehq/airbyte/pull/72016) | Update dependencies |
 | 1.3.40 | 2026-01-14 | [71471](https://github.com/airbytehq/airbyte/pull/71471) | Update dependencies |
 | 1.3.39 | 2025-12-18 | [70642](https://github.com/airbytehq/airbyte/pull/70642) | Update dependencies |

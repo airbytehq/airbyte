@@ -34,6 +34,14 @@ Sendinblue APIs are under rate limits for the number of API calls allowed per AP
 
 | Version | Date       | Pull Request                                              | Subject                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.2.28 | 2026-04-28 | [77399](https://github.com/airbytehq/airbyte/pull/77399) | Update dependencies |
+| 0.2.27 | 2026-04-21 | [76742](https://github.com/airbytehq/airbyte/pull/76742) | Update dependencies |
+| 0.2.26 | 2026-03-31 | [75798](https://github.com/airbytehq/airbyte/pull/75798) | Update dependencies |
+| 0.2.25 | 2026-03-24 | [75120](https://github.com/airbytehq/airbyte/pull/75120) | Update dependencies |
+| 0.2.24 | 2026-02-24 | [73936](https://github.com/airbytehq/airbyte/pull/73936) | Update dependencies |
+| 0.2.23 | 2026-02-17 | [73463](https://github.com/airbytehq/airbyte/pull/73463) | Update dependencies |
+| 0.2.22 | 2026-02-10 | [73155](https://github.com/airbytehq/airbyte/pull/73155) | Update dependencies |
+| 0.2.21 | 2026-02-03 | [72560](https://github.com/airbytehq/airbyte/pull/72560) | Update dependencies |
 | 0.2.20 | 2026-01-20 | [72103](https://github.com/airbytehq/airbyte/pull/72103) | Update dependencies |
 | 0.2.19 | 2026-01-14 | [71518](https://github.com/airbytehq/airbyte/pull/71518) | Update dependencies |
 | 0.2.18 | 2025-12-18 | [70757](https://github.com/airbytehq/airbyte/pull/70757) | Update dependencies |

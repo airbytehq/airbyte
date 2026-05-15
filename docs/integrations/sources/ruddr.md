@@ -31,6 +31,14 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-04-28 | [77411](https://github.com/airbytehq/airbyte/pull/77411) | Update dependencies |
+| 0.0.45 | 2026-04-21 | [76741](https://github.com/airbytehq/airbyte/pull/76741) | Update dependencies |
+| 0.0.44 | 2026-03-31 | [75847](https://github.com/airbytehq/airbyte/pull/75847) | Update dependencies |
+| 0.0.43 | 2026-03-24 | [75341](https://github.com/airbytehq/airbyte/pull/75341) | Update dependencies |
+| 0.0.42 | 2026-03-10 | [74700](https://github.com/airbytehq/airbyte/pull/74700) | Update dependencies |
+| 0.0.41 | 2026-02-24 | [73772](https://github.com/airbytehq/airbyte/pull/73772) | Update dependencies |
+| 0.0.40 | 2026-02-10 | [73185](https://github.com/airbytehq/airbyte/pull/73185) | Update dependencies |
+| 0.0.39 | 2026-02-03 | [72549](https://github.com/airbytehq/airbyte/pull/72549) | Update dependencies |
 | 0.0.38 | 2026-01-20 | [72100](https://github.com/airbytehq/airbyte/pull/72100) | Update dependencies |
 | 0.0.37 | 2026-01-14 | [71552](https://github.com/airbytehq/airbyte/pull/71552) | Update dependencies |
 | 0.0.36 | 2025-12-18 | [70734](https://github.com/airbytehq/airbyte/pull/70734) | Update dependencies |

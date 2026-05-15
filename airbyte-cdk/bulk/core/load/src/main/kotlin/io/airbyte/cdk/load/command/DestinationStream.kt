@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.command
 
-import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.LinkedHashMap
 
 private val log = KotlinLogging.logger {}
 
@@ -55,8 +56,6 @@ private val log = KotlinLogging.logger {}
 data class DestinationStream(
     val unmappedNamespace: String?,
     val unmappedName: String,
-    val importType: ImportType,
-    val schema: AirbyteType,
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
@@ -66,7 +65,9 @@ data class DestinationStream(
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
 
-    val unknownColumnChanges by lazy { schema.computeUnknownColumnChanges() }
+    val unknownColumnChanges by lazy {
+        tableSchema.columnSchema.inputSchema.computeUnknownColumnChanges()
+    }
 
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -94,21 +95,13 @@ data class DestinationStream(
      * sockets, possibly at the expense of performance on non-socket syncs.
      */
     val airbyteValueProxyFieldAccessors: Array<AirbyteValueProxy.FieldAccessor> by lazy {
-        if (schema is ObjectType) {
-            schema.properties
-                .toList()
-                .sortedBy { (name, _) -> name }
-                .mapIndexed { index, namedType ->
-                    AirbyteValueProxy.FieldAccessor(
-                        index = index,
-                        name = namedType.first,
-                        type = namedType.second.type
-                    )
-                }
-                .toTypedArray()
-        } else {
-            emptyArray()
-        }
+        tableSchema.columnSchema.inputSchema
+            .toList()
+            .sortedBy { (name, _) -> name }
+            .mapIndexed { index, (name, fieldType) ->
+                AirbyteValueProxy.FieldAccessor(index = index, name = name, type = fieldType.type)
+            }
+            .toTypedArray()
     }
 
     /**
@@ -123,13 +116,17 @@ data class DestinationStream(
      * cursor field; we don't care about the source sync mode, we only care about the destination
      * sync mode; etc.).
      */
-    fun asProtocolObject(): ConfiguredAirbyteStream =
-        ConfiguredAirbyteStream()
+    fun asProtocolObject(): ConfiguredAirbyteStream {
+        val importType = tableSchema.importType
+        val jsonSchema =
+            AirbyteTypeToJsonSchema()
+                .convert(ObjectType(LinkedHashMap(tableSchema.columnSchema.inputSchema)))
+        return ConfiguredAirbyteStream()
             .withStream(
                 AirbyteStream()
                     .withNamespace(unmappedNamespace)
                     .withName(unmappedName)
-                    .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
+                    .withJsonSchema(jsonSchema)
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
@@ -151,9 +148,10 @@ data class DestinationStream(
                     Update -> destinationSyncMode = DestinationSyncMode.UPDATE
                 }
             }
+    }
 
     fun shouldBeTruncatedAtEndOfSync(): Boolean {
-        return importType is Overwrite ||
+        return tableSchema.importType is Overwrite ||
             (minimumGenerationId == generationId && minimumGenerationId > 0)
     }
 
@@ -165,14 +163,15 @@ data class DestinationStream(
  * This function exists so that our tests can easily mock a DestinationStream, while still getting a
  * real value for unknownColumnChanges.
  */
-fun AirbyteType.computeUnknownColumnChanges() =
-    this.collectUnknownPaths().map {
-        Meta.Change(
-            it,
-            AirbyteRecordMessageMetaChange.Change.NULLED,
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
-        )
-    }
+fun Map<String, FieldType>.computeUnknownColumnChanges() =
+    this.flatMap { (name, fieldType) -> fieldType.type.collectUnknownPaths(name) }
+        .map {
+            Meta.Change(
+                it,
+                AirbyteRecordMessageMetaChange.Change.NULLED,
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+            )
+        }
 
 sealed interface ImportType
 

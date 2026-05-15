@@ -8,18 +8,72 @@ The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Search](#accounts-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
-| Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Search](#leads-search) |
-| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [API Search](#opportunities-api-search), [Search](#opportunities-search) |
-| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search), [Search](#tasks-search) |
+| Sobjects | [List](#sobjects-list) |
+| Accounts | [List](#accounts-list), [Get](#accounts-get), [API Search](#accounts-api-search), [Context Store Search](#accounts-context-store-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
+| Leads | [List](#leads-list), [Get](#leads-get), [API Search](#leads-api-search), [Context Store Search](#leads-context-store-search) |
+| Opportunities | [List](#opportunities-list), [Get](#opportunities-get), [API Search](#opportunities-api-search), [Context Store Search](#opportunities-context-store-search) |
+| Tasks | [List](#tasks-list), [Get](#tasks-get), [API Search](#tasks-api-search), [Context Store Search](#tasks-context-store-search) |
 | Events | [List](#events-list), [Get](#events-get), [API Search](#events-api-search) |
 | Campaigns | [List](#campaigns-list), [Get](#campaigns-get), [API Search](#campaigns-api-search) |
 | Cases | [List](#cases-list), [Get](#cases-get), [API Search](#cases-api-search) |
 | Notes | [List](#notes-list), [Get](#notes-get), [API Search](#notes-api-search) |
 | Content Versions | [List](#content-versions-list), [Get](#content-versions-get), [Download](#content-versions-download) |
 | Attachments | [List](#attachments-list), [Get](#attachments-get), [Download](#attachments-download) |
+| Reports | [List](#reports-list), [Get](#reports-get) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Opportunity Stages | [List](#opportunity-stages-list), [Get](#opportunity-stages-get), [Context Store Search](#opportunity-stages-context-store-search) |
 | Query | [List](#query-list) |
+
+## Sobjects
+
+### Sobjects List
+
+Returns a list of all available Salesforce objects (sObjects) in the organization.
+This endpoint is used for health checks to verify authentication and connectivity.
+
+
+#### Python SDK
+
+```python
+await salesforce.sobjects.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "sobjects",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `name` | `string` |  |
+| `label` | `null \| string` |  |
+| `labelPlural` | `null \| string` |  |
+| `keyPrefix` | `null \| string` |  |
+| `custom` | `null \| boolean` |  |
+| `queryable` | `null \| boolean` |  |
+| `searchable` | `null \| boolean` |  |
+| `createable` | `null \| boolean` |  |
+| `updateable` | `null \| boolean` |  |
+| `deletable` | `null \| boolean` |  |
+| `urls` | `null \| object` |  |
+
+
+</details>
 
 ## Accounts
 
@@ -40,7 +94,7 @@ await salesforce.accounts.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -59,7 +113,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for accounts. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
+  SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
+  SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
+
+Use dot-path traversal (Owner.Name, Parent.Name) to resolve relationship
+fields inline instead of returning raw IDs.
  |
 
 
@@ -101,7 +162,7 @@ await salesforce.accounts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -156,7 +217,7 @@ await salesforce.accounts.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -193,14 +254,14 @@ Examples:
 
 </details>
 
-### Accounts Search
+### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.accounts.search(
+await salesforce.accounts.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -208,12 +269,12 @@ await salesforce.accounts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "accounts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -228,7 +289,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -271,42 +332,41 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.Id` | `string` | Unique identifier for the account record |
-| `hits[].data.Name` | `string` | Name of the account or company |
-| `hits[].data.AccountSource` | `string` | Source of the account record (e.g., Web, Referral) |
-| `hits[].data.BillingAddress` | `object` | Complete billing address as a compound field |
-| `hits[].data.BillingCity` | `string` | City portion of the billing address |
-| `hits[].data.BillingCountry` | `string` | Country portion of the billing address |
-| `hits[].data.BillingPostalCode` | `string` | Postal code portion of the billing address |
-| `hits[].data.BillingState` | `string` | State or province portion of the billing address |
-| `hits[].data.BillingStreet` | `string` | Street address portion of the billing address |
-| `hits[].data.CreatedById` | `string` | ID of the user who created this account |
-| `hits[].data.CreatedDate` | `string` | Date and time when the account was created |
-| `hits[].data.Description` | `string` | Text description of the account |
-| `hits[].data.Industry` | `string` | Primary business industry of the account |
-| `hits[].data.IsDeleted` | `boolean` | Whether the account has been moved to the Recycle Bin |
-| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this account |
-| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this account |
-| `hits[].data.LastModifiedDate` | `string` | Date and time when the account was last modified |
-| `hits[].data.NumberOfEmployees` | `integer` | Number of employees at the account |
-| `hits[].data.OwnerId` | `string` | ID of the user who owns this account |
-| `hits[].data.ParentId` | `string` | ID of the parent account, if this is a subsidiary |
-| `hits[].data.Phone` | `string` | Primary phone number for the account |
-| `hits[].data.ShippingAddress` | `object` | Complete shipping address as a compound field |
-| `hits[].data.ShippingCity` | `string` | City portion of the shipping address |
-| `hits[].data.ShippingCountry` | `string` | Country portion of the shipping address |
-| `hits[].data.ShippingPostalCode` | `string` | Postal code portion of the shipping address |
-| `hits[].data.ShippingState` | `string` | State or province portion of the shipping address |
-| `hits[].data.ShippingStreet` | `string` | Street address portion of the shipping address |
-| `hits[].data.Type` | `string` | Type of account (e.g., Customer, Partner, Competitor) |
-| `hits[].data.Website` | `string` | Website URL for the account |
-| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the account record |
+| `data[].Name` | `string` | Name of the account or company |
+| `data[].AccountSource` | `string` | Source of the account record (e.g., Web, Referral) |
+| `data[].BillingAddress` | `object` | Complete billing address as a compound field |
+| `data[].BillingCity` | `string` | City portion of the billing address |
+| `data[].BillingCountry` | `string` | Country portion of the billing address |
+| `data[].BillingPostalCode` | `string` | Postal code portion of the billing address |
+| `data[].BillingState` | `string` | State or province portion of the billing address |
+| `data[].BillingStreet` | `string` | Street address portion of the billing address |
+| `data[].CreatedById` | `string` | ID of the user who created this account |
+| `data[].CreatedDate` | `string` | Date and time when the account was created |
+| `data[].Description` | `string` | Text description of the account |
+| `data[].Industry` | `string` | Primary business industry of the account |
+| `data[].IsDeleted` | `boolean` | Whether the account has been moved to the Recycle Bin |
+| `data[].LastActivityDate` | `string` | Date of the last activity associated with this account |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this account |
+| `data[].LastModifiedDate` | `string` | Date and time when the account was last modified |
+| `data[].NumberOfEmployees` | `integer` | Number of employees at the account |
+| `data[].OwnerId` | `string` | ID of the user who owns this account |
+| `data[].ParentId` | `string` | ID of the parent account, if this is a subsidiary |
+| `data[].Phone` | `string` | Primary phone number for the account |
+| `data[].ShippingAddress` | `object` | Complete shipping address as a compound field |
+| `data[].ShippingCity` | `string` | City portion of the shipping address |
+| `data[].ShippingCountry` | `string` | Country portion of the shipping address |
+| `data[].ShippingPostalCode` | `string` | Postal code portion of the shipping address |
+| `data[].ShippingState` | `string` | State or province portion of the shipping address |
+| `data[].ShippingStreet` | `string` | Street address portion of the shipping address |
+| `data[].Type` | `string` | Type of account (e.g., Customer, Partner, Competitor) |
+| `data[].Website` | `string` | Website URL for the account |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
 
 </details>
 
@@ -329,7 +389,7 @@ await salesforce.contacts.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -348,7 +408,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for contacts. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50
+  SELECT Id, FirstName, LastName, Account.Name, Owner.Name FROM Contact LIMIT 50
+  SELECT Id, Name, Email, Account.Name, ReportsTo.Name FROM Contact WHERE AccountId != null LIMIT 50
+
+Use dot-path traversal (Account.Name, Owner.Name, ReportsTo.Name) to resolve
+relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -390,7 +457,7 @@ await salesforce.contacts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -444,7 +511,7 @@ await salesforce.contacts.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -480,14 +547,14 @@ Examples:
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.contacts.search(
+await salesforce.contacts.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -495,12 +562,12 @@ await salesforce.contacts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -515,7 +582,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -554,38 +621,37 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.Id` | `string` | Unique identifier for the contact record |
-| `hits[].data.AccountId` | `string` | ID of the account this contact is associated with |
-| `hits[].data.CreatedById` | `string` | ID of the user who created this contact |
-| `hits[].data.CreatedDate` | `string` | Date and time when the contact was created |
-| `hits[].data.Department` | `string` | Department within the account where the contact works |
-| `hits[].data.Email` | `string` | Email address of the contact |
-| `hits[].data.FirstName` | `string` | First name of the contact |
-| `hits[].data.IsDeleted` | `boolean` | Whether the contact has been moved to the Recycle Bin |
-| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this contact |
-| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this contact |
-| `hits[].data.LastModifiedDate` | `string` | Date and time when the contact was last modified |
-| `hits[].data.LastName` | `string` | Last name of the contact |
-| `hits[].data.LeadSource` | `string` | Source from which this contact originated |
-| `hits[].data.MailingAddress` | `object` | Complete mailing address as a compound field |
-| `hits[].data.MailingCity` | `string` | City portion of the mailing address |
-| `hits[].data.MailingCountry` | `string` | Country portion of the mailing address |
-| `hits[].data.MailingPostalCode` | `string` | Postal code portion of the mailing address |
-| `hits[].data.MailingState` | `string` | State or province portion of the mailing address |
-| `hits[].data.MailingStreet` | `string` | Street address portion of the mailing address |
-| `hits[].data.MobilePhone` | `string` | Mobile phone number of the contact |
-| `hits[].data.Name` | `string` | Full name of the contact (read-only, concatenation of first and last name) |
-| `hits[].data.OwnerId` | `string` | ID of the user who owns this contact |
-| `hits[].data.Phone` | `string` | Business phone number of the contact |
-| `hits[].data.ReportsToId` | `string` | ID of the contact this contact reports to |
-| `hits[].data.Title` | `string` | Job title of the contact |
-| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the contact record |
+| `data[].AccountId` | `string` | ID of the account this contact is associated with |
+| `data[].CreatedById` | `string` | ID of the user who created this contact |
+| `data[].CreatedDate` | `string` | Date and time when the contact was created |
+| `data[].Department` | `string` | Department within the account where the contact works |
+| `data[].Email` | `string` | Email address of the contact |
+| `data[].FirstName` | `string` | First name of the contact |
+| `data[].IsDeleted` | `boolean` | Whether the contact has been moved to the Recycle Bin |
+| `data[].LastActivityDate` | `string` | Date of the last activity associated with this contact |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this contact |
+| `data[].LastModifiedDate` | `string` | Date and time when the contact was last modified |
+| `data[].LastName` | `string` | Last name of the contact |
+| `data[].LeadSource` | `string` | Source from which this contact originated |
+| `data[].MailingAddress` | `object` | Complete mailing address as a compound field |
+| `data[].MailingCity` | `string` | City portion of the mailing address |
+| `data[].MailingCountry` | `string` | Country portion of the mailing address |
+| `data[].MailingPostalCode` | `string` | Postal code portion of the mailing address |
+| `data[].MailingState` | `string` | State or province portion of the mailing address |
+| `data[].MailingStreet` | `string` | Street address portion of the mailing address |
+| `data[].MobilePhone` | `string` | Mobile phone number of the contact |
+| `data[].Name` | `string` | Full name of the contact (read-only, concatenation of first and last name) |
+| `data[].OwnerId` | `string` | ID of the user who owns this contact |
+| `data[].Phone` | `string` | Business phone number of the contact |
+| `data[].ReportsToId` | `string` | ID of the contact this contact reports to |
+| `data[].Title` | `string` | Job title of the contact |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
 
 </details>
 
@@ -608,7 +674,7 @@ await salesforce.leads.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -627,7 +693,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for leads. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100
+  SELECT Id, Name, Company, Owner.Name FROM Lead LIMIT 50
+  SELECT Id, Name, Owner.Name, ConvertedAccount.Name, ConvertedContact.Name, ConvertedOpportunity.Name FROM Lead WHERE IsConverted = true LIMIT 50
+
+Use dot-path traversal (Owner.Name, ConvertedAccount.Name, ConvertedContact.Name,
+ConvertedOpportunity.Name) to resolve relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -669,7 +742,7 @@ await salesforce.leads.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -723,7 +796,7 @@ await salesforce.leads.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -759,14 +832,14 @@ Examples:
 
 </details>
 
-### Leads Search
+### Leads Context Store Search
 
 Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.leads.search(
+await salesforce.leads.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -774,12 +847,12 @@ await salesforce.leads.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "leads",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -794,7 +867,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -841,46 +914,45 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.Id` | `string` | Unique identifier for the lead record |
-| `hits[].data.Address` | `object` | Complete address as a compound field |
-| `hits[].data.City` | `string` | City portion of the address |
-| `hits[].data.Company` | `string` | Company or organization the lead works for |
-| `hits[].data.ConvertedAccountId` | `string` | ID of the account created when lead was converted |
-| `hits[].data.ConvertedContactId` | `string` | ID of the contact created when lead was converted |
-| `hits[].data.ConvertedDate` | `string` | Date when the lead was converted |
-| `hits[].data.ConvertedOpportunityId` | `string` | ID of the opportunity created when lead was converted |
-| `hits[].data.Country` | `string` | Country portion of the address |
-| `hits[].data.CreatedById` | `string` | ID of the user who created this lead |
-| `hits[].data.CreatedDate` | `string` | Date and time when the lead was created |
-| `hits[].data.Email` | `string` | Email address of the lead |
-| `hits[].data.FirstName` | `string` | First name of the lead |
-| `hits[].data.Industry` | `string` | Industry the lead's company operates in |
-| `hits[].data.IsConverted` | `boolean` | Whether the lead has been converted to an account, contact, and opportunity |
-| `hits[].data.IsDeleted` | `boolean` | Whether the lead has been moved to the Recycle Bin |
-| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this lead |
-| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this lead |
-| `hits[].data.LastModifiedDate` | `string` | Date and time when the lead was last modified |
-| `hits[].data.LastName` | `string` | Last name of the lead |
-| `hits[].data.LeadSource` | `string` | Source from which this lead originated |
-| `hits[].data.MobilePhone` | `string` | Mobile phone number of the lead |
-| `hits[].data.Name` | `string` | Full name of the lead (read-only, concatenation of first and last name) |
-| `hits[].data.NumberOfEmployees` | `integer` | Number of employees at the lead's company |
-| `hits[].data.OwnerId` | `string` | ID of the user who owns this lead |
-| `hits[].data.Phone` | `string` | Phone number of the lead |
-| `hits[].data.PostalCode` | `string` | Postal code portion of the address |
-| `hits[].data.Rating` | `string` | Rating of the lead (e.g., Hot, Warm, Cold) |
-| `hits[].data.State` | `string` | State or province portion of the address |
-| `hits[].data.Status` | `string` | Current status of the lead in the sales process |
-| `hits[].data.Street` | `string` | Street address portion of the address |
-| `hits[].data.Title` | `string` | Job title of the lead |
-| `hits[].data.Website` | `string` | Website URL for the lead's company |
-| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the lead record |
+| `data[].Address` | `object` | Complete address as a compound field |
+| `data[].City` | `string` | City portion of the address |
+| `data[].Company` | `string` | Company or organization the lead works for |
+| `data[].ConvertedAccountId` | `string` | ID of the account created when lead was converted |
+| `data[].ConvertedContactId` | `string` | ID of the contact created when lead was converted |
+| `data[].ConvertedDate` | `string` | Date when the lead was converted |
+| `data[].ConvertedOpportunityId` | `string` | ID of the opportunity created when lead was converted |
+| `data[].Country` | `string` | Country portion of the address |
+| `data[].CreatedById` | `string` | ID of the user who created this lead |
+| `data[].CreatedDate` | `string` | Date and time when the lead was created |
+| `data[].Email` | `string` | Email address of the lead |
+| `data[].FirstName` | `string` | First name of the lead |
+| `data[].Industry` | `string` | Industry the lead's company operates in |
+| `data[].IsConverted` | `boolean` | Whether the lead has been converted to an account, contact, and opportunity |
+| `data[].IsDeleted` | `boolean` | Whether the lead has been moved to the Recycle Bin |
+| `data[].LastActivityDate` | `string` | Date of the last activity associated with this lead |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this lead |
+| `data[].LastModifiedDate` | `string` | Date and time when the lead was last modified |
+| `data[].LastName` | `string` | Last name of the lead |
+| `data[].LeadSource` | `string` | Source from which this lead originated |
+| `data[].MobilePhone` | `string` | Mobile phone number of the lead |
+| `data[].Name` | `string` | Full name of the lead (read-only, concatenation of first and last name) |
+| `data[].NumberOfEmployees` | `integer` | Number of employees at the lead's company |
+| `data[].OwnerId` | `string` | ID of the user who owns this lead |
+| `data[].Phone` | `string` | Phone number of the lead |
+| `data[].PostalCode` | `string` | Postal code portion of the address |
+| `data[].Rating` | `string` | Rating of the lead (e.g., Hot, Warm, Cold) |
+| `data[].State` | `string` | State or province portion of the address |
+| `data[].Status` | `string` | Current status of the lead in the sales process |
+| `data[].Street` | `string` | Street address portion of the address |
+| `data[].Title` | `string` | Job title of the lead |
+| `data[].Website` | `string` | Website URL for the lead's company |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
 
 </details>
 
@@ -903,7 +975,7 @@ await salesforce.opportunities.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -922,7 +994,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for opportunities. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
+  SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
+  SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
+
+Use dot-path traversal (Account.Name, Owner.Name, Campaign.Name) to resolve
+relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -964,7 +1043,7 @@ await salesforce.opportunities.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1018,7 +1097,7 @@ await salesforce.opportunities.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1054,14 +1133,14 @@ Examples:
 
 </details>
 
-### Opportunities Search
+### Opportunities Context Store Search
 
 Search and filter opportunities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.opportunities.search(
+await salesforce.opportunities.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -1069,12 +1148,12 @@ await salesforce.opportunities.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "opportunities",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -1089,7 +1168,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1128,38 +1207,37 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.Id` | `string` | Unique identifier for the opportunity record |
-| `hits[].data.AccountId` | `string` | ID of the account associated with this opportunity |
-| `hits[].data.Amount` | `number` | Estimated total sale amount |
-| `hits[].data.CampaignId` | `string` | ID of the campaign that generated this opportunity |
-| `hits[].data.CloseDate` | `string` | Expected close date for the opportunity |
-| `hits[].data.ContactId` | `string` | ID of the primary contact for this opportunity |
-| `hits[].data.CreatedById` | `string` | ID of the user who created this opportunity |
-| `hits[].data.CreatedDate` | `string` | Date and time when the opportunity was created |
-| `hits[].data.Description` | `string` | Text description of the opportunity |
-| `hits[].data.ExpectedRevenue` | `number` | Expected revenue based on amount and probability |
-| `hits[].data.ForecastCategory` | `string` | Forecast category for this opportunity |
-| `hits[].data.ForecastCategoryName` | `string` | Name of the forecast category |
-| `hits[].data.IsClosed` | `boolean` | Whether the opportunity is closed |
-| `hits[].data.IsDeleted` | `boolean` | Whether the opportunity has been moved to the Recycle Bin |
-| `hits[].data.IsWon` | `boolean` | Whether the opportunity was won |
-| `hits[].data.LastActivityDate` | `string` | Date of the last activity associated with this opportunity |
-| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this opportunity |
-| `hits[].data.LastModifiedDate` | `string` | Date and time when the opportunity was last modified |
-| `hits[].data.LeadSource` | `string` | Source from which this opportunity originated |
-| `hits[].data.Name` | `string` | Name of the opportunity |
-| `hits[].data.NextStep` | `string` | Description of the next step in closing the opportunity |
-| `hits[].data.OwnerId` | `string` | ID of the user who owns this opportunity |
-| `hits[].data.Probability` | `number` | Likelihood of closing the opportunity (percentage) |
-| `hits[].data.StageName` | `string` | Current stage of the opportunity in the sales process |
-| `hits[].data.Type` | `string` | Type of opportunity (e.g., New Business, Existing Business) |
-| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the opportunity record |
+| `data[].AccountId` | `string` | ID of the account associated with this opportunity |
+| `data[].Amount` | `number` | Estimated total sale amount |
+| `data[].CampaignId` | `string` | ID of the campaign that generated this opportunity |
+| `data[].CloseDate` | `string` | Expected close date for the opportunity |
+| `data[].ContactId` | `string` | ID of the primary contact for this opportunity |
+| `data[].CreatedById` | `string` | ID of the user who created this opportunity |
+| `data[].CreatedDate` | `string` | Date and time when the opportunity was created |
+| `data[].Description` | `string` | Text description of the opportunity |
+| `data[].ExpectedRevenue` | `number` | Expected revenue based on amount and probability |
+| `data[].ForecastCategory` | `string` | Forecast category for this opportunity |
+| `data[].ForecastCategoryName` | `string` | Name of the forecast category |
+| `data[].IsClosed` | `boolean` | Whether the opportunity is closed |
+| `data[].IsDeleted` | `boolean` | Whether the opportunity has been moved to the Recycle Bin |
+| `data[].IsWon` | `boolean` | Whether the opportunity was won |
+| `data[].LastActivityDate` | `string` | Date of the last activity associated with this opportunity |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this opportunity |
+| `data[].LastModifiedDate` | `string` | Date and time when the opportunity was last modified |
+| `data[].LeadSource` | `string` | Source from which this opportunity originated |
+| `data[].Name` | `string` | Name of the opportunity |
+| `data[].NextStep` | `string` | Description of the next step in closing the opportunity |
+| `data[].OwnerId` | `string` | ID of the user who owns this opportunity |
+| `data[].Probability` | `number` | Likelihood of closing the opportunity (percentage) |
+| `data[].StageName` | `string` | Current stage of the opportunity in the sales process |
+| `data[].Type` | `string` | Type of opportunity (e.g., New Business, Existing Business) |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
 
 </details>
 
@@ -1182,7 +1260,7 @@ await salesforce.tasks.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1201,7 +1279,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for tasks. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100
+  SELECT Id, Subject, Status, Owner.Name, Account.Name FROM Task LIMIT 50
+  SELECT Id, Subject, Status, Owner.Name, Who.Name, What.Name FROM Task WHERE ActivityDate = THIS_WEEK LIMIT 50
+
+Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
+fields inline instead of returning raw IDs. Who.Name and What.Name resolve
+polymorphic WhoId/WhatId references to the related record's name.
  |
 
 
@@ -1243,7 +1329,7 @@ await salesforce.tasks.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1297,7 +1383,7 @@ await salesforce.tasks.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1333,14 +1419,14 @@ Examples:
 
 </details>
 
-### Tasks Search
+### Tasks Context Store Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await salesforce.tasks.search(
+await salesforce.tasks.context_store_search(
     query={"filter": {"eq": {"Id": "<str>"}}}
 )
 ```
@@ -1348,12 +1434,12 @@ await salesforce.tasks.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tasks",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"Id": "<str>"}}}
     }
@@ -1368,7 +1454,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1405,36 +1491,35 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.Id` | `string` | Unique identifier for the task record |
-| `hits[].data.AccountId` | `string` | ID of the account associated with this task |
-| `hits[].data.ActivityDate` | `string` | Due date for the task |
-| `hits[].data.CallDisposition` | `string` | Result of the call, if this task represents a call |
-| `hits[].data.CallDurationInSeconds` | `integer` | Duration of the call in seconds |
-| `hits[].data.CallType` | `string` | Type of call (Inbound, Outbound, Internal) |
-| `hits[].data.CompletedDateTime` | `string` | Date and time when the task was completed |
-| `hits[].data.CreatedById` | `string` | ID of the user who created this task |
-| `hits[].data.CreatedDate` | `string` | Date and time when the task was created |
-| `hits[].data.Description` | `string` | Text description or notes about the task |
-| `hits[].data.IsClosed` | `boolean` | Whether the task has been completed |
-| `hits[].data.IsDeleted` | `boolean` | Whether the task has been moved to the Recycle Bin |
-| `hits[].data.IsHighPriority` | `boolean` | Whether the task is marked as high priority |
-| `hits[].data.LastModifiedById` | `string` | ID of the user who last modified this task |
-| `hits[].data.LastModifiedDate` | `string` | Date and time when the task was last modified |
-| `hits[].data.OwnerId` | `string` | ID of the user who owns this task |
-| `hits[].data.Priority` | `string` | Priority level of the task (High, Normal, Low) |
-| `hits[].data.Status` | `string` | Current status of the task |
-| `hits[].data.Subject` | `string` | Subject or title of the task |
-| `hits[].data.TaskSubtype` | `string` | Subtype of the task (e.g., Call, Email, Task) |
-| `hits[].data.Type` | `string` | Type of task |
-| `hits[].data.WhatId` | `string` | ID of the related object (Account, Opportunity, etc.) |
-| `hits[].data.WhoId` | `string` | ID of the related person (Contact or Lead) |
-| `hits[].data.SystemModstamp` | `string` | System timestamp when the record was last modified |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the task record |
+| `data[].AccountId` | `string` | ID of the account associated with this task |
+| `data[].ActivityDate` | `string` | Due date for the task |
+| `data[].CallDisposition` | `string` | Result of the call, if this task represents a call |
+| `data[].CallDurationInSeconds` | `integer` | Duration of the call in seconds |
+| `data[].CallType` | `string` | Type of call (Inbound, Outbound, Internal) |
+| `data[].CompletedDateTime` | `string` | Date and time when the task was completed |
+| `data[].CreatedById` | `string` | ID of the user who created this task |
+| `data[].CreatedDate` | `string` | Date and time when the task was created |
+| `data[].Description` | `string` | Text description or notes about the task |
+| `data[].IsClosed` | `boolean` | Whether the task has been completed |
+| `data[].IsDeleted` | `boolean` | Whether the task has been moved to the Recycle Bin |
+| `data[].IsHighPriority` | `boolean` | Whether the task is marked as high priority |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this task |
+| `data[].LastModifiedDate` | `string` | Date and time when the task was last modified |
+| `data[].OwnerId` | `string` | ID of the user who owns this task |
+| `data[].Priority` | `string` | Priority level of the task (High, Normal, Low) |
+| `data[].Status` | `string` | Current status of the task |
+| `data[].Subject` | `string` | Subject or title of the task |
+| `data[].TaskSubtype` | `string` | Subtype of the task (e.g., Call, Email, Task) |
+| `data[].Type` | `string` | Type of task |
+| `data[].WhatId` | `string` | ID of the related object (Account, Opportunity, etc.) |
+| `data[].WhoId` | `string` | ID of the related person (Contact or Lead) |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
 
 </details>
 
@@ -1457,7 +1542,7 @@ await salesforce.events.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1476,7 +1561,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for events. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime \> TODAY LIMIT 50
+  SELECT Id, Subject, StartDateTime, Owner.Name, Account.Name FROM Event LIMIT 50
+  SELECT Id, Subject, StartDateTime, Owner.Name, Who.Name, What.Name FROM Event WHERE StartDateTime = THIS_WEEK LIMIT 50
+
+Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
+fields inline instead of returning raw IDs. Who.Name and What.Name resolve
+polymorphic WhoId/WhatId references to the related record's name.
  |
 
 
@@ -1518,7 +1611,7 @@ await salesforce.events.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1572,7 +1665,7 @@ await salesforce.events.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1627,7 +1720,7 @@ await salesforce.campaigns.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1646,7 +1739,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for campaigns. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50
+  SELECT Id, Name, Type, Status, Owner.Name FROM Campaign LIMIT 50
+  SELECT Id, Name, Owner.Name, Owner.Email, StartDate FROM Campaign WHERE IsActive = true LIMIT 50
+
+Use dot-path traversal (Owner.Name) to resolve relationship fields inline
+instead of returning raw IDs.
  |
 
 
@@ -1688,7 +1788,7 @@ await salesforce.campaigns.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1742,7 +1842,7 @@ await salesforce.campaigns.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1797,7 +1897,7 @@ await salesforce.cases.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1816,7 +1916,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for cases. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100
+  SELECT Id, CaseNumber, Subject, Account.Name, Owner.Name, Contact.Name FROM Case LIMIT 50
+  SELECT Id, CaseNumber, Subject, Status, Account.Name, Owner.Name FROM Case WHERE Status = 'Escalated' LIMIT 50
+
+Use dot-path traversal (Account.Name, Owner.Name, Contact.Name) to resolve
+relationship fields inline instead of returning raw IDs.
  |
 
 
@@ -1859,7 +1966,7 @@ await salesforce.cases.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1914,7 +2021,7 @@ await salesforce.cases.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1969,7 +2076,7 @@ await salesforce.notes.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1988,7 +2095,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for notes. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50"
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
+  SELECT Id, Title, Body, Owner.Name FROM Note LIMIT 50
+  SELECT Id, Title, Owner.Name, CreatedDate FROM Note ORDER BY CreatedDate DESC LIMIT 50
+
+Use dot-path traversal (Owner.Name) to resolve relationship fields inline
+instead of returning raw IDs.
  |
 
 
@@ -2030,7 +2144,7 @@ await salesforce.notes.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2084,7 +2198,7 @@ await salesforce.notes.api_search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2140,7 +2254,7 @@ await salesforce.content_versions.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2206,7 +2320,7 @@ await salesforce.content_versions.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2268,7 +2382,7 @@ async for chunk in salesforce.content_versions.download(    id="<str>"):# Proces
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2311,7 +2425,7 @@ await salesforce.attachments.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2376,7 +2490,7 @@ await salesforce.attachments.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2436,7 +2550,7 @@ async for chunk in salesforce.attachments.download(    id="<str>"):# Process eac
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2459,6 +2573,569 @@ Obtain this ID from the list or get action.
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
 
+## Reports
+
+### Reports List
+
+Returns a list of reports available in the Salesforce org.
+Each report includes metadata such as Id, Name, Format, Description, and URL.
+This uses the Analytics REST API, not SOQL.
+
+
+#### Python SDK
+
+```python
+await salesforce.reports.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reports",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `null \| string` |  |
+| `url` | `null \| string` |  |
+| `describeUrl` | `null \| string` |  |
+| `instancesUrl` | `null \| string` |  |
+
+
+</details>
+
+### Reports Get
+
+Executes a report synchronously and returns the report data results.
+Returns both metadata and the executed data including fact maps, aggregates, and detail rows.
+First use the list action to find available reports, then use this action to run a report and get its data.
+Note: Large reports may be truncated. For reports with more than 2,000 detail rows, consider using async report runs.
+
+
+#### Python SDK
+
+```python
+await salesforce.reports.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "reports",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Salesforce Report ID (18-character ID starting with '00O').
+Obtain this ID from the list action.
+ |
+| `includeDetails` | `boolean` | No | Whether to include detail rows in the report results. Defaults to true.
+Set to false to get only summary/aggregate data.
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `attributes` | `null \| object` |  |
+| `reportMetadata` | `null \| object` |  |
+| `reportExtendedMetadata` | `null \| object` |  |
+| `factMap` | `null \| object` |  |
+| `groupingsDown` | `null \| object` |  |
+| `groupingsAcross` | `null \| object` |  |
+| `hasDetailRows` | `null \| boolean` |  |
+| `allData` | `null \| boolean` |  |
+
+
+</details>
+
+## Users
+
+### Users List
+
+Returns a list of users via SOQL query. Default returns up to 200 records.
+For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+
+
+#### Python SDK
+
+```python
+await salesforce.users.list(
+    q="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "list",
+    "params": {
+        "q": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `q` | `string` | Yes | SOQL query for users. Default returns up to 200 records.
+To change the limit, provide your own query with a LIMIT clause.
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM User WHERE IsActive = true ORDER BY LastModifiedDate DESC LIMIT 50
+  SELECT Id, Name, Email, Manager.Name, Profile.Name FROM User WHERE IsActive = true LIMIT 50
+  SELECT Id, Name, Email, Department, UserRole.Name FROM User LIMIT 50
+
+Use dot-path traversal (Manager.Name, Profile.Name, UserRole.Name) to resolve
+relationship fields inline instead of returning raw IDs.
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `done` | `boolean` |  |
+| `nextRecordsUrl` | `string` |  |
+
+</details>
+
+### Users Get
+
+Get a single user by ID. Returns all accessible fields by default.
+Use the `fields` parameter to retrieve only specific fields for better performance.
+
+
+#### Python SDK
+
+```python
+await salesforce.users.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Salesforce User ID (18-character ID starting with '005') |
+| `fields` | `string` | No | Comma-separated list of fields to retrieve. If omitted, returns all accessible fields.
+Example: "Id,Name,Email,Username,IsActive,ProfileId,UserRoleId"
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `Name` | `string` |  |
+| `attributes` | `object` |  |
+
+
+</details>
+
+### Users Context Store Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await salesforce.users.context_store_search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the user record |
+| `AccountId` | `string` | ID of the account associated with this user (for portal users) |
+| `Alias` | `string` | Short name used to identify the user in list views and reports |
+| `City` | `string` | City portion of the user's address |
+| `CompanyName` | `string` | Name of the user's company |
+| `ContactId` | `string` | ID of the contact associated with this user (for portal users) |
+| `Country` | `string` | Country portion of the user's address |
+| `CreatedById` | `string` | ID of the user who created this user record |
+| `CreatedDate` | `string` | Date and time when the user was created |
+| `Department` | `string` | Department within the organization |
+| `Division` | `string` | Division within the organization |
+| `Email` | `string` | Email address of the user |
+| `EmployeeNumber` | `string` | Employee number or ID assigned by the organization |
+| `FirstName` | `string` | First name of the user |
+| `IsActive` | `boolean` | Whether the user is active and can log in |
+| `LastLoginDate` | `string` | Date and time of the user's most recent login |
+| `LastModifiedById` | `string` | ID of the user who last modified this user record |
+| `LastModifiedDate` | `string` | Date and time when the user was last modified |
+| `LastName` | `string` | Last name of the user |
+| `ManagerId` | `string` | ID of the user's manager |
+| `MobilePhone` | `string` | Mobile phone number of the user |
+| `Name` | `string` | Full name of the user |
+| `Phone` | `string` | Business phone number of the user |
+| `PostalCode` | `string` | Postal code portion of the user's address |
+| `ProfileId` | `string` | ID of the user's profile |
+| `State` | `string` | State or province portion of the user's address |
+| `Street` | `string` | Street address of the user |
+| `Title` | `string` | Job title of the user |
+| `UserRoleId` | `string` | ID of the user's role in the organization |
+| `UserType` | `string` | Type of user license (e.g., Standard, PowerPartner) |
+| `Username` | `string` | Username for logging into Salesforce (unique across all orgs) |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the user record |
+| `data[].AccountId` | `string` | ID of the account associated with this user (for portal users) |
+| `data[].Alias` | `string` | Short name used to identify the user in list views and reports |
+| `data[].City` | `string` | City portion of the user's address |
+| `data[].CompanyName` | `string` | Name of the user's company |
+| `data[].ContactId` | `string` | ID of the contact associated with this user (for portal users) |
+| `data[].Country` | `string` | Country portion of the user's address |
+| `data[].CreatedById` | `string` | ID of the user who created this user record |
+| `data[].CreatedDate` | `string` | Date and time when the user was created |
+| `data[].Department` | `string` | Department within the organization |
+| `data[].Division` | `string` | Division within the organization |
+| `data[].Email` | `string` | Email address of the user |
+| `data[].EmployeeNumber` | `string` | Employee number or ID assigned by the organization |
+| `data[].FirstName` | `string` | First name of the user |
+| `data[].IsActive` | `boolean` | Whether the user is active and can log in |
+| `data[].LastLoginDate` | `string` | Date and time of the user's most recent login |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this user record |
+| `data[].LastModifiedDate` | `string` | Date and time when the user was last modified |
+| `data[].LastName` | `string` | Last name of the user |
+| `data[].ManagerId` | `string` | ID of the user's manager |
+| `data[].MobilePhone` | `string` | Mobile phone number of the user |
+| `data[].Name` | `string` | Full name of the user |
+| `data[].Phone` | `string` | Business phone number of the user |
+| `data[].PostalCode` | `string` | Postal code portion of the user's address |
+| `data[].ProfileId` | `string` | ID of the user's profile |
+| `data[].State` | `string` | State or province portion of the user's address |
+| `data[].Street` | `string` | Street address of the user |
+| `data[].Title` | `string` | Job title of the user |
+| `data[].UserRoleId` | `string` | ID of the user's role in the organization |
+| `data[].UserType` | `string` | Type of user license (e.g., Standard, PowerPartner) |
+| `data[].Username` | `string` | Username for logging into Salesforce (unique across all orgs) |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
+## Opportunity Stages
+
+### Opportunity Stages List
+
+Returns a list of opportunity stages via SOQL query. Default returns all stages.
+OpportunityStage defines the sales process stages that opportunities move through.
+
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.list(
+    q="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "list",
+    "params": {
+        "q": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `q` | `string` | Yes | SOQL query for opportunity stages. Default returns all stages.
+
+Examples:
+  SELECT FIELDS(STANDARD) FROM OpportunityStage ORDER BY SortOrder ASC
+  SELECT Id, MasterLabel, ApiName, DefaultProbability, IsClosed, IsWon, IsActive, ForecastCategoryName FROM OpportunityStage WHERE IsActive = true ORDER BY SortOrder ASC
+  SELECT Id, MasterLabel, DefaultProbability, CreatedBy.Name FROM OpportunityStage ORDER BY SortOrder ASC
+
+Use dot-path traversal (CreatedBy.Name, LastModifiedBy.Name) to resolve
+relationship fields inline instead of returning raw IDs.
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `MasterLabel` | `string` |  |
+| `attributes` | `object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `done` | `boolean` |  |
+| `nextRecordsUrl` | `string` |  |
+
+</details>
+
+### Opportunity Stages Get
+
+Get a single opportunity stage by ID. Returns all accessible fields by default.
+Use the `fields` parameter to retrieve only specific fields for better performance.
+
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Salesforce OpportunityStage ID |
+| `fields` | `string` | No | Comma-separated list of fields to retrieve. If omitted, returns all accessible fields.
+Example: "Id,MasterLabel,ApiName,DefaultProbability,IsClosed,IsWon,IsActive"
+ |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` |  |
+| `MasterLabel` | `string` |  |
+| `attributes` | `object` |  |
+
+
+</details>
+
+### Opportunity Stages Context Store Search
+
+Search and filter opportunity stages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await salesforce.opportunity_stages.context_store_search(
+    query={"filter": {"eq": {"Id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "opportunity_stages",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"Id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `Id` | `string` | Unique identifier for the opportunity stage record |
+| `ApiName` | `string` | API name of the stage used in code and integrations |
+| `CreatedById` | `string` | ID of the user who created this stage |
+| `CreatedDate` | `string` | Date and time when the stage was created |
+| `DefaultProbability` | `number` | Default probability percentage for opportunities at this stage |
+| `Description` | `string` | Description of the stage |
+| `ForecastCategory` | `string` | Forecast category for opportunities at this stage |
+| `ForecastCategoryName` | `string` | Display name of the forecast category |
+| `IsActive` | `boolean` | Whether the stage is currently active and can be used |
+| `IsClosed` | `boolean` | Whether opportunities at this stage are considered closed |
+| `IsWon` | `boolean` | Whether opportunities at this stage are considered won |
+| `LastModifiedById` | `string` | ID of the user who last modified this stage |
+| `LastModifiedDate` | `string` | Date and time when the stage was last modified |
+| `MasterLabel` | `string` | Display label for the stage |
+| `SortOrder` | `integer` | Order in which the stage appears in the sales process |
+| `SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].Id` | `string` | Unique identifier for the opportunity stage record |
+| `data[].ApiName` | `string` | API name of the stage used in code and integrations |
+| `data[].CreatedById` | `string` | ID of the user who created this stage |
+| `data[].CreatedDate` | `string` | Date and time when the stage was created |
+| `data[].DefaultProbability` | `number` | Default probability percentage for opportunities at this stage |
+| `data[].Description` | `string` | Description of the stage |
+| `data[].ForecastCategory` | `string` | Forecast category for opportunities at this stage |
+| `data[].ForecastCategoryName` | `string` | Display name of the forecast category |
+| `data[].IsActive` | `boolean` | Whether the stage is currently active and can be used |
+| `data[].IsClosed` | `boolean` | Whether opportunities at this stage are considered closed |
+| `data[].IsWon` | `boolean` | Whether opportunities at this stage are considered won |
+| `data[].LastModifiedById` | `string` | ID of the user who last modified this stage |
+| `data[].LastModifiedDate` | `string` | Date and time when the stage was last modified |
+| `data[].MasterLabel` | `string` | Display label for the stage |
+| `data[].SortOrder` | `integer` | Order in which the stage appears in the sales process |
+| `data[].SystemModstamp` | `string` | System timestamp when the record was last modified |
+
+</details>
+
 ## Query
 
 ### Query List
@@ -2478,7 +3155,7 @@ await salesforce.query.list(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -2500,6 +3177,10 @@ Examples:
 - "SELECT Id, Name FROM Account LIMIT 100"
 - "SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50"
 - "SELECT Id, Subject, Status FROM Case WHERE CreatedDate = TODAY"
+- "SELECT Id, Name, Account.Name, Owner.Name FROM Opportunity LIMIT 50"
+
+Use dot-path traversal (e.g. Owner.Name, Account.Name) to resolve relationship
+fields inline instead of returning raw IDs.
  |
 
 

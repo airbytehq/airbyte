@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.config.NamespaceMappingConfig
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputMessage
 import io.airbyte.cdk.load.message.InputMessageOther
 import io.airbyte.cdk.load.message.InputRecord
@@ -26,13 +27,16 @@ import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.LinkedHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
@@ -138,8 +142,9 @@ abstract class IntegrationTest(
         allowUnexpectedRecord: Boolean = false,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
+        val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
         val expectedRecords: List<OutputRecord> =
-            canonicalExpectedRecords.map { recordMangler.mapRecord(it, stream.schema) }
+            canonicalExpectedRecords.map { recordMangler.mapRecord(it, schema) }
         val descriptor = recordMangler.mapStreamDescriptor(stream.mappedDescriptor)
 
         RecordDiffer(
@@ -191,6 +196,7 @@ abstract class IntegrationTest(
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
+        useSingleSocket: Boolean = false,
     ): List<AirbyteMessage> =
         runSync(
             configContents,
@@ -199,6 +205,7 @@ abstract class IntegrationTest(
             streamStatus,
             useFileTransfer = useFileTransfer,
             destinationProcessFactory,
+            useSingleSocket = useSingleSocket,
         )
 
     /**
@@ -236,6 +243,7 @@ abstract class IntegrationTest(
         useFileTransfer: Boolean = false,
         destinationProcessFactory: DestinationProcessFactory = this.destinationProcessFactory,
         namespaceMappingConfig: NamespaceMappingConfig? = null,
+        useSingleSocket: Boolean = false,
     ): List<AirbyteMessage> =
         destinationProcessFactory.runSync(
             configContents,
@@ -248,13 +256,22 @@ abstract class IntegrationTest(
             useFileTransfer,
             namespaceMappingConfig,
             micronautProperties,
+            useSingleSocket,
         )
 
     enum class UncleanSyncEndBehavior {
         /**
-         * End the sync normally (i.e. by closing stdin), but don't send a COMPLETE status message.
+         * End the sync normally (i.e. by signaling end-of-input on the data channel), but don't
+         * send a COMPLETE status message.
          */
         TERMINATE_WITH_NO_STREAM_STATUS,
+
+        /**
+         * Emit a STREAM_STATUS: INCOMPLETE trace for the stream, then signal end-of-input on the
+         * data channel. Simulates a source that failed mid-sync; in SOCKET mode this trace reaches
+         * the destination directly (the orchestrator does not filter it).
+         */
+        EMIT_STREAM_INCOMPLETE,
 
         // TODO no test actually uses this right now, should we just remove it?
         UNPARSEABLE_MESSAGE,
@@ -331,6 +348,30 @@ abstract class IntegrationTest(
                 }
                 when (syncEndBehavior) {
                     UncleanSyncEndBehavior.TERMINATE_WITH_NO_STREAM_STATUS -> destination.shutdown()
+                    UncleanSyncEndBehavior.EMIT_STREAM_INCOMPLETE -> {
+                        val incompleteTrace =
+                            AirbyteMessage()
+                                .withType(AirbyteMessage.Type.TRACE)
+                                .withTrace(
+                                    AirbyteTraceMessage()
+                                        .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                        .withEmittedAt(System.currentTimeMillis().toDouble())
+                                        .withStreamStatus(
+                                            AirbyteStreamStatusTraceMessage()
+                                                .withStreamDescriptor(
+                                                    StreamDescriptor()
+                                                        .withNamespace(stream.unmappedNamespace)
+                                                        .withName(stream.unmappedName)
+                                                )
+                                                .withStatus(AirbyteStreamStatus.INCOMPLETE)
+                                        )
+                                )
+                        destination.sendMessage(
+                            InputMessageOther(incompleteTrace),
+                            broadcast = true
+                        )
+                        destination.shutdown()
+                    }
                     UncleanSyncEndBehavior.UNPARSEABLE_MESSAGE -> {
                         destination.sendMessage("{\"unparseable")
                         destination.shutdown()

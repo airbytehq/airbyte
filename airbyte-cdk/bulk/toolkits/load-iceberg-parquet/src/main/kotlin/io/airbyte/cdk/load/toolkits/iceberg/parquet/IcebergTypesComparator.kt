@@ -222,8 +222,8 @@ class IcebergTypesComparator {
                 // but for this function's purpose, we only check the existing fields.
                 true
             }
-            Type.TypeID.BINARY,
             Type.TypeID.DECIMAL,
+            Type.TypeID.BINARY,
             Type.TypeID.FIXED,
             Type.TypeID.UUID,
             Type.TypeID.MAP,

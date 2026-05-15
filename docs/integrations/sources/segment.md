@@ -34,6 +34,14 @@ Connector that pulls from Segment&#39;s Public API.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-04-28 | [77401](https://github.com/airbytehq/airbyte/pull/77401) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76738](https://github.com/airbytehq/airbyte/pull/76738) | Update dependencies |
+| 0.0.47 | 2026-03-31 | [75791](https://github.com/airbytehq/airbyte/pull/75791) | Update dependencies |
+| 0.0.46 | 2026-03-17 | [74599](https://github.com/airbytehq/airbyte/pull/74599) | Update dependencies |
+| 0.0.45 | 2026-02-24 | [73759](https://github.com/airbytehq/airbyte/pull/73759) | Update dependencies |
+| 0.0.44 | 2026-02-17 | [73464](https://github.com/airbytehq/airbyte/pull/73464) | Update dependencies |
+| 0.0.43 | 2026-02-10 | [73180](https://github.com/airbytehq/airbyte/pull/73180) | Update dependencies |
+| 0.0.42 | 2026-02-03 | [72571](https://github.com/airbytehq/airbyte/pull/72571) | Update dependencies |
 | 0.0.41 | 2026-01-20 | [72138](https://github.com/airbytehq/airbyte/pull/72138) | Update dependencies |
 | 0.0.40 | 2026-01-14 | [71534](https://github.com/airbytehq/airbyte/pull/71534) | Update dependencies |
 | 0.0.39 | 2025-12-18 | [70762](https://github.com/airbytehq/airbyte/pull/70762) | Update dependencies |

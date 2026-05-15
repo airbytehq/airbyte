@@ -32,6 +32,15 @@ For more information about the API visit https://apidocs.zonkafeedback.com/#intr
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-04-28 | [77502](https://github.com/airbytehq/airbyte/pull/77502) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76825](https://github.com/airbytehq/airbyte/pull/76825) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75812](https://github.com/airbytehq/airbyte/pull/75812) | Update dependencies |
+| 0.0.48 | 2026-03-24 | [75053](https://github.com/airbytehq/airbyte/pull/75053) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74430](https://github.com/airbytehq/airbyte/pull/74430) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73994](https://github.com/airbytehq/airbyte/pull/73994) | Update dependencies |
+| 0.0.45 | 2026-02-17 | [73597](https://github.com/airbytehq/airbyte/pull/73597) | Update dependencies |
+| 0.0.44 | 2026-02-10 | [73220](https://github.com/airbytehq/airbyte/pull/73220) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72087](https://github.com/airbytehq/airbyte/pull/72087) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71378](https://github.com/airbytehq/airbyte/pull/71378) | Update dependencies |
 | 0.0.41 | 2025-12-18 | [70802](https://github.com/airbytehq/airbyte/pull/70802) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70143](https://github.com/airbytehq/airbyte/pull/70143) | Update dependencies |

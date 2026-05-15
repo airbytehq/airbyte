@@ -63,10 +63,10 @@ class PostgresWriter(
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
 
         val isRawTablesMode = postgresConfiguration.legacyRawTablesOnly == true
-        if (isRawTablesMode && stream.importType is Dedupe) {
+        if (isRawTablesMode && stream.tableSchema.importType is Dedupe) {
             log.warn { "Dedupe mode is not supported in raw tables mode. Falling back to Append." }
         }
-        val useDedupe = !isRawTablesMode && stream.importType is Dedupe
+        val useDedupe = !isRawTablesMode && stream.tableSchema.importType is Dedupe
 
         return when (stream.minimumGenerationId) {
             0L ->

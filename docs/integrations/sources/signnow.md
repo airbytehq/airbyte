@@ -34,6 +34,14 @@ API Reference: https://docs.signnow.com/docs/signnow/welcome
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2026-04-28 | [77437](https://github.com/airbytehq/airbyte/pull/77437) | Update dependencies |
+| 0.0.36 | 2026-04-21 | [76781](https://github.com/airbytehq/airbyte/pull/76781) | Update dependencies |
+| 0.0.35 | 2026-03-31 | [75787](https://github.com/airbytehq/airbyte/pull/75787) | Update dependencies |
+| 0.0.34 | 2026-03-24 | [75119](https://github.com/airbytehq/airbyte/pull/75119) | Update dependencies |
+| 0.0.33 | 2026-02-24 | [73938](https://github.com/airbytehq/airbyte/pull/73938) | Update dependencies |
+| 0.0.32 | 2026-02-17 | [73561](https://github.com/airbytehq/airbyte/pull/73561) | Update dependencies |
+| 0.0.31 | 2026-02-10 | [73227](https://github.com/airbytehq/airbyte/pull/73227) | Update dependencies |
+| 0.0.30 | 2026-02-03 | [72709](https://github.com/airbytehq/airbyte/pull/72709) | Update dependencies |
 | 0.0.29 | 2026-01-20 | [72150](https://github.com/airbytehq/airbyte/pull/72150) | Update dependencies |
 | 0.0.28 | 2026-01-14 | [71625](https://github.com/airbytehq/airbyte/pull/71625) | Update dependencies |
 | 0.0.27 | 2025-12-18 | [70722](https://github.com/airbytehq/airbyte/pull/70722) | Update dependencies |
