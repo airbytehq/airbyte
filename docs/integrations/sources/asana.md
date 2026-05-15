@@ -12,8 +12,8 @@ To use the Asana source connector, you need:
 
 - An Asana account with access to the workspaces, projects, tasks, portfolios, and other resources you want to sync.
 - One of the following authentication methods:
-  - **OAuth**. Recommended for Airbyte Cloud.
-  - **Personal Access Token**. To create a token, follow Asana's [personal access token instructions](https://developers.asana.com/docs/personal-access-token).
+  - **OAuth**. Recommended for Airbyte Cloud. Airbyte Cloud manages the Asana OAuth app and token exchange for you. If you configure OAuth yourself, register an Asana OAuth app and make sure it can request these read scopes: `attachments:read`, `custom_fields:read`, `portfolios:read`, `projects:read`, `stories:read`, `tags:read`, `tasks:read`, `team_memberships:read`, `teams:read`, `users:read`, and `workspaces:read`.
+  - **Personal Access Token**. To create a token, follow Asana's [personal access token instructions](https://developers.asana.com/docs/personal-access-token). Use an Asana service account token if you need to sync organization exports.
 
 The connector can only sync data the authenticated Asana user can access. If the authenticated user has a view-only license or limited project access in Asana, the connector has the same limitations.
 
@@ -43,7 +43,7 @@ The connector can only sync data the authenticated Asana user can access. If the
 3. Click **+ New source**.
 4. Select **Asana** from the list of available sources.
 5. Enter a **Source name**.
-6. Enter a personal access token.
+6. Authenticate using OAuth, or enter a personal access token.
 7. Optionally, enter **Organization Export IDs** if you want to sync specific organization exports.
 8. Click **Set up source**.
 
@@ -127,6 +127,7 @@ Asana's organization export endpoints are only available to Enterprise organizat
 ### Troubleshooting
 
 - If you encounter access errors while using OAuth, make sure your Asana OAuth app is configured correctly. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
+- If Asana returns a `forbidden_scopes` error during OAuth authorization, update the app's approved scopes in the Asana developer console and then authorize the source again.
 - If the connector returns permissions errors for some streams, confirm that the authenticated Asana user can view those resources in Asana.
 - For other troubleshooting topics, see the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
@@ -155,7 +156,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.7.0 | 2026-04-28 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
+| 1.7.0 | 2026-05-15 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
 | 1.6.0 | 2026-05-14 | [78096](https://github.com/airbytehq/airbyte/pull/78096) | Promoted release candidate to GA |
 | 1.6.0-rc.2 | 2026-05-14 | [78082](https://github.com/airbytehq/airbyte/pull/78082) | Fix projects stream HTTP 400 after CDK v7 upgrade |
 | 1.6.0-rc.1 | 2026-04-27 | [76390](https://github.com/airbytehq/airbyte/pull/76390) | chore(source-asana): bump airbyte-cdk from ^6 to ^7.13.0 |
