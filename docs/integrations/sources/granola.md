@@ -8,10 +8,10 @@ This page contains the setup guide and reference information for the [Granola](h
 
 ## Prerequisites
 
-You need one of the following:
+You need one of the following API keys:
 
-- **Personal API key** (Beta) — available to any workspace member on a **Business** or **Enterprise** plan. On Enterprise plans, a workspace admin must enable Personal API key creation in **Settings > Workspace > General**.
-- **Enterprise API key** — available to workspace admins on an **Enterprise** plan.
+- **Personal API key (Beta)**: available to any workspace member on a **Business** or **Enterprise** plan. On Enterprise plans, a workspace administrator must enable user-scoped API key creation in **Settings > Workspace > General**.
+- **Enterprise API key**: available to workspace administrators on an **Enterprise** plan.
 
 The API endpoints and connector behavior are the same for both key types. The difference is the scope of data each key can access. See [Data access by key type](#data-access-by-key-type) for details.
 
@@ -29,13 +29,13 @@ Granola supports two API key types. Choose the one that matches your plan and ac
 4. Copy the generated API key and store it securely.
 
 :::note
-On Enterprise plans, a workspace admin must enable Personal API key creation via the "Allow personal API keys" toggle in **Settings > Workspace > General** before members can create Personal API keys.
+On Enterprise plans, a workspace administrator must enable Personal API key creation with the **Allow user-scoped API keys** toggle in **Settings > Workspace > General** before members can create Personal API keys.
 :::
 
 #### Enterprise API key
 
 1. Log in to your Granola workspace as an administrator.
-2. Go to **Settings > API > Create new key**.
+2. Go to **Settings > Connectors > API keys > Create new key**.
 3. Select **Enterprise API key** and click **Generate API Key**.
 4. Copy the generated API key and store it securely.
 
@@ -59,21 +59,28 @@ The Granola source connector supports the following sync modes:
 
 ## Supported streams
 
-The Granola source connector supports the following stream:
+The Granola source connector supports the following streams:
 
-| Stream  | Sync mode   | Primary key |
-| :------ | :---------- | :---------- |
-| `notes` | Incremental | `id`        |
+| Stream | Sync mode | Primary key |
+| :--- | :--- | :--- |
+| `notes` | Incremental | `id` |
+| `detailed_notes` | Full refresh | `id` |
 
 ### Notes
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows.
+For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows. The connector uses the `created_after` and `created_before` query parameters for these windows.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 
-This connector does not use the single-note detail endpoint (`GET /v1/notes/{note_id}`), so fields available only on that endpoint, such as summaries, transcripts, attendees, calendar events, and folder membership, are not included.
+### Detailed notes
+
+The `detailed_notes` stream retrieves each note from the `notes` stream with the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It includes the note metadata plus fields available only on the detail endpoint, including summaries, transcripts, attendees, calendar events, and folder membership.
+
+The connector always requests transcript data for this stream. Syncing `detailed_notes` can increase sync time and data volume for workspaces with many notes.
+
+The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
 ### Data access by key type
 
@@ -88,26 +95,37 @@ The set of notes returned by the API depends on the type of API key you use:
 
 The Granola API enforces rate limits. For Enterprise API keys, limits are applied per workspace. For Personal API keys, limits are applied per user.
 
-| Metric         | Value                             |
-| :------------- | :-------------------------------- |
-| Burst capacity | 25 requests                       |
-| Time window    | 5 seconds                         |
+| Metric | Value |
+| :--- | :--- |
+| Burst capacity | 25 requests |
+| Time window | 5 seconds |
 | Sustained rate | 5 requests per second (300/minute) |
 
-The connector handles rate limiting automatically by retrying requests when a `429 Too Many Requests` response is received.
+The connector uses the API's burst limit to manage request volume and retries requests when a `429 Too Many Requests` response is received.
+
+## Reference
+
+This connector uses the [Granola API](https://docs.granola.ai/introduction). All API requests use the `https://public-api.granola.ai` endpoint.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `api_key` | Yes | Granola API key. Use a Personal API key for your own notes or an Enterprise API key for workspace Team space notes. |
+| `start_date` | No | Earliest note creation date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request | Subject         |
-| :------ | :--------- | :----------- | :-------------- |
-| 0.2.1 | 2026-05-15 | | Update API key setup instructions |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 0.2.1 | 2026-05-15 | [78117](https://github.com/airbytehq/airbyte/pull/78117) | Update API key setup instructions |
 | 0.2.0 | 2026-05-07 | [77861](https://github.com/airbytehq/airbyte/pull/77861) | Promoted release candidate to GA |
 | 0.2.0-rc.4 | 2026-05-01 | [77698](https://github.com/airbytehq/airbyte/pull/77698) | Revert default_concurrency from 6 to 5 (optimal value from tuning) and add HTTP API budget matching Granola's documented rate limit (25 req/5s burst) |
-| 0.2.0-rc.3 | 2026-04-28 | [77645](https://github.com/airbytehq/airbyte/pull/77645) | Increase default_concurrency from 5 to 6 for concurrency tuning iteration 3 (final) |
-| 0.2.0-rc.2 | 2026-04-29 | [77551](https://github.com/airbytehq/airbyte/pull/77551) | Increase default_concurrency from 4 to 5 for concurrency tuning iteration 2 |
+| 0.2.0-rc.3 | 2026-04-30 | [77645](https://github.com/airbytehq/airbyte/pull/77645) | Increase default_concurrency from 5 to 6 for concurrency tuning iteration 3 (final) |
+| 0.2.0-rc.2 | 2026-04-28 | [77551](https://github.com/airbytehq/airbyte/pull/77551) | Increase default_concurrency from 4 to 5 for concurrency tuning iteration 2 |
 | 0.2.0-rc.1 | 2026-04-27 | [77067](https://github.com/airbytehq/airbyte/pull/77067) | set default_concurrency=4 for concurrency tuning iteration 1 (Path A, max_rate_limit=5 req/s) |
 | 0.1.3 | 2026-04-21 | [76632](https://github.com/airbytehq/airbyte/pull/76632) | Update dependencies |
 | 0.1.2 | 2026-03-31 | [75737](https://github.com/airbytehq/airbyte/pull/75737) | Update dependencies |
