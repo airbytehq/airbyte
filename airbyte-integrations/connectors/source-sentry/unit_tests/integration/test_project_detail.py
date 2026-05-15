@@ -1,13 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 from unittest import TestCase
 
 import freezegun
+from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import Level, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -15,9 +14,6 @@ from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
 
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from conftest import get_source
 
 
 _NOW = datetime.now(timezone.utc)
@@ -46,5 +42,33 @@ class TestProjectDetailStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=self._config(), catalog=catalog)
 
-        assert len(output.records) >= 1, f"Expected project detail record"
+        assert len(output.records) >= 1, "Expected project detail record"
         assert output.records[0].record.data["slug"] == "test-project"
+
+    def test_spec_rejects_blank_project_and_organization(self):
+        connector_spec = get_source(config={}).spec(logger=None)
+
+        connection_specification = connector_spec.connectionSpecification
+        project_schema = connection_specification["properties"]["project"]
+        organization_schema = connection_specification["properties"]["organization"]
+
+        assert project_schema["minLength"] == 1
+        assert project_schema["pattern"] == r"^.*\S.*$"
+        assert organization_schema["minLength"] == 1
+        assert organization_schema["pattern"] == r"^.*\S.*$"
+
+    @HttpMocker()
+    def test_404_error_uses_config_error_message(self, http_mocker: HttpMocker):
+        error_message = "Sentry organization or project is missing or invalid."
+        http_mocker.get(
+            SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
+            create_response("project_detail", status_code=404, has_next=False),
+        )
+
+        source = get_source(config=self._config())
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=self._config(), catalog=catalog)
+
+        assert any(
+            log.type == Type.LOG and log.log.level == Level.ERROR and error_message in log.log.message for log in output.logs
+        )
