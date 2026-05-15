@@ -15,7 +15,6 @@ from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
 
 
-
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "project_detail"
 _ORGANIZATION = "test-org"
@@ -69,6 +68,4 @@ class TestProjectDetailStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=self._config(), catalog=catalog)
 
-        assert any(
-            log.type == Type.LOG and log.log.level == Level.ERROR and error_message in log.log.message for log in output.logs
-        )
+        assert any(log.type == Type.LOG and log.log.level == Level.ERROR and error_message in log.log.message for log in output.logs)
