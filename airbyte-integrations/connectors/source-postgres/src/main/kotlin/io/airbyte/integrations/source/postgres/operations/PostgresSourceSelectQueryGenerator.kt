@@ -50,6 +50,18 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQuerySpec.sql(): String {
+        val selectMax = select as? SelectColumnMaxValue
+        if (selectMax != null) {
+            return listOf(
+                    "SELECT ${selectMax.column.sql()}",
+                    from.sql(),
+                    where.sql(),
+                    "ORDER BY ${selectMax.column.sql()} DESC NULLS LAST",
+                    "LIMIT 1"
+                )
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+        }
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
         val limitClause: String =
