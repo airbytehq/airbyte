@@ -8,7 +8,7 @@ sidebar_position: 6
 The CLI was designed to be driven by AI agent harnesses (Claude Code, Codex, Cursor, and similar) as much as by humans. Compared to writing a custom MCP server or wiring a Python SDK call, shelling out to `airbyte-agent` gives an agent:
 
 - A uniform `<resource> <operation>` surface that doesn't change between connectors.
-- Schema introspection via `--describe` on resource operations, so the agent can plan without round-tripping documentation. A few operations are backed by internal-only routes and return `{"type": "not_supported", ...}`; use `--help` on those instead.
+- Schema introspection via `airbyte-agent schema <resource> <operation>`, so the agent can plan without round-tripping documentation. A few operations are backed by internal-only routes and return `{"type": "not_supported", ...}`; use `--help` on those instead.
 - Stable JSON-in, JSON-out payloads suitable for tool calls.
 - Stable exit codes (`0`, `1`, `2`, `3`, `4`) for **server-side** failures (auth, not found, validation, rate limits). Client-side validation failures (bad UUIDs, unreachable hosts, malformed payloads) can surface as a generic `{"type": "error", ...}` with exit `1`, so agents should always parse the stderr JSON and branch on `type` rather than dispatching on exit code alone. The full taxonomy and one important exception (`connectors create` reports timeouts as a `0` success payload) are covered below.
 - A credential model that keeps third-party secrets out of agent transcripts entirely.

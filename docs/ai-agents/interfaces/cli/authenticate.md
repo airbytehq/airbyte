@@ -11,13 +11,6 @@ The CLI authenticates with Airbyte Agents using an `AIRBYTE_CLIENT_ID`, an `AIRB
 The credentials on this page authenticate *your machine* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you provide when you [add a connector](./add-connector). The two are independent, and rotating one doesn't affect the other. The CLI also never accepts per-connector credentials inline; those always go through the browser flow.
 :::
 
-## Get your credentials
-
-1. Sign in to [app.airbyte.ai](https://app.airbyte.ai/).
-2. Find the **Your API Credentials** card in the app and copy your `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID` from there. New accounts see this card on the onboarding screen; if you've already finished onboarding, it's available alongside your other account details.
-
-If the card isn't visible, copy the organization ID from the URL of any organization page (the UUID after `/organizations/`).
-
 ## Provide credentials
 
 The CLI accepts credentials three ways. Pick whichever fits your environment best.
@@ -26,15 +19,33 @@ The CLI resolves them in this order: environment variables, then the settings fi
 
 ### Recommended: `airbyte-agent login`
 
-`login` prompts for the three values, verifies them by listing organizations, and writes them to `~/.airbyte-agent/settings.json` with `0600` permissions. The `client_secret` prompt is masked on a terminal:
+`login` opens your browser to [app.airbyte.ai](https://app.airbyte.ai/) for a Keycloak sign-in, then fetches your `client_id`, `client_secret`, and `organization_id` from the airbyte.ai bootstrap endpoints and writes them to `~/.airbyte-agent/settings.json` with `0600` permissions. You never see or paste the values yourself.
 
 ```bash
 airbyte-agent login
 ```
 
-It also prompts for a default workspace name. You can press Enter to keep `default`, or set one later with [`workspaces use`](./workspaces#set-a-default-workspace).
+If you belong to more than one organization, the CLI prints a numbered picker on stderr and asks you to choose. To skip it on subsequent runs (or in scripted setups), pass `--org-id`:
 
-This is the right choice on a developer laptop or any machine where the credentials should persist across sessions.
+```bash
+airbyte-agent login --org-id <organization-uuid>
+```
+
+Get the organization UUID from the **Your API Credentials** card in the web app, or from the URL of any organization page (the UUID after `/organizations/`).
+
+The browser flow does not prompt for a default workspace. Set one with [`workspaces use`](./workspaces#set-a-default-workspace) once you're signed in, or edit `workspace` in `~/.airbyte-agent/settings.json` directly.
+
+This is the right choice on a developer laptop or any machine where the credentials should persist across sessions and a browser is available.
+
+#### Headless machines: `--manual`
+
+On a server, a remote shell, or any machine where no browser is reachable, pass `--manual` to fall back to the legacy prompt-based flow. The CLI asks for the three values plus an optional default workspace, with `client_secret` masked on a terminal:
+
+```bash
+airbyte-agent login --manual
+```
+
+Get the three values from the **Your API Credentials** card on [app.airbyte.ai](https://app.airbyte.ai/). New accounts see this card on the onboarding screen; if you've already finished onboarding, it's available alongside your other account details. If the card isn't visible, copy the organization ID from the URL of any organization page (the UUID after `/organizations/`).
 
 ### Environment variables
 
@@ -105,7 +116,7 @@ AIRBYTE_ORGANIZATION_ID=<other_org_id> \
 
 ### Settings file
 
-You can also write `~/.airbyte-agent/settings.json` directly. `login` writes the same shape:
+You can also write `~/.airbyte-agent/settings.json` directly. `login` writes the same shape (the browser flow populates `credentials` and `organization_id`; `--manual` also writes `workspace`):
 
 ```json title="~/.airbyte-agent/settings.json"
 {

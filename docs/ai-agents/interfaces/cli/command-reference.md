@@ -11,10 +11,10 @@ Every command on the CLI follows the same shape:
 airbyte-agent <resource> <operation> [flags]
 ```
 
-Run `airbyte-agent --help` to list resources, `airbyte-agent <resource> --help` to list operations, and `airbyte-agent <resource> <operation> --describe` to print the parameter schema (plus the underlying OpenAPI request and response shapes when the operation maps to a public API route) without executing the call. This page summarizes that surface in one place.
+Run `airbyte-agent --help` to list resources, `airbyte-agent <resource> --help` to list operations, and `airbyte-agent schema <resource> <operation>` to print the parameter schema (plus the underlying OpenAPI request and response shapes when the operation maps to a public API route) without executing the call. This page summarizes that surface in one place.
 
 :::note Single source of truth
-If anything on this page disagrees with `--describe` output, `--describe` wins. Run it whenever you need the canonical parameter list for a command.
+If anything on this page disagrees with `airbyte-agent schema <resource> <operation>` output, `schema` wins. Run it whenever you need the canonical parameter list for a command.
 :::
 
 ## Common flags
@@ -24,17 +24,17 @@ These flags are exposed on every resource operation:
 | Flag | Description | Default |
 | --- | --- | --- |
 | `--json` | Inline JSON parameters. Pass `@filename` to load from a file. Mutually exclusive with per-parameter flags. | (none) |
-| `--format` | Output format: `json` or `table`. `table` works best on operations whose response is a flat array of records; responses wrapped in `{ "data": [...], "meta": {...} }` render with the array under a `DATA` column. When in doubt, stick with `json` and use `--fields` to trim it. | `json` |
-| `--describe` | Print the operation's parameter schema (and OpenAPI shape, when the operation maps to a public API route) and exit without executing. Operations backed by internal-only routes return `{"type": "not_supported", ...}` on stderr with exit code `3`; use `--help` instead. | `false` |
 | `--output`, `-o` | Write stdout to a file instead of the terminal. | (none) |
 | `--verbose`, `-v` | Enable debug logging on stderr. | `false` |
 | `--fields` | Client-side response filter. Comma-separated dot paths (for example, `organizations.id,organizations.organization_name`). Errors are not filtered. | (none) |
 
+The CLI always prints JSON to stdout. There is no `--format` flag; pipe the output through `jq` if you need to reshape it.
+
 Per-parameter flags are generated from each operation's schema. Snake_case parameter names become kebab-case flags. For example, `select_fields` is exposed as `--select-fields`.
 
-The flags above don't all apply to the top-level commands (`login`, `login show`, `version`, `schema`). `--json` in particular isn't a valid flag on those: `airbyte-agent version --json '{}'` exits `1` because the flag is unknown to that command.
+The flags above don't all apply to the top-level commands (`login`, `login show`, `version`, `schema`, `completion`). `--json` in particular isn't a valid flag on those: `airbyte-agent version --json '{}'` exits `1` because the flag is unknown to that command.
 
-`--fields`, `--format`, and `--output` (`-o`) are silently accepted on top-level commands but don't do anything. `version --format table` still prints JSON, `version --fields version` still prints every field, and `version -o out.json` exits `0` without writing `out.json`. Treat top-level commands as JSON-to-stdout only, and use shell tools (`jq`, redirection) if you need to post-process the result.
+`--fields` and `--output` (`-o`) are silently accepted on top-level commands but don't do anything. `version --fields version` still prints the same string, and `version -o out.json` exits `0` without writing `out.json`. Treat top-level commands as plain-stdout output, and use shell tools (`jq`, redirection) if you need to post-process the result.
 
 ## Top-level commands
 
@@ -42,10 +42,10 @@ A few commands live at the top level rather than under a resource:
 
 | Command | Description |
 | --- | --- |
-| `airbyte-agent login` | Prompt for `client_id`, `client_secret`, `organization_id`, and a default workspace, then write `~/.airbyte-agent/settings.json` with `0600` permissions. The `client_secret` prompt is masked on a terminal. See [Authenticate](./authenticate). |
+| `airbyte-agent login` | Open a browser to [app.airbyte.ai](https://app.airbyte.ai/) for Keycloak sign-in, then fetch `client_id`, `client_secret`, and `organization_id` from the bootstrap endpoints and write them to `~/.airbyte-agent/settings.json` with `0600` permissions. Flags: `--manual` falls back to the legacy prompt-based flow for headless machines; `--org-id <uuid>` skips the multi-organization picker when you belong to more than one. See [Authenticate](./authenticate). |
 | `airbyte-agent login show` | Print the saved settings (with `client_secret` obfuscated). Useful for `--verbose` debugging and for sharing a redacted dump in bug reports. |
-| `airbyte-agent version` | Print version, commit, and build date as JSON. |
-| `airbyte-agent schema <resource> <operation>` | Equivalent to `<resource> <operation> --describe`, but discoverable as a top-level command. Returns `{"type": "not_supported", ...}` (exit `3`) for operations backed by internal-only API routes. |
+| `airbyte-agent version` | Print the CLI version string to stdout. Output is plain text, not JSON. |
+| `airbyte-agent schema <resource> <operation>` | Print the operation's parameter schema and, when it maps to a public API route, the underlying OpenAPI request and response shapes. Returns `{"type": "not_supported", ...}` (exit `3`) for operations backed by internal-only API routes. |
 | `airbyte-agent completion <shell>` | Cobra-generated shell-completion script for `bash`, `zsh`, `fish`, or `powershell`. Pipe the output into your shell's completion directory. Run `airbyte-agent completion --help` for installation steps. |
 
 ## `organizations`

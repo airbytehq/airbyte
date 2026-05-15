@@ -32,7 +32,7 @@ The error text refers to a legacy `~/.airbyte-agent/credentials` path and only t
 
 ### Fix
 
-Run `airbyte-agent login` to prompt for the three values and write the settings file. See [Authenticate](./authenticate) for the alternatives.
+Run `airbyte-agent login` to open a browser, sign in to [app.airbyte.ai](https://app.airbyte.ai/), and write the settings file. On a headless machine without a browser, run `airbyte-agent login --manual` and paste the three values from the **Your API Credentials** card instead. See [Authenticate](./authenticate) for the env-var path.
 
 ## Authentication fails
 
@@ -55,9 +55,8 @@ Stale or rotated credentials, a `client_id`/`client_secret` from a different org
 
 ### Fix
 
-1. Re-read your credentials from the **Your API Credentials** card in the web app. See [Authenticate](./authenticate#get-your-credentials) if you can't find it.
-2. Re-run `airbyte-agent login`, or update the env vars.
-3. If you switched orgs, also update `AIRBYTE_ORGANIZATION_ID`.
+1. Re-run `airbyte-agent login` to refresh the credentials, or read them from the **Your API Credentials** card in the web app and update your env vars. See [Authenticate](./authenticate) if you can't find it.
+2. If you switched orgs, also update `AIRBYTE_ORGANIZATION_ID` (or sign in to the right org via `airbyte-agent login --org-id <uuid>`).
 
 ## Workspace not found
 
@@ -203,7 +202,7 @@ airbyte-agent connectors execute --json '{
   "workspace": "default",
   "name": "hubspot",
   "entity": "contacts",
-  "action": "read",
+  "action": "list",
   "select_fields": ["id", "email", "name"]
 }' --fields data.id,data.email,data.name
 ```
@@ -216,11 +215,11 @@ For very large responses, also write the output to a file:
 airbyte-agent connectors execute --json '{...}' -o response.json
 ```
 
-## `--describe` returns no `api` block or `not_supported`
+## `schema` returns no `api` block or `not_supported`
 
 ### Symptom
 
-One of two things happens when you run `--describe` (or the equivalent `airbyte-agent schema <resource> <operation>`):
+One of two things happens when you run `airbyte-agent schema <resource> <operation>`:
 
 1. The response includes `params` but the `api` block is empty or missing.
 2. The response is an error on stderr with exit code `3`:
@@ -234,7 +233,7 @@ One of two things happens when you run `--describe` (or the equivalent `airbyte-
 
 ### Cause
 
-The OpenAPI schemas in `--describe` are extracted at build time from the CLI's checked-in specs and only cover routes the CLI maps to a public API endpoint.
+The OpenAPI schemas in `schema` output are extracted at build time from the CLI's checked-in specs and only cover routes the CLI maps to a public API endpoint.
 
 - Case 1 happens when the operation maps to a route that exists in the public spec but isn't bundled, leaving `params` populated but `api` empty.
 - Case 2 happens when the operation maps to an internal-only route (any path starting with `/api/v1/internal/`). The schema lookup deliberately refuses these. Today this affects `organizations list`; the same shape applies to any future operation backed by an internal route.

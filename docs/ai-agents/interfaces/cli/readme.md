@@ -7,7 +7,7 @@ import DocCardList from '@theme/DocCardList';
 
 # CLI
 
-The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Resource operations accept JSON in (`--json`), return JSON out, and support schema introspection via `--describe`. Every command exits with a stable code, so it's safe to script from a shell and easy for AI agents to discover and call at runtime. A few top-level commands (`login`, `version`, `schema`) sit outside the resource model and don't take `--json`.
+The Airbyte Agent CLI (`airbyte-agent`) is a single Go binary that exposes Airbyte Agents through a uniform `airbyte-agent <resource> <operation>` interface. Resource operations accept JSON in (`--json`), return JSON out, and support schema introspection via `airbyte-agent schema <resource> <operation>`. Every command exits with a stable code, so it's safe to script from a shell and easy for AI agents to discover and call at runtime. A few top-level commands (`login`, `version`, `schema`, `completion`) sit outside the resource model and don't take `--json`.
 
 The CLI is the right interface when you want:
 
@@ -22,7 +22,7 @@ Source code, releases, and bundled agent skills live at [`airbytehq/airbyte-agen
 Before you install the CLI, make sure you have:
 
 - An Airbyte Agents account. [Sign up at app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
-- An `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID`. Sign in to [app.airbyte.ai](https://app.airbyte.ai/) and find the **Your API Credentials** card to copy them. See [Authenticate](./authenticate#get-your-credentials) for the full walkthrough.
+- A signed-in [app.airbyte.ai](https://app.airbyte.ai/) account. `airbyte-agent login` opens your browser to complete the sign-in and writes credentials for you; for headless machines, [`--manual`](./authenticate#headless-machines-manual) reads them from the **Your API Credentials** card in the web app. See [Authenticate](./authenticate) for the full walkthrough.
 - For [`connectors create`](./add-connector), a browser on the machine running the CLI. The credential flow opens a browser tab so you can authenticate with the third-party service.
 
 ## Install
@@ -63,7 +63,7 @@ After [authenticating](./authenticate), list the workspaces in your organization
 airbyte-agent workspaces list
 ```
 
-The CLI prints JSON to stdout by default. Pass `--fields` to keep only the columns you want. `--format table` works best on responses that are a flat array of records; wrapped responses (`{"data": [...]}`, `{"workspaces": [...]}`, and so on) render with the array under a single `DATA` column containing JSON, so for those `json` plus `--fields` is usually more readable. See [Execute operations](./execute) for the full output-filtering rules.
+The CLI prints JSON to stdout. Pass `--fields` to keep only the dotted paths you want (for example, `--fields workspaces.id,workspaces.name`); pipe through `jq` for anything more involved. See [Execute operations](./execute) for the full output-filtering rules.
 
 ## Command model
 
@@ -110,15 +110,15 @@ To load a long JSON payload from a file, use `--json @path/to/file.json`.
 
 ### Discover before you execute
 
-`--describe` returns the schema for an operation (parameters, types, and, when the operation maps to a public API route, the underlying OpenAPI request and response shapes) without running it. Use it whenever you're unsure what an operation accepts:
+`airbyte-agent schema <resource> <operation>` returns the schema for an operation (parameters, types, and, when the operation maps to a public API route, the underlying OpenAPI request and response shapes) without running it. Use it whenever you're unsure what an operation accepts:
 
 ```bash
-airbyte-agent connectors execute --describe
+airbyte-agent schema connectors execute
 ```
 
 For connector-specific entities and actions, [`connectors describe`](./describe-connector) is the authoritative source. Never guess what a connector supports; ask `describe` first.
 
-A handful of operations are backed by internal-only API routes (currently `organizations list`) and return `{"type": "not_supported", ...}` on stderr with exit code `3` when introspected via `--describe`. Use `airbyte-agent <resource> <operation> --help` for those. `airbyte-agent schema <resource> <operation>` is an alias for `--describe` and behaves the same way.
+A handful of operations are backed by internal-only API routes (currently `organizations list`) and return `{"type": "not_supported", ...}` on stderr with exit code `3` when introspected via `schema`. Use `airbyte-agent <resource> <operation> --help` for those.
 
 ### Exit codes and errors
 
