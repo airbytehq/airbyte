@@ -1803,7 +1803,7 @@ streams:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 2) }}"
-  max_concurrency: 16
+  max_concurrency: 8
 
 spec:
   type: Spec
@@ -1831,7 +1831,7 @@ spec:
           Increase this only if your Greenhouse account can support higher API
           usage, or lower it if you see rate-limit errors.
         minimum: 1
-        maximum: 16
+        maximum: 8
         default: 2
         examples:
           - 1
