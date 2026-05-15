@@ -58,6 +58,7 @@ In a sandbox or any other long-lived deployment, supply the three values through
 On [Modal](https://modal.com/), bake the binary into the image and attach a `modal.Secret` to the function so the three values are present at runtime. The same pattern (image + secret) applies to most container and serverless platforms.
 
 ```python
+import os
 import subprocess
 
 import modal
@@ -82,8 +83,14 @@ app = modal.App("airbyte-agent-sync")
     secrets=[modal.Secret.from_name("airbyte-agent")],
 )
 def list_workspaces() -> None:
-    subprocess.run(["airbyte-agent", "workspaces", "list"], check=True)
+    subprocess.run(
+        ["airbyte-agent", "workspaces", "list"],
+        check=True,
+        env={"AIRBYTE_VERSION_CHECK": "disabled", **os.environ},
+    )
 ```
+
+`AIRBYTE_VERSION_CHECK=disabled` opts the run out of the daily GitHub check for a newer release. The binary version is pinned by the image, so the network call adds latency and noise without any actionable nudge for the operator. See the [settings file table](#settings-file) for the rest of the per-deployment knobs (`AIRBYTE_ALLOW_DESTRUCTIVE`, `AIRBYTE_TELEMETRY_MODE`).
 
 Environment-variable resolution is all-or-nothing: the CLI uses env vars only when **all three** of `AIRBYTE_CLIENT_ID`, `AIRBYTE_CLIENT_SECRET`, and `AIRBYTE_ORGANIZATION_ID` are set. If any one is missing, it falls back to `~/.airbyte-agent/settings.json` and the env values are ignored. There's no partial override: setting only `AIRBYTE_ORGANIZATION_ID` alongside a populated settings file will use the file's org ID, not the env var.
 
@@ -110,14 +117,24 @@ You can also write `~/.airbyte-agent/settings.json` directly. `login` writes the
     "organization_id": "your-org-id",
     "workspace": "default",
     "allow_destructive": false,
-    "telemetry_enabled": true
+    "telemetry_enabled": true,
+    "is_internal_user": false,
+    "version_check_enabled": true
   }
 }
 ```
 
-`workspace` is optional. When set, commands that take a `workspace` parameter without receiving one fall back to this value instead of the literal `"default"`. Set it with [`workspaces use`](./workspaces#set-a-default-workspace) so the CLI verifies the workspace exists and writes the canonical name.
+Only the `credentials` block and `organization_id` are required. The rest are optional and have safe defaults:
 
-`allow_destructive` and `telemetry_enabled` are also optional. See [Troubleshooting](./troubleshooting) for when you'd flip them.
+| Field | Default | What it does | Env override |
+| --- | --- | --- | --- |
+| `workspace` | `"default"` | Default workspace for commands that take a `workspace` parameter without receiving one. Set it with [`workspaces use`](./workspaces#set-a-default-workspace) so the CLI verifies the workspace exists and writes the canonical name. | `AIRBYTE_WORKSPACE` |
+| `allow_destructive` | `false` | When `true`, destructive commands like [`connectors delete`](./command-reference#connectors-delete) skip the interactive confirmation prompt. Useful for agent harnesses that can't answer a TTY prompt. | `AIRBYTE_ALLOW_DESTRUCTIVE=true` |
+| `telemetry_enabled` | `true` | Anonymous usage telemetry. Set to `false` to opt out. | `AIRBYTE_TELEMETRY_MODE=disabled` |
+| `is_internal_user` | `false` | Marks the invocation as an Airbyte employee so internal events can be filtered out of customer analytics. Leave at `false` outside of Airbyte. | `AIRBYTE_INTERNAL_USER` |
+| `version_check_enabled` | `true` | Once per day, the CLI checks GitHub for a newer release and prints a nudge. Set to `false` to disable the network call. **Recommended for sandboxed agents, long-running automations, and any deployment where the binary version is pinned by the image.** | `AIRBYTE_VERSION_CHECK=disabled` |
+
+See [Troubleshooting](./troubleshooting) for when you'd flip `allow_destructive` or `telemetry_enabled`.
 
 The file must be readable only by you. The CLI writes it at `0600` by default; if you create it by hand, set the permissions explicitly:
 
