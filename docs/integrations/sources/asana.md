@@ -127,7 +127,7 @@ Asana's organization export endpoints are only available to Enterprise organizat
 ### Troubleshooting
 
 - If you encounter access errors while using OAuth, make sure your Asana OAuth app is configured correctly. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
-- If Asana returns a `forbidden_scopes` error during OAuth authorization, update the app's approved scopes in the Asana developer console and then authorize the source again.
+- If Asana returns a `forbidden_scopes` error during OAuth authorization, update the app's approved scopes in Asana and then authorize the source again.
 - If the connector returns permissions errors for some streams, confirm that the authenticated Asana user can view those resources in Asana.
 - For other troubleshooting topics, see the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
