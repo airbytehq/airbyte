@@ -71,7 +71,9 @@ Each Google Ads API developer token is assigned an access level and "permissible
 
 ##### Optional: use your own Google OAuth app in Airbyte Cloud
 
-Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app and Google Ads developer token, create OAuth override credentials before you click **Sign in with Google**.
+Airbyte Cloud normally uses Airbyte-managed OAuth client credentials for the Google Ads source. If you need to use your own Google OAuth app and Google Ads developer token, create OAuth override credentials.
+
+Create the override first, then click **Sign in with Google**.
 
 Use the Airbyte API to create OAuth override credentials for the workspace or organization. For the workspace endpoint, see [Create OAuth override credentials for a workspace and source type](https://reference.airbyte.com/reference/workspaceoauthcredentials). For the organization endpoint, see [Create OAuth override credentials for an organization and source type](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials).
 
