@@ -136,6 +136,28 @@ class TestCampaignsStatsDaily(TestCase):
         record = output.records[0].record.data
         assert record.get("id") == CAMPAIGN_ID, f"Expected id={CAMPAIGN_ID}, got {record.get('id')}"
 
+    @HttpMocker()
+    def test_legacy_state_format_parses_without_error(self, http_mocker: HttpMocker) -> None:
+        state = (
+            StateBuilder()
+            .with_stream_state("campaigns_stats_daily", {"start_time": "2025-02-03T23:59:57"})
+            .build()
+        )
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.campaigns_stats_endpoint(CAMPAIGN_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=CAMPAIGN_ID, granularity="DAY"),
+        )
+
+        output = _read(
+            config_builder=config().with_end_date("2025-02-28"),
+            stream_name="campaigns_stats_daily",
+            sync_mode=SyncMode.incremental,
+            state=state,
+        )
+
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+
 
 class TestCampaignsStatsLifetime(TestCase):
     @HttpMocker()
