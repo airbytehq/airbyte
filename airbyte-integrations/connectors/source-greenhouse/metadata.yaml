@@ -22,9 +22,6 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-greenhouse
-  releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: true
   registryOverrides:
     cloud:
       enabled: true
