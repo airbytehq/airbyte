@@ -29,6 +29,7 @@ import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFiel
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeTzFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimestampFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimestampTzFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresUuidFieldType
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.JDBCType
@@ -107,6 +108,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.NULL -> NullFieldType
             JDBCType.OTHER ->
                 when (type.scalarTypeName) {
+                    "uuid" -> PostgresUuidFieldType
                     // Legacy mappings. Could be JsonStringFieldType instead?
                     "json",
                     "jsonb" -> StringFieldType

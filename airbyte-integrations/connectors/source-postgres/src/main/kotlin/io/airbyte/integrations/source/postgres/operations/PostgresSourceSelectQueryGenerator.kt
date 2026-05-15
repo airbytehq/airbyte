@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.ctidField
+import io.airbyte.integrations.source.postgres.operations.types.PostgresUuidFieldType
 import io.airbyte.integrations.source.postgres.xminField
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -50,6 +51,18 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQuerySpec.sql(): String {
+        val selectMax = select as? SelectColumnMaxValue
+        if (selectMax?.column?.type == PostgresUuidFieldType) {
+            return listOf(
+                    "SELECT ${selectMax.column.sql()}",
+                    from.sql(),
+                    where.sql(),
+                    "ORDER BY ${selectMax.column.sql()} DESC NULLS LAST",
+                    "LIMIT 1"
+                )
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+        }
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
         val limitClause: String =
