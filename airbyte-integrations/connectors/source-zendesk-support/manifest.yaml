@@ -1006,6 +1006,29 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  ticket_events_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          include: "comment_events"
+      paginator:
+        $ref: "#/definitions/end_of_stream_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ticket_events"
+    $parameters:
+      name: "ticket_events"
+      path: "incremental/ticket_events.json"
+      data_path: "ticket_events"
+      cursor_field: "timestamp"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
   ticket_fields_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -1366,6 +1389,7 @@ streams:
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
   - $ref: "#/definitions/ticket_comments_stream"
+  - $ref: "#/definitions/ticket_events_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/tickets_stream"
@@ -3510,6 +3534,153 @@ schemas:
         type:
           - "null"
           - array
+  ticket_events:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique identifier for the ticket event.
+        type:
+          - "null"
+          - integer
+      ticket_id:
+        description: Identifier of the ticket associated with the event.
+        type:
+          - "null"
+          - integer
+      timestamp:
+        description: Unix timestamp for when the ticket event occurred.
+        type:
+          - "null"
+          - integer
+      created_at:
+        description: Timestamp indicating when the ticket event was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      updater_id:
+        description: Identifier of the user who updated the ticket.
+        type:
+          - "null"
+          - integer
+      event_type:
+        description: Type of event generated for the ticket.
+        type:
+          - "null"
+          - string
+      via_reference_id:
+        description: Reference identifier associated with the channel that generated the event.
+        type:
+          - "null"
+          - integer
+          - string
+      via:
+        description: Channel through which the ticket event was generated.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          channel:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+      system:
+        description: System metadata associated with the ticket event.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          client:
+            type:
+              - "null"
+              - string
+          ip_address:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - string
+          latitude:
+            type:
+              - "null"
+              - number
+          longitude:
+            type:
+              - "null"
+              - number
+      metadata:
+        description: Additional metadata associated with the ticket event.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      updaters:
+        description: Users that contributed to the ticket event.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+      child_events:
+        description: Child events generated within the ticket event.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            event_type:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+            body:
+              type:
+                - "null"
+                - string
+            public:
+              type:
+                - "null"
+                - boolean
+            author_id:
+              type:
+                - "null"
+                - integer
   triggers:
     $schema: https://json-schema.org/draft-07/schema#
     type:
