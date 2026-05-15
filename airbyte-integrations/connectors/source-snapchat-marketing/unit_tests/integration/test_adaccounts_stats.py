@@ -9,6 +9,7 @@ from unittest import TestCase
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import AD_ACCOUNT_ID, ORGANIZATION_ID, ConfigBuilder
 from .request_builder import OAuthRequestBuilder, RequestBuilder
@@ -126,6 +127,21 @@ class TestAdaccountsStatsDaily(TestCase):
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
+    @HttpMocker()
+    def test_legacy_state_format_parses_without_error(self, http_mocker: HttpMocker) -> None:
+        state = StateBuilder().with_stream_state("adaccounts_stats_daily", {"start_time": "2024-01-15T23:59:57"}).build()
+
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.adaccounts_stats_endpoint(AD_ACCOUNT_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ACCOUNT_ID, granularity="DAY"),
+        )
+
+        output = _read(config_builder=config(), stream_name="adaccounts_stats_daily", sync_mode=SyncMode.incremental, state=state)
+
+        assert output.errors == []
+        assert len(output.state_messages) > 0
+
 
 class TestAdaccountsStatsLifetime(TestCase):
     @HttpMocker()
@@ -240,8 +256,6 @@ class TestAdaccountsStatsIncremental(TestCase):
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with previous state for stats streams."""
-        from airbyte_cdk.test.state_builder import StateBuilder
-
         previous_state_date = "2024-01-15T00:00:00.000000Z"
         state = StateBuilder().with_stream_state("adaccounts_stats_hourly", {"start_time": previous_state_date}).build()
 
