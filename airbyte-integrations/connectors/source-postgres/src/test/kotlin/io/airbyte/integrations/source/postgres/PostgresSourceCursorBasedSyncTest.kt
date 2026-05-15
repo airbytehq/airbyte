@@ -91,12 +91,18 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
         add(
             testCase(
                 "uuid",
-                mapOf("'00000000-0000-0000-0000-000000000001'::uuid" to
-                    "\"00000000-0000-0000-0000-000000000001\""),
-                mapOf("'00000000-0000-0000-0000-000000000002'::uuid" to
-                    "\"00000000-0000-0000-0000-000000000002\""),
-                mapOf("'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid" to
-                    "\"ffffffff-ffff-ffff-ffff-ffffffffffff\"")
+                mapOf(
+                    "'00000000-0000-0000-0000-000000000001'::uuid" to
+                        "\"00000000-0000-0000-0000-000000000001\""
+                ),
+                mapOf(
+                    "'00000000-0000-0000-0000-000000000002'::uuid" to
+                        "\"00000000-0000-0000-0000-000000000002\""
+                ),
+                mapOf(
+                    "'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid" to
+                        "\"ffffffff-ffff-ffff-ffff-ffffffffffff\""
+                )
             )
         )
 
