@@ -178,7 +178,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.2 | 2026-05-15 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add support for Atlassian Service Account API tokens with Jira Cloud ID routing |
+| 4.4.2 | 2026-05-15 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add support for Atlassian Service Account API tokens with Jira Cloud ID routing |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
 | 4.4.0 | 2026-05-06 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |
 | 4.3.21 | 2026-05-04 | [77751](https://github.com/airbytehq/airbyte/pull/77751) | Add input validation for `domain` field |
