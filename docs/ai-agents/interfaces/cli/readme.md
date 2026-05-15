@@ -35,6 +35,14 @@ Choose the install method that fits your environment.
 brew install airbytehq/tap/airbyte-agent
 ```
 
+### Install script (CLI + agent skill)
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Installs the latest CLI binary plus the bundled [agent skill](./using-with-ai-agents#install-the-bundled-skill) to `~/.claude/skills/airbyte-agent/`. Set `AIRBYTE_AGENT_SKIP_SKILLS=1` to install the binary only, or `AIRBYTE_AGENT_SKILLS_DIR=...` to redirect the skill.
+
 ### Manual binary download
 
 Download the archive for your platform from the [latest release](https://github.com/airbytehq/airbyte-agent-cli/releases/latest), extract it, and put `airbyte-agent` somewhere on your `PATH`. Builds are published for `linux`, `darwin`, and `windows` on both `amd64` and `arm64` (except Windows `arm64`).

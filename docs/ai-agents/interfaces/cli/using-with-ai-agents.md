@@ -13,31 +13,33 @@ The CLI was designed to be driven by AI agent harnesses (Claude Code, Codex, Cur
 - Stable exit codes (`0`, `1`, `2`, `3`, `4`) for **server-side** failures (auth, not found, validation, rate limits). Client-side validation failures (bad UUIDs, unreachable hosts, malformed payloads) can surface as a generic `{"type": "error", ...}` with exit `1`, so agents should always parse the stderr JSON and branch on `type` rather than dispatching on exit code alone. The full taxonomy and one important exception (`connectors create` reports timeouts as a `0` success payload) are covered below.
 - A credential model that keeps third-party secrets out of agent transcripts entirely.
 
-## Install the bundled skills
+## Install the bundled skill
 
-The CLI ships with per-command [skill](https://github.com/vercel-labs/skills) documents: small markdown files with YAML frontmatter that tell an agent how and when to call each command. They live in the `skills/` directory of [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli) and are designed to be consumed by skill-aware agent harnesses.
+The CLI ships with an [agent skill](https://github.com/vercel-labs/skills) document at `skills/airbyte-agent/SKILL.md` in [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli). It's a single top-level skill plus per-command references under `references/`, designed to be consumed by skill-aware agent harnesses.
 
-Install them with `npx skills add`:
+There are two install paths.
+
+### `npx skills add`
+
+For harnesses that understand the [`skills` CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-# Install every skill into the current project
 npx skills add airbytehq/airbyte-agent-cli
-
-# Install a single skill
-npx skills add airbytehq/airbyte-agent-cli --skill connectors-execute
-
-# Preview without installing
-npx skills add airbytehq/airbyte-agent-cli --list
-
-# Install globally instead of per-project
-npx skills add airbytehq/airbyte-agent-cli -g
 ```
 
-Target a specific agent with `--agent claude-code` (or another supported agent). See the [`skills` CLI docs](https://github.com/vercel-labs/skills) for the full flag set.
+Target a specific agent with `--agent claude-code` (or another supported agent). `npx skills add` writes to the harness's default skill directory, typically `~/.agents/skills/airbyte-agent/`. It doesn't honor a custom destination flag; if you need the skill somewhere else, copy or symlink the installed directory afterwards.
 
-`npx skills add` writes to the harness's default skill directory (typically `~/.agents/skills/<skill>/` for a global install, or `.agents/skills/<skill>/` inside the current project). It does not honor a custom destination flag, so don't pass `--target` expecting it to redirect the install; if you need a non-default location, copy or symlink the installed directory afterwards.
+### Install script (CLI + skill in one step)
 
-If your harness doesn't support `npx skills`, copy or symlink the `skills/<command>/` directories into the agent's skill directory directly (for example, `~/.claude/skills/` for Claude Code).
+For Claude Code or any harness that reads from `~/.claude/skills/`, the [official install script](https://github.com/airbytehq/airbyte-agent-cli/blob/main/scripts/install.sh) installs the CLI binary and the skill together:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+It writes the skill to `~/.claude/skills/airbyte-agent/` by default. Set `AIRBYTE_AGENT_SKILLS_DIR=...` to redirect the skill directory, or `AIRBYTE_AGENT_SKIP_SKILLS=1` to install the CLI binary only.
+
+If your harness doesn't support either of those paths, copy or symlink the `skills/airbyte-agent/` directory from the repo into the agent's skill directory directly.
 
 ## Rules for agents
 
