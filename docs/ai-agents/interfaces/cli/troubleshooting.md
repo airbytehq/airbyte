@@ -236,7 +236,7 @@ One of two things happens when you run `airbyte-agent schema <resource> <operati
 The OpenAPI schemas in `schema` output are extracted at build time from the CLI's checked-in specs and only cover routes the CLI maps to a public API endpoint.
 
 - Case 1 happens when the operation maps to a route that exists in the public spec but isn't bundled, leaving `params` populated but `api` empty.
-- Case 2 happens when the operation maps to an internal-only route (any path starting with `/api/v1/internal/`). The schema lookup deliberately refuses these. Today this affects `organizations list`; the same shape applies to any future operation backed by an internal route.
+- Case 2 happens when the operation maps to an internal-only route (any path starting with `/api/v1/internal/`) or doesn't map to an API route at all. The schema lookup deliberately refuses these. Today this affects `organizations list` and `organizations use`; the same shape applies to any future operation backed by an internal or non-API code path.
 
 ### Fix
 

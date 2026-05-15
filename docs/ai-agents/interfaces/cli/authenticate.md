@@ -35,6 +35,14 @@ Get the organization UUID from the **Your API Credentials** card in the web app,
 
 The browser flow does not prompt for a default workspace. Set one with [`workspaces use`](./workspaces#set-a-default-workspace) once you're signed in, or edit `workspace` in `~/.airbyte-agent/settings.json` directly.
 
+To switch the default organization later without re-running `login`, use [`organizations use`](./command-reference#organizations-use):
+
+```bash
+airbyte-agent organizations use --json '{"id": "<organization-uuid>"}'
+```
+
+The CLI verifies the org belongs to your account before writing it to settings.
+
 This is the right choice on a developer laptop or any machine where the credentials should persist across sessions and a browser is available.
 
 #### Headless machines: `--manual`

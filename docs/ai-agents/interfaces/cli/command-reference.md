@@ -63,6 +63,20 @@ The response is wrapped under an `organizations` key (`{"organizations": [...], 
 
 No required parameters.
 
+### `organizations use`
+
+Persist a default organization UUID to `~/.airbyte-agent/settings.json`. Subsequent commands scope to this organization. Useful when you belong to more than one and don't want to pass `--org-id` to `login` each time.
+
+```bash
+airbyte-agent organizations use --json '{"id": "<organization-uuid>"}'
+```
+
+| Param | Type | Required | Description |
+| --- | --- | --- | --- |
+| `id` | string | yes | Organization UUID. Must belong to the authenticated account; the CLI verifies via `organizations list` before writing. Match is case-insensitive. |
+
+Requires an existing `~/.airbyte-agent/settings.json`. Run `airbyte-agent login` first on a fresh machine; `organizations use` doesn't bootstrap a settings file from environment variables alone.
+
 ## `workspaces`
 
 ### `workspaces list`

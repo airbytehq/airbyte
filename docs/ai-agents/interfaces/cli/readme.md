@@ -126,7 +126,7 @@ airbyte-agent schema connectors execute
 
 For connector-specific entities and actions, [`connectors describe`](./describe-connector) is the authoritative source. Never guess what a connector supports; ask `describe` first.
 
-A handful of operations are backed by internal-only API routes (currently `organizations list`) and return `{"type": "not_supported", ...}` on stderr with exit code `3` when introspected via `schema`. Use `airbyte-agent <resource> <operation> --help` for those.
+A handful of operations are backed by internal-only API routes (`organizations list` and `organizations use`) and return `{"type": "not_supported", ...}` on stderr with exit code `3` when introspected via `schema`. Use `airbyte-agent <resource> <operation> --help` for those.
 
 ### Exit codes and errors
 
