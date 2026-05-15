@@ -143,7 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.5.35 | 2026-05-15 | [78132](https://github.com/airbytehq/airbyte/pull/78132) | Restored compatibility with legacy cursor state values for daily stats streams. |
+| 1.5.35 | 2026-05-15 | [78133](https://github.com/airbytehq/airbyte/pull/78133) | Restored compatibility with legacy cursor state values for daily stats streams. |
 | 1.5.34 | 2026-04-28 | [76758](https://github.com/airbytehq/airbyte/pull/76758) | Update dependencies |
 | 1.5.33 | 2026-04-24 | [77006](https://github.com/airbytehq/airbyte/pull/77006) | Promoted release candidate to GA |
 | 1.5.33-rc.5 | 2026-04-23 | [76950](https://github.com/airbytehq/airbyte/pull/76950) | Re-enable api_budget at 100/10s with concurrency 4 for tuning iteration 5 |
