@@ -778,6 +778,7 @@ definitions:
         is_compare_strictly: true
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
       transformations:
         - type: AddFields
           fields:
@@ -1401,6 +1402,7 @@ definitions:
         is_compare_strictly: true
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
       transformations:
         - type: AddFields
           fields:
@@ -2731,6 +2733,7 @@ definitions:
         is_compare_strictly: true
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
       transformations:
         - type: AddFields
           fields:
@@ -4061,6 +4064,7 @@ definitions:
         is_compare_strictly: true
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S"
       transformations:
         - type: AddFields
           fields:
