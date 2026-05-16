@@ -134,7 +134,7 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 2.0.1 | 2026-05-16 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Improve bulk export terminal status error messages. |
+| 2.0.1 | 2026-05-16 | [78138](https://github.com/airbytehq/airbyte/pull/78138) | Improve bulk export terminal status error messages. |
 | 2.0.0 | 2026-04-22 | [76476](https://github.com/airbytehq/airbyte/pull/76476) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
 | 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
