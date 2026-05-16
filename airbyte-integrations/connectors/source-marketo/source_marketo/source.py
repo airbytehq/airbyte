@@ -407,7 +407,7 @@ class MarketoExportStatus(MarketoStream):
     def path(self, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{self.export_id}/status.json"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> List[Mapping[str, Any]]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> List[Mapping[str, Any]]:
         result = response.json().get(self.data_field)
         if not result:
             raise Exception(
