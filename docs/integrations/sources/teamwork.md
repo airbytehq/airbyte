@@ -57,6 +57,7 @@ Your default login username and password could be used as secrets, ref: `https:/
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.51 | 2026-05-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `latestactivity` pagination for large activity histories |
 | 0.0.50 | 2026-04-28 | [77462](https://github.com/airbytehq/airbyte/pull/77462) | Update dependencies |
 | 0.0.49 | 2026-04-21 | [76764](https://github.com/airbytehq/airbyte/pull/76764) | Update dependencies |
 | 0.0.48 | 2026-03-17 | [75047](https://github.com/airbytehq/airbyte/pull/75047) | Update dependencies |
