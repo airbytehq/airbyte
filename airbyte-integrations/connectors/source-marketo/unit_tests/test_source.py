@@ -16,6 +16,7 @@ from source_marketo.source import Activities, IncrementalMarketoStream, Leads, M
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 from .conftest import START_DATE, get_stream_by_name
 
@@ -197,8 +198,15 @@ def test_memory_usage(send_email_stream, file_generator):
     assert abs(big_file_peak - small_file_peak) < 50 * 1024
 
 
-@pytest.mark.parametrize("job_statuses", ((("Created",), ("Completed",)), (("Created",), ("Cancelled",))))
-def test_export_sleep(send_email_stream, job_statuses):
+@pytest.mark.parametrize(
+    "job_statuses, expected_message",
+    (
+        ((({"status": "Created"},), ({"status": "Completed"},)), None),
+        ((({"status": "Created"},), ({"status": "Cancelled"},)), "Marketo bulk export job is cancelled."),
+        ((({"status": "Created"},), ({"status": "Failed"},)), "Marketo bulk export job failed."),
+    ),
+)
+def test_export_sleep(send_email_stream, job_statuses, expected_message):
     def tuple_to_generator(tuple_):
         yield from tuple_
 
@@ -207,9 +215,12 @@ def test_export_sleep(send_email_stream, job_statuses):
     with patch("source_marketo.source.MarketoExportStart.read_records", return_value=iter([Mock()])) as export_start:
         with patch("source_marketo.source.MarketoExportStatus.read_records", side_effect=job_statuses_side_effect) as export_status:
             with patch("source_marketo.source.sleep") as sleep:
-                if job_statuses[-1] == ("Cancelled",):
-                    with pytest.raises(Exception):
+                if expected_message:
+                    with pytest.raises(AirbyteTracedException) as exc_info:
                         send_email_stream.sleep_till_export_completed(stream_slice)
+                    assert exc_info.value.message == expected_message
+                    assert exc_info.value.failure_type == FailureType.system_error
+                    assert "export ID '1'" in exc_info.value.internal_message
                 else:
                     assert send_email_stream.sleep_till_export_completed(stream_slice) is True
                 export_start.assert_called()
@@ -339,7 +350,7 @@ def test_parse_response_with_unicode_line_separator(send_email_stream):
     do not cause CSV column misalignment. This was the root cause of
     https://github.com/airbytehq/oncall/issues/11468.
     """
-    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n" "1,\u2028test,true,10,15\n" "2,3,false,11,16"
+    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n1,\u2028test,true,10,15\n2,3,false,11,16"
 
     def iter_lines(*args, **kwargs):
         yield from response_text.split("\n")
@@ -405,7 +416,7 @@ def test_leads_bulk_export_filters_on_updated_at(config, requests_mock, mocker):
     for call in create_calls:
         filter_ = call.json()["filter"]
         assert "updatedAt" in filter_, (
-            "Leads bulk export must filter on `updatedAt` to match the cursor field; " f"got filter keys: {list(filter_.keys())}"
+            f"Leads bulk export must filter on `updatedAt` to match the cursor field; got filter keys: {list(filter_.keys())}"
         )
         assert "createdAt" not in filter_, (
             "Leads bulk export must not filter on `createdAt`; Marketo honors only "
