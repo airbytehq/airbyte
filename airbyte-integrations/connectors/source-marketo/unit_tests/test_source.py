@@ -415,9 +415,9 @@ def test_leads_bulk_export_filters_on_updated_at(config, requests_mock, mocker):
 
     for call in create_calls:
         filter_ = call.json()["filter"]
-        assert "updatedAt" in filter_, (
-            f"Leads bulk export must filter on `updatedAt` to match the cursor field; got filter keys: {list(filter_.keys())}"
-        )
+        assert (
+            "updatedAt" in filter_
+        ), f"Leads bulk export must filter on `updatedAt` to match the cursor field; got filter keys: {list(filter_.keys())}"
         assert "createdAt" not in filter_, (
             "Leads bulk export must not filter on `createdAt`; Marketo honors only "
             "one filter per export and using `createdAt` silently drops lead updates."
