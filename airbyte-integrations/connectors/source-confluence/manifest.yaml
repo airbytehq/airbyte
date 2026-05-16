@@ -57,8 +57,7 @@ definitions:
           path: wiki/api/v2/blogposts
           http_method: GET
           request_parameters:
-            expand: >-
-              history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view
+            body-format: storage
         record_selector:
           type: RecordSelector
           extractor:
@@ -134,8 +133,7 @@ definitions:
           path: wiki/api/v2/pages
           http_method: GET
           request_parameters:
-            expand: >-
-              history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view
+            body-format: storage
         record_selector:
           type: RecordSelector
           extractor:
@@ -175,7 +173,8 @@ definitions:
           path: wiki/api/v2/spaces
           http_method: GET
           request_parameters:
-            expand: permissions,icon,description.plain,description.view
+            description-format: view
+            include-icon: "true"
         record_selector:
           type: RecordSelector
           extractor:

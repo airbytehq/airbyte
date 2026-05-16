@@ -55,6 +55,12 @@ _V2_STREAMS = {
     "space": "/wiki/api/v2/spaces",
 }
 
+_EXPECTED_V2_PARAMS = {
+    "blog_posts": {"body-format": ["storage"]},
+    "pages": {"body-format": ["storage"]},
+    "space": {"description-format": ["view"], "include-icon": ["true"]},
+}
+
 
 def _record(record_id: str) -> dict:
     """Minimal record payload — Confluence v2 records have many fields, but the
@@ -115,12 +121,22 @@ def _assert_v2_cursor_pagination(stream_name: str, path: str) -> None:
     assert "cursor" not in first_qs, f"first request to {stream_name} must not include a cursor parameter, got qs={first_qs}"
     assert first_qs.get("limit") == ["25"], f"first request to {stream_name} must include limit=25, got qs={first_qs}"
     assert "start" not in first_qs, f"v2 stream {stream_name} must not send the v1 offset `start` parameter, got qs={first_qs}"
+    assert "expand" not in first_qs, f"v2 stream {stream_name} must not send the v1 `expand` parameter, got qs={first_qs}"
+    for parameter, expected_value in _EXPECTED_V2_PARAMS[stream_name].items():
+        assert (
+            first_qs.get(parameter) == expected_value
+        ), f"first request to {stream_name} must include {parameter}={expected_value}, got qs={first_qs}"
 
     second_qs = _parsed_qs(requests_made[1].url)
     assert second_qs.get("cursor") == [
         _NEXT_CURSOR_TOKEN
     ], f"second request to {stream_name} must inject the cursor token from _links.next, got qs={second_qs}"
     assert second_qs.get("limit") == ["25"], f"second request to {stream_name} must include limit=25, got qs={second_qs}"
+    assert "expand" not in second_qs, f"v2 stream {stream_name} must not send the v1 `expand` parameter, got qs={second_qs}"
+    for parameter, expected_value in _EXPECTED_V2_PARAMS[stream_name].items():
+        assert (
+            second_qs.get(parameter) == expected_value
+        ), f"second request to {stream_name} must include {parameter}={expected_value}, got qs={second_qs}"
 
     emitted_ids = [record.record.data["id"] for record in output.records]
     assert emitted_ids == ["1", "2", "3", "4"], f"expected records from both pages of {stream_name}, got {emitted_ids}"
