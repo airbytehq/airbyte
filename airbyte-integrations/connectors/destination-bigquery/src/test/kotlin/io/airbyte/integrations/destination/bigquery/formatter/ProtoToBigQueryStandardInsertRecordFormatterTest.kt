@@ -471,6 +471,46 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
     }
 
     @Test
+    fun `handles invalid numeric protobuf values with proper error tracking`() {
+        val invalidNumericValues =
+            listOf(
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNumber(Double.POSITIVE_INFINITY)
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNumber(Double.NEGATIVE_INFINITY)
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNumber(Double.NaN)
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigDecimal("INF").build(),
+            )
+
+        invalidNumericValues.forEach { invalidNumericValue ->
+            val protoValues = protoSource!!.source.record.dataList.toMutableList()
+            protoValues[2] = invalidNumericValue
+            val invalidRecord = buildModifiedRecord(protoValues)
+            every { record.rawData } returns invalidRecord
+
+            assertDoesNotThrow { formatter.formatRecord(record) }
+            val result = formatter.formatRecord(record).deserializeToNode() as ObjectNode
+
+            assertTrue(result.get("num_col").isNull())
+
+            val meta = result.get("_airbyte_meta") as ObjectNode
+            val changes = meta.get("changes") as ArrayNode
+            assertEquals(5, changes.size())
+
+            val numChange =
+                changes.find { change -> (change as ObjectNode).get("field").asText() == "num_col" }
+                    as ObjectNode
+
+            assertEquals("NULLED", numChange.get("change").asText())
+            assertEquals("DESTINATION_SERIALIZATION_ERROR", numChange.get("reason").asText())
+        }
+    }
+
+    @Test
     fun `handles invalid timestamp with proper error tracking`() {
         val invalidTimestampProtoValues =
             mutableListOf(

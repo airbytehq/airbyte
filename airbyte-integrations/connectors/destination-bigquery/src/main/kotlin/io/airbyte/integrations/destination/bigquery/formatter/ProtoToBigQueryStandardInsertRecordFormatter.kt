@@ -215,34 +215,45 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 }
             }
             is NumberType -> {
-                val value = proxy.getNumber(accessor)
-                if (value != null) {
-                    val validatedResult = validateAndFormatNumeric(value)
-                    if (validatedResult.value == null) {
-                        ExtractionResult(
-                            null,
-                            Meta.Change(
-                                accessor.name,
-                                validatedResult.changeType!!,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION
+                try {
+                    val value = proxy.getNumber(accessor)
+                    if (value != null) {
+                        val validatedResult = validateAndFormatNumeric(value)
+                        if (validatedResult.value == null) {
+                            ExtractionResult(
+                                null,
+                                Meta.Change(
+                                    accessor.name,
+                                    validatedResult.changeType!!,
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_FIELD_SIZE_LIMITATION
+                                )
                             )
-                        )
-                    } else if (validatedResult.changeType != null) {
-                        ExtractionResult(
-                            validatedResult.value,
-                            Meta.Change(
-                                accessor.name,
-                                validatedResult.changeType,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION
+                        } else if (validatedResult.changeType != null) {
+                            ExtractionResult(
+                                validatedResult.value,
+                                Meta.Change(
+                                    accessor.name,
+                                    validatedResult.changeType,
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_FIELD_SIZE_LIMITATION
+                                )
                             )
-                        )
+                        } else {
+                            ExtractionResult(validatedResult.value, null)
+                        }
                     } else {
-                        ExtractionResult(validatedResult.value, null)
+                        ExtractionResult(null, null)
                     }
-                } else {
-                    ExtractionResult(null, null)
+                } catch (_: Exception) {
+                    ExtractionResult(
+                        null,
+                        Meta.Change(
+                            accessor.name,
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                        )
+                    )
                 }
             }
             is DateType -> {
