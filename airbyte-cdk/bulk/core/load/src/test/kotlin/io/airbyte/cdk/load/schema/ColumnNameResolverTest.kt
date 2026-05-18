@@ -81,9 +81,10 @@ class ColumnNameResolverTest {
         every { mapper.toColumnName(Meta.COLUMN_NAME_AB_META) } returns "_AIRBYTE_META"
         every { mapper.toColumnName("${Meta.COLUMN_NAME_AB_META}_1") } returns "_AIRBYTE_META_1"
         every { mapper.toColumnName("normal") } returns "NORMAL"
-        every { mapper.colsConflict(any(), any()) } answers {
-            firstArg<String>().equals(secondArg<String>(), ignoreCase = true)
-        }
+        every { mapper.colsConflict(any(), any()) } answers
+            {
+                firstArg<String>().equals(secondArg<String>(), ignoreCase = true)
+            }
 
         val result = resolver.getColumnNameMapping(columns)
 
