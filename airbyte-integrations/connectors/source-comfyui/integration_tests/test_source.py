@@ -4,17 +4,23 @@
 Set up secrets/config.json with your API key before running."""
 
 import json
+from pathlib import Path
 
 import pytest
 from source_comfyui.source import SourceComfyUI
 
 
+CONFIG_PATH = Path("secrets/config.json")
+skip_no_creds = pytest.mark.skipif(not CONFIG_PATH.exists(), reason="No secrets/config.json")
+
+
 @pytest.fixture
 def config():
-    with open("secrets/config.json") as f:
+    with open(CONFIG_PATH) as f:
         return json.load(f)
 
 
+@skip_no_creds
 @pytest.mark.integration
 def test_check_connection(config):
     source = SourceComfyUI()
@@ -22,6 +28,7 @@ def test_check_connection(config):
     assert ok, f"Connection check failed: {error}"
 
 
+@skip_no_creds
 @pytest.mark.integration
 def test_discover(config):
     source = SourceComfyUI()

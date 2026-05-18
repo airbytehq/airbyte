@@ -3,7 +3,6 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-
 from source_comfyui.source import SourceComfyUI
 
 
