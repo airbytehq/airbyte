@@ -134,7 +134,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.17.11-rc.1 | 2026-05-18 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Tune default concurrency for progressive rollout |
+| 0.17.11-rc.1 | 2026-05-18 | [78150](https://github.com/airbytehq/airbyte/pull/78150) | Tune default concurrency for progressive rollout |
 | 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
 | 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
