@@ -11,7 +11,18 @@ NOT grant RELOAD to the replication user — as is the case on OCI HeatWave,
 Amazon Aurora, Google Cloud SQL, and other managed MySQL services.
 
 Prerequisites (fill in the CONFIG section below):
-  - Staging MySQL with binlog enabled (log_bin=ON, binlog_format=ROW, binlog_row_image=FULL)
+  - Staging MySQL with binlog enabled:
+      log_bin=ON, binlog_format=ROW, binlog_row_image=FULL,
+      binlog_row_value_options='' (empty, NOT 'PARTIAL_JSON').
+
+      On OCI HeatWave MySQL the default for binlog_row_value_options is
+      PARTIAL_JSON, which causes Debezium to silently drop UPDATE events
+      (INSERT and DELETE still flow). Set it to an empty string via the
+      OCI custom-configuration parameter group, or at runtime with
+      `SET GLOBAL binlog_row_value_options = '';` if the user has
+      SYSTEM_VARIABLES_ADMIN. See:
+      https://blogs.oracle.com/mysql/heatwave-mysql-solving-missing-updates-for-debezium-cdc
+
   - MySQL user with: SELECT, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT
     (explicitly NO RELOAD)
   - Staging Snowflake warehouse + database + schema + service-account credentials
@@ -206,7 +217,7 @@ def phase1():
         record("TEST-1.1", False, str(e))
         abort("Cannot connect to MySQL, remaining tests would fail.")
 
-    # TEST-1.2 .. 1.4: binlog variables
+    # TEST-1.2 .. 1.4: binlog variables that must match for CDC to work
     variable_checks = [
         ("TEST-1.2", "log_bin", "ON"),
         ("TEST-1.3", "binlog_format", "ROW"),
@@ -221,6 +232,25 @@ def phase1():
             record(test_id, True, f"{var}={row[1]}")
         else:
             record(test_id, False, f"{var}={row[1] if row else 'NOT FOUND'}, expected {expected}")
+
+    # TEST-1.4b: binlog_row_value_options must be empty.
+    # OCI HeatWave defaults this to PARTIAL_JSON, which causes Debezium to
+    # silently drop UPDATE events on rows containing JSON columns — INSERT
+    # and DELETE still flow normally, so the failure mode is "creates and
+    # deletes work, updates never arrive" with no error logged.
+    cur.execute("SHOW VARIABLES LIKE 'binlog_row_value_options'")
+    row = cur.fetchone()
+    value = row[1] if row else ""
+    if value == "":
+        record("TEST-1.4b", True, "binlog_row_value_options=<empty>")
+    else:
+        record(
+            "TEST-1.4b",
+            False,
+            f"binlog_row_value_options={value!r}, expected empty string "
+            "(OCI HeatWave default is PARTIAL_JSON; set to '' via OCI "
+            "parameter group or `SET GLOBAL binlog_row_value_options = '';`)",
+        )
     cur.close()
     conn.close()
 
@@ -273,19 +303,25 @@ def phase2():
         conn = mysql_conn()
         cur = conn.cursor()
         cur.execute(f"DROP TABLE IF EXISTS `{TEST_TABLE}`")
+        # `meta` is a JSON column so the test also exercises the
+        # PARTIAL_JSON / Debezium UPDATE-drop regression — if the source
+        # MySQL still has binlog_row_value_options=PARTIAL_JSON, UPDATE
+        # events on this row will be silently dropped and the UPDATE
+        # assertions in Phase 3 will fail with stale Snowflake values.
         cur.execute(f"""
             CREATE TABLE `{TEST_TABLE}` (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 status VARCHAR(20) NOT NULL DEFAULT 'active',
                 value INT NOT NULL DEFAULT 0,
+                meta JSON DEFAULT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )
         """)
         for i in range(1, 51):
             cur.execute(
-                f"INSERT INTO `{TEST_TABLE}` (name, status, value) VALUES (%s, %s, %s)",
-                (f"row_{i:03d}", "active", i * 10),
+                f"INSERT INTO `{TEST_TABLE}` (name, status, value, meta) VALUES (%s, %s, %s, %s)",
+                (f"row_{i:03d}", "active", i * 10, json.dumps({"v": i})),
             )
         conn.commit()
         cur.close()
@@ -462,8 +498,8 @@ def phase3():
         cur = conn.cursor()
         for i in range(51, 56):
             cur.execute(
-                f"INSERT INTO `{TEST_TABLE}` (name, status, value) VALUES (%s, %s, %s)",
-                (f"row_{i:03d}", "active", i * 10),
+                f"INSERT INTO `{TEST_TABLE}` (name, status, value, meta) VALUES (%s, %s, %s, %s)",
+                (f"row_{i:03d}", "active", i * 10, json.dumps({"v": i})),
             )
         conn.commit()
         cur.close()
@@ -489,7 +525,14 @@ def phase3():
     try:
         conn = mysql_conn()
         cur = conn.cursor()
-        cur.execute(f"UPDATE `{TEST_TABLE}` SET status='updated', value=9999 WHERE id IN (51, 52, 53)")
+        # Also mutate the JSON column — this is the regression surface for
+        # PARTIAL_JSON: under that binlog mode Debezium drops these UPDATEs
+        # silently and the assertions below stay stuck on the pre-UPDATE state.
+        cur.execute(
+            f"UPDATE `{TEST_TABLE}` "
+            f"SET status='updated', value=9999, meta=JSON_OBJECT('v', 0, 'updated', true) "
+            f"WHERE id IN (51, 52, 53)"
+        )
         conn.commit()
         cur.close()
         conn.close()
