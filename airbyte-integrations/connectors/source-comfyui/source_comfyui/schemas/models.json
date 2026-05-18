@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "folder": {
+      "type": "string",
+      "description": "Model folder/category (e.g. checkpoints, loras, vae)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Model filename"
+    },
+    "path": {
+      "type": ["string", "null"],
+      "description": "Full model path within the folder"
+    }
+  }
+}

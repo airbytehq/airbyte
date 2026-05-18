@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Internal node identifier"
+    },
+    "display_name": {
+      "type": ["string", "null"],
+      "description": "Human-readable node name"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Node description"
+    },
+    "category": {
+      "type": ["string", "null"],
+      "description": "Node category path (e.g. sampling, loaders)"
+    },
+    "python_module": {
+      "type": ["string", "null"],
+      "description": "Python module providing this node"
+    },
+    "input": {
+      "type": ["object", "null"],
+      "description": "Input specifications keyed by input group (required, optional, hidden)"
+    },
+    "input_order": {
+      "type": ["object", "null"],
+      "description": "Ordered input names per input group"
+    },
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Output type names"
+    },
+    "output_name": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Output display names"
+    },
+    "output_is_list": {
+      "type": "array",
+      "items": {
+        "type": "boolean"
+      },
+      "description": "Whether each output is a list"
+    },
+    "output_node": {
+      "type": ["boolean", "null"],
+      "description": "Whether this is a terminal output node"
+    },
+    "output_tooltips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tooltip text for each output"
+    },
+    "deprecated": {
+      "type": ["boolean", "null"],
+      "description": "Whether this node is deprecated"
+    },
+    "experimental": {
+      "type": ["boolean", "null"],
+      "description": "Whether this node is experimental"
+    },
+    "api_node": {
+      "type": ["boolean", "null"],
+      "description": "Whether this node is available via API"
+    }
+  }
+}

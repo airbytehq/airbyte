@@ -1,0 +1,18 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7dd6a32c-23a2-45dd-92e4-133e81209e4d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-comfyui
+  license: MIT
+  name: ComfyUI Cloud
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python

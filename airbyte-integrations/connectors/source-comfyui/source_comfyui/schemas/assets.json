@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Asset UUID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Asset filename"
+    },
+    "asset_hash": {
+      "type": ["string", "null"],
+      "description": "Blake3 content hash"
+    },
+    "size": {
+      "type": ["integer", "null"],
+      "description": "Size in bytes"
+    },
+    "mime_type": {
+      "type": ["string", "null"],
+      "description": "MIME type of the asset"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User-assigned tags"
+    },
+    "user_metadata": {
+      "type": ["object", "null"],
+      "description": "Arbitrary user-defined metadata"
+    },
+    "preview_url": {
+      "type": ["string", "null"],
+      "description": "URL for asset preview"
+    },
+    "preview_id": {
+      "type": ["string", "null"],
+      "description": "Preview asset UUID"
+    },
+    "prompt_id": {
+      "type": ["string", "null"],
+      "description": "Job UUID that generated this asset"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp (ISO 8601)"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Last update timestamp (ISO 8601)"
+    },
+    "last_access_time": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Last access timestamp (ISO 8601)"
+    },
+    "is_immutable": {
+      "type": ["boolean", "null"],
+      "description": "Whether the asset is immutable"
+    }
+  }
+}
