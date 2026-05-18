@@ -438,6 +438,24 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Object containing all property values for the company
 
+    `properties_createdate: str | None`
+    :   Date the company was created
+
+    `properties_domain: str | None`
+    :   Company domain name
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the company
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this company
+
+    `properties_name: str | None`
+    :   Company name
+
     `updated_at: str | None`
     :   Timestamp when the company record was last modified
 
@@ -724,16 +742,16 @@ Classes
     ### Class variables
 
     `archived: bool | None`
-    :   Boolean flag indicating whether the contact has been archived or deleted.
+    :   Boolean flag indicating whether the contact has been archived or deleted
 
     `companies: list[typing.Any] | None`
-    :   Associated company records linked to this contact.
+    :   Associated company records linked to this contact
 
     `created_at: str | None`
-    :   Timestamp indicating when the contact was first created in the system.
+    :   Timestamp indicating when the contact was first created in the system
 
     `id: str | None`
-    :   Unique identifier for the contact record.
+    :   Unique identifier for the contact record
 
     `model_config`
     :   The type of the None singleton.
@@ -741,8 +759,32 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Key-value object storing all contact properties and their values.
 
+    `properties_associatedcompanyid: str | None`
+    :   ID of the associated company
+
+    `properties_createdate: str | None`
+    :   Date the contact was created
+
+    `properties_email: str | None`
+    :   Contact email address
+
+    `properties_firstname: str | None`
+    :   Contact first name
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this contact
+
+    `properties_lastmodifieddate: str | None`
+    :   Last modified date of the contact
+
+    `properties_lastname: str | None`
+    :   Contact last name
+
     `updated_at: str | None`
-    :   Timestamp indicating when the contact record was last modified.
+    :   Timestamp indicating when the contact record was last modified
 
 <a id="Deal"></a>
 
@@ -969,6 +1011,33 @@ Classes
     `properties: dict[str, typing.Any]`
     :   Key-value object containing all deal properties and custom fields
 
+    `properties_amount: str | None`
+    :   Deal amount
+
+    `properties_closedate: str | None`
+    :   Expected close date of the deal
+
+    `properties_createdate: str | None`
+    :   Date the deal was created
+
+    `properties_dealname: str | None`
+    :   Deal name
+
+    `properties_dealstage: str | None`
+    :   Current deal stage
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the deal
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hubspot_owner_id: str | None`
+    :   ID of the HubSpot owner assigned to this deal
+
+    `properties_pipeline: str | None`
+    :   Deal pipeline
+
     `updated_at: str | None`
     :   Timestamp when the deal record was last modified
 
@@ -1073,7 +1142,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `HubspotExecuteResultWithMeta[list[CRMObject], ObjectsListResultMeta](**data: Any)`
@@ -2245,7 +2314,34 @@ Classes
     :   The type of the None singleton.
 
     `properties: dict[str, typing.Any]`
-    :   Key-value object containing all ticket properties and custom fields
+    :   Object containing all property values for the ticket
+
+    `properties_content: str | None`
+    :   Ticket content/description
+
+    `properties_createdate: str | None`
+    :   Date the ticket was created
+
+    `properties_hs_lastmodifieddate: str | None`
+    :   Last modified date of the ticket
+
+    `properties_hs_object_id: str | None`
+    :   HubSpot object ID
+
+    `properties_hs_pipeline: str | None`
+    :   Ticket pipeline
+
+    `properties_hs_pipeline_stage: str | None`
+    :   Current pipeline stage of the ticket
+
+    `properties_hs_ticket_category: str | None`
+    :   Ticket category
+
+    `properties_hs_ticket_priority: str | None`
+    :   Ticket priority level
+
+    `properties_subject: str | None`
+    :   Ticket subject line
 
     `updated_at: str | None`
     :   Timestamp when the ticket record was last modified
