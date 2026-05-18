@@ -21,11 +21,10 @@ This source supports the following streams:
 
 | Stream           | Sync Mode    | Description                                                             |
 | :--------------- | :----------- | :---------------------------------------------------------------------- |
-| **jobs**         | Incremental  | Generation job history with status, timing, and workflow references     |
-| **job_details**  | Incremental  | Full job data including workflow graph, outputs, and execution metadata |
-| **assets**       | Incremental  | User assets with tags, metadata, sizes, and preview URLs                |
+| **jobs**         | Full Refresh | Generation job history with status, timing, and workflow references     |
+| **job_details**  | Full Refresh | Full job data including workflow graph, outputs, and execution metadata |
+| **assets**       | Full Refresh | User assets with tags, metadata, sizes, and preview URLs                |
 | **models**       | Full Refresh | Available AI model catalog organized by folder                          |
-| **nodes**        | Full Refresh | Node type catalog with inputs, outputs, and categories                  |
 | **system_stats** | Full Refresh | System information including GPU, VRAM, and ComfyUI version             |
 
 ## Features
@@ -33,7 +32,7 @@ This source supports the following streams:
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
+| Incremental Sync  | No         |
 | Namespaces        | No         |
 
 ## Configuration
@@ -47,4 +46,4 @@ This source supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.0   | 2026-05-18 | [78142](https://github.com/airbytehq/airbyte/pull/78142) | Initial release with 6 streams |
+| 0.1.0   | 2026-05-18 | [78142](https://github.com/airbytehq/airbyte/pull/78142) | Initial release with 5 streams |
