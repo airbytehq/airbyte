@@ -34,6 +34,7 @@ Connector that pulls from Segment&#39;s Public API.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.49 | 2026-04-28 | [77401](https://github.com/airbytehq/airbyte/pull/77401) | Update dependencies |
 | 0.0.48 | 2026-04-21 | [76738](https://github.com/airbytehq/airbyte/pull/76738) | Update dependencies |
 | 0.0.47 | 2026-03-31 | [75791](https://github.com/airbytehq/airbyte/pull/75791) | Update dependencies |
 | 0.0.46 | 2026-03-17 | [74599](https://github.com/airbytehq/airbyte/pull/74599) | Update dependencies |

@@ -1,0 +1,666 @@
+---
+id: airbyte_agent_sdk-connectors-customer_io-index
+title: airbyte_agent_sdk.connectors.customer_io.index
+---
+
+Module airbyte_agent_sdk.connectors.customer_io
+===============================================
+Customer-Io connector for Airbyte SDK.
+
+Auto-generated from OpenAPI specification.
+
+Sub-modules
+-----------
+* airbyte_agent_sdk.connectors.customer_io.connector
+* airbyte_agent_sdk.connectors.customer_io.connector_model
+* airbyte_agent_sdk.connectors.customer_io.models
+* airbyte_agent_sdk.connectors.customer_io.types
+
+Classes
+-------
+
+<a id="AirbyteAuthConfig"></a>
+
+`AirbyteAuthConfig(**data: Any)`
+:   Authentication configuration for Airbyte hosted mode execution.
+    
+    Pass this to the connector's `auth_config` parameter to use hosted mode,
+    where API credentials are stored securely in Airbyte Cloud.
+    
+    For hosted mode execution, provide client credentials with either:
+    - `connector_id`: Direct connector/source ID (skips lookup)
+    - `workspace_name`: Workspace name for connector lookup
+    
+    Attributes:
+        workspace_name: Workspace name for hosted mode connector lookup
+        organization_id: Optional Airbyte organization ID for multi-org selection
+        airbyte_client_id: Airbyte OAuth client ID (required for hosted mode)
+        airbyte_client_secret: Airbyte OAuth client secret (required for hosted mode)
+        connector_id: Specific connector/source ID (skips lookup if provided)
+    
+    Examples:
+        # Hosted mode with connector_id (no lookup needed)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with workspace_name (lookup by workspace)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `airbyte_client_id: str | None`
+    :   The type of the None singleton.
+
+    `airbyte_client_secret: str | None`
+    :   The type of the None singleton.
+
+    `connector_id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `organization_id: str | None`
+    :   The type of the None singleton.
+
+    `workspace_name: str | None`
+    :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[CampaignActionsSearchData]
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[CampaignsSearchData]
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult[NewslettersSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="CampaignActionsSearchResult"></a>
+
+`CampaignActionsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CampaignsSearchResult"></a>
+
+`CampaignsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="NewslettersSearchResult"></a>
+
+`NewslettersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CampaignActionsSearchData"></a>
+
+`CampaignActionsSearchData(**data: Any)`
+:   Search result data for campaign_actions entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `bcc: str | None`
+    :   BCC addresses
+
+    `body: str | None`
+    :   Action body content (HTML for emails)
+
+    `campaign_id: int | None`
+    :   Parent campaign ID
+
+    `created: int | None`
+    :   Creation timestamp (Unix)
+
+    `deduplicate_id: str | None`
+    :   Deduplication identifier
+
+    `editor: str | None`
+    :   Editor used to create the action
+
+    `fake_bcc: bool | None`
+    :   Whether to use fake BCC
+
+    `from_: str | None`
+    :   From address
+
+    `from_id: str | None`
+    :   Sender identity ID
+
+    `headers: str | None`
+    :   Custom email headers as JSON
+
+    `id: str | None`
+    :   Unique action identifier
+
+    `language: str | None`
+    :   Language variant
+
+    `layout: str | None`
+    :   Layout template used
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Action name
+
+    `parent_action_id: int | None`
+    :   Parent action ID for language variants
+
+    `preheader_text: str | None`
+    :   Email preheader/preview text
+
+    `preprocessor: str | None`
+    :   CSS preprocessor setting
+
+    `recipient: str | None`
+    :   Recipient address
+
+    `recipient_environment_id: int | None`
+    :   Recipient environment ID
+
+    `reply_to: str | None`
+    :   Reply-to address
+
+    `reply_to_id: str | None`
+    :   Reply-to sender identity ID
+
+    `request_method: str | None`
+    :   HTTP request method for webhook actions
+
+    `sending_state: str | None`
+    :   Sending behavior (automatic or draft)
+
+    `subject: str | None`
+    :   Email subject line
+
+    `type_: str | None`
+    :   Action type (email, webhook, twilio, push, slack, in_app, whatsapp)
+
+    `updated: int | None`
+    :   Last update timestamp (Unix)
+
+    `url: str | None`
+    :   Webhook URL (for webhook actions)
+
+<a id="CampaignsSearchData"></a>
+
+`CampaignsSearchData(**data: Any)`
+:   Search result data for campaigns entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `actions: list[typing.Any] | None`
+    :   Actions defined in this campaign
+
+    `active: bool | None`
+    :   Whether the campaign is active
+
+    `created: int | None`
+    :   Creation timestamp (Unix)
+
+    `created_by: str | None`
+    :   Who created the campaign
+
+    `date_attribute: str | None`
+    :   Date attribute used for date-triggered campaigns
+
+    `deduplicate_id: str | None`
+    :   Deduplication identifier
+
+    `event_name: str | None`
+    :   Event name that triggers the campaign
+
+    `first_started: int | None`
+    :   When the campaign was first started (Unix)
+
+    `frequency: str | None`
+    :   How frequently a person can receive this campaign
+
+    `id: int | None`
+    :   Unique campaign identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `msg_templates: list[typing.Any] | None`
+    :   Message templates used in the campaign
+
+    `name: str | None`
+    :   Campaign name
+
+    `start_hour: int | None`
+    :   Hour of the day to trigger
+
+    `start_minutes: int | None`
+    :   Minute of the hour to trigger
+
+    `state: str | None`
+    :   Campaign status (draft, active, stopped)
+
+    `tags: list[typing.Any] | None`
+    :   Tags associated with the campaign
+
+    `timezone: str | None`
+    :   Timezone for trigger scheduling
+
+    `trigger_segment_ids: list[typing.Any] | None`
+    :   Segment IDs that trigger this campaign
+
+    `type_: str | None`
+    :   Campaign trigger type
+
+    `updated: int | None`
+    :   Last update timestamp (Unix)
+
+    `use_customer_timezone: bool | None`
+    :   Whether to use the customer's timezone
+
+<a id="CustomerIoAuthConfig"></a>
+
+`CustomerIoAuthConfig(**data: Any)`
+:   App API Key Authentication
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `app_api_key: str`
+    :   Your Customer.io App API key. Generate one in your workspace settings at Settings > API Credentials > App API Key.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="CustomerIoConnector"></a>
+
+`CustomerIoConnector(auth_config: CustomerIoAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Customer-Io API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new customer-io connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., CustomerIoAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = CustomerIoConnector(auth_config=CustomerIoAuthConfig(app_api_key="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = CustomerIoConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = CustomerIoConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+        
+        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
+        runtime wrapping (sync/async branch + output-size check + framework
+        signal translation + optional internal retry loop), and adds
+        connector-specific docstring augmentation on top of it.
+        
+        Usage:
+            @mcp.tool()
+            @CustomerIoConnector.tool_utils
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
+            @mcp.tool()
+            @CustomerIoConnector.tool_utils(update_docstring=False, max_output_chars=None)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
+            @mcp.tool()
+            @CustomerIoConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+            async def execute(entity: str, action: str, params: dict):
+                ...
+        
+        Args:
+            update_docstring: When True, append connector capabilities to __doc__.
+            max_output_chars: Max serialized output size before raising. Use None to disable.
+            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
+                Defaults to None → auto-detect by attempting each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
+                are exhausted OR were skipped via ``should_internal_retry`` returning
+                False. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.customer_io.models.CustomerIoCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            CustomerIoCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="CustomerIoReplicationConfig"></a>
+
+`CustomerIoReplicationConfig(**data: Any)`
+:   Replication Configuration - Settings for data replication from Customer.io.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `start_date: str`
+    :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+<a id="NewslettersSearchData"></a>
+
+`NewslettersSearchData(**data: Any)`
+:   Search result data for newsletters entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content_ids: list[typing.Any] | None`
+    :   Content variant IDs for this newsletter
+
+    `created: int | None`
+    :   Creation timestamp (Unix)
+
+    `deduplicate_id: str | None`
+    :   Deduplication identifier
+
+    `id: int | None`
+    :   Unique newsletter identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Newsletter name
+
+    `sent_at: int | None`
+    :   When the newsletter was last sent (Unix)
+
+    `tags: list[typing.Any] | None`
+    :   Tags associated with the newsletter
+
+    `type_: str | None`
+    :   Channel type (email, webhook, twilio, push, in_app, inbox)
+
+    `updated: int | None`
+    :   Last update timestamp (Unix)

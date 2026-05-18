@@ -187,16 +187,25 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonProperty("treat_tinyint1_as_integer")
+    @JsonSchemaTitle("Treat TINYINT(1) Columns as Integers")
+    @JsonSchemaInject(json = """{"order":14}""")
+    @JsonSchemaDefault("false")
+    @JsonPropertyDescription(
+        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans."
+    )
+    var treatTinyint1AsInteger: Boolean? = false
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
+
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
