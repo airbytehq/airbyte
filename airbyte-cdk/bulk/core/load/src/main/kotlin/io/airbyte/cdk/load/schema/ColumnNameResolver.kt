@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.schema
 
+import io.airbyte.cdk.load.message.Meta
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -18,7 +19,7 @@ class ColumnNameResolver(
      * numbering, with advanced resolution for truncation cases.
      */
     fun getColumnNameMapping(inputColumNames: Set<String>): Map<String, String> {
-        val processedColumnNames = mutableSetOf<String>()
+        val processedColumnNames = Meta.COLUMN_NAMES.toMutableSet()
         val columnMappings = mutableMapOf<String, String>()
 
         inputColumNames.forEach { columnName ->

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.schema
 
+import io.airbyte.cdk.load.message.Meta
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -70,6 +71,25 @@ class ColumnNameResolverTest {
         assertEquals("col", result["col"])
         assertEquals("col_1", result["Col"])
         assertEquals("col_2", result["COL"])
+    }
+
+    @Test
+    fun `renames Airbyte reserved column collisions`() {
+        val resolver = ColumnNameResolver(mapper)
+        val columns = setOf(Meta.COLUMN_NAME_AB_META, "normal")
+
+        every { mapper.toColumnName(Meta.COLUMN_NAME_AB_META) } returns "_AIRBYTE_META"
+        every { mapper.toColumnName("${Meta.COLUMN_NAME_AB_META}_1") } returns "_AIRBYTE_META_1"
+        every { mapper.toColumnName("normal") } returns "NORMAL"
+        every { mapper.colsConflict(any(), any()) } answers {
+            firstArg<String>().equals(secondArg<String>(), ignoreCase = true)
+        }
+
+        val result = resolver.getColumnNameMapping(columns)
+
+        assertEquals(2, result.size)
+        assertEquals("_AIRBYTE_META_1", result[Meta.COLUMN_NAME_AB_META])
+        assertEquals("NORMAL", result["normal"])
     }
 
     // We're testing some internals here, but I think it's important to validate this behavior as it
