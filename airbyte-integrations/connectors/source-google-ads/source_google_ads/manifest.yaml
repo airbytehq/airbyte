@@ -532,7 +532,6 @@ definitions:
     name: ad_group_bidding_strategy
     primary_key:
       - ad_group.id
-      - bidding_strategy.id
       - segments.date
     schema_loader:
       type: InlineSchemaLoader
@@ -597,7 +596,6 @@ definitions:
     name: campaign_bidding_strategy
     primary_key:
       - campaign.id
-      - bidding_strategy.id
       - segments.date
     schema_loader:
       type: InlineSchemaLoader

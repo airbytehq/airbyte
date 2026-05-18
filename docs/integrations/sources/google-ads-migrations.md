@@ -1,8 +1,17 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Google Ads Migration Guide
 
 ## Upgrading to 5.0.0
 
-This release upgrades the Google Ads API from Version 20 to Version 23. Key changes include:
+This release combines two breaking changes:
+
+1. The Google Ads API is upgraded from Version 20 to Version 23.
+2. The nullable `bidding_strategy.id` field is removed from the primary keys of the `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams.
+
+### Google Ads API v23 changes
+
+Key changes include:
 
 - New `segments.ad_network_type` support for Performance Max campaigns (channel-level reporting)
 - Renamed deprecated video metrics to TrueView equivalents
@@ -30,6 +39,19 @@ The following fields were also removed in v23 and may affect custom queries (`cu
 
 For custom queries, the stream may fail if a field was removed or renamed during the API update. Users with custom queries that reference any of the renamed or removed fields above must update their queries accordingly.
 You can use the [Query Builder](https://developers.google.com/google-ads/api/fields/v23/query_validator) to validate your custom queries.
+
+### Primary key change for bidding strategy streams
+
+The `bidding_strategy.id` field is nullable in the Google Ads API, meaning it can return `null` values. Including a nullable field in the primary key caused sync failures for destinations that enforce non-null primary key constraints, such as the Iceberg destination.
+
+| Stream | Old primary key | New primary key |
+|---|---|---|
+| `campaign_bidding_strategy` | `campaign.id`, `bidding_strategy.id`, `segments.date` | `campaign.id`, `segments.date` |
+| `ad_group_bidding_strategy` | `ad_group.id`, `bidding_strategy.id`, `segments.date` | `ad_group.id`, `segments.date` |
+
+Users syncing the `campaign_bidding_strategy` or `ad_group_bidding_strategy` streams are affected.
+
+### Action required
 
 Users should:
 
