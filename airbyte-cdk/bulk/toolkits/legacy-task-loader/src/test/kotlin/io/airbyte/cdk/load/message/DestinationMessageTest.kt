@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -46,7 +45,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
@@ -100,30 +98,28 @@ internal class DestinationMessageTest {
     }
 
     @Test
-    fun testThrowOnIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
-            }
+    fun testIncompleteStatusConvertsToTypedMessage() {
+        // INCOMPLETE reaches the destination directly in SPEED mode (the orchestrator filters
+        // it out in STDIO mode). The factory must surface a typed message so the bookkeeping
+        // router can mark the stream end-of-stream-but-not-completed and the sync winds down
+        // cleanly with the failure attributed to the source.
+        val converted = assertDoesNotThrow {
+            convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
+        }
         assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
+            converted is DestinationRecordStreamIncomplete,
+            "Expected DestinationRecordStreamIncomplete, got ${converted::class.simpleName}",
         )
     }
 
     @Test
-    fun testThrowOnFileIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
-            }
+    fun testFileIncompleteStatusConvertsToTypedMessage() {
+        val converted = assertDoesNotThrow {
+            convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
+        }
         assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
+            converted is DestinationFileStreamIncomplete,
+            "Expected DestinationFileStreamIncomplete, got ${converted::class.simpleName}",
         )
     }
 

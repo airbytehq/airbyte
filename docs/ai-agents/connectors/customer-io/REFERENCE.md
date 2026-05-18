@@ -19,6 +19,8 @@ The Customer-Io connector supports the following entities and actions.
 | Collections | [List](#collections-list), [Create](#collections-create), [Get](#collections-get), [Update](#collections-update) |
 | Reporting Webhooks | [List](#reporting-webhooks-list), [Create](#reporting-webhooks-create), [Get](#reporting-webhooks-get), [Update](#reporting-webhooks-update) |
 | Exports | [List](#exports-list), [Create](#exports-create), [Get](#exports-get) |
+| Transactional Messages | [List](#transactional-messages-list), [Get](#transactional-messages-get) |
+| Transactional Message Contents | [List](#transactional-message-contents-list), [Update](#transactional-message-contents-update) |
 | Transactional Email | [Create](#transactional-email-create) |
 | Transactional Sms | [Create](#transactional-sms-create) |
 | Transactional Push | [Create](#transactional-push-create) |
@@ -1853,6 +1855,272 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `deduplicate_id` | `null \| string` |  |
 | `user_id` | `null \| integer` |  |
 | `user_email` | `null \| string` |  |
+
+
+</details>
+
+## Transactional Messages
+
+### Transactional Messages List
+
+Returns a list of all transactional message templates in the workspace.
+
+#### Python SDK
+
+```python
+await customer_io.transactional_messages.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "transactional_messages",
+    "action": "list"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `null \| integer` |  |
+| `name` | `null \| string` |  |
+| `description` | `null \| string` |  |
+| `send_to_unsubscribed` | `null \| boolean` |  |
+| `link_tracking` | `null \| boolean` |  |
+| `open_tracking` | `null \| boolean` |  |
+| `hide_message_body` | `null \| boolean` |  |
+| `queue_drafts` | `null \| boolean` |  |
+| `trigger_name` | `null \| string` |  |
+| `created_at` | `null \| integer` |  |
+| `updated_at` | `null \| integer` |  |
+
+
+</details>
+
+### Transactional Messages Get
+
+Returns a single transactional message template by ID.
+
+#### Python SDK
+
+```python
+await customer_io.transactional_messages.get(
+    transactional_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "transactional_messages",
+    "action": "get",
+    "params": {
+        "transactional_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `transactional_id` | `integer` | Yes | The transactional message identifier |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `null \| integer` |  |
+| `name` | `null \| string` |  |
+| `description` | `null \| string` |  |
+| `send_to_unsubscribed` | `null \| boolean` |  |
+| `link_tracking` | `null \| boolean` |  |
+| `open_tracking` | `null \| boolean` |  |
+| `hide_message_body` | `null \| boolean` |  |
+| `queue_drafts` | `null \| boolean` |  |
+| `trigger_name` | `null \| string` |  |
+| `created_at` | `null \| integer` |  |
+| `updated_at` | `null \| integer` |  |
+
+
+</details>
+
+## Transactional Message Contents
+
+### Transactional Message Contents List
+
+Returns all content variants (including language translations) for a transactional message template.
+
+#### Python SDK
+
+```python
+await customer_io.transactional_message_contents.list(
+    transactional_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "transactional_message_contents",
+    "action": "list",
+    "params": {
+        "transactional_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `transactional_id` | `integer` | Yes | The transactional message identifier |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `null \| integer` |  |
+| `name` | `null \| string` |  |
+| `created` | `null \| integer` |  |
+| `updated` | `null \| integer` |  |
+| `body` | `null \| string` |  |
+| `language` | `null \| string` |  |
+| `type` | `null \| string` |  |
+| `from` | `null \| string` |  |
+| `from_id` | `null \| integer` |  |
+| `reply_to` | `null \| string` |  |
+| `reply_to_id` | `null \| integer` |  |
+| `preprocessor` | `null \| string` |  |
+| `recipient` | `null \| string` |  |
+| `subject` | `null \| string` |  |
+| `bcc` | `null \| string` |  |
+| `fake_bcc` | `null \| boolean` |  |
+| `preheader_text` | `null \| string` |  |
+| `body_amp` | `null \| string` |  |
+| `headers` | `null \| string` |  |
+
+
+</details>
+
+### Transactional Message Contents Update
+
+Updates the content of a specific variant of a transactional message template by content ID.
+
+#### Python SDK
+
+```python
+await customer_io.transactional_message_contents.update(
+    body="<str>",
+    from_id=0,
+    reply_to_id=0,
+    recipient="<str>",
+    subject="<str>",
+    preheader_text="<str>",
+    body_amp="<str>",
+    headers=[],
+    transactional_id=0,
+    content_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "transactional_message_contents",
+    "action": "update",
+    "params": {
+        "body": "<str>",
+        "from_id": 0,
+        "reply_to_id": 0,
+        "recipient": "<str>",
+        "subject": "<str>",
+        "preheader_text": "<str>",
+        "body_amp": "<str>",
+        "headers": [],
+        "transactional_id": 0,
+        "content_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `body` | `string` | No | HTML body content of the message |
+| `from_id` | `integer` | No | Sender identity ID |
+| `reply_to_id` | `integer \| null` | No | Reply-to sender identity ID |
+| `recipient` | `string` | No | Recipient expression (e.g. "\{\{customer.email\}\}") |
+| `subject` | `string` | No | Email subject line |
+| `preheader_text` | `string` | No | Email preheader/preview text |
+| `body_amp` | `string` | No | AMP HTML body content |
+| `headers` | `array<object>` | No | Custom email headers as an array of name-value objects |
+| `headers.name` | `string` | No | Header name |
+| `headers.value` | `string` | No | Header value |
+| `transactional_id` | `integer` | Yes | The transactional message identifier |
+| `content_id` | `integer` | Yes | The content variant identifier |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `null \| integer` |  |
+| `name` | `null \| string` |  |
+| `created` | `null \| integer` |  |
+| `updated` | `null \| integer` |  |
+| `body` | `null \| string` |  |
+| `language` | `null \| string` |  |
+| `type` | `null \| string` |  |
+| `from` | `null \| string` |  |
+| `from_id` | `null \| integer` |  |
+| `reply_to` | `null \| string` |  |
+| `reply_to_id` | `null \| integer` |  |
+| `preprocessor` | `null \| string` |  |
+| `recipient` | `null \| string` |  |
+| `subject` | `null \| string` |  |
+| `bcc` | `null \| string` |  |
+| `fake_bcc` | `null \| boolean` |  |
+| `preheader_text` | `null \| string` |  |
+| `body_amp` | `null \| string` |  |
+| `headers` | `null \| string` |  |
 
 
 </details>
