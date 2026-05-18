@@ -16,7 +16,6 @@ include = "source_comfyui"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 airbyte-cdk = ">=6.61.6,<7.0"
-requests = ">=2.28.0"
 
 [tool.poetry.scripts]
 source-comfyui = "source_comfyui.run:run"

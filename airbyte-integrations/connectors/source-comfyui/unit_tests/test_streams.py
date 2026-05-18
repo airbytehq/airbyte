@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from source_comfyui.streams import (
     AssetsStream,
     JobDetailsStream,
@@ -394,7 +395,7 @@ class TestModelsStream:
         ]
 
     def test_stream_slices_request_error(self, stream_kwargs):
-        """stream_slices returns empty on request failure."""
+        """stream_slices raises RuntimeError on request failure."""
         stream = ModelsStream(**stream_kwargs)
 
         import requests as req
@@ -403,9 +404,8 @@ class TestModelsStream:
             "source_comfyui.streams.requests.get",
             side_effect=req.exceptions.ConnectionError("fail"),
         ):
-            slices = list(stream.stream_slices(sync_mode=None))
-
-        assert slices == []
+            with pytest.raises(RuntimeError, match="Failed to fetch model folders"):
+                list(stream.stream_slices(sync_mode=None))
 
     def test_parse_response_string_models(self, stream_kwargs):
         """When models are returned as string filenames."""
@@ -503,3 +503,120 @@ class TestJobDetailsStream:
         stream = JobDetailsStream(parent=parent_stream, **stream_kwargs)
         headers = stream.request_headers()
         assert headers == {"X-API-Key": api_key}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Incremental State
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestIncrementalState:
+    """Tests for ComfyUIIncrementalStream cursor comparison and state management."""
+
+    @pytest.fixture
+    def jobs_stream(self, stream_kwargs):
+        return JobsStream(**stream_kwargs)
+
+    def test_compare_cursor_values_numeric(self, jobs_stream):
+        assert jobs_stream._compare_cursor_values("1700000000", "1700000100") == "1700000100"
+        assert jobs_stream._compare_cursor_values("1700000100", "1700000000") == "1700000100"
+
+    def test_compare_cursor_values_iso(self, jobs_stream):
+        assert jobs_stream._compare_cursor_values("2024-01-01T00:00:00Z", "2024-06-15T12:00:00Z") == "2024-06-15T12:00:00Z"
+
+    def test_compare_cursor_values_equal(self, jobs_stream):
+        assert jobs_stream._compare_cursor_values("100", "100") == "100"
+
+    def test_cursor_value_extracts_field(self, jobs_stream):
+        assert jobs_stream._cursor_value({"create_time": 1700000000}) == "1700000000"
+
+    def test_cursor_value_none(self, jobs_stream):
+        assert jobs_stream._cursor_value({"other_field": 123}) is None
+
+    def test_is_record_newer_no_prior_state(self, jobs_stream):
+        assert jobs_stream._is_record_newer({"create_time": 100}, None) is True
+
+    def test_is_record_newer_strictly_greater(self, jobs_stream):
+        assert jobs_stream._is_record_newer({"create_time": 200}, "100") is True
+
+    def test_is_record_newer_equal_returns_false(self, jobs_stream):
+        # Strict > comparison prevents duplicates on incremental sync
+        assert jobs_stream._is_record_newer({"create_time": 100}, "100") is False
+
+    def test_is_record_newer_older_returns_false(self, jobs_stream):
+        assert jobs_stream._is_record_newer({"create_time": 50}, "100") is False
+
+    def test_is_record_newer_none_cursor_in_record(self, jobs_stream):
+        assert jobs_stream._is_record_newer({"other": "data"}, "100") is True
+
+    def test_update_state_from_empty(self, jobs_stream):
+        jobs_stream._update_state({"create_time": 1700000000})
+        assert jobs_stream.state == {"create_time": "1700000000"}
+
+    def test_update_state_advances(self, jobs_stream):
+        jobs_stream._state = {"create_time": "1700000000"}
+        jobs_stream._update_state({"create_time": 1700000100})
+        assert jobs_stream.state["create_time"] == "1700000100"
+
+    def test_update_state_does_not_regress(self, jobs_stream):
+        jobs_stream._state = {"create_time": "1700000100"}
+        jobs_stream._update_state({"create_time": 1700000000})
+        assert jobs_stream.state["create_time"] == "1700000100"
+
+    def test_update_state_skips_none_cursor(self, jobs_stream):
+        jobs_stream._update_state({"other": "data"})
+        assert jobs_stream.state == {}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# JobDetailsStream Slices
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestJobDetailsStreamSlices:
+    """Tests for JobDetailsStream parent-child slice generation."""
+
+    @pytest.fixture
+    def parent_stream(self, stream_kwargs):
+        return JobsStream(**stream_kwargs)
+
+    @pytest.fixture
+    def details_stream(self, parent_stream, stream_kwargs):
+        return JobDetailsStream(parent=parent_stream, **stream_kwargs)
+
+    def test_stream_slices_yields_job_ids(self, details_stream):
+        parent_records = [
+            {"id": "job-1", "create_time": 100, "status": "completed"},
+            {"id": "job-2", "create_time": 200, "status": "completed"},
+        ]
+        with patch.object(details_stream.parent, "read_records", return_value=iter(parent_records)):
+            slices = list(details_stream.stream_slices(sync_mode="full_refresh"))
+        assert len(slices) == 2
+        assert slices[0]["job_id"] == "job-1"
+        assert slices[1]["job_id"] == "job-2"
+
+    def test_stream_slices_empty_parent(self, details_stream):
+        with patch.object(details_stream.parent, "read_records", return_value=iter([])):
+            slices = list(details_stream.stream_slices(sync_mode="full_refresh"))
+        assert slices == []
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ModelsStream Edge Cases
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestModelsStreamEdgeCases:
+    def test_stream_slices_empty_list(self, stream_kwargs):
+        stream = ModelsStream(**stream_kwargs)
+        with patch("source_comfyui.streams.requests.get") as mock_get:
+            mock_get.return_value = _mock_response([])
+            slices = list(stream.stream_slices(sync_mode="full_refresh"))
+        assert slices == []
+
+    def test_stream_slices_error_raises(self, stream_kwargs):
+        stream = ModelsStream(**stream_kwargs)
+        with patch("source_comfyui.streams.requests.get") as mock_get:
+            mock_get.side_effect = requests.RequestException("connection failed")
+            with pytest.raises(RuntimeError, match="Failed to fetch model folders"):
+                list(stream.stream_slices(sync_mode="full_refresh"))

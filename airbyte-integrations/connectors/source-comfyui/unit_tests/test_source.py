@@ -117,10 +117,27 @@ def test_check_connection_strips_trailing_slash(source):
 # ── streams ──────────────────────────────────────────────────────────────────
 
 
-def test_streams_count(source, config):
-    """streams() returns exactly 6 stream instances."""
+def test_streams_count_and_types(source, config):
+    """streams() returns all 6 expected stream types."""
+    from source_comfyui.streams import (
+        AssetsStream,
+        JobDetailsStream,
+        JobsStream,
+        ModelsStream,
+        NodesStream,
+        SystemStatsStream,
+    )
+
     streams = source.streams(config)
-    assert len(streams) == 6
+    stream_types = {type(s) for s in streams}
+    assert stream_types == {
+        JobsStream,
+        JobDetailsStream,
+        AssetsStream,
+        ModelsStream,
+        NodesStream,
+        SystemStatsStream,
+    }
 
 
 def test_streams_uses_default_base_url(source):

@@ -8,15 +8,7 @@
     },
     "status": {
       "type": "string",
-      "enum": [
-        "waiting_to_dispatch",
-        "pending",
-        "in_progress",
-        "completed",
-        "failed",
-        "cancelled",
-        "error"
-      ],
+      "enum": ["pending", "in_progress", "completed", "failed", "cancelled"],
       "description": "Current job status"
     },
     "create_time": {
@@ -76,6 +68,14 @@
     "execution_meta": {
       "type": ["object", "null"],
       "description": "Node-level execution metadata"
+    },
+    "execution_start_time": {
+      "type": ["integer", "null"],
+      "description": "Execution start time as Unix timestamp in milliseconds"
+    },
+    "execution_end_time": {
+      "type": ["integer", "null"],
+      "description": "Execution end time as Unix timestamp in milliseconds"
     }
   }
 }

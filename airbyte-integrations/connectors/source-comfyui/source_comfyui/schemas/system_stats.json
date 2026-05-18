@@ -39,11 +39,11 @@
           "description": "PyTorch version"
         },
         "ram_total": {
-          "type": "number",
+          "type": "integer",
           "description": "Total system RAM in bytes"
         },
         "ram_free": {
-          "type": "number",
+          "type": "integer",
           "description": "Free system RAM in bytes"
         }
       }
@@ -63,11 +63,11 @@
             "description": "Device type (e.g. cuda, cpu)"
           },
           "vram_total": {
-            "type": "number",
+            "type": "integer",
             "description": "Total VRAM in bytes"
           },
           "vram_free": {
-            "type": "number",
+            "type": "integer",
             "description": "Free VRAM in bytes"
           }
         }

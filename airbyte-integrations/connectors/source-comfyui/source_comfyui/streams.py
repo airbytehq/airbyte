@@ -53,9 +53,7 @@ class ComfyUIStream(HttpStream, ABC):
 class ComfyUIIncrementalStream(ComfyUIStream, ABC):
     """Base for incremental ComfyUI streams with cursor-based state tracking."""
 
-    @property
-    def cursor_field(self) -> str:
-        raise NotImplementedError("Subclasses must define cursor_field")
+    cursor_field: str
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -72,12 +70,12 @@ class ComfyUIIncrementalStream(ComfyUIStream, ABC):
     def _compare_cursor_values(self, a: str, b: str) -> str:
         """Return the greater of two cursor values.
 
-        Handles both Unix-epoch timestamps (numeric strings) and ISO-8601 datetime
-        strings.  For ISO strings, lexicographic comparison is correct because the
+        Handles both Unix-epoch timestamps (integer strings) and ISO-8601 datetime
+        strings. For ISO strings, lexicographic comparison is correct because the
         format is zero-padded and UTC-sortable.
         """
         try:
-            return str(max(float(a), float(b)))
+            return str(max(int(a), int(b)))
         except (ValueError, TypeError):
             return max(str(a), str(b))
 
@@ -86,16 +84,16 @@ class ComfyUIIncrementalStream(ComfyUIStream, ABC):
         return str(value) if value is not None else None
 
     def _is_record_newer(self, record: Mapping[str, Any], cursor_value: Optional[str]) -> bool:
-        """Return True if the record's cursor value is >= the stored cursor."""
+        """Return True if the record's cursor value is strictly greater than the stored cursor."""
         if cursor_value is None:
             return True
         record_value = self._cursor_value(record)
         if record_value is None:
             return True
         try:
-            return float(record_value) >= float(cursor_value)
+            return int(record_value) > int(cursor_value)
         except (ValueError, TypeError):
-            return str(record_value) >= str(cursor_value)
+            return str(record_value) > str(cursor_value)
 
     def read_records(
         self,
@@ -345,7 +343,7 @@ class ModelsStream(ComfyUIStream):
             else:
                 logger.warning("Unexpected /api/models response type: %s", type(folders))
         except requests.RequestException as exc:
-            logger.error("Failed to fetch model folders: %s", exc)
+            raise RuntimeError(f"Failed to fetch model folders from {url}: {exc}") from exc
 
     def parse_response(
         self,

@@ -3,6 +3,7 @@ connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: ComfyUI Cloud Source Spec
   type: object
+  additionalProperties: false
   required:
     - api_key
   properties:

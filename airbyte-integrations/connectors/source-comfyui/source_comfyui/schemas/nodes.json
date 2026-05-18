@@ -31,21 +31,21 @@
       "description": "Ordered input names per input group"
     },
     "output": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       },
       "description": "Output type names"
     },
     "output_name": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       },
       "description": "Output display names"
     },
     "output_is_list": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": "boolean"
       },
@@ -56,7 +56,7 @@
       "description": "Whether this is a terminal output node"
     },
     "output_tooltips": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       },

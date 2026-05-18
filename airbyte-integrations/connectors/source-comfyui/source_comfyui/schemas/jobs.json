@@ -8,15 +8,7 @@
     },
     "status": {
       "type": "string",
-      "enum": [
-        "waiting_to_dispatch",
-        "pending",
-        "in_progress",
-        "completed",
-        "failed",
-        "cancelled",
-        "error"
-      ],
+      "enum": ["pending", "in_progress", "completed", "failed", "cancelled"],
       "description": "Current job status"
     },
     "create_time": {
