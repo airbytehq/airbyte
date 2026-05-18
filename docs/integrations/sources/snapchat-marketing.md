@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.35 | 2026-05-18 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Fix parsing of legacy second-precision state timestamps for daily stats streams |
 | 1.5.34 | 2026-04-28 | [76758](https://github.com/airbytehq/airbyte/pull/76758) | Update dependencies |
 | 1.5.33 | 2026-04-24 | [77006](https://github.com/airbytehq/airbyte/pull/77006) | Promoted release candidate to GA |
 | 1.5.33-rc.5 | 2026-04-23 | [76950](https://github.com/airbytehq/airbyte/pull/76950) | Re-enable api_budget at 100/10s with concurrency 4 for tuning iteration 5 |
