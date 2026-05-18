@@ -40,7 +40,7 @@ class SomeTestStream(FBMarketingStream):
 
 
 class ErroringTestStream(FBMarketingStream):
-    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable[Any]:
+    def list_objects(self, params: Mapping[str, Any], **kwargs: str) -> Iterable[Any]:
         raise FacebookRequestError(
             message="Call was not successful",
             request_context={},
