@@ -449,8 +449,7 @@ class TestRealErrors:
         [
             (
                 REDUCE_FIELDS_ERROR_TEST_NAME,
-                "Please reduce the number of fields requested. Go to the schema tab, "
-                "select your source, and unselect the fields you do not need.",
+                "Facebook Marketing API request includes too many selected fields. Select fewer fields.",
                 REDUCE_FIELDS_ERROR_RESPONSE,
                 FailureType.config_error,
             ),
@@ -719,3 +718,30 @@ def test_traced_exception_without_api_error():
     assert isinstance(result, AirbyteTracedException)
     assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
     assert result.failure_type == FailureType.system_error
+
+
+@pytest.mark.parametrize(
+    "stream_name,expected_message",
+    [
+        pytest.param(
+            "ad_creatives",
+            "Facebook Marketing API request includes too many selected fields for the ad_creatives stream. Select fewer fields.",
+            id="stream_name",
+        ),
+        pytest.param(None, "Facebook Marketing API request includes too many selected fields. Select fewer fields.", id="no_stream_name"),
+    ],
+)
+def test_traced_exception_reduce_data_error(stream_name, expected_message):
+    error = FacebookRequestError(
+        message="Call was not successful",
+        request_context={},
+        http_status=500,
+        http_headers={},
+        body='{"error": {"message": "Please reduce the amount of data you\'re asking for, then retry your request", "code": 1}}',
+    )
+
+    result = traced_exception(error, stream_name=stream_name)
+
+    assert result.message == expected_message
+    assert result.internal_message == "Please reduce the amount of data you're asking for, then retry your request"
+    assert result.failure_type == FailureType.config_error
