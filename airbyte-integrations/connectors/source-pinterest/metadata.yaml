@@ -18,13 +18,6 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-pinterest
-  registryOverrides:
-    cloud:
-      enabled: true
-      dockerImageTag: 2.1.27
-    oss:
-      enabled: true
-      dockerImageTag: 2.1.27
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
