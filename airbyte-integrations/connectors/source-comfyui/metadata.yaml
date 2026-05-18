@@ -1,3 +1,4 @@
+metadataSpecVersion: "1.0"
 data:
   ab_internal:
     ql: 100
@@ -17,6 +18,10 @@ data:
   icon: icon.svg
   license: MIT
   name: ComfyUI Cloud
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-comfyui
   registryOverrides:
     cloud:
       enabled: false
