@@ -164,7 +164,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8.0.3 | 2026-05-19 | [PR_NUMBER_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_PLACEHOLDER) | Bump default `num_workers` 10 → 14 for improved throughput on parallelizable workloads |
+| 8.0.3 | 2026-05-19 | [78158](https://github.com/airbytehq/airbyte/pull/78158) | Bump default `num_workers` 10 → 14 for improved throughput on parallelizable workloads |
 | 8.0.2 | 2026-05-05 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Skip profiles without Amazon Attribution access on attribution report performance streams instead of failing the sync |
 | 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |
 | 8.0.0 | 2026-04-22 | [75490](https://github.com/airbytehq/airbyte/pull/75490) | Use `date` field from API response as cursor and primary key for daily report streams instead of synthetic `reportDate`. Fixes ~96% data loss from incorrect deduplication. |
