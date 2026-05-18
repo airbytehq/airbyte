@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -131,9 +130,20 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            throw ConfigErrorException(
-                                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message: $message"
-                            )
+                            // The source declared this stream incomplete (i.e. failed).
+                            // Let the sync end naturally so the failure is attributed to the
+                            // source, not the destination.
+                            if (fileTransferEnabled) {
+                                DestinationFileStreamIncomplete(
+                                    stream,
+                                    message.trace.emittedAt?.toLong() ?: 0L,
+                                )
+                            } else {
+                                DestinationRecordStreamIncomplete(
+                                    stream,
+                                    message.trace.emittedAt?.toLong() ?: 0L,
+                                )
+                            }
                         else -> Undefined
                     }
                 } else {

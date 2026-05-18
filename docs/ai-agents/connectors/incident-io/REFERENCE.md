@@ -8,18 +8,18 @@ The Incident-Io connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Incidents | [List](#incidents-list), [Get](#incidents-get), [Search](#incidents-search) |
-| Alerts | [List](#alerts-list), [Get](#alerts-get), [Search](#alerts-search) |
-| Escalations | [List](#escalations-list), [Get](#escalations-get), [Search](#escalations-search) |
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Incident Updates | [List](#incident-updates-list), [Search](#incident-updates-search) |
-| Incident Roles | [List](#incident-roles-list), [Get](#incident-roles-get), [Search](#incident-roles-search) |
-| Incident Statuses | [List](#incident-statuses-list), [Get](#incident-statuses-get), [Search](#incident-statuses-search) |
-| Incident Timestamps | [List](#incident-timestamps-list), [Get](#incident-timestamps-get), [Search](#incident-timestamps-search) |
-| Severities | [List](#severities-list), [Get](#severities-get), [Search](#severities-search) |
-| Custom Fields | [List](#custom-fields-list), [Get](#custom-fields-get), [Search](#custom-fields-search) |
-| Catalog Types | [List](#catalog-types-list), [Get](#catalog-types-get), [Search](#catalog-types-search) |
-| Schedules | [List](#schedules-list), [Get](#schedules-get), [Search](#schedules-search) |
+| Incidents | [List](#incidents-list), [Get](#incidents-get), [Context Store Search](#incidents-context-store-search) |
+| Alerts | [List](#alerts-list), [Get](#alerts-get), [Context Store Search](#alerts-context-store-search) |
+| Escalations | [List](#escalations-list), [Get](#escalations-get), [Context Store Search](#escalations-context-store-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Incident Updates | [List](#incident-updates-list), [Context Store Search](#incident-updates-context-store-search) |
+| Incident Roles | [List](#incident-roles-list), [Get](#incident-roles-get), [Context Store Search](#incident-roles-context-store-search) |
+| Incident Statuses | [List](#incident-statuses-list), [Get](#incident-statuses-get), [Context Store Search](#incident-statuses-context-store-search) |
+| Incident Timestamps | [List](#incident-timestamps-list), [Get](#incident-timestamps-get), [Context Store Search](#incident-timestamps-context-store-search) |
+| Severities | [List](#severities-list), [Get](#severities-get), [Context Store Search](#severities-context-store-search) |
+| Custom Fields | [List](#custom-fields-list), [Get](#custom-fields-get), [Context Store Search](#custom-fields-context-store-search) |
+| Catalog Types | [List](#catalog-types-list), [Get](#catalog-types-get), [Context Store Search](#catalog-types-context-store-search) |
+| Schedules | [List](#schedules-list), [Get](#schedules-get), [Context Store Search](#schedules-context-store-search) |
 
 ## Incidents
 
@@ -93,9 +93,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.after` | `null \| string` |  |
-| `pagination.page_size` | `null \| integer` |  |
+| `next_cursor` | `null \| string` |  |
 
 </details>
 
@@ -171,14 +169,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Incidents Search
+### Incidents Context Store Search
 
 Search and filter incidents records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.incidents.search(
+await incident_io.incidents.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -191,7 +189,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "incidents",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -334,9 +332,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.after` | `null \| string` |  |
-| `pagination.page_size` | `null \| integer` |  |
+| `next_cursor` | `null \| string` |  |
 
 </details>
 
@@ -397,14 +393,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Alerts Search
+### Alerts Context Store Search
 
 Search and filter alerts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.alerts.search(
+await incident_io.alerts.context_store_search(
     query={"filter": {"eq": {"alert_source_id": "<str>"}}}
 )
 ```
@@ -417,7 +413,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "alerts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"alert_source_id": "<str>"}}}
     }
@@ -532,9 +528,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.after` | `null \| string` |  |
-| `pagination.page_size` | `null \| integer` |  |
+| `next_cursor` | `null \| string` |  |
 
 </details>
 
@@ -595,14 +589,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Escalations Search
+### Escalations Context Store Search
 
 Search and filter escalations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.escalations.search(
+await incident_io.escalations.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -615,7 +609,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "escalations",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -726,9 +720,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.after` | `null \| string` |  |
-| `pagination.page_size` | `null \| integer` |  |
+| `next_cursor` | `null \| string` |  |
 
 </details>
 
@@ -785,14 +777,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.users.search(
+await incident_io.users.context_store_search(
     query={"filter": {"eq": {"base_role": {}}}}
 )
 ```
@@ -805,7 +797,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"base_role": {}}}}
     }
@@ -908,20 +900,18 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.after` | `null \| string` |  |
-| `pagination.page_size` | `null \| integer` |  |
+| `next_cursor` | `null \| string` |  |
 
 </details>
 
-### Incident Updates Search
+### Incident Updates Context Store Search
 
 Search and filter incident updates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.incident_updates.search(
+await incident_io.incident_updates.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -934,7 +924,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "incident_updates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -1085,14 +1075,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Incident Roles Search
+### Incident Roles Context Store Search
 
 Search and filter incident roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.incident_roles.search(
+await incident_io.incident_roles.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -1105,7 +1095,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "incident_roles",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -1256,14 +1246,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Incident Statuses Search
+### Incident Statuses Context Store Search
 
 Search and filter incident statuses records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.incident_statuses.search(
+await incident_io.incident_statuses.context_store_search(
     query={"filter": {"eq": {"category": "<str>"}}}
 )
 ```
@@ -1276,7 +1266,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "incident_statuses",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"category": "<str>"}}}
     }
@@ -1415,14 +1405,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Incident Timestamps Search
+### Incident Timestamps Context Store Search
 
 Search and filter incident timestamps records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.incident_timestamps.search(
+await incident_io.incident_timestamps.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -1435,7 +1425,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "incident_timestamps",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -1572,14 +1562,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Severities Search
+### Severities Context Store Search
 
 Search and filter severities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.severities.search(
+await incident_io.severities.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -1592,7 +1582,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "severities",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -1737,14 +1727,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Custom Fields Search
+### Custom Fields Context Store Search
 
 Search and filter custom fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.custom_fields.search(
+await incident_io.custom_fields.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -1757,7 +1747,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "custom_fields",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -1922,14 +1912,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Catalog Types Search
+### Catalog Types Context Store Search
 
 Search and filter catalog types records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.catalog_types.search(
+await incident_io.catalog_types.context_store_search(
     query={"filter": {"eq": {"annotations": {}}}}
 )
 ```
@@ -1942,7 +1932,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "catalog_types",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"annotations": {}}}}
     }
@@ -2068,9 +2058,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `pagination` | `object` |  |
-| `pagination.after` | `null \| string` |  |
-| `pagination.page_size` | `null \| integer` |  |
+| `next_cursor` | `null \| string` |  |
 
 </details>
 
@@ -2130,14 +2118,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Schedules Search
+### Schedules Context Store Search
 
 Search and filter schedules records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await incident_io.schedules.search(
+await incident_io.schedules.context_store_search(
     query={"filter": {"eq": {"annotations": {}}}}
 )
 ```
@@ -2150,7 +2138,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "schedules",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"annotations": {}}}}
     }
