@@ -841,7 +841,10 @@ Provides aggregated user activity metrics across a specified period
 
 ```python
 await gong.stats_activity_aggregate.list(
-    filter={}
+    filter={
+        "fromDate": "<str>",
+        "toDate": "<str>"
+    }
 )
 ```
 
@@ -855,7 +858,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "stats_activity_aggregate",
     "action": "list",
     "params": {
-        "filter": {}
+        "filter": {
+            "fromDate": "<str>",
+            "toDate": "<str>"
+        }
     }
 }'
 ```
@@ -866,8 +872,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `object` | Yes |  |
-| `filter.fromDate` | `string` | No | Start date (YYYY-MM-DD). Recommended for scoping results to a manageable date range. |
-| `filter.toDate` | `string` | No | End date (YYYY-MM-DD). Recommended for scoping results to a manageable date range. |
+| `filter.fromDate` | `string` | Yes | Start date (YYYY-MM-DD). Required by the Gong API for activity stats. |
+| `filter.toDate` | `string` | Yes | End date (YYYY-MM-DD). Required by the Gong API for activity stats. |
 | `filter.userIds` | `array<string>` | No | List of user IDs to retrieve stats for |
 
 
@@ -918,7 +924,10 @@ Delivers daily user activity metrics across a specified date range
 
 ```python
 await gong.stats_activity_day_by_day.list(
-    filter={}
+    filter={
+        "fromDate": "<str>",
+        "toDate": "<str>"
+    }
 )
 ```
 
@@ -932,7 +941,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "stats_activity_day_by_day",
     "action": "list",
     "params": {
-        "filter": {}
+        "filter": {
+            "fromDate": "<str>",
+            "toDate": "<str>"
+        }
     }
 }'
 ```
@@ -943,8 +955,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `object` | Yes |  |
-| `filter.fromDate` | `string` | No | Start date (YYYY-MM-DD). Recommended for scoping results to a manageable date range. |
-| `filter.toDate` | `string` | No | End date (YYYY-MM-DD). Recommended for scoping results to a manageable date range. |
+| `filter.fromDate` | `string` | Yes | Start date (YYYY-MM-DD). Required by the Gong API for activity stats. |
+| `filter.toDate` | `string` | Yes | End date (YYYY-MM-DD). Required by the Gong API for activity stats. |
 | `filter.userIds` | `array<string>` | No | List of user IDs to retrieve stats for |
 
 
@@ -997,7 +1009,10 @@ Returns interaction stats for users based on calls that have Whisper turned on
 
 ```python
 await gong.stats_interaction.list(
-    filter={}
+    filter={
+        "fromDate": "<str>",
+        "toDate": "<str>"
+    }
 )
 ```
 
@@ -1011,7 +1026,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "stats_interaction",
     "action": "list",
     "params": {
-        "filter": {}
+        "filter": {
+            "fromDate": "<str>",
+            "toDate": "<str>"
+        }
     }
 }'
 ```
@@ -1022,8 +1040,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `object` | Yes |  |
-| `filter.fromDate` | `string` | No | Start date (YYYY-MM-DD). Recommended for scoping results to a manageable date range. |
-| `filter.toDate` | `string` | No | End date (YYYY-MM-DD). Recommended for scoping results to a manageable date range. |
+| `filter.fromDate` | `string` | Yes | Start date (YYYY-MM-DD). Required by the Gong API for interaction stats. |
+| `filter.toDate` | `string` | Yes | End date (YYYY-MM-DD). Required by the Gong API for interaction stats. |
 | `filter.userIds` | `array<string>` | No | List of user IDs to retrieve stats for |
 
 
@@ -1439,7 +1457,10 @@ Retrieve answered scorecards for applicable reviewed users or scorecards for a d
 
 ```python
 await gong.stats_activity_scorecards.list(
-    filter={}
+    filter={
+        "fromDateTime": "2025-01-01T00:00:00Z",
+        "toDateTime": "2025-01-01T00:00:00Z"
+    }
 )
 ```
 
@@ -1453,7 +1474,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "stats_activity_scorecards",
     "action": "list",
     "params": {
-        "filter": {}
+        "filter": {
+            "fromDateTime": "2025-01-01T00:00:00Z",
+            "toDateTime": "2025-01-01T00:00:00Z"
+        }
     }
 }'
 ```
@@ -1464,8 +1488,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `filter` | `object` | Yes |  |
-| `filter.fromDateTime` | `string` | No | Start date in ISO 8601 format. Recommended for scoping results to a manageable date range. |
-| `filter.toDateTime` | `string` | No | End date in ISO 8601 format. Recommended for scoping results to a manageable date range. |
+| `filter.fromDateTime` | `string` | Yes | Start date in ISO 8601 format. Required by the Gong API for scorecard stats. |
+| `filter.toDateTime` | `string` | Yes | End date in ISO 8601 format. Required by the Gong API for scorecard stats. |
 | `filter.scorecardIds` | `array<string>` | No | List of scorecard IDs to filter by |
 | `filter.reviewedUserIds` | `array<string>` | No | List of reviewed user IDs to filter by |
 | `filter.reviewerUserIds` | `array<string>` | No | List of reviewer user IDs to filter by |
