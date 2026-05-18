@@ -997,7 +997,7 @@ definitions:
       password: "{{ config['api_key'] }}"
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 250
+  default_concurrency: 4
 
 streams:
   - type: DeclarativeStream
