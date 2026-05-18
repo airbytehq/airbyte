@@ -27,11 +27,11 @@ data:
       enabled: false
     oss:
       enabled: true
+  releaseDate: "2026-05-18"
   releaseStage: alpha
-  releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: false
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
   tags:
     - language:python
     - cdk:python

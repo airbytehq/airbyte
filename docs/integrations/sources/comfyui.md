@@ -9,6 +9,12 @@ The ComfyUI Cloud source connector extracts generation jobs, assets, models, nod
 - A ComfyUI Cloud account
 - An API key generated from [platform.comfy.org/profile/api-keys](https://platform.comfy.org/profile/api-keys)
 
+## Setup guide
+
+1. **Create a ComfyUI account**: Sign up at [comfy.org](https://www.comfy.org) if you don't already have one.
+2. **Generate an API key**: Go to [platform.comfy.org/profile/api-keys](https://platform.comfy.org/profile/api-keys) and create a new API key. Copy it immediately — it won't be shown again.
+3. **Configure the connector in Airbyte**: Enter your API key in the connector settings. The default Base URL (`https://cloud.comfy.org`) works for most users.
+
 ## Supported streams
 
 This source supports the following streams:
