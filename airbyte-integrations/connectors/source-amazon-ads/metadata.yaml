@@ -81,13 +81,20 @@ data:
         upgradeDeadline: "2024-03-27"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["sponsored_brands_campaigns", "sponsored_brands_ad_groups", "sponsored_product_campaigns", "sponsored_product_ad_group_bid_recommendations"]
+            impactedScopes:
+              [
+                "sponsored_brands_campaigns",
+                "sponsored_brands_ad_groups",
+                "sponsored_product_campaigns",
+                "sponsored_product_ad_group_bid_recommendations",
+              ]
       4.0.0:
         message: "Streams `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` now have updated schemas."
         upgradeDeadline: "2024-01-17"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["sponsored_brands_ad_groups", "sponsored_brands_keywords"]
+            impactedScopes:
+              ["sponsored_brands_ad_groups", "sponsored_brands_keywords"]
       3.0.0:
         message: Attribution report stream schemas fix.
         upgradeDeadline: "2023-07-24"
