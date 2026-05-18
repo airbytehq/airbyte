@@ -13,7 +13,9 @@ dependencies {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
     }
-    api 'org.apache.parquet:parquet-avro:1.15.1'
+    api 'org.apache.parquet:parquet-avro:1.15.2'
+    // CVE-2025-48734: force commons-beanutils off the vulnerable 1.9.4 transitive pulled by hadoop-common
+    implementation 'commons-beanutils:commons-beanutils:1.10.0'
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
 }
