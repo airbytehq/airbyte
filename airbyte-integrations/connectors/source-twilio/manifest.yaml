@@ -840,7 +840,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 25) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 40
 
 spec:
@@ -894,8 +894,8 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 25
-        examples: [1, 25, 40]
+        default: 6
+        examples: [1, 6, 40]
         order: 5
         description: The number of worker threads to use for the sync.
       slice_step_duration:
