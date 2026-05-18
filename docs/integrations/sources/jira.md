@@ -32,7 +32,7 @@ This page contains the setup guide and reference information for the [Jira](http
 5. Select **API Token** authentication for a standard user API token, or **Service Account** authentication for an Atlassian Service Account API token.
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 7. For **API Token** authentication, enter the **Email** for the Jira account that generated the API token and enter the **API Token**.
-8. For **Service Account** authentication, enter the service account **API Token** and the **Cloud ID** for your Jira site.
+8. For **Service Account** authentication, enter the **Service Account Token** and the **Cloud ID** for your Jira site.
 9. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
 10. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 
@@ -48,7 +48,7 @@ This page contains the setup guide and reference information for the [Jira](http
 5. Select **API Token** authentication for a standard user API token, or **Service Account** authentication for an Atlassian Service Account API token.
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 7. For **API Token** authentication, enter the **Email** for the Jira account that generated the API token and enter the **API Token**.
-8. For **Service Account** authentication, enter the service account **API Token** and the **Cloud ID** for your Jira site.
+8. For **Service Account** authentication, enter the **Service Account Token** and the **Cloud ID** for your Jira site.
 9. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
 10. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 

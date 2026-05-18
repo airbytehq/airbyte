@@ -40,7 +40,7 @@ def _stream(config, stream_name):
         pytest.param(
             {
                 "auth_type": "Service Account",
-                "api_token": "token",
+                "service_account_token": "token",
                 "cloud_id": CLOUD_ID,
             },
             "application_roles",
@@ -78,7 +78,7 @@ def _stream(config, stream_name):
         pytest.param(
             {
                 "auth_type": "Service Account",
-                "api_token": "token",
+                "service_account_token": "token",
                 "cloud_id": CLOUD_ID,
             },
             "boards",

@@ -15,7 +15,7 @@ definitions:
         password: "{{ config['credentials']['api_token'] }}"
       "Service Account":
         type: BearerAuthenticator
-        api_token: "{{ config['credentials']['api_token'] }}"
+        api_token: "{{ config['credentials']['service_account_token'] }}"
       "OAuth2.0":
         type: CustomAuthenticator
         class_name: source_declarative_manifest.components.JiraOAuthAuthenticator
@@ -14728,16 +14728,16 @@ spec:
             title: Service Account
             required:
               - auth_type
-              - api_token
+              - service_account_token
               - cloud_id
             properties:
               auth_type:
                 type: string
                 const: "Service Account"
                 order: 0
-              api_token:
+              service_account_token:
                 type: string
-                title: API Token
+                title: Service Account Token
                 description: Atlassian Service Account API token. Service account API tokens authenticate with Bearer authentication and use Atlassian's Platform API Gateway.
                 airbyte_secret: true
                 order: 1
@@ -14745,7 +14745,7 @@ spec:
                 type: string
                 title: Cloud ID
                 description: Jira Cloud ID. The Cloud ID is different from your Atlassian Organization ID.
-                pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                 pattern_descriptor: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                 examples:
                   - "12345678-1234-1234-1234-123456789abc"
