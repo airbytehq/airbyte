@@ -8,10 +8,10 @@ This page contains the setup guide and reference information for the [Jira](http
 
 ## Prerequisites
 
-- API Token
+- API Token or Atlassian Service Account API token
 - Domain
 - Email
-- Cloud ID, if you're using an Atlassian Service Account API token
+- Cloud ID, if you're using Service Account authentication
 
 ## Setup guide
 
@@ -29,10 +29,10 @@ This page contains the setup guide and reference information for the [Jira](http
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Jira from the Source type dropdown.
 4. Enter a name for the Jira connector.
-5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
+5. Select **API Token** authentication for a standard user API token, or **Service Account** authentication for an Atlassian Service Account API token.
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-8. If you're using an Atlassian Service Account API token, enter the **Cloud ID** for your Jira site. Leave this field empty for standard user API tokens.
+7. For **API Token** authentication, enter the **Email** for the Jira account that generated the API token and enter the **API Token**.
+8. For **Service Account** authentication, enter the service account **API Token** and the **Cloud ID** for your Jira site.
 9. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
 10. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 
@@ -45,10 +45,10 @@ This page contains the setup guide and reference information for the [Jira](http
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Jira from the Source type dropdown.
 4. Enter a name for the Jira connector.
-5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
+5. Select **API Token** authentication for a standard user API token, or **Service Account** authentication for an Atlassian Service Account API token.
 6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-8. If you're using an Atlassian Service Account API token, enter the **Cloud ID** for your Jira site. Leave this field empty for standard user API tokens.
+7. For **API Token** authentication, enter the **Email** for the Jira account that generated the API token and enter the **API Token**.
+8. For **Service Account** authentication, enter the service account **API Token** and the **Cloud ID** for your Jira site.
 9. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
 10. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 
@@ -56,9 +56,9 @@ This page contains the setup guide and reference information for the [Jira](http
 
 ### Use Atlassian Service Account API tokens
 
-Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, keep **Authentication** set to **API Token** and also enter the **Cloud ID** for your Jira site. When **Cloud ID** is set, Airbyte routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/`.
+Atlassian Service Account API tokens must use Atlassian's Platform API Gateway. To use one in Airbyte, set **Authentication** to **Service Account** and enter the **Cloud ID** for your Jira site. Service Account authentication routes Jira requests through `https://api.atlassian.com/ex/jira/{cloudId}/` and authenticates with a Bearer token.
 
-Use the service account's email in the **Email** field and the service account API token in the **API Token** field. The token must include the Jira scopes and project permissions required for the streams you sync. The Cloud ID is different from your Atlassian Organization ID.
+The token must include the Jira scopes and project permissions required for the streams you sync. The Cloud ID is different from your Atlassian Organization ID.
 
 ## Supported sync modes
 
@@ -178,7 +178,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.2 | 2026-05-15 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add support for Atlassian Service Account API tokens with Jira Cloud ID routing |
+| 4.4.2 | 2026-05-15 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication for Atlassian Service Account API tokens |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
 | 4.4.0 | 2026-05-06 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |
 | 4.3.21 | 2026-05-04 | [77751](https://github.com/airbytehq/airbyte/pull/77751) | Add input validation for `domain` field |
