@@ -36,6 +36,9 @@ class MockPartition(Partition):
     def __hash__(self):
         return 0
 
+    def __eq__(self, other):
+        return self is other
+
 
 class MockConcurrentStream:
     name = "mock_stream"
