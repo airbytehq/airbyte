@@ -18,6 +18,11 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-pinterest
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
