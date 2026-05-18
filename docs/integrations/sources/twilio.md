@@ -8,6 +8,8 @@ Twilio HTTP requests to the REST API are protected with HTTP Basic authenticatio
 
 You can find your Account SID and Auth Token in the [Twilio Console](https://console.twilio.com/).
 
+Use credentials for the Twilio account whose resources you want to sync. Main account credentials can access main account resources and v2010 REST API resources for subaccounts. Subaccount credentials can access only that subaccount. Twilio notes that resources on product-specific subdomains, such as Studio and Conversations, must be accessed directly with credentials for the account that owns those resources.
+
 For more information, see the [Twilio API authentication documentation](https://www.twilio.com/docs/iam/api).
 
 ## Setup guide
@@ -94,6 +96,8 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 ## Performance considerations
 
 The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
+
+By default, the connector syncs with 6 concurrent threads. Increase **Number of concurrent threads** only if your Twilio account can handle the extra API traffic. If syncs are repeatedly rate limited, reduce the thread count. If high-volume incremental streams time out, use a smaller slice step duration.
 
 ### Alerts pagination limit
 
