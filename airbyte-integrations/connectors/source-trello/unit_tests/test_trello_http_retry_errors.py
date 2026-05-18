@@ -4,6 +4,7 @@ import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -51,12 +52,8 @@ def test_trello_http_500_retry_exhaustion_preserves_transient_error_message(requ
     traced_exception = exc_info.value
     assert traced_exception.failure_type == FailureType.transient_error
     assert traced_exception.message == (
-        "Exhausted available request attempts. Please see logs for more details. "
-        "Exception: Internal server error."
+        "Exhausted available request attempts. Please see logs for more details. " "Exception: Internal server error."
     )
-    assert traced_exception.internal_message == (
-        "Exhausted available request attempts. Exception: Internal server error."
-    )
+    assert traced_exception.internal_message == ("Exhausted available request attempts. Exception: Internal server error.")
     assert isinstance(traced_exception._exception, UserDefinedBackoffException)
     assert traced_exception._exception.response.status_code == 500
-
