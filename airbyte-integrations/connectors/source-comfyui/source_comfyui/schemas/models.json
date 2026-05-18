@@ -13,6 +13,10 @@
     "path": {
       "type": ["string", "null"],
       "description": "Full model path within the folder"
+    },
+    "pathIndex": {
+      "type": ["integer", "null"],
+      "description": "Index of the path in the folder's path list"
     }
   }
 }

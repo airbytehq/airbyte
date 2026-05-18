@@ -366,23 +366,27 @@ class TestModelsStream:
     def test_path_with_slice(self, stream_kwargs):
         stream = ModelsStream(**stream_kwargs)
         path = stream.path(stream_slice={"folder": "checkpoints"})
-        assert path == "/api/models/checkpoints"
+        assert path == "/api/experiment/models/checkpoints"
 
     def test_path_without_slice(self, stream_kwargs):
         stream = ModelsStream(**stream_kwargs)
         path = stream.path(stream_slice=None)
-        assert path == "/api/models/"
+        assert path == "/api/experiment/models/"
 
     def test_primary_key(self, stream_kwargs):
         stream = ModelsStream(**stream_kwargs)
         assert stream.primary_key == ["folder", "name"]
 
     def test_stream_slices(self, stream_kwargs):
-        """stream_slices fetches folder names from GET /api/models."""
+        """stream_slices fetches folder names from GET /api/experiment/models."""
         stream = ModelsStream(**stream_kwargs)
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = ["checkpoints", "loras", "vae"]
+        mock_response.json.return_value = [
+            {"name": "checkpoints", "folders": ["checkpoints"]},
+            {"name": "loras", "folders": ["loras"]},
+            {"name": "vae", "folders": ["vae"]},
+        ]
         mock_response.raise_for_status = MagicMock()
 
         with patch("source_comfyui.streams.requests.get", return_value=mock_response):

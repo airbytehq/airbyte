@@ -45,6 +45,14 @@
       "type": ["string", "null"],
       "description": "Job UUID that generated this asset"
     },
+    "job_id": {
+      "type": ["string", "null"],
+      "description": "Job UUID associated with this asset"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "description": "System-level metadata"
+    },
     "created_at": {
       "type": "string",
       "format": "date-time",
@@ -54,11 +62,6 @@
       "type": ["string", "null"],
       "format": "date-time",
       "description": "Last update timestamp (ISO 8601)"
-    },
-    "last_access_time": {
-      "type": ["string", "null"],
-      "format": "date-time",
-      "description": "Last access timestamp (ISO 8601)"
     },
     "is_immutable": {
       "type": ["boolean", "null"],

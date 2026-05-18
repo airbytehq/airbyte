@@ -307,8 +307,8 @@ class AssetsStream(ComfyUIIncrementalStream):
 class ModelsStream(ComfyUIStream):
     """Fetches available models by first listing folders, then models within each.
 
-    Stage 1: GET /api/models → list of folder names
-    Stage 2: GET /api/models/{folder} → models in that folder
+    Stage 1: GET /api/experiment/models → list of {name, folders} objects
+    Stage 2: GET /api/experiment/models/{folder} → models in that folder
     """
 
     primary_key = ["folder", "name"]
@@ -321,7 +321,7 @@ class ModelsStream(ComfyUIStream):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         folder = (stream_slice or {}).get("folder", "")
-        return f"/api/models/{folder}"
+        return f"/api/experiment/models/{folder}"
 
     def stream_slices(
         self,
@@ -330,18 +330,18 @@ class ModelsStream(ComfyUIStream):
         cursor_field: Optional[list[str]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # Fetch the list of model folders first.
-        url = f"{self._base_url}/api/models"
+        url = f"{self._base_url}/api/experiment/models"
         headers = {"X-API-Key": self.api_key}
         try:
             resp = requests.get(url, headers=headers, timeout=30)
             resp.raise_for_status()
-            folders = resp.json()
-            if isinstance(folders, list):
-                for folder in folders:
+            entries = resp.json()
+            if isinstance(entries, list):
+                for entry in entries:
+                    folder = entry["name"] if isinstance(entry, dict) else entry
                     yield {"folder": folder}
             else:
-                logger.warning("Unexpected /api/models response type: %s", type(folders))
+                logger.warning("Unexpected /api/experiment/models response type: %s", type(entries))
         except requests.RequestException as exc:
             raise RuntimeError(f"Failed to fetch model folders from {url}: {exc}") from exc
 
