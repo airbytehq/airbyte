@@ -34,7 +34,9 @@ def test_check_connection_success(source, config):
     }
     mock_response.raise_for_status = MagicMock()
 
-    with patch("source_comfyui.source.requests.get", return_value=mock_response) as mock_get:
+    with patch(
+        "source_comfyui.source.requests.get", return_value=mock_response
+    ) as mock_get:
         ok, error = source.check_connection(None, config)
 
         assert ok is True
@@ -106,7 +108,9 @@ def test_check_connection_strips_trailing_slash(source):
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
 
-    with patch("source_comfyui.source.requests.get", return_value=mock_response) as mock_get:
+    with patch(
+        "source_comfyui.source.requests.get", return_value=mock_response
+    ) as mock_get:
         source.check_connection(None, config)
 
         called_url = mock_get.call_args[0][0]

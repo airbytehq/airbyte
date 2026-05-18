@@ -13,7 +13,6 @@ from source_comfyui.streams import (
     SystemStatsStream,
 )
 
-
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
 
@@ -61,13 +60,15 @@ class TestJobsStream:
 
     def test_parse_response(self, stream_kwargs):
         stream = JobsStream(**stream_kwargs)
-        response = _mock_response({
-            "jobs": [
-                {"id": "abc", "status": "completed", "create_time": 1700000000},
-                {"id": "def", "status": "running", "create_time": 1700000100},
-            ],
-            "pagination": {"has_more": False},
-        })
+        response = _mock_response(
+            {
+                "jobs": [
+                    {"id": "abc", "status": "completed", "create_time": 1700000000},
+                    {"id": "def", "status": "running", "create_time": 1700000100},
+                ],
+                "pagination": {"has_more": False},
+            }
+        )
 
         records = list(stream.parse_response(response))
 
@@ -86,10 +87,12 @@ class TestJobsStream:
 
     def test_next_page_token_has_more(self, stream_kwargs):
         stream = JobsStream(**stream_kwargs)
-        response = _mock_response({
-            "jobs": [{"id": "a"}],
-            "pagination": {"has_more": True, "offset": 0, "limit": 100},
-        })
+        response = _mock_response(
+            {
+                "jobs": [{"id": "a"}],
+                "pagination": {"has_more": True, "offset": 0, "limit": 100},
+            }
+        )
 
         token = stream.next_page_token(response)
 
@@ -98,20 +101,24 @@ class TestJobsStream:
     def test_next_page_token_has_more_mid_page(self, stream_kwargs):
         """Offset advances from a non-zero starting point."""
         stream = JobsStream(**stream_kwargs)
-        response = _mock_response({
-            "jobs": [{"id": "b"}],
-            "pagination": {"has_more": True, "offset": 200, "limit": 100},
-        })
+        response = _mock_response(
+            {
+                "jobs": [{"id": "b"}],
+                "pagination": {"has_more": True, "offset": 200, "limit": 100},
+            }
+        )
 
         token = stream.next_page_token(response)
         assert token == {"offset": 300}
 
     def test_next_page_token_no_more(self, stream_kwargs):
         stream = JobsStream(**stream_kwargs)
-        response = _mock_response({
-            "jobs": [],
-            "pagination": {"has_more": False, "offset": 0, "limit": 100},
-        })
+        response = _mock_response(
+            {
+                "jobs": [],
+                "pagination": {"has_more": False, "offset": 0, "limit": 100},
+            }
+        )
 
         token = stream.next_page_token(response)
         assert token is None
@@ -160,13 +167,23 @@ class TestAssetsStream:
 
     def test_parse_response(self, stream_kwargs):
         stream = AssetsStream(**stream_kwargs)
-        response = _mock_response({
-            "assets": [
-                {"id": "asset-1", "url": "https://cdn.example.com/a.png", "created_at": "2024-01-01T00:00:00Z"},
-                {"id": "asset-2", "url": "https://cdn.example.com/b.png", "created_at": "2024-01-02T00:00:00Z"},
-            ],
-            "has_more": False,
-        })
+        response = _mock_response(
+            {
+                "assets": [
+                    {
+                        "id": "asset-1",
+                        "url": "https://cdn.example.com/a.png",
+                        "created_at": "2024-01-01T00:00:00Z",
+                    },
+                    {
+                        "id": "asset-2",
+                        "url": "https://cdn.example.com/b.png",
+                        "created_at": "2024-01-02T00:00:00Z",
+                    },
+                ],
+                "has_more": False,
+            }
+        )
 
         records = list(stream.parse_response(response))
 
@@ -183,24 +200,28 @@ class TestAssetsStream:
 
     def test_pagination_has_more(self, stream_kwargs):
         stream = AssetsStream(**stream_kwargs)
-        response = _mock_response({
-            "assets": [{"id": "a"}],
-            "has_more": True,
-            "offset": 0,
-            "limit": 100,
-        })
+        response = _mock_response(
+            {
+                "assets": [{"id": "a"}],
+                "has_more": True,
+                "offset": 0,
+                "limit": 100,
+            }
+        )
 
         token = stream.next_page_token(response)
         assert token == {"offset": 100}
 
     def test_pagination_no_more(self, stream_kwargs):
         stream = AssetsStream(**stream_kwargs)
-        response = _mock_response({
-            "assets": [],
-            "has_more": False,
-            "offset": 0,
-            "limit": 100,
-        })
+        response = _mock_response(
+            {
+                "assets": [],
+                "has_more": False,
+                "offset": 0,
+                "limit": 100,
+            }
+        )
 
         token = stream.next_page_token(response)
         assert token is None
@@ -243,18 +264,20 @@ class TestNodesStream:
 
     def test_parse_response(self, stream_kwargs):
         stream = NodesStream(**stream_kwargs)
-        response = _mock_response({
-            "KSampler": {
-                "input": {"required": {"seed": ["INT"]}},
-                "output": ["LATENT"],
-                "category": "sampling",
-            },
-            "CLIPTextEncode": {
-                "input": {"required": {"text": ["STRING"]}},
-                "output": ["CONDITIONING"],
-                "category": "conditioning",
-            },
-        })
+        response = _mock_response(
+            {
+                "KSampler": {
+                    "input": {"required": {"seed": ["INT"]}},
+                    "output": ["LATENT"],
+                    "category": "sampling",
+                },
+                "CLIPTextEncode": {
+                    "input": {"required": {"text": ["STRING"]}},
+                    "output": ["CONDITIONING"],
+                    "category": "conditioning",
+                },
+            }
+        )
 
         records = list(stream.parse_response(response))
 
@@ -269,9 +292,11 @@ class TestNodesStream:
     def test_parse_response_non_dict_node_info(self, stream_kwargs):
         """When a node's info is not a dict, it gets wrapped in a 'data' field."""
         stream = NodesStream(**stream_kwargs)
-        response = _mock_response({
-            "SimpleNode": "just-a-string",
-        })
+        response = _mock_response(
+            {
+                "SimpleNode": "just-a-string",
+            }
+        )
 
         records = list(stream.parse_response(response))
 
@@ -376,6 +401,7 @@ class TestModelsStream:
         stream = ModelsStream(**stream_kwargs)
 
         import requests as req
+
         with patch(
             "source_comfyui.streams.requests.get",
             side_effect=req.exceptions.ConnectionError("fail"),
@@ -389,10 +415,12 @@ class TestModelsStream:
         stream = ModelsStream(**stream_kwargs)
         response = _mock_response(["model_v1.safetensors", "model_v2.safetensors"])
 
-        records = list(stream.parse_response(
-            response,
-            stream_slice={"folder": "checkpoints"},
-        ))
+        records = list(
+            stream.parse_response(
+                response,
+                stream_slice={"folder": "checkpoints"},
+            )
+        )
 
         assert len(records) == 2
         assert records[0] == {"folder": "checkpoints", "name": "model_v1.safetensors"}
@@ -401,17 +429,21 @@ class TestModelsStream:
     def test_parse_response_dict_models(self, stream_kwargs):
         """When models are returned as dicts with metadata."""
         stream = ModelsStream(**stream_kwargs)
-        response = _mock_response({
-            "models": [
-                {"name": "sd_xl.safetensors", "size": 6938000000},
-                {"name": "sd_15.safetensors", "size": 4270000000},
-            ],
-        })
+        response = _mock_response(
+            {
+                "models": [
+                    {"name": "sd_xl.safetensors", "size": 6938000000},
+                    {"name": "sd_15.safetensors", "size": 4270000000},
+                ],
+            }
+        )
 
-        records = list(stream.parse_response(
-            response,
-            stream_slice={"folder": "checkpoints"},
-        ))
+        records = list(
+            stream.parse_response(
+                response,
+                stream_slice={"folder": "checkpoints"},
+            )
+        )
 
         assert len(records) == 2
         assert records[0]["folder"] == "checkpoints"
