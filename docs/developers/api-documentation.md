@@ -7,10 +7,7 @@ import TabItem from "@theme/TabItem";
 
 # API documentation
 
-Use the Airbyte API to programmatically interact with Airbyte. You can extend it to:
-
-- Control Airbyte in conjunction with orchestration tools like Airflow
-- Use [Airbyte Embedded](https://airbyte.com/ai)
+Use the Airbyte API to programmatically interact with Airbyte. For example, you can control Airbyte in conjunction with orchestration tools like Airflow.
 
 This article shows you how to get an access token and make your first request, and it provides strategies to manage token expiry.
 

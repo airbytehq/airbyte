@@ -129,16 +129,12 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 ### SSL Modes
 
-Airbyte Cloud uses `required` SSL mode by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
-
 Here is a breakdown of available SSL connection modes:
 
-- `required` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
-- `preferred` to allow unencrypted communication only when the source doesn't support encryption
-- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate
-- `verify_identity` to always require encryption and verify the identity of the source
-- `disabled` to disable encrypted communication between Airbyte and the source
-- `allow` to enable encrypted communication only when required by the source
+- `preferred` to allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud, this mode requires an SSH tunnel.
+- `required` to always require encryption. The connection fails if the source doesn't support encryption. This is the default.
+- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate.
+- `verify_identity` to always require encryption and verify the identity of the source.
 
 </FieldAnchor>
 
@@ -230,6 +226,10 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                                                                          | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.52.2      | 2026-05-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)                                                  | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                    |
+| 3.52.1      | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787)                                              | Make the hidden additional properties fields in spec optional. No functional change.                                                            |
+| 3.52.0      | 2026-05-05 | [77772](https://github.com/airbytehq/airbyte/pull/77772)                                              | Add a `treat_tinyint1_as_integer` connector setting that maps TINYINT(1) columns to integers in both snapshot and CDC reads (default unchanged).|
+| 3.51.6      | 2025-04-02 | [76050](https://github.com/airbytehq/airbyte/pull/76050)                                              | Handle sentinel values in GUID primary key columns during partition splitting.                                                                  |
 | 3.51.5      | 2025-11-14 | [69228](https://github.com/airbytehq/airbyte/pull/69228)                                              | Add table filtering                                                                                                                             |
 | 3.51.4      | 2025-11-12 | [69284](https://github.com/airbytehq/airbyte/pull/69284)                                              | Improve CDC shutdown to prevent loss of records in high velocity tables                                                                         |
 | 3.51.3      | 2025-11-05 | [69177](https://github.com/airbytehq/airbyte/pull/69177)                                              | Fix a bug in CDC snapshot queries leading to omission of the first record in some cases.                                                        |

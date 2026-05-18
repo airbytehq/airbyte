@@ -119,6 +119,16 @@ spec:
         description: Space-delimited list of projects. e.g. airbyte.io/documentation
           meltano/tap-gitlab.
         order: 4
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: Number of concurrent threads for syncing. Higher values can speed
+          up syncs but may hit rate limits. Adjust based on your GitLab instance
+          rate limits.
+        default: 8
+        minimum: 2
+        maximum: 25
+        order: 5
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -870,7 +880,74 @@ definitions:
       schema:
         $ref: "#/schemas/pipelines"
 
+# Rate limits:
+# https://docs.gitlab.com/ee/user/gitlab_com/#rate-limits-on-gitlabcom
+# https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/
+# https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/
+#
+# GitLab.com per-endpoint rate limits (per user, per minute):
+#   GET /groups                          — 200/min
+#   GET /groups/:id                      — 400/min
+#   GET /groups/:id/projects             — 600/min
+#   GET /projects/:id                    — 400/min
+#   GET /projects/:id/members/all        — 200/min
+#   GET /groups/:id/members/all          — 200/min
+#   All other authenticated API traffic  — 2,000/min
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Members endpoints: 200 requests/min (most restrictive)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 200
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "/members"
+    # GET /groups (list) and /descendant_groups: 200 requests/min
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 200
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^groups$"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 200
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "/descendant_groups$"
+    # GET /groups/:id and GET /projects/:id: 400 requests/min
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 400
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^groups/[^/]+$"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 400
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^projects/[^/]+$"
+    # Catch-all: 2,000 requests/min for all other authenticated API traffic
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2000
+          interval: PT1M
+      matchers: []
+  ratelimit_reset_header: "RateLimit-Reset"
+  ratelimit_remaining_header: "RateLimit-Remaining"
+  status_codes_for_ratelimit_hit: [429]
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 8) }}"
+  max_concurrency: 25
 
 streams:
   # Groups-based streams

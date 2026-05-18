@@ -110,7 +110,7 @@ def test_chunk_date_range():
 
 def test_streams_count(config):
     streams = get_source(config).streams(config)
-    expected_streams_number = 30
+    expected_streams_number = 31
     assert len(streams) == expected_streams_number
 
 

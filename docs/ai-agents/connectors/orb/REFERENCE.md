@@ -8,10 +8,10 @@ The Orb connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Get](#customers-get), [Search](#customers-search) |
-| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Search](#subscriptions-search) |
-| Plans | [List](#plans-list), [Get](#plans-get), [Search](#plans-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [Search](#invoices-search) |
+| Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search) |
+| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Context Store Search](#subscriptions-context-store-search) |
+| Plans | [List](#plans-list), [Get](#plans-get), [Context Store Search](#plans-context-store-search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Context Store Search](#invoices-context-store-search) |
 
 ## Customers
 
@@ -139,14 +139,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Customers Search
+### Customers Context Store Search
 
 Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.customers.search(
+await orb.customers.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -159,7 +159,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -191,10 +191,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `timezone` | `string` | The timezone setting of the customer |
 | `shipping_address` | `object` | The shipping address of the customer |
 | `billing_address` | `object` | The billing address of the customer |
-| `balance` | `string` | The current balance of the customer |
-| `currency` | `string` | The currency of the customer |
-| `auto_collection` | `boolean` | Whether auto collection is enabled |
-| `metadata` | `object` | Additional metadata for the customer |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -216,10 +212,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].timezone` | `string` | The timezone setting of the customer |
 | `data[].shipping_address` | `object` | The shipping address of the customer |
 | `data[].billing_address` | `object` | The billing address of the customer |
-| `data[].balance` | `string` | The current balance of the customer |
-| `data[].currency` | `string` | The currency of the customer |
-| `data[].auto_collection` | `boolean` | Whether auto collection is enabled |
-| `data[].metadata` | `object` | Additional metadata for the customer |
 
 </details>
 
@@ -358,14 +350,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Subscriptions Search
+### Subscriptions Context Store Search
 
 Search and filter subscriptions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.subscriptions.search(
+await orb.subscriptions.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -378,7 +370,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscriptions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -405,13 +397,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `start_date` | `string` | The date and time when the subscription starts |
 | `end_date` | `string` | The date and time when the subscription ends |
 | `status` | `string` | The current status of the subscription |
-| `customer` | `object` | The customer associated with the subscription |
-| `plan` | `object` | The plan associated with the subscription |
-| `current_billing_period_start_date` | `string` | The start date of the current billing period |
-| `current_billing_period_end_date` | `string` | The end date of the current billing period |
-| `auto_collection` | `boolean` | Whether auto collection is enabled |
-| `net_terms` | `integer` | The net terms for the subscription |
-| `metadata` | `object` | Additional metadata for the subscription |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -428,13 +413,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].start_date` | `string` | The date and time when the subscription starts |
 | `data[].end_date` | `string` | The date and time when the subscription ends |
 | `data[].status` | `string` | The current status of the subscription |
-| `data[].customer` | `object` | The customer associated with the subscription |
-| `data[].plan` | `object` | The plan associated with the subscription |
-| `data[].current_billing_period_start_date` | `string` | The start date of the current billing period |
-| `data[].current_billing_period_end_date` | `string` | The end date of the current billing period |
-| `data[].auto_collection` | `boolean` | Whether auto collection is enabled |
-| `data[].net_terms` | `integer` | The net terms for the subscription |
-| `data[].metadata` | `object` | Additional metadata for the subscription |
 
 </details>
 
@@ -570,14 +548,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Plans Search
+### Plans Context Store Search
 
 Search and filter plans records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.plans.search(
+await orb.plans.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -590,7 +568,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "plans",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -616,12 +594,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `string` | The date and time when the plan was created |
 | `name` | `string` | The name of the plan |
 | `description` | `string` | A description of the plan |
-| `status` | `string` | The status of the plan |
-| `currency` | `string` | The currency of the plan |
 | `prices` | `array` | The pricing options for the plan |
 | `product` | `object` | The product associated with the plan |
-| `external_plan_id` | `string` | The external plan ID |
-| `metadata` | `object` | Additional metadata for the plan |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -637,12 +611,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].created_at` | `string` | The date and time when the plan was created |
 | `data[].name` | `string` | The name of the plan |
 | `data[].description` | `string` | A description of the plan |
-| `data[].status` | `string` | The status of the plan |
-| `data[].currency` | `string` | The currency of the plan |
 | `data[].prices` | `array` | The pricing options for the plan |
 | `data[].product` | `object` | The product associated with the plan |
-| `data[].external_plan_id` | `string` | The external plan ID |
-| `data[].metadata` | `object` | Additional metadata for the plan |
 
 </details>
 
@@ -818,14 +788,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoices Search
+### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await orb.invoices.search(
+await orb.invoices.context_store_search(
     query={"filter": {"eq": {"id": "<str>"}}}
 )
 ```
@@ -838,7 +808,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": "<str>"}}}
     }
@@ -875,10 +845,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `hosted_invoice_url` | `string` | The URL to view the hosted invoice |
 | `line_items` | `array` | The line items on the invoice |
 | `subscription` | `object` | The subscription associated with the invoice |
-| `customer` | `object` | The customer associated with the invoice |
-| `currency` | `string` | The currency of the invoice |
-| `invoice_number` | `string` | The invoice number |
-| `metadata` | `object` | Additional metadata for the invoice |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -905,10 +871,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].hosted_invoice_url` | `string` | The URL to view the hosted invoice |
 | `data[].line_items` | `array` | The line items on the invoice |
 | `data[].subscription` | `object` | The subscription associated with the invoice |
-| `data[].customer` | `object` | The customer associated with the invoice |
-| `data[].currency` | `string` | The currency of the invoice |
-| `data[].invoice_number` | `string` | The invoice number |
-| `data[].metadata` | `object` | Additional metadata for the invoice |
 
 </details>
 

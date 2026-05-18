@@ -286,18 +286,10 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    action: RETRY
+                    action: RATE_LIMITED
                     http_codes:
                       - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
+                    error_message: Rate limit exceeded for LinkedIn API.
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
@@ -1642,7 +1634,7 @@ dynamic_streams:
           - ad_analytics_reports
       components_mapping:
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
+          field_path: ["name"]
           value: "custom_{{components_values['name']}}"
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "request_parameters", "pivot"]
@@ -1840,6 +1832,31 @@ spec:
       - auth_method
     predicate_value: oAuth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "r_marketing_leadgen_automation"
+          - scope: "r_ads_reporting"
+          - scope: "r_liteprofile"
+          - scope: "r_organization_social"
+          - scope: "r_ads"
+          - scope: "r_emailaddress"
+          - scope: "r_basicprofile"
+          - scope: "r_events"
+          - scope: "r_organization_admin"
+          - scope: "r_ads_leadgen_automation"
+          - scope: "r_1st_connections_size"
+        consent_url: "https://www.linkedin.com/oauth/v2/authorization?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
+        access_token_url: "https://www.linkedin.com/oauth/v2/accessToken"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         properties:

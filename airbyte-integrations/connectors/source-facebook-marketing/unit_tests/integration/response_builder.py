@@ -21,8 +21,8 @@ def build_response(
     return HttpResponse(body=json.dumps(body), status_code=status_code.value, headers=headers)
 
 
-def get_account_response(account_id: Optional[str] = ACCOUNT_ID) -> HttpResponse:
-    response = {"account_id": account_id, "id": f"act_{account_id}"}
+def get_account_response(account_id: Optional[str] = ACCOUNT_ID, timezone_name: str = "Etc/UTC") -> HttpResponse:
+    response = {"account_id": account_id, "id": f"act_{account_id}", "timezone_name": timezone_name}
     return build_response(body=response, status_code=HTTPStatus.OK)
 
 
