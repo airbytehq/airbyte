@@ -1,6 +1,9 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Setup for the source-comfyui Airbyte connector."""
 
 from setuptools import find_packages, setup
+
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk>=0.80.0",

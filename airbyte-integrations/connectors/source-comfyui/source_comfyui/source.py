@@ -1,9 +1,12 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """ComfyUI Cloud source connector."""
 
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -16,6 +19,7 @@ from .streams import (
     SystemStatsStream,
 )
 
+
 logger = logging.getLogger("airbyte")
 
 DEFAULT_BASE_URL = "https://cloud.comfy.org"
@@ -24,9 +28,7 @@ DEFAULT_BASE_URL = "https://cloud.comfy.org"
 class SourceComfyUI(AbstractSource):
     """Airbyte source connector for the ComfyUI Cloud API."""
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Validate the connection by hitting the system_stats endpoint."""
         base_url = config.get("base_url", DEFAULT_BASE_URL).rstrip("/")
         api_key = config["api_key"]

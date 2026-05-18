@@ -1,9 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Unit tests for ComfyUI Cloud stream implementations."""
 
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from source_comfyui.streams import (
     AssetsStream,
     JobDetailsStream,
@@ -12,6 +13,7 @@ from source_comfyui.streams import (
     NodesStream,
     SystemStatsStream,
 )
+
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -45,7 +47,6 @@ def _mock_response(json_data, status_code=200):
 
 
 class TestJobsStream:
-
     def test_path(self, stream_kwargs):
         stream = JobsStream(**stream_kwargs)
         assert stream.path() == "/api/jobs"
@@ -152,7 +153,6 @@ class TestJobsStream:
 
 
 class TestAssetsStream:
-
     def test_path(self, stream_kwargs):
         stream = AssetsStream(**stream_kwargs)
         assert stream.path() == "/api/assets"
@@ -253,7 +253,6 @@ class TestAssetsStream:
 
 
 class TestNodesStream:
-
     def test_path(self, stream_kwargs):
         stream = NodesStream(**stream_kwargs)
         assert stream.path() == "/api/object_info"
@@ -323,7 +322,6 @@ class TestNodesStream:
 
 
 class TestSystemStatsStream:
-
     def test_path(self, stream_kwargs):
         stream = SystemStatsStream(**stream_kwargs)
         assert stream.path() == "/api/system_stats"
@@ -364,7 +362,6 @@ class TestSystemStatsStream:
 
 
 class TestModelsStream:
-
     def test_path_with_slice(self, stream_kwargs):
         stream = ModelsStream(**stream_kwargs)
         path = stream.path(stream_slice={"folder": "checkpoints"})
@@ -462,7 +459,6 @@ class TestModelsStream:
 
 
 class TestJobDetailsStream:
-
     @pytest.fixture
     def parent_stream(self, stream_kwargs):
         return JobsStream(**stream_kwargs)

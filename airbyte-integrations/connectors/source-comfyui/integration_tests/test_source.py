@@ -1,10 +1,11 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Integration tests require a real ComfyUI Cloud API key.
 Set up secrets/config.json with your API key before running."""
 
 import json
 
 import pytest
-
 from source_comfyui.source import SourceComfyUI
 
 

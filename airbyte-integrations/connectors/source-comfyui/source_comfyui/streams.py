@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Stream implementations for the ComfyUI Cloud Airbyte source connector."""
 
 from __future__ import annotations
@@ -7,7 +9,9 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
+
 
 logger = logging.getLogger("airbyte")
 
@@ -121,6 +125,7 @@ class ComfyUIIncrementalStream(ComfyUIStream, ABC):
 # Stream 1: Jobs (incremental, paginated)
 # ---------------------------------------------------------------------------
 
+
 class JobsStream(ComfyUIIncrementalStream):
     """Fetches generation jobs from GET /api/jobs with offset/limit pagination."""
 
@@ -176,6 +181,7 @@ class JobsStream(ComfyUIIncrementalStream):
 # ---------------------------------------------------------------------------
 # Stream 2: Job Details (incremental, sub-resource of Jobs)
 # ---------------------------------------------------------------------------
+
 
 class JobDetailsStream(ComfyUIIncrementalStream):
     """Fetches full details for each job via GET /api/jobs/{job_id}.
@@ -243,6 +249,7 @@ class JobDetailsStream(ComfyUIIncrementalStream):
 # Stream 3: Assets (incremental, paginated)
 # ---------------------------------------------------------------------------
 
+
 class AssetsStream(ComfyUIIncrementalStream):
     """Fetches user assets from GET /api/assets with offset/limit pagination."""
 
@@ -297,6 +304,7 @@ class AssetsStream(ComfyUIIncrementalStream):
 # ---------------------------------------------------------------------------
 # Stream 4: Models (full refresh, two-stage: folders then models)
 # ---------------------------------------------------------------------------
+
 
 class ModelsStream(ComfyUIStream):
     """Fetches available models by first listing folders, then models within each.
@@ -363,6 +371,7 @@ class ModelsStream(ComfyUIStream):
 # Stream 5: Nodes (full refresh)
 # ---------------------------------------------------------------------------
 
+
 class NodesStream(ComfyUIStream):
     """Fetches the node type catalog from GET /api/object_info.
 
@@ -402,6 +411,7 @@ class NodesStream(ComfyUIStream):
 # ---------------------------------------------------------------------------
 # Stream 6: System Stats (full refresh, singleton)
 # ---------------------------------------------------------------------------
+
 
 class SystemStatsStream(ComfyUIStream):
     """Fetches system information from GET /api/system_stats.
