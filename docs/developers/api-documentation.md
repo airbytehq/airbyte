@@ -222,7 +222,7 @@ curl --request GET \
 
 ## Use external secret references
 
-If your organization uses an external secret manager (such as AWS Secrets Manager, Google Secret Manager, or Azure Key Vault), you can pass secret references instead of raw credentials when creating or updating connectors via the API. Use the `secret_coordinate::` prefix on any secret field to store an external reference rather than the plaintext value. For setup instructions and examples, see [External Secret Management](/platform/enterprise-flex/external-secrets#external-secret-references).
+If your organization uses an external secret manager (such as AWS Secrets Manager, Google Secret Manager, or Azure Key Vault), you can pass secret references instead of raw credentials when creating or updating connectors via the API. Use the `secret_coordinate::` prefix on any secret field to store an external reference rather than the plain text value. For example, for an AWS Secrets Manager secret named `production/database/password`, pass `secret_coordinate::production/database/password`. For setup instructions and examples, see [External Secret Management](/platform/operating-airbyte/external-secrets#external-secret-references).
 
 ## Handle access token expiry in your requests
 

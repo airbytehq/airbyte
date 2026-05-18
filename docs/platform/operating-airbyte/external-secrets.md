@@ -203,32 +203,47 @@ Configuration format will be provided by your Airbyte representative.
 </TabItem>
 </Tabs>
 
+In the Airbyte API, these secret storage configuration endpoints use the internal configuration API path, such as `POST /v1/secret_storage/create`, `POST /v1/secret_storage/list`, `POST /v1/secret_storage/get`, `POST /v1/secret_storage/delete`, and `POST /v1/secret_storage/migrate`.
+
 ---
 
 ## Using External Secret References in Connector Configurations {#external-secret-references}
 
-Once your secret storage is configured, you can reference secrets stored in your external secret manager when creating or updating connectors via the API or Terraform. Instead of passing a raw secret value, use the `secret_coordinate::` prefix followed by the name of the secret in your configured secret manager.
+Once your secret storage is configured, you can reference secrets stored in your external secret manager when creating or updating connectors via the API or Terraform. Instead of passing a raw secret value, use the `secret_coordinate::` prefix followed by the key or path of the secret in your configured secret manager.
 
 This is useful when:
 
-- You manage secrets externally (e.g. via Terraform, CI/CD pipelines, or a secrets team) and want Airbyte connectors to reference them without Airbyte ever seeing the plaintext value.
+- You manage secrets externally (for example, via Terraform, CI/CD pipelines, or a secrets team) and want Airbyte connectors to reference them without Airbyte ever seeing the plain text value.
 - You want to rotate secrets in your secret manager without updating Airbyte connector configurations.
 - Compliance requirements prevent you from sending secret values through the Airbyte API.
 
 ### How It Works
 
-Any field in a connector spec marked `airbyte_secret: true` can accept a value prefixed with `secret_coordinate::`. When Airbyte sees this prefix, it stores an external reference to the secret in your configured secret manager rather than writing the value to Airbyte's own secret persistence.
+Any field in a connector spec marked `airbyte_secret: true` can accept a value prefixed with `secret_coordinate::`. When Airbyte sees this prefix, it strips the prefix and stores the remaining text as an external reference to the secret in your configured secret manager rather than writing the value to Airbyte's own secret persistence.
 
 At runtime, Airbyte resolves the reference by reading the secret value from your configured secret manager.
 
 ### Supported APIs
 
-External secret references work with all source and destination create and update endpoints:
+External secret references work with source and destination create and update endpoints.
 
-- **Create Source** (`POST /v1/sources`)
-- **Update Source** (`PUT /v1/sources/{sourceId}`)
-- **Create Destination** (`POST /v1/destinations`)
-- **Update Destination** (`PUT /v1/destinations/{destinationId}`)
+For the public API, use the `configuration` field:
+
+- **Create Source** (`POST /public/v1/sources`)
+- **Update Source** (`PUT /public/v1/sources/{sourceId}`)
+- **Patch Source** (`PATCH /public/v1/sources/{sourceId}`)
+- **Create Destination** (`POST /public/v1/destinations`)
+- **Update Destination** (`PUT /public/v1/destinations/{destinationId}`)
+- **Patch Destination** (`PATCH /public/v1/destinations/{destinationId}`)
+
+For the internal configuration API, use the `connectionConfiguration` field:
+
+- **Create Source** (`POST /v1/sources/create`)
+- **Update Source** (`POST /v1/sources/update`)
+- **Partial Update Source** (`POST /v1/sources/partial_update`)
+- **Create Destination** (`POST /v1/destinations/create`)
+- **Update Destination** (`POST /v1/destinations/update`)
+- **Partial Update Destination** (`POST /v1/destinations/partial_update`)
 
 ### API Example
 
@@ -246,12 +261,12 @@ curl --request POST \
       "port": 5432,
       "database": "mydb",
       "username": "airbyte_user",
-      "password": "secret_coordinate::my-pg-password"
+      "password": "secret_coordinate::production/database/password"
     }
   }'
 ```
 
-In this example, `password` is an `airbyte_secret` field. Instead of providing the actual password, you pass `secret_coordinate::my-pg-password`, and Airbyte resolves it from your configured secret manager.
+In this example, `password` is an `airbyte_secret` field. Instead of providing the actual password, you pass `secret_coordinate::production/database/password`, and Airbyte resolves it from your configured secret manager. For AWS Secrets Manager, `production/database/password` is an example path-style secret name; Airbyte uses the text after `secret_coordinate::` as the AWS Secrets Manager `SecretId`.
 
 ### Terraform Example
 
@@ -268,18 +283,26 @@ resource "airbyte_source" "postgres" {
     port     = 5432
     database = "mydb"
     username = "airbyte_user"
-    password = "secret_coordinate::my-pg-password"
+    password = "secret_coordinate::production/database/password"
   })
 }
 ```
 
 :::tip
-You can also read back the stored secret coordinates (rather than `***` placeholders) by setting `include_secret_coordinates = true` on the `airbyte_source` or `airbyte_destination` data sources.
+Secret fields are masked by default when you read a source or destination. To read back stored secret coordinates instead, pass `includeSecretCoordinates=true` to the supported API read endpoints or set `include_secret_coordinates = true` on the `airbyte_source` or `airbyte_destination` Terraform data sources.
 :::
+
+Supported API read endpoints for returning coordinates:
+
+- **Internal source read** (`POST /v1/sources/get_with_metadata`) with `includeSecretCoordinates: true` in the request body
+- **Public source read** (`GET /public/v1/sources/{sourceId}?includeSecretCoordinates=true`)
+- **Public destination read** (`GET /public/v1/destinations/{destinationId}?includeSecretCoordinates=true`)
+
+The internal `POST /v1/sources/get` and `POST /v1/destinations/get` endpoints always mask secrets. Airbyte doesn't provide an internal `POST /v1/destinations/get_with_metadata` endpoint.
 
 ### Limitations
 
-- The secret name you pass after the `secret_coordinate::` prefix must match the name of a secret that exists (or will exist) in the secret manager configured for your workspace or organization.
+- The secret coordinate you pass after the `secret_coordinate::` prefix must match the key, path, or name of a secret that exists (or will exist) in the secret manager configured for your workspace or organization.
 - If no custom secret storage is configured for your workspace/organization, the `secret_coordinate::` prefix will not resolve correctly at runtime.
 
 ---
