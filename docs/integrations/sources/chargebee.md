@@ -107,6 +107,7 @@ Some streams are only available on a specific Product Catalog version. If you at
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.35 | 2026-04-28 | [77207](https://github.com/airbytehq/airbyte/pull/77207) | Update dependencies |
 | 0.10.34 | 2026-04-21 | [75795](https://github.com/airbytehq/airbyte/pull/75795) | Update dependencies |
 | 0.10.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 0.10.32 | 2026-03-25 | [75476](https://github.com/airbytehq/airbyte/pull/75476) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |

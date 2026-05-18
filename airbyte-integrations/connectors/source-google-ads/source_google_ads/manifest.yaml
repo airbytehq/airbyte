@@ -50,7 +50,7 @@ definitions:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
-        action: FAIL
+        action: RETRY
         http_codes:
           - 500
         error_message: >-
