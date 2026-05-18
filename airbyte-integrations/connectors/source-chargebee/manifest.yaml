@@ -2076,11 +2076,11 @@ spec:
         title: Number of Concurrent Workers
         minimum: 2
         maximum: 50
-        default: 4
-        examples: [2, 4, 10]
+        default: 5
+        examples: [2, 5, 10]
         description: >-
           Number of concurrent threads for syncing. Higher values can speed up syncs but may
-          provoke rate-limit errors on lower-tier Chargebee plans. The default of 4 is calibrated
+          provoke rate-limit errors on lower-tier Chargebee plans. The default of 5 is calibrated
           to be safe on the Starter tier (150 req/min, 2.5 req/sec). Customers on Performance
           (1000 req/min) or Enterprise (3500 req/min) can raise this value to take advantage of
           their plan's higher rate limit. More info about the rate limit plan tiers can be found on
@@ -11873,14 +11873,14 @@ schemas:
 #   status_codes_for_ratelimit_hit:
 #     - 429
 #
-# default_concurrency is set to 4 — calibrated against the LOWEST documented tier (Starter,
+# default_concurrency is set to 5 — calibrated against the LOWEST documented tier (Starter,
 # 150 req/min = 2.5 req/sec) per the Path B rule: floor(2.5/4) = 0, then the
-# special-case override applies.
+# special-case override applies, with manual tuning to 5.
 # It is intentionally a single value, not tier-aware: tuning is performed empirically against
 # this baseline and the same value applies to all customers. Higher-tier customers (Performance,
 # Enterprise) can raise num_workers in their connection config to fully exploit their plan;
 # unconfigured users on lower tiers stay safe at the lowest-tier-aware default.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 50
