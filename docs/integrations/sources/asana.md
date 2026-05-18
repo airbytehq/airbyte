@@ -12,7 +12,7 @@ To use the Asana source connector, you need:
 
 - An Asana account with access to the workspaces, projects, tasks, portfolios, and other resources you want to sync.
 - One of the following authentication methods:
-  - **OAuth**. Recommended for Airbyte Cloud. Airbyte Cloud manages the Asana OAuth app and token exchange for you. If you configure OAuth yourself, register an Asana OAuth app and make sure it can request these read scopes: `attachments:read`, `custom_fields:read`, `portfolios:read`, `projects:read`, `stories:read`, `tags:read`, `tasks:read`, `team_memberships:read`, `teams:read`, `users:read`, and `workspaces:read`.
+  - **OAuth**. Recommended for Airbyte Cloud. Airbyte Cloud manages the Asana OAuth app and token exchange for you. If you configure OAuth yourself, register an Asana OAuth app with Full permissions so Asana uses its default OAuth scope.
   - **Personal Access Token**. To create a token, follow Asana's [personal access token instructions](https://developers.asana.com/docs/personal-access-token). Use an Asana service account token if you need to sync organization exports.
 
 The connector can only sync data the authenticated Asana user can access. If the authenticated user has a view-only license or limited project access in Asana, the connector has the same limitations.
@@ -156,6 +156,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.7.1 | 2026-05-18 | [78159](https://github.com/airbytehq/airbyte/pull/78159) | Remove explicit OAuth scopes from connector input specification |
 | 1.7.0 | 2026-05-15 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
 | 1.6.0 | 2026-05-14 | [78096](https://github.com/airbytehq/airbyte/pull/78096) | Promoted release candidate to GA |
 | 1.6.0-rc.2 | 2026-05-14 | [78082](https://github.com/airbytehq/airbyte/pull/78082) | Fix projects stream HTTP 400 after CDK v7 upgrade |
