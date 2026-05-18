@@ -331,6 +331,13 @@ definitions:
         action: RATE_LIMITED
         error_message_contains: "Search Analytics QPS quota exceeded"
       - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 403
+        error_message_contains: "Search Analytics load quota exceeded"
+        error_message: "Search Analytics load quota is exceeded."
+        failure_type: transient_error
+      - type: HttpResponseFilter
         action: IGNORE
         error_message_contains: "User does not have sufficient permission"
         error_message: "{{ response['error']['message'] }}"
