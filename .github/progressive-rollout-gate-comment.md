@@ -1,36 +1,63 @@
 <!-- progressive-rollout-gate:{{ .connector }} -->
 
+## Detected `{{ .connector }}` Active Rollout: `{{ .active_rollout }}`
+
 > [!IMPORTANT]
 > Active progressive rollout warning for `{{ .connector }}`.
 >
-> This PR can bypass the warning only after the PR-description ACK checkbox is checked.
+> To bypass this warning, click on the matching checkbox in the PR description. Look for the checkbox text:
+>
+> > {{ .ack_checkbox_text }}
 
-Detected signals:
-
-- Active rollout: `{{ .active_rollout }}`
 - Rollout version: `{{ .rollout_docker_image_tag }}`
 - Rollout state: `{{ .rollout_state }}`
-- Master version: `{{ .master_version }}`
-- Master RC marker: `{{ .master_rc_marker }}`
-- Bypass ACK checked: `{{ .bypass_ack_checked }}`
 
-To bypass this warning, check this box in the PR description:
+### Version on `master` Branch: `{{ .master_version }}`
 
-`- [ ] {{ .ack_checkbox_text }} [here]({{ .rollout_comment_url }}).`
+- RC marker on `master` branch: `{{ .master_rc_marker }}`
 
-<details>
-<summary>What happens if this PR is merged?</summary>
+### PR Description Checkbox Status
 
-Checking the ACK box does not stop the active rollout by itself. It only allows this workflow's required check to pass. If the PR then merges, the result depends on what connector version is published after merge.
+- Bypass checkbox checked: `{{ .bypass_ack_checked }}`
 
-<details>
-<summary>Expected outcomes by version-change type</summary>
+### ℹ️ More Information
 
-- No connector version change: no new connector version should be released, and the active rollout should continue unchanged.
-- RC to GA: the merged PR may publish the GA version and make it default for eligible non-pinned actors. The existing rollout is not stopped immediately by the merge, but the rollout worker can later cancel it as superseded when finalizing.
-- RCn to RCn+1: the merged PR may publish a new release candidate and replace the active RC marker. The previous incomplete rollout is canceled without unpinning, and a new rollout is created for RCn+1.
+<details><summary>Show/hide details...</summary>
+
+#### 🤔 What happens if this PR is merged
+
+Checking the checkbox will allow the PR to merge, but it does not necessarily stop the active rollout by itself. The result of the PR merging depends on what connector version is published.
+
+Expected outcomes by type of version number change:
+
+<details><summary>If connector version is not modified in this PR...</summary>
+
+No new connector version should be released, and the active rollout should continue unchanged.
 
 </details>
+
+<details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
+
+The merged PR may publish the GA version and make it default for eligible non-pinned actors. The existing rollout is not stopped immediately by the merge, but the rollout worker can later cancel it as superseded when finalizing.
+
 </details>
+
+<details><summary>If the connector version increments to a higher `-rc` version...</summary>
+
+The merged PR may publish a new release candidate and replace the active RC marker. The previous incomplete rollout is canceled without unpinning, and a new rollout is created for the subsequent RC version.
+
+</details>
+
+#### 🔁 How to rerun this check
+
+To rerun the check, simply check and uncheck the box, or else modify the PR description and/or title in any way.
+
+Alternatively, you can find the Active Progressive Rollout CI workflow and manually rerun it (although this is generally slower than the above methods).
+
+</details>
+
+---
+
+This comment will be updated as PR and/or rollout status changes.
 
 [Workflow run]({{ .workflow_run_url }})

@@ -216,6 +216,24 @@ definitions:
 
   alerts_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/base_requester/error_handler"
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 400
+              error_message_contains: "Invalid page and pageSize combination"
+              error_message: >-
+                Twilio Alerts request exceeds the 10,000-result pagination limit. Decrease Slice Step Duration in the source configuration to sync fewer Alert records per slice.
+            - $ref: "#/definitions/base_requester/error_handler/response_filters/0"
+            - $ref: "#/definitions/base_requester/error_handler/response_filters/1"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_generated
