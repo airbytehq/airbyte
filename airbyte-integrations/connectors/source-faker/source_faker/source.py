@@ -22,6 +22,7 @@ class SourceFaker(AbstractSource):
             return False, "Count option is missing"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """Return the three local synthetic-data streams for the configured generation settings."""
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
         seed: int = config["seed"] if "seed" in config else None
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
