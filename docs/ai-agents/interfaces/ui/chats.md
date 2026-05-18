@@ -54,9 +54,9 @@ Chats are best for interactive, one-off work where you want to iterate with the 
 - **Summarizing and reporting**: Generate on-demand summaries, such as "What deals closed this quarter?" or "Which accounts have the most open support tickets?"
 - **Cross-system questions**: Ask questions that span multiple connectors. For example, match Salesforce accounts to HubSpot contacts or Zendesk tickets.
 - **Drafting content**: Use replies as a starting point for emails, follow-ups, status updates, or internal notes.
-- **Prototyping an Automation**: Iterate on a prompt in Chat until the agent reliably returns what you want, then convert the chat into an [Automation](./automations) so it can run on a schedule or webhook.
+- **Prototyping an Automation**: Iterate on a prompt in Chat until the agent reliably returns what you want, then convert the chat into an [Automation](./automations) so it can run on a schedule.
 
-If you want the same work to happen repeatedly, on a schedule, or in response to an event, use an Automation instead.
+If you want the same work to happen repeatedly on a schedule, use an Automation instead.
 
 ## Tips for effective conversations
 
