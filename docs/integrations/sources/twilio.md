@@ -6,9 +6,9 @@ This page contains the setup guide and reference information for the Twilio sour
 
 Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
 
-You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
+You can find your Account SID and Auth Token in the [Twilio Console](https://console.twilio.com/).
 
-See [docs](https://www.twilio.com/docs/iam/api) for more details.
+For more information, see the [Twilio API authentication documentation](https://www.twilio.com/docs/iam/api).
 
 ## Setup guide
 
@@ -18,11 +18,14 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the Source/Destination type dropdown.
-4. Enter your `account_sid`.
-5. Enter your `auth_token`.
-6. Enter your `start_date`.
-7. Enter your `lookback_window`.
+3. On the Set up the source page, enter a name for the Twilio connector and select **Twilio** from the source type dropdown.
+4. Enter your **Account ID** (Twilio Account SID).
+5. Enter your **Auth Token**.
+6. Enter a **Replication Start Date**. Records created before this UTC date and time aren't synced. Use the format `YYYY-MM-DDTHH:MM:SSZ` (for example, `2020-10-01T00:00:00Z`).
+7. Optionally, configure the following fields:
+   - **Lookback window**: The number of minutes before the last cursor value to re-fetch on each incremental sync. Use this to catch late-arriving records. Defaults to `0`.
+   - **Number of concurrent threads**: The number of worker threads used during a sync. Defaults to `3`. Maximum is `40`.
+   - **Slice Step Duration**: The time window size used for each slice of an incremental stream. See [Tuning the slice step duration](#tuning-the-slice-step-duration). Defaults to **1 Month** (`P1M`).
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -31,11 +34,11 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `account_sid`.
-4. Enter your `auth_token`.
-5. Enter your `start_date`.
-6. Enter your `lookback_window`.
+2. Set a name for your source.
+3. Enter your **Account ID** (Twilio Account SID).
+4. Enter your **Auth Token**.
+5. Enter a **Replication Start Date** in the format `YYYY-MM-DDTHH:MM:SSZ`.
+6. Optionally, set the **Lookback window**, **Number of concurrent threads**, and **Slice Step Duration**. See the Cloud instructions above for details.
 7. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -61,14 +64,14 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 - [Available Phone Numbers Local](https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources) \(Incremental\)
 - [Available Phone Numbers Mobile](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources) \(Incremental\)
 - [Available Phone Numbers Toll Free](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources) \(Incremental\)
-- [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
+- [Calls](https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources) \(Incremental\)
 - [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
 - [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
 - [Conversations](https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources)
 - [Conversation Messages](https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages)
 - [Conversation Participants](https://www.twilio.com/docs/conversations/api/conversation-participant-resource)
 - [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
-- [Executions](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
+- [Executions](https://www.twilio.com/docs/studio/rest-api/v2/execution#read-a-list-of-executions) \(Incremental\)
 - [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
 - [Flows](https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows)
 - [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource)
@@ -90,26 +93,62 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Performance considerations
 
-The Twilio connector will gracefully handle rate limits.
-For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
+
+### Alerts pagination limit
+
+The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. If the `alerts` stream fails because a time window contains more than 10,000 Alert records, reduce **Slice Step Duration** to sync fewer Alert records per request.
+
+### Tuning the slice step duration
+
+Incremental streams page the Twilio API in fixed-size time windows between the replication start date and now. The **Slice Step Duration** option controls the size of those windows and lets you trade request count against the amount of data each request returns.
+
+| Option     | ISO 8601 value | When to use                                                                                                                                                                |
+| :--------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 Day**  | `P1D`          | Very high volume accounts where monthly or weekly windows trigger Twilio timeouts or exceed the result size Twilio returns.                                                |
+| **1 Week** | `P1W`          | High volume accounts that still time out with monthly windows.                                                                                                             |
+| **1 Month**| `P1M`          | Default. Works well for most accounts and minimizes request count compared to shorter windows.                                                                             |
+| **1 Year** | `P1Y`          | Low volume accounts or short backfills where you want to minimize the number of slices per stream.                                                                         |
+
+Smaller windows increase the number of API requests and are more likely to be rate limited, but they reduce the amount of data Twilio must return per request. Larger windows reduce request count but can time out on busy accounts. If syncs of the `calls`, `messages`, `recordings`, `message_media`, `conference_participants`, `usage_records`, or `alerts` streams fail with timeouts, lower the slice step duration.
+
+## Reference
+
+This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://chat.twilio.com/v2`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `account_sid` | Yes | Account identifier used as the HTTP Basic authentication username. |
+| `auth_token` | Yes | Auth Token used as the HTTP Basic authentication password. |
+| `start_date` | Yes | Date and time in `YYYY-MM-DDTHH:MM:SSZ` format. Records before this date aren't replicated. |
+| `lookback_window` | No | Number of minutes before the last cursor value to re-fetch on each incremental sync. Defaults to `0`. |
+| `num_worker` | No | Number of concurrent threads to use during a sync. Valid values are `1` through `40`. Defaults to `3`. |
+| `slice_step_duration` | No | Time window size for each incremental stream slice. Valid values are `P1D`, `P1W`, `P1M`, and `P1Y`. Defaults to `P1M`. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
+| 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
+| 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
+| 0.17.7 | 2026-04-22 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
+| 0.17.6 | 2026-04-21 | [76801](https://github.com/airbytehq/airbyte/pull/76801) | Update dependencies |
 | 0.17.5 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 0.17.4 | 2026-01-22 | [72260](https://github.com/airbytehq/airbyte/pull/72260) | Update CDK version from 7.0.1 to 7.6.5 |
-| 0.17.3 | 2025-11-06 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
+| 0.17.3 | 2025-11-14 | [68680](https://github.com/airbytehq/airbyte/pull/68680) | Handle 404 errors gracefully for date ranges with no data |
 | 0.17.2 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 0.17.1 | 2025-09-15 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
 | 0.17.0 | 2025-09-05 | [65955](https://github.com/airbytehq/airbyte/pull/65955) | Promoting release candidate 0.17.0-rc.2 to a main version. |
 | 0.17.0-rc.2 | 2025-09-04 | [65936](https://github.com/airbytehq/airbyte/pull/65936) | Fix lookback window |
-| 0.17.0-rc.1 | 2025-08-20 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate to manifest-only |
+| 0.17.0-rc.1 | 2025-08-25 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate to manifest-only |
 | 0.16.0 | 2025-08-28 | [65593](https://github.com/airbytehq/airbyte/pull/65593) | Promoting release candidate 0.16.0-rc.1 to a main version. |
-| 0.16.0-rc.1 | 2025-08-19 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate incremental streams |
+| 0.16.0-rc.1 | 2025-08-25 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate incremental streams |
 | 0.15.0 | 2025-08-19 | [65085](https://github.com/airbytehq/airbyte/pull/65085) | Promoting release candidate 0.15.0-rc.1 to a main version. |
 | 0.15.0-rc.1 | 2025-08-18 | [64918](https://github.com/airbytehq/airbyte/pull/64918) | Migrate nested full refresh streams |
 | 0.14.0 | 2025-08-18 | [65066](https://github.com/airbytehq/airbyte/pull/65066) | Promoting release candidate 0.14.0-rc.1 to a main version. |
