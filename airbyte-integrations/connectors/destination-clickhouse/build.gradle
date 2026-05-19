@@ -42,10 +42,3 @@ dependencies {
     integrationTestImplementation 'org.testcontainers:clickhouse:1.21.1'
     integrationTestImplementation 'com.clickhouse:client-v2:0.9.4'
 }
-
-tasks.named('integrationTestJava').configure {
-    maxParallelForks = 1
-    doFirst {
-        systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
-    }
-}
