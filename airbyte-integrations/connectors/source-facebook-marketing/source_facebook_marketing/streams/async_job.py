@@ -40,6 +40,29 @@ backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=1
 
 
 # ----------------------------- batching -------------------------------------
+# Facebook caps batch requests at 50 entries; sending more returns a
+# GraphBatchException ("An error has occurred. No further information is
+# available."), which fails the whole sync.
+_FB_MAX_BATCH_SIZE = 50
+
+
+def _pending_leaves(jobs: List["AsyncJob"]) -> Iterator["AsyncJob"]:
+    """Yield jobs that contribute one batch entry to a status-poll call.
+
+    A ParentAsyncJob does not poll itself — it just delegates to its
+    children — so we recurse into its `_jobs` list. This lets
+    `update_in_batch` enforce the per-batch size cap across nested parents
+    instead of only between top-level entries in the input list.
+    """
+    for job in jobs:
+        if not job.started or job.completed:
+            continue
+        if isinstance(job, ParentAsyncJob):
+            yield from _pending_leaves(job._jobs)
+        else:
+            yield job
+
+
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
@@ -47,23 +70,26 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     :param jobs:
     """
     batch = api.new_batch()
-    max_batch_size = 50
-    for job in jobs:
-        if not job.started or job.completed:
-            continue
-        # we check it here because job can be already finished
-        if len(batch) == max_batch_size:
+    for leaf in _pending_leaves(jobs):
+        leaf.update_job(batch=batch)
+        if len(batch) >= _FB_MAX_BATCH_SIZE:
             while batch:
                 # If some of the calls from batch have failed, it returns  a new
                 # FacebookAdsApiBatch object with those calls
                 batch = batch.execute()
             batch = api.new_batch()
-        job.update_job(batch=batch)
 
     while batch:
         # If some of the calls from batch have failed, it returns  a new
         # FacebookAdsApiBatch object with those calls
         batch = batch.execute()
+
+    # Polling is done — let each parent consolidate any child-produced
+    # replacement work (mirrors what ParentAsyncJob.update_job used to do
+    # right after its child loop).
+    for job in jobs:
+        if isinstance(job, ParentAsyncJob):
+            job._splice_new_children()
 
 
 # ------------------------------ status --------------------------------------
@@ -191,11 +217,22 @@ class ParentAsyncJob(AsyncJob):
         return all(child.completed for child in self._jobs) and any(child.failed for child in self._jobs)
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
+        # Direct call (outside update_in_batch): keep the original semantics
+        # of polling children inline and then splicing. Inside
+        # update_in_batch, leaves are polled via _pending_leaves() and
+        # _splice_new_children() is invoked separately so the 50-per-batch
+        # cap is respected when a parent has many children.
         for child in self._jobs:
             if child.started and not child.completed:
                 child.update_job(batch=batch)
+        self._splice_new_children()
 
-        # If any child produced replacement work, splice it in-place.
+    def _splice_new_children(self) -> None:
+        """Replace children that produced `new_jobs` with the new work,
+        recursing so nested parents are spliced bottom-up."""
+        for child in self._jobs:
+            if isinstance(child, ParentAsyncJob):
+                child._splice_new_children()
         new_children: List[AsyncJob] = []
         for job in self._jobs:
             if job.new_jobs:

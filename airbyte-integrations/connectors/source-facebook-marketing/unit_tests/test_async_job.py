@@ -259,6 +259,32 @@ class TestUpdateInBatch:
         assert len(api.new_batch.return_value) == 49
         assert batch.execute.call_count == 3
 
+    def test_parent_with_many_children_respects_batch_cap(self, api, started_job, mocker):
+        """ParentAsyncJob children must be batched under Meta's 50-per-batch limit.
+
+        Regression: previously update_in_batch checked size only between top-level
+        jobs, so a single ParentAsyncJob with 120 children would add 120 entries
+        to one batch and Meta would reject with GraphBatchException.
+        """
+        batches = [FacebookAdsApiBatch(api=api) for _ in range(3)]
+        for b in batches:
+            mocker.patch.object(b, "execute", return_value=None)
+        api.new_batch.side_effect = batches
+
+        parent = ParentAsyncJob(
+            jobs=[started_job for _ in range(120)],
+            api=api,
+            interval=DateInterval(date(2020, 1, 1), date(2020, 1, 2)),
+        )
+        parent._attempt_number = 1  # parent considered started when its children are
+
+        update_in_batch(api=api, jobs=[parent])
+
+        # 120 leaf updates split into batches of at most 50: 50 + 50 + 20.
+        assert [len(b) for b in batches] == [50, 50, 20]
+        for b in batches:
+            b.execute.assert_called_once()
+
 
 class TestInsightAsyncJob:
     """Test InsightAsyncJob class"""
