@@ -57,7 +57,11 @@ class ClickhouseSqlGenerator {
 
                     val useCursorAsVersion =
                         cursorColumnType != null &&
-                            isValidVersionColumn(cursor, cursorColumnType.type, cursorColumnType.nullable)
+                            isValidVersionColumn(
+                                cursor,
+                                cursorColumnType.type,
+                                cursorColumnType.nullable
+                            )
                     val versionColumn =
                         if (useCursorAsVersion) {
                             "`$cursor`"

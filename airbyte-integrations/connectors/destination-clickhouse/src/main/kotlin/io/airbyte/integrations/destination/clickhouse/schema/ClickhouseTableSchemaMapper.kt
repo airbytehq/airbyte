@@ -99,7 +99,9 @@ class ClickhouseTableSchemaMapper(
             if (cursor != null) {
                 // Check if the cursor column type is valid for ClickHouse ReplacingMergeTree
                 val cursorColumnType = tableSchema.columnSchema.finalSchema[cursor]!!
-                if (isValidVersionColumn(cursor, cursorColumnType.type, cursorColumnType.nullable)) {
+                if (
+                    isValidVersionColumn(cursor, cursorColumnType.type, cursorColumnType.nullable)
+                ) {
                     add(cursor)
                 }
             }

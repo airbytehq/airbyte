@@ -178,10 +178,7 @@ class ClickhouseSqlGeneratorTest {
                             mapOf(
                                 "order_id" to ColumnType(ClickhouseSqlTypes.INT64, false),
                                 "updated_at" to
-                                    ColumnType(
-                                        ClickhouseSqlTypes.DATETIME_WITH_PRECISION,
-                                        true
-                                    ),
+                                    ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
                             ),
                     ),
                 importType =
@@ -191,7 +188,8 @@ class ClickhouseSqlGeneratorTest {
                     ),
             )
 
-        val sql = clickhouseSqlGenerator.createTable(TableName("namespace", "table"), tableSchema, false)
+        val sql =
+            clickhouseSqlGenerator.createTable(TableName("namespace", "table"), tableSchema, false)
 
         assertTrue(sql.contains("`updated_at` Nullable(DateTime64(3))"))
         assertTrue(sql.contains("ENGINE = ReplacingMergeTree(_airbyte_extracted_at)"))
