@@ -83,7 +83,14 @@ class TestSearchAnalyticsByDateStream(TestCase):
         # Mock OAuth token refresh via HttpMocker
         http_mocker.post(_oauth_request(), create_oauth_response())
 
-        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+        config = (
+            ConfigBuilder()
+            .with_site_urls(["https://example.com/"])
+            .with_start_date("2024-01-01")
+            .with_end_date("2024-01-03")
+            .with_oauth_credentials("test_client_id", "test_client_secret", "test_refresh_token", access_token="test_access_token")
+            .build()
+        )
 
         # Track captured request bodies for assertions
         captured_bodies: List[Dict[str, Any]] = []
@@ -492,5 +499,48 @@ class TestSearchAnalyticsByDateStream(TestCase):
         assert request_count > 6, f"Expected retries after rate limit, but only {request_count} requests made"
 
         # Verify no ERROR logs were produced (RATE_LIMITED should be handled gracefully)
+        error_logs = [log for log in output.logs if log.log.level == "ERROR"]
+        assert len(error_logs) == 0, f"Expected no ERROR logs for RATE_LIMITED handler, got: {error_logs}"
+
+    @patch("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep", lambda x: None)
+    @HttpMocker()
+    def test_load_quota_error(self, http_mocker: HttpMocker) -> None:
+        """Test RATE_LIMITED error handler for Search Analytics load quota errors."""
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+        request_count = 0
+
+        def load_quota_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return load quota error first, then success on retry."""
+            nonlocal request_count
+            request_count += 1
+            body = json.loads(request.body)
+
+            if request_count <= 5:
+                context.status_code = 403
+                return json.dumps({"error": {"message": "Search Analytics load quota exceeded."}})
+
+            if body.get("type") == "web":
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row("2024-01-01", clicks=100, impressions=1000),
+                        ]
+                    )
+                )
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=load_quota_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        assert request_count > 5, f"Expected retries after load quota error, but only {request_count} requests made"
+        assert len(records) > 0
+
         error_logs = [log for log in output.logs if log.log.level == "ERROR"]
         assert len(error_logs) == 0, f"Expected no ERROR logs for RATE_LIMITED handler, got: {error_logs}"
