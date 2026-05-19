@@ -44,7 +44,7 @@ data:
   releases:
     breakingChanges:
       5.0.0:
-        message: "The `workflows` stream has been migrated from the deprecated `GET /rest/api/3/workflow/search` endpoint to its replacement `GET /rest/api/3/workflows/search`. The replacement endpoint returns a different record shape (`id` is now a top-level UUID string, `name` is top-level, and the `transitions`/`statuses` sub-shapes have changed), and the primary key of the `workflows` stream has changed from `[entityId, name]` to `[id]`. Users syncing the `workflows` stream must refresh their source schema and reset the stream. For more information, see our migration documentation for source Jira."
+        message: "The `workflows` stream is migrating from the soon to be deprecated `GET /rest/api/3/workflow/search` endpoint to its replacement `GET /rest/api/3/workflows/search`. The replacement endpoint returns a different record shape (`id` is now a top-level UUID string, `name` is top-level, and the `transitions`/`statuses` sub-shapes have changed), and the primary key of the `workflows` stream has changed from `[entityId, name]` to `[id]`. Users syncing the `workflows` stream must refresh their source schema and reset the stream. For more information, see our migration documentation for source Jira."
         upgradeDeadline: "2026-05-31"
         scopedImpact:
           - scopeType: stream
