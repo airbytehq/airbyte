@@ -219,7 +219,11 @@ def test_flat_api_key_config_after_migration_can_build_auth_header() -> None:
     [
         pytest.param(
             400,
-            {"errors": [{"message": "Rate limit exceeded. Only 2500 requests are allowed per 1 hour.", "extensions": {"code": "RATELIMITED"}}]},
+            {
+                "errors": [
+                    {"message": "Rate limit exceeded. Only 2500 requests are allowed per 1 hour.", "extensions": {"code": "RATELIMITED"}}
+                ]
+            },
             ResponseAction.RATE_LIMITED,
             "Rate limit exceeded for Linear API.",
             id="graphql_ratelimited_error",
