@@ -49,15 +49,21 @@ class BigqueryDirectLoadNativeTableOperations(
     ) {
         val existingTable =
             bigquery.getTable(tableName.toTableId()).getDefinition<TableDefinition>()
-        val shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
         val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
+        val shouldRecreateTable =
+            shouldRecreateTable(
+                stream,
+                columnNameMapping,
+                existingTable,
+                alterTableReport.columnsToChangeType,
+            )
         logger.info {
             "Stream ${stream.mappedDescriptor.toPrettyString()} had alter table report $alterTableReport"
         }
         try {
             if (shouldRecreateTable) {
                 logger.info {
-                    "Stream ${stream.mappedDescriptor.toPrettyString()} detected change in partitioning/clustering config. Recreating the table."
+                    "Stream ${stream.mappedDescriptor.toPrettyString()} detected change in partitioning/clustering config, or type change on a partitioning/clustering column. Recreating the table."
                 }
                 recreateTable(
                     stream,
@@ -107,21 +113,34 @@ class BigqueryDirectLoadNativeTableOperations(
     }
 
     /**
-     * Bigquery doesn't support changing a table's partitioning / clustering scheme in-place. So
-     * check whether we want to change those here.
+     * Bigquery doesn't support changing a table's partitioning / clustering scheme in-place, and
+     * also prohibits RENAME COLUMN on any column that participates in the table's partitioning or
+     * clustering config (see
+     * https://cloud.google.com/bigquery/docs/managing-table-schemas#rename_a_column). Our schema
+     * evolution path for type changes relies on a RENAME COLUMN swap, so if a type change targets a
+     * clustering (or partitioning) column, we must recreate the table instead of altering it.
      */
     private fun shouldRecreateTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
-        existingTable: TableDefinition
+        existingTable: TableDefinition,
+        columnsToChangeType: List<ColumnChange<StandardSQLTypeName>>,
     ): Boolean {
         var tableClusteringMatches = false
         var tablePartitioningMatches = false
+        var typeChangeTargetsClusteringOrPartitioningColumn = false
         if (existingTable is StandardTableDefinition) {
             tableClusteringMatches = clusteringMatches(stream, columnNameMapping, existingTable)
             tablePartitioningMatches = partitioningMatches(existingTable)
+            typeChangeTargetsClusteringOrPartitioningColumn =
+                typeChangeTargetsClusteringOrPartitioningColumn(
+                    existingTable,
+                    columnsToChangeType,
+                )
         }
-        return !tableClusteringMatches || !tablePartitioningMatches
+        return !tableClusteringMatches ||
+            !tablePartitioningMatches ||
+            typeChangeTargetsClusteringOrPartitioningColumn
     }
 
     internal fun buildAlterTableReport(
@@ -435,6 +454,32 @@ class BigqueryDirectLoadNativeTableOperations(
                     .field
                     .equals("_airbyte_extracted_at", ignoreCase = true) &&
                 TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
+        }
+
+        /**
+         * BigQuery rejects `ALTER TABLE ... RENAME COLUMN` on any column that participates in the
+         * table's partitioning or clustering config. Our schema-evolution path for type changes
+         * relies on a RENAME COLUMN swap, so when a type change targets such a column we must take
+         * the recreate-table path instead. Comparisons are case-insensitive, matching the rest of
+         * this file.
+         */
+        @VisibleForTesting
+        fun typeChangeTargetsClusteringOrPartitioningColumn(
+            existingTable: StandardTableDefinition,
+            columnsToChangeType: List<ColumnChange<StandardSQLTypeName>>,
+        ): Boolean {
+            if (columnsToChangeType.isEmpty()) {
+                return false
+            }
+            val protectedColumns = HashSet<String>()
+            existingTable.clustering?.fields?.forEach { protectedColumns.add(it) }
+            existingTable.timePartitioning?.field?.let { protectedColumns.add(it) }
+            if (protectedColumns.isEmpty()) {
+                return false
+            }
+            return columnsToChangeType.any { change ->
+                protectedColumns.containsIgnoreCase(change.name)
+            }
         }
     }
 }

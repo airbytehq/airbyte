@@ -28,6 +28,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.typeChangeTargetsClusteringOrPartitioningColumn
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -283,5 +284,106 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .build()
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
+    }
+
+    /**
+     * Regression test for https://github.com/airbytehq/oncall/issues/10813. BigQuery rejects `ALTER
+     * TABLE ... RENAME COLUMN` on any column in the table's clustering (or partitioning) config, so
+     * when a type change targets such a column we must recreate the table instead of altering it.
+     */
+    @Test
+    fun testTypeChangeTargetsClusteringOrPartitioningColumn() {
+        val existingTable = Mockito.mock(StandardTableDefinition::class.java)
+        Mockito.`when`(existingTable.clustering)
+            .thenReturn(
+                Clustering.newBuilder().setFields(listOf("id", "_airbyte_extracted_at")).build()
+            )
+        Mockito.`when`(existingTable.timePartitioning)
+            .thenReturn(
+                TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+                    .setField("_airbyte_extracted_at")
+                    .build()
+            )
+
+        // No type changes => false.
+        Assertions.assertFalse(
+            typeChangeTargetsClusteringOrPartitioningColumn(existingTable, emptyList())
+        )
+
+        // Type change on a non-clustering, non-partitioning column => false.
+        Assertions.assertFalse(
+            typeChangeTargetsClusteringOrPartitioningColumn(
+                existingTable,
+                listOf(
+                    ColumnChange(
+                        name = "name",
+                        originalType = StandardSQLTypeName.INT64,
+                        newType = StandardSQLTypeName.STRING,
+                    )
+                ),
+            )
+        )
+
+        // Type change on a clustering column (the PK) => true. This is the
+        // source-upgrades-PK-type scenario that previously crashed with
+        // "Columns used in table partitioning or clustering cannot be renamed."
+        Assertions.assertTrue(
+            typeChangeTargetsClusteringOrPartitioningColumn(
+                existingTable,
+                listOf(
+                    ColumnChange(
+                        name = "id",
+                        originalType = StandardSQLTypeName.INT64,
+                        newType = StandardSQLTypeName.STRING,
+                    )
+                ),
+            )
+        )
+
+        // Case-insensitive match, consistent with the rest of this file.
+        Assertions.assertTrue(
+            typeChangeTargetsClusteringOrPartitioningColumn(
+                existingTable,
+                listOf(
+                    ColumnChange(
+                        name = "ID",
+                        originalType = StandardSQLTypeName.INT64,
+                        newType = StandardSQLTypeName.STRING,
+                    )
+                ),
+            )
+        )
+
+        // Defense-in-depth: type change on the partitioning column also triggers recreate,
+        // even though Airbyte pins partitioning to the system `_airbyte_extracted_at` column.
+        Assertions.assertTrue(
+            typeChangeTargetsClusteringOrPartitioningColumn(
+                existingTable,
+                listOf(
+                    ColumnChange(
+                        name = "_airbyte_extracted_at",
+                        originalType = StandardSQLTypeName.TIMESTAMP,
+                        newType = StandardSQLTypeName.DATETIME,
+                    )
+                ),
+            )
+        )
+
+        // If the table has no clustering or partitioning config, there's nothing to protect.
+        val unclusteredTable = Mockito.mock(StandardTableDefinition::class.java)
+        Mockito.`when`(unclusteredTable.clustering).thenReturn(null)
+        Mockito.`when`(unclusteredTable.timePartitioning).thenReturn(null)
+        Assertions.assertFalse(
+            typeChangeTargetsClusteringOrPartitioningColumn(
+                unclusteredTable,
+                listOf(
+                    ColumnChange(
+                        name = "id",
+                        originalType = StandardSQLTypeName.INT64,
+                        newType = StandardSQLTypeName.STRING,
+                    )
+                ),
+            )
+        )
     }
 }
