@@ -21,7 +21,8 @@ class ComponentTestConfigFactory {
     @Primary
     fun config(): ClickhouseConfiguration {
         ClickhouseContainerHelper.start()
-        val isDockerTestRunner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") == "docker"
+        val isDockerTestRunner =
+            System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER") == "docker"
         return ClickhouseConfiguration(
             hostname =
                 if (isDockerTestRunner) {
@@ -29,7 +30,8 @@ class ComponentTestConfigFactory {
                 } else {
                     "localhost"
                 },
-            port = if (isDockerTestRunner) "8123" else ClickhouseContainerHelper.getPort().toString(),
+            port =
+                if (isDockerTestRunner) "8123" else ClickhouseContainerHelper.getPort().toString(),
             protocol = ClickhouseConnectionProtocol.HTTP.value,
             database = testSpec().database,
             username = ClickhouseContainerHelper.getUsername(),
