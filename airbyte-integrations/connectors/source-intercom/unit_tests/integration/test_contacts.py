@@ -51,7 +51,7 @@ def read(
 
 
 class ContactsTest(TestCase):
-    def test_search_query_expands_sub_daily_interval_to_day_boundaries(self) -> None:
+    def test_search_query_expands_sub_daily_start_time_to_day_boundary_without_upper_bound(self) -> None:
         streams = {
             "contacts": ("contacts/search", "data"),
             "conversations": ("conversations/search", "conversations"),
@@ -59,9 +59,13 @@ class ContactsTest(TestCase):
         }
         for stream_name, (path, response_field) in streams.items():
             with self.subTest(stream_name=stream_name):
-                self._assert_search_query_expands_sub_daily_interval_to_day_boundaries(stream_name, path, response_field)
+                self._assert_search_query_expands_sub_daily_start_time_to_day_boundary_without_upper_bound(
+                    stream_name, path, response_field
+                )
 
-    def _assert_search_query_expands_sub_daily_interval_to_day_boundaries(self, stream_name: str, path: str, response_field: str) -> None:
+    def _assert_search_query_expands_sub_daily_start_time_to_day_boundary_without_upper_bound(
+        self, stream_name: str, path: str, response_field: str
+    ) -> None:
         state_datetime = datetime.now(timezone.utc) - timedelta(hours=1)
         state_timestamp = int(state_datetime.timestamp())
         observed_bodies: List[Dict[str, Any]] = []
@@ -94,12 +98,11 @@ class ContactsTest(TestCase):
         assert len(observed_bodies) == 1
 
         query = observed_bodies[0]["query"]
-        lower_bound = query["value"][0]["value"][0]["value"]
-        inclusive_lower_bound = query["value"][0]["value"][1]["value"]
-        upper_bound = query["value"][1]["value"]
+        lower_bound = query["value"][0]["value"]
+        inclusive_lower_bound = query["value"][1]["value"]
 
         expected_lower_bound = (state_timestamp // _SECONDS_PER_DAY) * _SECONDS_PER_DAY
+        assert query["operator"] == "OR"
+        assert len(query["value"]) == 2
         assert lower_bound == expected_lower_bound
         assert inclusive_lower_bound == expected_lower_bound
-        assert upper_bound % _SECONDS_PER_DAY == 0
-        assert 0 < upper_bound - int(datetime.now(timezone.utc).timestamp()) <= _SECONDS_PER_DAY

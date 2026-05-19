@@ -435,11 +435,10 @@ definitions:
             Intercom-Version: "2.11"
           request_body_json:
             query: >-
-              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"operator" : "OR", "value" : [
               {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              (((stream_interval['end_time'] | int) // 86400) + 1) * 86400 }} } ]}
+              }]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
@@ -513,11 +512,10 @@ definitions:
           request_body_json:
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
             query: >-
-              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"operator" : "OR", "value" : [
               {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              (((stream_interval['end_time'] | int) // 86400) + 1) * 86400 }} } ]}
+              }]}
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -730,11 +728,10 @@ definitions:
             Accept: application/json
           request_body_json:
             query: >-
-              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"operator" : "OR", "value" : [
               {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              (((stream_interval['end_time'] | int) // 86400) + 1) * 86400 }} } ]}
+              }]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
