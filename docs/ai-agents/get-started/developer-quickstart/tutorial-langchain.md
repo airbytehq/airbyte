@@ -185,7 +185,7 @@ agent = create_agent(
 ```
 
 - `ChatOpenAI(model="gpt-4o")` creates an OpenAI chat model. You can use a different model by changing the model string. For example, use `"gpt-4o-mini"` to lower costs. LangChain also supports [other providers](https://python.langchain.com/docs/integrations/chat/) like Anthropic and Google.
-- `create_agent` creates an agent that reasons about which tools to call based on the user's input. LangChain's agent runtime is built on LangGraph, but you don't need to import LangGraph directly for this quickstart.
+- `create_agent` creates an agent that reasons about which tools to call based on your input. LangChain's agent runtime is built on LangGraph, but you don't need to import LangGraph directly for this quickstart.
 - The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Agent SDK already exposes entity names, actions, and enum values through the tool description, so the system prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 
 ## Part 6: Run your project
