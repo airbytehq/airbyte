@@ -179,6 +179,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.24     | 2026-04-16 | [76383](https://github.com/airbytehq/airbyte/pull/76383)   | Fix UNKNOWN_TABLE error during overwrite when target table does not exist       |
 | 2.1.23     | 2026-02-04 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
 | 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
 | 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
