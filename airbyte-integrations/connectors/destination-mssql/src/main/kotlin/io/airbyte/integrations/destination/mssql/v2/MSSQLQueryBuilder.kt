@@ -238,12 +238,14 @@ class MSSQLQueryBuilder(
             SoftDelete,
             Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
         }
-    private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
     private val toMssqlType = AirbyteTypeToMssqlType()
 
     val finalTableSchema: List<NamedField> = airbyteFinalTableFields + extractFinalTableSchema()
     val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
+
+    private val indexedColumns: Set<String> =
+        if (hasCdc) uniquenessKey.toSet() + AIRBYTE_CDC_DELETED_AT else uniquenessKey.toSet()
 
     private fun getExistingSchema(connection: Connection): List<NamedSqlField> {
         val fields = mutableListOf<NamedSqlField>()

@@ -469,6 +469,22 @@ data class DestinationFileStreamComplete(
         statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
+data class DestinationRecordStreamIncomplete(
+    override val stream: DestinationStream,
+    val emittedAtMs: Long,
+) : DestinationRecordDomainMessage {
+    override fun asProtocolMessage(): AirbyteMessage =
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+}
+
+data class DestinationFileStreamIncomplete(
+    override val stream: DestinationStream,
+    val emittedAtMs: Long,
+) : DestinationFileDomainMessage {
+    override fun asProtocolMessage(): AirbyteMessage =
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+}
+
 /** State. */
 sealed interface CheckpointMessage : DestinationMessage {
     companion object {

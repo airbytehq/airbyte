@@ -1135,7 +1135,9 @@ await slack.messages.create(
     thread_ts="<str>",
     reply_broadcast=True,
     unfurl_links=True,
-    unfurl_media=True
+    unfurl_media=True,
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
@@ -1154,7 +1156,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "thread_ts": "<str>",
         "reply_broadcast": True,
         "unfurl_links": True,
-        "unfurl_media": True
+        "unfurl_media": True,
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -1170,6 +1174,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `reply_broadcast` | `boolean` | No | Also post reply to channel when replying to a thread |
 | `unfurl_links` | `boolean` | No | Enable unfurling of primarily text-based content |
 | `unfurl_media` | `boolean` | No | Enable unfurling of media content |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
@@ -1202,7 +1208,8 @@ Updates an existing message in a channel
 await slack.messages.update(
     channel="<str>",
     ts="<str>",
-    text="<str>"
+    text="<str>",
+    blocks=[]
 )
 ```
 
@@ -1218,7 +1225,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "params": {
         "channel": "<str>",
         "ts": "<str>",
-        "text": "<str>"
+        "text": "<str>",
+        "blocks": []
     }
 }'
 ```
@@ -1231,6 +1239,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `channel` | `string` | Yes | Channel ID containing the message |
 | `ts` | `string` | Yes | Timestamp of the message to update |
 | `text` | `string` | Yes | New message text content |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
 
 
 <details>
@@ -1676,7 +1685,8 @@ await slack.ephemeral_messages.create(
     user="<str>",
     text="<str>",
     thread_ts="<str>",
-    blocks="<str>"
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
@@ -1694,7 +1704,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "user": "<str>",
         "text": "<str>",
         "thread_ts": "<str>",
-        "blocks": "<str>"
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -1708,7 +1719,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `user` | `string` | Yes | ID of the user who will receive the ephemeral message. The user should be in the channel specified by the channel argument. |
 | `text` | `string` | Yes | Message text content (supports mrkdwn formatting). How this field works depends on whether blocks are also provided. |
 | `thread_ts` | `string` | No | Provide another message's ts value to post this ephemeral message in a thread. The thread must already be active. |
-| `blocks` | `string` | No | A JSON-based array of structured blocks, presented as a URL-encoded string. |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
@@ -1740,7 +1752,9 @@ await slack.scheduled_messages.create(
     thread_ts="<str>",
     reply_broadcast=True,
     unfurl_links=True,
-    unfurl_media=True
+    unfurl_media=True,
+    blocks=[],
+    mrkdwn=True
 )
 ```
 
@@ -1760,7 +1774,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "thread_ts": "<str>",
         "reply_broadcast": True,
         "unfurl_links": True,
-        "unfurl_media": True
+        "unfurl_media": True,
+        "blocks": [],
+        "mrkdwn": True
     }
 }'
 ```
@@ -1777,6 +1793,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `reply_broadcast` | `boolean` | No | Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel. Defaults to false. |
 | `unfurl_links` | `boolean` | No | Pass true to enable unfurling of primarily text-based content. |
 | `unfurl_media` | `boolean` | No | Pass false to disable unfurling of media content. |
+| `blocks` | `array<object>` | No | Block Kit blocks for rich message layout. When set, `text` is used as the notification fallback. |
+| `mrkdwn` | `boolean` | No | Whether to render mrkdwn formatting in `text` (default true). |
 
 
 <details>
