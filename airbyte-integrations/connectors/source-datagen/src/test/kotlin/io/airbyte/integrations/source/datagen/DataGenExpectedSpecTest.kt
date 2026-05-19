@@ -9,9 +9,10 @@ import org.junit.jupiter.api.Test
 class DataGenExpectedSpecTest {
     @Test
     fun testCopiedMysqlCdcDocumentationLinkReferencesMysqlDocs() {
-        val expectedSpec = requireNotNull(javaClass.classLoader.getResourceAsStream("expected-spec.json")).use {
-            String(it.readAllBytes(), StandardCharsets.UTF_8)
-        }
+        val expectedSpec =
+            requireNotNull(javaClass.classLoader.getResourceAsStream("expected-spec.json")).use {
+                String(it.readAllBytes(), StandardCharsets.UTF_8)
+            }
 
         assertTrue(
             expectedSpec.contains(
