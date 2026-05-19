@@ -276,10 +276,10 @@ In open source mode, you provide API credentials directly to the connector.
 ```python title="Pydantic AI"
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+from airbyte_agent_sdk.connectors.linear.models import LinearLinearApiKeyAuthenticationAuthConfig
 
 connector = LinearConnector(
-    auth_config=LinearAuthConfig(
+    auth_config=LinearLinearApiKeyAuthenticationAuthConfig(
         api_key="<Your Linear API key from Settings > API > Personal API keys>"
     )
 )
@@ -297,10 +297,10 @@ async def linear_execute(entity: str, action: str, params: dict | None = None):
 ```python title="LangChain"
 from langchain_core.tools import tool
 from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+from airbyte_agent_sdk.connectors.linear.models import LinearLinearApiKeyAuthenticationAuthConfig
 
 connector = LinearConnector(
-    auth_config=LinearAuthConfig(
+    auth_config=LinearLinearApiKeyAuthenticationAuthConfig(
         api_key="<Your Linear API key from Settings > API > Personal API keys>"
     )
 )
@@ -319,10 +319,10 @@ async def linear_execute(entity: str, action: str, params: dict | None = None):
 ```python title="OpenAI Agents"
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+from airbyte_agent_sdk.connectors.linear.models import LinearLinearApiKeyAuthenticationAuthConfig
 
 connector = LinearConnector(
-    auth_config=LinearAuthConfig(
+    auth_config=LinearLinearApiKeyAuthenticationAuthConfig(
         api_key="<Your Linear API key from Settings > API > Personal API keys>"
     )
 )
@@ -344,10 +344,10 @@ agent = Agent(name="Linear Assistant", tools=[linear_execute])
 ```python title="FastMCP"
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.linear import LinearConnector
-from airbyte_agent_sdk.connectors.linear.models import LinearAuthConfig
+from airbyte_agent_sdk.connectors.linear.models import LinearLinearApiKeyAuthenticationAuthConfig
 
 connector = LinearConnector(
-    auth_config=LinearAuthConfig(
+    auth_config=LinearLinearApiKeyAuthenticationAuthConfig(
         api_key="<Your Linear API key from Settings > API > Personal API keys>"
     )
 )
