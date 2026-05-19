@@ -44,7 +44,9 @@ def test_application_roles_stream(config, application_roles_response):
 
 @responses.activate
 def test_application_roles_stream_http_error(config, application_roles_response):
-    responses.add(responses.GET, f"https://{config['credentials']['domain']}/rest/api/3/applicationrole", json={"error": "not found"}, status=404)
+    responses.add(
+        responses.GET, f"https://{config['credentials']['domain']}/rest/api/3/applicationrole", json={"error": "not found"}, status=404
+    )
 
     stream = find_stream("application_roles", config)
     with pytest.raises(AirbyteTracedException, match="Not found. The requested resource was not found on the server"):
@@ -72,7 +74,9 @@ def test_board_stream_forbidden(config, boards_response, caplog):
     responses.add(
         responses.GET,
         f"https://{config['credentials']['domain']}/rest/agile/1.0/board?maxResults=50",
-        json={"error": f"403 Client Error: Forbidden for url: https://{config['credentials']['domain']}/rest/agile/1.0/board?maxResults=50"},
+        json={
+            "error": f"403 Client Error: Forbidden for url: https://{config['credentials']['domain']}/rest/agile/1.0/board?maxResults=50"
+        },
         status=403,
     )
     stream = find_stream("boards", config)
