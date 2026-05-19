@@ -3,6 +3,7 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
+import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
@@ -23,18 +24,60 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 
 class BigqueryDirectLoadNativeTableOperationsTest {
+    @Test
+    fun testEnsureSchemaMatchesCreatesMissingTable() {
+        val stream =
+            DestinationStream(
+                "foo",
+                "bar",
+                Append,
+                ObjectType(linkedMapOf("a1" to FieldType(IntegerType, nullable = true))),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+                namespaceMapper = NamespaceMapper()
+            )
+        val tableName = TableName("foo", "bar")
+        val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
+        val bigquery = mockk<BigQuery>()
+        val sqlOperations = mockk<BigqueryDirectLoadSqlTableOperations>(relaxed = true)
+        every { bigquery.getTable(tableName.toTableId()) } returns null
+
+        runBlocking {
+            BigqueryDirectLoadNativeTableOperations(
+                    bigquery,
+                    sqlOperations,
+                    mockk(),
+                    projectId = "unused",
+                    tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+                )
+                .ensureSchemaMatches(stream, tableName, columnNameMapping)
+        }
+
+        coVerify(exactly = 1) {
+            sqlOperations.createTable(stream, tableName, columnNameMapping, replace = true)
+        }
+    }
+
     @Test
     fun testToDialectType() {
         val s = ObjectType(linkedMapOf())
