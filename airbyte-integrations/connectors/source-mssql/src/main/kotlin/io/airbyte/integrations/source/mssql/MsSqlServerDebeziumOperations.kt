@@ -52,6 +52,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicLong
+import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.collections.plus
@@ -63,6 +64,11 @@ data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServe
         return lsn.compareTo(other.lsn)
     }
 }
+
+private data class MsSqlServerCdcTable(
+    val schema: String,
+    val table: String,
+)
 
 @Singleton
 class MsSqlServerDebeziumOperations(
@@ -78,6 +84,7 @@ class MsSqlServerDebeziumOperations(
     val cdcCursorGenerator = AtomicLong(Instant.now().epochSecond * 100_000_000 + 1)
 
     private val log = KotlinLogging.logger {}
+    private var shouldRecoverSchemaHistory = false
 
     @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
@@ -256,6 +263,7 @@ class MsSqlServerDebeziumOperations(
     }
 
     override fun deserializeState(opaqueStateValue: JsonNode): DebeziumWarmStartState {
+        shouldRecoverSchemaHistory = false
         val stateNode = opaqueStateValue[MSSQL_STATE]
         val offsetNode = stateNode[MSSQL_CDC_OFFSET] as JsonNode
         val offsetMap: Map<JsonNode, JsonNode> =
@@ -359,13 +367,16 @@ class MsSqlServerDebeziumOperations(
                         .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
                 DebeziumSchemaHistory(schemaHistoryList)
             }
-        // If the schema history is empty or null, we want to abort the sync
-        // and run a recovery snapshot.
         if (schemaHistory == null || schemaHistory.wrapped.isEmpty()) {
-            return AbortDebeziumWarmStartState(
-                "Schema history missing with existing offset. " +
-                    "Previous snapshot was incomplete, please refresh the connection."
-            )
+            shouldRecoverSchemaHistory = true
+            lastLoadedOffset = offset
+            return ValidDebeziumWarmStartState(offset, null)
+        }
+
+        if (schemaHistoryMissingCdcTables(schemaHistory)) {
+            shouldRecoverSchemaHistory = true
+            lastLoadedOffset = offset
+            return ValidDebeziumWarmStartState(offset, null)
         }
 
         // Store the loaded offset for heartbeat sanitization comparison
@@ -599,11 +610,40 @@ class MsSqlServerDebeziumOperations(
     }
 
     override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> {
-        return generateCommonDebeziumProperties(streams) + ("snapshot.mode" to "recovery")
+        val properties = generateCommonDebeziumProperties(streams).toMutableMap()
+        val cdcTables = discoverCdcEnabledTables()
+        if (cdcTables.isNotEmpty()) {
+            properties["schema.include.list"] =
+                DebeziumPropertiesBuilder.joinIncludeList(
+                    cdcTables.map { Pattern.quote(it.schema) }.distinct()
+                )
+            properties["table.include.list"] =
+                DebeziumPropertiesBuilder.joinIncludeList(
+                    cdcTables.map { Pattern.quote("${it.schema}.${it.table}") }
+                )
+            properties.remove("column.include.list")
+        }
+        properties["snapshot.mode"] = "recovery"
+        return properties
     }
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> {
+        if (shouldRecoverSchemaHistory) {
+            return generateColdStartProperties(streams)
+        }
         return generateCommonDebeziumProperties(streams) + ("snapshot.mode" to "when_needed")
+    }
+
+    private fun schemaHistoryMissingCdcTables(schemaHistory: DebeziumSchemaHistory): Boolean {
+        val schemaHistoryText =
+            schemaHistory.wrapped.joinToString(separator = "\n") {
+                DocumentWriter.defaultWriter().write(it.document())
+            }
+        return discoverCdcEnabledTables().any { table ->
+            val tableId =
+                "\\\"${configuration.databaseName}\\\".\\\"${table.schema}\\\".\\\"${table.table}\\\""
+            !schemaHistoryText.contains(tableId)
+        }
     }
 
     private fun generateCommonDebeziumProperties(streams: List<Stream>): Map<String, String> {
@@ -665,6 +705,7 @@ class MsSqlServerDebeziumOperations(
             .withHeartbeats(configuration.debeziumHeartbeatInterval)
             .withOffset()
             .withSchemaHistory()
+            .with("schema.history.internal.store.only.captured.tables.ddl", "true")
             .withStreams(streams)
             .with("include.schema.changes", "false")
             .with("provide.transaction.metadata", "false")
@@ -700,6 +741,41 @@ class MsSqlServerDebeziumOperations(
                     .toString()
             )
             .buildMap()
+    }
+
+    private fun discoverCdcEnabledTables(): List<MsSqlServerCdcTable> {
+        jdbcConnectionFactory.get().use { connection ->
+            connection.createStatement().use { statement ->
+                statement
+                    .executeQuery(
+                        """
+                            SELECT s.name AS schema_name, t.name AS table_name
+                            FROM cdc.change_tables ct
+                            JOIN sys.tables t ON ct.source_object_id = t.object_id
+                            JOIN sys.schemas s ON t.schema_id = s.schema_id
+                            ORDER BY s.name, t.name
+                            """.trimIndent()
+                    )
+                    .use { resultSet ->
+                        return buildList {
+                            while (resultSet.next()) {
+                                val schema = resultSet.getString("schema_name")
+                                if (
+                                    configuration.namespaces.isEmpty() ||
+                                        configuration.namespaces.contains(schema)
+                                ) {
+                                    add(
+                                        MsSqlServerCdcTable(
+                                            schema = schema,
+                                            table = resultSet.getString("table_name"),
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+            }
+        }
     }
 
     override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? {
