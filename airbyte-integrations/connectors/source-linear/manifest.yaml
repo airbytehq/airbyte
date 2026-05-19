@@ -1384,6 +1384,28 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.linear.app/graphql
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Endpoint-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Complexity-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      response_filters:
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}"
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_type"]
