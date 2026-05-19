@@ -435,10 +435,10 @@ definitions:
             Intercom-Version: "2.11"
           request_body_json:
             query: >-
-              {"operator" : "OR", "value" : [
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
               {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
-              }]}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{ (((stream_interval['end_time'] | int) // 86400) * 86400) + 172800 }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
@@ -487,6 +487,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
@@ -510,10 +512,10 @@ definitions:
           request_body_json:
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
             query: >-
-              {"operator" : "OR", "value" : [
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
               {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
-              }]}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{ (((stream_interval['end_time'] | int) // 86400) * 86400) + 172800 }} } ]}
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -561,6 +563,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
@@ -724,10 +728,10 @@ definitions:
             Accept: application/json
           request_body_json:
             query: >-
-              {"operator" : "OR", "value" : [
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
               {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
               }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
-              }]}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{ (((stream_interval['end_time'] | int) // 86400) * 86400) + 172800 }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
