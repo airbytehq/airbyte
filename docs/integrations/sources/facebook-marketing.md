@@ -476,6 +476,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.12 | 2026-04-28 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Custom Insights streams now auto-request PK-required fields (cursor, date_stop, account_id, entity ID, breakdowns) when user configures a custom `fields` list, preventing null PK columns in destinations |
 | 5.2.11 | 2026-04-28 | [76977](https://github.com/airbytehq/airbyte/pull/76977) | Bump airbyte-cdk to ^7.17.4; facebook-business updated to 23.0.3 via lockfile refresh |
 | 5.2.10 | 2026-04-24 | [76064](https://github.com/airbytehq/airbyte/pull/76064) | Fix ad_account stream crash by catching AirbyteTracedException wrapping FacebookRequestError in list_objects |
 | 5.2.9 | 2026-04-24 | [76995](https://github.com/airbytehq/airbyte/pull/76995) | Fix TypeError crash when Facebook API returns error response with no message body |
@@ -643,8 +644,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 0.2.68 | 2022-10-12 | [17869](https://github.com/airbytehq/airbyte/pull/17869) | Remove "format" from optional datetime `end_date` field |
 | 0.2.67 | 2022-10-04 | [17551](https://github.com/airbytehq/airbyte/pull/17551) | Add `cursor_field` for custom_insights stream schema |
 | 0.2.65 | 2022-09-29 | [17371](https://github.com/airbytehq/airbyte/pull/17371) | Fix stream CustomConversions `enable_deleted=False` |
-| 0.2.64 | 2022-09-22 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state. |
 | 0.2.64 | 2022-09-22 | [17027](https://github.com/airbytehq/airbyte/pull/17027) | Limit time range with 37 months when creating an insight job from lower edge object. Retry bulk request when getting error code `960` |
+| 0.2.64 | 2022-09-22 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state. |
 | 0.2.63 | 2022-09-06 | [15724](https://github.com/airbytehq/airbyte/pull/15724) | Add the Custom Conversion stream |
 | 0.2.62 | 2022-09-01 | [16222](https://github.com/airbytehq/airbyte/pull/16222) | Remove `end_date` from config if empty value (re-implement #16096) |
 | 0.2.61 | 2022-08-29 | [16096](https://github.com/airbytehq/airbyte/pull/16096) | Remove `end_date` from config if empty value |

@@ -555,7 +555,9 @@ class TestBaseInsightsStream:
             insights_lookback_window=28,
         )
 
-        assert stream.fields() == ["account_id", "account_currency"]
+        # fields() should inject required PK fields (cursor, date_stop, account_id, ad_id for default level="ad")
+        fields = stream.fields()
+        assert fields == ["account_id", "account_currency", "date_start", "date_stop", "ad_id"]
         schema = stream.get_json_schema()
         assert schema["properties"].keys() == set(
             [
@@ -566,6 +568,85 @@ class TestBaseInsightsStream:
                 "ad_id",
             ]
         )
+
+    @pytest.mark.parametrize(
+        "level, custom_fields, expected_fields",
+        [
+            pytest.param(
+                "campaign",
+                ["impressions", "clicks"],
+                ["impressions", "clicks", "date_start", "date_stop", "account_id", "campaign_id"],
+                id="campaign_level_injects_campaign_id",
+            ),
+            pytest.param(
+                "adset",
+                ["impressions"],
+                ["impressions", "date_start", "date_stop", "account_id", "adset_id"],
+                id="adset_level_injects_adset_id",
+            ),
+            pytest.param(
+                "account",
+                ["impressions"],
+                ["impressions", "date_start", "date_stop", "account_id"],
+                id="account_level_no_extra_entity_id",
+            ),
+            pytest.param(
+                "ad",
+                ["impressions"],
+                ["impressions", "date_start", "date_stop", "account_id", "ad_id"],
+                id="ad_level_injects_ad_id",
+            ),
+        ],
+    )
+    def test_fields_custom_injects_required_pk_fields(self, api, some_config, level, custom_fields, expected_fields):
+        """fields() must inject PK-required fields so the API returns them even when the user omits them."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            level=level,
+            insights_lookback_window=28,
+        )
+
+        assert stream.fields() == expected_fields
+
+    def test_fields_custom_with_breakdowns_injects_breakdown_fields(self, api, some_config):
+        """fields() must also inject breakdown fields when breakdowns are configured."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["impressions"],
+            breakdowns=["device_platform", "country"],
+            level="campaign",
+            insights_lookback_window=28,
+        )
+
+        fields = stream.fields()
+        assert "device_platform" in fields
+        assert "country" in fields
+        assert "campaign_id" in fields
+        assert "date_start" in fields
+        assert "date_stop" in fields
+        assert "account_id" in fields
+
+    def test_fields_custom_no_duplicates(self, api, some_config):
+        """fields() must not produce duplicates when user already includes required fields."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "date_start", "date_stop", "ad_id", "impressions"],
+            insights_lookback_window=28,
+        )
+
+        fields = stream.fields()
+        assert len(fields) == len(set(fields)), "fields() should not contain duplicates"
+        assert fields == ["account_id", "date_start", "date_stop", "ad_id", "impressions"]
 
     @pytest.mark.parametrize(
         "custom_fields, expected_in_schema, expected_not_in_schema",
