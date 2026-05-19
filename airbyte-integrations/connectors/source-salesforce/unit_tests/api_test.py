@@ -427,6 +427,16 @@ def test_full_refresh_streams_are_concurrent(stream_config, stream_names, catalo
         assert isinstance(stream, StreamFacade)
 
 
+def test_describe_uses_only_validated_streams_from_catalog(stream_config) -> None:
+    stream_names = ["stream_1"]
+    catalog_stream_names = ["stream_1", "stale_stream", "Describe"]
+
+    streams = _get_streams(stream_config, stream_names, catalog_stream_names, SyncMode.full_refresh)
+    describe_stream = next(stream for stream in streams if stream.name == "Describe")._legacy_stream
+
+    assert describe_stream.sobjects_to_describe == stream_names
+
+
 def _get_streams(stream_config, stream_names, catalog_stream_names, sync_type) -> List[Stream]:
     sobjects_matcher = re.compile("/sobjects$")
     token_matcher = re.compile("/token$")

@@ -226,7 +226,11 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 continue
 
             streams.append(self._wrap_for_concurrency(config, stream, state_manager))
-        streams.append(self._wrap_for_concurrency(config, Describe(sf_api=sf_object, catalog=self.catalog), state_manager))
+        streams.append(
+            self._wrap_for_concurrency(
+                config, Describe(sf_api=sf_object, catalog=self.catalog, sobjects_to_describe=stream_objects.keys()), state_manager
+            )
+        )
         return streams
 
     def _wrap_for_concurrency(self, config, stream, state_manager):
