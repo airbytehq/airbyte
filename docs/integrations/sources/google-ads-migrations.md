@@ -24,12 +24,31 @@ The following field renames and removals affect built-in stream schemas:
 
 | Stream | Previous field name | New field name |
 |---|---|---|
-| Various report streams | `metrics.video_views` | `metrics.video_trueview_views` |
-| Various report streams | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
-| Various report streams | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
-| campaign | `campaign.start_date` | `campaign.start_date_time` |
-| campaign | `campaign.end_date` | `campaign.end_date_time` |
-| ad_group_ad | `CallAd` / `CallAdInfo` fields | Removed |
+| `account_performance_report` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `account_performance_report` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `account_performance_report` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `ad_group_ad` | `ad_group_ad.ad.call_ad.*` / `CallAdInfo` fields | Removed |
+| `ad_group_ad_legacy` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `ad_group_ad_legacy` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `ad_group_ad_legacy` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `campaign` | `campaign.start_date` | `campaign.start_date_time` |
+| `campaign` | `campaign.end_date` | `campaign.end_date_time` |
+| `campaign` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `campaign_budget` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `campaign_budget` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `campaign_budget` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `display_keyword_view` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `display_keyword_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `display_keyword_view` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `geographic_view_with_metrics` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `geographic_view_with_metrics` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `geographic_view_with_metrics` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `topic_view` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `topic_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `topic_view` | `metrics.video_views` | `metrics.video_trueview_views` |
+| `user_location_view` | `metrics.average_cpv` | `metrics.trueview_average_cpv` |
+| `user_location_view` | `metrics.video_view_rate` | `metrics.video_trueview_view_rate` |
+| `user_location_view` | `metrics.video_views` | `metrics.video_trueview_views` |
 
 The following fields were also removed in v23 and may affect custom queries (`custom_queries_array`), even though they are not used in built-in streams:
 
