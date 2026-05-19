@@ -2,7 +2,7 @@
 
 The Airbyte knowledge MCP server connects AI agents to comprehensive sources of information about Airbyte. It provides semantic search over Airbyte's documentation, website, OpenAPI specs, YouTube content, and GitHub issues, discussions, and pull requests.
 
-Use it to provide Airbyte knowledge to agents. It is not the primary interface agents should use to work with Airbyte data. For data workflows, use the [Agent MCP](/ai-agents/interfaces/mcp/), which is the primary way agents use Airbyte to work with data.
+Use it to provide Airbyte knowledge to agents. It is not the primary interface agents should use to work with data. The [Agent MCP](/ai-agents/interfaces/mcp/) is the primary way agents use Airbyte to work with data.
 
 ## When to use it
 
