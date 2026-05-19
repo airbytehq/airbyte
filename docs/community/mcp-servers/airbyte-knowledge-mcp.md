@@ -1,3 +1,7 @@
+---
+sidebar_label: Knowledge MCP server
+---
+
 # Airbyte knowledge MCP server
 
 The Airbyte knowledge MCP server connects AI agents to comprehensive sources of information about Airbyte. It provides semantic search over Airbyte's documentation, website, OpenAPI specs, YouTube content, and GitHub issues, discussions, and pull requests.
