@@ -61,6 +61,10 @@ An infrequent instance of maximum usage probably isn't a problem. If you're regu
 
 On connections with a manual schedule type, syncs that remain queued for 8 hours are automatically cancelled. On scheduled or cron connections, a queued sync waits until the next scheduled run arrives, at which point the older queued sync is replaced.
 
+### Manually queue a sync when capacity is exhausted
+
+If all committed data workers are in use and you click **Sync now** on a connection, Airbyte shows an **Insufficient capacity** confirmation before it queues the sync. To queue the sync until enough committed capacity is available, click **Queue sync**. To leave the connection unchanged, click **Cancel**.
+
 ### Optimize data worker usage
 
 If you can, it's preferable to optimize Airbyte by rescheduling connections outside of busy periods.
