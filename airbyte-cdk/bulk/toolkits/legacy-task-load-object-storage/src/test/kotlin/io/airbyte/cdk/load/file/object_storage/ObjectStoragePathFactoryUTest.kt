@@ -126,6 +126,30 @@ class ObjectStoragePathFactoryUTest {
         assertNotNull(matcher.match("prefix/stream+1/any_filename"))
     }
 
+    @Test
+    fun `test blank prefix and namespace do not generate a leading slash`() {
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
+            ObjectStoragePathConfiguration(
+                "",
+                DEFAULT_PATH_FORMAT,
+                DEFAULT_FILE_FORMAT,
+            )
+        val streamWithNullNamespace = mockk<DestinationStream>()
+        coEvery { streamWithNullNamespace.mappedDescriptor } returns
+            DestinationStream.Descriptor(null, "commits")
+        coEvery { streamWithNullNamespace.syncId } returns 101
+        val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
+
+        assertEquals(
+            "commits/1970_01_01_0_1",
+            factory.getPathToFile(streamWithNullNamespace, 1L)
+        )
+
+        val matcher = factory.getPathMatcher(streamWithNullNamespace)
+        assertNotNull(matcher.match("commits/1970_01_01_0_1"))
+        assertNull(matcher.match("/commits/1970_01_01_0_1"))
+    }
+
     @ParameterizedTest
     @MethodSource("pathTemplateMatrix")
     fun `handles duplicate vars in path templates`(
@@ -229,7 +253,7 @@ class ObjectStoragePathFactoryUTest {
                     "",
                     "\${NAMESPACE}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}/\${STREAM_NAME}",
                     "{part_number}{format_extension}",
-                    "/stream_abc/stream_abc/stream_abc/stream_abc6",
+                    "stream_abc/stream_abc/stream_abc/stream_abc6",
                     6,
                 ),
                 Arguments.arguments(
