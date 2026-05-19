@@ -85,7 +85,7 @@ If you've tried to optimize scheduling and still need more data workers, contact
 
 For critical data pipelines that must always run on time, you can enable on-demand capacity on individual connections. When committed capacity is available, the sync uses it at no extra cost. When committed capacity is exhausted, the sync runs immediately instead of being queued.
 
-Once your organization administrator enables on-demand capacity at the organization level, instance admins, organization admins, and workspace admins can enable it per connection. Other roles can view the toggle, but Airbyte disables it and shows a tooltip: "Only admins can enable or disable on-demand capacity."
+Once your organization administrator enables on-demand capacity at the organization level, organization admins and workspace admins can enable it per connection. Other roles can view the toggle, but Airbyte disables it and shows a tooltip: "Only admins can enable or disable on-demand capacity."
 
 ### Enable on-demand capacity on a connection
 
@@ -93,7 +93,7 @@ Once your organization administrator enables on-demand capacity at the organizat
 
 2. Click **Settings**.
 
-3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable on demand capacity for this connection. Syncs for this connection will never be queued. Syncs that run when committed data worker is exhausted will be charged a premium rate." You must have the instance admin, organization admin, or workspace admin role to change this toggle.
+3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable on demand capacity for this connection. Syncs for this connection will never be queued. Syncs that run when committed data worker is exhausted will be charged a premium rate." You must have the organization admin or workspace admin role to change this toggle.
 
 You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup.
 
