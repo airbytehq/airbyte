@@ -173,6 +173,24 @@ class SalesforceErrorHandlerTest(TestCase):
         # 401 is a 4xx that is NOT in _RETRYABLE_400_STATUS_CODES, so it should FAIL
         assert error_resolution.response_action == ResponseAction.FAIL
 
+    def test_given_404_not_found_when_interpret_response_then_fail_as_config_error(self) -> None:
+        error_handler = SalesforceErrorHandler(stream_name="MissingObject")
+        response = self._create_response(
+            "GET",
+            f"{_ANY_BASE_URL}/services/data/{API_VERSION}/sobjects/MissingObject",
+            404,
+            [{"errorCode": "NOT_FOUND", "message": "The requested resource does not exist"}],
+        )
+
+        error_resolution = error_handler.interpret_response(response)
+
+        assert error_resolution.response_action == ResponseAction.FAIL
+        assert error_resolution.failure_type == FailureType.config_error
+        assert (
+            error_resolution.error_message
+            == 'Salesforce object "MissingObject" not found in this Salesforce instance. Remove the stream from the catalog or refresh the schema.'
+        )
+
     def _create_response(self, http_method: str, url: str, status_code: int, json: Any) -> requests.Response:
         with requests_mock.Mocker() as mocker:
             mocker.register_uri(

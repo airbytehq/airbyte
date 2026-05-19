@@ -59,9 +59,21 @@ _RETRYABLE_400_STATUS_CODES = {
 _AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
     "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
 }
+_UNKNOWN_STREAM_NAME = "<unknown stream>"
 
 
 logger = logging.getLogger("airbyte")
+
+
+def salesforce_object_not_found_message(stream_name: str = _UNKNOWN_STREAM_NAME) -> str:
+    if stream_name == _UNKNOWN_STREAM_NAME:
+        return (
+            "Salesforce object not found in this Salesforce instance. Remove the unavailable stream from the catalog or refresh the schema."
+        )
+    return (
+        f'Salesforce object "{stream_name}" not found in this Salesforce instance. '
+        "Remove the stream from the catalog or refresh the schema."
+    )
 
 
 class BulkNotSupportedException(Exception):
@@ -130,6 +142,13 @@ class SalesforceErrorHandler(ErrorHandler):
                         if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
                         else f"An error occurred: {response.content.decode()}"
                     ),
+                )
+
+            if response.status_code == codes.not_found and error_code == "NOT_FOUND":
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    salesforce_object_not_found_message(self._stream_name),
                 )
 
             if self._is_bulk_job_creation(response) and response.status_code in [
