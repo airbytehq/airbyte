@@ -623,17 +623,42 @@ class ReportCreationRequester(HttpRequester):
                 return existing_report
 
         # No existing report found — create a new one via the normal POST flow
-        return super().send_request(
-            stream_state=stream_state,
-            stream_slice=stream_slice,
-            next_page_token=next_page_token,
-            path=path,
-            request_headers=request_headers,
-            request_params=request_params,
-            request_body_data=request_body_data,
-            request_body_json=request_body_json,
-            log_formatter=log_formatter,
-        )
+        try:
+            return super().send_request(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+        except AirbyteTracedException as exc:
+            if not self._is_rate_limit_exception(exc):
+                raise
+            message = "Amazon SP-API report creation rate limit exceeded."
+            if report_type:
+                message = f"Amazon SP-API report creation rate limit exceeded for report type {report_type}."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=(
+                    f"Amazon SP-API retry budget exhausted during report creation for reportType={report_type}; "
+                    f"dataStartTime={requested_start}; dataEndTime={requested_end}; marketplaceIds={requested_marketplace_ids}. "
+                    f"Original error: {exc.internal_message or str(exc)}"
+                ),
+                failure_type=FailureType.transient_error,
+                exception=exc,
+            ) from exc
+
+    @staticmethod
+    def _is_rate_limit_exception(exc: AirbyteTracedException) -> bool:
+        if exc.failure_type != FailureType.transient_error:
+            return False
+
+        message = f"{exc.message or ''} {exc.internal_message or ''}".lower()
+        return "429" in message or "too many requests" in message or "rate limit" in message
 
     def _fetch_reports(
         self,

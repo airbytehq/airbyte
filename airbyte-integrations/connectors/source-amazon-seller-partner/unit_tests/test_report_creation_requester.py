@@ -9,6 +9,9 @@ from unittest.mock import MagicMock, patch
 import requests
 from components import ReportCreationRequester
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 
 def _create_response(status_code: int, json_body: dict) -> requests.Response:
     """Create a real requests.Response object with the given status code and JSON body."""
@@ -798,3 +801,54 @@ class TestSendRequest:
         call_kwargs = requester._http_client.send_request.call_args
         params = call_kwargs.kwargs.get("params", call_kwargs[1].get("params", {}))
         assert params["marketplaceIds"] == "ATVPDKIKX0DER,A2EUQ1WTGCTBG2"
+
+    def test_rewrites_exhausted_429_creation_error(self):
+        requester = _make_requester()
+        requester._request_body_json.return_value = {
+            "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-30T00:00:00Z",
+            "marketplaceIds": ["ATVPDKIKX0DER"],
+        }
+        requester._http_client.send_request.return_value = (None, _make_get_reports_response([]))
+        exhausted_error = AirbyteTracedException(
+            message="Exhausted available request attempts. Please see logs for more details. Exception: HTTP Status Code: 429.",
+            internal_message="Exhausted available request attempts. Exception: HTTP Status Code: 429. Error: Too many requests.",
+            failure_type=FailureType.transient_error,
+        )
+
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", side_effect=exhausted_error):
+            try:
+                requester.send_request(stream_state=None, stream_slice=None)
+            except AirbyteTracedException as exc:
+                assert exc.failure_type == FailureType.transient_error
+                assert exc.message == (
+                    "Amazon SP-API report creation rate limit exceeded for report type GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL."
+                )
+                assert "reportType=GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL" in exc.internal_message
+                assert "HTTP Status Code: 429" in exc.internal_message
+            else:
+                raise AssertionError("Expected AirbyteTracedException")
+
+    def test_preserves_non_rate_limit_creation_error(self):
+        requester = _make_requester()
+        requester._request_body_json.return_value = {
+            "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-30T00:00:00Z",
+            "marketplaceIds": ["ATVPDKIKX0DER"],
+        }
+        requester._http_client.send_request.return_value = (None, _make_get_reports_response([]))
+        config_error = AirbyteTracedException(
+            message="Amazon SP-API authorization failed.",
+            internal_message="HTTP Status Code: 403.",
+            failure_type=FailureType.config_error,
+        )
+
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", side_effect=config_error):
+            try:
+                requester.send_request(stream_state=None, stream_slice=None)
+            except AirbyteTracedException as exc:
+                assert exc is config_error
+            else:
+                raise AssertionError("Expected AirbyteTracedException")
