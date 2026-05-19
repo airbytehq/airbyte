@@ -13,7 +13,7 @@ WARNING: Do not modify this file.
 """
 
 
-# Declarative Source
+# Declarative source wrapper
 class SourceRss(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
