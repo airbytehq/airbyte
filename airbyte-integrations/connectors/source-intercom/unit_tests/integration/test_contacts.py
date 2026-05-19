@@ -63,6 +63,16 @@ class ContactsTest(TestCase):
                     stream_name, path, response_field
                 )
 
+    def test_search_query_uses_single_slice_without_upper_bound(self) -> None:
+        streams = {
+            "contacts": ("contacts/search", "data"),
+            "conversations": ("conversations/search", "conversations"),
+            "tickets": ("tickets/search", "tickets"),
+        }
+        for stream_name, (path, response_field) in streams.items():
+            with self.subTest(stream_name=stream_name):
+                self._assert_search_query_uses_single_slice_without_upper_bound(stream_name, path, response_field)
+
     def _assert_search_query_expands_sub_daily_start_time_to_day_boundary_without_upper_bound(
         self, stream_name: str, path: str, response_field: str
     ) -> None:
@@ -106,3 +116,36 @@ class ContactsTest(TestCase):
         assert len(query["value"]) == 2
         assert lower_bound == expected_lower_bound
         assert inclusive_lower_bound == expected_lower_bound
+
+    def _assert_search_query_uses_single_slice_without_upper_bound(self, stream_name: str, path: str, response_field: str) -> None:
+        start_datetime = datetime.now(timezone.utc) - timedelta(days=90)
+        start_timestamp = int(start_datetime.timestamp())
+        observed_bodies: List[Dict[str, Any]] = []
+
+        def capture_request_body(request: requests_mock.request._RequestObjectProxy) -> bool:
+            observed_bodies.append(json.loads(request.text))
+            return True
+
+        with requests_mock.Mocker() as http_mocker:
+            http_mocker.post(
+                f"https://api.intercom.io/{path}",
+                additional_matcher=capture_request_body,
+                json={
+                    response_field: [
+                        {
+                            "id": f"{stream_name}_1",
+                            "updated_at": start_timestamp + 60,
+                        }
+                    ],
+                    "pages": {},
+                },
+            )
+
+            output = read(
+                stream_name=stream_name,
+                config_builder=ConfigBuilder().start_date(start_datetime),
+            )
+
+        assert len(output.records) == 1
+        assert len(observed_bodies) == 1
+        assert observed_bodies[0]["query"]["operator"] == "OR"

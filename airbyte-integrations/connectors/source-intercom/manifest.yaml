@@ -487,8 +487,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: P30D
-        cursor_granularity: PT1S
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
@@ -563,8 +561,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        step: P30D
-        cursor_granularity: PT1S
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
