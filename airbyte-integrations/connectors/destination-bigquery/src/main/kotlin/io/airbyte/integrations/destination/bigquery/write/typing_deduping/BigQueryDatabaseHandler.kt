@@ -89,23 +89,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
          * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
          * doesn't do a good job of inferring the query location. Pass it in explicitly.
          */
-        var job =
-            bq.create(
-                JobInfo.of(
-                    JobId.newBuilder().setLocation(datasetLocation).build(),
-                    QueryJobConfiguration.of(statement)
-                )
-            )
-        // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-        while (JobStatus.State.DONE != job.status.state) {
-            Thread.sleep(1000L)
-            job = job.reload()
-        }
-        job.status.error?.let {
-            throw wrapWithConfigExceptionIfNeeded(
-                BigQueryException(listOf(job.status.error) + job.status.executionErrors)
-            )
-        }
+        val job = runQueryWithConcurrentUpdateRetries(queryId, statement)
 
         val statistics = job.getStatistics<JobStatistics.QueryStatistics>()
         logger.debug {
@@ -171,6 +155,68 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         }
     }
 
+    /**
+     * Submit [statement] as a BigQuery query job, poll to completion, and retry on transient
+     * concurrent-update aborts.
+     *
+     * BigQuery uses optimistic concurrency control for DML. When two transactions touch the same
+     * table in overlapping windows, BigQuery aborts one of them with the message `Transaction is
+     * aborted due to concurrent update`. The canonical mitigation per BigQuery docs is to retry the
+     * aborted transaction. The typing+deduping operations we run here (MERGE, CREATE OR REPLACE
+     * TABLE) are idempotent, so retrying is safe.
+     */
+    private fun runQueryWithConcurrentUpdateRetries(queryId: UUID, statement: String): Job {
+        var attemptDelayMs = CONCURRENT_UPDATE_INITIAL_DELAY_MS
+        var lastException: BigQueryException? = null
+        for (attemptNumber in 1..CONCURRENT_UPDATE_MAX_ATTEMPTS) {
+            var job =
+                bq.create(
+                    JobInfo.of(
+                        JobId.newBuilder().setLocation(datasetLocation).build(),
+                        QueryJobConfiguration.of(statement)
+                    )
+                )
+            // job.waitFor() gets stuck forever in some failure cases, so manually poll the job
+            // instead.
+            while (JobStatus.State.DONE != job.status.state) {
+                Thread.sleep(1000L)
+                job = job.reload()
+            }
+            val jobError = job.status.error
+            if (jobError == null) {
+                return job
+            }
+            val bqException = BigQueryException(listOf(jobError) + job.status.executionErrors)
+            if (
+                isConcurrentUpdateError(bqException) &&
+                    attemptNumber < CONCURRENT_UPDATE_MAX_ATTEMPTS
+            ) {
+                lastException = bqException
+                logger.warn(bqException) {
+                    "BigQuery aborted sql $queryId due to concurrent update " +
+                        "(attempt $attemptNumber/$CONCURRENT_UPDATE_MAX_ATTEMPTS). " +
+                        "Sleeping ${attemptDelayMs}ms and retrying."
+                }
+                val withJitter = attemptDelayMs + (1000 * Math.random()).toLong()
+                Thread.sleep(withJitter)
+                attemptDelayMs = min(attemptDelayMs * 2, CONCURRENT_UPDATE_MAX_DELAY_MS)
+                continue
+            }
+            throw wrapWithConfigExceptionIfNeeded(bqException)
+        }
+        // Should be unreachable: the loop either returns on success or throws on failure. Only
+        // way to exit is if every attempt was a concurrent-update abort AND we exhausted the
+        // retry budget, in which case the final attempt's exception is thrown above. This branch
+        // is defensive to satisfy the compiler.
+        throw wrapWithConfigExceptionIfNeeded(
+            lastException
+                ?: BigQueryException(
+                    500,
+                    "BigQuery job exhausted concurrent-update retry budget without a recorded error."
+                )
+        )
+    }
+
     private fun wrapWithConfigExceptionIfNeeded(e: Exception): Exception {
         when (e) {
             is BigQueryException -> {
@@ -184,5 +230,26 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
 
     companion object {
         private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
+
+        /**
+         * Text fragment BigQuery includes in the error message when it aborts a transaction due to
+         * optimistic concurrency control. See
+         * https://cloud.google.com/bigquery/docs/data-manipulation-language#concurrent_dml_statements.
+         */
+        private const val CONCURRENT_UPDATE_ERROR_FRAGMENT =
+            "Transaction is aborted due to concurrent update"
+
+        private const val CONCURRENT_UPDATE_MAX_ATTEMPTS = 5
+        private const val CONCURRENT_UPDATE_INITIAL_DELAY_MS = 1000L
+        private const val CONCURRENT_UPDATE_MAX_DELAY_MS = 60_000L
+
+        internal fun isConcurrentUpdateError(e: BigQueryException): Boolean {
+            if (e.message?.contains(CONCURRENT_UPDATE_ERROR_FRAGMENT) == true) {
+                return true
+            }
+            return e.errors.orEmpty().any {
+                it.message?.contains(CONCURRENT_UPDATE_ERROR_FRAGMENT) == true
+            }
+        }
     }
 }
