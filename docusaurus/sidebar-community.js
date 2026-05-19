@@ -35,6 +35,19 @@ const licenses = {
   ],
 };
 
+const mcpServers = {
+  type: "category",
+  label: "MCP servers",
+  link: {
+    type: "doc",
+    id: "mcp-servers/readme",
+  },
+  items: [
+    "mcp-servers/airbyte-knowledge-mcp",
+    "mcp-servers/pyairbyte-mcp",
+  ],
+};
+
 module.exports = {
   community: [
     {
@@ -47,6 +60,7 @@ module.exports = {
       },
       items: [
         "getting-support",
+        mcpServers,
         contributeToAirbyte,
         "code-of-conduct",
         licenses,
