@@ -1,6 +1,8 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from copy import deepcopy
+from unittest.mock import patch
 
 import pytest
 from conftest import _YAML_FILE_PATH
@@ -9,6 +11,10 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 
 
 CLOUD_ID = "12345678-1234-1234-1234-123456789abc"
+
+_ACCESSIBLE_RESOURCES_RESPONSE = json.dumps(
+    [{"id": CLOUD_ID, "url": "https://airbyteio.atlassian.net", "name": "airbyteio", "scopes": ["jira"]}]
+).encode()
 
 
 def _source_with_config(config):
@@ -22,8 +28,20 @@ def _stream(config, stream_name):
     raise ValueError(f"Stream {stream_name} not found")
 
 
+def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
+    """Return a context-manager mock for `urllib.request.urlopen`."""
+    from io import BytesIO
+    from unittest.mock import MagicMock
+
+    resp = MagicMock()
+    resp.read.return_value = accessible_resources_payload
+    resp.__enter__ = lambda s: BytesIO(accessible_resources_payload)
+    resp.__exit__ = lambda s, *a: None
+    return patch("components.urllib.request.urlopen", return_value=resp)
+
+
 @pytest.mark.parametrize(
-    "credentials,stream_name,expected_url_base,expected_authenticator,expected_token",
+    "credentials,stream_name,expected_url_base,expected_authenticator,expected_token,mock_accessible_resources",
     [
         pytest.param(
             {
@@ -36,6 +54,7 @@ def _stream(config, stream_name):
             "https://airbyteio.atlassian.net/rest/api/3/",
             "BasicHttpAuthenticator",
             "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu",
+            False,
             id="api_token_without_cloud_id_rest_v3_domain_route",
         ),
         pytest.param(
@@ -46,9 +65,22 @@ def _stream(config, stream_name):
             },
             "application_roles",
             f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3/",
-            "BearerAuthenticator",
-            "Bearer token",
-            id="service_account_rest_v3_gateway_route",
+            "JiraServiceAccountAuthenticator",
+            None,
+            False,
+            id="service_account_explicit_cloud_id_rest_v3",
+        ),
+        pytest.param(
+            {
+                "auth_type": "Service Account",
+                "service_account_token": "token",
+            },
+            "application_roles",
+            f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3/",
+            "JiraServiceAccountAuthenticator",
+            None,
+            True,
+            id="service_account_auto_cloud_id_rest_v3",
         ),
         pytest.param(
             {
@@ -62,6 +94,7 @@ def _stream(config, stream_name):
             f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3/",
             "JiraOAuthAuthenticator",
             None,
+            False,
             id="oauth_rest_v3_gateway_route",
         ),
         pytest.param(
@@ -75,6 +108,7 @@ def _stream(config, stream_name):
             "https://airbyteio.atlassian.net/rest/agile/1.0/",
             "BasicHttpAuthenticator",
             "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu",
+            False,
             id="api_token_without_cloud_id_agile_v1_domain_route",
         ),
         pytest.param(
@@ -85,9 +119,22 @@ def _stream(config, stream_name):
             },
             "boards",
             f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/agile/1.0/",
-            "BearerAuthenticator",
-            "Bearer token",
-            id="service_account_agile_v1_gateway_route",
+            "JiraServiceAccountAuthenticator",
+            None,
+            False,
+            id="service_account_explicit_cloud_id_agile_v1",
+        ),
+        pytest.param(
+            {
+                "auth_type": "Service Account",
+                "service_account_token": "token",
+            },
+            "boards",
+            f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/agile/1.0/",
+            "JiraServiceAccountAuthenticator",
+            None,
+            True,
+            id="service_account_auto_cloud_id_agile_v1",
         ),
         pytest.param(
             {
@@ -101,15 +148,22 @@ def _stream(config, stream_name):
             f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/agile/1.0/",
             "JiraOAuthAuthenticator",
             None,
+            False,
             id="oauth_agile_v1_gateway_route",
         ),
     ],
 )
-def test_url_routing_by_credential_type(config, credentials, stream_name, expected_url_base, expected_authenticator, expected_token):
+def test_url_routing_by_credential_type(
+    config, credentials, stream_name, expected_url_base, expected_authenticator, expected_token, mock_accessible_resources
+):
     test_config = deepcopy(config)
     test_config["credentials"] = credentials
 
-    stream = _stream(test_config, stream_name)
+    if mock_accessible_resources:
+        with _mock_urlopen():
+            stream = _stream(test_config, stream_name)
+    else:
+        stream = _stream(test_config, stream_name)
 
     assert stream.retriever.requester.get_url_base() == expected_url_base
     authenticator = stream.retriever.requester._authenticator

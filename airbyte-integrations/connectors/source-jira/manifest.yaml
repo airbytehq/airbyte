@@ -14,8 +14,8 @@ definitions:
         username: "{{ config['credentials']['email'] }}"
         password: "{{ config['credentials']['api_token'] }}"
       "Service Account":
-        type: BearerAuthenticator
-        api_token: "{{ config['credentials']['service_account_token'] }}"
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.JiraServiceAccountAuthenticator
       "OAuth2.0":
         type: CustomAuthenticator
         class_name: source_declarative_manifest.components.JiraOAuthAuthenticator
@@ -14748,7 +14748,6 @@ spec:
             required:
               - auth_type
               - service_account_token
-              - cloud_id
             properties:
               auth_type:
                 type: string
@@ -14763,7 +14762,7 @@ spec:
               cloud_id:
                 type: string
                 title: Cloud ID
-                description: Jira Cloud ID. The Cloud ID is different from your Atlassian Organization ID.
+                description: "Optional. Jira Cloud ID — auto-discovered from the service account token when omitted. Required only when the token has access to multiple Jira sites. The Cloud ID is different from your Atlassian Organization ID."
                 pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                 pattern_descriptor: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                 examples:
