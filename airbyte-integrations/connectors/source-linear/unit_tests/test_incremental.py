@@ -15,10 +15,14 @@ import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
+from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
 
 
@@ -209,3 +213,31 @@ def test_flat_api_key_config_after_migration_can_build_auth_header() -> None:
     headers = partition._retriever.requester._request_headers()
 
     assert headers["Authorization"] == "test-api-key"
+
+
+def test_linear_graphql_rate_limit_error_is_transient() -> None:
+    """Linear GraphQL rate-limit responses must not be classified as bad requests."""
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
+    streams = {s.name: s for s in src.streams(config=CONFIG)}
+    partition = next(iter(streams["issues"].generate_partitions()))
+    error_handler = partition._retriever.requester.error_handler
+
+    response = MagicMock(spec=Response, status_code=400)
+    response.ok = False
+    response.headers = {"Content-Type": "application/json"}
+    response.json.return_value = {
+        "errors": [
+            {
+                "message": "Ratelimited.",
+                "extensions": {
+                    "code": "RATELIMITED",
+                },
+            }
+        ]
+    }
+
+    result = error_handler.interpret_response(response)
+
+    assert result.response_action == ResponseAction.RETRY
+    assert result.failure_type == FailureType.transient_error
+    assert result.error_message == "Rate limit exceeded for Linear API."

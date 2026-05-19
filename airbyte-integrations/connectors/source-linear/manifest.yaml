@@ -1403,6 +1403,28 @@ definitions:
           token_refresh_endpoint: "https://api.linear.app/oauth/token"
           access_token_name: access_token
           grant_type: refresh_token
+    error_handler:
+      type: CustomErrorHandler
+      class_name: source_declarative_manifest.components.LinearErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: retry-after
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          failure_type: transient_error
+          error_message: Rate limit exceeded for Linear API.
+          predicate: >-
+            {{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+          failure_type: transient_error
+          error_message: Rate limit exceeded for Linear API.
 
 streams:
   - $ref: "#/definitions/streams/issues"
