@@ -140,10 +140,7 @@ class ObjectStoragePathFactoryUTest {
         coEvery { streamWithNullNamespace.syncId } returns 101
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
 
-        assertEquals(
-            "commits/1970_01_01_0_1",
-            factory.getPathToFile(streamWithNullNamespace, 1L)
-        )
+        assertEquals("commits/1970_01_01_0_1", factory.getPathToFile(streamWithNullNamespace, 1L))
 
         val matcher = factory.getPathMatcher(streamWithNullNamespace)
         assertNotNull(matcher.match("commits/1970_01_01_0_1"))

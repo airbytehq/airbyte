@@ -313,7 +313,8 @@ class ObjectStoragePathFactory(
     ): String {
         val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
-        val resolved = variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
+        val resolved =
+            variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
         return removeLeadingDelimiterFromBlankLeadingVariable(resolved, pattern, context)
     }
 
