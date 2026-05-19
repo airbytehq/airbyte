@@ -313,7 +313,25 @@ class ObjectStoragePathFactory(
     ): String {
         val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
-        return variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
+        val resolved =
+            variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
+        return removeLeadingDelimiterFromBlankLeadingVariable(resolved, pattern, context)
+    }
+
+    private fun removeLeadingDelimiterFromBlankLeadingVariable(
+        resolvedPath: String,
+        pattern: String,
+        context: VariableContext,
+    ): String {
+        val startsWithBlankVariable =
+            pathVariablesConstant.any { variable ->
+                pattern.startsWith("${variable.toMacro()}/") && variable.provider(context).isBlank()
+            }
+        return if (startsWithBlankVariable) {
+            resolvedPath.removePrefix("/")
+        } else {
+            resolvedPath
+        }
     }
 
     private fun getFormattedFileName(context: VariableContext): String {
@@ -387,6 +405,12 @@ class ObjectStoragePathFactory(
                 pathVariableToPattern,
                 variableIndexTuples
             )
+        val replacedForPathWithLeadingEmptyVariableRemoved =
+            removeLeadingDelimiterFromBlankLeadingVariable(
+                replacedForPath,
+                pathPattern,
+                VariableContext(stream)
+            )
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
@@ -397,7 +421,7 @@ class ObjectStoragePathFactory(
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
         val replacedForPathWithEmptyVariablesRemoved =
-            resolveRetainingTerminalSlash(replacedForPath)
+            resolveRetainingTerminalSlash(replacedForPathWithLeadingEmptyVariableRemoved)
         val combined = "$replacedForPathWithEmptyVariablesRemoved$replacedForFile"
         val withSuffix =
             if (suffixPattern != null) {
