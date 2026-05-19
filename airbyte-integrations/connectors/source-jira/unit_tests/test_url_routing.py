@@ -2,7 +2,8 @@
 
 import json
 from copy import deepcopy
-from unittest.mock import patch
+from io import BytesIO
+from unittest.mock import MagicMock, patch
 
 import pytest
 from conftest import _YAML_FILE_PATH
@@ -12,9 +13,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 
 CLOUD_ID = "12345678-1234-1234-1234-123456789abc"
 
-_ACCESSIBLE_RESOURCES_RESPONSE = json.dumps(
-    [{"id": CLOUD_ID, "url": "https://airbyteio.atlassian.net", "name": "airbyteio", "scopes": ["jira"]}]
-).encode()
+_ACCESSIBLE_RESOURCES_RESPONSE = json.dumps([{"id": CLOUD_ID, "url": "https://airbyteio.atlassian.net", "name": "airbyteio"}]).encode()
 
 
 def _source_with_config(config):
@@ -30,9 +29,6 @@ def _stream(config, stream_name):
 
 def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
     """Return a context-manager mock for `urllib.request.urlopen`."""
-    from io import BytesIO
-    from unittest.mock import MagicMock
-
     resp = MagicMock()
     resp.read.return_value = accessible_resources_payload
     resp.__enter__ = lambda s: BytesIO(accessible_resources_payload)
@@ -55,20 +51,7 @@ def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
             "BasicHttpAuthenticator",
             "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu",
             False,
-            id="api_token_without_cloud_id_rest_v3_domain_route",
-        ),
-        pytest.param(
-            {
-                "auth_type": "Service Account",
-                "service_account_token": "token",
-                "cloud_id": CLOUD_ID,
-            },
-            "application_roles",
-            f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3/",
-            "JiraServiceAccountAuthenticator",
-            None,
-            False,
-            id="service_account_explicit_cloud_id_rest_v3",
+            id="api_token_rest_v3_domain_route",
         ),
         pytest.param(
             {
@@ -109,20 +92,7 @@ def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
             "BasicHttpAuthenticator",
             "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu",
             False,
-            id="api_token_without_cloud_id_agile_v1_domain_route",
-        ),
-        pytest.param(
-            {
-                "auth_type": "Service Account",
-                "service_account_token": "token",
-                "cloud_id": CLOUD_ID,
-            },
-            "boards",
-            f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/agile/1.0/",
-            "JiraServiceAccountAuthenticator",
-            None,
-            False,
-            id="service_account_explicit_cloud_id_agile_v1",
+            id="api_token_agile_v1_domain_route",
         ),
         pytest.param(
             {

@@ -14759,15 +14759,6 @@ spec:
                 description: Atlassian Service Account API token. Service account API tokens authenticate with Bearer authentication and use Atlassian's Platform API Gateway.
                 airbyte_secret: true
                 order: 1
-              cloud_id:
-                type: string
-                title: Cloud ID
-                description: "Optional. Jira Cloud ID — auto-discovered from the service account token when omitted. Required only when the token has access to multiple Jira sites. The Cloud ID is different from your Atlassian Organization ID."
-                pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                pattern_descriptor: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                examples:
-                  - "12345678-1234-1234-1234-123456789abc"
-                order: 2
           - type: object
             title: OAuth2.0
             required:

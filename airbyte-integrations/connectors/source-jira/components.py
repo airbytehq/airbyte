@@ -128,8 +128,7 @@ class JiraServiceAccountAuthenticator:
         creds = self.config.get("credentials", {})
         if creds.get("auth_type") != "Service Account":
             return
-        if not creds.get("cloud_id"):
-            self._resolve_cloud_id()
+        self._resolve_cloud_id()
 
     def _resolve_cloud_id(self) -> None:
         token = self.config["credentials"]["service_account_token"]
