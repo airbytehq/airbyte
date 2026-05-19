@@ -39,7 +39,7 @@ object GcsDataLakeTestUtil {
     ): Catalog {
         // Create utility instances for test
         val icebergUtil =
-            IcebergUtil(tableIdGenerator, AirbyteValueCoercer(useFastTimestampParsing = true))
+            IcebergUtil(tableIdGenerator, AirbyteValueCoercer())
         val gcsDataLakeCatalogUtil = GcsDataLakeCatalogUtil(icebergUtil)
 
         val properties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
