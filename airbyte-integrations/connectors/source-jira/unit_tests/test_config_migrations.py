@@ -13,13 +13,13 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 
 CLOUD_ID = "12345678-1234-1234-1234-123456789abc"
 
-_ACCESSIBLE_RESOURCES_RESPONSE = json.dumps([{"id": CLOUD_ID, "url": "https://airbyteio.atlassian.net", "name": "airbyteio"}]).encode()
+_TENANT_INFO_RESPONSE = json.dumps({"cloudId": CLOUD_ID}).encode()
 
 
-def _mock_urlopen():
+def _mock_tenant_info():
     resp = MagicMock()
-    resp.read.return_value = _ACCESSIBLE_RESOURCES_RESPONSE
-    resp.__enter__ = lambda s: BytesIO(_ACCESSIBLE_RESOURCES_RESPONSE)
+    resp.read.return_value = _TENANT_INFO_RESPONSE
+    resp.__enter__ = lambda s: BytesIO(_TENANT_INFO_RESPONSE)
     resp.__exit__ = lambda s, *a: None
     return patch("components.urllib.request.urlopen", return_value=resp)
 
@@ -74,39 +74,35 @@ def test_config_migrations_copy_root_domain_to_api_token_credentials(config, exp
     assert migrated_config["credentials"]["domain"] == expected_domain
 
 
-@pytest.mark.parametrize(
-    "config",
-    [
-        pytest.param(
-            {
-                "credentials": {
-                    "auth_type": "Service Account",
-                    "service_account_token": "token",
-                },
-                "domain": "airbyteio.atlassian.net",
-            },
-            id="service_account_ignores_root_domain",
-        ),
-        pytest.param(
-            {
-                "credentials": {
-                    "auth_type": "OAuth2.0",
-                    "client_id": "client-id",
-                    "client_secret": "client-secret",
-                    "refresh_token": "refresh-token",
-                    "cloud_id": CLOUD_ID,
-                },
-                "domain": "airbyteio.atlassian.net",
-            },
-            id="oauth_ignores_root_domain",
-        ),
-    ],
-)
-def test_config_migrations_do_not_copy_root_domain_to_gateway_auth_credentials(config):
-    if config.get("credentials", {}).get("auth_type") == "Service Account":
-        with _mock_urlopen():
-            migrated_config = _migrated_config(deepcopy(config))
-    else:
+def test_config_migrations_service_account_does_not_copy_root_domain():
+    """Service Account has its own domain field — root domain migration should not overwrite it."""
+    config = {
+        "credentials": {
+            "auth_type": "Service Account",
+            "service_account_token": "token",
+            "domain": "airbyteio.atlassian.net",
+        },
+        "domain": "other-site.atlassian.net",
+    }
+    with _mock_tenant_info():
         migrated_config = _migrated_config(deepcopy(config))
 
-    assert "domain" not in migrated_config["credentials"]
+    assert migrated_config["credentials"]["domain"] == "airbyteio.atlassian.net"
+
+
+def test_config_migrations_oauth_does_not_copy_root_domain():
+    """OAuth credentials should not receive the root-level domain."""
+    config = {
+        "credentials": {
+            "auth_type": "OAuth2.0",
+            "client_id": "client-id",
+            "client_secret": "client-secret",
+            "refresh_token": "refresh-token",
+            "cloud_id": CLOUD_ID,
+        },
+        "domain": "airbyteio.atlassian.net",
+    }
+    migrated_config = _migrated_config(deepcopy(config))
+
+    creds = migrated_config["credentials"]
+    assert creds.get("domain") is None or "domain" not in creds

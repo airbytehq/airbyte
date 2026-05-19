@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 
 CLOUD_ID = "12345678-1234-1234-1234-123456789abc"
 
-_ACCESSIBLE_RESOURCES_RESPONSE = json.dumps([{"id": CLOUD_ID, "url": "https://airbyteio.atlassian.net", "name": "airbyteio"}]).encode()
+_TENANT_INFO_RESPONSE = json.dumps({"cloudId": CLOUD_ID}).encode()
 
 
 def _source_with_config(config):
@@ -27,17 +27,17 @@ def _stream(config, stream_name):
     raise ValueError(f"Stream {stream_name} not found")
 
 
-def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
+def _mock_tenant_info(payload=_TENANT_INFO_RESPONSE):
     """Return a context-manager mock for `urllib.request.urlopen`."""
     resp = MagicMock()
-    resp.read.return_value = accessible_resources_payload
-    resp.__enter__ = lambda s: BytesIO(accessible_resources_payload)
+    resp.read.return_value = payload
+    resp.__enter__ = lambda s: BytesIO(payload)
     resp.__exit__ = lambda s, *a: None
     return patch("components.urllib.request.urlopen", return_value=resp)
 
 
 @pytest.mark.parametrize(
-    "credentials,stream_name,expected_url_base,expected_authenticator,expected_token,mock_accessible_resources",
+    "credentials,stream_name,expected_url_base,expected_authenticator,expected_token,mock_tenant_info",
     [
         pytest.param(
             {
@@ -57,6 +57,7 @@ def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
             {
                 "auth_type": "Service Account",
                 "service_account_token": "token",
+                "domain": "airbyteio.atlassian.net",
             },
             "application_roles",
             f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3/",
@@ -98,6 +99,7 @@ def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
             {
                 "auth_type": "Service Account",
                 "service_account_token": "token",
+                "domain": "airbyteio.atlassian.net",
             },
             "boards",
             f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/agile/1.0/",
@@ -124,13 +126,13 @@ def _mock_urlopen(accessible_resources_payload=_ACCESSIBLE_RESOURCES_RESPONSE):
     ],
 )
 def test_url_routing_by_credential_type(
-    config, credentials, stream_name, expected_url_base, expected_authenticator, expected_token, mock_accessible_resources
+    config, credentials, stream_name, expected_url_base, expected_authenticator, expected_token, mock_tenant_info
 ):
     test_config = deepcopy(config)
     test_config["credentials"] = credentials
 
-    if mock_accessible_resources:
-        with _mock_urlopen():
+    if mock_tenant_info:
+        with _mock_tenant_info():
             stream = _stream(test_config, stream_name)
     else:
         stream = _stream(test_config, stream_name)

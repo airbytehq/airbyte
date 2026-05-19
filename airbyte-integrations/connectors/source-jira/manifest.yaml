@@ -14748,6 +14748,7 @@ spec:
             required:
               - auth_type
               - service_account_token
+              - domain
             properties:
               auth_type:
                 type: string
@@ -14759,6 +14760,14 @@ spec:
                 description: Atlassian Service Account API token. Service account API tokens authenticate with Bearer authentication and use Atlassian's Platform API Gateway.
                 airbyte_secret: true
                 order: 1
+              domain:
+                type: string
+                title: Domain
+                pattern_descriptor: "<your-domain>.atlassian.net"
+                examples:
+                - "<your-domain>.atlassian.net"
+                description: "Your Jira domain (e.g. airbyteio.atlassian.net). Used to resolve the Jira Cloud ID automatically."
+                order: 2
           - type: object
             title: OAuth2.0
             required:

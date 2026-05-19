@@ -115,10 +115,9 @@ class JiraOAuthAuthenticator:
 class JiraServiceAccountAuthenticator:
     """Authenticator for Atlassian Service Account API tokens.
 
-    Automatically resolves the Jira Cloud ID from the Atlassian
-    accessible-resources API so users don't need to supply it manually.
-    If the user provides `cloud_id` in the config, that value is used
-    as-is and no API call is made.
+    Resolves the Jira Cloud ID from the user-provided `domain` via the
+    unauthenticated `/_edge/tenant_info` endpoint so the connector can
+    route requests through the Atlassian Platform API Gateway.
     """
 
     config: Mapping[str, Any]
@@ -131,27 +130,16 @@ class JiraServiceAccountAuthenticator:
         self._resolve_cloud_id()
 
     def _resolve_cloud_id(self) -> None:
-        token = self.config["credentials"]["service_account_token"]
-        req = urllib.request.Request(
-            _ACCESSIBLE_RESOURCES_URL,
-            headers={"Authorization": f"Bearer {token}"},
-        )
+        domain = self.config["credentials"]["domain"]
+        url = f"https://{domain}/_edge/tenant_info"
+        req = urllib.request.Request(url)
         with urllib.request.urlopen(req, timeout=30) as resp:
-            resources = json.load(resp)
+            tenant_info = json.load(resp)
 
-        if not resources:
-            raise ValueError(
-                "No accessible Jira Cloud instances found for this service account token. Verify the token has the required Jira scopes."
-            )
-
-        if len(resources) == 1:
-            self.config["credentials"]["cloud_id"] = resources[0]["id"]
-            return
-
-        available = [(r.get("id"), r.get("url"), r.get("name")) for r in resources]
-        raise ValueError(
-            f"Multiple Jira Cloud instances found: {available}. Please specify 'cloud_id' in the Service Account credentials to select one."
-        )
+        cloud_id = tenant_info.get("cloudId")
+        if not cloud_id:
+            raise ValueError(f"Could not resolve Cloud ID from {url}. Verify the domain is a valid Jira Cloud site.")
+        self.config["credentials"]["cloud_id"] = cloud_id
 
     def get_auth_header(self) -> Mapping[str, str]:
         token = self.config["credentials"]["service_account_token"]
