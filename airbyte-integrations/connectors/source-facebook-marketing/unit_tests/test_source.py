@@ -8,6 +8,7 @@ from unittest.mock import call
 
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
 
@@ -19,6 +20,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
+    FailureType,
     Status,
     SyncMode,
 )
@@ -119,6 +121,35 @@ class TestSourceFacebookMarketing:
 
         assert not ok
         assert error_msg == "Unexpected error: RuntimeError('Something went wrong!')"
+
+    def test_check_connection_airbyte_traced_exception(self, api, config, logger_mock, fb_marketing):
+        api.return_value.get_account.side_effect = AirbyteTracedException(
+            message="The Facebook Marketing access token has expired or is invalid.",
+            internal_message="Error validating access token: Session has expired.",
+            failure_type=FailureType.config_error,
+        )
+
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert not ok
+        assert error_msg == "The Facebook Marketing access token has expired or is invalid."
+
+    def test_check_connection_facebook_request_error(self, api, config, logger_mock, fb_marketing):
+        api.return_value.get_account.side_effect = FacebookRequestError(
+            message="Call was not successful",
+            request_context={"method": "GET"},
+            http_status=400,
+            http_headers={},
+            body='{"error": {"message": "Error validating access token: Session has expired.", "code": 190, "error_subcode": 463}}',
+        )
+
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert not ok
+        assert (
+            error_msg
+            == "The Facebook Marketing access token has expired or is invalid. Re-authenticate this source in Airbyte, or provide a new valid access token with the required permissions."
+        )
 
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)

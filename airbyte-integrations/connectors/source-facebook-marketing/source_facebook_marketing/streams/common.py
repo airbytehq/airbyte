@@ -172,7 +172,10 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     elif "Error validating access token" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+        friendly_msg = (
+            "The Facebook Marketing access token has expired or is invalid. "
+            "Re-authenticate this source in Airbyte, or provide a new valid access token with the required permissions."
+        )
 
     elif "(#100) Missing permissions" in msg:
         failure_type = FailureType.config_error
