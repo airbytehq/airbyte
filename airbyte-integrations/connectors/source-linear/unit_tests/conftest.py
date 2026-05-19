@@ -4,6 +4,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
+
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 CONNECTOR_DIR = Path(__file__).parent.parent

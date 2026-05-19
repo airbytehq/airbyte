@@ -20,9 +20,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
 
 
 class LinearErrorHandler(DefaultErrorHandler):
-    def interpret_response(
-        self, response_or_exception: Optional[Union[requests.Response, Exception]]
-    ) -> ErrorResolution:
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if self.response_filters:
             for response_filter in self.response_filters:
                 matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)
