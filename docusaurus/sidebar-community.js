@@ -43,6 +43,11 @@ const mcpServers = {
     id: "mcp-servers/readme",
   },
   items: [
+    {
+      type: "link",
+      label: "Agent MCP",
+      href: "/ai-agents/interfaces/mcp/",
+    },
     "mcp-servers/airbyte-knowledge-mcp",
     "mcp-servers/pyairbyte-mcp",
   ],
@@ -64,11 +69,6 @@ module.exports = {
         contributeToAirbyte,
         "code-of-conduct",
         licenses,
-        {
-          type: "link",
-          label: "Public roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
       ],
     },
   ],
