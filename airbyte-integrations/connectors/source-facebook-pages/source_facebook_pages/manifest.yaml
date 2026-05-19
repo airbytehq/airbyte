@@ -19,10 +19,14 @@ definitions:
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
+        - error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+          action: FAIL
+          failure_type: config_error
+          error_message: Facebook API response data exceeds the request limit.
         - http_codes: [400]
-          action: RETRY
-        - action: RETRY
-          error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+          action: FAIL
+          failure_type: config_error
+          error_message: Facebook API request contains invalid Page fields, metrics, or permissions.
 
     authenticator:
       type: CustomAuthenticator
