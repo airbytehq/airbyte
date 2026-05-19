@@ -765,7 +765,7 @@ class TestVendorSalesReportsFullRefresh:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -800,7 +800,7 @@ class TestVendorSalesReportsFullRefresh:
             response_list=[{"content": document_response.body, "status_code": document_response.status_code}],
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -829,7 +829,7 @@ class TestVendorSalesReportsFullRefresh:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -861,7 +861,7 @@ class TestVendorSalesReportsFullRefresh:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -893,7 +893,7 @@ class TestVendorSalesReportsFullRefresh:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -925,7 +925,7 @@ class TestVendorSalesReportsFullRefresh:
             ],
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @pytest.mark.parametrize("selling_program", selling_program)
@@ -946,7 +946,7 @@ class TestVendorSalesReportsFullRefresh:
             response_with_status(status_code=HTTPStatus.FORBIDDEN),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         message_on_access_forbidden = "Forbidden. You don't have permission to access this resource."
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
         assert message_on_access_forbidden in output.errors[0].trace.error.message
@@ -972,7 +972,7 @@ class TestVendorSalesReportsFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
         assert len(output.records) == 0
         assert len(output.errors) == 0
 
@@ -1005,7 +1005,7 @@ class TestVendorSalesReportsFullRefresh:
             * 3,
         )
 
-        output = self._read(stream_name, config().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
+        output = self._read(stream_name, config().as_vendor_account().with_failed_retry_wait_time_in_seconds(1), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
         assert "At least one job could not be completed for slice {}" in output.errors[-1].trace.error.message
 
@@ -1029,7 +1029,7 @@ class TestVendorSalesReportsFullRefresh:
 
         message_on_backoff_exception = "Max retry limit reached after"
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().as_vendor_account())
 
         assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)

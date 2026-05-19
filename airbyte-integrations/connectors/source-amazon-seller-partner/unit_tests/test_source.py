@@ -141,7 +141,33 @@ def test_streams(connector_config_without_start_date):
 
 def test_streams_count(connector_config_without_start_date, monkeypatch):
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
-    assert len(streams) == 53
+    assert len(streams) == 46
+
+
+@pytest.mark.parametrize(
+    ("account_type", "expected_vendor_streams"),
+    [
+        pytest.param("Seller", set(), id="seller_account"),
+        pytest.param(
+            "Vendor",
+            {
+                "VendorDirectFulfillmentShipping",
+                "VendorOrders",
+                "VendorOrdersStatus",
+                "GET_VENDOR_FORECASTING_FRESH_REPORT",
+                "GET_VENDOR_FORECASTING_RETAIL_REPORT",
+                "GET_VENDOR_SALES_REPORT",
+                "GET_VENDOR_INVENTORY_REPORT",
+            },
+            id="vendor_account",
+        ),
+    ],
+)
+def test_streams_filters_vendor_streams_by_account_type(connector_config_without_start_date, account_type, expected_vendor_streams):
+    config = {**connector_config_without_start_date, "account_type": account_type}
+    stream_names = {stream.name for stream in get_source(config).streams(config)}
+
+    assert {stream_name for stream_name in stream_names if stream_name.startswith(("Vendor", "GET_VENDOR"))} == expected_vendor_streams
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -344,6 +370,9 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         stream_name (str): Name of the stream to test.
         requests_mock: Fixture to mock HTTP requests.
     """
+    if stream_name.startswith("Vendor"):
+        config["account_type"] = "Vendor"
+
     now = datetime.strptime("2023-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
 
     # Mock the token refresh endpoint

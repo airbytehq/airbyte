@@ -34,7 +34,13 @@ The OAuth token refresh flow fails when running "locally" or via regression test
 
 **Why this matters:** You cannot rely on regression tests or local runs to validate changes to this connector. The only reliable way to test is through Cloud with a dev image. Skipping the Cloud-based testing process risks shipping broken changes that won't be caught until production.
 
-## 5. Standard Tests Will Not Pass for All Streams
+## 5. Vendor-Only Streams Are Hidden for Seller Accounts
+
+The manifest wraps VendorDirectFulfillment streams and `GET_VENDOR_*` reports in `ConditionalStreams` gated by `account_type == "Vendor"`. Seller accounts cannot request these Vendor APIs or reports and Amazon returns 400 errors when they are selected.
+
+**Why this matters:** Tests or configs that exercise Vendor streams must set `account_type` to `Vendor`. Seller-account catalogs should not include Vendor-only streams.
+
+## 6. Standard Tests Will Not Pass for All Streams
 
 The test `test_basic_read['config' Test Scenario]` fails for `GET_VENDOR_FORECASTING_RETAIL_REPORT` and `GET_VENDOR_FORECASTING_FRESH_REPORT` due to sandbox account permissions:
 
@@ -42,7 +48,7 @@ The test `test_basic_read['config' Test Scenario]` fails for `GET_VENDOR_FORECAS
 
 This error has been returning since at least v4.4.7 of the connector (before these streams were migrated to low-code). This should be resolved once Standard Tests can bypass specific streams — an upcoming update expected in the next few weeks.
 
-## 6. Known Stream Failures in Testing
+## 7. Known Stream Failures in Testing
 
 The following streams have known failures when running against test/sandbox credentials. These are **not** connector bugs — they are limitations of the test account or sandbox environment.
 

@@ -38,15 +38,6 @@
     },
     {
       "stream": {
-        "name": "ListFinancialEventGroups",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "GET_MERCHANT_LISTINGS_DATA",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -57,6 +48,33 @@
     {
       "stream": {
         "name": "GET_MERCHANT_LISTINGS_INACTIVE_DATA",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
