@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
@@ -70,20 +71,29 @@ class BigqueryRawTableOperations(private val bigquery: BigQuery) :
     }
 
     override fun getRawTableGeneration(rawTableName: TableName, suffix: String): Long? {
-        val result: TableResult =
-            bigquery.query(
-                QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM ${rawTableName.namespace}.${rawTableName.name}$suffix LIMIT 1"
-                ),
-            )
-        if (result.totalRows == 0L) {
-            return null
-        }
-        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value == null || value.isNull) {
-            0
-        } else {
-            value.longValue
+        return try {
+            val result: TableResult =
+                bigquery.query(
+                    QueryJobConfiguration.of(
+                        "SELECT _airbyte_generation_id FROM ${rawTableName.namespace}.${rawTableName.name}$suffix LIMIT 1"
+                    ),
+                )
+            if (result.totalRows == 0L) {
+                return null
+            }
+            val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
+            if (value == null || value.isNull) {
+                0
+            } else {
+                value.longValue
+            }
+        } catch (e: BigQueryException) {
+            if (e.message?.contains("Unrecognized name: _airbyte_generation_id") == true) {
+                logger.info { "Legacy raw table ${rawTableName.namespace}.${rawTableName.name}$suffix does not have _airbyte_generation_id column; treating as null generation." }
+                null
+            } else {
+                throw e
+            }
         }
     }
 

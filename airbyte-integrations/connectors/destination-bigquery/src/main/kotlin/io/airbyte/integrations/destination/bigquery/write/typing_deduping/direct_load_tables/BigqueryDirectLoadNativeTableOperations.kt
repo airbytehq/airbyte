@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
@@ -92,17 +93,26 @@ class BigqueryDirectLoadNativeTableOperations(
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long {
-        val result =
-            bigquery.query(
-                QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
-                ),
-            )
-        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value.isNull) {
-            0
-        } else {
-            value.longValue
+        return try {
+            val result =
+                bigquery.query(
+                    QueryJobConfiguration.of(
+                        "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
+                    ),
+                )
+            val rows = result.iterateAll()
+            if (!rows.iterator().hasNext()) {
+                return 0
+            }
+            val value = rows.first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
+            if (value.isNull) 0 else value.longValue
+        } catch (e: BigQueryException) {
+            if (e.message?.contains("Unrecognized name: _airbyte_generation_id") == true) {
+                logger.info { "Legacy table ${tableName.namespace}.${tableName.name} does not have _airbyte_generation_id column; treating as generation 0." }
+                0
+            } else {
+                throw e
+            }
         }
     }
 
