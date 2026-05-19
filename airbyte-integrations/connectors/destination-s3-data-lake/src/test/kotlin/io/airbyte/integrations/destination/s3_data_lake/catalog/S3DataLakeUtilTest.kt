@@ -239,6 +239,7 @@ internal class S3DataLakeUtilTest {
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
+                flushBatchSizeMb = null,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         Assertions.assertEquals(
@@ -351,6 +352,7 @@ internal class S3DataLakeUtilTest {
                             databaseName = "test_db"
                         )
                 ),
+            flushBatchSizeMb = null,
         )
     }
 

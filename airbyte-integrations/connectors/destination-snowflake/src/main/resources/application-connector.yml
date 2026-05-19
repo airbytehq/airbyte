@@ -3,8 +3,6 @@ airbyte:
     core:
       types:
         unions: DEFAULT
-      coercion:
-        use-fast-timestamp-parsing: true
 
 logger:
   levels:
