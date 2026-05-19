@@ -43,7 +43,7 @@ Choose one of these logging modes:
 | Mode             | Notes                                                                                                                       | Parameters                                                                                                                                 |
 | :--------------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
 | First N entries  | Log the first N records for each stream.                                                                                    | N: how many records to log.                                                                                                                |
-| Every N-th entry | Log every N-th record for each stream. When N is 1, it logs every record. When N is 2, it logs every other record.           | N: the N-th record to log. Max entry count: max number of records to log.                                                                  |
+| Every N-th entry | Log every N-th record for each stream. When N is 1, it logs every record. When N is 2, it logs every other record.          | N: the N-th record to log. Max entry count: max number of records to log.                                                                  |
 | Random sampling  | Log a random percentage of the records for each stream.                                                                     | Sampling ratio: a number in range of `[0, 1]`. Optional seed: default to system epoch time. Max entry count: max number of records to log. |
 
 ### Throttling
@@ -86,11 +86,11 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.9.4 | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13 |
-| 0.9.3 | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8 |
-| 0.9.2 | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0 |
-| 0.9.1 | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle |
-| 0.9.0 | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version. |
+| 0.9.4       | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13                                                                        |
+| 0.9.3       | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8                                                                         |
+| 0.9.2       | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0                                                                         |
+| 0.9.1       | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle                                                     |
+| 0.9.0       | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version.                                    |
 | 0.9.0-rc.2  | 2026-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean.                                                              |
 | 0.9.0-rc.1  | 2026-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture.                                                 |
 | 0.8.6       | 2025-11-05 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61.                                                                  |
