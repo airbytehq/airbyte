@@ -252,6 +252,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.19 | 2026-05-08 | [76603](https://github.com/airbytehq/airbyte/pull/76603) | Improve BigQuery load job finalization failures. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
