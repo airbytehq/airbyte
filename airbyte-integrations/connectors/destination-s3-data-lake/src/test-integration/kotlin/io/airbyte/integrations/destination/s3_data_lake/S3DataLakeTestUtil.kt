@@ -59,7 +59,7 @@ object S3DataLakeTestUtil {
         val icebergUtil =
             IcebergUtil(
                 SimpleTableIdGenerator(),
-                AirbyteValueCoercer(useFastTimestampParsing = true)
+                AirbyteValueCoercer()
             )
         val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)
         val props = s3DataLakeUtil.toCatalogProperties(config)
