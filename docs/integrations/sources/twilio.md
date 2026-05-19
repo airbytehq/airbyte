@@ -8,6 +8,8 @@ Twilio HTTP requests to the REST API are protected with HTTP Basic authenticatio
 
 You can find your Account SID and Auth Token in the [Twilio Console](https://console.twilio.com/).
 
+Use credentials for the Twilio account whose resources you want to sync. Main account credentials can access main account resources and v2010 REST API resources for subaccounts. Subaccount credentials can access only that subaccount. Twilio notes that resources on product-specific subdomains, such as Studio and Conversations, must be accessed directly with credentials for the account that owns those resources.
+
 For more information, see the [Twilio API authentication documentation](https://www.twilio.com/docs/iam/api).
 
 ## Setup guide
@@ -24,7 +26,7 @@ For more information, see the [Twilio API authentication documentation](https://
 6. Enter a **Replication Start Date**. Records created before this UTC date and time aren't synced. Use the format `YYYY-MM-DDTHH:MM:SSZ` (for example, `2020-10-01T00:00:00Z`).
 7. Optionally, configure the following fields:
    - **Lookback window**: The number of minutes before the last cursor value to re-fetch on each incremental sync. Use this to catch late-arriving records. Defaults to `0`.
-   - **Number of concurrent threads**: The number of worker threads used during a sync. Defaults to `3`. Maximum is `40`.
+   - **Number of concurrent threads**: The number of worker threads used during a sync. Defaults to `6`. Maximum is `40`.
    - **Slice Step Duration**: The time window size used for each slice of an incremental stream. See [Tuning the slice step duration](#tuning-the-slice-step-duration). Defaults to **1 Month** (`P1M`).
 8. Click **Set up source**.
 <!-- /env:cloud -->
@@ -95,6 +97,8 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
 
+By default, the connector syncs with 6 concurrent threads. Increase **Number of concurrent threads** only if your Twilio account can handle the extra API traffic. If syncs are repeatedly rate limited, reduce the thread count. If high-volume incremental streams time out, use a smaller slice step duration.
+
 ### Alerts pagination limit
 
 The [Alerts API](https://www.twilio.com/docs/usage/monitor-alert) limits each request to 10,000 Alert resources. If the `alerts` stream fails because a time window contains more than 10,000 Alert records, reduce **Slice Step Duration** to sync fewer Alert records per request.
@@ -124,7 +128,7 @@ For programmatic configuration, use these parameter names:
 | `auth_token` | Yes | Auth Token used as the HTTP Basic authentication password. |
 | `start_date` | Yes | Date and time in `YYYY-MM-DDTHH:MM:SSZ` format. Records before this date aren't replicated. |
 | `lookback_window` | No | Number of minutes before the last cursor value to re-fetch on each incremental sync. Defaults to `0`. |
-| `num_worker` | No | Number of concurrent threads to use during a sync. Valid values are `1` through `40`. Defaults to `3`. |
+| `num_workers` | No | Number of concurrent threads to use during a sync. Valid values are `1` through `40`. Defaults to `6`. |
 | `slice_step_duration` | No | Time window size for each incremental stream slice. Valid values are `P1D`, `P1W`, `P1M`, and `P1Y`. Defaults to `P1M`. |
 
 ## Changelog
@@ -134,6 +138,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.17.11-rc.1 | 2026-05-18 | [78150](https://github.com/airbytehq/airbyte/pull/78150) | Start concurrency tuning rollout |
 | 0.17.10 | 2026-05-12 | [77988](https://github.com/airbytehq/airbyte/pull/77988) | Improve the Twilio Alerts pagination-limit error message. |
 | 0.17.9 | 2026-04-30 | [77593](https://github.com/airbytehq/airbyte/pull/77593) | Fix usage_records start_date schema format from date-time to date to prevent null primary key in Iceberg destination |
 | 0.17.8 | 2026-04-28 | [77453](https://github.com/airbytehq/airbyte/pull/77453) | Update dependencies |
