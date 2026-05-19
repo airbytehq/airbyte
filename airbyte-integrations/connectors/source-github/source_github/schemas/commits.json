@@ -156,6 +156,77 @@
           }
         }
       }
+    },
+    "stats": {
+      "description": "Commit change counts returned by GitHub when Fetch Commit Stats is enabled.",
+      "type": ["null", "object"],
+      "properties": {
+        "additions": {
+          "description": "Number of lines added by the commit.",
+          "type": ["null", "integer"]
+        },
+        "deletions": {
+          "description": "Number of lines deleted by the commit.",
+          "type": ["null", "integer"]
+        },
+        "total": {
+          "description": "Total number of changed lines in the commit.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "files": {
+      "description": "Files changed by the commit returned by GitHub when Fetch Commit Stats is enabled.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "sha": {
+            "description": "SHA of the changed file.",
+            "type": ["null", "string"]
+          },
+          "filename": {
+            "description": "Path of the changed file.",
+            "type": ["null", "string"]
+          },
+          "status": {
+            "description": "Status of the changed file.",
+            "type": ["null", "string"]
+          },
+          "additions": {
+            "description": "Number of lines added to the file.",
+            "type": ["null", "integer"]
+          },
+          "deletions": {
+            "description": "Number of lines deleted from the file.",
+            "type": ["null", "integer"]
+          },
+          "changes": {
+            "description": "Total number of changed lines in the file.",
+            "type": ["null", "integer"]
+          },
+          "blob_url": {
+            "description": "URL for viewing the file blob on GitHub.",
+            "type": ["null", "string"]
+          },
+          "raw_url": {
+            "description": "URL for the raw file contents on GitHub.",
+            "type": ["null", "string"]
+          },
+          "contents_url": {
+            "description": "URL for accessing the file contents through the GitHub API.",
+            "type": ["null", "string"]
+          },
+          "patch": {
+            "description": "Patch text for the file, when returned by GitHub.",
+            "type": ["null", "string"]
+          },
+          "previous_filename": {
+            "description": "Previous file path for renamed files.",
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }

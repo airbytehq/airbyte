@@ -262,6 +262,16 @@ def test_streams_config_start_date(config, expected, rate_limit_mock_response, r
         assert not project_stream._start_date
 
 
+def test_streams_config_fetch_commit_stats(rate_limit_mock_response, requests_mock):
+    requests_mock.get("https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
+
+    source = SourceGithub()
+    streams = source.streams(config={"access_token": "test_token", "repository": "airbyte/test", "fetch_commit_stats": True})
+
+    commits_stream = next(stream for stream in streams if stream.name == "commits")
+    assert commits_stream.fetch_commit_stats is True
+
+
 @pytest.mark.parametrize(
     "error_message, expected_user_friendly_message",
     [

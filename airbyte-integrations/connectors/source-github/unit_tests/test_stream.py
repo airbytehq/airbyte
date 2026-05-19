@@ -768,6 +768,65 @@ def test_stream_commits_incremental_read(requests_mock):
     assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:14Z"}}}
 
 
+def test_stream_commits_fetch_commit_stats(requests_mock):
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-02T10:10:03Z",
+    }
+
+    stream = Commits(
+        **repository_args_with_start_date,
+        branches_to_pull=["organization/repository/branch"],
+        fetch_commit_stats=True,
+    )
+    stream.page_size = 2
+
+    repo_api_url = "https://api.github.com/repos/organization/repository"
+    branches_api_url = "https://api.github.com/repos/organization/repository/branches"
+    commits_api_url = "https://api.github.com/repos/organization/repository/commits"
+
+    requests_mock.get(
+        repo_api_url,
+        json={"id": 1, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/repository"},
+    )
+    requests_mock.get(
+        branches_api_url,
+        json=[
+            {
+                "name": "branch",
+                "commit": {
+                    "sha": "commit-sha",
+                    "url": "https://api.github.com/repos/organization/repository/commits/commit-sha",
+                },
+                "protected": False,
+            }
+        ],
+        status_code=200,
+    )
+    requests_mock.get(
+        f"{commits_api_url}?per_page=2&since=2022-02-02T10%3A10%3A03Z&sha=branch",
+        json=[{"sha": "commit-sha", "commit": {"author": {"date": "2022-02-02T10:10:04Z"}}}],
+    )
+    detail_request = requests_mock.get(
+        f"{commits_api_url}/commit-sha",
+        json={
+            "sha": "commit-sha",
+            "commit": {"author": {"date": "2022-02-02T10:10:04Z"}},
+            "stats": {"additions": 10, "deletions": 2, "total": 12},
+            "files": [{"filename": "source.py", "additions": 10, "deletions": 2, "changes": 12}],
+        },
+    )
+
+    records = read_incremental(stream, {})
+
+    assert detail_request.call_count == 1
+    assert records[0]["stats"] == {"additions": 10, "deletions": 2, "total": 12}
+    assert records[0]["files"] == [{"filename": "source.py", "additions": 10, "deletions": 2, "changes": 12}]
+    assert records[0]["repository"] == "organization/repository"
+    assert records[0]["branch"] == "branch"
+
+
 def test_stream_commits_409_empty_repository(caplog, requests_mock):
     """
     Adding tests for the case when the repository is empty and the API returns a 409 status code.

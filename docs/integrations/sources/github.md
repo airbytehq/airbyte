@@ -73,9 +73,8 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
-10. **Max Waiting Time (Optional)** - Maximum time in minutes to wait when the connector is rate-limited by the GitHub API. Defaults to 10 minutes. Valid range: 1 to 60 minutes.
-
-9. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
+10. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
+11. **Fetch Commit Stats (Optional)** - Fetch `stats` and `files` for records in the `commits` stream. This adds one request to GitHub's [Get a commit](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit) endpoint for each commit, so it can significantly increase rate-limit usage for repositories with many commits. Leave this disabled if you only need commit metadata from the default [List commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-commits) response.
 
 ### For Airbyte Open Source:
 
@@ -237,6 +236,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.0 | 2026-05-19 | | Add an optional Fetch Commit Stats setting to include commit `stats` and changed `files` in the `commits` stream |
 | 2.1.28 | 2026-05-07 | [77847](https://github.com/airbytehq/airbyte/pull/77847) | Reduce GraphQL `releases` query cost (mark as large stream), bound page-size halving at 1, and improve 504 Gateway Timeout error messages |
 | 2.1.27 | 2026-05-02 | [77685](https://github.com/airbytehq/airbyte/pull/77685) | Make `parse_response` and error-handler helpers defensive against unexpected response shapes (HTML error pages, malformed JSON, missing keys) |
 | 2.1.26 | 2026-05-02 | [77681](https://github.com/airbytehq/airbyte/pull/77681) | Treat 410 "Issues/Projects disabled" responses as skip-the-slice instead of failing the stream |

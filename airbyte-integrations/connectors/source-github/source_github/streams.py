@@ -731,11 +731,12 @@ class Commits(IncrementalMixin, GithubStream):
     cursor_field = "created_at"
     slice_keys = ["repository", "branch"]
 
-    def __init__(self, branches_to_pull: List[str], **kwargs):
+    def __init__(self, branches_to_pull: List[str], fetch_commit_stats: bool = False, **kwargs):
         super().__init__(**kwargs)
         kwargs.pop("start_date")
         self.branches_to_repos = {}
         self.branches_to_pull = set(branches_to_pull)
+        self.fetch_commit_stats = fetch_commit_stats
         self.branches_stream = Branches(**kwargs)
         self.repositories_stream = RepositoryStats(**kwargs)
 
@@ -766,6 +767,35 @@ class Commits(IncrementalMixin, GithubStream):
         record["branch"] = stream_slice["branch"]
 
         return record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if self.fetch_commit_stats:
+                self._add_commit_details(record=record, stream_slice=stream_slice)
+            yield record
+
+    def _add_commit_details(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> None:
+        _, response = self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(self.url_base, f"repos/{stream_slice['repository']}/commits/{record['sha']}"),
+            request_kwargs={},
+            headers=self.request_headers(stream_slice=stream_slice),
+            params={},
+            dedupe_query_params=True,
+            log_formatter=self.get_log_formatter(),
+            exit_on_rate_limit=self.exit_on_rate_limit,
+        )
+        commit_details = response.json()
+        record["stats"] = commit_details.get("stats")
+        record["files"] = commit_details.get("files")
 
     def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]

@@ -277,7 +277,11 @@ class SourceGithub(AbstractSource):
             Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
-            Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
+            Commits(
+                **repository_args_with_start_date,
+                branches_to_pull=config.get("branches", []),
+                fetch_commit_stats=config.get("fetch_commit_stats", False),
+            ),
             ContributorActivity(**repository_args),
             Deployments(**repository_args_with_start_date),
             Events(**repository_args_with_start_date),
