@@ -1828,7 +1828,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `GongExecuteResultWithMeta[list[AnsweredScorecard], StatsActivityScorecardsListResultMeta](**data: Any)`

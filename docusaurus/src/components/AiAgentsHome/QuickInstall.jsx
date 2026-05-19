@@ -90,7 +90,7 @@ const TABS = [
     id: "api",
     label: "API",
     command: null,
-    description: "Integrate with the Airbyte Agent API.",
+    description: "Integrate with the Agent API.",
     tools: [
       {
         name: "API reference",
