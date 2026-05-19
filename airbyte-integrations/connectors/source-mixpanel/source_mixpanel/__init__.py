@@ -24,4 +24,5 @@ SOFTWARE.
 
 from .source import SourceMixpanel
 
+
 __all__ = ["SourceMixpanel"]

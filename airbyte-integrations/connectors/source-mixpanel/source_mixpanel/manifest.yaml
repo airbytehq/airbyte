@@ -33,6 +33,12 @@ definitions:
       - type: ExponentialBackoffStrategy
         factor: 30
     response_filters:
+      - type: HttpResponseFilter
+        http_codes: [404]
+        error_message_contains: "Invalid endpoint: revenue"
+        action: FAIL
+        error_message: Mixpanel revenue endpoint is not found.
+        failure_type: system_error
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
         error_message: Authentication has failed. Please update your config with valid credentials.
@@ -366,7 +372,7 @@ definitions:
     primary_key: "date"
     $parameters:
       name: revenue
-      path: query/engage/revenue
+      path: 2.0/engage/revenue
       extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
