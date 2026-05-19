@@ -1,9 +1,10 @@
 ---
+plan: all
 sidebar_label: "Pydantic AI"
 sidebar_position: 3
 ---
 
-# Agent connector tutorial: Pydantic AI
+# Pydantic AI quickstart
 
 In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it with one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
 
@@ -23,13 +24,11 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.13 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - An [Airbyte Agents account](https://app.airbyte.ai). You can sign up for free.
-- Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app. See [Manage your user profile](../../admin/profile) for details.
-- A GitHub connector added to your Airbyte Agents workspace. Add one of these two ways:
-    - **Web app (recommended)**: Go to [Credentials](https://app.airbyte.ai/credentials) in the Airbyte Agents web app, add a GitHub connector, and authenticate it with a [GitHub personal access token](https://github.com/settings/tokens) (a classic token with `repo` scope is sufficient for this tutorial) or OAuth. See [Add a connector](../../interfaces/ui/add-connector) for details.
-    - **API**: Create a connector with `POST /api/v1/integrations/connectors` and store your GitHub credentials. See [Add a connector](../../interfaces/api/add-connector) for details.
+- Your Airbyte API credentials. Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai). See [Manage your user profile](../../admin/profile) for details.
+- A GitHub [personal access token](https://github.com/settings/tokens). A classic token with `repo` scope is sufficient.
 - An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but [Pydantic AI](https://pydantic.dev/docs/ai/models/overview) supports other LLM providers if you prefer.
 
 ## Part 1: Create a new Python project
@@ -56,75 +55,81 @@ my-ai-agent/
 
 You create `.env` and `uv.lock` files in later steps, so don't worry about them yet.
 
-## Part 2: Install dependencies
+## Part 2: Install dependencies and create your agent file
 
-Install the Airbyte agent SDK, Pydantic AI, and `python-dotenv`:
+1. Install the Agent SDK, Pydantic AI, and `python-dotenv`:
 
-```bash
-uv add airbyte-agent-sdk pydantic-ai python-dotenv
-```
+   ```bash
+   uv add airbyte-agent-sdk pydantic-ai python-dotenv
+   ```
 
-This command installs:
+   This command installs:
 
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
-- `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
-- `python-dotenv`: A library you can use to load environment variables from a `.env` file.
+   - `airbyte-agent-sdk`: The Agent SDK, which ships every connector as a typed submodule.
 
-:::note
-If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
-:::
+   - `pydantic-ai`: The AI agent framework, which includes support for [multiple LLM providers](https://pydantic.dev/docs/ai/models/overview) including OpenAI, Anthropic, and Google.
 
-## Part 3: Import Pydantic AI and the GitHub agent connector
+   - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
-1. Create an `agent.py` file for your agent definition:
+   :::note
+   If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
+   :::
 
-    ```bash
-    touch agent.py
-    ```
+2. Create an `agent.py` file with the following imports:
 
-2. Add the following imports to `agent.py`:
+   ```python title="agent.py"
+   from dotenv import load_dotenv
+   from pydantic_ai import Agent
+   from airbyte_agent_sdk import connect
+   from airbyte_agent_sdk.connectors.github import GithubConnector
+   ```
 
-    ```python title="agent.py"
-    from dotenv import load_dotenv
-    from pydantic_ai import Agent
-    from airbyte_agent_sdk import connect
-    from airbyte_agent_sdk.connectors.github import GithubConnector
-    ```
+   These imports provide:
 
-    These imports provide:
+   - `load_dotenv`: Load environment variables from your `.env` file.
+   - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
+   - `connect`: The Agent SDK entry point. One call returns a typed connector bound to your workspace.
+   - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
-    - `load_dotenv`: Load environment variables from your `.env` file.
-    - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
-    - `connect`: The Airbyte agent SDK entry point. One call returns a typed connector bound to your workspace.
-    - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
-
-## Part 4: Add a .env file with your secrets
+## Part 3: Add a .env file with your secrets
 
 1. Create a `.env` file in your project root and add your secrets to it. Replace the placeholder values with your actual credentials.
 
-    ```text title=".env"
-    AIRBYTE_CLIENT_ID=your-airbyte-client-id
-    AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
-    OPENAI_API_KEY=your-openai-api-key
-    ```
+   ```text title=".env"
+   AIRBYTE_CLIENT_ID=your-airbyte-client-id
+   AIRBYTE_CLIENT_SECRET=your-airbyte-client-secret
+   OPENAI_API_KEY=your-openai-api-key
+   ```
 
-    Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents web app.
+   Copy `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the Profile page on [app.airbyte.ai](https://app.airbyte.ai).
 
-    :::warning
-    Never commit your `.env` file to version control. If you do this by mistake, rotate your secrets immediately.
-    :::
+   :::warning
+   Never commit your `.env` file to version control. If you do this by mistake, rotate your secrets immediately.
+   :::
 
 2. Add the following line to `agent.py` after your imports to load the environment variables:
 
-    ```python title="agent.py"
-    load_dotenv()
-    ```
+   ```python title="agent.py"
+   load_dotenv()
+   ```
 
-    This makes your secrets available via `os.environ`. Pydantic AI automatically reads `OPENAI_API_KEY` from the environment, and the agent SDK picks up `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment in the next step.
+   This makes your secrets available via `os.environ`. Pydantic AI automatically reads `OPENAI_API_KEY` from the environment, and the agent SDK picks up `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment in the next step.
+
+## Part 4: Add the GitHub connector
+
+Before you can query GitHub data, add a GitHub connector to your Airbyte Agents workspace. You can do this through either the web app, MCP, or API.
+
+- **Web app**: Open [app.airbyte.ai](https://app.airbyte.ai/), click **Connectors**, click **Add Connector**, search for **GitHub**, and complete the authentication flow with your GitHub personal access token. See [Add a connector (UI)](../../interfaces/ui/add-connector) for a full walkthrough.
+
+- **API**: Send a `POST` request to create the connector programmatically. See [Add a connector (API)](../../interfaces/api/add-connector) for request examples.
+
+- **MCP**: If you run the Agent MCP, you can add a new connector from your existing agent. See [Agent MCP](../../interfaces/mcp) to learn how to use the MCP server.
+
+You only need to add the connector once. After it exists in your workspace, you can skip this step when setting up new agents.
 
 ## Part 5: Configure your connector and agent
 
-Now that your environment is set up, add the following code to `agent.py` to create the GitHub connector and Pydantic AI agent.
+Now add the following code to `agent.py` to connect to the GitHub connector and create the Pydantic AI agent.
 
 ### Define the connector
 
@@ -138,10 +143,8 @@ One line does four things for you:
 
 - Reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment.
 - Defaults to the `"default"` workspace, which is where the web app stores credentials unless you change it.
-- Returns a typed `GithubConnector` bound to the authenticated GitHub connector you added earlier.
-- Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub OAuth tokens and refreshes them for you.
-
-You never register an OAuth app, copy a GitHub token into your code, or write token-refresh logic.
+- Returns a typed `GithubConnector` bound to the GitHub connector in your workspace.
+- Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub tokens and refreshes them for you.
 
 If you want to connect to a different workspace or pass credentials explicitly, use `connect("github", workspace_name="my-workspace", client_id=..., client_secret=...)` or pass an `AirbyteAuthConfig`. See the [SDK reference](https://github.com/airbytehq/airbyte-agent-sdk) for details.
 
@@ -160,12 +163,12 @@ agent = Agent(
 ```
 
 - The `"openai:gpt-4o"` string specifies the model to use. You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` to lower costs, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
-- The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Airbyte agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
+- The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 - The prompt references a `github_execute` tool. You register that tool in the next part.
 
 ## Part 6: Add a tool to your agent
 
-Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `tool_utils` decorator fills in the entity and action catalog as the tool description, so the model knows what's available without you writing a schema.
+Rather than one tool per GitHub endpoint, the Agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `tool_utils` decorator fills in the entity and action catalog as the tool description, so the model knows what's available without you writing a schema.
 
 Add the following to `agent.py`:
 
@@ -184,35 +187,35 @@ Each `execute` call returns a structured result with `data` (the records) and `m
 
 Now that your agent is configured with a tool, update `main.py` and run your project.
 
-1. Update `main.py`. This code creates a simple chat interface in your command line tool and allows your agent to remember your conversation history between prompts.
+1. Update `main.py`. This creates a simple chat interface that lets your agent remember your conversation history between prompts.
 
-    ```python title="main.py"
-    import asyncio
-    from agent import agent
+   ```python title="main.py"
+   import asyncio
+   from agent import agent
 
-    async def main():
-        print("GitHub Agent Ready! Ask questions about GitHub repositories.")
-        print("Type 'quit' to exit.\n")
+   async def main():
+       print("GitHub Agent Ready! Ask questions about GitHub repositories.")
+       print("Type 'quit' to exit.\n")
 
-        history = None
+       history = None
 
-        while True:
-            prompt = input("You: ")
-            if prompt.lower() in ('quit', 'exit', 'q'):
-                break
-            result = await agent.run(prompt, message_history=history)
-            history = result.all_messages()
-            print(f"\nAgent: {result.output}\n")
+       while True:
+           prompt = input("You: ")
+           if prompt.lower() in ('quit', 'exit', 'q'):
+               break
+           result = await agent.run(prompt, message_history=history)
+           history = result.all_messages()
+           print(f"\nAgent: {result.output}\n")
 
-    if __name__ == "__main__":
-        asyncio.run(main())
-    ```
+   if __name__ == "__main__":
+       asyncio.run(main())
+   ```
 
 2. Run the project.
 
-    ```bash
-    uv run main.py
-    ```
+   ```bash
+   uv run main.py
+   ```
 
 ### Chat with your agent
 
@@ -228,10 +231,14 @@ The agent has basic message history within each session, and you can ask followu
 
 If your agent fails to retrieve GitHub data, check the following:
 
-- **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your [Profile page](https://app.airbyte.ai/profile).
-- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app. `connect("github")` defaults to the `"default"` workspace; if you added the connector to a different workspace, pass `workspace_name="your-workspace-name"` to `connect()`.
-- **HTTP 401/403 errors from GitHub**: The GitHub token or OAuth credentials stored in your connector are invalid or missing required scopes. Open your GitHub connector in the web app and reauthenticate with a valid token that has `repo` scope.
+- **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your Profile page on [app.airbyte.ai](https://app.airbyte.ai).
+
+- **"No connector found" or "connector not configured"**: Make sure you added the GitHub connector to your workspace before running `main.py`. `connect("github")` defaults to the `"default"` workspace; if you created the connector in a different workspace, pass `workspace_name="your-workspace-name"` to `connect()`.
+
+- **HTTP 401/403 errors from GitHub**: The GitHub token stored in your connector is invalid or missing required scopes. Verify that the token you provided when adding the connector has `repo` scope.
+
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The system prompt in this tutorial nudges the model to do that by default.
+
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
 
 See the [Github agent connector page](https://docs.airbyte.com/ai-agents/connectors/github/) for more details.
@@ -248,7 +255,8 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- **Add another connector.** The same `connect(...)` + `execute(...)` pattern covers the full [Airbyte agent connectors catalog](../../connectors). Add Slack, Stripe, Salesforce, or any other connector in the web app, then call `slack = connect("slack")` in your agent and register a second tool with another `@agent.tool_plain` / `@SlackConnector.tool_utils` stack. Your agent now reads GitHub and posts to Slack with no additional OAuth setup.
-- **Use write actions.** Connectors expose create, update, and post actions alongside the read ones. Ask the agent to file an issue, comment on a PR, or send a Slack message, and `execute` carries the write through with the stored OAuth token.
-- **Let your AI assistant scaffold the next agent.** The Airbyte agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new agent without retyping them. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
-- **Reach the same connectors from any MCP client.** Airbyte Agents exposes the same connectors through a hosted MCP endpoint that works with Claude Code, Cursor, and ChatGPT. See the [FastMCP tutorial](./tutorial-fastmcp) for a local-server variant you can run yourself.
+- **Learn more about the SDK**: See the [full SDK interface tutorial](../../interfaces/sdk) and [reference documentation](../../reference/sdk).
+
+- **Let your AI assistant scaffold the next agent.** The Agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new agent quickly. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
+
+- **Reach the same connectors from any other interface.** Airbyte Agents exposes the same connectors through all of its [interfaces](../../interfaces). Since you already added a connector, you can use that connector anywhere you use Airbyte Agents.

@@ -139,6 +139,7 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[BlocksSearchData]
+    * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[CommentsSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[DataSourcesSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[UsersSearchData]
@@ -157,6 +158,24 @@ Classes
 <a id="BlocksSearchResult"></a>
 
 `BlocksSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CommentsSearchResult"></a>
+
+`CommentsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -373,6 +392,51 @@ Classes
     `video: dict[str, typing.Any] | None`
     :   Represents a video block.
 
+<a id="CommentsSearchData"></a>
+
+`CommentsSearchData(**data: Any)`
+:   Search result data for comments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_by: dict[str, typing.Any] | None`
+    :   User who created the comment.
+
+    `created_time: str | None`
+    :   Date and time when the comment was created.
+
+    `discussion_id: str | None`
+    :   Discussion thread ID.
+
+    `id: str | None`
+    :   Unique identifier for the comment.
+
+    `last_edited_time: str | None`
+    :   Date and time when the comment was last edited.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `object_: str | None`
+    :   Always comment.
+
+    `parent: dict[str, typing.Any] | None`
+    :   Parent of the comment.
+
+    `rich_text: list[typing.Any] | None`
+    :   Content of the comment as rich text.
+
 <a id="DataSourcesSearchData"></a>
 
 `DataSourcesSearchData(**data: Any)`
@@ -498,129 +562,6 @@ Classes
 
     ### Static methods
 
-    `configure_oauth_app_parameters(*, airbyte_config: AirbyteAuthConfig, credentials: NotionOAuthCredentials | None) ‑> None`
-    :   Configure or remove OAuth app credentials for your organization.
-        
-        When credentials are provided, replaces the default Airbyte-managed OAuth
-        app credentials with your own. After calling this, all OAuth flows for
-        this connector in your organization will use the provided credentials.
-        
-        When credentials are None, removes any existing override so the
-        organization reverts to the default Airbyte-managed OAuth app.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials.
-            credentials: Your OAuth app credentials (NotionOAuthCredentials), or None to remove the override.
-        
-        Example:
-            await NotionConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=NotionOAuthCredentials(
-                    client_id="...",
-                    client_secret="...",
-                ),
-            )
-        
-            await NotionConnector.configure_oauth_app_parameters(
-                airbyte_config=AirbyteAuthConfig(
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                credentials=None,
-            )
-
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'NotionAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
-        
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
-        
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A NotionConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await NotionConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=NotionAuthConfig(client_id="...", client_secret="...", access_token="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await NotionConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await NotionConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Notion Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
     :   Decorator that adds tool utilities like docstring augmentation and output limits.
         
@@ -671,10 +612,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await NotionConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 

@@ -26,6 +26,8 @@ This page guides you through setting up the BigQuery destination connector.
   [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and
   the
   [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+- If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+  Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ## Setup guide
 
