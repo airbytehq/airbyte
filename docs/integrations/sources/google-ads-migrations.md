@@ -6,8 +6,8 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 This release combines two breaking changes:
 
-1. The Google Ads API is upgraded from Version 20 to Version 23.
-2. The nullable `bidding_strategy.id` field is removed from the primary keys of the `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams.
+1. The Google Ads API is upgraded from Version 20 to Version 23 (see key changes below).
+2. The nullable `bidding_strategy.id` field is removed from primary keys. See the table below for new primary keys.
 
 ### Google Ads API v23 changes
 
