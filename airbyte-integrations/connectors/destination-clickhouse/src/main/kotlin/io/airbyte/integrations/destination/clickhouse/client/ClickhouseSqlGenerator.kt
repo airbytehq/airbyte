@@ -53,10 +53,11 @@ class ClickhouseSqlGenerator {
                 is Dedupe -> {
                     // Check if cursor column type is valid for ClickHouse ReplacingMergeTree
                     val cursor = tableSchema.getCursor().firstOrNull()
-                    val cursorType = cursor?.let { finalSchema[it]?.type }
+                    val cursorColumnType = cursor?.let { finalSchema[it] }
 
                     val useCursorAsVersion =
-                        cursorType != null && isValidVersionColumn(cursor, cursorType)
+                        cursorColumnType != null &&
+                            isValidVersionColumn(cursor, cursorColumnType.type, cursorColumnType.nullable)
                     val versionColumn =
                         if (useCursorAsVersion) {
                             "`$cursor`"

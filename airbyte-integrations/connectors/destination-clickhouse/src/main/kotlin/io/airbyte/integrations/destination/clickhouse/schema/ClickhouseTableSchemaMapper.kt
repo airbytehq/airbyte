@@ -95,13 +95,12 @@ class ClickhouseTableSchemaMapper(
         val cursor = tableSchema.getCursor().firstOrNull()
 
         val nonNullCols = buildSet {
-            addAll(pks) // Primary keys are always non-nullable
+            addAll(pks)
             if (cursor != null) {
                 // Check if the cursor column type is valid for ClickHouse ReplacingMergeTree
-                val cursorColumnType = tableSchema.columnSchema.finalSchema[cursor]!!.type
-                if (isValidVersionColumn(cursor, cursorColumnType)) {
-                    // Cursor column is valid, use it as version column
-                    add(cursor) // Make cursor column non-nullable too
+                val cursorColumnType = tableSchema.columnSchema.finalSchema[cursor]!!
+                if (isValidVersionColumn(cursor, cursorColumnType.type, cursorColumnType.nullable)) {
+                    add(cursor)
                 }
             }
         }
