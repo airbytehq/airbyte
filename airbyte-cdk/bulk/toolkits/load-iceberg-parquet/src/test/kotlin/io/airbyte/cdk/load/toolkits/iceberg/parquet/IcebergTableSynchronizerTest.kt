@@ -754,4 +754,54 @@ class IcebergTableSynchronizerTest {
         catalog.dropTable(tableId)
         warehousePath.toFile().deleteRecursively()
     }
+
+    @Test
+    fun `new identifier column should be added before identifier fields are updated`() {
+        val warehousePath = Files.createTempDirectory("iceberg-test-warehouse")
+        val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+        val tableId = TableIdentifier.of("db", "new_identifier_column")
+
+        val existingSchema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "_airbyte_extracted_at",
+                        Types.TimestampType.withZone()
+                    ),
+                    Types.NestedField.optional(3, "value", Types.StringType.get()),
+                ),
+            )
+        val table = createTableWithoutSortOrder(catalog, tableId, existingSchema)
+
+        val incomingSchema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "_airbyte_raw_id", Types.StringType.get()),
+                    Types.NestedField.required(
+                        2,
+                        "_airbyte_extracted_at",
+                        Types.TimestampType.withZone()
+                    ),
+                    Types.NestedField.optional(3, "value", Types.StringType.get()),
+                    Types.NestedField.required(4, "_id", Types.StringType.get()),
+                ),
+                setOf(4),
+            )
+
+        val synchronizer = createRealSynchronizer()
+        synchronizer.maybeApplySchemaChanges(
+            table,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+        )
+
+        table.refresh()
+        assertThat(table.schema().findField("_id")).isNotNull()
+        assertThat(table.schema().identifierFieldNames()).containsExactly("_id")
+
+        catalog.dropTable(tableId)
+        warehousePath.toFile().deleteRecursively()
+    }
 }
