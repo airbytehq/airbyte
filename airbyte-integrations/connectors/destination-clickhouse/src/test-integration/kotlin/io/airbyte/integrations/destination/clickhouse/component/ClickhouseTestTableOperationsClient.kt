@@ -9,17 +9,32 @@ import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.data.ClickHouseFormat
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
 
 private val logger = KotlinLogging.logger {}
+private val clickhouseDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
 
 @Requires(env = ["component"])
 @Singleton
@@ -38,11 +53,33 @@ class ClickhouseTestTableOperationsClient(
         client
             .insert(
                 "`${table.namespace}`.`${table.name}`",
-                records.serializeToString().byteInputStream(),
+                records
+                    .joinToString("\n") { record ->
+                        record.mapValues { (_, value) -> value.toJsonEachRowValue() }
+                            .serializeToString()
+                    }
+                    .byteInputStream(),
                 ClickHouseFormat.JSONEachRow,
             )
             .await()
     }
+
+    private fun AirbyteValue.toJsonEachRowValue(): Any? =
+        when (this) {
+            is NullValue -> null
+            is StringValue -> value
+            is BooleanValue -> value
+            is IntegerValue -> value
+            is NumberValue -> value
+            is DateValue -> value.toString()
+            is TimeWithTimezoneValue -> value.toString()
+            is TimeWithoutTimezoneValue -> value.toString()
+            is TimestampWithTimezoneValue ->
+                clickhouseDateTimeFormatter.format(value.withOffsetSameInstant(ZoneOffset.UTC))
+            is TimestampWithoutTimezoneValue -> clickhouseDateTimeFormatter.format(value)
+            is ArrayValue -> values.map { it.toJsonEachRowValue() }
+            is ObjectValue -> values.mapValues { (_, value) -> value.toJsonEachRowValue() }
+        }
 
     override suspend fun readTable(table: TableName): List<Map<String, Any>> {
         waitForPendingOperations(table)
