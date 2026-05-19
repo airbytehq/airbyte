@@ -24,8 +24,8 @@ class ConfigBuilder:
                 "auth_type": "API Token",
                 "api_token": "any_api_token",
                 "email": "integration-test@airbyte.io",
+                "domain": "airbyteio.atlassian.net",
             },
-            "domain": "airbyteio.atlassian.net",
             "start_date": "2021-01-01T00:00:00Z",
             "projects": [],
         }
@@ -37,7 +37,7 @@ class ConfigBuilder:
 
     def with_domain(self, domain: str) -> "ConfigBuilder":
         """Set the Jira domain (e.g., 'mycompany.atlassian.net')."""
-        self._config["domain"] = domain
+        self._config["credentials"]["domain"] = domain
         return self
 
     def with_email(self, email: str) -> "ConfigBuilder":

@@ -2,8 +2,8 @@
   "credentials": {
     "auth_type": "API Token",
     "api_token": "<api_token>",
-    "email": "<email>"
+    "email": "<email>",
+    "domain": "<your_domain.atlassian.net>"
   },
-  "domain": "<your_domain.atlassian.net>",
   "projects": []
 }

@@ -33,13 +33,13 @@ definitions:
   requester:
     type: HttpRequester
     http_method: GET
-    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['domain'] }}/rest/api/3/{% endif %}"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['credentials']['domain'] }}/rest/api/3/{% endif %}"
     authenticator: "#/definitions/authenticator"
     error_handler: "#/definitions/error_handler"
 
   requester_v1:
     $ref: "#/definitions/requester"
-    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['credentials']['domain'] }}/rest/agile/1.0/{% endif %}"
 
   # Selector
 
@@ -14670,17 +14670,26 @@ spec:
                 value: "{{ config['email'] }}"
             condition: "{{ not config.get('credentials', {}).get('email') and config.get('email') }}"
       - type: ConfigMigration
-        description: Normalize domain by stripping protocol prefix and trailing slashes
+        description: Migrate root domain config to API Token credentials
         transformations:
           - type: ConfigAddFields
             fields:
               - type: AddedFieldDefinition
-                path: ["domain"]
-                value: "{{ config.get('domain', '').split('://', 1)[-1].rstrip('/') }}"
-            condition: "{{ config.get('domain') and ('://' in config.get('domain', '') or config.get('domain', '').endswith('/')) }}"
+                path: ["credentials", "domain"]
+                value: "{{ config['domain'] }}"
+            condition: "{{ config.get('domain') != None and config.get('domain') != '' and config.get('credentials', {}).get('auth_type') == 'API Token' and (config.get('credentials', {}).get('domain') == None or config.get('credentials', {}).get('domain') == '') }}"
+      - type: ConfigMigration
+        description: Normalize API Token domain by stripping protocol prefix and trailing slashes
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "domain"]
+                value: "{{ config.get('credentials', {}).get('domain', '').split('://', 1)[-1].rstrip('/') }}"
+            condition: "{{ config.get('credentials', {}).get('domain') != None and config.get('credentials', {}).get('domain') != '' and ('://' in config.get('credentials', {}).get('domain', '') or config.get('credentials', {}).get('domain', '').endswith('/')) }}"
     validations:
       - type: DpathValidator
-        field_path: ["domain"]
+        field_path: ["credentials", "domain"]
         validation_strategy:
           type: CustomValidationStrategy
           class_name: source_declarative_manifest.components.ValidateJiraDomain
@@ -14690,7 +14699,6 @@ spec:
     type: object
     required:
     - credentials
-    - domain
     additionalProperties: true
     properties:
       credentials:
@@ -14705,6 +14713,7 @@ spec:
               - auth_type
               - api_token
               - email
+              - domain
             properties:
               auth_type:
                 type: string
@@ -14724,6 +14733,16 @@ spec:
                   to your account by BasicAuth.
                 airbyte_secret: true
                 order: 2
+              domain:
+                type: string
+                title: Domain
+                pattern_descriptor: "<your-domain>.atlassian.net"
+                examples:
+                - "<your-domain>.atlassian.net"
+                - "<your-domain>.jira.com"
+                - jira.<your-domain>.com
+                description: "Your Jira host (full domain — do not include 'https://' or paths). Examples: airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com."
+                order: 3
           - type: object
             title: Service Account
             required:
@@ -14780,16 +14799,6 @@ spec:
                 description: The Refresh Token obtained after completing the OAuth flow.
                 airbyte_secret: true
                 order: 3
-      domain:
-        type: string
-        title: Domain
-        pattern_descriptor: "<your-domain>.atlassian.net"
-        examples:
-        - "<your-domain>.atlassian.net"
-        - "<your-domain>.jira.com"
-        - jira.<your-domain>.com
-        description: "Your Jira host (full domain — do not include 'https://' or paths). Examples: airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com."
-        order: 1
       projects:
         type: array
         title: Projects
