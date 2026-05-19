@@ -95,7 +95,7 @@ Once your organization administrator enables on-demand capacity at the organizat
 
 3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable on demand capacity for this connection. Syncs for this connection will never be queued. Syncs that run when committed data worker is exhausted will be charged a premium rate." You must have the organization admin or workspace admin role to change this toggle.
 
-When you turn on **Use on-demand capacity**, Airbyte asks you to authorize the additional paid service before enabling it. Click **Authorize & Enable** to confirm you're authorized to approve the expense on behalf of your organization. Click **Cancel** to leave on-demand capacity disabled. Turning off on-demand capacity doesn't require confirmation.
+When you turn on **Use on-demand capacity**, Airbyte asks you to authorize the additional paid service before enabling it. Click **Authorize & Enable** to confirm you're authorized to approve the expense on behalf of your organization. Click **Cancel** to leave on-demand capacity off. Turning off on-demand capacity doesn't require confirmation.
 
 You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup and uses the same authorization confirmation.
 
