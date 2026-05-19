@@ -266,7 +266,7 @@ class RedshiftStagingStorageOperation(
         private fun createRawTableQuery(streamId: StreamId, suffix: String): String {
             return """
                 CREATE TABLE IF NOT EXISTS "${streamId.rawNamespace}"."${streamId.rawName}$suffix" (
-                    ${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID} VARCHAR(36),
+                    ${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID} VARCHAR(36) distkey,
                     ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} TIMESTAMPTZ DEFAULT GETDATE(),
                     ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} TIMESTAMPTZ,
                     ${JavaBaseConstants.COLUMN_NAME_DATA} SUPER NOT NULL,
