@@ -36,7 +36,7 @@ class ComponentTestConfigFactory {
             database = testSpec().database,
             username = ClickhouseContainerHelper.getUsername(),
             password = ClickhouseContainerHelper.getPassword(),
-            enableJson = testSpec().enableJson ?: false,
+            enableJson = true,
             tunnelConfig = testSpec().getTunnelMethodValue()!!,
             recordWindowSize = testSpec().recordWindowSize,
         )
