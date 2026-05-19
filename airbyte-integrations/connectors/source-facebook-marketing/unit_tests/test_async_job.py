@@ -89,6 +89,8 @@ class DummyRun:
             return self._status
         if key == "async_percent_completion":
             return self._percent
+        if key == "id":
+            return "dummy-report-run-id"
         raise KeyError(key)
 
     # FB SDK typically supports dict-style indexing too
@@ -643,7 +645,7 @@ class TestInsightAsyncJob:
         failed_run.get.side_effect = lambda key: {
             "async_status": Status.FAILED,
             "async_percent_completion": 0,
-        }[key]
+        }.get(key)
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=failed_run)
         mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
@@ -677,7 +679,7 @@ class TestInsightAsyncJob:
         completed_run.get.side_effect = lambda key: {
             "async_status": Status.COMPLETED,
             "async_percent_completion": 100,
-        }[key]
+        }.get(key)
         completed_run.get_result.side_effect = FacebookBadObjectError("bad object")
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
@@ -711,7 +713,7 @@ class TestInsightAsyncJob:
         completed_run.get.side_effect = lambda key: {
             "async_status": Status.COMPLETED,
             "async_percent_completion": 100,
-        }[key]
+        }.get(key)
         completed_run.get_result.return_value = []  # no rows → no IDs
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
@@ -722,6 +724,91 @@ class TestInsightAsyncJob:
             job._split_by_edge_class(Campaign)
 
         assert exc_info.value.failure_type == FailureType.system_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_poll_typeerror_exhausted(self, mocker, api):
+        """
+        When `id_job.api_get()` keeps raising the upstream-SDK `TypeError`
+        (`string indices must be integers, not 'str'` from `ObjectParser.parse_single`)
+        across all attempts, `_collect_child_ids` should raise an
+        `AirbyteTracedException` with `transient_error` and a connector-level
+        user-facing message instead of letting the bare `TypeError` propagate.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Mock that always raises TypeError when api_get is called (mirrors the
+        # upstream FB SDK ObjectParser.parse_single behaviour on a non-JSON body).
+        unparseable_run = mocker.MagicMock()
+        unparseable_run.api_get.side_effect = TypeError("string indices must be integers, not 'str'")
+        unparseable_run.get.side_effect = lambda key: {"id": "1234567890"}.get(key)
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=unparseable_run)
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        with pytest.raises(
+            AirbyteTracedException,
+            match="Facebook Marketing API returned an unexpected response while polling an Insights job split status",
+        ) as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        # internal_message must preserve the raw TypeError + report_run_id for debugging.
+        internal_message = exc_info.value.internal_message
+        assert "TypeError" in internal_message
+        assert "string indices must be integers" in internal_message
+        assert "1234567890" in internal_message
+        # Outer attempt loop must have re-issued the async job MAX_ID_COLLECTION_ATTEMPTS times.
+        assert job._edge_object.get_insights.call_count == InsightAsyncJob.MAX_ID_COLLECTION_ATTEMPTS
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_poll_typeerror_recovers(self, mocker, api):
+        """
+        A transient `TypeError` from the upstream SDK on the first attempt should
+        be treated like `Job Failed`: the outer loop re-issues the async job and
+        a subsequent successful poll should let `_collect_child_ids` return the
+        collected IDs without raising.
+        """
+        # First attempt: api_get raises TypeError, then outer loop re-issues.
+        unparseable_run = mocker.MagicMock()
+        unparseable_run.api_get.side_effect = TypeError("string indices must be integers, not 'str'")
+        unparseable_run.get.side_effect = lambda key: {"id": "first"}.get(key)
+
+        # Second attempt: completes immediately and returns rows.
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "id": "second",
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }.get(key)
+        completed_run.get_result.return_value = [{"campaign_id": "111"}, {"campaign_id": "222"}]
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+        mocker.patch.object(
+            job._edge_object,
+            "get_insights",
+            side_effect=[unparseable_run, completed_run],
+        )
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        ids = job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert sorted(ids) == ["111", "222"]
+        assert job._edge_object.get_insights.call_count == 2
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_timeout(self, mocker, api):
@@ -745,7 +832,7 @@ class TestInsightAsyncJob:
         running_run.get.side_effect = lambda key: {
             "async_status": Status.RUNNING,
             "async_percent_completion": 50,
-        }[key]
+        }.get(key)
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=running_run)
         # Patch sleep to be a no-op, and advance time past the timeout
