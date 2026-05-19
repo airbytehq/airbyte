@@ -122,7 +122,7 @@ class ContactsTest(TestCase):
     def _assert_search_query_keeps_30_day_checkpoint_slices_with_upper_bounds(
         self, stream_name: str, path: str, response_field: str
     ) -> None:
-        start_datetime = datetime.now(timezone.utc) - timedelta(days=90)
+        start_datetime = datetime.now(timezone.utc) - timedelta(days=95)
         start_timestamp = int(start_datetime.timestamp())
         observed_bodies: List[Dict[str, Any]] = []
 
@@ -150,7 +150,7 @@ class ContactsTest(TestCase):
                 config_builder=ConfigBuilder().start_date(start_datetime),
             )
 
-        assert len(observed_bodies) >= 3
+        assert len(observed_bodies) >= 4
         assert 1 <= len(output.records) <= len(observed_bodies)
         assert [body["query"]["operator"] for body in observed_bodies] == ["AND"] * len(observed_bodies)
         assert [body["query"]["value"][1]["operator"] for body in observed_bodies] == ["<"] * len(observed_bodies)
