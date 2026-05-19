@@ -2073,7 +2073,7 @@ spec:
         order: 3
       num_workers:
         type: integer
-        title: Number of Concurrent Threads
+        title: Number of Concurrent Workers
         minimum: 2
         maximum: 50
         default: 5
