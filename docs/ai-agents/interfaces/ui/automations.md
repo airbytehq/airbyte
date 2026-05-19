@@ -9,7 +9,7 @@ sidebar_position: 2
 Automations are currently in Research Preview. Features, interfaces, and behavior may change as the product evolves.
 :::
 
-An Automation is an agent task that runs on its own, without a human in the loop. You describe what you want done once, pick how you want to trigger it (manually, on a schedule, or from a webhook), and Airbyte runs the task every time the trigger fires. Automations are the right choice when you need the same work to happen repeatedly, reliably, and without someone sitting at a keyboard.
+An Automation is an agent task that runs on its own, without a human in the loop. You describe what you want done once, pick how you want to trigger it manually or on a schedule, and Airbyte runs the task every time the trigger fires. Automations are the right choice when you need the same work to happen repeatedly, reliably, and without someone sitting at a keyboard.
 
 To open Automations, click **Automations** in the left sidebar.
 
@@ -51,7 +51,7 @@ Use search and filters to find what you want:
 
 - **Search**: Type in the search box at the top of the table to filter by Automation name.
 - **Status**: Filter by Running, Active, Paused, Failed, or Draft.
-- **Trigger**: Filter by Manual, Schedule, or Webhook.
+- **Trigger**: Filter by Manual or Schedule.
 - **Enabled**: Show only enabled Automations, only turned-off Automations, or both.
 
 Click the **Edit** (pencil) icon on a row to open the Automation in the Automation Builder. Automations created before session linking was introduced can't be edited from this button; Airbyte disables the icon and explains why on hover.
@@ -68,7 +68,7 @@ Open the Automation in the Automation Builder and click **Properties** to open t
 
 Scheduled Automations run automatically when their trigger fires. To pause a scheduled Automation without deleting it, turn its **Enabled** toggle off. The next scheduled time is skipped, and the Automation's status changes to Paused. Turn the toggle back on to resume.
 
-You can toggle Enabled from the table on the Automations page or from the Properties panel in the Automation Builder. The toggle is only available for Automations with a Schedule trigger; Manual and Webhook Automations are always "on" in the sense that they run whenever you invoke them, so there's nothing to pause.
+You can toggle Enabled from the table on the Automations page or from the Properties panel in the Automation Builder. The toggle is only available for Automations with a Schedule trigger; Manual Automations are always "on" in the sense that they run whenever you invoke them, so there's nothing to pause.
 
 ## The Automation Builder {#the-automation-builder}
 
@@ -97,7 +97,7 @@ Click **Properties** in the header to open the Properties panel. The panel conta
 - **Name**: The Automation's display name. Shown in the table, sidebar, and run history. Editable inline.
 - **Prompt**: The original prompt the Automation was created from, shown read-only for reference. To change what the Automation does, chat with the Automation Builder Agent.
 - **Context**: The connectors this Automation uses. Managed through the Automation Builder chat; edit connector membership by asking the agent to add or remove a source. Airbyte blocks direct editing here to keep the prompt and context consistent.
-- **Trigger**: How the Automation is invoked. Choose Manual, Schedule, or Webhook. See [Run automations](#run-automations).
+- **Trigger**: How the Automation is invoked. Choose Manual or Schedule. See [Run automations](#run-automations).
 - **Schedule**: Visible when the trigger is Schedule. A builder that lets you pick a frequency (hourly, daily, weekly, monthly, or a raw cron expression) and a timezone.
 - **Result webhook (optional)**: A destination URL where Airbyte posts results after a run finishes. See [Result webhooks](#result-webhooks).
 
@@ -125,16 +125,10 @@ Airbyte dispatches scheduled Automations at the exact moment the cron expression
 Keep this in mind when you design schedules:
 
 - **Avoid stacking many heavy Automations on the same round cadence.** If you have several Automations that each do substantial work, stagger them across different minutes (for example, `5 * * * *`, `15 * * * *`, `25 * * * *`) rather than running them all at `0 * * * *`. This spreads load on your connectors, reduces the chance of hitting upstream rate limits at the same moment, and makes failures easier to diagnose one Automation at a time.
-- **Expect near-simultaneous webhook or connector calls** when multiple Automations share a trigger time and hit the same third-party API. If that API enforces per-minute rate limits, consider splitting the schedules.
+- **Expect near-simultaneous connector calls** when multiple Automations share a trigger time and hit the same third-party API. If that API enforces per-minute rate limits, consider splitting the schedules.
 - **Dispatch time isn't execution time.** Airbyte dispatches the run on the dot, but the agent work itself takes as long as it takes. A 9:00 schedule doesn't guarantee results by 9:00, only that the run starts then.
 
 If you need a schedule that's more fine-grained than the Automation Builder's presets allow, use **Custom cron** and pick a specific minute offset that isn't shared with your other Automations.
-
-### From a webhook
-
-Webhook Automations run when an external system posts to a URL Airbyte provides. Open the Properties panel, set **Trigger** to Webhook, and copy the generated webhook URL. Configure the external system to post to that URL when the event you care about happens. Each POST starts one run.
-
-Webhook Automations are useful for event-driven workflows like "when a Salesforce deal closes, create an onboarding ticket and notify the team in Slack."
 
 ### See the status of a running automation
 
@@ -158,7 +152,7 @@ Result webhooks are currently persisted for scheduled Automations. If you leave 
 
 The Run History tab in the Automation Builder lists every run of the current Automation, most recent first. Each entry shows:
 
-- A **Test run** or **Live run** badge. Test runs come from the **Run** button in the Automation Builder; live runs come from a schedule or webhook trigger.
+- A **Test run** or **Live run** badge. Test runs come from the **Run** button in the Automation Builder; live runs come from a schedule.
 - The run's overall state: **Running**, **Succeeded**, or **Failed**.
 - When the run was created and how many jobs it produced.
 - A per-job breakdown with state (Pending, Created, Ready, Running, Retrying, Cancelled, Failed, or Completed) and the job's result.
@@ -172,7 +166,7 @@ Run History is scoped to one Automation. To audit runs across every Automation i
 Airbyte treats the current state of the Automation Builder as the draft version of the Automation. As you chat with the Automation Builder Agent or edit properties, Airbyte saves your changes automatically, and the header's **Saving…** / **Saved** indicator confirms each save.
 
 - **Test runs** always execute against the current draft. Use them to verify a change before letting a schedule pick it up.
-- **Live runs** (scheduled or webhook) also run against the current saved state. After you edit an Automation, the next live run uses the new version.
+- **Live runs** from schedules also run against the current saved state. After you edit an Automation, the next live run uses the new version.
 - **Run History** records which version of the Automation produced each run, so you can correlate behavior changes with edits.
 
 Because each edit is saved in place, there isn't a separate "publish" step. If you want to experiment without affecting a live schedule, turn **Enabled** off, iterate with test runs until you're satisfied, and turn Enabled back on.

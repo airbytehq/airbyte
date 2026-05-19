@@ -270,7 +270,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
+  default_concurrency: 5
   max_concurrency: 10
 
 spec:
