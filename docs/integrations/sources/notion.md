@@ -122,7 +122,7 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.8-rc.2 | 2026-05-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
+| 4.0.8-rc.2 | 2026-05-19 | [78274](https://github.com/airbytehq/airbyte/pull/78274) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
 | 4.0.8-rc.1 | 2026-05-18 | [78149](https://github.com/airbytehq/airbyte/pull/78149) | Start concurrency tuning rollout |
 | 4.0.7 | 2026-04-28 | [77340](https://github.com/airbytehq/airbyte/pull/77340) | Update dependencies |
 | 4.0.6 | 2026-04-21 | [76681](https://github.com/airbytehq/airbyte/pull/76681) | Update dependencies |
