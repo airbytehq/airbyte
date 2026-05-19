@@ -3,8 +3,8 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
-import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
 import com.google.cloud.bigquery.StandardSQLTypeName
