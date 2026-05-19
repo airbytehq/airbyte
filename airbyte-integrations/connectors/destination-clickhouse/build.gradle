@@ -45,5 +45,7 @@ dependencies {
 
 tasks.named('integrationTestJava').configure {
     maxParallelForks = 1
-    systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'same_thread'
+    systemProperties = systemProperties + [
+        'junit.jupiter.execution.parallel.mode.classes.default': 'same_thread'
+    ]
 }
