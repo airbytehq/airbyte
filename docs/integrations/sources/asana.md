@@ -157,6 +157,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.7.2 | 2026-05-19 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix large project task syncs by reading tasks from project sections |
 | 1.7.1 | 2026-05-18 | [78159](https://github.com/airbytehq/airbyte/pull/78159) | Remove explicit OAuth scopes from connector input specification |
 | 1.7.0 | 2026-05-15 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
 | 1.6.0 | 2026-05-14 | [78096](https://github.com/airbytehq/airbyte/pull/78096) | Promoted release candidate to GA |
