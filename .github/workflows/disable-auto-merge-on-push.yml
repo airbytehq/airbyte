@@ -1,0 +1,63 @@
+name: Disable Auto-Merge on New Commits
+
+on:
+  pull_request_target:
+    types:
+      - synchronize
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  disable-auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check and disable auto-merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+
+          # Exception 1: Skip if PR author is a bot
+          if [[ "$PR_AUTHOR" == *"[bot]"* ]] || [[ "$PR_AUTHOR" == *"-bot"* ]]; then
+            echo "PR author '$PR_AUTHOR' is a bot. Skipping."
+            exit 0
+          fi
+
+          # Exception 2: Skip if PR has an auto-merge label
+          LABELS=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json labels --jq '.labels[].name')
+          for LABEL in $LABELS; do
+            if [[ "$LABEL" == *"auto-merge"* ]]; then
+              echo "PR has auto-merge label '$LABEL'. Skipping."
+              exit 0
+            fi
+          done
+
+          # Exception 3: Skip if PR was never in draft status (non-draft from creation)
+          # A PR that skipped draft status is presumed to have auto-merge set intentionally.
+          if [[ "${{ github.event.pull_request.draft }}" != "true" ]]; then
+            # Check the timeline for draft events to see if it was ever a draft
+            WAS_DRAFT=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/timeline" --paginate \
+              --jq '[.[] | select(.event == "convert_to_draft" or .event == "ready_for_review")] | length > 0')
+            if [[ "$WAS_DRAFT" != "true" ]]; then
+              echo "PR was never in draft status. Skipping."
+              exit 0
+            fi
+          fi
+
+          # Check if auto-merge is actually enabled
+          AUTO_MERGE_ENABLED=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json autoMergeRequest --jq '.autoMergeRequest != null')
+
+          if [[ "$AUTO_MERGE_ENABLED" != "true" ]]; then
+            echo "Auto-merge is not enabled. Nothing to do."
+            exit 0
+          fi
+
+          echo "Auto-merge is enabled. Disabling due to new commits."
+          gh pr merge "$PR_NUMBER" --repo "$REPO" --disable-auto
+
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body \
+            "Auto-merge has been disabled because new commits were pushed to this PR. Please re-enable auto-merge manually after reviewing the new changes."
