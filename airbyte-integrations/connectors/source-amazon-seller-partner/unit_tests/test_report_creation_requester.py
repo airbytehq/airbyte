@@ -823,7 +823,7 @@ class TestSendRequest:
             except AirbyteTracedException as exc:
                 assert exc.failure_type == FailureType.transient_error
                 assert exc.message == (
-                    "Amazon SP-API rate limit exceeded during GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL report creation."
+                    "Amazon SP-API report creation rate limit exceeded for report type GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL."
                 )
                 assert "reportType=GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL" in exc.internal_message
                 assert "HTTP Status Code: 429" in exc.internal_message

@@ -3103,7 +3103,7 @@ definitions:
                 http_codes:
                   - 429
                 failure_type: transient_error
-                error_message: "Amazon SP-API rate limit exceeded during report creation."
+                error_message: "Amazon SP-API report creation rate limit exceeded."
             max_retries: "{{ config.get('creation_requester_429_max_retries', 5) }}"
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"

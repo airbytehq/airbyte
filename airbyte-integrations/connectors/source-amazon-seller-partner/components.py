@@ -638,9 +638,11 @@ class ReportCreationRequester(HttpRequester):
         except AirbyteTracedException as exc:
             if not self._is_rate_limit_exception(exc):
                 raise
-            message_report_type = report_type or "Amazon"
+            message = "Amazon SP-API report creation rate limit exceeded."
+            if report_type:
+                message = f"Amazon SP-API report creation rate limit exceeded for report type {report_type}."
             raise AirbyteTracedException(
-                message=f"Amazon SP-API rate limit exceeded during {message_report_type} report creation.",
+                message=message,
                 internal_message=(
                     f"Amazon SP-API retry budget exhausted during report creation for reportType={report_type}; "
                     f"dataStartTime={requested_start}; dataEndTime={requested_end}; marketplaceIds={requested_marketplace_ids}. "
