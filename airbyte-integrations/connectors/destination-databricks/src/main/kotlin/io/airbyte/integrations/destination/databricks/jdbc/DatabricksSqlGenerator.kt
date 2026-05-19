@@ -313,6 +313,7 @@ class DatabricksSqlGenerator(
                     metaColumnTypeMap
                         .asSequence()
                         .filter { it.key.name != AB_META }
+                        .filter { it.key.name != AB_META }
                         .map { it.key.name },
                 )
                 .flatten()
