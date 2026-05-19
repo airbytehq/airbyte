@@ -55,7 +55,8 @@ class ClickhouseTestTableOperationsClient(
                 "`${table.namespace}`.`${table.name}`",
                 records
                     .joinToString("\n") { record ->
-                        record.mapValues { (_, value) -> value.toJsonEachRowValue() }
+                        record
+                            .mapValues { (_, value) -> value.toJsonEachRowValue() }
                             .serializeToString()
                     }
                     .byteInputStream(),
