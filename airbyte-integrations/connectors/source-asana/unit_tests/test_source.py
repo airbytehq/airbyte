@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 from source_asana.source import SourceAsana
 
 
@@ -45,11 +44,7 @@ def test_401_error_handler_by_auth_type(filter_index, expected_filter):
     manifest = source._read_and_parse_yaml_file(source._path_to_yaml)
 
     response_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
-    auth_filters = [
-        response_filter
-        for response_filter in response_filters
-        if 401 in response_filter.get("http_codes", [])
-    ]
+    auth_filters = [response_filter for response_filter in response_filters if 401 in response_filter.get("http_codes", [])]
 
     assert len(auth_filters) == 2
     assert auth_filters[filter_index] == {
