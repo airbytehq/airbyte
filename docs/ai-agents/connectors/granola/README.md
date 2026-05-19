@@ -4,8 +4,8 @@ The Granola agent connector is a Python package that equips AI agents to interac
 
 The Granola API connector provides read access to meeting notes from Granola,
 an AI-powered meeting notes platform. This connector integrates with the Granola
-Enterprise API to list and retrieve notes, including summaries, transcripts,
-attendees, and calendar event details. Requires an Enterprise plan API key.
+API to list and retrieve notes, including summaries, transcripts, attendees,
+and calendar event details. Requires a Granola API key.
 
 
 ## Example prompts
@@ -256,7 +256,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -277,7 +277,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -299,7 +299,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -324,7 +324,7 @@ from airbyte_agent_sdk.connectors.granola.models import GranolaAuthConfig
 
 connector = GranolaConnector(
     auth_config=GranolaAuthConfig(
-        api_key="<Granola Enterprise API key generated from Settings > Workspaces > API tab>"
+        api_key="<Granola API key. For a personal key, open the Granola desktop app and go to Settings > Connectors > API keys > Create new key. For an Enterprise API key, go to Settings > API > Create new key. On Enterprise plans, workspace admins must enable "Allow personal API keys" in Settings > Workspace > General before personal keys can be created.>"
     )
 )
 
@@ -344,4 +344,4 @@ For all authentication options, see the connector's [authentication documentatio
 
 ## Version information
 
-**Connector version:** 1.0.6
+**Connector version:** 1.0.7
